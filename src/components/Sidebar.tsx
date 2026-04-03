@@ -15,7 +15,7 @@ function NavButton({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="block rounded-lg px-3 py-1.5 text-left text-[10px] leading-snug tracking-tight text-slate-500 transition-colors hover:bg-violet-500/10 hover:text-violet-700"
+      className="block rounded-lg px-3 py-1.5 text-left text-[12px] leading-snug tracking-tight text-slate-500 transition-colors hover:bg-violet-500/10 hover:text-violet-700"
     >
       {label}
     </Link>

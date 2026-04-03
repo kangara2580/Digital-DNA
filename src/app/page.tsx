@@ -1,4 +1,5 @@
 import { CategoryBar } from "@/components/CategoryBar";
+import { FloatingHelp } from "@/components/FloatingHelp";
 import { HeroSearch } from "@/components/HeroSearch";
 import { Sidebar } from "@/components/Sidebar";
 import { VideoFeed } from "@/components/VideoFeed";
@@ -17,6 +18,7 @@ export default function Home() {
             <VideoFeed />
           </div>
         </div>
+        <FloatingHelp />
       </main>
     </div>
   );

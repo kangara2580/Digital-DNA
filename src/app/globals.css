@@ -17,3 +17,28 @@ body {
     text-wrap: balance;
   }
 }
+
+/* 가로 피드: 얇은 스크롤바 (롱진류 슬라이더 느낌) */
+.feed-scroll {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(203 213 225) transparent;
+}
+
+.feed-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.feed-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.feed-scroll::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: rgb(203 213 225);
+}
+
+.feed-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgb(148 163 184);
+}

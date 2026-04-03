@@ -5,6 +5,8 @@ export type FeedVideo = {
   creator: string;
   src: string;
   poster: string;
+  /** 세로(릴스) / 가로(와이드) 피드 구분 */
+  orientation: "portrait" | "landscape";
 };
 
 export const SAMPLE_VIDEOS: FeedVideo[] = [
@@ -15,6 +17,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     src: "https://videos.pexels.com/video-files/3571264/3571264-hd_1920_1080_30fps.mp4",
     poster:
       "https://images.pexels.com/photos/2387873/pexels-photo-2387873.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
   },
   {
     id: "2",
@@ -23,6 +26,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     src: "https://videos.pexels.com/video-files/3045163/3045163-hd_1920_1080_25fps.mp4",
     poster:
       "https://images.pexels.com/photos/1519088/pexels-photo-1519088.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "landscape",
   },
   {
     id: "3",
@@ -31,6 +35,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     src: "https://videos.pexels.com/video-files/3045160/3045160-hd_1920_1080_25fps.mp4",
     poster:
       "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
   },
   {
     id: "4",
@@ -39,6 +44,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     src: "https://videos.pexels.com/video-files/1448735/1448735-hd_1920_1080_30fps.mp4",
     poster:
       "https://images.pexels.com/photos/1179229/pexels-photo-1179229.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "landscape",
   },
   {
     id: "5",
@@ -47,6 +53,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     src: "https://videos.pexels.com/video-files/2491284/2491284-hd_1920_1080_30fps.mp4",
     poster:
       "https://images.pexels.com/photos/1520760/pexels-photo-1520760.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
   },
   {
     id: "6",
@@ -55,6 +62,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     src: "https://videos.pexels.com/video-files/1409899/1409899-hd_1920_1080_25fps.mp4",
     poster:
       "https://images.pexels.com/photos/1683492/pexels-photo-1683492.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "landscape",
   },
   {
     id: "7",
@@ -63,6 +71,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     src: "https://videos.pexels.com/video-files/2495382/2495382-hd_1920_1080_30fps.mp4",
     poster:
       "https://images.pexels.com/photos/931007/pexels-photo-931007.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
   },
   {
     id: "8",
@@ -71,6 +80,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     src: "https://videos.pexels.com/video-files/3209828/3209828-hd_1920_1080_25fps.mp4",
     poster:
       "https://images.pexels.com/photos/3757376/pexels-photo-3757376.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "landscape",
   },
   {
     id: "9",
@@ -79,6 +89,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     src: "https://videos.pexels.com/video-files/3044475/3044475-hd_1920_1080_25fps.mp4",
     poster:
       "https://images.pexels.com/photos/1571458/pexels-photo-1571458.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
   },
   {
     id: "10",
@@ -87,6 +98,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     src: "https://videos.pexels.com/video-files/2889030/2889030-hd_1920_1080_30fps.mp4",
     poster:
       "https://images.pexels.com/photos/869258/pexels-photo-869258.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "landscape",
   },
   {
     id: "11",
@@ -95,6 +107,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     src: "https://videos.pexels.com/video-files/3044473/3044473-hd_1920_1080_25fps.mp4",
     poster:
       "https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
   },
   {
     id: "12",
@@ -103,6 +116,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     src: "https://videos.pexels.com/video-files/2570934/2570934-hd_1920_1080_30fps.mp4",
     poster:
       "https://images.pexels.com/photos/235648/pexels-photo-235648.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "landscape",
   },
 ];
 

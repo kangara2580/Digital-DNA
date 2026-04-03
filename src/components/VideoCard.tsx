@@ -3,9 +3,13 @@
 import { useCallback, useRef } from "react";
 import type { FeedVideo } from "@/data/videos";
 
-type Props = { video: FeedVideo };
+type Props = { video: FeedVideo; className?: string };
 
-export function VideoCard({ video }: Props) {
+export function VideoCard({ video, className }: Props) {
+  const aspectClass =
+    video.orientation === "portrait"
+      ? "aspect-[9/18] w-full"
+      : "aspect-video w-full";
   const ref = useRef<HTMLVideoElement>(null);
 
   const play = useCallback(() => {
@@ -24,11 +28,11 @@ export function VideoCard({ video }: Props) {
 
   return (
     <article
-      className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white/60 shadow-sm transition-transform duration-300 hover:-translate-y-0.5 hover:border-violet-300/60"
+      className={`group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)] transition-transform duration-300 hover:-translate-y-0.5 hover:border-violet-200/80 hover:shadow-[0_16px_40px_-14px_rgba(15,23,42,0.18)] ${className ?? ""}`}
       onMouseEnter={play}
       onMouseLeave={pause}
     >
-      <div className="relative aspect-[9/16] w-full bg-slate-100 sm:aspect-video">
+      <div className={`relative bg-slate-100 ${aspectClass}`}>
         <video
           ref={ref}
           className="absolute inset-0 h-full w-full object-cover"
