@@ -1,5 +1,6 @@
 "use client";
 
+import { Heart } from "lucide-react";
 import { useCallback, useRef } from "react";
 import type { FeedVideo } from "@/data/videos";
 
@@ -29,20 +30,6 @@ function CartIcon({ className }: { className?: string }) {
       />
       <circle cx="9" cy="20" r="1.35" fill="currentColor" />
       <circle cx="17" cy="20" r="1.35" fill="currentColor" />
-    </svg>
-  );
-}
-
-/** 하트 대신 대칭 북마크 — 장바구니 아이콘과 같은 24×24·선 굵기로 수직 정렬 맞춤 */
-function BookmarkIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-      <path
-        d="M6 3.5h12a1.5 1.5 0 011.5 1.5v15.5l-7.5-4.5L4.5 20.5V5A1.5 1.5 0 016 3.5z"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-      />
     </svg>
   );
 }
@@ -102,7 +89,7 @@ export function VideoCard({ video, className, flush }: Props) {
         </video>
 
         <div
-          className="pointer-events-none absolute inset-0 z-[1] bg-black/0 transition-colors duration-300 ease-out group-hover:bg-black/38 motion-reduce:group-hover:bg-black/30"
+          className="pointer-events-none absolute inset-0 z-[1] bg-black/0 transition-colors duration-300 ease-out group-hover:bg-black/30 motion-reduce:group-hover:bg-black/25"
           aria-hidden
         />
         <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center p-4">
@@ -121,7 +108,11 @@ export function VideoCard({ video, className, flush }: Props) {
               aria-label="찜하기"
               onClick={(e) => e.preventDefault()}
             >
-              <BookmarkIcon className="h-8 w-8 shrink-0 drop-shadow-md" />
+              <Heart
+                className="h-8 w-8 shrink-0 fill-none drop-shadow-md"
+                strokeWidth={1.75}
+                aria-hidden
+              />
             </button>
           </div>
         </div>

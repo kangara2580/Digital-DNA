@@ -379,24 +379,26 @@ export function Highlight24() {
       />
 
       <div className="relative z-10 mx-auto max-w-[1800px] px-4 pb-10 pt-8 sm:px-6 sm:pb-12 sm:pt-10 lg:px-8">
-        <div className="mb-6 flex flex-col gap-1 sm:mb-8 sm:gap-1.5">
-          <div className="flex items-baseline justify-between gap-4">
-            <h2
-              id="highlight-24-heading"
-              className="min-w-0 text-[18px] font-bold leading-tight tracking-tight text-white drop-shadow-sm sm:text-[20px]"
-            >
-              24시간 클립 하이라이트
-            </h2>
-            <Link
-              href="/"
-              className="shrink-0 text-[12px] font-medium leading-none text-white/85 underline-offset-4 transition-colors hover:text-white sm:text-[13px]"
-            >
-              더보기
-            </Link>
+        <div className="mb-6 sm:mb-8">
+          <div className="inline-flex max-w-full flex-col gap-1 rounded-l-none rounded-r-[9999px] bg-black/58 py-2.5 pl-3 pr-5 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.45)] ring-1 ring-white/12 backdrop-blur-md sm:gap-1.5 sm:py-3 sm:pl-4 sm:pr-7">
+            <div className="flex items-baseline justify-between gap-4 pr-1">
+              <h2
+                id="highlight-24-heading"
+                className="min-w-0 text-[18px] font-bold leading-tight tracking-tight text-white sm:text-[20px]"
+              >
+                24시간 클립 하이라이트
+              </h2>
+              <Link
+                href="/"
+                className="shrink-0 text-[12px] font-medium leading-none text-white/92 underline-offset-4 transition-colors hover:text-white sm:text-[13px]"
+              >
+                더보기
+              </Link>
+            </div>
+            <p className="max-w-xl pr-2 text-[12px] leading-snug text-white/92 sm:text-[13px] sm:leading-relaxed">
+              지금 거래되고 있는 일상 클립을 바로 넘겨 보세요
+            </p>
           </div>
-          <p className="text-[12px] text-white/75 sm:text-[13px]">
-            지금 거래되고 있는 일상 클립을 바로 넘겨 보세요
-          </p>
         </div>
 
         <div
