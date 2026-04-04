@@ -67,7 +67,8 @@ function circularRingPose(
   const depthFactor = (1 + Math.cos(phi)) / 2;
   const isMain = delta === 0;
   const scale = 0.72 + 0.28 * depthFactor;
-  const opacity = isMain ? 1 : 0.5 + 0.48 * depthFactor;
+  /** 메인만 선명 — 옆 카드는 낮은 불투명도로 ‘다음에 뭐가 있지?’ 호기심 유도 */
+  const opacity = isMain ? 1 : 0.26 + 0.2 * depthFactor;
   const zIndex = 10 + Math.round(depthFactor * 50);
   return {
     x,
@@ -103,7 +104,7 @@ function diagonalWingPose(
     rotateY,
     depthFactor: 0.22,
     scale: 0.52,
-    opacity: 0.44,
+    opacity: 0.26,
     zIndex: 14,
   };
 }
@@ -124,7 +125,7 @@ function centerBackQueuePose(radius: number): {
     rotateY: 0,
     depthFactor: 0.2,
     scale: 0.48,
-    opacity: 0.4,
+    opacity: 0.22,
     zIndex: 13,
   };
 }
@@ -156,6 +157,7 @@ export function Highlight24() {
   );
   const [index, setIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const ambientVideoRef = useRef<HTMLVideoElement>(null);
   const touchStartX = useRef<number | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -165,6 +167,9 @@ export function Highlight24() {
     perspective: 1680,
     ringRadius: 280,
   });
+
+  /** 메인 클립과 동기된 블러 배경 영상 — 로드 전·후 부드럽게 페이드 */
+  const [ambientVideoReady, setAmbientVideoReady] = useState(false);
 
   const reduceMotion = useReducedMotion() ?? false;
 
@@ -215,6 +220,18 @@ export function Highlight24() {
     v.muted = true;
     void v.play().catch(() => {});
   }, [activeId]);
+
+  useEffect(() => {
+    setAmbientVideoReady(false);
+  }, [activeId]);
+
+  useEffect(() => {
+    if (reduceMotion) return;
+    const el = ambientVideoRef.current;
+    if (!el) return;
+    el.muted = true;
+    void el.play().catch(() => {});
+  }, [activeId, reduceMotion, ambientVideoReady]);
 
   const onTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -312,29 +329,52 @@ export function Highlight24() {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
+      {/* 배경: 포스터 즉시 반영 + (모션 허용 시) 메인 영상 블러로 색감이 살아 움직임 */}
       <div
-        className="absolute inset-0 scale-110 bg-cover bg-center"
+        className="absolute inset-0 scale-110 bg-cover bg-center transition-[opacity,filter] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
         style={{ backgroundImage: `url(${active.poster})` }}
         aria-hidden
       />
+      {!reduceMotion ? (
+        <video
+          key={active.id}
+          ref={ambientVideoRef}
+          className={`pointer-events-none absolute left-1/2 top-1/2 z-0 min-h-[120%] min-w-[120%] -translate-x-1/2 -translate-y-1/2 scale-110 object-cover transition-opacity duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity,transform] motion-reduce:opacity-0 ${
+            ambientVideoReady ? "opacity-[0.52]" : "opacity-0"
+          }`}
+          style={{
+            filter: "blur(72px) saturate(1.15) brightness(1.05)",
+            WebkitFilter: "blur(72px) saturate(1.15) brightness(1.05)",
+          }}
+          src={active.src}
+          poster={active.poster}
+          muted
+          playsInline
+          loop
+          autoPlay
+          preload="metadata"
+          aria-hidden
+          onLoadedData={() => setAmbientVideoReady(true)}
+        />
+      ) : null}
       <div
-        className="absolute inset-0 bg-black/45 backdrop-blur-2xl transition-opacity duration-700"
+        className="absolute inset-0 z-[1] bg-black/28 backdrop-blur-xl transition-colors duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
         aria-hidden
       />
       <div
-        className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/35 to-black/55"
+        className="absolute inset-0 z-[1] bg-gradient-to-b from-black/18 via-black/28 to-black/48 transition-opacity duration-[900ms]"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_88%_58%_at_50%_40%,rgba(255,255,255,0.12),transparent_60%)]"
+        className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_88%_58%_at_50%_38%,rgba(255,255,255,0.14),transparent_58%)]"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_125%_92%_at_50%_118%,rgba(0,0,0,0.52),transparent_46%)]"
+        className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_125%_92%_at_50%_118%,rgba(0,0,0,0.42),transparent_48%)]"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_38%_at_50%_72%,rgba(0,0,0,0.35),transparent_70%)]"
+        className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_72%_40%_at_50%_70%,rgba(0,0,0,0.28),transparent_72%)]"
         aria-hidden
       />
 
@@ -405,8 +445,10 @@ export function Highlight24() {
                 <motion.div
                   key={v.id}
                   role="presentation"
-                  className={`absolute left-1/2 top-1/2 overflow-hidden rounded-2xl border border-white/25 bg-black/40 shadow-[0_28px_90px_-26px_rgba(0,0,0,0.88)] [transform-style:preserve-3d] ${
-                    isMain ? "cursor-default" : "cursor-pointer"
+                  className={`absolute left-1/2 top-1/2 overflow-hidden rounded-2xl border bg-black/40 [transform-style:preserve-3d] ${
+                    isMain
+                      ? "cursor-default border-white/35 shadow-[0_32px_100px_-24px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.14)] ring-1 ring-inset ring-white/20"
+                      : "cursor-pointer border-white/14 shadow-[0_28px_90px_-26px_rgba(0,0,0,0.88)]"
                   } ${pose.opacity < 0.02 ? "pointer-events-none" : ""}`}
                   style={{
                     width: cardW,
@@ -429,7 +471,9 @@ export function Highlight24() {
                     if (!isMain && pose.opacity >= 0.02) setIndex(i);
                   }}
                 >
-                  <div className="relative h-full w-full">
+                  <div
+                    className={`relative h-full w-full ${isMain ? "" : "brightness-[0.72] contrast-[0.92] saturate-[0.85]"}`}
+                  >
                     {isMain ? (
                       <video
                         ref={videoRef}
@@ -457,12 +501,16 @@ export function Highlight24() {
                         aria-hidden
                         initial={false}
                         animate={{
-                          opacity: 0.08 + 0.22 * (1 - pose.depthFactor),
+                          opacity: 0.38 + 0.34 * (1 - pose.depthFactor),
                         }}
                         transition={transition}
                       />
                     )}
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10" />
+                    <div
+                      className={`pointer-events-none absolute inset-0 bg-gradient-to-t via-transparent to-black/10 ${
+                        isMain ? "from-black/25" : "from-black/45"
+                      }`}
+                    />
                     <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/12" />
                   </div>
                 </motion.div>
