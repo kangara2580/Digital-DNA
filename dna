@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 # 어디서 실행하든 이 파일이 있는 폴더(프로젝트 루트)로 이동 후 dev 서버 실행
+#
+# 홈(~)에서 한 번에 쓰려면 ~/.zshrc 에 (경로는 본인 Mac에 맞게):
+#   alias dna='"/Users/gang-ahra/Digital - DNA/dna"'
+# ※ cd 만 하는 alias 와 혼동하지 마세요. npm 은 package.json 이 있는 폴더에서만 됩니다.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
