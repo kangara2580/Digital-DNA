@@ -5,6 +5,13 @@ import type { FeedVideo } from "@/data/videos";
 
 type Props = { video: FeedVideo; className?: string; flush?: boolean };
 
+function formatDuration(seconds: number): string {
+  const s = Math.max(0, Math.floor(seconds));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m}:${r.toString().padStart(2, "0")}`;
+}
+
 function CartIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
@@ -62,19 +69,24 @@ export function VideoCard({ video, className, flush }: Props) {
   }, []);
 
   const shell = flush
-    ? "border-0 bg-white shadow-none"
-    : "border border-slate-200/90 bg-white shadow-sm hover:shadow-md";
+    ? "rounded-none border-0 bg-white shadow-none"
+    : "rounded-xl border border-slate-200/90 bg-white shadow-sm hover:shadow-md";
+
+  const priceLabel =
+    video.priceWon != null
+      ? `${video.priceWon.toLocaleString("ko-KR")}원`
+      : null;
 
   return (
     <article
-      className={`group relative overflow-hidden transition-shadow duration-300 ${shell} ${className ?? ""}`}
+      className={`group flex flex-col overflow-hidden transition-shadow duration-300 ${shell} ${className ?? ""}`}
       onMouseEnter={play}
       onMouseLeave={pause}
     >
       <div className={`relative bg-slate-100 ${aspectClass}`}>
-        {video.priceWon != null ? (
-          <span className="absolute right-2 top-2 z-[4] rounded-md bg-black/78 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white ring-1 ring-white/15 sm:right-2.5 sm:top-2.5 sm:text-[12px]">
-            {video.priceWon.toLocaleString("ko-KR")}원
+        {video.durationSec != null ? (
+          <span className="absolute right-2 top-2 z-[4] rounded bg-black/72 px-1.5 py-px text-[10px] font-medium tabular-nums leading-tight text-white/95 ring-1 ring-white/12 sm:right-2.5 sm:top-2.5 sm:text-[11px]">
+            {formatDuration(video.durationSec)}
           </span>
         ) : null}
         <video
@@ -90,11 +102,11 @@ export function VideoCard({ video, className, flush }: Props) {
         </video>
 
         <div
-          className="pointer-events-none absolute inset-0 z-[1] bg-black/0 transition-colors duration-300 ease-out group-hover:bg-black/40"
+          className="pointer-events-none absolute inset-0 z-[1] bg-black/0 transition-colors duration-300 ease-out group-hover:bg-black/38 motion-reduce:group-hover:bg-black/30"
           aria-hidden
         />
-        <div className="pointer-events-none absolute inset-0 z-[2] flex flex-col justify-between p-4">
-          <div className="flex flex-1 items-center justify-center gap-10 opacity-0 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 translate-y-1 group-hover:translate-y-0 group-hover:opacity-100">
+        <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center p-4">
+          <div className="flex items-center justify-center gap-10 opacity-0 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 translate-y-1 group-hover:translate-y-0 group-hover:opacity-100">
             <button
               type="button"
               className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110"
@@ -112,12 +124,19 @@ export function VideoCard({ video, className, flush }: Props) {
               <BookmarkIcon className="h-8 w-8 shrink-0 drop-shadow-md" />
             </button>
           </div>
-          <div className="opacity-0 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 translate-y-1.5 group-hover:translate-y-0 group-hover:opacity-100">
-            <h3 className="line-clamp-2 text-sm font-semibold text-white drop-shadow">
-              {video.title}
-            </h3>
-            <p className="mt-1 text-xs text-white/90">{video.creator}</p>
-          </div>
+        </div>
+      </div>
+
+      <div className="flex min-h-[40px] items-stretch border-t border-slate-200/80 bg-white px-2 py-1.5 sm:min-h-[44px] sm:px-2.5 sm:py-2">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <h3 className="line-clamp-2 min-w-0 flex-1 text-left text-[11px] font-medium leading-snug text-slate-800 sm:text-[12px]">
+            {video.title}
+          </h3>
+          {priceLabel ? (
+            <span className="shrink-0 rounded-md px-1.5 py-0.5 text-right text-[11px] font-semibold tabular-nums text-slate-900 transition-[transform,background-color,color,box-shadow,font-weight] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none sm:text-[12px] group-hover:scale-[1.07] group-hover:bg-slate-900 group-hover:font-bold group-hover:text-white group-hover:shadow-md motion-reduce:group-hover:scale-100 motion-reduce:group-hover:bg-transparent motion-reduce:group-hover:font-semibold motion-reduce:group-hover:text-slate-900 motion-reduce:group-hover:shadow-none">
+              {priceLabel}
+            </span>
+          ) : null}
         </div>
       </div>
     </article>

@@ -9,6 +9,8 @@ export type FeedVideo = {
   orientation: "portrait" | "landscape";
   /** 원 단위 가격(데모). 없으면 표시 안 함 */
   priceWon?: number;
+  /** 초 단위 길이 — 썸네일 위에만 재생 시간(예: 0:15)으로 표시 */
+  durationSec?: number;
 };
 
 export const SAMPLE_VIDEOS: FeedVideo[] = [
@@ -21,6 +23,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
       "https://images.pexels.com/photos/2387873/pexels-photo-2387873.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
     priceWon: 1200,
+    durationSec: 18,
   },
   {
     id: "2",
@@ -31,6 +34,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
       "https://images.pexels.com/photos/1519088/pexels-photo-1519088.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "landscape",
     priceWon: 4500,
+    durationSec: 42,
   },
   {
     id: "3",
@@ -41,6 +45,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
       "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
     priceWon: 700,
+    durationSec: 12,
   },
   {
     id: "4",
@@ -51,6 +56,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
       "https://images.pexels.com/photos/1179229/pexels-photo-1179229.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "landscape",
     priceWon: 2200,
+    durationSec: 35,
   },
   {
     id: "5",
@@ -61,6 +67,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
       "https://images.pexels.com/photos/1520760/pexels-photo-1520760.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
     priceWon: 900,
+    durationSec: 24,
   },
   {
     id: "6",
@@ -71,6 +78,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
       "https://images.pexels.com/photos/1683492/pexels-photo-1683492.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "landscape",
     priceWon: 3500,
+    durationSec: 51,
   },
   {
     id: "7",
@@ -81,6 +89,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
       "https://images.pexels.com/photos/931007/pexels-photo-931007.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
     priceWon: 1500,
+    durationSec: 15,
   },
   {
     id: "8",
@@ -91,6 +100,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
       "https://images.pexels.com/photos/3757376/pexels-photo-3757376.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "landscape",
     priceWon: 1800,
+    durationSec: 28,
   },
   {
     id: "9",
@@ -101,6 +111,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
       "https://images.pexels.com/photos/1571458/pexels-photo-1571458.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
     priceWon: 500,
+    durationSec: 9,
   },
   {
     id: "10",
@@ -111,6 +122,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
       "https://images.pexels.com/photos/869258/pexels-photo-869258.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "landscape",
     priceWon: 3200,
+    durationSec: 38,
   },
   {
     id: "11",
@@ -121,6 +133,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
       "https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
     priceWon: 800,
+    durationSec: 14,
   },
   {
     id: "12",
@@ -131,6 +144,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
       "https://images.pexels.com/photos/235648/pexels-photo-235648.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "landscape",
     priceWon: 2800,
+    durationSec: 46,
   },
 ];
 
@@ -154,6 +168,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/1520760/pexels-photo-1520760.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
+    durationSec: 16,
   },
   {
     id: "fail-2",
@@ -163,6 +178,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/3757376/pexels-photo-3757376.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
+    durationSec: 11,
   },
   {
     id: "fail-3",
@@ -172,6 +188,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
+    durationSec: 20,
   },
   {
     id: "fail-4",
@@ -181,6 +198,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/1571458/pexels-photo-1571458.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
+    durationSec: 13,
   },
   {
     id: "fail-5",
@@ -190,6 +208,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/931007/pexels-photo-931007.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
+    durationSec: 17,
   },
   {
     id: "fail-6",
@@ -199,6 +218,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
+    durationSec: 14,
   },
 ];
 
