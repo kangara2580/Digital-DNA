@@ -24,7 +24,7 @@ export function TrendingRankSection() {
             {TRENDING_RANK_CLIPS.map((video, index) => (
               <div key={`trend-${video.id}`} className="relative min-w-0">
                 <span
-                  className="absolute left-2 top-2 z-[3] flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-black/52 px-1.5 text-[11px] font-bold tabular-nums text-white ring-1 ring-white/15 backdrop-blur-[3px] sm:left-2.5 sm:top-2.5 sm:h-7 sm:min-w-[1.75rem] sm:text-[12px]"
+                  className="absolute left-2 top-2 z-[3] flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-white/92 px-1.5 text-[11px] font-bold tabular-nums text-slate-900 shadow-sm ring-1 ring-black/10 sm:left-2.5 sm:top-2.5 sm:h-7 sm:min-w-[1.75rem] sm:text-[12px]"
                   aria-label={`${index + 1}위`}
                 >
                   {index + 1}
