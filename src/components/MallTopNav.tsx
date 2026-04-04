@@ -8,9 +8,12 @@ import {
   ShoppingCart,
   User,
 } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhrases";
 
 const iconStroke = 1.25;
 
@@ -70,6 +73,110 @@ const QUICK_MENU = [
   { href: "/cart", label: "장바구니", Icon: ShoppingCart },
   { href: "/mypage", label: "마이페이지", Icon: User },
 ] as const;
+
+const ROTATE_MS = 4500;
+
+function RotatingSearchField({
+  compact,
+  q,
+  setQ,
+}: {
+  compact: boolean;
+  q: string;
+  setQ: (v: string) => void;
+}) {
+  const pathname = usePathname();
+  const reduceMotion = useReducedMotion() ?? false;
+  const [phrases, setPhrases] = useState<string[]>(() => [...SEARCH_GUIDE_PHRASES]);
+  const [phraseIdx, setPhraseIdx] = useState(0);
+  const [focused, setFocused] = useState(false);
+
+  useEffect(() => {
+    setPhrases(shuffleSearchGuides([...SEARCH_GUIDE_PHRASES]));
+    setPhraseIdx(0);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (phrases.length === 0) return;
+    const id = window.setInterval(() => {
+      setPhraseIdx((i) => (i + 1) % phrases.length);
+    }, ROTATE_MS);
+    return () => window.clearInterval(id);
+  }, [phrases]);
+
+  const showGuide = q.trim() === "" && !focused;
+  const current = phrases[phraseIdx] ?? phrases[0] ?? "";
+  const slideY = compact ? 14 : 18;
+
+  return (
+    <div className="group relative">
+      <input
+        type="search"
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        placeholder=""
+        autoComplete="off"
+        enterKeyHint="search"
+        className={`mall-search w-full rounded-full border text-[#000000] outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,box-shadow,color] ${easeLayout} ${searchEase} border-slate-200/90 bg-slate-100/95 placeholder:text-slate-500 hover:border-slate-300 hover:bg-slate-200/90 hover:shadow-[0_2px_14px_-6px_rgba(15,23,42,0.14)] focus:border-slate-400 focus:bg-white focus:shadow-[0_4px_20px_-8px_rgba(15,23,42,0.18)] focus:ring-0 ${
+          compact
+            ? "h-9 pl-3 pr-10 text-[13px]"
+            : "h-11 pl-5 pr-12 text-[14px]"
+        }`}
+        aria-label={`조각 검색. 안내: ${current}`}
+      />
+      {showGuide ? (
+        <div
+          className={`pointer-events-none absolute inset-y-0 left-0 flex items-center overflow-hidden text-left text-slate-500 ${
+            compact ? "right-10 pl-3 text-[13px]" : "right-12 pl-5 text-[14px]"
+          }`}
+          aria-hidden
+        >
+          <div className="relative w-full min-w-0">
+            <div
+              className={`overflow-hidden ${compact ? "h-[18px]" : "h-[22px]"}`}
+            >
+              {reduceMotion ? (
+                <span className="block truncate">{current}</span>
+              ) : (
+                <AnimatePresence initial={false} mode="wait">
+                  <motion.span
+                    key={`${pathname}-${phraseIdx}-${current}`}
+                    initial={{ y: slideY, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -slideY, opacity: 0 }}
+                    transition={{
+                      duration: 0.42,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                    className="block truncate"
+                  >
+                    {current}
+                  </motion.span>
+                </AnimatePresence>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
+      <span
+        className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-slate-500 ${
+          compact ? "right-2.5" : "right-3.5"
+        }`}
+        aria-hidden
+      >
+        <span className={`block ${searchIconMotion}`}>
+          <Search
+            className={`shrink-0 ${compact ? "h-4 w-4" : "h-[18px] w-[18px]"}`}
+            strokeWidth={2}
+            aria-hidden
+          />
+        </span>
+      </span>
+    </div>
+  );
+}
 
 function QuickMenuIcons({ className }: { className?: string }) {
   return (
@@ -312,35 +419,7 @@ export function MallTopNav() {
                   : "mx-auto mt-1 max-w-2xl sm:mt-1.5"
               }`}
             >
-              <div className="group relative">
-                <input
-                  type="search"
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="지금 '망한 요리' 조각을 찾아보세요"
-                  autoComplete="off"
-                  enterKeyHint="search"
-                  className={`mall-search w-full rounded-full border text-[#000000] outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,box-shadow,color] ${easeLayout} ${searchEase} border-slate-200/90 bg-slate-100/95 placeholder:text-slate-500 hover:border-slate-300 hover:bg-slate-200/90 hover:shadow-[0_2px_14px_-6px_rgba(15,23,42,0.14)] focus:border-slate-400 focus:bg-white focus:shadow-[0_4px_20px_-8px_rgba(15,23,42,0.18)] focus:ring-0 ${
-                    compact
-                      ? "h-9 pl-3 pr-10 text-[13px]"
-                      : "h-11 pl-5 pr-12 text-[14px]"
-                  }`}
-                  aria-label="조각 검색, 예: 망한 요리"
-                />
-                <span
-                  className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-slate-500 ${
-                    compact ? "right-2.5" : "right-3.5"
-                  }`}
-                  aria-hidden
-                >
-                  <span className={`block ${searchIconMotion}`}>
-                    <Search
-                      className={`shrink-0 ${compact ? "h-4 w-4" : "h-[18px] w-[18px]"}`}
-                      strokeWidth={2}
-                    />
-                  </span>
-                </span>
-              </div>
+              <RotatingSearchField compact={compact} q={q} setQ={setQ} />
             </div>
 
             <nav

@@ -1,0 +1,15 @@
+---
+description: After code changes, commit and push to GitHub without waiting for the user to ask
+alwaysApply: true
+---
+
+# GitHub 자동 동기화
+
+사용자가 별도로 말하지 않는 한, **의미 있는 코드·설정 변경을 마친 뒤** 아래를 수행한다.
+
+1. `git status`로 변경 여부 확인
+2. 커밋할 내용이 있으면 `git add`(필요한 파일만, `.env`·비밀 키·`node_modules`는 제외)
+3. 변경 요약이 드러나는 **한국어 또는 영어 커밋 메시지**로 `git commit`
+4. 원격이 설정되어 있으면 `git push`로 `origin`에 푸시
+
+사용자가 "푸시하지 마", "커밋만", "WIP"라고 하면 그에 따른다. 충돌·푸시 거부 시 원인을 짧게 설명하고 해결을 시도한다.
