@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# 어디서 실행하든 이 파일이 있는 폴더(프로젝트 루트)로 이동 후 dev 서버 실행
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT"
+if [[ ! -f package.json ]]; then
+  echo "dna: 이 폴더에 package.json 이 없습니다: $ROOT" >&2
+  exit 1
+fi
+exec npm run dev

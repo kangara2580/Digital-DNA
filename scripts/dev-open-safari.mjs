@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import http from "node:http";
@@ -8,13 +9,27 @@ const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const host = "127.0.0.1";
 const port = Number(process.env.PORT) || 3000;
 const url = `http://${host}:${port}`;
-const nextBin = path.join(root, "node_modules", ".bin", "next");
 
-const child = spawn(nextBin, ["dev", "-H", host], {
-  stdio: "inherit",
-  cwd: root,
-  env: process.env,
-});
+let nextCli;
+try {
+  const require = createRequire(import.meta.url);
+  nextCli = require.resolve("next/dist/bin/next");
+} catch {
+  console.error(
+    "[dev] Next.js를 찾을 수 없습니다. 프로젝트 루트에서 npm install 을 실행하세요.",
+  );
+  process.exit(1);
+}
+
+const child = spawn(
+  process.execPath,
+  [nextCli, "dev", "-H", host, "-p", String(port)],
+  {
+    stdio: "inherit",
+    cwd: root,
+    env: { ...process.env, PORT: String(port) },
+  },
+);
 
 function pingOnce() {
   return new Promise((resolve) => {
@@ -23,10 +38,29 @@ function pingOnce() {
       resolve(true);
     });
     req.on("error", () => resolve(false));
-    req.setTimeout(1500, () => {
+    req.setTimeout(2000, () => {
       req.destroy();
       resolve(false);
     });
+  });
+}
+
+function openDarwinBrowser(targetUrl) {
+  const run = (args) => {
+    const p = spawn("open", args, {
+      stdio: "ignore",
+      detached: true,
+    });
+    p.unref();
+    return p;
+  };
+  /** Safari 우선 → 실패 시 시스템 기본 브라우저(크롬 등) */
+  const safari = run(["-a", "Safari", targetUrl]);
+  safari.on("exit", (code) => {
+    if (code !== 0) run([targetUrl]);
+  });
+  safari.on("error", () => {
+    run([targetUrl]);
   });
 }
 
@@ -37,14 +71,15 @@ let opened = false;
     if (await pingOnce()) {
       if (!opened && process.platform === "darwin") {
         opened = true;
-        spawn("open", ["-a", "Safari", url], {
-          stdio: "ignore",
-          detached: true,
-        }).unref();
+        openDarwinBrowser(url);
       }
       return;
     }
     await delay(250);
+  }
+  if (process.platform === "darwin" && !opened) {
+    opened = true;
+    openDarwinBrowser(url);
   }
 })();
 
