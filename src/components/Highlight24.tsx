@@ -67,8 +67,8 @@ function circularRingPose(
   const depthFactor = (1 + Math.cos(phi)) / 2;
   const isMain = delta === 0;
   const scale = 0.72 + 0.28 * depthFactor;
-  /** 메인만 선명 — 옆 카드는 낮은 불투명도로 ‘다음에 뭐가 있지?’ 호기심 유도 */
-  const opacity = isMain ? 1 : 0.26 + 0.2 * depthFactor;
+  /** 메인만 선명 — 옆 카드는 살짝만 눌러도 넘기기·탭이 잘 되게 가시성 유지 */
+  const opacity = isMain ? 1 : 0.44 + 0.32 * depthFactor;
   const zIndex = 10 + Math.round(depthFactor * 50);
   return {
     x,
@@ -104,7 +104,7 @@ function diagonalWingPose(
     rotateY,
     depthFactor: 0.22,
     scale: 0.52,
-    opacity: 0.26,
+    opacity: 0.38,
     zIndex: 14,
   };
 }
@@ -125,7 +125,7 @@ function centerBackQueuePose(radius: number): {
     rotateY: 0,
     depthFactor: 0.2,
     scale: 0.48,
-    opacity: 0.22,
+    opacity: 0.34,
     zIndex: 13,
   };
 }
@@ -162,10 +162,10 @@ export function Highlight24() {
   const wrapRef = useRef<HTMLDivElement>(null);
 
   const [layout, setLayout] = useState({
-    cardW: 200,
-    cardH: 356,
-    perspective: 1680,
-    ringRadius: 280,
+    cardW: 268,
+    cardH: 476,
+    perspective: 1750,
+    ringRadius: 300,
   });
 
   /** 메인 클립과 동기된 블러 배경 영상 — 로드 전·후 부드럽게 페이드 */
@@ -196,11 +196,11 @@ export function Highlight24() {
     if (!el) return;
     const apply = () => {
       const w = el.clientWidth || 640;
-      const base = Math.min(360, Math.max(200, Math.round(w * 0.34)));
+      const base = Math.min(420, Math.max(228, Math.round(w * 0.42)));
       const cardW = base;
       const cardH = Math.round((cardW * 16) / 9);
-      const ringRadius = Math.min(360, Math.max(220, Math.round(w * 0.4)));
-      const perspective = Math.min(2000, Math.max(1100, Math.round(w * 2.65)));
+      const ringRadius = Math.min(400, Math.max(248, Math.round(w * 0.46)));
+      const perspective = Math.min(2200, Math.max(1200, Math.round(w * 2.75)));
       setLayout({
         cardW,
         cardH,
@@ -241,8 +241,8 @@ export function Highlight24() {
     if (touchStartX.current == null) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
     touchStartX.current = null;
-    if (dx > 56) go(-1);
-    else if (dx < -56) go(1);
+    if (dx > 40) go(-1);
+    else if (dx < -40) go(1);
   };
 
   /** 스프링은 빨리 수렴해 ‘탁’ 넘어가는 느낌 → 긴 트윈 + 강한 ease-out으로 끌어당겨 정착 */
@@ -250,8 +250,8 @@ export function Highlight24() {
     ? { type: "tween" as const, duration: 0.2, ease: [0.22, 1, 0.36, 1] as const }
     : {
         type: "tween" as const,
-        duration: 1.05,
-        ease: [0.22, 0.99, 0.26, 1] as const,
+        duration: 0.72,
+        ease: [0.22, 1, 0.32, 1] as const,
       };
 
   const { cardW, cardH, perspective, ringRadius } = layout;
@@ -380,7 +380,7 @@ export function Highlight24() {
 
       <div className="relative z-10 mx-auto max-w-[1800px] px-4 pb-6 pt-8 sm:px-6 sm:pb-8 sm:pt-10 lg:px-8">
         <div className="relative z-20 mb-10 max-w-full sm:mb-11 xl:mb-6">
-          <div className="inline-flex max-w-full flex-col gap-1 rounded-l-none rounded-r-[9999px] bg-[#0a0a0b] py-2.5 pl-3 pr-5 shadow-[0_12px_40px_-10px_rgba(0,0,0,0.65)] ring-1 ring-white/20 sm:gap-1.5 sm:py-3 sm:pl-4 sm:pr-7">
+          <div className="inline-flex max-w-full flex-col gap-1 rounded-l-none rounded-r-[9999px] border-2 border-white bg-black/72 py-2.5 pl-3 pr-5 shadow-[0_12px_40px_-10px_rgba(0,0,0,0.55)] backdrop-blur-md sm:gap-1.5 sm:py-3 sm:pl-4 sm:pr-7">
             <div className="flex items-baseline justify-between gap-4 pr-1">
               <h2
                 id="highlight-24-heading"
@@ -403,7 +403,7 @@ export function Highlight24() {
 
         <div
           ref={wrapRef}
-          className="relative z-10 mx-auto flex min-h-[min(58vw,500px)] max-w-5xl items-center justify-center pt-12 pb-0 sm:min-h-[min(52vw,520px)] sm:pt-14 md:pt-10 xl:pt-4"
+          className="relative z-10 mx-auto flex min-h-[min(64vw,560px)] max-w-5xl items-center justify-center pt-12 pb-0 sm:min-h-[min(58vw,580px)] sm:pt-14 md:pt-10 xl:pt-4"
           style={{
             perspective: `${perspective}px`,
             perspectiveOrigin: "50% 36%",
@@ -478,6 +478,7 @@ export function Highlight24() {
                   >
                     {isMain ? (
                       <video
+                        key={v.id}
                         ref={videoRef}
                         className="absolute inset-0 h-full w-full object-cover"
                         poster={v.poster}
@@ -485,9 +486,8 @@ export function Highlight24() {
                         muted
                         loop
                         preload="metadata"
-                      >
-                        <source src={v.src} type="video/mp4" />
-                      </video>
+                        src={v.src}
+                      />
                     ) : (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -503,7 +503,7 @@ export function Highlight24() {
                         aria-hidden
                         initial={false}
                         animate={{
-                          opacity: 0.38 + 0.34 * (1 - pose.depthFactor),
+                          opacity: 0.22 + 0.22 * (1 - pose.depthFactor),
                         }}
                         transition={transition}
                       />
