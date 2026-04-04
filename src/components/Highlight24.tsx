@@ -378,7 +378,7 @@ export function Highlight24() {
         aria-hidden
       />
 
-      <div className="relative z-10 mx-auto max-w-[1800px] px-4 pb-10 pt-8 sm:px-6 sm:pb-12 sm:pt-10 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-[1800px] px-4 pb-6 pt-8 sm:px-6 sm:pb-8 sm:pt-10 lg:px-8">
         <div className="relative z-20 mb-10 max-w-full sm:mb-11 xl:mb-6">
           <div className="inline-flex max-w-full flex-col gap-1 rounded-l-none rounded-r-[9999px] bg-black/86 py-2.5 pl-3 pr-5 shadow-[0_12px_40px_-10px_rgba(0,0,0,0.65)] ring-1 ring-white/18 backdrop-blur-md sm:gap-1.5 sm:py-3 sm:pl-4 sm:pr-7">
             <div className="flex items-baseline justify-between gap-4 pr-1">
@@ -403,7 +403,7 @@ export function Highlight24() {
 
         <div
           ref={wrapRef}
-          className="relative z-10 mx-auto flex min-h-[min(58vw,500px)] max-w-5xl items-center justify-center pt-12 pb-4 sm:min-h-[min(52vw,520px)] sm:pt-14 sm:pb-5 md:pt-10 md:pb-6 xl:pt-4 xl:pb-6"
+          className="relative z-10 mx-auto flex min-h-[min(58vw,500px)] max-w-5xl items-center justify-center pt-12 pb-0 sm:min-h-[min(52vw,520px)] sm:pt-14 md:pt-10 xl:pt-4"
           style={{
             perspective: `${perspective}px`,
             perspectiveOrigin: "50% 36%",
@@ -542,7 +542,7 @@ export function Highlight24() {
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-6 sm:mt-8 sm:gap-10">
+        <div className="mx-auto flex max-w-5xl items-center justify-center gap-6 py-6 sm:gap-10 sm:py-8">
           <button
             type="button"
             onClick={() => go(-1)}
