@@ -85,7 +85,7 @@ export function VideoCard({ video, className, flush }: Props) {
     >
       <div className={`relative bg-slate-100 ${aspectClass}`}>
         {video.durationSec != null ? (
-          <span className="absolute right-2 top-2 z-[4] rounded bg-black/72 px-1.5 py-px text-[10px] font-medium tabular-nums leading-tight text-white/95 ring-1 ring-white/12 sm:right-2.5 sm:top-2.5 sm:text-[11px]">
+          <span className="absolute right-2 top-2 z-[4] text-[10px] font-medium tabular-nums leading-none text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.75),0_0_8px_rgba(0,0,0,0.35)] sm:right-2.5 sm:top-2.5 sm:text-[11px]">
             {formatDuration(video.durationSec)}
           </span>
         ) : null}

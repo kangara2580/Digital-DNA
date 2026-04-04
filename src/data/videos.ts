@@ -169,6 +169,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
       "https://images.pexels.com/photos/1520760/pexels-photo-1520760.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
     durationSec: 16,
+    priceWon: 950,
   },
   {
     id: "fail-2",
@@ -179,6 +180,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
       "https://images.pexels.com/photos/3757376/pexels-photo-3757376.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
     durationSec: 11,
+    priceWon: 720,
   },
   {
     id: "fail-3",
@@ -189,6 +191,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
       "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
     durationSec: 20,
+    priceWon: 1100,
   },
   {
     id: "fail-4",
@@ -199,6 +202,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
       "https://images.pexels.com/photos/1571458/pexels-photo-1571458.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
     durationSec: 13,
+    priceWon: 680,
   },
   {
     id: "fail-5",
@@ -209,6 +213,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
       "https://images.pexels.com/photos/931007/pexels-photo-931007.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
     durationSec: 17,
+    priceWon: 880,
   },
   {
     id: "fail-6",
@@ -219,6 +224,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
       "https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
     durationSec: 14,
+    priceWon: 790,
   },
 ];
 
