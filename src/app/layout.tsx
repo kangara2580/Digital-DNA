@@ -11,9 +11,9 @@ const kr = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: "디지털 DNA — 나만의 영상을 판매하는 곳",
+  title: "디지털 DNA — 누구나 사고팔 수 있는 동영상 쇼핑몰",
   description:
-    "크리에이터를 위한 동영상 쇼핑몰. 릴스를 제작하고, 판매하고, 구매하세요.",
+    "크리에이터·일상 클립까지. 베스트·세일·트렌드 릴스를 한곳에서. 디지털 DNA에서 영상을 사고팔아 보세요.",
 };
 
 export default function RootLayout({
@@ -22,8 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${inter.variable} ${kr.variable}`}>
-      <body className="min-h-screen bg-slate-50 font-sans text-slate-900 antialiased">
+    <html lang="ko" className={`${inter.variable} ${kr.variable} scroll-smooth`}>
+      <body className="min-h-screen bg-[#FFFFFF] font-sans text-slate-900 antialiased">
         {children}
       </body>
     </html>

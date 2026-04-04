@@ -5,6 +5,8 @@
 :root {
   --background: #f8fafc; /* slate-50 느낌 */
   --foreground: #0f172a; /* slate-900 */
+  /* MallTopNav 실제 높이는 클라이언트에서 측정해 설정 — 초기 레이아웃용 폴백 */
+  --header-height: 220px;
 }
 
 body {
@@ -41,4 +43,14 @@ body {
 
 .feed-scroll::-webkit-scrollbar-thumb:hover {
   background: rgb(148 163 184);
+}
+
+/* 상단 몰 메뉴 가로 스크롤 시 스크롤바 숨김 */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
