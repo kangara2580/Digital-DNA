@@ -74,6 +74,50 @@ const QUICK_MENU = [
   { href: "/mypage", label: "마이페이지", Icon: User },
 ] as const;
 
+/** 2×2 격자 — 단조로운 퍼즐/조각 느낌 */
+function PuzzleMosaicIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <rect
+        x="4"
+        y="4"
+        width="7.5"
+        height="7.5"
+        rx="0.75"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <rect
+        x="12.5"
+        y="4"
+        width="7.5"
+        height="7.5"
+        rx="0.75"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <rect
+        x="4"
+        y="12.5"
+        width="7.5"
+        height="7.5"
+        rx="0.75"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <rect
+        x="12.5"
+        y="12.5"
+        width="7.5"
+        height="7.5"
+        rx="0.75"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
 const ROTATE_MS = 4500;
 
 function RotatingSearchField({
@@ -398,8 +442,9 @@ export function MallTopNav() {
             aria-hidden={compact}
           >
             <div className={`${!compact ? "mt-1 sm:mt-1.5" : ""}`}>
-              <h1 className="text-center text-[28px] font-bold leading-snug tracking-tight text-[#000000] sm:text-[30px]">
-                살아있는 일상의 조각을 파는 마켓
+              <h1 className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-center text-[26px] font-bold leading-snug tracking-tight text-[#000000] sm:text-[28px] md:text-[30px]">
+                <PuzzleMosaicIcon className="h-7 w-7 shrink-0 text-[#000000] opacity-90 sm:h-8 sm:w-8" />
+                <span>?00원으로 사는 일상의 ‘조각’</span>
               </h1>
             </div>
           </div>

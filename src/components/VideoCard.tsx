@@ -57,7 +57,11 @@ export function VideoCard({ video, className, flush }: Props) {
 
   const shell = flush
     ? "rounded-none border-0 bg-white shadow-none"
-    : "rounded-xl border border-slate-200/90 bg-white shadow-sm hover:shadow-md";
+    : "rounded-xl border border-slate-200/90 bg-white shadow-sm";
+
+  /** 기본은 살짝 어긋난 조각 → 호버 시 들어 올리며 똑바로 맞춤 */
+  const pieceMotion =
+    "transform-gpu transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.34,1.15,0.64,1)] motion-reduce:transform-none motion-reduce:transition-none translate-y-1 rotate-[-0.7deg] group-hover:-translate-y-2 group-hover:rotate-0 group-hover:shadow-[0_14px_32px_-12px_rgba(15,23,42,0.22)] motion-reduce:translate-y-0 motion-reduce:rotate-0 motion-reduce:group-hover:translate-y-0 motion-reduce:group-hover:rotate-0";
 
   const priceLabel =
     video.priceWon != null
@@ -66,7 +70,7 @@ export function VideoCard({ video, className, flush }: Props) {
 
   return (
     <article
-      className={`group flex flex-col overflow-hidden transition-shadow duration-300 ${shell} ${className ?? ""}`}
+      className={`group flex flex-col overflow-hidden ${pieceMotion} ${shell} ${className ?? ""}`}
       onMouseEnter={play}
       onMouseLeave={pause}
     >
