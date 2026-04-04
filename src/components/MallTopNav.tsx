@@ -1,8 +1,16 @@
 "use client";
 
-import { ShoppingCart, User } from "lucide-react";
+import {
+  ChevronDown,
+  Heart,
+  History,
+  Search,
+  ShoppingCart,
+  User,
+} from "lucide-react";
 import Link from "next/link";
-import { startTransition, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 const iconStroke = 1.25;
 
@@ -25,19 +33,78 @@ const ITEMS = [
   { href: "/", label: "만화" },
 ] as const;
 
+/** 스크롤 컴팩트 시 상단에는 베스트·추천만 노출, 나머지는 「카테고리」 메뉴로 */
+const COMPACT_PRIMARY = ITEMS.slice(0, 2);
+const COMPACT_MORE = ITEMS.slice(2);
+
 const SCROLL_COMPACT_AT = 56;
 
-/** 헤더 전반: 레이아웃·타이틀·검색 전환 — 더 천천히, 끝부분이 부드럽게 */
-const easeHeader =
-  "duration-[2000ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-500 motion-reduce:ease-linear";
+/**
+ * 레이아웃·폰트·패딩을 2초 넘게 걸면 매 프레임 리플로우·리사이즈 옵저버가 겹쳐 버벅임.
+ * GPU 친화 속도(≈520ms) + 블러 제거로 스크롤 역방향 복귀도 프레임 안정화.
+ */
+const easeLayout =
+  "duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 motion-reduce:ease-linear";
 
-const easeNav =
-  `transition-[padding,margin,font-size,line-height,box-shadow,gap,border-color,width,max-width,flex] ${easeHeader}`;
+/** 타이틀 페이드만 살짝 길게 — max-height/opacity는 리플로우 부담 적음 */
+const easeTitleFade =
+  "duration-[620ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 motion-reduce:ease-linear";
+
+const easeNav = `transition-[padding,margin,font-size,line-height,box-shadow,gap,border-color,width,max-width,flex] ${easeLayout}`;
+
+/** 검색창: 마켓형(에츠이 류) 부드러운 배경·테두리·그림자 전환 */
+const searchEase =
+  "duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:duration-150 motion-reduce:ease-linear";
+
+/** 돋보기 아이콘: 호버/포커스 시 살짝 커지고 기울어지며 뜨는 느낌(마켓 검색 UX) */
+const searchIconMotion =
+  "origin-[52%_54%] transition-[transform,color] duration-[320ms] ease-[cubic-bezier(0.34,1.15,0.64,1)] motion-reduce:duration-150 motion-reduce:ease-linear " +
+  "group-hover:-translate-y-0.5 group-hover:scale-[1.1] group-hover:-rotate-[10deg] group-hover:text-slate-900 " +
+  "group-focus-within:-translate-y-0.5 group-focus-within:scale-[1.1] group-focus-within:-rotate-[10deg] group-focus-within:text-slate-900 " +
+  "motion-reduce:group-hover:translate-y-0 motion-reduce:group-hover:scale-100 motion-reduce:group-hover:rotate-0 " +
+  "motion-reduce:group-focus-within:translate-y-0 motion-reduce:group-focus-within:scale-100 motion-reduce:group-focus-within:rotate-0";
+
+const QUICK_MENU = [
+  { href: "/recent", label: "최근 본 조각", Icon: History },
+  { href: "/wishlist", label: "찜한 조각", Icon: Heart },
+  { href: "/cart", label: "장바구니", Icon: ShoppingCart },
+  { href: "/mypage", label: "마이페이지", Icon: User },
+] as const;
+
+function QuickMenuIcons({ className }: { className?: string }) {
+  return (
+    <div
+      role="group"
+      aria-label="나의 활동"
+      className={`flex shrink-0 items-center gap-0.5 sm:gap-1 ${className ?? ""}`}
+    >
+      {QUICK_MENU.map(({ href, label, Icon }) => (
+        <Link key={href} href={href} className={navActionClass} aria-label={label}>
+          <Icon
+            className="h-[20px] w-[20px]"
+            strokeWidth={iconStroke}
+            aria-hidden
+          />
+        </Link>
+      ))}
+    </div>
+  );
+}
 
 export function MallTopNav() {
   const [q, setQ] = useState("");
   const headerRef = useRef<HTMLElement>(null);
   const [compact, setCompact] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const moreWrapRef = useRef<HTMLDivElement>(null);
+  const menuPortalRef = useRef<HTMLDivElement>(null);
+  const hoverCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [menuPlace, setMenuPlace] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
 
   useEffect(() => {
     const el = headerRef.current;
@@ -47,6 +114,8 @@ export function MallTopNav() {
     let lastRounded = -1;
 
     /** 레이아웃 전환 중 매 틱마다 --header-height 갱신하면 메인 스레드·사이드바가 버벅임 → rAF 1프레임 1회 + 동일 높이 스킵 */
+    let debounceT = 0;
+
     const flushHeight = () => {
       rafId = 0;
       const h = Math.round(el.getBoundingClientRect().height);
@@ -60,12 +129,21 @@ export function MallTopNav() {
       rafId = requestAnimationFrame(flushHeight);
     };
 
-    const onScroll = () => {
-      const next = window.scrollY > SCROLL_COMPACT_AT;
-      startTransition(() => setCompact(next));
+    /** 전환 중 연속 리사이즈 → rAF만으로도 매 프레임 --header-height 갱신 → 사이드바·페인트 부담. 짧게 디바운스 */
+    const scheduleHeightDebounced = () => {
+      window.clearTimeout(debounceT);
+      debounceT = window.setTimeout(() => {
+        debounceT = 0;
+        scheduleHeight();
+      }, 56);
     };
 
-    const ro = new ResizeObserver(scheduleHeight);
+    const onScroll = () => {
+      const next = window.scrollY > SCROLL_COMPACT_AT;
+      setCompact(next);
+    };
+
+    const ro = new ResizeObserver(scheduleHeightDebounced);
     ro.observe(el);
     scheduleHeight();
     onScroll();
@@ -73,11 +151,98 @@ export function MallTopNav() {
     window.addEventListener("scroll", onScroll, { passive: true });
 
     return () => {
+      window.clearTimeout(debounceT);
       cancelAnimationFrame(rafId);
       ro.disconnect();
       window.removeEventListener("scroll", onScroll);
     };
   }, []);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!compact) setMoreOpen(false);
+  }, [compact]);
+
+  const cancelHoverClose = useCallback(() => {
+    if (hoverCloseTimerRef.current != null) {
+      clearTimeout(hoverCloseTimerRef.current);
+      hoverCloseTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleHoverClose = useCallback(() => {
+    cancelHoverClose();
+    hoverCloseTimerRef.current = setTimeout(() => {
+      setMoreOpen(false);
+      hoverCloseTimerRef.current = null;
+    }, 220);
+  }, [cancelHoverClose]);
+
+  const openCategoryMenu = useCallback(() => {
+    cancelHoverClose();
+    setMoreOpen(true);
+  }, [cancelHoverClose]);
+
+  const measureMenu = useCallback(() => {
+    const tr = moreWrapRef.current;
+    if (!tr || typeof window === "undefined") return;
+    const r = tr.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const edge = 12;
+    const width = Math.min(720, Math.max(280, vw - edge * 2));
+    const centerX = r.left + r.width / 2;
+    let left = centerX - width / 2;
+    left = Math.max(edge, Math.min(left, vw - width - edge));
+    setMenuPlace({
+      top: r.bottom + 2,
+      left,
+      width,
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!moreOpen) {
+      setMenuPlace(null);
+      return;
+    }
+    measureMenu();
+    window.addEventListener("scroll", measureMenu, true);
+    window.addEventListener("resize", measureMenu);
+    return () => {
+      window.removeEventListener("scroll", measureMenu, true);
+      window.removeEventListener("resize", measureMenu);
+    };
+  }, [moreOpen, measureMenu]);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const n = e.target as Node;
+      if (moreWrapRef.current?.contains(n) || menuPortalRef.current?.contains(n))
+        return;
+      cancelHoverClose();
+      setMoreOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        cancelHoverClose();
+        setMoreOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown, true);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [moreOpen, cancelHoverClose]);
+
+  useEffect(() => {
+    return () => cancelHoverClose();
+  }, [cancelHoverClose]);
 
   const logoClass = `shrink-0 font-semibold tracking-tight text-[#000000] ${easeNav} ${
     compact ? "text-[13px]" : "text-sm"
@@ -86,8 +251,8 @@ export function MallTopNav() {
   return (
     <header
       ref={headerRef}
-      className={`sticky top-0 z-40 isolate border-b border-slate-200/80 bg-white/90 backdrop-blur-sm [transform:translateZ(0)] ${easeNav} ${
-        compact ? "shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)]" : "shadow-none"
+      className={`sticky top-0 z-40 isolate border-b border-slate-200/80 bg-white [transform:translateZ(0)] ${easeNav} ${
+        compact ? "overflow-visible shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)]" : "shadow-none"
       }`}
     >
       <div
@@ -96,13 +261,15 @@ export function MallTopNav() {
         }`}
       >
         <div
-          className={`flex min-h-0 w-full [contain:layout] ${easeHeader} ${
-            compact ? "relative flex-row flex-nowrap items-center gap-x-2 sm:gap-x-3" : "flex-col"
+          className={`flex min-h-0 w-full [contain:layout] ${easeLayout} ${
+            compact
+              ? "relative flex-row flex-nowrap items-center gap-x-2 overflow-visible sm:gap-x-3"
+              : "flex-col"
           }`}
         >
           {/* 로고 줄: 펼침에서만 오른쪽 아이콘 */}
           <div
-            className={`flex items-center ${easeHeader} ${
+            className={`flex items-center ${easeLayout} ${
               compact ? "shrink-0" : "w-full justify-between gap-3"
             }`}
           >
@@ -110,28 +277,13 @@ export function MallTopNav() {
               디지털 DNA
             </Link>
             {!compact && (
-              <div className="hidden shrink-0 items-center gap-0.5 sm:-mr-1 sm:flex lg:-mr-0.5">
-                <Link href="/login" className={navActionClass} aria-label="로그인">
-                  <User
-                    className="h-[20px] w-[20px]"
-                    strokeWidth={iconStroke}
-                    aria-hidden
-                  />
-                </Link>
-                <Link href="/cart" className={navActionClass} aria-label="장바구니">
-                  <ShoppingCart
-                    className="h-[20px] w-[20px]"
-                    strokeWidth={iconStroke}
-                    aria-hidden
-                  />
-                </Link>
-              </div>
+              <QuickMenuIcons className="hidden sm:-mr-1 sm:flex lg:-mr-0.5" />
             )}
           </div>
 
           {/* 타이틀: grid-rows 대신 max-height+opacity만 전환(레이아웃 계산 부담 감소). 컴팩트 시 absolute로 한 줄 정렬 유지 */}
           <div
-            className={`w-full overflow-hidden transition-[max-height,opacity] ${easeHeader} ${
+            className={`w-full overflow-hidden transition-[max-height,opacity] ${easeTitleFade} ${
               compact
                 ? "pointer-events-none absolute left-0 top-0 z-0 max-h-0 w-full opacity-0"
                 : "relative max-h-[min(320px,50vh)] opacity-100"
@@ -147,9 +299,9 @@ export function MallTopNav() {
 
           {/* 검색 + 카테고리: 컴팩트에서는 가로로 붙여 검색(왼쪽)·카테고리(오른쪽) */}
           <div
-            className={`flex min-h-0 w-full min-w-0 ${easeHeader} ${
+            className={`flex min-h-0 w-full min-w-0 ${easeLayout} ${
               compact
-                ? "flex-1 flex-row items-center gap-2 sm:gap-3"
+                ? "flex-1 flex-row items-center gap-2 overflow-visible sm:gap-3"
                 : "flex flex-col"
             }`}
           >
@@ -160,87 +312,144 @@ export function MallTopNav() {
                   : "mx-auto mt-1 max-w-2xl sm:mt-1.5"
               }`}
             >
-              <div className="relative">
-                <span
-                  className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-slate-400 transition-[left] ${easeHeader} ${
-                    compact ? "left-3" : "left-4"
-                  }`}
-                  aria-hidden
-                >
-                  <svg
-                    className={`text-slate-400 transition-[width,height] ${easeHeader} ${
-                      compact ? "h-4 w-4" : "h-[18px] w-[18px]"
-                    }`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                </span>
+              <div className="group relative">
                 <input
                   type="search"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="키워드, 크리에이터, 분위기로 검색"
-                  className={`w-full rounded-2xl border border-slate-200 bg-slate-50 pr-4 text-[#000000] outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,box-shadow] ${easeHeader} placeholder:text-slate-400 hover:bg-[#708090]/15 focus:border-slate-300 focus:bg-white focus:shadow-[0_0_0_1px_rgba(0,0,0,0.06)] ${
+                  placeholder="지금 '망한 요리' 조각을 찾아보세요"
+                  autoComplete="off"
+                  enterKeyHint="search"
+                  className={`mall-search w-full rounded-full border text-[#000000] outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,box-shadow,color] ${easeLayout} ${searchEase} border-slate-200/90 bg-slate-100/95 placeholder:text-slate-500 hover:border-slate-300 hover:bg-slate-200/90 hover:shadow-[0_2px_14px_-6px_rgba(15,23,42,0.14)] focus:border-slate-400 focus:bg-white focus:shadow-[0_4px_20px_-8px_rgba(15,23,42,0.18)] focus:ring-0 ${
                     compact
-                      ? "h-9 pl-10 pr-3 text-[13px]"
-                      : "h-11 pl-12 text-[14px]"
+                      ? "h-9 pl-3 pr-10 text-[13px]"
+                      : "h-11 pl-5 pr-12 text-[14px]"
                   }`}
-                  aria-label="검색"
+                  aria-label="조각 검색, 예: 망한 요리"
                 />
+                <span
+                  className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-slate-500 ${
+                    compact ? "right-2.5" : "right-3.5"
+                  }`}
+                  aria-hidden
+                >
+                  <span className={`block ${searchIconMotion}`}>
+                    <Search
+                      className={`shrink-0 ${compact ? "h-4 w-4" : "h-[18px] w-[18px]"}`}
+                      strokeWidth={2}
+                    />
+                  </span>
+                </span>
               </div>
             </div>
 
             <nav
-              className={`no-scrollbar flex min-w-0 items-center overflow-x-auto ${easeNav} ${
+              className={`flex min-w-0 items-center ${easeNav} ${
                 compact
-                  ? "mt-0 flex-1 justify-start gap-1 border-0 py-0 sm:gap-1.5"
-                  : "mt-1.5 justify-center gap-0.5 border-t border-slate-100 pt-1.5 sm:gap-1"
+                  ? "mt-0 flex-1 justify-center gap-1 overflow-visible border-0 py-0 sm:gap-1.5"
+                  : "no-scrollbar mt-1.5 justify-center gap-1 overflow-x-auto border-t border-slate-100 pt-1.5 sm:gap-1.5"
               }`}
               aria-label="카테고리"
             >
-              {ITEMS.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className={`shrink-0 rounded-full bg-transparent font-medium text-slate-800 transition-[background-color,color,padding,font-size] ${easeHeader} hover:bg-slate-100 hover:text-slate-950 ${
-                    compact
-                      ? "px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]"
-                      : "px-3 py-2 text-[11px] sm:px-4 sm:text-[12px]"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {compact ? (
+                <>
+                  {COMPACT_PRIMARY.map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className={`shrink-0 rounded-full bg-transparent font-medium text-slate-800 transition-[background-color,color,padding,font-size] ${easeLayout} hover:bg-slate-100 hover:text-slate-950 px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]`}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  <div
+                    ref={moreWrapRef}
+                    className="relative shrink-0"
+                    onMouseEnter={openCategoryMenu}
+                    onMouseLeave={scheduleHoverClose}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        cancelHoverClose();
+                        setMoreOpen((o) => !o);
+                      }}
+                      aria-expanded={moreOpen}
+                      aria-haspopup="true"
+                      aria-controls="mall-category-more"
+                      id="mall-category-trigger"
+                      className={`inline-flex items-center gap-0.5 rounded-full bg-transparent font-medium text-slate-800 transition-[background-color,color,padding,font-size] ${easeLayout} hover:bg-slate-100 hover:text-slate-950 px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]`}
+                    >
+                      카테고리
+                      <ChevronDown
+                        className={`h-3.5 w-3.5 shrink-0 opacity-70 transition-transform duration-200 ${moreOpen ? "rotate-180" : ""}`}
+                        strokeWidth={2}
+                        aria-hidden
+                      />
+                    </button>
+                    {mounted &&
+                      moreOpen &&
+                      menuPlace &&
+                      createPortal(
+                        <div
+                          ref={menuPortalRef}
+                          id="mall-category-more"
+                          role="region"
+                          aria-labelledby="mall-category-trigger"
+                          className="rounded-xl border border-slate-200/95 bg-white shadow-[0_16px_48px_-12px_rgba(15,23,42,0.22)] transition-[opacity,transform] duration-200 ease-out"
+                          style={{
+                            position: "fixed",
+                            top: menuPlace.top,
+                            left: menuPlace.left,
+                            width: menuPlace.width,
+                            zIndex: 9999,
+                          }}
+                          onMouseEnter={openCategoryMenu}
+                          onMouseLeave={scheduleHoverClose}
+                        >
+                          <div className="no-scrollbar flex justify-center overflow-x-auto px-2 py-1 sm:px-2.5 sm:py-1.5">
+                            <nav
+                              className="inline-flex min-w-0 flex-nowrap items-center justify-center gap-1 sm:gap-1.5"
+                              aria-label="추가 카테고리"
+                            >
+                              {COMPACT_MORE.map((item) => (
+                                <Link
+                                  key={item.label}
+                                  href={item.href}
+                                  onClick={() => {
+                                    cancelHoverClose();
+                                    setMoreOpen(false);
+                                  }}
+                                  className={`shrink-0 whitespace-nowrap rounded-full px-1.5 py-1 text-[10px] font-medium text-slate-800 transition-colors duration-200 first:pl-2 last:pr-2 sm:px-2 sm:text-[11px] sm:first:pl-2.5 sm:last:pr-2.5 ${easeLayout} hover:bg-slate-100 hover:text-slate-950`}
+                                >
+                                  {item.label}
+                                </Link>
+                              ))}
+                            </nav>
+                          </div>
+                        </div>,
+                        document.body,
+                      )}
+                  </div>
+                </>
+              ) : (
+                ITEMS.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className={`shrink-0 rounded-full bg-transparent font-medium text-slate-800 transition-[background-color,color,padding,font-size] ${easeLayout} hover:bg-slate-100 hover:text-slate-950 px-2.5 py-1.5 text-[11px] sm:px-3 sm:py-2 sm:text-[12px]`}
+                  >
+                    {item.label}
+                  </Link>
+                ))
+              )}
             </nav>
           </div>
 
           {compact && (
-            <div
-              className={`flex shrink-0 items-center gap-0.5 sm:-mr-1 lg:-mr-0.5 ${easeHeader}`}
-            >
-              <Link href="/login" className={navActionClass} aria-label="로그인">
-                <User
-                  className="h-[20px] w-[20px]"
-                  strokeWidth={iconStroke}
-                  aria-hidden
-                />
-              </Link>
-              <Link href="/cart" className={navActionClass} aria-label="장바구니">
-                <ShoppingCart
-                  className="h-[20px] w-[20px]"
-                  strokeWidth={iconStroke}
-                  aria-hidden
-                />
-              </Link>
-            </div>
+            <QuickMenuIcons
+              className={`shrink-0 sm:-mr-1 lg:-mr-0.5 ${easeLayout}`}
+            />
           )}
         </div>
       </div>

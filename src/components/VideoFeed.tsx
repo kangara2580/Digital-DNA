@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FeedVideo } from "@/data/videos";
 import { SAMPLE_VIDEOS, shuffleVideos } from "@/data/videos";
 import { VideoCard } from "./VideoCard";
@@ -43,18 +43,45 @@ function FeedRows({
 }
 
 export function VideoFeed() {
-  const portrait = useMemo(
-    () => shuffleVideos(SAMPLE_VIDEOS.filter((v) => v.orientation === "portrait")),
+  const portraitBase = useMemo(
+    () => SAMPLE_VIDEOS.filter((v) => v.orientation === "portrait"),
     [],
   );
-  const landscape = useMemo(
-    () => shuffleVideos(SAMPLE_VIDEOS.filter((v) => v.orientation === "landscape")),
+  const landscapeBase = useMemo(
+    () => SAMPLE_VIDEOS.filter((v) => v.orientation === "landscape"),
     [],
   );
 
+  const [portrait, setPortrait] = useState(portraitBase);
+  const [landscape, setLandscape] = useState(landscapeBase);
+
+  useEffect(() => {
+    setPortrait(shuffleVideos([...portraitBase]));
+    setLandscape(shuffleVideos([...landscapeBase]));
+  }, [portraitBase, landscapeBase]);
+
   return (
-    <section aria-label="동영상 피드" className="w-full overflow-hidden">
-      <FeedRows portrait={portrait} landscape={landscape} keyPrefix="feed" />
+    <section
+      className="w-full overflow-hidden border-t border-slate-200/90 bg-[#FFFFFF]"
+      aria-labelledby="recommended-feed-heading"
+    >
+      <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8">
+        <div className="text-left">
+          <h2
+            id="recommended-feed-heading"
+            className="text-[22px] font-bold leading-snug tracking-tight text-[#0f172a] sm:text-[26px] md:text-[28px]"
+          >
+            추천 영상
+          </h2>
+          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600 sm:text-[16px]">
+            왠지 자꾸 보게 되는 영상
+          </p>
+        </div>
+
+        <div className="mt-3 overflow-hidden rounded-lg border border-slate-200/90 bg-white shadow-sm sm:mt-3.5">
+          <FeedRows portrait={portrait} landscape={landscape} keyPrefix="feed" />
+        </div>
+      </div>
     </section>
   );
 }

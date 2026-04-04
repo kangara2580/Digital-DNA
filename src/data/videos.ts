@@ -7,6 +7,8 @@ export type FeedVideo = {
   poster: string;
   /** 세로(릴스) / 가로(와이드) 피드 구분 */
   orientation: "portrait" | "landscape";
+  /** 원 단위 가격(데모). 없으면 표시 안 함 */
+  priceWon?: number;
 };
 
 export const SAMPLE_VIDEOS: FeedVideo[] = [
@@ -18,6 +20,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/2387873/pexels-photo-2387873.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
+    priceWon: 1200,
   },
   {
     id: "2",
@@ -27,6 +30,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/1519088/pexels-photo-1519088.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "landscape",
+    priceWon: 4500,
   },
   {
     id: "3",
@@ -36,6 +40,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
+    priceWon: 700,
   },
   {
     id: "4",
@@ -45,6 +50,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/1179229/pexels-photo-1179229.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "landscape",
+    priceWon: 2200,
   },
   {
     id: "5",
@@ -54,6 +60,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/1520760/pexels-photo-1520760.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
+    priceWon: 900,
   },
   {
     id: "6",
@@ -63,6 +70,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/1683492/pexels-photo-1683492.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "landscape",
+    priceWon: 3500,
   },
   {
     id: "7",
@@ -72,6 +80,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/931007/pexels-photo-931007.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
+    priceWon: 1500,
   },
   {
     id: "8",
@@ -81,6 +90,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/3757376/pexels-photo-3757376.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "landscape",
+    priceWon: 1800,
   },
   {
     id: "9",
@@ -90,6 +100,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/1571458/pexels-photo-1571458.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
+    priceWon: 500,
   },
   {
     id: "10",
@@ -99,6 +110,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/869258/pexels-photo-869258.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "landscape",
+    priceWon: 3200,
   },
   {
     id: "11",
@@ -108,6 +120,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
+    priceWon: 800,
   },
   {
     id: "12",
@@ -117,6 +130,75 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     poster:
       "https://images.pexels.com/photos/235648/pexels-photo-235648.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "landscape",
+    priceWon: 2800,
+  },
+];
+
+/** 실시간 인기순위 데모 — 세로 클립 6개 고정 순서(실제 서비스에서는 랭킹 API로 교체) */
+export const TRENDING_RANK_CLIPS: FeedVideo[] = [
+  SAMPLE_VIDEOS[0],
+  SAMPLE_VIDEOS[2],
+  SAMPLE_VIDEOS[4],
+  SAMPLE_VIDEOS[6],
+  SAMPLE_VIDEOS[8],
+  SAMPLE_VIDEOS[10],
+];
+
+/** #실패와실수 카테고리 데모 클립(제목·해시태그만 테마에 맞춤, 미디어는 샘플 재사용) */
+export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
+  {
+    id: "fail-1",
+    title: "요리하다 냄비가 탄 순간",
+    creator: "@kitchen_oops",
+    src: "https://videos.pexels.com/video-files/2491284/2491284-hd_1920_1080_30fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/1520760/pexels-photo-1520760.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+  },
+  {
+    id: "fail-2",
+    title: "계단에서 발이 꼬여 넘어짐",
+    creator: "@stumble_cam",
+    src: "https://videos.pexels.com/video-files/3209828/3209828-hd_1920_1080_30fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/3757376/pexels-photo-3757376.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+  },
+  {
+    id: "fail-3",
+    title: "커피를 옷에 쏟아버린 날",
+    creator: "@spill_daily",
+    src: "https://videos.pexels.com/video-files/3045160/3045160-hd_1920_1080_30fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+  },
+  {
+    id: "fail-4",
+    title: "조깅 중 미끄러진 클립",
+    creator: "@slip_record",
+    src: "https://videos.pexels.com/video-files/3044475/3044475-hd_1920_1080_30fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/1571458/pexels-photo-1571458.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+  },
+  {
+    id: "fail-5",
+    title: "쟁반째로 음료를 떨어뜨림",
+    creator: "@cafe_fail",
+    src: "https://videos.pexels.com/video-files/2495382/2495382-hd_1920_1080_30fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/931007/pexels-photo-931007.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+  },
+  {
+    id: "fail-6",
+    title: "파티에서 발 디뎌 넘어짐",
+    creator: "@party_oops",
+    src: "https://videos.pexels.com/video-files/3044473/3044473-hd_1920_1080_30fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
   },
 ];
 
@@ -127,4 +209,11 @@ export function shuffleVideos(list: FeedVideo[]): FeedVideo[] {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+/** 5,000원 이하 데모 클립(가성비 모음전) */
+export function clipsUnder5000Won(list: FeedVideo[]): FeedVideo[] {
+  return list
+    .filter((v) => (v.priceWon ?? Infinity) <= 5000)
+    .sort((a, b) => (a.priceWon ?? 0) - (b.priceWon ?? 0));
 }

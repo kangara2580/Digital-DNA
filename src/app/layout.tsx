@@ -1,14 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { Noto_Sans_KR } from "next/font/google";
+import { FloatingHelp } from "@/components/FloatingHelp";
+import { MallTopNav } from "@/components/MallTopNav";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const kr = Noto_Sans_KR({
-  subsets: ["latin", "korean"],
-  variable: "--font-kr",
-  weight: ["300", "400", "500", "600", "700", "900"],
-});
 
 export const metadata: Metadata = {
   title: "디지털 DNA — 누구나 사고팔 수 있는 동영상 쇼핑몰",
@@ -22,9 +18,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${inter.variable} ${kr.variable} scroll-smooth`}>
+    <html lang="ko" className={`${inter.variable} scroll-smooth`}>
       <body className="min-h-screen bg-[#FFFFFF] font-sans text-slate-900 antialiased">
+        <MallTopNav />
         {children}
+        <FloatingHelp />
       </body>
     </html>
   );

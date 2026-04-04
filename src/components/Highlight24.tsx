@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SAMPLE_VIDEOS } from "@/data/videos";
@@ -32,6 +33,122 @@ function ChevronRight({ className }: { className?: string }) {
   );
 }
 
+/** 활성 인덱스 기준 최단 호 길이 차이 (−n/2 … n/2) */
+function circularDelta(i: number, active: number, n: number): number {
+  if (n <= 1) return 0;
+  let d = i - active;
+  const half = n / 2;
+  if (d > half) d -= n;
+  if (d < -half) d += n;
+  return d;
+}
+
+/**
+ * 수평면(XZ) 위의 정원 배치 + 각 패널을 카메라 쪽으로 회전(빌보드).
+ * 넘길 때마다 같은 반지름 R 위를 따라 이동 → 2D 화면에선 원을 도는 느낌.
+ */
+function circularRingPose(
+  delta: number,
+  n: number,
+  radius: number,
+): {
+  x: number;
+  z: number;
+  rotateY: number;
+  depthFactor: number;
+  scale: number;
+  opacity: number;
+  zIndex: number;
+} {
+  const phi = (delta * 2 * Math.PI) / Math.max(n, 1);
+  const x = radius * Math.sin(phi);
+  const z = radius * Math.cos(phi);
+  const rotateY = -(phi * 180) / Math.PI;
+  const depthFactor = (1 + Math.cos(phi)) / 2;
+  const isMain = delta === 0;
+  const scale = 0.72 + 0.28 * depthFactor;
+  const opacity = isMain ? 1 : 0.5 + 0.48 * depthFactor;
+  const zIndex = 10 + Math.round(depthFactor * 50);
+  return {
+    x,
+    z,
+    rotateY,
+    depthFactor,
+    scale,
+    opacity,
+    zIndex,
+  };
+}
+
+/** ±1 옆 카드 뒤편 대각선에 ‘대기 큐’ 한 겹 더 (로테이션 대기 느낌) */
+function diagonalWingPose(
+  side: "left" | "right",
+  radius: number,
+): {
+  x: number;
+  z: number;
+  rotateY: number;
+  depthFactor: number;
+  scale: number;
+  opacity: number;
+  zIndex: number;
+} {
+  const sign = side === "left" ? -1 : 1;
+  const x = sign * radius * 0.96;
+  const z = -radius * 0.68;
+  const rotateY = sign * 26;
+  return {
+    x,
+    z,
+    rotateY,
+    depthFactor: 0.22,
+    scale: 0.52,
+    opacity: 0.44,
+    zIndex: 14,
+  };
+}
+
+/** n이 작을 때 prev2===next2 한 장만 — 중앙 뒤로 깊게 */
+function centerBackQueuePose(radius: number): {
+  x: number;
+  z: number;
+  rotateY: number;
+  depthFactor: number;
+  scale: number;
+  opacity: number;
+  zIndex: number;
+} {
+  return {
+    x: 0,
+    z: -radius * 0.78,
+    rotateY: 0,
+    depthFactor: 0.2,
+    scale: 0.48,
+    opacity: 0.4,
+    zIndex: 13,
+  };
+}
+
+function hiddenOffstagePose(radius: number): {
+  x: number;
+  z: number;
+  rotateY: number;
+  depthFactor: number;
+  scale: number;
+  opacity: number;
+  zIndex: number;
+} {
+  return {
+    x: 0,
+    z: -radius * 2.4,
+    rotateY: 0,
+    depthFactor: 0,
+    scale: 0.38,
+    opacity: 0,
+    zIndex: 0,
+  };
+}
+
 export function Highlight24() {
   const videos = useMemo(
     () => SAMPLE_VIDEOS.filter((v) => v.orientation === "portrait"),
@@ -40,6 +157,16 @@ export function Highlight24() {
   const [index, setIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const touchStartX = useRef<number | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  const [layout, setLayout] = useState({
+    cardW: 200,
+    cardH: 356,
+    perspective: 1680,
+    ringRadius: 280,
+  });
+
+  const reduceMotion = useReducedMotion() ?? false;
 
   const n = videos.length;
   const safeIndex = n > 0 ? ((index % n) + n) % n : 0;
@@ -47,11 +174,7 @@ export function Highlight24() {
   const prevVideo =
     n > 0 ? videos[(safeIndex - 1 + n) % n] : undefined;
   const nextVideo =
-    n > 0 ? videos[(safeIndex + 1) % n] : undefined;
-  const prev2Video =
-    n > 0 ? videos[(safeIndex - 2 + n) % n] : undefined;
-  const next2Video =
-    n > 0 ? videos[(safeIndex + 2) % n] : undefined;
+    n > 0 ? videos[(safeIndex + 1 + n) % n] : undefined;
 
   const go = useCallback(
     (dir: -1 | 1) => {
@@ -62,6 +185,29 @@ export function Highlight24() {
   );
 
   const activeId = active?.id;
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const apply = () => {
+      const w = el.clientWidth || 640;
+      const base = Math.min(360, Math.max(200, Math.round(w * 0.34)));
+      const cardW = base;
+      const cardH = Math.round((cardW * 16) / 9);
+      const ringRadius = Math.min(360, Math.max(220, Math.round(w * 0.4)));
+      const perspective = Math.min(2000, Math.max(1100, Math.round(w * 2.65)));
+      setLayout({
+        cardW,
+        cardH,
+        perspective,
+        ringRadius,
+      });
+    };
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -82,7 +228,71 @@ export function Highlight24() {
     else if (dx < -56) go(1);
   };
 
+  /** 스프링은 빨리 수렴해 ‘탁’ 넘어가는 느낌 → 긴 트윈 + 강한 ease-out으로 끌어당겨 정착 */
+  const transition = reduceMotion
+    ? { type: "tween" as const, duration: 0.2, ease: [0.22, 1, 0.36, 1] as const }
+    : {
+        type: "tween" as const,
+        duration: 1.05,
+        ease: [0.22, 0.99, 0.26, 1] as const,
+      };
+
+  const { cardW, cardH, perspective, ringRadius } = layout;
+
+  const wingSlots = useMemo(() => {
+    if (n === 0) {
+      return {
+        prev1: 0,
+        next1: 0,
+        wingLeftIndex: null as number | null,
+        wingRightIndex: null as number | null,
+        centerBackOnly: false,
+      };
+    }
+    if (n < 3) {
+      return {
+        prev1: (safeIndex - 1 + n) % n,
+        next1: (safeIndex + 1) % n,
+        wingLeftIndex: null as number | null,
+        wingRightIndex: null as number | null,
+        centerBackOnly: false,
+      };
+    }
+    const prev1 = (safeIndex - 1 + n) % n;
+    const next1 = (safeIndex + 1) % n;
+    const prev2 = (safeIndex - 2 + n) % n;
+    const next2 = (safeIndex + 2) % n;
+    let wingLeftIndex: number | null = null;
+    if (prev2 !== safeIndex && prev2 !== prev1 && prev2 !== next1) {
+      wingLeftIndex = prev2;
+    }
+    let wingRightIndex: number | null = null;
+    if (
+      next2 !== safeIndex &&
+      next2 !== prev1 &&
+      next2 !== next1 &&
+      next2 !== wingLeftIndex
+    ) {
+      wingRightIndex = next2;
+    }
+    const centerBackOnly =
+      wingLeftIndex != null &&
+      wingRightIndex == null &&
+      prev2 === next2 &&
+      wingLeftIndex === prev2;
+    return {
+      prev1,
+      next1,
+      wingLeftIndex,
+      wingRightIndex,
+      centerBackOnly,
+    };
+  }, [n, safeIndex]);
+
   if (n === 0 || !active || !prevVideo || !nextVideo) return null;
+
+  const { prev1, next1, wingLeftIndex, wingRightIndex, centerBackOnly } =
+    wingSlots;
 
   return (
     <section
@@ -103,7 +313,6 @@ export function Highlight24() {
       onTouchEnd={onTouchEnd}
     >
       <div
-        key={active.id}
         className="absolute inset-0 scale-110 bg-cover bg-center"
         style={{ backgroundImage: `url(${active.poster})` }}
         aria-hidden
@@ -116,140 +325,168 @@ export function Highlight24() {
         className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/35 to-black/55"
         aria-hidden
       />
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_88%_58%_at_50%_40%,rgba(255,255,255,0.12),transparent_60%)]"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_125%_92%_at_50%_118%,rgba(0,0,0,0.52),transparent_46%)]"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_38%_at_50%_72%,rgba(0,0,0,0.35),transparent_70%)]"
+        aria-hidden
+      />
 
       <div className="relative z-10 mx-auto max-w-[1800px] px-4 pb-10 pt-8 sm:px-6 sm:pb-12 sm:pt-10 lg:px-8">
-        <div className="mb-6 flex items-end justify-between gap-4 sm:mb-8">
-          <div>
+        <div className="mb-6 flex flex-col gap-1 sm:mb-8 sm:gap-1.5">
+          <div className="flex items-baseline justify-between gap-4">
             <h2
               id="highlight-24-heading"
-              className="text-[18px] font-bold tracking-tight text-white drop-shadow-sm sm:text-[20px]"
+              className="min-w-0 text-[18px] font-bold leading-tight tracking-tight text-white drop-shadow-sm sm:text-[20px]"
             >
               24시간 클립 하이라이트
             </h2>
-            <p className="mt-1 text-[12px] text-white/75 sm:text-[13px]">
-              지금 거래되고 있는 일상 클립을 바로 넘겨 보세요
-            </p>
+            <Link
+              href="/"
+              className="shrink-0 text-[12px] font-medium leading-none text-white/85 underline-offset-4 transition-colors hover:text-white sm:text-[13px]"
+            >
+              더보기
+            </Link>
           </div>
-          <Link
-            href="/"
-            className="shrink-0 text-[12px] font-medium text-white/85 underline-offset-4 transition-colors hover:text-white sm:text-[13px]"
-          >
-            더보기
-          </Link>
+          <p className="text-[12px] text-white/75 sm:text-[13px]">
+            지금 거래되고 있는 일상 클립을 바로 넘겨 보세요
+          </p>
         </div>
 
-        {/* 3D 캐러셀: 원근 + 측면에 더 많은 클립이 이어진다는 힌트 */}
         <div
-          className="relative mx-auto flex min-h-[min(52vw,420px)] max-w-5xl items-center justify-center py-4 sm:min-h-[min(48vw,460px)] md:py-6"
-          style={{ perspective: "1400px" }}
+          ref={wrapRef}
+          className="relative mx-auto flex min-h-[min(58vw,500px)] max-w-5xl items-center justify-center py-4 sm:min-h-[min(52vw,520px)] md:py-6"
+          style={{
+            perspective: `${perspective}px`,
+            perspectiveOrigin: "50% 36%",
+          }}
         >
-          {/* 깊이감 있는 반투명 무대 */}
           <div
-            className="pointer-events-none absolute inset-x-[6%] inset-y-[12%] rounded-[50%] bg-white/[0.06] blur-3xl sm:inset-x-[10%]"
+            className="pointer-events-none absolute inset-x-[6%] top-1/2 h-[86%] max-h-[480px] -translate-y-1/2 rounded-[50%] border border-white/[0.06] bg-gradient-to-b from-white/[0.06] to-transparent opacity-80"
             aria-hidden
           />
           <div
-            className="pointer-events-none absolute inset-x-4 top-1/2 h-[78%] -translate-y-1/2 rounded-[3rem] border border-white/10 bg-gradient-to-b from-white/[0.07] to-transparent opacity-80 sm:inset-x-10"
+            className="pointer-events-none absolute inset-x-[18%] bottom-[8%] h-[28%] max-h-[200px] rounded-[50%] border border-white/[0.05] bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,255,255,0.08),transparent_72%)] opacity-60"
             aria-hidden
           />
 
-          {/* 더 뒤에 있는 클립 힌트 (맨 끝 얇은 슬라이스) */}
-          {n > 3 && prev2Video && (
-            <div
-              className="pointer-events-none absolute left-0 top-1/2 z-0 hidden h-[46%] w-[10%] min-w-[44px] -translate-y-1/2 overflow-hidden rounded-l-2xl border border-white/10 opacity-35 sm:block md:left-[2%] md:h-[50%] md:w-[8%]"
-              aria-hidden
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={prev2Video.poster}
-                alt=""
-                className="h-full w-full scale-110 object-cover blur-[2px]"
-              />
-            </div>
-          )}
-          {n > 3 && next2Video && (
-            <div
-              className="pointer-events-none absolute right-0 top-1/2 z-0 hidden h-[46%] w-[10%] min-w-[44px] -translate-y-1/2 overflow-hidden rounded-r-2xl border border-white/10 opacity-35 sm:block md:right-[2%] md:h-[50%] md:w-[8%]"
-              aria-hidden
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={next2Video.poster}
-                alt=""
-                className="h-full w-full scale-110 object-cover blur-[2px]"
-              />
-            </div>
-          )}
-
+          {/* 무대를 X축으로 살짝 기울여 원이 화면에 타원·깊이로 투영되게 함 */}
           <div
-            className="relative flex w-full items-center justify-center gap-1 sm:gap-2 md:gap-4 [transform-style:preserve-3d]"
-            style={{ transform: "translateZ(-24px)" }}
+            className="relative w-full [transform-style:preserve-3d]"
+            style={{
+              minHeight: cardH + 72,
+              transform: "rotateX(11deg)",
+              transformOrigin: "50% 55%",
+            }}
           >
-            {/* 이전 프리뷰 — 왼쪽으로 원근 */}
+            {videos.map((v, i) => {
+              const isMain = i === safeIndex;
+              const delta = circularDelta(i, safeIndex, n);
+
+              const pose = isMain
+                ? circularRingPose(0, n, ringRadius)
+                : i === prev1 || i === next1
+                  ? circularRingPose(delta, n, ringRadius)
+                  : centerBackOnly && i === wingLeftIndex
+                    ? centerBackQueuePose(ringRadius)
+                    : i === wingLeftIndex
+                      ? diagonalWingPose("left", ringRadius)
+                      : i === wingRightIndex
+                        ? diagonalWingPose("right", ringRadius)
+                        : hiddenOffstagePose(ringRadius);
+
+              return (
+                <motion.div
+                  key={v.id}
+                  role="presentation"
+                  className={`absolute left-1/2 top-1/2 overflow-hidden rounded-2xl border border-white/25 bg-black/40 shadow-[0_28px_90px_-26px_rgba(0,0,0,0.88)] [transform-style:preserve-3d] ${
+                    isMain ? "cursor-default" : "cursor-pointer"
+                  } ${pose.opacity < 0.02 ? "pointer-events-none" : ""}`}
+                  style={{
+                    width: cardW,
+                    height: cardH,
+                    marginLeft: -cardW / 2,
+                    marginTop: -cardH / 2,
+                    zIndex: pose.zIndex,
+                    transformOrigin: "center center",
+                  }}
+                  initial={false}
+                  animate={{
+                    x: pose.x,
+                    z: pose.z,
+                    rotateY: pose.rotateY,
+                    scale: pose.scale,
+                    opacity: pose.opacity,
+                  }}
+                  transition={transition}
+                  onClick={() => {
+                    if (!isMain && pose.opacity >= 0.02) setIndex(i);
+                  }}
+                >
+                  <div className="relative h-full w-full">
+                    {isMain ? (
+                      <video
+                        ref={videoRef}
+                        className="absolute inset-0 h-full w-full object-cover"
+                        poster={v.poster}
+                        playsInline
+                        muted
+                        loop
+                        preload="metadata"
+                      >
+                        <source src={v.src} type="video/mp4" />
+                      </video>
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={v.poster}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover"
+                        draggable={false}
+                      />
+                    )}
+                    {!isMain && (
+                      <motion.div
+                        className="pointer-events-none absolute inset-0 bg-black"
+                        aria-hidden
+                        initial={false}
+                        animate={{
+                          opacity: 0.08 + 0.22 * (1 - pose.depthFactor),
+                        }}
+                        transition={transition}
+                      />
+                    )}
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10" />
+                    <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/12" />
+                  </div>
+                </motion.div>
+              );
+            })}
+
             <button
               type="button"
               onClick={() => go(-1)}
-              className="group relative z-10 aspect-[9/16] w-[min(22%,120px)] max-w-[120px] shrink-0 overflow-hidden rounded-2xl border border-white/20 bg-black/25 shadow-[0_20px_50px_-28px_rgba(0,0,0,0.85)] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] [transform:rotateY(34deg)_translateZ(-36px)_scale(0.92)] hover:[transform:rotateY(30deg)_translateZ(-28px)_scale(0.94)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/60 sm:w-[min(24%,140px)] sm:max-w-[140px] md:[transform:rotateY(38deg)_translateZ(-48px)_scale(0.9)] md:hover:[transform:rotateY(34deg)_translateZ(-36px)_scale(0.92)]"
-              style={{ transformOrigin: "right center" }}
+              className="group absolute left-0 top-1/2 z-[60] flex h-[min(52%,340px)] w-[min(22%,120px)] max-w-[100px] -translate-y-1/2 items-center justify-start pl-1 sm:pl-2"
               aria-label="이전 클립"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={prevVideo.poster}
-                alt=""
-                className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:opacity-100"
-              />
-              <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/35 to-transparent" />
-              <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-300 group-hover:bg-black/25" />
-              <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/95 text-slate-900 opacity-0 shadow-lg ring-1 ring-black/10 transition-all duration-300 ease-out group-hover:scale-100 group-hover:opacity-100 sm:h-14 sm:w-14">
-                  <ChevronLeft className="h-6 w-6 sm:h-7 sm:w-7" />
-                </span>
+              <span className="pointer-events-none flex h-12 w-12 items-center justify-center rounded-full bg-white/95 text-slate-900 opacity-0 shadow-lg ring-1 ring-black/10 transition-all duration-300 ease-out group-hover:opacity-100 sm:h-14 sm:w-14">
+                <ChevronLeft className="h-6 w-6 sm:h-7 sm:w-7" />
               </span>
             </button>
-
-            {/* 중앙 메인 — 앞으로 */}
-            <div
-              className="relative z-20 aspect-[9/16] w-[min(52%,360px)] max-w-[360px] shrink-0 overflow-hidden rounded-2xl border border-white/25 bg-black/35 shadow-[0_28px_90px_-24px_rgba(0,0,0,0.75)] [transform:translateZ(56px)_scale(1.02)]"
-              style={{ transformStyle: "preserve-3d" }}
-            >
-              {active && (
-                <video
-                  key={active.id}
-                  ref={videoRef}
-                  className="absolute inset-0 h-full w-full object-cover"
-                  poster={active.poster}
-                  playsInline
-                  muted
-                  loop
-                  preload="metadata"
-                >
-                  <source src={active.src} type="video/mp4" />
-                </video>
-              )}
-              <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10" />
-            </div>
-
-            {/* 다음 프리뷰 — 오른쪽으로 원근 */}
             <button
               type="button"
               onClick={() => go(1)}
-              className="group relative z-10 aspect-[9/16] w-[min(22%,120px)] max-w-[120px] shrink-0 overflow-hidden rounded-2xl border border-white/20 bg-black/25 shadow-[0_20px_50px_-28px_rgba(0,0,0,0.85)] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] [transform:rotateY(-34deg)_translateZ(-36px)_scale(0.92)] hover:[transform:rotateY(-30deg)_translateZ(-28px)_scale(0.94)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/60 sm:w-[min(24%,140px)] sm:max-w-[140px] md:[transform:rotateY(-38deg)_translateZ(-48px)_scale(0.9)] md:hover:[transform:rotateY(-34deg)_translateZ(-36px)_scale(0.92)]"
-              style={{ transformOrigin: "left center" }}
+              className="group absolute right-0 top-1/2 z-[60] flex h-[min(52%,340px)] w-[min(22%,120px)] max-w-[100px] -translate-y-1/2 items-center justify-end pr-1 sm:pr-2"
               aria-label="다음 클립"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={nextVideo.poster}
-                alt=""
-                className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:opacity-100"
-              />
-              <span className="pointer-events-none absolute inset-0 bg-gradient-to-l from-black/35 to-transparent" />
-              <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-300 group-hover:bg-black/25" />
-              <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/95 text-slate-900 opacity-0 shadow-lg ring-1 ring-black/10 transition-all duration-300 ease-out group-hover:scale-100 group-hover:opacity-100 sm:h-14 sm:w-14">
-                  <ChevronRight className="h-6 w-6 sm:h-7 sm:w-7" />
-                </span>
+              <span className="pointer-events-none flex h-12 w-12 items-center justify-center rounded-full bg-white/95 text-slate-900 opacity-0 shadow-lg ring-1 ring-black/10 transition-all duration-300 ease-out group-hover:opacity-100 sm:h-14 sm:w-14">
+                <ChevronRight className="h-6 w-6 sm:h-7 sm:w-7" />
               </span>
             </button>
           </div>
@@ -264,7 +501,7 @@ export function Highlight24() {
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <div className="min-w-0 text-center">
+          <div className="min-w-0 text-center transition-opacity duration-300 ease-out">
             <p className="truncate text-[15px] font-semibold tracking-tight text-white drop-shadow-md sm:text-[16px]">
               {active?.creator ?? ""}
             </p>

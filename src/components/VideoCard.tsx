@@ -72,6 +72,11 @@ export function VideoCard({ video, className, flush }: Props) {
       onMouseLeave={pause}
     >
       <div className={`relative bg-slate-100 ${aspectClass}`}>
+        {video.priceWon != null ? (
+          <span className="absolute right-2 top-2 z-[4] rounded-md bg-black/78 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white ring-1 ring-white/15 sm:right-2.5 sm:top-2.5 sm:text-[12px]">
+            {video.priceWon.toLocaleString("ko-KR")}원
+          </span>
+        ) : null}
         <video
           ref={ref}
           className="absolute inset-0 h-full w-full object-cover"
