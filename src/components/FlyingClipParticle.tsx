@@ -2,7 +2,7 @@
 
 import { motion, useAnimation, useReducedMotion } from "framer-motion";
 import { useEffect } from "react";
-import { buildDopamineSpiralPath } from "@/lib/dopaminePath";
+import { buildElasticArcPath } from "@/lib/dopaminePath";
 
 const SIZE = 40;
 const HALF = SIZE / 2;
@@ -69,8 +69,11 @@ export function FlyingClipParticle({
         await controls.start({
           x: end.x - start.x,
           y: end.y - start.y,
-          rotate: 4,
-          transition: { duration: 0.32, ease: [0.4, 0, 0.2, 1] },
+          rotate: 5,
+          transition: {
+            duration: 0.34,
+            ease: [0.28, 1.15, 0.45, 1],
+          },
         });
         await tuckIn(4);
       } else {
@@ -83,19 +86,19 @@ export function FlyingClipParticle({
             ease: [0.34, 1.25, 0.64, 1],
           },
         });
-        await sleep(72);
+        await sleep(56);
         if (!alive) return;
 
-        const { xs, ys } = buildDopamineSpiralPath(
+        const { xs, ys, rotations } = buildElasticArcPath(
           start.x,
           start.y,
           end.x,
           end.y,
-          15,
+          18,
         );
         const kx = xs.map((xi) => xi - start.x);
         const ky = ys.map((yi) => yi - start.y);
-        const kr = kx.map((_, i) => 2 + i * 1.85 + Math.sin(i * 0.55) * 3);
+        const kr = rotations;
         const times = kx.map((_, i) => i / (kx.length - 1));
 
         await controls.start({
@@ -105,8 +108,9 @@ export function FlyingClipParticle({
           scale: 1,
           opacity: 1,
           transition: {
-            duration: 0.58,
-            ease: [0.2, 0.95, 0.24, 1],
+            duration: 0.52,
+            /** 쫀득·빠른 가속 후 부드럽게 착지 */
+            ease: [0.28, 1.22, 0.42, 1.02],
             times,
           },
         });
