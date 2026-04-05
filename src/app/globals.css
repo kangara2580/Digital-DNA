@@ -49,6 +49,31 @@ body {
   background: rgb(148 163 184);
 }
 
+/* 베스트 구매평 등: 살짝 더 긴 트랙 (부티크형 가로 리스트) */
+.feed-scroll-wide::-webkit-scrollbar {
+  height: 8px;
+}
+
+.feed-scroll-wide {
+  scrollbar-width: auto;
+  scrollbar-color: rgb(186 198 212) rgb(241 245 249);
+}
+
+.feed-scroll-wide::-webkit-scrollbar-track {
+  margin-inline: 0.5rem;
+  border-radius: 9999px;
+  background: rgb(241 245 249);
+}
+
+.feed-scroll-wide::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: rgb(186 198 212);
+}
+
+.feed-scroll-wide::-webkit-scrollbar-thumb:hover {
+  background: rgb(148 163 184);
+}
+
 /* 상단 몰 메뉴 가로 스크롤 시 스크롤바 숨김 */
 .no-scrollbar {
   -ms-overflow-style: none;

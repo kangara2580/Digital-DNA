@@ -20,34 +20,50 @@ export function BestPurchaseReviewsSection() {
           </p>
         </div>
 
-        <div
-          className="feed-scroll no-scrollbar -mx-4 mt-6 flex gap-4 overflow-x-auto px-4 pb-3 pt-1 sm:-mx-6 sm:mt-8 sm:gap-5 sm:px-6 lg:-mx-8 lg:px-8"
-          role="region"
-          aria-label="베스트 구매평 가로 목록"
-        >
-          {BEST_PURCHASE_REVIEWS.map((card) => (
-            <article
-              key={card.id}
-              className="snap-start shrink-0 border border-slate-200/90 bg-white p-5 shadow-sm sm:p-6"
-              style={{ width: "min(82vw, 320px)" }}
-            >
-              <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                <span className="rounded-md bg-[#708090]/12 px-2 py-0.5 text-[11px] font-bold text-[#5a6a78]">
-                  {card.badge}
-                </span>
-                <span className="text-[11px] font-medium text-slate-400">
-                  카드 뉴스
-                </span>
-              </div>
-              <p className="mt-4 text-[15px] font-medium leading-[1.65] tracking-tight text-slate-800 sm:text-[16px] sm:leading-[1.7]">
-                {card.quote}
-              </p>
-              <p className="mt-5 text-[13px] font-semibold text-slate-500">
-                {card.author}
-              </p>
-            </article>
-          ))}
+        <div className="relative mt-6 sm:mt-8">
+          <div
+            className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-10 bg-gradient-to-r from-slate-50 to-transparent sm:w-14 lg:w-16"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-10 bg-gradient-to-l from-white to-transparent sm:w-14 lg:w-16"
+            aria-hidden
+          />
+
+          <div
+            className="feed-scroll feed-scroll-wide -mx-4 flex gap-4 overflow-x-auto px-4 pb-4 pt-1 sm:-mx-6 sm:gap-5 sm:px-6 lg:-mx-8 lg:px-8"
+            role="region"
+            aria-label="베스트 구매평 가로 목록"
+            tabIndex={0}
+          >
+            {BEST_PURCHASE_REVIEWS.map((card) => (
+              <article
+                key={card.id}
+                className="snap-start shrink-0 border border-slate-200/90 bg-white p-5 shadow-sm sm:p-6"
+                style={{ width: "min(82vw, 320px)" }}
+              >
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="rounded-md bg-[#708090]/12 px-2 py-0.5 text-[11px] font-bold text-[#5a6a78]">
+                    {card.badge}
+                  </span>
+                  <span className="text-[11px] font-medium text-slate-400">
+                    카드 뉴스
+                  </span>
+                </div>
+                <p className="mt-4 text-[15px] font-medium leading-[1.65] tracking-tight text-slate-800 sm:text-[16px] sm:leading-[1.7]">
+                  {card.quote}
+                </p>
+                <p className="mt-5 text-[13px] font-semibold text-slate-500">
+                  {card.author}
+                </p>
+              </article>
+            ))}
+          </div>
         </div>
+
+        <p className="mx-auto mt-1 max-w-xl text-center text-[12px] font-medium tracking-wide text-slate-500 sm:text-[13px]">
+          옆으로 스크롤하여 더 많은 구매평을 확인하세요
+        </p>
       </div>
     </section>
   );
