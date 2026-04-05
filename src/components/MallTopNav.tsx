@@ -13,6 +13,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { SellerNotificationBell } from "@/components/SellerNotificationBell";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhrases";
 
@@ -23,18 +24,18 @@ const navActionClass =
   "inline-flex items-center justify-center rounded-full bg-transparent px-2.5 py-1.5 text-black transition-[background-color,color] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100/85 hover:text-slate-950 motion-reduce:duration-250";
 
 const ITEMS = [
-  { href: "/", label: "베스트" },
-  { href: "/", label: "추천" },
-  { href: "/", label: "일상" },
-  { href: "/", label: "숏폼·릴스" },
-  { href: "/", label: "춤" },
-  { href: "/", label: "노래" },
-  { href: "/", label: "푸드" },
-  { href: "/", label: "여행" },
-  { href: "/", label: "동물" },
-  { href: "/", label: "비즈니스" },
-  { href: "/", label: "코미디" },
-  { href: "/", label: "만화" },
+  { href: "/category/best", label: "베스트" },
+  { href: "/category/recommend", label: "추천" },
+  { href: "/category/daily", label: "일상" },
+  { href: "/category/shortform", label: "숏폼·릴스" },
+  { href: "/category/dance", label: "춤" },
+  { href: "/category/music", label: "노래" },
+  { href: "/category/food", label: "푸드" },
+  { href: "/category/travel", label: "여행" },
+  { href: "/category/animals", label: "동물" },
+  { href: "/category/business", label: "비즈니스" },
+  { href: "/category/comedy", label: "코미디" },
+  { href: "/category/cartoon", label: "만화" },
 ] as const;
 
 /** 스크롤 컴팩트 시 상단에는 베스트·추천만 노출, 나머지는 「카테고리」 메뉴로 */
@@ -462,11 +463,10 @@ export function MallTopNav() {
               디지털 DNA
             </Link>
             {!compact && (
-              <QuickMenuIcons
-                className="hidden sm:-mr-1 sm:flex lg:-mr-0.5"
-                cartAnchorRef={cartAnchorRef}
-                cartFillLevel={cartCount}
-              />
+              <div className="hidden items-center gap-0.5 sm:-mr-1 sm:flex lg:-mr-0.5">
+                <SellerNotificationBell />
+                <QuickMenuIcons cartAnchorRef={cartAnchorRef} cartFillLevel={cartCount} />
+              </div>
             )}
           </div>
 
@@ -608,11 +608,12 @@ export function MallTopNav() {
           </div>
 
           {compact && (
-            <QuickMenuIcons
-              className={`shrink-0 sm:-mr-1 lg:-mr-0.5 ${easeLayout}`}
-              cartAnchorRef={cartAnchorRef}
-              cartFillLevel={cartCount}
-            />
+            <div
+              className={`flex shrink-0 items-center gap-0.5 sm:-mr-1 lg:-mr-0.5 ${easeLayout}`}
+            >
+              <SellerNotificationBell compact />
+              <QuickMenuIcons cartAnchorRef={cartAnchorRef} cartFillLevel={cartCount} />
+            </div>
           )}
         </div>
       </div>

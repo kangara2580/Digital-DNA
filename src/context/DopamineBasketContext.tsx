@@ -10,6 +10,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { FlyingClipParticle } from "@/components/FlyingClipParticle";
+import type { FeedVideo } from "@/data/videos";
 
 type Vec2 = { x: number; y: number };
 
@@ -20,11 +21,19 @@ type Particle = {
   poster?: string;
 };
 
+export type BuilderTimelineItem = {
+  key: string;
+  video: FeedVideo;
+};
+
 type Ctx = {
   cartAnchorRef: React.RefObject<HTMLAnchorElement | null>;
   cartCount: number;
-  /** 장바구니 버튼(비디오 위) 기준으로 날리기 */
-  launchFromCartButton: (buttonEl: HTMLElement, poster?: string) => void;
+  /** 장바구니 버튼(비디오 위) 기준으로 날리기 + 조합기 타임라인에 추가 */
+  launchFromCartButton: (buttonEl: HTMLElement, video: FeedVideo, poster?: string) => void;
+  builderItems: BuilderTimelineItem[];
+  removeBuilderItem: (key: string) => void;
+  clearBuilder: () => void;
 };
 
 const DopamineBasketContext = createContext<Ctx | null>(null);
@@ -46,10 +55,12 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
   const cartAnchorRef = useRef<HTMLAnchorElement | null>(null);
   const [particles, setParticles] = useState<Particle[]>([]);
   const [cartCount, setCartCount] = useState(0);
+  const [builderItems, setBuilderItems] = useState<BuilderTimelineItem[]>([]);
   const idRef = useRef(0);
+  const builderSeq = useRef(0);
 
   const launchFromCartButton = useCallback(
-    (buttonEl: HTMLElement, poster?: string) => {
+    (buttonEl: HTMLElement, video: FeedVideo, poster?: string) => {
       const cartEl = cartAnchorRef.current;
       if (!cartEl || typeof window === "undefined") return;
 
@@ -70,6 +81,9 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
 
       const id = `fly-${++idRef.current}`;
       setParticles((p) => [...p, { id, start, end, poster }]);
+
+      const key = `b-${video.id}-${++builderSeq.current}`;
+      setBuilderItems((items) => [...items, { key, video }]);
     },
     [],
   );
@@ -79,13 +93,24 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
     setCartCount((c) => Math.min(c + 1, 99));
   }, []);
 
+  const removeBuilderItem = useCallback((key: string) => {
+    setBuilderItems((items) => items.filter((x) => x.key !== key));
+  }, []);
+
+  const clearBuilder = useCallback(() => {
+    setBuilderItems([]);
+  }, []);
+
   const value = useMemo(
     () => ({
       cartAnchorRef,
       cartCount,
       launchFromCartButton,
+      builderItems,
+      removeBuilderItem,
+      clearBuilder,
     }),
-    [cartCount, launchFromCartButton],
+    [cartCount, launchFromCartButton, builderItems, removeBuilderItem, clearBuilder],
   );
 
   return (

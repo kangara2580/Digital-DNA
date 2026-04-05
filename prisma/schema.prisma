@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// 판매 중인 영상(조각). 가격·조회·판매 수는 배치·수락 API에서 갱신됩니다.
+model Video {
+  id             String    @id @default(cuid())
+  title          String
+  creator        String
+  src            String
+  poster         String
+  orientation    String
+  durationSec    Int?
+  price          Int
+  views          Int       @default(0)
+  salesCount     Int       @default(0) @map("sales_count")
+  /// open | limited | private | batch
+  editionKind    String    @default("open") @map("edition_kind")
+  editionCap     Int?      @map("edition_cap")
+  sellerId       String    @map("seller_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  flashSaleUntil DateTime? @map("flash_sale_until")
+
+  notifications Notification[]
+
+  @@index([sellerId])
+  @@index([createdAt])
+  @@index([flashSaleUntil])
+  @@map("videos")
+}
+
+/// 판매자 알림(가격 제안 등)
+model Notification {
+  id        String   @id @default(cuid())
+  sellerId  String   @map("seller_id")
+  type      String
+  title     String
+  body      String
+  videoId   String   @map("video_id")
+  oldPrice  Int      @map("old_price")
+  newPrice  Int      @map("new_price")
+  read      Boolean  @default(false)
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([sellerId, createdAt])
+  @@index([videoId, type, status])
+  @@map("notifications")
+}

@@ -31,6 +31,8 @@ export function BudgetClipsSection() {
                 key={`budget-${video.id}`}
                 video={video}
                 flush
+                domId={`clip-${video.id}`}
+                showRelatedQuilt
                 className="min-w-0 w-full"
               />
             ))}

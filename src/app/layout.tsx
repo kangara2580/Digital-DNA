@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { DnaBuilderDock } from "@/components/DnaBuilderDock";
 import { FloatingHelp } from "@/components/FloatingHelp";
 import { MallTopNav } from "@/components/MallTopNav";
 import { DopamineBasketProvider } from "@/context/DopamineBasketContext";
@@ -24,6 +25,7 @@ export default function RootLayout({
         <DopamineBasketProvider>
           <MallTopNav />
           {children}
+          <DnaBuilderDock />
           <FloatingHelp />
         </DopamineBasketProvider>
       </body>

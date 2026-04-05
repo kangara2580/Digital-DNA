@@ -146,6 +146,40 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     priceWon: 2800,
     durationSec: 46,
   },
+  /** 100·300·500원대 — DNA 조합기·연관 무드 데모용 마이크로 조각 */
+  {
+    id: "dna-100-asphalt",
+    title: "젖은 아스팔트 조각",
+    creator: "@vibe_micro",
+    src: "https://videos.pexels.com/video-files/3045163/3045163-hd_1920_1080_25fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/1519088/pexels-photo-1519088.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 100,
+    durationSec: 8,
+  },
+  {
+    id: "dna-300-rain-asmr",
+    title: "빗소리 ASMR 조각",
+    creator: "@vibe_micro",
+    src: "https://videos.pexels.com/video-files/2491284/2491284-hd_1920_1080_30fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/1520760/pexels-photo-1520760.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 300,
+    durationSec: 10,
+  },
+  {
+    id: "dna-500-window-rain",
+    title: "창가 빗방울 (숏)",
+    creator: "@vibe_micro",
+    src: "https://videos.pexels.com/video-files/3045160/3045160-hd_1920_1080_25fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 500,
+    durationSec: 9,
+  },
 ];
 
 /** 실시간 인기순위 데모 — 세로 클립 6개 고정 순서(실제 서비스에서는 랭킹 API로 교체) */

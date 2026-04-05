@@ -25,6 +25,8 @@ function FeedRows({
             key={`${keyPrefix}-p-${video.id}`}
             video={video}
             flush
+            domId={`clip-${video.id}`}
+            showRelatedQuilt={video.id === "5"}
             className="min-w-0 w-full"
           />
         ))}
@@ -35,6 +37,8 @@ function FeedRows({
             key={`${keyPrefix}-l-${video.id}`}
             video={video}
             flush
+            domId={`clip-${video.id}`}
+            showRelatedQuilt
             className="min-w-0 w-full"
           />
         ))}

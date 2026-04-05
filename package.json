@@ -7,12 +7,20 @@
     "dna": "npm run dev",
     "dev:3001": "next dev -p 3001 -H 127.0.0.1",
     "dev:turbo": "next dev --turbopack",
-    "build": "next build",
+    "postinstall": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio",
+    "build": "prisma generate && next build",
     "start": "next start",
     "preview": "next build && next start",
     "lint": "next lint"
   },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
+  },
   "dependencies": {
+    "@prisma/client": "^6.19.0",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.7.0",
     "next": "^15.1.0",
@@ -27,7 +35,9 @@
     "eslint": "^9.16.0",
     "eslint-config-next": "^15.1.0",
     "postcss": "^8.4.49",
+    "prisma": "^6.19.0",
     "tailwindcss": "^3.4.16",
+    "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   }
 }
