@@ -190,6 +190,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                       video={video}
                       flush
                       dense={dense}
+                      instantPreview={false}
                       domId={`clip-${video.id}`}
                       className="h-full min-h-0 w-full flex-1"
                     />

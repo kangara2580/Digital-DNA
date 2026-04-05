@@ -11,6 +11,10 @@ export type FeedVideo = {
   priceWon?: number;
   /** 초 단위 길이 — 썸네일 위에만 재생 시간(예: 0:15)으로 표시 */
   durationSec?: number;
+  /** 호버 인스턴트 프리뷰 전용 URL(없으면 src로 앞 구간만 재생) */
+  previewSrc?: string;
+  /** 호버 프리뷰 구간 길이(초). 기본 3 */
+  previewDurationSec?: number;
 };
 
 export const SAMPLE_VIDEOS: FeedVideo[] = [
@@ -178,6 +182,106 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
       "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=640",
     orientation: "portrait",
     priceWon: 500,
+    durationSec: 9,
+  },
+  /** Micro DNA — 300원 이하 전용 그리드용 추가 조각 */
+  {
+    id: "micro-100-neon-bokeh",
+    title: "네온 보케 스킵",
+    creator: "@vibe_micro",
+    src: "https://videos.pexels.com/video-files/3045163/3045163-hd_1920_1080_25fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/1519088/pexels-photo-1519088.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 100,
+    durationSec: 6,
+  },
+  {
+    id: "micro-150-river-glint",
+    title: "강빛 반짝임",
+    creator: "@vibe_micro",
+    src: "https://videos.pexels.com/video-files/3044475/3044475-hd_1920_1080_25fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/1571458/pexels-photo-1571458.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 150,
+    durationSec: 7,
+  },
+  {
+    id: "micro-200-forest-mist",
+    title: "숲 안개 한 줄",
+    creator: "@vibe_micro",
+    src: "https://videos.pexels.com/video-files/1448735/1448735-hd_1920_1080_30fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/1179229/pexels-photo-1179229.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 200,
+    durationSec: 8,
+  },
+  {
+    id: "micro-200-beach-foam",
+    title: "거품 한 박자",
+    creator: "@vibe_micro",
+    src: "https://videos.pexels.com/video-files/1409899/1409899-hd_1920_1080_25fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/1683492/pexels-photo-1683492.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 200,
+    durationSec: 7,
+  },
+  {
+    id: "micro-250-rooftop-breeze",
+    title: "옥상 바람 컷",
+    creator: "@vibe_micro",
+    src: "https://videos.pexels.com/video-files/3044473/3044473-hd_1920_1080_25fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 250,
+    durationSec: 8,
+  },
+  {
+    id: "micro-300-night-market",
+    title: "야시장 불빛 클립",
+    creator: "@vibe_micro",
+    src: "https://videos.pexels.com/video-files/2495382/2495382-hd_1920_1080_30fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/931007/pexels-photo-931007.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 300,
+    durationSec: 9,
+  },
+  {
+    id: "micro-300-dance-kick",
+    title: "댄스 킥 프레임",
+    creator: "@vibe_micro",
+    src: "https://videos.pexels.com/video-files/3209828/3209828-hd_1920_1080_25fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/3757376/pexels-photo-3757376.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 300,
+    durationSec: 8,
+  },
+  {
+    id: "micro-100-snow-quiet",
+    title: "설원 정적 3초",
+    creator: "@vibe_micro",
+    src: "https://videos.pexels.com/video-files/2889030/2889030-hd_1920_1080_30fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/869258/pexels-photo-869258.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 100,
+    durationSec: 5,
+  },
+  {
+    id: "micro-250-village-dawn",
+    title: "마을 새벽 공기",
+    creator: "@vibe_micro",
+    src: "https://videos.pexels.com/video-files/2570934/2570934-hd_1920_1080_30fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/235648/pexels-photo-235648.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 250,
     durationSec: 9,
   },
 ];

@@ -1,5 +1,5 @@
-import Image from "next/image";
-import Link from "next/link";
+import { EditorCurationClipThumb } from "@/components/EditorCurationClipThumb";
+import { SectionMoreLink } from "@/components/SectionMoreLink";
 import { EDITOR_CURATIONS } from "@/data/marketing";
 
 export function EditorCurationSection() {
@@ -10,12 +10,9 @@ export function EditorCurationSection() {
     >
       <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8">
         <div className="text-left">
-          <p className="text-[13px] font-bold tracking-tight text-[#708090] sm:text-[14px]">
-            에디터의 큐레이션
-          </p>
           <h2
             id="editor-curation-heading"
-            className="mt-1 text-[22px] font-bold leading-snug tracking-tight text-[#0f172a] sm:text-[26px] md:text-[28px]"
+            className="text-[22px] font-bold leading-snug tracking-tight text-[#0f172a] sm:text-[26px] md:text-[28px]"
           >
             이런 상황에 딱!
           </h2>
@@ -27,37 +24,26 @@ export function EditorCurationSection() {
         <div className="mt-6 flex flex-col gap-10 sm:mt-8 sm:gap-12">
           {EDITOR_CURATIONS.map((block) => (
             <div key={block.id} className="min-w-0">
-              <h3 className="text-left text-[17px] font-bold leading-snug tracking-tight text-slate-900 sm:text-[18px]">
-                {block.title}
-              </h3>
-              <p className="mt-1 text-[14px] leading-relaxed text-slate-600 sm:text-[15px]">
-                {block.description}
-              </p>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                <div className="min-w-0 text-left">
+                  <h3 className="text-[17px] font-bold leading-snug tracking-tight text-slate-900 sm:text-[18px]">
+                    {block.title}
+                  </h3>
+                  <p className="mt-1 text-[14px] leading-relaxed text-slate-600 sm:text-[15px]">
+                    {block.description}
+                  </p>
+                </div>
+                <SectionMoreLink
+                  category="recommend"
+                  className="w-full shrink-0 sm:w-auto sm:self-center"
+                />
+              </div>
               <div className="no-scrollbar mt-3 flex gap-3 overflow-x-auto pb-1 sm:mt-4 sm:gap-4">
                 {block.clips.map((v) => (
-                  <Link
+                  <EditorCurationClipThumb
                     key={`${block.id}-${v.id}`}
-                    href="/"
-                    className="group shrink-0 w-[104px] sm:w-[118px]"
-                  >
-                    <div className="relative aspect-[4/5] overflow-hidden rounded-xl border border-slate-200/90 bg-slate-100 shadow-sm transition-shadow group-hover:shadow-md">
-                      <Image
-                        src={v.poster}
-                        alt=""
-                        fill
-                        sizes="120px"
-                        className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.04]"
-                      />
-                    </div>
-                    <p className="mt-2 line-clamp-2 text-left text-[12px] font-semibold leading-snug text-slate-800">
-                      {v.title}
-                    </p>
-                    {v.priceWon != null ? (
-                      <p className="mt-0.5 text-left text-[11px] font-medium tabular-nums text-slate-500">
-                        {v.priceWon.toLocaleString("ko-KR")}원
-                      </p>
-                    ) : null}
-                  </Link>
+                    video={v}
+                  />
                 ))}
               </div>
             </div>

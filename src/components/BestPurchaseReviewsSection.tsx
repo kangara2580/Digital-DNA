@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { SectionMoreLink } from "@/components/SectionMoreLink";
 import type { PurchaseReviewPickTone } from "@/data/marketing";
 import { BEST_PURCHASE_REVIEWS } from "@/data/marketing";
 import { HighlightedQuote } from "@/lib/highlightText";
@@ -44,17 +45,24 @@ export function BestPurchaseReviewsSection() {
       aria-labelledby="best-reviews-heading"
     >
       <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8">
-        <div className="text-left">
-          <h2
-            id="best-reviews-heading"
-            className="text-[22px] font-bold leading-snug tracking-tight text-[#0f172a] sm:text-[26px] md:text-[28px]"
-          >
-            오늘의 베스트 구매평
-          </h2>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600 sm:text-[16px]">
-            &quot;이걸 어디다 써?&quot;를 사라지게 하는 실제 활용 사례예요. 남들이
-            이 조각으로 무엇을 만들었는지 보면, 나도 할 수 있겠다는 감이 옵니다.
-          </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+          <div className="min-w-0 text-left">
+            <h2
+              id="best-reviews-heading"
+              className="text-[22px] font-bold leading-snug tracking-tight text-[#0f172a] sm:text-[26px] md:text-[28px]"
+            >
+              오늘의 베스트 구매평
+            </h2>
+            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600 sm:text-[16px]">
+              남들이 이 조각으로 무엇을 만들었는지 보면,
+              <br />
+              나도 할 수 있겠다는 감이 옵니다.
+            </p>
+          </div>
+          <SectionMoreLink
+            category="best"
+            className="shrink-0 self-stretch sm:self-center"
+          />
         </div>
 
         <div className="mt-6 sm:mt-8">

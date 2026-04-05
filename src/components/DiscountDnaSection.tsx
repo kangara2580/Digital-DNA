@@ -1,3 +1,4 @@
+import { SectionMoreLink } from "@/components/SectionMoreLink";
 import { VideoCard } from "@/components/VideoCard";
 import { getFlashSaleVideosSafe, videoRowToFeedVideo } from "@/lib/flashSaleVideos";
 
@@ -12,8 +13,8 @@ export async function DiscountDnaSection() {
       className="mx-auto w-full max-w-[1800px] px-4 pb-6 pt-2 sm:px-6 lg:px-8"
       aria-labelledby="discount-dna-heading"
     >
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-2 border-b border-slate-200/90 pb-2">
-        <div>
+      <div className="mb-3 flex flex-col gap-3 border-b border-slate-200/90 pb-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4 sm:pb-2">
+        <div className="min-w-0 text-left">
           <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-slate-500">
             Flash Sale
           </p>
@@ -28,6 +29,10 @@ export async function DiscountDnaSection() {
             불러보세요.
           </p>
         </div>
+        <SectionMoreLink
+          category="best"
+          className="w-full shrink-0 sm:w-auto sm:self-end"
+        />
       </div>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-2.5 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
         {videos.map((v) => (

@@ -4,6 +4,8 @@ import { DnaBuilderDock } from "@/components/DnaBuilderDock";
 import { FloatingHelp } from "@/components/FloatingHelp";
 import { MallTopNav } from "@/components/MallTopNav";
 import { DopamineBasketProvider } from "@/context/DopamineBasketContext";
+import { RecentClipsProvider } from "@/context/RecentClipsContext";
+import { WishlistProvider } from "@/context/WishlistContext";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -22,12 +24,16 @@ export default function RootLayout({
   return (
     <html lang="ko" className={`${inter.variable} scroll-smooth`}>
       <body className="min-h-screen bg-[#FFFFFF] font-sans text-slate-900 antialiased">
-        <DopamineBasketProvider>
-          <MallTopNav />
-          {children}
-          <DnaBuilderDock />
-          <FloatingHelp />
-        </DopamineBasketProvider>
+        <WishlistProvider>
+          <RecentClipsProvider>
+          <DopamineBasketProvider>
+            <MallTopNav />
+            {children}
+            <DnaBuilderDock />
+            <FloatingHelp />
+          </DopamineBasketProvider>
+          </RecentClipsProvider>
+        </WishlistProvider>
       </body>
     </html>
   );

@@ -122,6 +122,51 @@ const M: Record<string, VideoCatalogMeta> = {
     vibeIds: ["rainy_window", "rainy_cafe", "cozy_rain"],
     listedAt: "2026-03-09",
   },
+  "micro-100-neon-bokeh": {
+    categories: ["daily", "shortform", "best"],
+    vibeIds: ["urban_night", "neon_city"],
+    listedAt: "2026-03-14",
+  },
+  "micro-150-river-glint": {
+    categories: ["daily", "travel", "recommend"],
+    vibeIds: ["river_morning", "active_day"],
+    listedAt: "2026-03-13",
+  },
+  "micro-200-forest-mist": {
+    categories: ["travel", "daily"],
+    vibeIds: ["forest_trail", "green_escape"],
+    listedAt: "2026-03-14",
+  },
+  "micro-200-beach-foam": {
+    categories: ["travel", "best"],
+    vibeIds: ["sunset_beach", "golden_hour"],
+    listedAt: "2026-03-12",
+  },
+  "micro-250-rooftop-breeze": {
+    categories: ["music", "shortform", "daily"],
+    vibeIds: ["rooftop_party", "urban_fun"],
+    listedAt: "2026-03-13",
+  },
+  "micro-300-night-market": {
+    categories: ["food", "daily", "comedy"],
+    vibeIds: ["night_market", "street_vibe"],
+    listedAt: "2026-03-15",
+  },
+  "micro-300-dance-kick": {
+    categories: ["dance", "shortform", "best"],
+    vibeIds: ["studio_energy", "dance_practice"],
+    listedAt: "2026-03-14",
+  },
+  "micro-100-snow-quiet": {
+    categories: ["travel", "daily"],
+    vibeIds: ["snow_peak", "cold_nature"],
+    listedAt: "2026-03-11",
+  },
+  "micro-250-village-dawn": {
+    categories: ["travel", "daily", "music"],
+    vibeIds: ["village_morning", "slow_life"],
+    listedAt: "2026-03-10",
+  },
   "fail-1": { categories: ["comedy", "food", "daily"], vibeIds: ["kitchen_chaos"], listedAt: "2026-02-14" },
   "fail-2": {
     categories: ["comedy", "daily", "cartoon"],

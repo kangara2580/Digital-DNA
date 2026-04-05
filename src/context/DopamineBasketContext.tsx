@@ -8,6 +8,11 @@ import {
   useRef,
   useState,
 } from "react";
+import {
+  CartThumbnailFlyLayer,
+  type CartFlyItem,
+  rectFromEl,
+} from "@/components/CartThumbnailFly";
 import type { FeedVideo } from "@/data/videos";
 
 export type BuilderTimelineItem = {
@@ -18,11 +23,11 @@ export type BuilderTimelineItem = {
 type Ctx = {
   cartAnchorRef: React.RefObject<HTMLAnchorElement | null>;
   cartCount: number;
-  /** 장바구니에 담기 — 비행 애니 없이 조합기 타임라인만 갱신 */
+  /** 장바구니 아이콘까지 썸네일 비행 후 조합기 타임라인 갱신 */
   launchFromCartButton: (
-    _buttonEl: HTMLElement,
+    buttonEl: HTMLElement,
     video: FeedVideo,
-    _poster?: string,
+    poster?: string,
   ) => void;
   builderItems: BuilderTimelineItem[];
   removeBuilderItem: (key: string) => void;
@@ -45,16 +50,38 @@ export function useDopamineBasketOptional() {
 
 export function DopamineBasketProvider({ children }: { children: React.ReactNode }) {
   const cartAnchorRef = useRef<HTMLAnchorElement | null>(null);
-  const [cartCount, setCartCount] = useState(0);
   const [builderItems, setBuilderItems] = useState<BuilderTimelineItem[]>([]);
+  const [flyItems, setFlyItems] = useState<CartFlyItem[]>([]);
   const builderSeq = useRef(0);
+  const flySeq = useRef(0);
+
+  const removeFly = useCallback((id: string) => {
+    setFlyItems((items) => items.filter((x) => x.id !== id));
+  }, []);
 
   const launchFromCartButton = useCallback(
-    (_buttonEl: HTMLElement, video: FeedVideo, _poster?: string) => {
+    (buttonEl: HTMLElement, video: FeedVideo, poster?: string) => {
       if (typeof window === "undefined") return;
       const key = `b-${video.id}-${++builderSeq.current}`;
       setBuilderItems((items) => [...items, { key, video }]);
-      setCartCount((c) => Math.min(c + 1, 99));
+
+      const cartEl = cartAnchorRef.current;
+      if (!cartEl) return;
+
+      const from = rectFromEl(buttonEl);
+      const to = rectFromEl(cartEl);
+      if (from.width < 4 || from.height < 4 || to.width < 2) return;
+
+      const id = `fly-${++flySeq.current}-${Date.now()}`;
+      setFlyItems((items) => [
+        ...items,
+        {
+          id,
+          poster: poster ?? video.poster,
+          from,
+          to,
+        },
+      ]);
     },
     [],
   );
@@ -66,6 +93,8 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
   const clearBuilder = useCallback(() => {
     setBuilderItems([]);
   }, []);
+
+  const cartCount = builderItems.length;
 
   const value = useMemo(
     () => ({
@@ -80,6 +109,9 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
   );
 
   return (
-    <DopamineBasketContext.Provider value={value}>{children}</DopamineBasketContext.Provider>
+    <DopamineBasketContext.Provider value={value}>
+      {children}
+      <CartThumbnailFlyLayer items={flyItems} onRemove={removeFly} />
+    </DopamineBasketContext.Provider>
   );
 }

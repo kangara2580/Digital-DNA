@@ -20,15 +20,35 @@ try {
   process.exit(1);
 }
 
-/** Next가 출력하는 `Local: http://127.0.0.1:3001` 에서 실제 주소 추출 (포트 충돌 시 필수) */
+/** 터미널 색 이스케이프가 URL에 붙으면 ping/파싱이 실패해 Safari가 3000 등 잘못된 포트를 엽니다 */
+function stripAnsi(s) {
+  return s.replace(/\u001b\[[0-9;]*m/g, "");
+}
+
 let discoveredUrl = null;
+/** `Port 3000 is in use … using available port 3001` — Local: 줄보다 먼저 나오는 경우가 많음 */
+let portFromNextMessage = null;
 let logTail = "";
 
 function tryDiscoverUrl(chunk) {
-  logTail = (logTail + chunk).slice(-16000);
-  const m = logTail.match(/Local:\s+(https?:\/\/[^\s]+)/);
-  if (m) {
-    discoveredUrl = m[1].replace(/\/$/, "");
+  const clean = stripAnsi(chunk.toString());
+  logTail = (logTail + clean).slice(-24000);
+
+  const alt = clean.match(/using available port (\d+)/i);
+  if (alt) {
+    portFromNextMessage = Number(alt[1]);
+    discoveredUrl = `http://${host}:${portFromNextMessage}`;
+  }
+
+  const local = logTail.match(/Local:\s+(https?:\/\/[^\s]+)/);
+  if (local) {
+    const u = stripAnsi(local[1]).replace(/\/$/, "").trim();
+    try {
+      new URL(u);
+      discoveredUrl = u;
+    } catch {
+      /* ignore */
+    }
   }
 }
 
@@ -43,7 +63,6 @@ const child = spawn(process.execPath, [nextCli, ...nextArgs], {
   cwd: root,
   env: {
     ...process.env,
-    /** stdout/stderr가 파이프여도 터미널 색 유지에 도움 */
     FORCE_COLOR: process.env.FORCE_COLOR ?? "1",
   },
 });
@@ -95,46 +114,70 @@ function openDarwinBrowser(targetUrl) {
   });
 }
 
+function logOpen(url) {
+  console.log(
+    `\n\x1b[36m[dev]\x1b[0m 브라우저 주소: \x1b[1m${url}\x1b[0m (Safari가 안 뜨면 주소를 직접 열어 주세요)\n`,
+  );
+}
+
 let opened = false;
 
 (async () => {
-  for (let attempt = 0; attempt < 160; attempt++) {
+  for (let attempt = 0; attempt < 200; attempt++) {
     if (child.exitCode != null) return;
 
     const url =
       discoveredUrl ??
       (Number.isFinite(envPort) && envPort > 0
         ? `http://${host}:${envPort}`
-        : null);
+        : portFromNextMessage != null
+          ? `http://${host}:${portFromNextMessage}`
+          : null);
 
     if (url && (await pingOnce(url))) {
-      if (!opened && process.platform === "darwin") {
+      if (!opened) {
         opened = true;
-        openDarwinBrowser(url);
+        logOpen(url);
+        if (process.platform === "darwin") {
+          openDarwinBrowser(url);
+        }
       }
       return;
     }
 
-    if (!discoveredUrl && attempt > 100) {
-      for (let p = 3000; p <= 3010; p++) {
+    /* URL을 못 찾았을 때만 추측 스캔 — 높은 포트부터(대체 포트가 보통 더 큼) */
+    if (!discoveredUrl && attempt > 35) {
+      for (let p = 3015; p >= 3000; p--) {
         const guess = `http://${host}:${p}`;
         if (await pingOnce(guess)) {
-          if (!opened && process.platform === "darwin") {
+          if (!opened) {
             opened = true;
-            openDarwinBrowser(guess);
+            logOpen(guess);
+            if (process.platform === "darwin") {
+              openDarwinBrowser(guess);
+            }
           }
           return;
         }
       }
     }
 
-    await delay(200);
+    await delay(150);
   }
 
-  if (process.platform === "darwin" && !opened) {
-    const fallback = discoveredUrl ?? `http://${host}:3000`;
+  if (!opened) {
+    const fallback =
+      discoveredUrl ??
+      (portFromNextMessage != null
+        ? `http://${host}:${portFromNextMessage}`
+        : Number.isFinite(envPort) && envPort > 0
+          ? `http://${host}:${envPort}`
+          : `http://${host}:3000`);
     opened = true;
-    openDarwinBrowser(fallback);
+    logOpen(fallback);
+    if (process.platform === "darwin") {
+      openDarwinBrowser(fallback);
+    }
   }
 })();
 

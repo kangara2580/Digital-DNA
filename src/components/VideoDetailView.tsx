@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { CloneCountAnimation } from "@/components/CloneCountAnimation";
 import { RelatedDnaQuilt } from "@/components/RelatedDnaQuilt";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
+import { useRecentClips } from "@/context/RecentClipsContext";
 import type { FeedVideo } from "@/data/videos";
 import {
   clonesRemaining,
@@ -30,7 +31,12 @@ function editionTitleKo(meta: ReturnType<typeof getCommerceMeta>): string {
 
 export function VideoDetailView({ video }: { video: FeedVideo }) {
   const dopamine = useDopamineBasket();
+  const { recordView } = useRecentClips();
   const ctaRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    recordView(video.id);
+  }, [video.id, recordView]);
   const meta = getCommerceMeta(video.id);
   const remaining = clonesRemaining(meta);
   const fresh = getFreshnessForVideoId(video.id);

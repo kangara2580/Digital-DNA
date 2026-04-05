@@ -2,6 +2,7 @@
 
 import { FAILURE_OOPS_CLIPS } from "@/data/videos";
 import { OopsPlayIcon } from "./icons/SectionPlayIcons";
+import { SectionMoreLink } from "./SectionMoreLink";
 import { VideoCard } from "./VideoCard";
 
 const FAILURE_HASHTAGS = [
@@ -21,18 +22,26 @@ export function FailureOopsSection() {
       aria-labelledby="failure-oops-heading"
     >
       <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8">
-        <div className="text-left">
-          <h2
-            id="failure-oops-heading"
-            className="flex items-center gap-2.5 text-[22px] font-bold leading-snug tracking-tight text-[#0f172a] sm:gap-3 sm:text-[26px] md:text-[28px]"
-          >
-            <OopsPlayIcon className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
-            누군가의 실패와 실수
-          </h2>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600 sm:text-[16px]">
-            오히려 좋아, 0.1%의 완벽함보다 99.9%의 리얼함
-          </p>
-          <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-3.5 sm:gap-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+          <div className="min-w-0 text-left">
+            <h2
+              id="failure-oops-heading"
+              className="flex items-center gap-2.5 text-[22px] font-bold leading-snug tracking-tight text-[#0f172a] sm:gap-3 sm:text-[26px] md:text-[28px]"
+            >
+              <OopsPlayIcon className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
+              누군가의 실패와 실수
+            </h2>
+            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600 sm:text-[16px]">
+              오히려 좋아, 0.1%의 완벽함보다 99.9%의 리얼함
+            </p>
+          </div>
+          <SectionMoreLink
+            category="comedy"
+            className="shrink-0 self-stretch sm:self-center"
+          />
+        </div>
+        <div className="mt-3 text-left sm:mt-3">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {FAILURE_HASHTAGS.map((tag) => (
               <span
                 key={tag}

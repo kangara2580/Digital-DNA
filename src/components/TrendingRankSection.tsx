@@ -2,23 +2,30 @@
 
 import { TRENDING_RANK_CLIPS } from "@/data/videos";
 import { TrendingPlayIcon } from "./icons/SectionPlayIcons";
+import { SectionMoreLink } from "./SectionMoreLink";
 import { VideoCard } from "./VideoCard";
 
 export function TrendingRankSection() {
   return (
     <section className="bg-[#FFFFFF]" aria-labelledby="trending-rank-heading">
       <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8">
-        <div className="text-left">
-          <h2
-            id="trending-rank-heading"
-            className="flex items-center gap-2.5 text-[22px] font-bold leading-snug tracking-tight text-[#0f172a] sm:gap-3 sm:text-[26px] md:text-[28px]"
-          >
-            <TrendingPlayIcon className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
-            실시간 인기순위 영상
-          </h2>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600 sm:text-[16px]">
-            공식보다 앞서가는 날 것의 바이브. 지금 가장 ‘폼’ 미친 클립들만 모았어요.
-          </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+          <div className="min-w-0 text-left">
+            <h2
+              id="trending-rank-heading"
+              className="flex items-center gap-2.5 text-[22px] font-bold leading-snug tracking-tight text-[#0f172a] sm:gap-3 sm:text-[26px] md:text-[28px]"
+            >
+              <TrendingPlayIcon className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
+              실시간 인기순위 영상
+            </h2>
+            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600 sm:text-[16px]">
+              공식보다 앞서가는 날 것의 바이브. 지금 가장 ‘폼’ 미친 클립들만 모았어요.
+            </p>
+          </div>
+          <SectionMoreLink
+            category="best"
+            className="shrink-0 self-stretch sm:self-center"
+          />
         </div>
 
         <div className="mt-4 overflow-hidden rounded-lg border border-slate-200/90 bg-white shadow-sm sm:mt-5">

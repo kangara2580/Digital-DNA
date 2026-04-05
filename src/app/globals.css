@@ -31,31 +31,6 @@ body {
   }
 }
 
-/* 조각 사치 $ 아이콘 — 🫠 느낌의 아주 가벼운 ‘녹아내림’ 모션 */
-@keyframes melt-dollar-drip {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(1.4px);
-  }
-  72% {
-    transform: translateY(0.35px);
-  }
-}
-
-.melt-dollar-anim {
-  transform-box: fill-box;
-  animation: melt-dollar-drip 2.8s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .melt-dollar-anim {
-    animation: none;
-  }
-}
-
 /* 가로 피드: 얇은 스크롤바 (롱진류 슬라이더 느낌) */
 .feed-scroll {
   scroll-snap-type: x mandatory;

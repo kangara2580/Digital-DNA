@@ -1,12 +1,15 @@
 "use client";
 
+import { motion, useReducedMotion } from "framer-motion";
 import { Heart } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useRef } from "react";
 import { CloneCountAnimation } from "@/components/CloneCountAnimation";
 import { RelatedDnaQuilt } from "@/components/RelatedDnaQuilt";
 import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
+import { useWishlistOptional } from "@/context/WishlistContext";
 import type { FeedVideo } from "@/data/videos";
+import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
 import {
   clonesRemaining,
   getCommerceMeta,
@@ -19,6 +22,8 @@ type Props = {
   flush?: boolean;
   /** 촘촘한 그리드(할인 DNA 등) */
   dense?: boolean;
+  /** Micro DNA 탐색 그리드: 호버 시 살짝 확대·z-index로 인접 카드 위에 겹침 */
+  overlapOnHover?: boolean;
   /** 썸네일 좌상단 배지 문구(다른 배지와 겹치면 우측으로 이동) */
   topBadge?: string;
   /** 앵커 링크용 (연관 DNA에서 스크롤) */
@@ -29,6 +34,11 @@ type Props = {
   hideMicroDnaBadge?: boolean;
   /** 썸네일 하단 복제 지수 줄 숨김 */
   hideCloneStrip?: boolean;
+  /**
+   * true: 호버 시 무음·약 3초 구간을 반복(인스턴트 프리뷰)
+   * false: 호버 시 전체 영상 루프(카테고리 등)
+   */
+  instantPreview?: boolean;
 };
 
 function formatDuration(seconds: number): string {
@@ -64,36 +74,43 @@ export function VideoCard({
   className,
   flush,
   dense,
+  overlapOnHover,
   topBadge,
   domId,
   showRelatedQuilt,
   hideMicroDnaBadge,
   hideCloneStrip,
+  instantPreview = true,
 }: Props) {
   const dopamine = useDopamineBasketOptional();
+  const wishlist = useWishlistOptional();
+  const reduceMotion = useReducedMotion() ?? false;
   const commerce = getCommerceMeta(video.id);
   const remaining = clonesRemaining(commerce);
   const showMicro = !hideMicroDnaBadge && isMicroDna(video);
   const cartBtnRef = useRef<HTMLButtonElement>(null);
+  const liked = wishlist?.isSaved(video.id) ?? false;
   const aspectClass =
     video.orientation === "portrait"
       ? "aspect-[4/5] w-full"
       : "aspect-video w-full";
-  const ref = useRef<HTMLVideoElement>(null);
+  const previewSrc = video.previewSrc ?? video.src;
+  const segmentPreview = instantPreview === true;
+
+  const {
+    ref,
+    onTimeUpdate,
+    onEnter: previewEnter,
+    onLeave: previewLeave,
+  } = useHoverInstantPreview(segmentPreview, video, reduceMotion);
 
   const play = useCallback(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.muted = true;
-    void el.play().catch(() => {});
-  }, []);
+    previewEnter();
+  }, [previewEnter]);
 
   const pause = useCallback(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.pause();
-    el.currentTime = 0;
-  }, []);
+    previewLeave();
+  }, [previewLeave]);
 
   const shell = flush
     ? "rounded-none border-0 bg-white shadow-none"
@@ -113,10 +130,20 @@ export function VideoCard({
     ? "right-1.5 top-1.5 max-w-[min(100%-12px,6rem)] sm:right-2 sm:top-2 sm:max-w-[7rem]"
     : "left-1.5 top-1.5 max-w-[min(100%-12px,7rem)] sm:left-2 sm:top-2 sm:max-w-[9rem]";
 
+  const transitionCls =
+    overlapOnHover === true
+      ? "transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+      : "transition-shadow duration-300";
+
+  const overlapHover =
+    overlapOnHover === true
+      ? "relative z-0 hover:z-[30] hover:overflow-visible hover:-translate-y-0.5 hover:scale-[1.06] hover:shadow-xl motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100 motion-reduce:hover:shadow-md"
+      : "";
+
   return (
     <article
       id={domId}
-      className={`group flex flex-col overflow-hidden transition-shadow duration-300 ${shell} ${className ?? ""}`}
+      className={`group flex flex-col overflow-hidden ${transitionCls} ${shell} ${overlapHover} ${className ?? ""}`}
       onMouseEnter={play}
       onMouseLeave={pause}
     >
@@ -127,10 +154,11 @@ export function VideoCard({
           poster={video.poster}
           playsInline
           muted
-          loop
-          preload="metadata"
+          loop={!segmentPreview}
+          preload={segmentPreview ? "auto" : "metadata"}
+          onTimeUpdate={segmentPreview ? onTimeUpdate : undefined}
         >
-          <source src={video.src} type="video/mp4" />
+          <source src={previewSrc} type="video/mp4" />
         </video>
         <div
           className="pointer-events-none absolute inset-0 z-[1] bg-black/0 transition-colors duration-300 ease-out group-hover:bg-black/30 motion-reduce:group-hover:bg-black/25"
@@ -220,14 +248,47 @@ export function VideoCard({
               className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 ${
                 dense ? "h-8 w-8" : "h-10 w-10"
               }`}
-              aria-label="찜하기"
-              onClick={(e) => e.preventDefault()}
+              aria-label={liked ? "찜 해제" : "찜하기"}
+              aria-pressed={liked}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                wishlist?.toggle(video);
+              }}
             >
-              <Heart
-                className={`shrink-0 fill-none drop-shadow-md ${dense ? "h-6 w-6" : "h-8 w-8"}`}
-                strokeWidth={1.75}
-                aria-hidden
-              />
+              <span
+                className={`relative isolate block shrink-0 ${dense ? "h-6 w-6" : "h-8 w-8"}`}
+              >
+                {/* 찜 클릭 시에만 아래→위 채움 — fill만 써서 바깥 stroke와 동일 실루엣 */}
+                <motion.span
+                  className="absolute inset-0 overflow-hidden"
+                  initial={false}
+                  animate={{
+                    clipPath: liked
+                      ? "inset(0% 0% 0% 0%)"
+                      : "inset(0% 0% 100% 0%)",
+                  }}
+                  transition={{
+                    duration: reduceMotion ? 0 : 0.52,
+                    ease: [0.22, 0.99, 0.36, 1],
+                  }}
+                >
+                  <Heart
+                    className="block h-full w-full"
+                    fill="white"
+                    stroke="none"
+                    strokeWidth={0}
+                    aria-hidden
+                  />
+                </motion.span>
+                <Heart
+                  className="pointer-events-none absolute inset-0 z-[1] block h-full w-full drop-shadow-md"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth={1.75}
+                  aria-hidden
+                />
+              </span>
             </button>
           </div>
         </div>

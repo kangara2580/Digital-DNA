@@ -15,6 +15,8 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { createPortal } from "react-dom";
 import { SellerNotificationBell } from "@/components/SellerNotificationBell";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
+import { useRecentClips } from "@/context/RecentClipsContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhrases";
 
 const iconStroke = 1.25;
@@ -214,10 +216,14 @@ function QuickMenuIcons({
   className,
   cartAnchorRef,
   cartFillLevel = 0,
+  wishlistCount = 0,
+  recentCount = 0,
 }: {
   className?: string;
   cartAnchorRef?: React.RefObject<HTMLAnchorElement | null>;
   cartFillLevel?: number;
+  wishlistCount?: number;
+  recentCount?: number;
 }) {
   return (
     <div
@@ -262,6 +268,56 @@ function QuickMenuIcons({
             </Link>
           );
         }
+        if (href === "/recent") {
+          const ariaRecent =
+            recentCount > 0
+              ? `${label} · Recently viewed, ${recentCount > 99 ? "99+" : recentCount}`
+              : `${label} · Recently viewed`;
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`${navActionClass} relative`}
+              aria-label={ariaRecent}
+            >
+              <Icon
+                className="h-[20px] w-[20px]"
+                strokeWidth={iconStroke}
+                aria-hidden
+              />
+              {recentCount > 0 ? (
+                <span className="absolute -right-1 -top-1 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-slate-700 px-[3px] text-[8px] font-bold leading-none text-white shadow-sm ring-1 ring-white sm:h-4 sm:min-w-[16px] sm:text-[9px]">
+                  {recentCount > 99 ? "99+" : recentCount}
+                </span>
+              ) : null}
+            </Link>
+          );
+        }
+        if (href === "/wishlist") {
+          const ariaWishlist =
+            wishlistCount > 0
+              ? `${label} · Saved clips, ${wishlistCount > 99 ? "99+" : wishlistCount}`
+              : `${label} · Saved clips`;
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`${navActionClass} relative`}
+              aria-label={ariaWishlist}
+            >
+              <Icon
+                className="h-[20px] w-[20px]"
+                strokeWidth={iconStroke}
+                aria-hidden
+              />
+              {wishlistCount > 0 ? (
+                <span className="absolute -right-1 -top-1 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-rose-500 px-[3px] text-[8px] font-bold leading-none text-white shadow-sm ring-1 ring-white sm:h-4 sm:min-w-[16px] sm:text-[9px]">
+                  {wishlistCount > 99 ? "99+" : wishlistCount}
+                </span>
+              ) : null}
+            </Link>
+          );
+        }
         return (
           <Link key={href} href={href} className={navActionClass} aria-label={label}>
             <Icon
@@ -278,6 +334,8 @@ function QuickMenuIcons({
 
 export function MallTopNav() {
   const { cartAnchorRef, cartCount } = useDopamineBasket();
+  const { count: wishlistCount } = useWishlist();
+  const { count: recentCount } = useRecentClips();
   const [q, setQ] = useState("");
   const headerRef = useRef<HTMLElement>(null);
   const [compact, setCompact] = useState(false);
@@ -465,7 +523,12 @@ export function MallTopNav() {
             {!compact && (
               <div className="hidden items-center gap-0.5 sm:-mr-1 sm:flex lg:-mr-0.5">
                 <SellerNotificationBell />
-                <QuickMenuIcons cartAnchorRef={cartAnchorRef} cartFillLevel={cartCount} />
+                <QuickMenuIcons
+                  cartAnchorRef={cartAnchorRef}
+                  cartFillLevel={cartCount}
+                  wishlistCount={wishlistCount}
+                  recentCount={recentCount}
+                />
               </div>
             )}
           </div>
@@ -480,9 +543,15 @@ export function MallTopNav() {
             aria-hidden={compact}
           >
             <div className={`${!compact ? "mt-1 sm:mt-1.5" : ""}`}>
-              <h1 className="text-center text-[28px] font-bold leading-snug tracking-tight text-[#000000] sm:text-[30px]">
-                살아있는 일상의 조각을 파는 마켓
-              </h1>
+              <Link
+                href="/"
+                className="mx-auto block w-fit max-w-full rounded-sm outline-none transition-[opacity,transform] duration-200 hover:opacity-80 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2"
+                aria-label="홈 · 메인 화면으로 이동"
+              >
+                <h1 className="text-center text-[28px] font-bold leading-snug tracking-tight text-[#000000] sm:text-[30px]">
+                  살아있는 일상의 조각을 파는 마켓
+                </h1>
+              </Link>
             </div>
           </div>
 
@@ -612,7 +681,12 @@ export function MallTopNav() {
               className={`flex shrink-0 items-center gap-0.5 sm:-mr-1 lg:-mr-0.5 ${easeLayout}`}
             >
               <SellerNotificationBell compact />
-              <QuickMenuIcons cartAnchorRef={cartAnchorRef} cartFillLevel={cartCount} />
+              <QuickMenuIcons
+                cartAnchorRef={cartAnchorRef}
+                cartFillLevel={cartCount}
+                wishlistCount={wishlistCount}
+                recentCount={recentCount}
+              />
             </div>
           )}
         </div>

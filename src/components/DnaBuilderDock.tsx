@@ -89,7 +89,7 @@ export function DnaBuilderDock() {
                     </div>
                     <div
                       id="dna-builder-timeline"
-                      className="no-scrollbar flex max-h-[min(38vh,220px)] min-h-[64px] items-center gap-0 overflow-x-auto py-2"
+                      className="no-scrollbar flex max-h-[min(38vh,220px)] min-h-[72px] items-center gap-0 overflow-x-auto px-1 pb-2 pt-3"
                     >
                       {builderItems.map((item, i) => (
                         <div key={item.key} className="flex shrink-0 items-center">
@@ -102,17 +102,19 @@ export function DnaBuilderDock() {
                             </span>
                           ) : null}
                           <div className="relative flex w-[52px] flex-col items-center gap-0.5 sm:w-[58px]">
-                            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-md border border-slate-200/95 bg-slate-100 shadow-sm ring-1 ring-slate-900/5">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={item.video.poster}
-                                alt=""
-                                className="h-full w-full object-cover"
-                              />
+                            <div className="relative w-full">
+                              <div className="aspect-[4/5] w-full overflow-hidden rounded-md border border-slate-200/95 bg-slate-100 shadow-sm ring-1 ring-slate-900/5">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={item.video.poster}
+                                  alt=""
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
                               <button
                                 type="button"
                                 onClick={() => removeBuilderItem(item.key)}
-                                className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-slate-600 shadow ring-1 ring-slate-200/90 hover:bg-slate-50"
+                                className="absolute -right-1 -top-1 z-[1] flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white text-slate-600 shadow ring-1 ring-slate-200/90 hover:bg-slate-50"
                                 aria-label="타임라인에서 제거"
                               >
                                 <X className="h-3 w-3" strokeWidth={2.5} aria-hidden />
@@ -156,11 +158,6 @@ export function DnaBuilderDock() {
                       {builderItems.length}개
                     </span>
                   </p>
-                  {!expanded ? (
-                    <p className="truncate text-[10px] text-slate-500 sm:text-[11px]">
-                      위 화살표로 펼쳐서 이어 붙여 보기 · 영상 시청을 가리지 않아요
-                    </p>
-                  ) : null}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
                   <div className="hidden h-8 max-w-[120px] items-center gap-0.5 overflow-hidden sm:flex">

@@ -1,9 +1,11 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { FeedVideo } from "@/data/videos";
 import { SAMPLE_VIDEOS } from "@/data/videos";
+import { SectionMoreLink } from "@/components/SectionMoreLink";
+import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
 
 function ChevronLeft({ className }: { className?: string }) {
   return (
@@ -33,25 +35,7 @@ function ChevronRight({ className }: { className?: string }) {
   );
 }
 
-/** 활성 인덱스 기준 최단 호 길이 차이 (−n/2 … n/2) */
-function circularDelta(i: number, active: number, n: number): number {
-  if (n <= 1) return 0;
-  let d = i - active;
-  const half = n / 2;
-  if (d > half) d -= n;
-  if (d < -half) d += n;
-  return d;
-}
-
-/**
- * 수평면(XZ) 위의 정원 배치 + 각 패널을 카메라 쪽으로 회전(빌보드).
- * 넘길 때마다 같은 반지름 R 위를 따라 이동 → 2D 화면에선 원을 도는 느낌.
- */
-function circularRingPose(
-  delta: number,
-  n: number,
-  radius: number,
-): {
+type RingPose = {
   x: number;
   z: number;
   rotateY: number;
@@ -59,7 +43,17 @@ function circularRingPose(
   scale: number;
   opacity: number;
   zIndex: number;
-} {
+};
+
+/**
+ * 수평면(XZ) 위의 정원 배치 + 각 패널을 카메라 쪽으로 회전(빌보드).
+ * 메인(정면) 전용.
+ */
+function circularRingPose(
+  delta: number,
+  n: number,
+  radius: number,
+): RingPose {
   const phi = (delta * 2 * Math.PI) / Math.max(n, 1);
   const x = radius * Math.sin(phi);
   const z = radius * Math.cos(phi);
@@ -81,64 +75,74 @@ function circularRingPose(
   };
 }
 
-/** ±1 옆 카드 뒤편 대각선에 ‘대기 큐’ 한 겹 더 (로테이션 대기 느낌) */
-function diagonalWingPose(
+/** 바로 옆(±1) — 원주 각 분할 대신 고정 각으로 간격 확대 */
+function sideNeighborPose(sign: -1 | 1, radius: number): RingPose {
+  const phi = sign * 0.66;
+  return {
+    x: radius * Math.sin(phi) * 1.08,
+    z: radius * Math.cos(phi) * 0.9,
+    rotateY: -(phi * 180) / Math.PI,
+    depthFactor: 0.55,
+    scale: 0.8,
+    opacity: 0.78,
+    zIndex: 44,
+  };
+}
+
+/** 양끝 여백 채우는 대기열(±2 ~ ±4) — 멀수록 작고 흐리게 */
+function sideFarWingPose(
   side: "left" | "right",
   radius: number,
-): {
-  x: number;
-  z: number;
-  rotateY: number;
-  depthFactor: number;
-  scale: number;
-  opacity: number;
-  zIndex: number;
-} {
+  tier: 2 | 3 | 4,
+): RingPose {
   const sign = side === "left" ? -1 : 1;
-  const x = sign * radius * 0.96;
-  const z = -radius * 0.68;
-  const rotateY = sign * 26;
+  const cfg = {
+    2: { x: 1.08, z: -0.62, rot: 28, sc: 0.5, op: 0.4, zi: 24 },
+    3: { x: 1.38, z: -0.72, rot: 32, sc: 0.43, op: 0.33, zi: 20 },
+    4: { x: 1.68, z: -0.8, rot: 36, sc: 0.37, op: 0.27, zi: 16 },
+  }[tier];
   return {
-    x,
-    z,
-    rotateY,
+    x: sign * radius * cfg.x,
+    z: radius * cfg.z,
+    rotateY: sign * cfg.rot,
     depthFactor: 0.22,
-    scale: 0.52,
-    opacity: 0.38,
-    zIndex: 14,
+    scale: cfg.sc,
+    opacity: cfg.op,
+    zIndex: cfg.zi,
   };
 }
 
-/** n이 작을 때 prev2===next2 한 장만 — 중앙 뒤로 깊게 */
-function centerBackQueuePose(radius: number): {
-  x: number;
-  z: number;
-  rotateY: number;
-  depthFactor: number;
-  scale: number;
-  opacity: number;
-  zIndex: number;
-} {
-  return {
-    x: 0,
-    z: -radius * 0.78,
-    rotateY: 0,
-    depthFactor: 0.2,
-    scale: 0.48,
-    opacity: 0.34,
-    zIndex: 13,
-  };
+/** 링 옆 카드: 호버 시 앞 3초 무음 프리뷰 */
+function HighlightRingSidePreview({ video }: { video: FeedVideo }) {
+  const reduceMotion = useReducedMotion() ?? false;
+  const { ref, onTimeUpdate, onEnter, onLeave } = useHoverInstantPreview(
+    true,
+    video,
+    reduceMotion,
+  );
+  const previewSrc = video.previewSrc ?? video.src;
+  return (
+    <div
+      className="absolute inset-0"
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+    >
+      <video
+        ref={ref}
+        className="absolute inset-0 h-full w-full object-cover"
+        poster={video.poster}
+        playsInline
+        muted
+        preload="auto"
+        onTimeUpdate={onTimeUpdate}
+      >
+        <source src={previewSrc} type="video/mp4" />
+      </video>
+    </div>
+  );
 }
 
-function hiddenOffstagePose(radius: number): {
-  x: number;
-  z: number;
-  rotateY: number;
-  depthFactor: number;
-  scale: number;
-  opacity: number;
-  zIndex: number;
-} {
+function hiddenOffstagePose(radius: number): RingPose {
   return {
     x: 0,
     z: -radius * 2.4,
@@ -162,10 +166,10 @@ export function Highlight24() {
   const wrapRef = useRef<HTMLDivElement>(null);
 
   const [layout, setLayout] = useState({
-    cardW: 268,
-    cardH: 476,
-    perspective: 1750,
-    ringRadius: 300,
+    cardW: 328,
+    cardH: 584,
+    perspective: 1720,
+    ringRadius: 310,
   });
 
   /** 메인 클립과 동기된 블러 배경 영상 — 로드 전·후 부드럽게 페이드 */
@@ -176,10 +180,6 @@ export function Highlight24() {
   const n = videos.length;
   const safeIndex = n > 0 ? ((index % n) + n) % n : 0;
   const active = n > 0 ? videos[safeIndex] : undefined;
-  const prevVideo =
-    n > 0 ? videos[(safeIndex - 1 + n) % n] : undefined;
-  const nextVideo =
-    n > 0 ? videos[(safeIndex + 1 + n) % n] : undefined;
 
   const go = useCallback(
     (dir: -1 | 1) => {
@@ -196,11 +196,39 @@ export function Highlight24() {
     if (!el) return;
     const apply = () => {
       const w = el.clientWidth || 640;
-      const base = Math.min(420, Math.max(228, Math.round(w * 0.42)));
-      const cardW = base;
-      const cardH = Math.round((cardW * 16) / 9);
-      const ringRadius = Math.min(400, Math.max(248, Math.round(w * 0.46)));
-      const perspective = Math.min(2200, Math.max(1200, Math.round(w * 2.75)));
+      const vvH =
+        typeof window !== "undefined"
+          ? window.visualViewport?.height ?? window.innerHeight
+          : 820;
+
+      /**
+       * 헤더 칩 + 3D 무대 + 하단 조작줄까지 한 화면에 들어오도록 스테이지 높이 예산.
+       */
+      /** 상단 sticky 네비·섹션 패딩·하단 조작줄 여유 */
+      const sectionChrome = 220;
+      const stageBudget = Math.max(
+        288,
+        Math.min(vvH * 0.9 - sectionChrome, 620),
+      );
+      const tiltOverhead = 72;
+      const maxCardH = Math.max(268, Math.round(stageBudget - tiltOverhead));
+      const maxCardWFromH = Math.floor((maxCardH * 9) / 16);
+
+      const baseFromWidth = Math.min(560, Math.max(200, Math.round(w * 0.52)));
+      let cardW = Math.min(baseFromWidth, maxCardWFromH);
+      cardW = Math.max(200, cardW);
+      let cardH = Math.round((cardW * 16) / 9);
+      if (cardH > maxCardH) {
+        cardH = maxCardH;
+        cardW = Math.max(200, Math.round((cardH * 9) / 16));
+      }
+
+      const ringRadius = Math.min(
+        480,
+        Math.max(170, Math.round(Math.min(w * 0.48, cardW * 1.1))),
+      );
+      const perspective = Math.min(2050, Math.max(820, Math.round(w * 2.12)));
+
       setLayout({
         cardW,
         cardH,
@@ -211,7 +239,13 @@ export function Highlight24() {
     apply();
     const ro = new ResizeObserver(apply);
     ro.observe(el);
-    return () => ro.disconnect();
+    window.addEventListener("resize", apply);
+    window.visualViewport?.addEventListener("resize", apply);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", apply);
+      window.visualViewport?.removeEventListener("resize", apply);
+    };
   }, []);
 
   useEffect(() => {
@@ -256,60 +290,52 @@ export function Highlight24() {
 
   const { cardW, cardH, perspective, ringRadius } = layout;
 
-  const wingSlots = useMemo(() => {
-    if (n === 0) {
-      return {
-        prev1: 0,
-        next1: 0,
-        wingLeftIndex: null as number | null,
-        wingRightIndex: null as number | null,
-        centerBackOnly: false,
-      };
-    }
-    if (n < 3) {
-      return {
-        prev1: (safeIndex - 1 + n) % n,
-        next1: (safeIndex + 1) % n,
-        wingLeftIndex: null as number | null,
-        wingRightIndex: null as number | null,
-        centerBackOnly: false,
-      };
-    }
-    const prev1 = (safeIndex - 1 + n) % n;
-    const next1 = (safeIndex + 1) % n;
-    const prev2 = (safeIndex - 2 + n) % n;
-    const next2 = (safeIndex + 2) % n;
-    let wingLeftIndex: number | null = null;
-    if (prev2 !== safeIndex && prev2 !== prev1 && prev2 !== next1) {
-      wingLeftIndex = prev2;
-    }
-    let wingRightIndex: number | null = null;
-    if (
-      next2 !== safeIndex &&
-      next2 !== prev1 &&
-      next2 !== next1 &&
-      next2 !== wingLeftIndex
-    ) {
-      wingRightIndex = next2;
-    }
-    const centerBackOnly =
-      wingLeftIndex != null &&
-      wingRightIndex == null &&
-      prev2 === next2 &&
-      wingLeftIndex === prev2;
-    return {
-      prev1,
-      next1,
-      wingLeftIndex,
-      wingRightIndex,
-      centerBackOnly,
+  /** 메인 + ±1(넓은 간격) + 양옆 ±2~±4 대기열 — 동일 인덱스는 앞 슬롯만 */
+  const { mainPose, poseByIndex } = useMemo(() => {
+    const r = ringRadius;
+    const baseMain = circularRingPose(0, n, r);
+    /** 메인만 조금 더 크게(픽셀 예산 + 스케일) — 옆 카드 대비 주목도 */
+    const main: RingPose = {
+      ...baseMain,
+      scale: baseMain.scale * 1.26,
+      z: baseMain.z * 1.06,
+      zIndex: baseMain.zIndex + 4,
     };
-  }, [n, safeIndex]);
+    const map = new Map<number, RingPose>();
+    const assign = (idx: number, pose: RingPose) => {
+      if (idx === safeIndex) return;
+      if (map.has(idx)) return;
+      map.set(idx, pose);
+    };
 
-  if (n === 0 || !active || !prevVideo || !nextVideo) return null;
+    const p1 = (safeIndex - 1 + n) % n;
+    const n1 = (safeIndex + 1) % n;
+    const p2 = (safeIndex - 2 + n) % n;
+    const n2 = (safeIndex + 2) % n;
+    const p3 = (safeIndex - 3 + n) % n;
+    const n3 = (safeIndex + 3) % n;
+    const p4 = (safeIndex - 4 + n) % n;
+    const n4 = (safeIndex + 4) % n;
 
-  const { prev1, next1, wingLeftIndex, wingRightIndex, centerBackOnly } =
-    wingSlots;
+    assign(p1, sideNeighborPose(-1, r));
+    assign(n1, sideNeighborPose(1, r));
+    if (n >= 5) {
+      assign(p2, sideFarWingPose("left", r, 2));
+      assign(n2, sideFarWingPose("right", r, 2));
+    }
+    if (n >= 7) {
+      assign(p3, sideFarWingPose("left", r, 3));
+      assign(n3, sideFarWingPose("right", r, 3));
+    }
+    if (n >= 9) {
+      assign(p4, sideFarWingPose("left", r, 4));
+      assign(n4, sideFarWingPose("right", r, 4));
+    }
+
+    return { mainPose: main, poseByIndex: map };
+  }, [n, safeIndex, ringRadius]);
+
+  if (n < 3 || !active) return null;
 
   return (
     <section
@@ -378,8 +404,8 @@ export function Highlight24() {
         aria-hidden
       />
 
-      <div className="relative z-10 mx-auto max-w-[1800px] px-4 pb-6 pt-8 sm:px-6 sm:pb-8 sm:pt-10 lg:px-8">
-        <div className="relative z-20 mb-10 max-w-full sm:mb-11 xl:mb-6">
+      <div className="relative z-10 mx-auto max-w-[1800px] px-4 pb-4 pt-6 sm:px-6 sm:pb-5 sm:pt-7 lg:px-8">
+        <div className="relative z-20 mb-5 max-w-full sm:mb-6 md:mb-7">
           <div className="inline-flex max-w-full flex-col gap-1 rounded-l-none rounded-r-[9999px] border-2 border-white bg-black/72 py-2.5 pl-3 pr-5 shadow-[0_12px_40px_-10px_rgba(0,0,0,0.55)] backdrop-blur-md sm:gap-1.5 sm:py-3 sm:pl-4 sm:pr-7">
             <div className="flex items-baseline justify-between gap-4 pr-1">
               <h2
@@ -388,12 +414,11 @@ export function Highlight24() {
               >
                 24시간 클립 하이라이트
               </h2>
-              <Link
-                href="/"
-                className="text-legible-white shrink-0 text-[12px] font-medium leading-none text-white underline-offset-4 transition-colors hover:text-white/90 sm:text-[13px]"
-              >
-                더보기
-              </Link>
+              <SectionMoreLink
+                variant="light"
+                category="shortform"
+                className="shrink-0 !py-1.5 !pl-3 !pr-2 !text-[11px] !font-semibold sm:!py-2 sm:!text-[12px]"
+              />
             </div>
             <p className="text-legible-white max-w-xl pr-2 text-[12px] leading-snug text-white sm:text-[13px] sm:leading-relaxed">
               지금 거래되고 있는 일상 클립을 바로 넘겨 보세요
@@ -403,10 +428,10 @@ export function Highlight24() {
 
         <div
           ref={wrapRef}
-          className="relative z-10 mx-auto flex min-h-[min(64vw,560px)] max-w-5xl items-center justify-center pt-12 pb-0 sm:min-h-[min(58vw,580px)] sm:pt-14 md:pt-10 xl:pt-4"
+          className="relative z-10 mx-auto flex min-h-0 max-w-6xl items-center justify-center pt-2 pb-0 sm:max-w-7xl sm:pt-3 md:max-w-[min(100%,88rem)] md:pt-4"
           style={{
             perspective: `${perspective}px`,
-            perspectiveOrigin: "50% 36%",
+            perspectiveOrigin: "50% 38%",
           }}
         >
           <div
@@ -422,32 +447,22 @@ export function Highlight24() {
           <div
             className="relative w-full [transform-style:preserve-3d]"
             style={{
-              minHeight: cardH + 72,
-              transform: "rotateX(11deg)",
-              transformOrigin: "50% 55%",
+              minHeight: Math.round(cardH * 1.2) + 32,
+              transform: "rotateX(10deg)",
+              transformOrigin: "50% 52%",
             }}
           >
             {videos.map((v, i) => {
               const isMain = i === safeIndex;
-              const delta = circularDelta(i, safeIndex, n);
-
               const pose = isMain
-                ? circularRingPose(0, n, ringRadius)
-                : i === prev1 || i === next1
-                  ? circularRingPose(delta, n, ringRadius)
-                  : centerBackOnly && i === wingLeftIndex
-                    ? centerBackQueuePose(ringRadius)
-                    : i === wingLeftIndex
-                      ? diagonalWingPose("left", ringRadius)
-                      : i === wingRightIndex
-                        ? diagonalWingPose("right", ringRadius)
-                        : hiddenOffstagePose(ringRadius);
+                ? mainPose
+                : (poseByIndex.get(i) ?? hiddenOffstagePose(ringRadius));
 
               return (
                 <motion.div
                   key={v.id}
                   role="presentation"
-                  className={`absolute left-1/2 top-1/2 overflow-hidden rounded-2xl border bg-black/40 [transform-style:preserve-3d] ${
+                  className={`group absolute left-1/2 top-1/2 overflow-hidden rounded-2xl border bg-black/40 [transform-style:preserve-3d] ${
                     isMain
                       ? "cursor-default border-white/35 shadow-[0_32px_100px_-24px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.14)] ring-1 ring-inset ring-white/20"
                       : "cursor-pointer border-white/14 shadow-[0_28px_90px_-26px_rgba(0,0,0,0.88)]"
@@ -485,17 +500,11 @@ export function Highlight24() {
                         playsInline
                         muted
                         loop
-                        preload="metadata"
+                        preload="auto"
                         src={v.src}
                       />
                     ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={v.poster}
-                        alt=""
-                        className="absolute inset-0 h-full w-full object-cover"
-                        draggable={false}
-                      />
+                      <HighlightRingSidePreview video={v} />
                     )}
                     {!isMain && (
                       <motion.div
@@ -514,6 +523,13 @@ export function Highlight24() {
                       }`}
                     />
                     <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/12" />
+                    {v.priceWon != null ? (
+                      <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center bg-gradient-to-b from-black/50 via-black/20 to-transparent px-2 pb-6 pt-2.5 opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 motion-reduce:transition-none sm:pb-8 sm:pt-3">
+                        <span className="text-legible-white rounded-md bg-black/45 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-white ring-1 ring-white/20 sm:text-[11px]">
+                          {v.priceWon.toLocaleString("ko-KR")}원
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
                 </motion.div>
               );
@@ -542,7 +558,7 @@ export function Highlight24() {
           </div>
         </div>
 
-        <div className="mx-auto flex max-w-5xl items-center justify-center gap-6 py-6 sm:gap-10 sm:py-8">
+        <div className="mx-auto flex max-w-6xl items-center justify-center gap-5 py-4 sm:gap-8 sm:py-5 md:max-w-7xl">
           <button
             type="button"
             onClick={() => go(-1)}
