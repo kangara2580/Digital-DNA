@@ -55,9 +55,13 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
 
       const cr = cartEl.getBoundingClientRect();
       const br = buttonEl.getBoundingClientRect();
+      const iconEl = cartEl.querySelector(
+        "[data-cart-fly-target]",
+      ) as HTMLElement | null;
+      const tr = iconEl?.getBoundingClientRect() ?? cr;
       const end = {
-        x: cr.left + cr.width / 2,
-        y: cr.top + cr.height / 2,
+        x: tr.left + tr.width / 2,
+        y: tr.top + tr.height / 2 + 1,
       };
       const start = {
         x: br.left + br.width / 2,

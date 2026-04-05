@@ -45,6 +45,20 @@ export function FlyingClipParticle({
         rotate: -10,
       });
 
+      const tuckIn = async (lastRotate: number) => {
+        await controls.start({
+          x: end.x - start.x,
+          y: end.y - start.y,
+          scale: 0.08,
+          opacity: 0,
+          rotate: lastRotate * 0.35,
+          transition: {
+            duration: 0.15,
+            ease: [0.55, 0, 0.95, 0.45],
+          },
+        });
+      };
+
       if (reduceMotion) {
         await controls.start({
           scale: 1,
@@ -58,6 +72,7 @@ export function FlyingClipParticle({
           rotate: 4,
           transition: { duration: 0.32, ease: [0.4, 0, 0.2, 1] },
         });
+        await tuckIn(4);
       } else {
         await controls.start({
           scale: 1,
@@ -87,12 +102,16 @@ export function FlyingClipParticle({
           x: kx,
           y: ky,
           rotate: kr,
+          scale: 1,
+          opacity: 1,
           transition: {
             duration: 0.58,
             ease: [0.2, 0.95, 0.24, 1],
             times,
           },
         });
+        const lastR = kr[kr.length - 1] ?? 0;
+        await tuckIn(lastR);
       }
 
       finish();
@@ -115,12 +134,13 @@ export function FlyingClipParticle({
 
   return (
     <motion.div
-      className="pointer-events-none fixed z-[100000] overflow-hidden rounded-lg border-2 border-white/95 shadow-[0_8px_28px_-6px_rgba(15,23,42,0.45)]"
+      className="pointer-events-none fixed z-[100000] origin-center overflow-hidden rounded-lg border-2 border-white/95 shadow-[0_8px_28px_-6px_rgba(15,23,42,0.45)]"
       style={{
         width: SIZE,
         height: SIZE,
         left: start.x - HALF,
         top: start.y - HALF,
+        transformOrigin: "50% 50%",
         backgroundColor: poster ? undefined : "rgb(51 65 85)",
         backgroundImage: poster ? `url(${poster})` : undefined,
         backgroundSize: "cover",

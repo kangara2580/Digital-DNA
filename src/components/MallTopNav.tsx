@@ -236,7 +236,7 @@ function QuickMenuIcons({
             >
               <motion.span
                 key={cartFillLevel}
-                className="relative inline-flex"
+                className="relative inline-flex flex-col items-center"
                 initial={cartFillLevel > 0 ? { scale: 1.12 } : false}
                 animate={{ scale: 1 }}
                 transition={{
@@ -245,11 +245,17 @@ function QuickMenuIcons({
                   damping: 22,
                 }}
               >
-                <Icon
-                  className="h-[20px] w-[20px]"
-                  strokeWidth={iconStroke}
+                <span
+                  data-cart-fly-target
+                  className="inline-flex items-center justify-center"
                   aria-hidden
-                />
+                >
+                  <Icon
+                    className="h-[20px] w-[20px]"
+                    strokeWidth={iconStroke}
+                    aria-hidden
+                  />
+                </span>
                 <CartChunkMeter level={cartFillLevel} />
               </motion.span>
             </Link>

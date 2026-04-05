@@ -20,10 +20,14 @@ export function buildDopamineSpiralPath(
     const bx = sx + dx * t;
     const by = sy + dy * t;
     const envelope = Math.sin(Math.PI * t) ** 1.12;
+    /** 끝 구간에서 나선 진폭을 줄여 카트 안으로 정확히 안착 */
+    const endDamp = t < 0.76 ? 1 : (1 - t) / (1 - 0.76);
     const spiral =
-      Math.sin(t * Math.PI * 3.45) * 34 * envelope +
-      Math.sin(t * Math.PI * 1.55) * 11 * envelope +
-      Math.sin(t * Math.PI * 5.1) * 6 * envelope;
+      (Math.sin(t * Math.PI * 3.45) * 34 +
+        Math.sin(t * Math.PI * 1.55) * 11 +
+        Math.sin(t * Math.PI * 5.1) * 6) *
+      envelope *
+      endDamp;
     xs.push(bx + px * spiral);
     ys.push(by + py * spiral);
   }
