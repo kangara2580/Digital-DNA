@@ -36,7 +36,7 @@ export function FailureOopsSection() {
             {FAILURE_HASHTAGS.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[13px] font-semibold tracking-tight text-slate-800 sm:px-3.5 sm:py-1.5 sm:text-[14px]"
+                className="inline-flex items-center rounded-full border border-dashed border-amber-900/22 bg-[linear-gradient(165deg,rgb(250_248_245)_0%,rgb(254_252_232)_42%,rgb(245_240_230)_100%)] px-3 py-1 text-[13px] font-semibold tracking-tight text-stone-800 shadow-[inset_0_1px_0_rgb(255_255_255/0.65),0_0_0_1px_rgb(180_83_9/0.06)] sm:px-3.5 sm:py-1.5 sm:text-[14px]"
               >
                 {tag}
               </span>

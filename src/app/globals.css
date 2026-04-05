@@ -22,6 +22,13 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+
+  /** 흰 글씨가 밝은 배경 위로 올라갈 때 대비 확보 */
+  .text-legible-white {
+    text-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.48),
+      0 0 1px rgba(30, 41, 59, 0.42);
+  }
 }
 
 /* 가로 피드: 얇은 스크롤바 (롱진류 슬라이더 느낌) */

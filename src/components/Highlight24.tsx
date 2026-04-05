@@ -384,18 +384,18 @@ export function Highlight24() {
             <div className="flex items-baseline justify-between gap-4 pr-1">
               <h2
                 id="highlight-24-heading"
-                className="min-w-0 text-[18px] font-bold leading-tight tracking-tight text-white sm:text-[20px]"
+                className="text-legible-white min-w-0 text-[18px] font-bold leading-tight tracking-tight text-white sm:text-[20px]"
               >
                 24시간 클립 하이라이트
               </h2>
               <Link
                 href="/"
-                className="shrink-0 text-[12px] font-medium leading-none text-white underline-offset-4 transition-colors hover:text-white/90 sm:text-[13px]"
+                className="text-legible-white shrink-0 text-[12px] font-medium leading-none text-white underline-offset-4 transition-colors hover:text-white/90 sm:text-[13px]"
               >
                 더보기
               </Link>
             </div>
-            <p className="max-w-xl pr-2 text-[12px] leading-snug text-white sm:text-[13px] sm:leading-relaxed">
+            <p className="text-legible-white max-w-xl pr-2 text-[12px] leading-snug text-white sm:text-[13px] sm:leading-relaxed">
               지금 거래되고 있는 일상 클립을 바로 넘겨 보세요
             </p>
           </div>
@@ -546,26 +546,26 @@ export function Highlight24() {
           <button
             type="button"
             onClick={() => go(-1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/12 text-white backdrop-blur-sm transition hover:border-white/55 hover:bg-white/18 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/12 text-white shadow-[0_1px_3px_rgba(15,23,42,0.35)] backdrop-blur-sm transition hover:border-white/55 hover:bg-white/18 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
             aria-label="이전"
           >
-            <ChevronLeft className="h-5 w-5 text-white" />
+            <ChevronLeft className="h-5 w-5 text-white drop-shadow-[0_1px_2px_rgba(15,23,42,0.45)]" />
           </button>
           <div className="min-w-0 text-center transition-opacity duration-300 ease-out">
-            <p className="truncate text-[15px] font-semibold tracking-tight text-white sm:text-[16px]">
+            <p className="text-legible-white truncate text-[15px] font-semibold tracking-tight text-white sm:text-[16px]">
               {active?.creator ?? ""}
             </p>
-            <p className="mt-0.5 line-clamp-1 text-[11px] text-white sm:text-xs">
+            <p className="text-legible-white mt-0.5 line-clamp-1 text-[11px] text-white sm:text-xs">
               {active?.title ?? ""}
             </p>
           </div>
           <button
             type="button"
             onClick={() => go(1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/12 text-white backdrop-blur-sm transition hover:border-white/55 hover:bg-white/18 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/12 text-white shadow-[0_1px_3px_rgba(15,23,42,0.35)] backdrop-blur-sm transition hover:border-white/55 hover:bg-white/18 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
             aria-label="다음"
           >
-            <ChevronRight className="h-5 w-5 text-white" />
+            <ChevronRight className="h-5 w-5 text-white drop-shadow-[0_1px_2px_rgba(15,23,42,0.45)]" />
           </button>
         </div>
       </div>
