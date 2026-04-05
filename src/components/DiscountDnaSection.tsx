@@ -1,8 +1,8 @@
 import { VideoCard } from "@/components/VideoCard";
-import { getFlashSaleVideos, videoRowToFeedVideo } from "@/lib/flashSaleVideos";
+import { getFlashSaleVideosSafe, videoRowToFeedVideo } from "@/lib/flashSaleVideos";
 
 export async function DiscountDnaSection() {
-  const rows = await getFlashSaleVideos(24);
+  const rows = await getFlashSaleVideosSafe(24);
   if (rows.length === 0) return null;
 
   const videos = rows.map(videoRowToFeedVideo);

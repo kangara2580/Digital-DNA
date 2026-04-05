@@ -24,3 +24,12 @@ export async function getFlashSaleVideos(limit = 24): Promise<Video[]> {
     take: limit,
   });
 }
+
+/** DB 미설정·경로 오류 시 홈 500 방지 */
+export async function getFlashSaleVideosSafe(limit = 24): Promise<Video[]> {
+  try {
+    return await getFlashSaleVideos(limit);
+  } catch {
+    return [];
+  }
+}
