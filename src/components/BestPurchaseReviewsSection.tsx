@@ -20,18 +20,9 @@ export function BestPurchaseReviewsSection() {
           </p>
         </div>
 
-        <div className="relative mt-6 sm:mt-8">
+        <div className="mt-6 sm:mt-8">
           <div
-            className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-10 bg-gradient-to-r from-slate-50 to-transparent sm:w-14 lg:w-16"
-            aria-hidden
-          />
-          <div
-            className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-10 bg-gradient-to-l from-white to-transparent sm:w-14 lg:w-16"
-            aria-hidden
-          />
-
-          <div
-            className="feed-scroll feed-scroll-wide -mx-4 flex gap-4 overflow-x-auto px-4 pb-4 pt-1 sm:-mx-6 sm:gap-5 sm:px-6 lg:-mx-8 lg:px-8"
+            className="feed-scroll feed-scroll-wide -mx-4 flex gap-4 overflow-x-auto px-4 pb-7 pt-1 sm:-mx-6 sm:gap-5 sm:px-6 sm:pb-9 lg:-mx-8 lg:px-8"
             role="region"
             aria-label="베스트 구매평 가로 목록"
             tabIndex={0}
@@ -61,7 +52,7 @@ export function BestPurchaseReviewsSection() {
           </div>
         </div>
 
-        <p className="mx-auto mt-1 max-w-xl text-center text-[12px] font-medium tracking-wide text-slate-500 sm:text-[13px]">
+        <p className="mx-auto mt-3 max-w-xl text-center text-[12px] font-medium tracking-wide text-slate-500 sm:mt-4 sm:text-[13px]">
           옆으로 스크롤하여 더 많은 구매평을 확인하세요
         </p>
       </div>
