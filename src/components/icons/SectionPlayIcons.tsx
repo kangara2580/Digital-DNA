@@ -40,7 +40,8 @@ export function TrendingPlayIcon({ className }: { className?: string }) {
 }
 
 /**
- * 인기 섹션과 같은 원·슬레이트 톤 — 재생 끝이 깨져 조각이 떨어지고, 얇은 균열이 겹침.
+ * 산산조각 난 ▶ — 큰 파편 + 헤어라인 균열 + 칩 엣지 + 끝 파편 분리.
+ * (외곽은 여전히 재생 삼각형으로 읽힘)
  */
 export function OopsPlayIcon({ className }: { className?: string }) {
   return (
@@ -52,26 +53,64 @@ export function OopsPlayIcon({ className }: { className?: string }) {
       aria-hidden
     >
       <TrendingCircle />
-      {/* 본체: 끝이 깨져 들쭉날쭉한 ▶ */}
-      <path
-        d="M10.2 8.35L10.2 15.65 12.95 14.1 13.55 12.45 13.1 11.95 13.45 10.25z"
-        className="fill-slate-800"
-      />
-      {/* 원래 끝에 붙어 있던 조각 — 살짝 떨어짐 */}
-      <path
-        d="M14.85 10.95l1.53 1.1-1.58 1.23z"
-        className="fill-slate-800"
-        transform="translate(0.62 0.38) rotate(19 15.45 12.05)"
-      />
-      {/* 유리 깨짐 느낌 — ▶·원 위로 얇은 균열 */}
-      <path
-        d="M15.1 5.9l-1.35 4.05-.45.55-1.1 3.2.35.65-1.55 4.35"
-        className="stroke-slate-400"
-        strokeWidth="1.15"
+      <g className="fill-slate-800">
+        {/* 좌상 파편 — 들쭉날쭉한 윤곽 */}
+        <path d="M10.05 8.25l-.12 1.05.22 1.1-.18.95.08 1.15 1.35-.42 1.05-.88-.32-1.02-.95-.38-.42-1.05.18-.95-.08-.75z" />
+        {/* 좌하 */}
+        <path d="M9.95 12.45l-.08 1.25.15 1.55.28 1.35 1.48-.22 1.62-.72.38-.62-.72-1.05-1.18-.48-.55.35-.92-.2-.54z" />
+        {/* 중앙 덩어리 — 살짝 비틀어진 덩어리 */}
+        <path d="M11.55 10.15l1.85.55 1.25.95.32 1.05-.42 1.12-1.55.62-1.35-.18-.82-1.15.12-1.35.6-.88z" />
+        {/* 우상·우측 면 */}
+        <path d="M13.65 9.85l1.95.72 1.15.88.48.75-.28.92-1.42.35-1.28-.55-.85-.95-.08-1.12z" />
+        {/* 끝 — 분리된 칩 */}
+        <path
+          d="M14.95 11.55l1.65 1.05.35.72-.48.88-1.35.42-.72-.95.35-1.12z"
+          transform="translate(0.52 0.22) rotate(11 15.6 12.05)"
+        />
+        {/* 미세 칩 */}
+        <path
+          d="M10.85 14.95l.62.38.28.72-.35.48-.78-.15-.15-.95.38-.48z"
+          opacity={0.88}
+        />
+      </g>
+      {/* 밝은 헤어라인 — 깊은 균열 */}
+      <g
+        className="stroke-slate-100/95"
+        fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
+        opacity={0.95}
+      >
+        <path d="M10.35 9.05l.95 1.45-.22 1.18.62 1.35" strokeWidth="0.42" />
+        <path d="M11.25 11.35l1.55.28 1.25-.12" strokeWidth="0.36" />
+        <path d="M10.65 13.85l1.85-.22 1.45.52" strokeWidth="0.38" />
+        <path d="M12.55 10.55l.52 2.05 1.35 1.15" strokeWidth="0.34" />
+        <path d="M11.95 9.25l2.15 2.25 1.48.58" strokeWidth="0.32" />
+        <path d="M13.15 13.05l1.42-.48 1.08.42" strokeWidth="0.36" />
+        <path d="M10.55 11.05l2.35.65 2.05-.25" strokeWidth="0.3" />
+        <path d="M12.05 14.45l1.25-1.85 1.55.35" strokeWidth="0.28" />
+      </g>
+      {/* 보조 어두운 균열선 */}
+      <g
+        className="stroke-slate-600/55"
         fill="none"
-        opacity={0.92}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={0.7}
+      >
+        <path d="M10.15 10.65l1.05.42.88 1.22" strokeWidth="0.22" />
+        <path d="M12.85 12.05l.88 1.42.62 1.12" strokeWidth="0.2" />
+        <path d="M11.55 14.35l1.95-.55" strokeWidth="0.22" />
+        <path d="M13.45 10.95l.75 1.65" strokeWidth="0.2" />
+      </g>
+      {/* 중심이 꺼진 듯한 그림자 */}
+      <ellipse
+        cx="12.5"
+        cy="12.1"
+        rx="1.45"
+        ry="1.1"
+        className="fill-slate-950/30"
+        transform="rotate(-14 12.5 12.1)"
       />
     </svg>
   );
