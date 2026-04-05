@@ -2,7 +2,6 @@ import { BestPurchaseReviewsSection } from "@/components/BestPurchaseReviewsSect
 import { BudgetClipsSection } from "@/components/BudgetClipsSection";
 import { EditorCurationSection } from "@/components/EditorCurationSection";
 import { FailureOopsSection } from "@/components/FailureOopsSection";
-import { FloatingHuntersBar } from "@/components/FloatingHuntersBar";
 import { Highlight24 } from "@/components/Highlight24";
 import { TrendingRankSection } from "@/components/TrendingRankSection";
 import { SellerPitchBanner } from "@/components/SellerPitchBanner";
@@ -23,10 +22,9 @@ export default async function Home() {
         <VideoFeed />
         <BudgetClipsSection />
         <EditorCurationSection />
-        <BestPurchaseReviewsSection />
         <SellerPitchBanner />
         <MicroDnaExploreSection />
-        <FloatingHuntersBar />
+        <BestPurchaseReviewsSection />
       </main>
     </div>
   );

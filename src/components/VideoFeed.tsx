@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FeedVideo } from "@/data/videos";
 import { SAMPLE_VIDEOS, shuffleVideos } from "@/data/videos";
+import { isMicroDna } from "@/data/videoCommerce";
 import { RecommendMagnetIcon } from "./icons/RecommendMagnetIcon";
 import { VideoCard } from "./VideoCard";
 
@@ -26,7 +27,6 @@ function FeedRows({
             video={video}
             flush
             domId={`clip-${video.id}`}
-            showRelatedQuilt={video.id === "5"}
             className="min-w-0 w-full"
           />
         ))}
@@ -38,7 +38,6 @@ function FeedRows({
             video={video}
             flush
             domId={`clip-${video.id}`}
-            showRelatedQuilt
             className="min-w-0 w-full"
           />
         ))}
@@ -47,13 +46,25 @@ function FeedRows({
   );
 }
 
+function isRecommendFeedClip(v: FeedVideo): boolean {
+  if (v.id.startsWith("dna-")) return false;
+  if (isMicroDna(v)) return false;
+  return true;
+}
+
 export function VideoFeed() {
   const portraitBase = useMemo(
-    () => SAMPLE_VIDEOS.filter((v) => v.orientation === "portrait"),
+    () =>
+      SAMPLE_VIDEOS.filter(
+        (v) => v.orientation === "portrait" && isRecommendFeedClip(v),
+      ),
     [],
   );
   const landscapeBase = useMemo(
-    () => SAMPLE_VIDEOS.filter((v) => v.orientation === "landscape"),
+    () =>
+      SAMPLE_VIDEOS.filter(
+        (v) => v.orientation === "landscape" && isRecommendFeedClip(v),
+      ),
     [],
   );
 
