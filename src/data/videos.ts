@@ -237,7 +237,7 @@ export function shuffleVideos(list: FeedVideo[]): FeedVideo[] {
   return a;
 }
 
-/** 5,000원 이하 데모 클립(가성비 모음전) */
+/** 5,000원 이하 데모 클립(죄책감 없는 조각 사치 섹션) */
 export function clipsUnder5000Won(list: FeedVideo[]): FeedVideo[] {
   return list
     .filter((v) => (v.priceWon ?? Infinity) <= 5000)

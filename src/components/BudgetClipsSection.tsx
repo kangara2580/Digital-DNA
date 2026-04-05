@@ -15,7 +15,7 @@ export function BudgetClipsSection() {
             id="budget-clips-heading"
             className="text-[22px] font-bold leading-snug tracking-tight text-[#0f172a] sm:text-[26px] md:text-[28px]"
           >
-            5,000원 이하 &apos;가성비 조각&apos; 모음전
+            죄책감 없는 조각 사치
           </h2>
           <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600 sm:text-[16px]">
             커피 한 잔 값도 안 되는 일상의 순간들. 500원·1,000원대부터 부담 없이
