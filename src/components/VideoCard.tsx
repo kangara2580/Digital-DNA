@@ -2,6 +2,7 @@
 
 import { Heart } from "lucide-react";
 import { useCallback, useRef } from "react";
+import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
 import type { FeedVideo } from "@/data/videos";
 
 type Props = { video: FeedVideo; className?: string; flush?: boolean };
@@ -35,6 +36,8 @@ function CartIcon({ className }: { className?: string }) {
 }
 
 export function VideoCard({ video, className, flush }: Props) {
+  const dopamine = useDopamineBasketOptional();
+  const cartBtnRef = useRef<HTMLButtonElement>(null);
   const aspectClass =
     video.orientation === "portrait"
       ? "aspect-[4/5] w-full"
@@ -95,10 +98,18 @@ export function VideoCard({ video, className, flush }: Props) {
         <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center p-4">
           <div className="flex items-center justify-center gap-10 opacity-0 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 translate-y-1 group-hover:translate-y-0 group-hover:opacity-100">
             <button
+              ref={cartBtnRef}
               type="button"
               className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110"
-              aria-label="장바구니"
-              onClick={(e) => e.preventDefault()}
+              aria-label="장바구니에 담기"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const el = cartBtnRef.current;
+                if (el && dopamine) {
+                  dopamine.launchFromCartButton(el, video.poster);
+                }
+              }}
             >
               <CartIcon className="h-8 w-8 shrink-0 drop-shadow-md" />
             </button>

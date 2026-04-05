@@ -13,6 +13,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhrases";
 
 const iconStroke = 1.25;
@@ -178,27 +179,98 @@ function RotatingSearchField({
   );
 }
 
-function QuickMenuIcons({ className }: { className?: string }) {
+function CartChunkMeter({ level }: { level: number }) {
+  const slots = 5;
+  const filled = Math.min(Math.max(0, level), slots);
+  return (
+    <span
+      className="pointer-events-none absolute -bottom-0.5 left-1/2 flex -translate-x-1/2 gap-[2px]"
+      aria-hidden
+    >
+      {Array.from({ length: slots }, (_, i) => (
+        <motion.span
+          key={i}
+          className="block h-[3px] w-[3.5px] rounded-[1px] bg-slate-700"
+          initial={false}
+          animate={{
+            scale: i < filled ? 1 : 0.35,
+            opacity: i < filled ? 1 : 0.12,
+            y: i < filled ? 0 : 1,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 440,
+            damping: 24,
+            delay: i * 0.028,
+          }}
+        />
+      ))}
+    </span>
+  );
+}
+
+function QuickMenuIcons({
+  className,
+  cartAnchorRef,
+  cartFillLevel = 0,
+}: {
+  className?: string;
+  cartAnchorRef?: React.RefObject<HTMLAnchorElement | null>;
+  cartFillLevel?: number;
+}) {
   return (
     <div
       role="group"
       aria-label="나의 활동"
       className={`flex shrink-0 items-center gap-0.5 sm:gap-1 ${className ?? ""}`}
     >
-      {QUICK_MENU.map(({ href, label, Icon }) => (
-        <Link key={href} href={href} className={navActionClass} aria-label={label}>
-          <Icon
-            className="h-[20px] w-[20px]"
-            strokeWidth={iconStroke}
-            aria-hidden
-          />
-        </Link>
-      ))}
+      {QUICK_MENU.map(({ href, label, Icon }) => {
+        if (href === "/cart") {
+          return (
+            <Link
+              key={href}
+              ref={cartAnchorRef}
+              href={href}
+              className={`${navActionClass} relative`}
+              aria-label={label}
+            >
+              <motion.span
+                key={cartFillLevel}
+                className="relative inline-flex"
+                initial={cartFillLevel > 0 ? { scale: 1.12 } : false}
+                animate={{ scale: 1 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 520,
+                  damping: 22,
+                }}
+              >
+                <Icon
+                  className="h-[20px] w-[20px]"
+                  strokeWidth={iconStroke}
+                  aria-hidden
+                />
+                <CartChunkMeter level={cartFillLevel} />
+              </motion.span>
+            </Link>
+          );
+        }
+        return (
+          <Link key={href} href={href} className={navActionClass} aria-label={label}>
+            <Icon
+              className="h-[20px] w-[20px]"
+              strokeWidth={iconStroke}
+              aria-hidden
+            />
+          </Link>
+        );
+      })}
     </div>
   );
 }
 
 export function MallTopNav() {
+  const { cartAnchorRef, cartCount } = useDopamineBasket();
   const [q, setQ] = useState("");
   const headerRef = useRef<HTMLElement>(null);
   const [compact, setCompact] = useState(false);
@@ -384,7 +456,11 @@ export function MallTopNav() {
               디지털 DNA
             </Link>
             {!compact && (
-              <QuickMenuIcons className="hidden sm:-mr-1 sm:flex lg:-mr-0.5" />
+              <QuickMenuIcons
+                className="hidden sm:-mr-1 sm:flex lg:-mr-0.5"
+                cartAnchorRef={cartAnchorRef}
+                cartFillLevel={cartCount}
+              />
             )}
           </div>
 
@@ -528,6 +604,8 @@ export function MallTopNav() {
           {compact && (
             <QuickMenuIcons
               className={`shrink-0 sm:-mr-1 lg:-mr-0.5 ${easeLayout}`}
+              cartAnchorRef={cartAnchorRef}
+              cartFillLevel={cartCount}
             />
           )}
         </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { FloatingHelp } from "@/components/FloatingHelp";
 import { MallTopNav } from "@/components/MallTopNav";
+import { DopamineBasketProvider } from "@/context/DopamineBasketContext";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -20,9 +21,11 @@ export default function RootLayout({
   return (
     <html lang="ko" className={`${inter.variable} scroll-smooth`}>
       <body className="min-h-screen bg-[#FFFFFF] font-sans text-slate-900 antialiased">
-        <MallTopNav />
-        {children}
-        <FloatingHelp />
+        <DopamineBasketProvider>
+          <MallTopNav />
+          {children}
+          <FloatingHelp />
+        </DopamineBasketProvider>
       </body>
     </html>
   );
