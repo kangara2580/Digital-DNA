@@ -30,6 +30,48 @@ export const BEST_PURCHASE_REVIEWS: PurchaseReviewCard[] = [
     author: "@daily_fail_log",
     badge: "실제 활용 샷",
   },
+  {
+    id: "rv-4",
+    quote:
+      "카페 거품 ASMR 클립으로 제품 소개 영상 첫 3초를 잡았더니 이탈률이 눈에 띄게 줄었어요. 소리 하나로 분위기가 바뀌네요.",
+    author: "@brand_slice",
+    badge: "실제 활용 샷",
+  },
+  {
+    id: "rv-5",
+    quote:
+      "지하철 안내 방송 직전 정적 2초짜리 샀는데, 다큐 전환 구간에 넣으니까 긴장감이 확 살아요.",
+    author: "@docu_cut",
+    badge: "실제 활용 샷",
+  },
+  {
+    id: "rv-6",
+    quote:
+      "해변 일몰 타임랩스를 썸네일 배경으로만 썼는데 클릭률이 평소보다 높았어요. 고퀄 영상 한 컷이 효율이 좋아요.",
+    author: "@thumb_lab",
+    badge: "실제 활용 샷",
+  },
+  {
+    id: "rv-7",
+    quote:
+      "야시장 불빛 클립을 라이브 방송 인트로에 깔았더니 시청자가 '어디냐'고 물어봤어요. 분위기 연출에 딱이에요.",
+    author: "@live_mood",
+    badge: "실제 활용 샷",
+  },
+  {
+    id: "rv-8",
+    quote:
+      "설원 하이킹 풋짐만 샀는데 여행 광고 모의편집에 넣으니 클라이언트가 바로 OK. 짧은 조각이 설득력을 만들어요.",
+    author: "@pitch_editor",
+    badge: "실제 활용 샷",
+  },
+  {
+    id: "rv-9",
+    quote:
+      "강변 조깅 캠으로 러닝 앱 광고 스토리보드 채웠어요. 직접 찍기엔 날씨·시간이 아까웠는데 한 방에 해결.",
+    author: "@ad_story_k",
+    badge: "실제 활용 샷",
+  },
 ];
 
 function byId(id: string): FeedVideo {

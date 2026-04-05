@@ -20,12 +20,16 @@ export function BestPurchaseReviewsSection() {
           </p>
         </div>
 
-        <div className="no-scrollbar mt-6 flex gap-4 overflow-x-auto pb-2 pt-1 sm:mt-8 sm:gap-5">
+        <div
+          className="feed-scroll no-scrollbar -mx-4 mt-6 flex gap-4 overflow-x-auto px-4 pb-3 pt-1 sm:-mx-6 sm:mt-8 sm:gap-5 sm:px-6 lg:-mx-8 lg:px-8"
+          role="region"
+          aria-label="베스트 구매평 가로 목록"
+        >
           {BEST_PURCHASE_REVIEWS.map((card) => (
             <article
               key={card.id}
               className="snap-start shrink-0 border border-slate-200/90 bg-white p-5 shadow-sm sm:p-6"
-              style={{ width: "min(100vw - 3rem, 320px)" }}
+              style={{ width: "min(82vw, 320px)" }}
             >
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
                 <span className="rounded-md bg-[#708090]/12 px-2 py-0.5 text-[11px] font-bold text-[#5a6a78]">
