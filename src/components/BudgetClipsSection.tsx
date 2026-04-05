@@ -1,4 +1,5 @@
 import { clipsUnder5000Won, SAMPLE_VIDEOS } from "@/data/videos";
+import { MeltingDollarIcon } from "./icons/MeltingDollarIcon";
 import { VideoCard } from "./VideoCard";
 
 const BUDGET_ROW = clipsUnder5000Won(SAMPLE_VIDEOS).slice(0, 6);
@@ -13,8 +14,9 @@ export function BudgetClipsSection() {
         <div className="text-left">
           <h2
             id="budget-clips-heading"
-            className="text-[22px] font-bold leading-snug tracking-tight text-[#0f172a] sm:text-[26px] md:text-[28px]"
+            className="flex items-center gap-2.5 text-[22px] font-bold leading-snug tracking-tight text-[#0f172a] sm:gap-3 sm:text-[26px] md:text-[28px]"
           >
+            <MeltingDollarIcon className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
             죄책감 없는 조각 사치
           </h2>
           <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600 sm:text-[16px]">
