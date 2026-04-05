@@ -18,8 +18,7 @@ export function BudgetClipsSection() {
             죄책감 없는 조각 사치
           </h2>
           <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600 sm:text-[16px]">
-            커피 한 잔 값도 안 되는 일상의 순간들. 500원·1,000원대부터 부담 없이
-            담아 보세요.
+            가벼운 조각 쇼핑으로 채우는 오늘의 도파민
           </p>
         </div>
 
