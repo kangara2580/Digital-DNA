@@ -1,6 +1,7 @@
 "use client";
 
 import { TRENDING_RANK_CLIPS } from "@/data/videos";
+import { TrendingPlayIcon } from "./icons/SectionPlayIcons";
 import { VideoCard } from "./VideoCard";
 
 export function TrendingRankSection() {
@@ -10,8 +11,9 @@ export function TrendingRankSection() {
         <div className="text-left">
           <h2
             id="trending-rank-heading"
-            className="text-[22px] font-bold leading-snug tracking-tight text-[#0f172a] sm:text-[26px] md:text-[28px]"
+            className="flex items-center gap-2.5 text-[22px] font-bold leading-snug tracking-tight text-[#0f172a] sm:gap-3 sm:text-[26px] md:text-[28px]"
           >
+            <TrendingPlayIcon className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
             실시간 인기순위 영상
           </h2>
           <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600 sm:text-[16px]">
