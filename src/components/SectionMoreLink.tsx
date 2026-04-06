@@ -46,7 +46,7 @@ export function SectionMoreLink({
   const styles =
     variant === "light"
       ? "border-white/55 bg-white/12 text-white shadow-[0_2px_12px_rgba(0,0,0,0.2)] backdrop-blur-sm hover:border-white/75 hover:bg-white/22"
-      : "border-slate-200/95 bg-white text-slate-800 shadow-sm hover:border-slate-300 hover:bg-slate-50";
+      : "border border-white/15 bg-white/[0.06] text-zinc-100 shadow-none backdrop-blur-md hover:border-reels-cyan/45 hover:bg-white/10 hover:text-white";
 
   const widthCls =
     variant === "light"

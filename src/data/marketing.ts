@@ -24,6 +24,8 @@ export type PurchaseReviewCard = {
   pickTone: PurchaseReviewPickTone;
   /** 우상단 가격 메리트 (달러 톤) */
   dealBadge: string;
+  /** Kling 리스킨 전·후 비교 슬라이더 (데모 이미지) */
+  reskinCompare?: { before: string; after: string };
 };
 
 export const BEST_PURCHASE_REVIEWS: PurchaseReviewCard[] = [
@@ -37,6 +39,10 @@ export const BEST_PURCHASE_REVIEWS: PurchaseReviewCard[] = [
     pickLabel: "Viral Pick",
     pickTone: "rose",
     dealBadge: "$1 Deal",
+    reskinCompare: {
+      before: "https://picsum.photos/seed/rv1before/640/360",
+      after: "https://picsum.photos/seed/rv1after/640/360",
+    },
   },
   {
     id: "rv-2",
@@ -48,6 +54,10 @@ export const BEST_PURCHASE_REVIEWS: PurchaseReviewCard[] = [
     pickLabel: "Time Saver",
     pickTone: "sky",
     dealBadge: "Smart Buy",
+    reskinCompare: {
+      before: "https://picsum.photos/seed/rv2before/640/360",
+      after: "https://picsum.photos/seed/rv2after/640/360",
+    },
   },
   {
     id: "rv-3",
@@ -59,6 +69,10 @@ export const BEST_PURCHASE_REVIEWS: PurchaseReviewCard[] = [
     pickLabel: "Mood Boost",
     pickTone: "fuchsia",
     dealBadge: "Under $1",
+    reskinCompare: {
+      before: "https://picsum.photos/seed/rv3before/640/360",
+      after: "https://picsum.photos/seed/rv3after/640/360",
+    },
   },
   {
     id: "rv-4",

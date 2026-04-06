@@ -55,15 +55,17 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
 
   const pillClass = (active: boolean) =>
     `rounded-md px-2.5 py-1.5 font-mono text-[11px] transition-colors ${
-      active ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+      active
+        ? "bg-reels-crimson text-white"
+        : "bg-white/[0.06] text-zinc-400 hover:bg-white/10 hover:text-zinc-200"
     }`;
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="min-h-screen bg-reels-abyss text-zinc-100">
       <div className="mx-auto flex max-w-[1800px]">
-        <aside className="hidden w-[168px] shrink-0 border-r border-[#e5e7eb] [border-right-width:0.5px] md:block lg:w-[188px]">
+        <aside className="hidden w-[168px] shrink-0 border-r border-white/10 [border-right-width:0.5px] md:block lg:w-[188px]">
           <div className="sticky top-[var(--header-height,220px)] space-y-1 px-4 py-8">
-            <p className="mb-3 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-slate-400">
+            <p className="mb-3 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-600">
               정렬
             </p>
             <button
@@ -74,13 +76,13 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
               }}
               className={`flex w-full items-center justify-between rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
                 sort === "price"
-                  ? "bg-slate-100 text-slate-900"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                  ? "bg-white/10 text-zinc-100"
+                  : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
               }`}
             >
               <span>가격순</span>
               {sort === "price" ? (
-                <span className="text-[10px] text-slate-500">{priceAsc ? "↑" : "↓"}</span>
+                <span className="text-[10px] text-reels-cyan">{priceAsc ? "↑" : "↓"}</span>
               ) : null}
             </button>
             <button
@@ -88,14 +90,14 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
               onClick={() => setSort("newest")}
               className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
                 sort === "newest"
-                  ? "bg-slate-100 text-slate-900"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                  ? "bg-white/10 text-zinc-100"
+                  : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
               }`}
             >
               최신순
             </button>
 
-            <p className="mb-3 mt-8 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-slate-400">
+            <p className="mb-3 mt-8 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-600">
               판매 방식
             </p>
             {EDITION_PILLS.map((p) => (
@@ -105,8 +107,8 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                 onClick={() => setEditionFilter(p.id)}
                 className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
                   editionFilter === p.id
-                    ? "bg-slate-100 text-slate-900"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                    ? "bg-white/10 text-zinc-100"
+                    : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
                 }`}
               >
                 {p.label}
@@ -116,13 +118,13 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
         </aside>
 
         <main className="min-w-0 flex-1">
-          <header className="border-b border-[#e5e7eb] [border-bottom-width:0.5px] px-4 py-6 sm:px-6 lg:px-8">
+          <header className="border-b border-white/10 [border-bottom-width:0.5px] px-4 py-6 sm:px-6 lg:px-8">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
+                <h1 className="text-xl font-extrabold tracking-tight text-zinc-100 sm:text-2xl">
                   {label}
                 </h1>
-                <p className="mt-2 font-mono text-[11px] leading-none text-slate-500 sm:text-[12px]">
+                <p className="mt-2 font-mono text-[11px] leading-none text-zinc-500 sm:text-[12px]">
                   등록된 조각 {sorted.length}개
                 </p>
               </div>
@@ -134,7 +136,9 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                     setPriceAsc((a) => !a);
                   }}
                   className={`rounded-md px-3 py-1.5 font-mono text-[11px] ${
-                    sort === "price" ? "bg-slate-200 text-slate-900" : "bg-slate-100 text-slate-600"
+                    sort === "price"
+                      ? "bg-reels-crimson/90 text-white"
+                      : "bg-white/[0.06] text-zinc-400"
                   }`}
                 >
                   가격순{sort === "price" ? (priceAsc ? " ↑" : " ↓") : ""}
@@ -143,7 +147,9 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                   type="button"
                   onClick={() => setSort("newest")}
                   className={`rounded-md px-3 py-1.5 font-mono text-[11px] ${
-                    sort === "newest" ? "bg-slate-200 text-slate-900" : "bg-slate-100 text-slate-600"
+                    sort === "newest"
+                      ? "bg-reels-crimson/90 text-white"
+                      : "bg-white/[0.06] text-zinc-400"
                   }`}
                 >
                   최신순
@@ -151,8 +157,8 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-1.5 border-t border-[#f1f5f9] pt-4 [border-top-width:0.5px] md:hidden">
-              <span className="mr-1 self-center font-mono text-[10px] text-slate-400">판매</span>
+            <div className="mt-4 flex flex-wrap gap-1.5 border-t border-white/10 pt-4 [border-top-width:0.5px] md:hidden">
+              <span className="mr-1 self-center font-mono text-[10px] text-zinc-600">판매</span>
               {EDITION_PILLS.map((p) => (
                 <button
                   key={p.id}
@@ -167,12 +173,12 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
           </header>
 
           {sorted.length === 0 ? (
-            <p className="px-4 py-16 text-center font-mono text-[12px] text-slate-500 sm:px-6">
+            <p className="px-4 py-16 text-center font-mono text-[12px] text-zinc-500 sm:px-6">
               이 조건에 맞는 조각이 없어요.
             </p>
           ) : (
             <div
-              className="grid grid-cols-12 gap-0 border border-[#e5e7eb] [border-width:0.5px]"
+              className="grid grid-cols-12 gap-0 border border-white/10 [border-width:0.5px]"
               style={{ gridAutoFlow: "dense" as const }}
             >
               {sorted.map((video) => {
@@ -183,7 +189,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                 return (
                   <div
                     key={video.id}
-                    className={`flex min-h-0 flex-col border-b border-r border-[#e5e7eb] [border-bottom-width:0.5px] [border-right-width:0.5px] ${minH}`}
+                    className={`flex min-h-0 flex-col border-b border-r border-white/10 [border-bottom-width:0.5px] [border-right-width:0.5px] ${minH}`}
                     style={{ gridColumn: `span ${span} / span ${span}` }}
                   >
                     <VideoCard

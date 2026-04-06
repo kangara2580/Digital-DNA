@@ -185,6 +185,16 @@ const M: Record<string, VideoCatalogMeta> = {
     vibeIds: ["party_oops", "urban_fun"],
     listedAt: "2026-02-27",
   },
+  "fail-7": {
+    categories: ["comedy", "travel", "daily"],
+    vibeIds: ["beach_fail", "golden_hour"],
+    listedAt: "2026-03-02",
+  },
+  "fail-8": {
+    categories: ["comedy", "travel", "shortform"],
+    vibeIds: ["coastal_walk", "wet_street"],
+    listedAt: "2026-03-04",
+  },
 };
 
 export function getVideoCatalogMeta(id: string): VideoCatalogMeta {

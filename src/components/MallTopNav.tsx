@@ -8,37 +8,30 @@ import {
   ShoppingCart,
   User,
 } from "lucide-react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { ReelsLogo } from "@/components/ReelsLogo";
 import { SellerNotificationBell } from "@/components/SellerNotificationBell";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { useRecentClips } from "@/context/RecentClipsContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { MALL_CATEGORY_NAV_ITEMS as ITEMS } from "@/data/mallCategoryNav";
 import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhrases";
 
 const iconStroke = 1.25;
 
-/** 상단 로그인·장바구니 공통: 카테고리 칩과 같은 은은한 회색 호버 */
+/** 상단 아이콘 — 글래스 다크 */
 const navActionClass =
-  "inline-flex items-center justify-center rounded-full bg-transparent px-2.5 py-1.5 text-black transition-[background-color,color] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100/85 hover:text-slate-950 motion-reduce:duration-250";
-
-const ITEMS = [
-  { href: "/category/best", label: "베스트" },
-  { href: "/category/recommend", label: "추천" },
-  { href: "/category/daily", label: "일상" },
-  { href: "/category/shortform", label: "숏폼·릴스" },
-  { href: "/category/dance", label: "춤" },
-  { href: "/category/music", label: "노래" },
-  { href: "/category/food", label: "푸드" },
-  { href: "/category/travel", label: "여행" },
-  { href: "/category/animals", label: "동물" },
-  { href: "/category/business", label: "비즈니스" },
-  { href: "/category/comedy", label: "코미디" },
-  { href: "/category/cartoon", label: "만화" },
-] as const;
+  "inline-flex items-center justify-center rounded-full bg-transparent px-2.5 py-1.5 text-zinc-300 transition-[background-color,color] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/10 hover:text-white motion-reduce:duration-250";
 
 /** 스크롤 컴팩트 시 상단에는 베스트·추천만 노출, 나머지는 「카테고리」 메뉴로 */
 const COMPACT_PRIMARY = ITEMS.slice(0, 2);
@@ -66,8 +59,8 @@ const searchEase =
 /** 돋보기 아이콘: 호버/포커스 시 살짝 커지고 기울어지며 뜨는 느낌(마켓 검색 UX) */
 const searchIconMotion =
   "origin-[52%_54%] transition-[transform,color] duration-[320ms] ease-[cubic-bezier(0.34,1.15,0.64,1)] motion-reduce:duration-150 motion-reduce:ease-linear " +
-  "group-hover:-translate-y-0.5 group-hover:scale-[1.1] group-hover:-rotate-[10deg] group-hover:text-slate-900 " +
-  "group-focus-within:-translate-y-0.5 group-focus-within:scale-[1.1] group-focus-within:-rotate-[10deg] group-focus-within:text-slate-900 " +
+  "group-hover:-translate-y-0.5 group-hover:scale-[1.1] group-hover:-rotate-[10deg] group-hover:text-reels-cyan " +
+  "group-focus-within:-translate-y-0.5 group-focus-within:scale-[1.1] group-focus-within:-rotate-[10deg] group-focus-within:text-reels-cyan " +
   "motion-reduce:group-hover:translate-y-0 motion-reduce:group-hover:scale-100 motion-reduce:group-hover:rotate-0 " +
   "motion-reduce:group-focus-within:translate-y-0 motion-reduce:group-focus-within:scale-100 motion-reduce:group-focus-within:rotate-0";
 
@@ -123,7 +116,7 @@ function RotatingSearchField({
         placeholder=""
         autoComplete="off"
         enterKeyHint="search"
-        className={`mall-search w-full rounded-full border text-[#000000] outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,box-shadow,color] ${easeLayout} ${searchEase} border-slate-200/90 bg-slate-100/95 placeholder:text-slate-500 hover:border-slate-300 hover:bg-slate-200/90 hover:shadow-[0_2px_14px_-6px_rgba(15,23,42,0.14)] focus:border-slate-400 focus:bg-white focus:shadow-[0_4px_20px_-8px_rgba(15,23,42,0.18)] focus:ring-0 ${
+        className={`mall-search w-full rounded-full border text-zinc-100 outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,box-shadow,color] ${easeLayout} ${searchEase} border-white/15 bg-white/[0.06] placeholder:text-zinc-600 hover:border-reels-cyan/35 hover:bg-white/10 hover:shadow-[0_2px_20px_-8px_rgba(0,242,234,0.15)] focus:border-reels-cyan/50 focus:bg-white/[0.09] focus:shadow-[0_4px_24px_-8px_rgba(255,0,85,0.12)] focus:ring-0 ${
           compact
             ? "h-9 pl-3 pr-10 text-[13px]"
             : "h-11 pl-5 pr-12 text-[14px]"
@@ -132,7 +125,7 @@ function RotatingSearchField({
       />
       {showGuide ? (
         <div
-          className={`pointer-events-none absolute inset-y-0 left-0 flex items-center overflow-hidden text-left text-slate-500 ${
+          className={`pointer-events-none absolute inset-y-0 left-0 flex items-center overflow-hidden text-left text-zinc-500 ${
             compact ? "right-10 pl-3 text-[13px]" : "right-12 pl-5 text-[14px]"
           }`}
           aria-hidden
@@ -165,7 +158,7 @@ function RotatingSearchField({
         </div>
       ) : null}
       <span
-        className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-slate-500 ${
+        className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-zinc-500 ${
           compact ? "right-2.5" : "right-3.5"
         }`}
         aria-hidden
@@ -193,7 +186,7 @@ function CartChunkMeter({ level }: { level: number }) {
       {Array.from({ length: slots }, (_, i) => (
         <motion.span
           key={i}
-          className="block h-[3px] w-[3.5px] rounded-[1px] bg-slate-700"
+          className="block h-[3px] w-[3.5px] rounded-[1px] bg-reels-cyan/70"
           initial={false}
           animate={{
             scale: i < filled ? 1 : 0.35,
@@ -286,7 +279,7 @@ function QuickMenuIcons({
                 aria-hidden
               />
               {recentCount > 0 ? (
-                <span className="absolute -right-1 -top-1 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-slate-700 px-[3px] text-[8px] font-bold leading-none text-white shadow-sm ring-1 ring-white sm:h-4 sm:min-w-[16px] sm:text-[9px]">
+                <span className="absolute -right-1 -top-1 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-reels-cyan px-[3px] text-[8px] font-bold leading-none text-reels-abyss shadow-sm ring-1 ring-white/20 sm:h-4 sm:min-w-[16px] sm:text-[9px]">
                   {recentCount > 99 ? "99+" : recentCount}
                 </span>
               ) : null}
@@ -311,7 +304,7 @@ function QuickMenuIcons({
                 aria-hidden
               />
               {wishlistCount > 0 ? (
-                <span className="absolute -right-1 -top-1 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-rose-500 px-[3px] text-[8px] font-bold leading-none text-white shadow-sm ring-1 ring-white sm:h-4 sm:min-w-[16px] sm:text-[9px]">
+                <span className="absolute -right-1 -top-1 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-reels-crimson px-[3px] text-[8px] font-bold leading-none text-white shadow-sm ring-1 ring-white/30 sm:h-4 sm:min-w-[16px] sm:text-[9px]">
                   {wishlistCount > 99 ? "99+" : wishlistCount}
                 </span>
               ) : null}
@@ -333,6 +326,8 @@ function QuickMenuIcons({
 }
 
 export function MallTopNav() {
+  const { scrollY } = useScroll();
+  const heroTitleY = useTransform(scrollY, [0, 200], [0, -18]);
   const { cartAnchorRef, cartCount } = useDopamineBasket();
   const { count: wishlistCount } = useWishlist();
   const { count: recentCount } = useRecentClips();
@@ -488,15 +483,17 @@ export function MallTopNav() {
     return () => cancelHoverClose();
   }, [cancelHoverClose]);
 
-  const logoClass = `shrink-0 font-semibold tracking-tight text-[#000000] ${easeNav} ${
-    compact ? "text-[13px]" : "text-sm"
+  const logoClass = `flex shrink-0 items-center gap-2 font-extrabold tracking-tight text-zinc-100 ${easeNav} ${
+    compact ? "text-[12px]" : "text-sm"
   }`;
 
   return (
     <header
       ref={headerRef}
-      className={`sticky top-0 z-40 isolate border-b border-slate-200/80 bg-white [transform:translateZ(0)] ${easeNav} ${
-        compact ? "overflow-visible shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)]" : "shadow-none"
+      className={`sticky top-0 z-40 isolate border-b border-white/10 bg-reels-abyss/72 backdrop-blur-xl [transform:translateZ(0)] ${easeNav} ${
+        compact
+          ? "overflow-visible shadow-[0_12px_40px_-16px_rgba(255,0,85,0.18)]"
+          : "shadow-none"
       }`}
     >
       <div
@@ -518,7 +515,8 @@ export function MallTopNav() {
             }`}
           >
             <Link href="/" className={logoClass}>
-              디지털 DNA
+              <ReelsLogo size={compact ? 22 : 26} className="shrink-0" />
+              <span className="whitespace-nowrap">REELS MARKET</span>
             </Link>
             {!compact && (
               <div className="hidden items-center gap-0.5 sm:-mr-1 sm:flex lg:-mr-0.5">
@@ -545,12 +543,21 @@ export function MallTopNav() {
             <div className={`${!compact ? "mt-1 sm:mt-1.5" : ""}`}>
               <Link
                 href="/"
-                className="mx-auto block w-fit max-w-full rounded-sm outline-none transition-[opacity,transform] duration-200 hover:opacity-80 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2"
+                className="mx-auto block w-fit max-w-full rounded-sm outline-none transition-[opacity,transform] duration-200 hover:opacity-[0.9] active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-reels-cyan/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reels-abyss"
                 aria-label="홈 · 메인 화면으로 이동"
               >
-                <h1 className="text-center text-[28px] font-bold leading-snug tracking-tight text-[#000000] sm:text-[30px]">
-                  살아있는 일상의 조각을 파는 마켓
-                </h1>
+                <motion.h1
+                  style={{ y: heroTitleY }}
+                  className="text-center text-[26px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:text-[30px] md:text-[32px]"
+                >
+                  <span className="bg-gradient-to-r from-white via-zinc-100 to-zinc-400 bg-clip-text text-transparent">
+                    Buy the Motion,
+                  </span>
+                  <br />
+                  <span className="bg-gradient-to-r from-reels-crimson via-reels-cyan to-reels-crimson bg-clip-text text-transparent">
+                    Own the Moment.
+                  </span>
+                </motion.h1>
               </Link>
             </div>
           </div>
@@ -577,7 +584,7 @@ export function MallTopNav() {
               className={`flex min-w-0 items-center ${easeNav} ${
                 compact
                   ? "mt-0 flex-1 justify-center gap-1 overflow-visible border-0 py-0 sm:gap-1.5"
-                  : "no-scrollbar mt-1.5 justify-center gap-1 overflow-x-auto border-t border-slate-100 pt-1.5 sm:gap-1.5"
+                  : "no-scrollbar mt-1.5 justify-center gap-1 overflow-x-auto border-t border-white/10 pt-1.5 sm:gap-1.5"
               }`}
               aria-label="카테고리"
             >
@@ -587,7 +594,7 @@ export function MallTopNav() {
                     <Link
                       key={item.label}
                       href={item.href}
-                      className={`shrink-0 rounded-full bg-transparent font-medium text-slate-800 transition-[background-color,color,padding,font-size] ${easeLayout} hover:bg-slate-100 hover:text-slate-950 px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]`}
+                      className={`shrink-0 rounded-full border border-transparent bg-transparent font-semibold text-zinc-400 transition-[background-color,color,padding,font-size,border-color] ${easeLayout} hover:border-white/15 hover:bg-white/8 hover:text-white px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]`}
                     >
                       {item.label}
                     </Link>
@@ -608,7 +615,7 @@ export function MallTopNav() {
                       aria-haspopup="true"
                       aria-controls="mall-category-more"
                       id="mall-category-trigger"
-                      className={`inline-flex items-center gap-0.5 rounded-full bg-transparent font-medium text-slate-800 transition-[background-color,color,padding,font-size] ${easeLayout} hover:bg-slate-100 hover:text-slate-950 px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]`}
+                      className={`inline-flex items-center gap-0.5 rounded-full border border-transparent bg-transparent font-semibold text-zinc-400 transition-[background-color,color,padding,font-size,border-color] ${easeLayout} hover:border-white/15 hover:bg-white/8 hover:text-white px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]`}
                     >
                       카테고리
                       <ChevronDown
@@ -626,7 +633,7 @@ export function MallTopNav() {
                           id="mall-category-more"
                           role="region"
                           aria-labelledby="mall-category-trigger"
-                          className="rounded-xl border border-slate-200/95 bg-white shadow-[0_16px_48px_-12px_rgba(15,23,42,0.22)] transition-[opacity,transform] duration-200 ease-out"
+                          className="rounded-xl border border-white/15 bg-reels-void/95 shadow-[0_20px_50px_-12px_rgba(0,242,234,0.12)] backdrop-blur-xl transition-[opacity,transform] duration-200 ease-out"
                           style={{
                             position: "fixed",
                             top: menuPlace.top,
@@ -650,7 +657,7 @@ export function MallTopNav() {
                                     cancelHoverClose();
                                     setMoreOpen(false);
                                   }}
-                                  className={`shrink-0 whitespace-nowrap rounded-full px-1.5 py-1 text-[10px] font-medium text-slate-800 transition-colors duration-200 first:pl-2 last:pr-2 sm:px-2 sm:text-[11px] sm:first:pl-2.5 sm:last:pr-2.5 ${easeLayout} hover:bg-slate-100 hover:text-slate-950`}
+                                  className={`shrink-0 whitespace-nowrap rounded-full px-1.5 py-1 text-[10px] font-semibold text-zinc-300 transition-colors duration-200 first:pl-2 last:pr-2 sm:px-2 sm:text-[11px] sm:first:pl-2.5 sm:last:pr-2.5 ${easeLayout} hover:bg-white/10 hover:text-white`}
                                 >
                                   {item.label}
                                 </Link>
@@ -667,7 +674,7 @@ export function MallTopNav() {
                   <Link
                     key={item.label}
                     href={item.href}
-                    className={`shrink-0 rounded-full bg-transparent font-medium text-slate-800 transition-[background-color,color,padding,font-size] ${easeLayout} hover:bg-slate-100 hover:text-slate-950 px-2.5 py-1.5 text-[11px] sm:px-3 sm:py-2 sm:text-[12px]`}
+                    className={`shrink-0 rounded-full border border-transparent bg-transparent font-semibold text-zinc-400 transition-[background-color,color,padding,font-size,border-color] ${easeLayout} hover:border-white/15 hover:bg-white/8 hover:text-white px-2.5 py-1.5 text-[11px] sm:px-3 sm:py-2 sm:text-[12px]`}
                   >
                     {item.label}
                   </Link>

@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { Heart } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, type ReactNode } from "react";
 import { CloneCountAnimation } from "@/components/CloneCountAnimation";
 import { RelatedDnaQuilt } from "@/components/RelatedDnaQuilt";
 import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
@@ -39,6 +39,16 @@ type Props = {
    * false: 호버 시 전체 영상 루프(카테고리 등)
    */
   instantPreview?: boolean;
+  /**
+   * 홈 인기순위·실패 섹션 등 — 세로 9:16·여백·타이포를 릴스 마켓형으로
+   */
+  reelLayout?: boolean;
+  /**
+   * reelLayout + 인기순위 한 줄 5열 등 — 9:16 대신 3:4로 높이를 줄여 가로 스트립에 맞춤
+   */
+  reelStrip?: boolean;
+  /** 제목·가격 아래 추가 블록(인기순위 지표 등) */
+  footerExtension?: ReactNode;
 };
 
 function formatDuration(seconds: number): string {
@@ -81,6 +91,9 @@ export function VideoCard({
   hideMicroDnaBadge,
   hideCloneStrip,
   instantPreview = true,
+  reelLayout = false,
+  reelStrip = false,
+  footerExtension,
 }: Props) {
   const dopamine = useDopamineBasketOptional();
   const wishlist = useWishlistOptional();
@@ -90,10 +103,18 @@ export function VideoCard({
   const showMicro = !hideMicroDnaBadge && isMicroDna(video);
   const cartBtnRef = useRef<HTMLButtonElement>(null);
   const liked = wishlist?.isSaved(video.id) ?? false;
+  const reelAspectPortrait =
+    reelLayout && reelStrip ? "aspect-[3/4] w-full" : "aspect-[9/16] w-full";
+  const reelAspectLandscape =
+    reelLayout && reelStrip ? "aspect-[4/5] w-full" : "aspect-[9/16] w-full";
   const aspectClass =
     video.orientation === "portrait"
-      ? "aspect-[4/5] w-full"
-      : "aspect-video w-full";
+      ? reelLayout
+        ? reelAspectPortrait
+        : "aspect-[3/4] w-full"
+      : reelLayout
+        ? reelAspectLandscape
+        : "aspect-video w-full";
   const previewSrc = video.previewSrc ?? video.src;
   const segmentPreview = instantPreview === true;
 
@@ -113,10 +134,10 @@ export function VideoCard({
   }, [previewLeave]);
 
   const shell = flush
-    ? "rounded-none border-0 bg-white shadow-none"
+    ? "rounded-none border-0 bg-transparent shadow-none"
     : dense
-      ? "rounded-lg border border-slate-200/85 bg-white shadow-sm hover:shadow-md"
-      : "rounded-xl border border-slate-200/90 bg-white shadow-sm hover:shadow-md";
+      ? "rounded-lg border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-reels-cyan/25 hover:shadow-reels-cyan/20"
+      : "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-reels-crimson/20 hover:shadow-reels-crimson/25";
 
   const priceLabel =
     video.priceWon != null
@@ -132,22 +153,29 @@ export function VideoCard({
 
   const transitionCls =
     overlapOnHover === true
-      ? "transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
-      : "transition-shadow duration-300";
+      ? "transition-[transform,box-shadow] duration-[400ms] ease-in-out motion-reduce:transition-none"
+      : !dense && !flush
+        ? "transition-[transform,box-shadow] duration-[400ms] ease-in-out motion-reduce:transition-none"
+        : "transition-[box-shadow] duration-[400ms] ease-in-out";
 
   const overlapHover =
     overlapOnHover === true
       ? "relative z-0 hover:z-[30] hover:overflow-visible hover:-translate-y-0.5 hover:scale-[1.06] hover:shadow-xl motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100 motion-reduce:hover:shadow-md"
       : "";
 
+  const gridHoverScale =
+    !dense && !flush && overlapOnHover !== true
+      ? "hover:z-[2] hover:scale-[1.05] motion-reduce:hover:scale-100"
+      : "";
+
   return (
     <article
       id={domId}
-      className={`group flex flex-col overflow-hidden ${transitionCls} ${shell} ${overlapHover} ${className ?? ""}`}
+      className={`group flex flex-col overflow-hidden ${transitionCls} ${shell} ${overlapHover} ${gridHoverScale} ${className ?? ""}`}
       onMouseEnter={play}
       onMouseLeave={pause}
     >
-      <div className={`relative bg-slate-100 ${aspectClass}`}>
+      <div className={`relative bg-black/40 ${aspectClass}`}>
         <video
           ref={ref}
           className="absolute inset-0 z-0 h-full w-full object-cover"
@@ -170,13 +198,13 @@ export function VideoCard({
           aria-label={`${video.title} 상세 페이지`}
         />
         {showMicro ? (
-          <span className="pointer-events-none absolute left-1.5 top-1.5 z-[6] rounded border border-slate-300/95 bg-transparent px-1 py-[1px] text-[6.5px] font-semibold uppercase leading-tight tracking-[0.06em] text-slate-600 sm:left-2 sm:top-2 sm:px-1.5 sm:text-[7.5px]">
+          <span className="pointer-events-none absolute left-1.5 top-1.5 z-[6] rounded border border-reels-cyan/40 bg-black/55 px-1 py-[1px] text-[6.5px] font-bold uppercase leading-tight tracking-[0.06em] text-reels-cyan sm:left-2 sm:top-2 sm:px-1.5 sm:text-[7.5px]">
             Micro DNA
           </span>
         ) : null}
         {topBadge ? (
           <span
-            className={`pointer-events-none absolute z-[6] truncate rounded-full bg-slate-900/90 px-1.5 py-0.5 text-[9px] font-semibold leading-none text-white sm:px-2 sm:text-[10px] ${topBadgePos}`}
+            className={`pointer-events-none absolute z-[6] truncate rounded-full border border-reels-crimson/35 bg-reels-crimson/85 px-1.5 py-0.5 text-[9px] font-bold leading-none text-white sm:px-2 sm:text-[10px] ${topBadgePos}`}
           >
             {topBadge}
           </span>
@@ -216,18 +244,26 @@ export function VideoCard({
           </div>
         ) : null}
         <div
-          className={`pointer-events-none absolute inset-0 z-[7] flex items-center justify-center ${dense ? "p-2" : "p-4"}`}
+          className={`pointer-events-none absolute inset-0 z-[7] flex items-center justify-center ${
+            dense ? "p-2" : reelStrip ? "p-2 sm:p-3" : reelLayout ? "p-4 sm:p-6" : "p-4"
+          }`}
         >
           <div
             className={`flex items-center justify-center opacity-0 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 translate-y-1 group-hover:translate-y-0 group-hover:opacity-100 ${
-              dense ? "gap-5" : "gap-10"
+              dense ? "gap-5" : reelStrip ? "gap-4 sm:gap-6" : reelLayout ? "gap-8 sm:gap-12" : "gap-10"
             }`}
           >
             <button
               ref={cartBtnRef}
               type="button"
               className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 ${
-                dense ? "h-8 w-8" : "h-10 w-10"
+                dense
+                  ? "h-8 w-8"
+                  : reelStrip
+                    ? "h-9 w-9 sm:h-10 sm:w-10"
+                    : reelLayout
+                      ? "h-11 w-11 sm:h-12 sm:w-12"
+                      : "h-10 w-10"
               }`}
               aria-label="장바구니에 담기"
               onClick={(e) => {
@@ -240,13 +276,27 @@ export function VideoCard({
               }}
             >
               <CartIcon
-                className={`shrink-0 drop-shadow-md ${dense ? "h-6 w-6" : "h-8 w-8"}`}
+                className={`shrink-0 drop-shadow-md ${
+                  dense
+                    ? "h-6 w-6"
+                    : reelStrip
+                      ? "h-7 w-7 sm:h-8 sm:w-8"
+                      : reelLayout
+                        ? "h-9 w-9 sm:h-10 sm:w-10"
+                        : "h-8 w-8"
+                }`}
               />
             </button>
             <button
               type="button"
               className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 ${
-                dense ? "h-8 w-8" : "h-10 w-10"
+                dense
+                  ? "h-8 w-8"
+                  : reelStrip
+                    ? "h-9 w-9 sm:h-10 sm:w-10"
+                    : reelLayout
+                      ? "h-11 w-11 sm:h-12 sm:w-12"
+                      : "h-10 w-10"
               }`}
               aria-label={liked ? "찜 해제" : "찜하기"}
               aria-pressed={liked}
@@ -257,7 +307,15 @@ export function VideoCard({
               }}
             >
               <span
-                className={`relative isolate block shrink-0 ${dense ? "h-6 w-6" : "h-8 w-8"}`}
+                className={`relative isolate block shrink-0 ${
+                  dense
+                    ? "h-6 w-6"
+                    : reelStrip
+                      ? "h-7 w-7 sm:h-8 sm:w-8"
+                      : reelLayout
+                        ? "h-9 w-9 sm:h-10 sm:w-10"
+                        : "h-8 w-8"
+                }`}
               >
                 {/* 찜 클릭 시에만 아래→위 채움 — fill만 써서 바깥 stroke와 동일 실루엣 */}
                 <motion.span
@@ -295,24 +353,40 @@ export function VideoCard({
       </div>
 
       <div
-        className={`flex items-stretch border-t border-slate-200/80 bg-white ${
+        className={`flex items-stretch border-t border-white/10 bg-black/25 ${
           dense
             ? "min-h-[34px] px-1.5 py-1 sm:min-h-[36px]"
-            : "min-h-[40px] px-2 py-1.5 sm:min-h-[44px] sm:px-2.5 sm:py-2"
+            : reelStrip
+              ? "min-h-[40px] px-1.5 py-1.5 sm:min-h-[42px] sm:px-2 sm:py-2"
+              : reelLayout
+                ? "min-h-[48px] px-2.5 py-2 sm:min-h-[52px] sm:px-3 sm:py-2.5"
+                : "min-h-[40px] px-2 py-1.5 sm:min-h-[44px] sm:px-2.5 sm:py-2"
         }`}
       >
         <div className={`flex min-w-0 flex-1 items-center ${dense ? "gap-1" : "gap-2"}`}>
           <h3
-            className={`line-clamp-2 min-w-0 flex-1 text-left font-medium leading-snug text-slate-800 ${
-              dense ? "text-[10px] sm:text-[10px]" : "text-[11px] sm:text-[12px]"
+            className={`line-clamp-2 min-w-0 flex-1 text-left font-semibold leading-snug text-zinc-100 ${
+              dense
+                ? "text-[10px] sm:text-[10px]"
+                : reelStrip
+                  ? "text-[10px] sm:text-[11px]"
+                  : reelLayout
+                    ? "text-[12px] sm:text-[13px]"
+                    : "text-[11px] sm:text-[12px]"
             }`}
           >
             {video.title}
           </h3>
           {priceLabel ? (
             <span
-              className={`shrink-0 rounded-md px-1 py-0.5 text-right font-semibold tabular-nums text-slate-900 transition-[transform,background-color,color,box-shadow,font-weight] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none group-hover:scale-[1.07] group-hover:bg-slate-900 group-hover:font-bold group-hover:text-white group-hover:shadow-md motion-reduce:group-hover:scale-100 motion-reduce:group-hover:bg-transparent motion-reduce:group-hover:font-semibold motion-reduce:group-hover:text-slate-900 motion-reduce:group-hover:shadow-none ${
-                dense ? "text-[10px]" : "text-[11px] sm:text-[12px]"
+              className={`shrink-0 rounded-md px-1 py-0.5 text-right font-extrabold tabular-nums text-reels-cyan transition-[transform,background-color,color,box-shadow,font-weight] duration-[400ms] ease-in-out motion-reduce:transition-none group-hover:scale-[1.07] group-hover:bg-reels-crimson group-hover:font-extrabold group-hover:text-white group-hover:shadow-reels-crimson motion-reduce:group-hover:scale-100 motion-reduce:group-hover:bg-transparent motion-reduce:group-hover:font-extrabold motion-reduce:group-hover:text-reels-cyan motion-reduce:group-hover:shadow-none ${
+                dense
+                  ? "text-[10px]"
+                  : reelStrip
+                    ? "text-[10px] sm:text-[11px]"
+                    : reelLayout
+                      ? "text-[12px] sm:text-[13px]"
+                      : "text-[11px] sm:text-[12px]"
               }`}
             >
               {priceLabel}
@@ -320,6 +394,7 @@ export function VideoCard({
           ) : null}
         </div>
       </div>
+      {footerExtension}
       {quilt}
     </article>
   );

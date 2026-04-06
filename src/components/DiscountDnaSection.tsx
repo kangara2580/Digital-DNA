@@ -1,3 +1,4 @@
+import { FlashSaleCountdown } from "@/components/FlashSaleCountdown";
 import { SectionMoreLink } from "@/components/SectionMoreLink";
 import { VideoCard } from "@/components/VideoCard";
 import { getFlashSaleVideosSafe, videoRowToFeedVideo } from "@/lib/flashSaleVideos";
@@ -13,18 +14,21 @@ export async function DiscountDnaSection() {
       className="mx-auto w-full max-w-[1800px] px-4 pb-6 pt-2 sm:px-6 lg:px-8"
       aria-labelledby="discount-dna-heading"
     >
-      <div className="mb-3 flex flex-col gap-3 border-b border-slate-200/90 pb-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4 sm:pb-2">
+      <div className="mb-3 flex flex-col gap-3 border-b border-white/10 pb-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4 sm:pb-2">
         <div className="min-w-0 text-left">
-          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-slate-500">
-            Flash Sale
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-reels-crimson">
+              Flash Sale
+            </p>
+            <FlashSaleCountdown />
+          </div>
           <h2
             id="discount-dna-heading"
-            className="text-lg font-bold tracking-tight text-slate-900 sm:text-xl"
+            className="text-lg font-extrabold tracking-tight text-zinc-100 sm:text-xl"
           >
             할인 중인 DNA
           </h2>
-          <p className="mt-0.5 max-w-xl text-[13px] leading-snug text-slate-600">
+          <p className="mt-0.5 max-w-xl text-[13px] leading-snug text-zinc-500">
             방금 끌올된 100원 전략 조각들이 촘촘히 모여 있어요. 작은 가격 변화로 새로운 시선을
             불러보세요.
           </p>

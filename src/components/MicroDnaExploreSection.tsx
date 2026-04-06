@@ -17,7 +17,7 @@ export function MicroDnaExploreSection() {
 
   return (
     <section
-      className="border-t border-slate-200/90 bg-[#FFFFFF]"
+      className="border-t border-white/10 bg-transparent"
       aria-labelledby="micro-dna-explore-heading"
     >
       <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8">
@@ -25,11 +25,11 @@ export function MicroDnaExploreSection() {
           <div className="min-w-0 text-left">
             <h2
               id="micro-dna-explore-heading"
-              className="text-[22px] font-bold leading-snug tracking-tight text-[#0f172a] sm:text-[26px] md:text-[28px]"
+              className="text-[22px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:text-[26px] md:text-[28px]"
             >
               영감이 필요한 순간, 단 100~원만 준비하세요!
             </h2>
-            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600 sm:text-[16px]">
+            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-zinc-500 sm:text-[16px]">
               300원 이하 조각만 모았어요.
             </p>
           </div>

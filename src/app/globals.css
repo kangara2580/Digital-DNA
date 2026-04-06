@@ -1,16 +1,31 @@
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap");
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc; /* slate-50 느낌 */
-  --foreground: #0f172a; /* slate-900 */
-  /* next/font Noto_Sans_KR는 korean 서브셋 미지원 → Google Fonts 링크 + 여기서 스택 연결 */
-  --font-kr: "Noto Sans KR", ui-sans-serif, system-ui, sans-serif;
-  /* MallTopNav 실제 높이는 클라이언트에서 측정해 설정 — 초기 레이아웃용 폴백 */
+  --reels-abyss: #050505;
+  --reels-void: #0a0a0a;
+  --reels-lift: #121212;
+  --reels-crimson: #ff0055;
+  --reels-cyan: #00f2ea;
+  --reels-glass: rgba(255, 255, 255, 0.055);
+  --reels-glass-strong: rgba(255, 255, 255, 0.09);
+  --reels-border: rgba(255, 255, 255, 0.12);
+  --reels-border-hot: rgba(255, 0, 85, 0.35);
+  --background: var(--reels-abyss);
+  --foreground: #fafafa;
+  --font-pretendard: "Pretendard", ui-sans-serif, system-ui, sans-serif;
   --header-height: 220px;
+  /** md+ 틱톡형 좌측 레일 — 본문·헤더 패딩과 동기화 */
+  --reels-rail-w: 0px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --reels-rail-w: 3.5rem;
+  }
 }
 
 body {
@@ -18,25 +33,194 @@ body {
   background: var(--background);
 }
 
+::selection {
+  background-color: rgba(0, 242, 234, 0.22);
+  color: #fff;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
 
-  /** 흰 글씨가 밝은 배경 위로 올라갈 때 대비 확보 */
   .text-legible-white {
     text-shadow:
-      0 1px 2px rgba(15, 23, 42, 0.48),
-      0 0 1px rgba(30, 41, 59, 0.42);
+      0 1px 2px rgba(0, 0, 0, 0.65),
+      0 0 12px rgba(255, 0, 85, 0.25);
+  }
+
+  /** Glassmorphism 카드 — 1px 라이트 보더 */
+  .reels-glass-card {
+    background: var(--reels-glass);
+    border: 1px solid var(--reels-border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .reels-glass-card-strong {
+    background: var(--reels-glass-strong);
+    border: 1px solid var(--reels-border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /** Kling / AI CTA — 시안 네온 글로우 + 쉬머 */
+  .reels-ai-glow {
+    position: relative;
+    box-shadow:
+      0 0 0 1px rgba(0, 242, 234, 0.35),
+      0 0 24px -4px rgba(0, 242, 234, 0.55),
+      0 0 48px -12px rgba(0, 242, 234, 0.35);
+  }
+
+  .reels-ai-glow::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      110deg,
+      transparent 30%,
+      rgba(0, 242, 234, 0.5) 45%,
+      rgba(255, 0, 85, 0.25) 55%,
+      transparent 70%
+    );
+    background-size: 200% 100%;
+    animation: reels-shimmer 2.8s ease-in-out infinite;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.85;
+  }
+
+  .reels-border-gradient {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(var(--reels-lift), var(--reels-lift)) padding-box,
+      linear-gradient(135deg, rgba(255, 0, 85, 0.45), rgba(0, 242, 234, 0.35))
+        border-box;
+  }
+
+  /** 리스킨 생성 VFX — 스캔 라인 */
+  .reels-scan-overlay {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+  }
+
+  .reels-scan-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 28%;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgba(0, 242, 234, 0.12),
+      rgba(0, 242, 234, 0.35),
+      rgba(0, 242, 234, 0.12),
+      transparent
+    );
+    animation: reels-scan-move 1.35s ease-in-out infinite;
+  }
+
+  .reels-data-stream {
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 242, 234, 0.04) 2px,
+      rgba(0, 242, 234, 0.04) 3px
+    );
   }
 }
 
-/* 가로 피드: 얇은 스크롤바 (롱진류 슬라이더 느낌) */
+@keyframes reels-shimmer {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -120% 0;
+  }
+}
+
+@keyframes reels-scan-move {
+  0% {
+    top: -35%;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/** 인기순위 스트립 끝 — 더보기 셀, 스크롤 끝에서만 반짝 */
+@keyframes reels-trend-more-pulse {
+  0%,
+  100% {
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow:
+      0 0 12px rgba(0, 242, 234, 0.1),
+      inset 0 0 0 1px rgba(0, 242, 234, 0.06);
+  }
+  50% {
+    border-color: rgba(0, 242, 234, 0.5);
+    box-shadow:
+      0 0 22px rgba(0, 242, 234, 0.35),
+      0 0 36px rgba(255, 0, 85, 0.12),
+      inset 0 0 0 1px rgba(0, 242, 234, 0.2);
+  }
+}
+
+@keyframes reels-trend-more-text-glow {
+  0%,
+  100% {
+    text-shadow: 0 0 8px rgba(0, 242, 234, 0.2);
+  }
+  50% {
+    text-shadow:
+      0 0 14px rgba(0, 242, 234, 0.55),
+      0 0 24px rgba(255, 0, 85, 0.18);
+  }
+}
+
+.reels-trending-more-sparkle {
+  animation: reels-trend-more-pulse 2.5s ease-in-out infinite;
+}
+
+.reels-trending-more-sparkle .reels-trending-more-label {
+  animation: reels-trend-more-text-glow 2.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reels-trending-more-sparkle,
+  .reels-trending-more-sparkle .reels-trending-more-label {
+    animation: none;
+  }
+}
+
+/* 가로 피드 스크롤바 — 다크 + 시안 악센트 */
 .feed-scroll {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-  scrollbar-color: rgb(203 213 225) transparent;
+  scrollbar-color: rgba(0, 242, 234, 0.35) transparent;
 }
 
 .feed-scroll::-webkit-scrollbar {
@@ -49,39 +233,37 @@ body {
 
 .feed-scroll::-webkit-scrollbar-thumb {
   border-radius: 9999px;
-  background: rgb(203 213 225);
+  background: rgba(0, 242, 234, 0.28);
 }
 
 .feed-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgb(148 163 184);
+  background: rgba(255, 0, 85, 0.35);
 }
 
-/* 베스트 구매평 등: 살짝 더 긴 트랙 (부티크형 가로 리스트) */
 .feed-scroll-wide::-webkit-scrollbar {
   height: 8px;
 }
 
 .feed-scroll-wide {
   scrollbar-width: auto;
-  scrollbar-color: rgb(186 198 212) rgb(241 245 249);
+  scrollbar-color: rgba(0, 242, 234, 0.3) rgba(255, 255, 255, 0.04);
 }
 
 .feed-scroll-wide::-webkit-scrollbar-track {
   margin-inline: 0.5rem;
   border-radius: 9999px;
-  background: rgb(241 245 249);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .feed-scroll-wide::-webkit-scrollbar-thumb {
   border-radius: 9999px;
-  background: rgb(186 198 212);
+  background: rgba(0, 242, 234, 0.25);
 }
 
 .feed-scroll-wide::-webkit-scrollbar-thumb:hover {
-  background: rgb(148 163 184);
+  background: rgba(255, 0, 85, 0.3);
 }
 
-/* 상단 몰 메뉴 가로 스크롤 시 스크롤바 숨김 */
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -91,7 +273,6 @@ body {
   display: none;
 }
 
-/* Safari/WebKit: type=search 기본 둥근 UI·클리어 버튼이 커스텀 검색창과 충돌 → 제거 */
 input.mall-search[type="search"] {
   -webkit-appearance: none;
   appearance: none;

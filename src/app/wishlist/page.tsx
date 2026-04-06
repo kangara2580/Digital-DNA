@@ -87,15 +87,15 @@ export default function WishlistPage() {
   }, [entries, catalogById, sort]);
 
   return (
-    <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
-      <header className="flex flex-col gap-4 border-b border-slate-200/90 pb-8 sm:flex-row sm:items-end sm:justify-between">
+    <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 text-zinc-100 sm:px-6 sm:py-12 lg:px-8">
+      <header className="flex flex-col gap-4 border-b border-white/10 pb-8 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl">
             찜한 조각
           </h1>
-          <p className="mt-1 text-[15px] text-slate-600">
-            <span className="font-medium text-slate-800">Saved clips</span>
-            <span className="mx-1.5 text-slate-400" aria-hidden>
+          <p className="mt-1 text-[15px] text-zinc-500">
+            <span className="font-semibold text-zinc-300">Saved clips</span>
+            <span className="mx-1.5 text-zinc-600" aria-hidden>
               ·
             </span>
             카드에서 하트를 누르면 여기 모입니다. 우측 상단 하트에서도 바로 올 수
@@ -104,15 +104,15 @@ export default function WishlistPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-          <label className="flex items-center gap-2 text-[13px] text-slate-600">
+          <label className="flex items-center gap-2 text-[13px] text-zinc-500">
             <span className="sr-only">Sort order</span>
-            <span className="hidden font-medium text-slate-700 sm:inline">
+            <span className="hidden font-medium text-zinc-400 sm:inline">
               Sort
             </span>
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortValue)}
-              className="min-w-[11.5rem] cursor-pointer rounded-lg border border-slate-200/95 bg-white px-3 py-2 text-[13px] font-medium text-slate-900 shadow-sm outline-none transition-colors hover:border-slate-300 focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+              className="min-w-[11.5rem] cursor-pointer rounded-lg border border-white/15 bg-reels-void/80 px-3 py-2 text-[13px] font-medium text-zinc-100 outline-none transition-colors hover:border-reels-cyan/35 focus:border-reels-cyan/50 focus:ring-2 focus:ring-reels-cyan/25"
               aria-label="Sort saved clips"
             >
               {SORT_OPTIONS.map((o) => (
@@ -133,7 +133,7 @@ export default function WishlistPage() {
                   clear();
                 }
               }}
-              className="rounded-lg border border-slate-200/95 px-3 py-2 text-[13px] font-medium text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+              className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-reels-crimson/35 hover:bg-white/[0.06] hover:text-zinc-100"
             >
               Clear all
             </button>
@@ -142,23 +142,23 @@ export default function WishlistPage() {
       </header>
 
       {!hydrated ? (
-        <p className="mt-10 text-[14px] text-slate-500" aria-live="polite">
+        <p className="mt-10 text-[14px] text-zinc-500" aria-live="polite">
           Loading…
         </p>
       ) : rows.length === 0 ? (
         <div className="mx-auto mt-16 max-w-md text-center">
-          <p className="text-[16px] font-medium text-slate-800">
+          <p className="text-[16px] font-semibold text-zinc-200">
             No saved clips yet
           </p>
-          <p className="mt-2 text-[14px] leading-relaxed text-slate-600">
+          <p className="mt-2 text-[14px] leading-relaxed text-zinc-500">
             Explore clips and tap the heart on a card — they will appear here.
-            <span className="mt-2 block text-[13px] text-slate-500">
+            <span className="mt-2 block text-[13px] text-zinc-600">
               아직 찜한 클립이 없어요. 영상 카드에서 하트를 눌러 보세요.
             </span>
           </p>
           <Link
             href="/"
-            className="mt-6 inline-flex rounded-full bg-slate-900 px-5 py-2.5 text-[14px] font-semibold text-white hover:opacity-90"
+            className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
           >
             Browse clips
           </Link>

@@ -10,7 +10,7 @@ import {
 } from "@/components/PriceSuggestionModal";
 
 const navActionClass =
-  "inline-flex items-center justify-center rounded-full bg-transparent px-2.5 py-1.5 text-black transition-[background-color,color] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100/85 hover:text-slate-950 motion-reduce:duration-250";
+  "inline-flex items-center justify-center rounded-full bg-transparent px-2.5 py-1.5 text-zinc-300 transition-[background-color,color] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/10 hover:text-white motion-reduce:duration-250";
 
 type ApiNotification = {
   id: string;
@@ -102,35 +102,35 @@ export function SellerNotificationBell({ compact }: { compact?: boolean }) {
             aria-hidden
           />
           {unread > 0 ? (
-            <span className="absolute -right-0.5 -top-0.5 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-slate-900 px-[3px] text-[9px] font-bold leading-none text-white">
+            <span className="absolute -right-0.5 -top-0.5 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-reels-crimson px-[3px] text-[9px] font-bold leading-none text-white">
               {unread > 9 ? "9+" : unread}
             </span>
           ) : null}
         </button>
         {open && mounted ? (
           <div
-            className="absolute right-0 top-[calc(100%+6px)] z-[9998] w-[min(calc(100vw-24px),320px)] rounded-xl border border-slate-200/95 bg-white py-1 shadow-[0_16px_48px_-12px_rgba(15,23,42,0.22)]"
+            className="absolute right-0 top-[calc(100%+6px)] z-[9998] w-[min(calc(100vw-24px),320px)] rounded-xl border border-white/15 bg-reels-void/95 py-1 shadow-[0_16px_48px_-12px_rgba(0,242,234,0.15)] backdrop-blur-xl"
             role="menu"
           >
-            <p className="border-b border-slate-100 px-3 py-2 text-[12px] font-semibold text-slate-900">
+            <p className="border-b border-white/10 px-3 py-2 text-[12px] font-bold text-zinc-100">
               알림
             </p>
             <ul className="max-h-[min(50vh,320px)] overflow-y-auto">
               {items.length === 0 ? (
-                <li className="px-3 py-4 text-[13px] text-slate-500">알림이 없어요.</li>
+                <li className="px-3 py-4 text-[13px] text-zinc-500">알림이 없어요.</li>
               ) : (
                 items.map((n) => (
-                  <li key={n.id} className="border-b border-slate-50 last:border-0">
+                  <li key={n.id} className="border-b border-white/5 last:border-0">
                     <button
                       type="button"
-                      className="w-full px-3 py-2.5 text-left transition-colors hover:bg-slate-50 disabled:opacity-50"
+                      className="w-full px-3 py-2.5 text-left transition-colors hover:bg-white/[0.06] disabled:opacity-50"
                       disabled={n.type !== "PRICE_SUGGEST" || n.status !== "PENDING"}
                       onClick={() => openSuggestModal(n)}
                     >
-                      <span className="line-clamp-1 text-[13px] font-medium text-slate-900">
+                      <span className="line-clamp-1 text-[13px] font-semibold text-zinc-100">
                         {n.title}
                       </span>
-                      <span className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-slate-600">
+                      <span className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-zinc-500">
                         {n.body}
                       </span>
                       {n.status === "ACCEPTED" ? (

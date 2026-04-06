@@ -286,15 +286,27 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
 ];
 
-/** 실시간 인기순위 데모 — 세로 클립 6개 고정 순서(실제 서비스에서는 랭킹 API로 교체) */
-export const TRENDING_RANK_CLIPS: FeedVideo[] = [
+/** 인기순위 상단 5슬롯 — 기존과 동일 순서 */
+const TRENDING_RANK_TOP_FIVE: FeedVideo[] = [
   SAMPLE_VIDEOS[0],
   SAMPLE_VIDEOS[2],
   SAMPLE_VIDEOS[4],
   SAMPLE_VIDEOS[6],
   SAMPLE_VIDEOS[8],
-  SAMPLE_VIDEOS[10],
 ];
+
+const TRENDING_PORTRAIT_POOL = SAMPLE_VIDEOS.filter(
+  (v) => v.orientation === "portrait",
+);
+
+/** 실시간 인기순위 데모 — 상위 5 + 추가 30 = 35개 가로 스크롤(실서비스는 랭킹 API로 교체) */
+export const TRENDING_RANK_CLIPS: FeedVideo[] = (() => {
+  const out: FeedVideo[] = [...TRENDING_RANK_TOP_FIVE];
+  for (let i = 0; i < 30; i++) {
+    out.push(TRENDING_PORTRAIT_POOL[i % TRENDING_PORTRAIT_POOL.length]);
+  }
+  return out;
+})();
 
 /** #실패와실수 카테고리 데모 클립(제목·해시태그만 테마에 맞춤, 미디어는 샘플 재사용) */
 export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
@@ -363,6 +375,28 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
     orientation: "portrait",
     durationSec: 14,
     priceWon: 790,
+  },
+  {
+    id: "fail-7",
+    title: "해변에서 런닝하다 모래에 꽂힘",
+    creator: "@sand_face",
+    src: "https://videos.pexels.com/video-files/1409899/1409899-hd_1920_1080_25fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/1683492/pexels-photo-1683492.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    durationSec: 18,
+    priceWon: 640,
+  },
+  {
+    id: "fail-8",
+    title: "셀카 찍다가 파도에 휩쓸린 순간",
+    creator: "@wave_oops",
+    src: "https://videos.pexels.com/video-files/3571264/3571264-hd_1920_1080_30fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/2387873/pexels-photo-2387873.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    durationSec: 12,
+    priceWon: 820,
   },
 ];
 

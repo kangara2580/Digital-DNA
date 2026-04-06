@@ -48,6 +48,8 @@ const COMMERCE: Record<string, VideoCommerceMeta> = {
   "fail-4": { salesCount: 156, edition: "open" },
   "fail-5": { salesCount: 3, edition: "limited", editionCap: 15 },
   "fail-6": { salesCount: 444, edition: "open" },
+  "fail-7": { salesCount: 198, edition: "open" },
+  "fail-8": { salesCount: 67, edition: "batch", editionCap: 40 },
 };
 
 export function getCommerceMeta(id: string): VideoCommerceMeta {

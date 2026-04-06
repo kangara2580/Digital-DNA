@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "clean": "rm -rf .next",
     "dev": "node scripts/dev-open-safari.mjs",
     "dna": "npm run dev",
     "dev:3001": "next dev -p 3001 -H 127.0.0.1",

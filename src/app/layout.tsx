@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { DnaBuilderDock } from "@/components/DnaBuilderDock";
 import { FloatingHelp } from "@/components/FloatingHelp";
 import { MallTopNav } from "@/components/MallTopNav";
+import { ReelsLeftRail } from "@/components/ReelsLeftRail";
 import { DopamineBasketProvider } from "@/context/DopamineBasketContext";
 import { RecentClipsProvider } from "@/context/RecentClipsContext";
 import { WishlistProvider } from "@/context/WishlistContext";
@@ -11,9 +12,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "디지털 DNA — 누구나 사고팔 수 있는 동영상 쇼핑몰",
+  title: "REELS MARKET — Buy the Motion, Own the Moment",
   description:
-    "크리에이터·일상 클립까지. 베스트·세일·트렌드 릴스를 한곳에서. 디지털 DNA에서 영상을 사고팔아 보세요.",
+    "모션 권리를 사고 Kling 3.0으로 리스킨하세요. 베스트·플래시 세일·상황 큐레이션 릴스 마켓.",
 };
 
 export default function RootLayout({
@@ -23,14 +24,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={`${inter.variable} scroll-smooth`}>
-      <body className="min-h-screen bg-[#FFFFFF] font-sans text-slate-900 antialiased">
+      <body className="min-h-screen bg-reels-abyss font-sans text-zinc-100 antialiased">
         <WishlistProvider>
           <RecentClipsProvider>
           <DopamineBasketProvider>
-            <MallTopNav />
-            {children}
-            <DnaBuilderDock />
-            <FloatingHelp />
+            <ReelsLeftRail />
+            <div className="min-w-0 md:pl-[var(--reels-rail-w)]">
+              <MallTopNav />
+              {children}
+              <DnaBuilderDock />
+              <FloatingHelp />
+            </div>
           </DopamineBasketProvider>
           </RecentClipsProvider>
         </WishlistProvider>

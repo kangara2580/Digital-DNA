@@ -43,11 +43,11 @@ const easeExpand = "duration-[1600ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-
 
 /** 맨 위로: 살짝만 비치게 하되 아이콘 대비 확보(전체 opacity 금지) */
 const scrollTopShell =
-  "border border-slate-200/90 bg-white/95 text-slate-900 shadow-[0_10px_36px_-16px_rgba(15,23,42,0.34)] backdrop-blur-md";
+  "border border-white/15 bg-reels-void/90 text-zinc-100 shadow-[0_10px_36px_-16px_rgba(0,242,234,0.18)] backdrop-blur-xl";
 
 /** 도움말 펼침: 자식 opacity 애니메이션을 위해 부모에 opacity 금지(배경만 /95) */
 const helpLinkShell =
-  "border border-slate-200/90 bg-white/95 text-slate-800 shadow-[0_12px_40px_-18px_rgba(15,23,42,0.35)] backdrop-blur-md";
+  "border border-white/15 bg-reels-void/92 text-zinc-200 shadow-[0_12px_40px_-18px_rgba(255,0,85,0.12)] backdrop-blur-xl";
 
 export function FloatingHelp() {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -86,14 +86,14 @@ export function FloatingHelp() {
         type="button"
         onClick={scrollToTop}
         aria-label="맨 위로 가기"
-        className={`flex h-11 w-11 items-center justify-center rounded-full ${scrollTopShell} scale-95 opacity-0 transition-[opacity,transform,box-shadow] duration-300 ease-out hover:border-[#708090]/40 hover:bg-white hover:shadow-[0_14px_40px_-14px_rgba(112,128,144,0.28)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#708090] motion-reduce:transition-none ${
+        className={`flex h-11 w-11 items-center justify-center rounded-full ${scrollTopShell} scale-95 opacity-0 transition-[opacity,transform,box-shadow] duration-[400ms] ease-in-out hover:border-reels-cyan/45 hover:bg-white/8 hover:shadow-reels-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reels-cyan motion-reduce:transition-none ${
           showScrollTop
             ? "pointer-events-auto scale-100 opacity-100"
             : "pointer-events-none"
         }`}
       >
         <ChevronUp
-          className="h-[18px] w-[18px] shrink-0 text-slate-900"
+          className="h-[18px] w-[18px] shrink-0 text-reels-cyan"
           strokeWidth={2.25}
           aria-hidden
         />
@@ -102,15 +102,15 @@ export function FloatingHelp() {
       <a
         href="#"
         onClick={(e) => e.preventDefault()}
-        className={`group pointer-events-auto flex h-14 max-w-[3.5rem] flex-row-reverse items-center overflow-hidden rounded-full ${helpLinkShell} transition-[max-width,box-shadow,border-color,background-color] ${easeExpand} hover:max-w-[min(92vw,20rem)] hover:border-[#708090]/40 hover:bg-slate-50 hover:shadow-[0_18px_50px_-16px_rgba(112,128,144,0.25)] focus-visible:max-w-[min(92vw,20rem)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#708090]`}
+        className={`group pointer-events-auto flex h-14 max-w-[3.5rem] flex-row-reverse items-center overflow-hidden rounded-full ${helpLinkShell} transition-[max-width,box-shadow,border-color,background-color] duration-[400ms] ease-in-out ${easeExpand} hover:max-w-[min(92vw,20rem)] hover:border-reels-cyan/40 hover:bg-white/8 hover:shadow-reels-cyan focus-visible:max-w-[min(92vw,20rem)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reels-cyan`}
         aria-label="도움이 필요하시나요? 고객 지원 열기"
       >
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[#708090] transition-colors duration-500 group-hover:bg-[#708090]/10">
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-reels-cyan/15 text-reels-cyan transition-colors duration-500 group-hover:bg-reels-cyan/25">
           <StylizedBell className="block h-[22px] w-[22px] shrink-0" />
         </span>
         <span className="flex min-h-14 min-w-0 flex-1 items-center justify-end overflow-hidden pl-2 pr-2">
           <span
-            className={`whitespace-nowrap pl-3 pr-2 text-right text-[13px] font-medium tracking-tight text-[#708090] opacity-0 transition-[opacity,transform] duration-[1640ms] ease-[cubic-bezier(0.22,1,0.36,1)] delay-0 motion-reduce:transition-none translate-x-1.5 group-hover:translate-x-0 group-hover:opacity-100 group-hover:delay-[280ms] group-focus-visible:translate-x-0 group-focus-visible:opacity-100 group-focus-visible:delay-[280ms]`}
+            className={`whitespace-nowrap pl-3 pr-2 text-right text-[13px] font-semibold tracking-tight text-zinc-300 opacity-0 transition-[opacity,transform] duration-[1640ms] ease-[cubic-bezier(0.22,1,0.36,1)] delay-0 motion-reduce:transition-none translate-x-1.5 group-hover:translate-x-0 group-hover:opacity-100 group-hover:delay-[280ms] group-focus-visible:translate-x-0 group-focus-visible:opacity-100 group-focus-visible:delay-[280ms]`}
           >
             도움이 필요하시나요?
           </span>

@@ -87,15 +87,15 @@ export default function RecentPage() {
   }, [entries, catalogById, sort]);
 
   return (
-    <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
-      <header className="flex flex-col gap-4 border-b border-slate-200/90 pb-8 sm:flex-row sm:items-end sm:justify-between">
+    <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 text-zinc-100 sm:px-6 sm:py-12 lg:px-8">
+      <header className="flex flex-col gap-4 border-b border-white/10 pb-8 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl">
             최근 본 조각
           </h1>
-          <p className="mt-1 text-[15px] text-slate-600">
-            <span className="font-medium text-slate-800">Recently viewed</span>
-            <span className="mx-1.5 text-slate-400" aria-hidden>
+          <p className="mt-1 text-[15px] text-zinc-500">
+            <span className="font-semibold text-zinc-300">Recently viewed</span>
+            <span className="mx-1.5 text-zinc-600" aria-hidden>
               ·
             </span>
             조각 상세 페이지를 열면 자동으로 여기 쌓입니다. 우측 상단 시계
@@ -104,15 +104,15 @@ export default function RecentPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-          <label className="flex items-center gap-2 text-[13px] text-slate-600">
+          <label className="flex items-center gap-2 text-[13px] text-zinc-500">
             <span className="sr-only">Sort order</span>
-            <span className="hidden font-medium text-slate-700 sm:inline">
+            <span className="hidden font-medium text-zinc-400 sm:inline">
               Sort
             </span>
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortValue)}
-              className="min-w-[11.5rem] cursor-pointer rounded-lg border border-slate-200/95 bg-white px-3 py-2 text-[13px] font-medium text-slate-900 shadow-sm outline-none transition-colors hover:border-slate-300 focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+              className="min-w-[11.5rem] cursor-pointer rounded-lg border border-white/15 bg-reels-void/80 px-3 py-2 text-[13px] font-medium text-zinc-100 outline-none transition-colors hover:border-reels-cyan/35 focus:border-reels-cyan/50 focus:ring-2 focus:ring-reels-cyan/25"
               aria-label="Sort recently viewed clips"
             >
               {SORT_OPTIONS.map((o) => (
@@ -133,7 +133,7 @@ export default function RecentPage() {
                   clear();
                 }
               }}
-              className="rounded-lg border border-slate-200/95 px-3 py-2 text-[13px] font-medium text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+              className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-reels-crimson/35 hover:bg-white/[0.06] hover:text-zinc-100"
             >
               Clear all
             </button>
@@ -142,23 +142,23 @@ export default function RecentPage() {
       </header>
 
       {!hydrated ? (
-        <p className="mt-10 text-[14px] text-slate-500" aria-live="polite">
+        <p className="mt-10 text-[14px] text-zinc-500" aria-live="polite">
           Loading…
         </p>
       ) : rows.length === 0 ? (
         <div className="mx-auto mt-16 max-w-md text-center">
-          <p className="text-[16px] font-medium text-slate-800">
+          <p className="text-[16px] font-semibold text-zinc-200">
             No recently viewed clips
           </p>
-          <p className="mt-2 text-[14px] leading-relaxed text-slate-600">
+          <p className="mt-2 text-[14px] leading-relaxed text-zinc-500">
             Open any clip detail page — it will show up here automatically.
-            <span className="mt-2 block text-[13px] text-slate-500">
+            <span className="mt-2 block text-[13px] text-zinc-600">
               아직 본 조각이 없어요. 마음에 드는 클립을 열어 보세요.
             </span>
           </p>
           <Link
             href="/"
-            className="mt-6 inline-flex rounded-full bg-slate-900 px-5 py-2.5 text-[14px] font-semibold text-white hover:opacity-90"
+            className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
           >
             Browse clips
           </Link>
@@ -170,7 +170,7 @@ export default function RecentPage() {
               <button
                 type="button"
                 onClick={() => remove(video.id)}
-                className="absolute right-2 top-2 z-[25] flex h-8 w-8 items-center justify-center rounded-full border border-slate-200/90 bg-white/95 text-slate-600 shadow-md backdrop-blur-sm transition-colors hover:border-slate-300 hover:bg-white hover:text-slate-900"
+                className="absolute right-2 top-2 z-[25] flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-reels-void/90 text-zinc-300 shadow-md backdrop-blur-md transition-colors hover:border-reels-crimson/40 hover:bg-white/10 hover:text-white"
                 aria-label={`Remove ${video.title} from recently viewed`}
               >
                 <X className="h-4 w-4" strokeWidth={2.2} aria-hidden />
