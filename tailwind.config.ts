@@ -22,7 +22,7 @@ const config: Config = {
           raised: "#f8fafc",
           border: "#e2e8f0",
         },
-        /** REELS MARKET — Electric Crimson + Cyber Cyan on Deep Abyss */
+        /** REELS MARKET — Crimson + Cyan theme */
         reels: {
           abyss: "#050505",
           void: "#0a0a0a",

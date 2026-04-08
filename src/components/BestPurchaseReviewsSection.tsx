@@ -42,7 +42,7 @@ function DealCornerIcon({ className }: { className?: string }) {
 export function BestPurchaseReviewsSection() {
   return (
     <section
-      className="border-t border-white/10 bg-gradient-to-b from-reels-void/90 via-reels-abyss to-reels-void/80"
+      className="border-t border-white/10 bg-gradient-to-b from-reels-void/90 via-reels-abyss to-reels-void/80 [html[data-theme='light']_&]:border-black/10 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:from-white [html[data-theme='light']_&]:via-white [html[data-theme='light']_&]:to-white"
       aria-labelledby="best-reviews-heading"
     >
       <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8">
@@ -76,7 +76,7 @@ export function BestPurchaseReviewsSection() {
             {BEST_PURCHASE_REVIEWS.map((card) => (
               <article
                 key={card.id}
-                className="relative snap-start shrink-0 rounded-xl border border-white/10 bg-white/[0.045] p-5 shadow-none backdrop-blur-md sm:p-6"
+                className="relative snap-start shrink-0 rounded-xl border border-white/10 bg-white/[0.045] p-5 shadow-none backdrop-blur-md [html[data-theme='light']_&]:border-black/10 [html[data-theme='light']_&]:bg-white/80 sm:p-6"
                 style={{ width: "min(82vw, 320px)" }}
               >
                 <div
@@ -123,7 +123,7 @@ export function BestPurchaseReviewsSection() {
                     height={40}
                     alt=""
                     unoptimized
-                    className="h-9 w-9 shrink-0 rounded-full object-cover shadow-md ring-2 ring-white/10 ring-offset-2 ring-offset-reels-void sm:h-10 sm:w-10"
+                    className="h-9 w-9 shrink-0 rounded-full object-cover shadow-md ring-2 ring-white/10 ring-offset-2 ring-offset-[var(--reels-void)] sm:h-10 sm:w-10"
                   />
                   <p className="min-w-0 truncate text-[13px] font-bold text-zinc-300">
                     {card.author}

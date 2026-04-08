@@ -53,24 +53,28 @@ const COMMERCE: Record<string, VideoCommerceMeta> = {
 };
 
 export function getCommerceMeta(id: string): VideoCommerceMeta {
-  return COMMERCE[id] ?? DEFAULT_COMMERCE;
+  const raw = COMMERCE[id] ?? DEFAULT_COMMERCE;
+  // 정책 변경: 모든 조각은 무제한 판매로 처리
+  return {
+    salesCount: raw.salesCount,
+    edition: "open",
+  };
 }
 
 export function getEditionCap(meta: VideoCommerceMeta): number | null {
-  if (meta.edition === "open") return null;
-  if (meta.edition === "private") return 1;
-  return meta.editionCap ?? 1;
+  void meta;
+  return null;
 }
 
 /** 무제한이 아니면 남은 복제·판매 슬롯 */
 export function clonesRemaining(meta: VideoCommerceMeta): number | null {
-  const cap = getEditionCap(meta);
-  if (cap == null) return null;
-  return Math.max(0, cap - meta.salesCount);
+  void meta;
+  return null;
 }
 
 export function isLimitedFamily(edition: EditionKind): boolean {
-  return edition !== "open";
+  void edition;
+  return false;
 }
 
 export type EditionFilter = "all" | "limited" | "open";
@@ -79,9 +83,10 @@ export function matchesEditionFilter(
   edition: EditionKind,
   filter: EditionFilter,
 ): boolean {
+  void edition;
   if (filter === "all") return true;
-  if (filter === "open") return edition === "open";
-  return isLimitedFamily(edition);
+  if (filter === "open") return true;
+  return false;
 }
 
 export function isMicroDna(video: Pick<FeedVideo, "priceWon">): boolean {

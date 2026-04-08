@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
+import { ShoppingCart } from "lucide-react";
 import { CloneCountAnimation } from "@/components/CloneCountAnimation";
 import { RelatedDnaQuilt } from "@/components/RelatedDnaQuilt";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
@@ -15,26 +16,10 @@ import {
   isLimitedFamily,
 } from "@/data/videoCommerce";
 
-function editionTitleKo(meta: ReturnType<typeof getCommerceMeta>): string {
-  switch (meta.edition) {
-    case "open":
-      return "무제한 판매 (Open Edition)";
-    case "limited":
-      return "한정 판매 (Limited)";
-    case "private":
-      return "1인 독점 (Private)";
-    case "batch":
-      return `${meta.editionCap ?? "?"}명 한정 (Batch)`;
-    default:
-      return "판매 방식";
-  }
-}
-
 export function VideoDetailView({ video }: { video: FeedVideo }) {
   const dopamine = useDopamineBasket();
   const { hasPurchased, markPurchased } = usePurchasedVideos();
   const { recordView } = useRecentClips();
-  const ctaRef = useRef<HTMLButtonElement>(null);
   const owned = hasPurchased(video.id);
 
   useEffect(() => {
@@ -51,10 +36,10 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
       ? "[커피 한 잔보다 싼 영감 수집하기]"
       : soldOut
         ? "품절"
-        : "장바구니에 담기";
+        : "바로 구매하기";
 
   return (
-    <div className="min-h-screen bg-reels-abyss text-zinc-100">
+    <div className="min-h-screen bg-transparent text-zinc-100">
       <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 lg:px-8">
         <nav className="mb-6 font-mono text-[11px] text-zinc-500">
           <Link href="/" className="text-reels-cyan/90 hover:text-reels-cyan">
@@ -106,9 +91,24 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
             </div>
 
             <div className="border-t border-white/10 pt-6">
-              <p className="font-mono text-[22px] font-extrabold tabular-nums text-zinc-100">
-                {price > 0 ? `${price.toLocaleString("ko-KR")}원` : "가격 문의"}
-              </p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-mono text-[22px] font-extrabold tabular-nums text-zinc-100">
+                  {price > 0 ? `${price.toLocaleString("ko-KR")}원` : "가격 문의"}
+                </p>
+                <button
+                  type="button"
+                  title="장바구니 담기"
+                  onClick={(e) => {
+                    if (soldOut) return;
+                    dopamine.launchFromCartButton(e.currentTarget, video, video.poster);
+                  }}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-zinc-200 transition-colors hover:border-reels-cyan/40 hover:text-reels-cyan disabled:cursor-not-allowed disabled:opacity-40"
+                  disabled={soldOut}
+                  aria-label="장바구니 담기"
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
             <section
@@ -121,15 +121,15 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
               >
                 소유 방식 · License Type
               </h2>
-              <p className="mt-2 text-[15px] font-bold text-zinc-100">{editionTitleKo(meta)}</p>
-
               {meta.edition === "open" ? (
                 <p className="mt-3 text-[13px] leading-relaxed text-zinc-400">
                   이미{" "}
                   <span className="font-bold text-reels-cyan">
                     {meta.salesCount.toLocaleString("ko-KR")}명
                   </span>
-                  의 크리에이터가 수집한 검증된 도파민 조각이에요. 유튜브 배경·브이로그에 가볍게
+                  의 크리에이터가 수집한 검증된 도파민 이것도 조각이에요.
+                  <br />
+                  유튜브 배경·브이로그에 가볍게
                   얹어 보세요.
                 </p>
               ) : (
@@ -158,14 +158,10 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
 
             <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
               <button
-                ref={ctaRef}
                 type="button"
                 disabled={soldOut}
                 onClick={() => {
-                  const el = ctaRef.current;
-                  if (el && !soldOut) {
-                    dopamine.launchFromCartButton(el, video, video.poster);
-                  }
+                  if (!soldOut && !owned) markPurchased(video.id);
                 }}
                 className="w-full rounded-full bg-reels-crimson px-5 py-3.5 text-[14px] font-extrabold text-white shadow-reels-crimson transition-[transform,opacity] duration-300 ease-in-out hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40 sm:flex-1"
               >
@@ -183,21 +179,17 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
             </div>
 
             <div className="flex flex-col gap-2">
-              {owned ? (
-                <p className="text-center font-mono text-[10px] font-semibold uppercase tracking-wider text-reels-cyan">
-                  구매 완료 · 창작 가능
-                </p>
-              ) : (
+              {!owned ? (
                 <p className="text-center text-[11px] text-zinc-500">
                   결제 연동 전에는 「모션 권한 구매(데모)」로 창작 버튼을 켤 수 있어요.
                 </p>
-              )}
+              ) : null}
               {owned ? (
                 <Link
                   href={`/create?videoId=${encodeURIComponent(video.id)}`}
                   className="flex w-full items-center justify-center rounded-full border border-reels-cyan/40 bg-reels-cyan/10 px-5 py-3.5 text-center text-[14px] font-extrabold text-reels-cyan shadow-[0_0_24px_-8px_rgba(0,242,234,0.35)] transition-[transform,opacity] duration-300 hover:bg-reels-cyan/18"
                 >
-                  AI 창작하기
+                  AI 창작 ○ 편집
                 </Link>
               ) : (
                 <div
@@ -205,7 +197,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                   aria-disabled
                   title="먼저 모션 권한을 구매해 주세요"
                 >
-                  AI 창작하기 (구매 후 활성화)
+                  AI 창작 ○ 편집 (구매 후 활성화)
                 </div>
               )}
             </div>

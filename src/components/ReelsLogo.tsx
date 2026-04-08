@@ -1,6 +1,3 @@
-/**
- * REELS — R + 필름 퍼포레이션 + ∞ 실루엣 힌트 (SVG, 네온 미니멀)
- */
 export function ReelsLogo({
   className = "",
   size = 28,
@@ -19,28 +16,32 @@ export function ReelsLogo({
     >
       <defs>
         <linearGradient id="reels-logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FF0055" />
-          <stop offset="100%" stopColor="#00F2EA" />
+          <stop offset="0%" stopColor="#1C2D5A" />
+          <stop offset="100%" stopColor="#FF8A3D" />
+        </linearGradient>
+        <linearGradient id="reels-logo-fill" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.8)" />
+          <stop offset="100%" stopColor="rgba(255,255,255,0.25)" />
         </linearGradient>
       </defs>
       <rect
-        x="2"
+        x="3"
         y="4"
-        width="20"
+        width="21"
         height="24"
-        rx="3"
+        rx="6"
         stroke="url(#reels-logo-grad)"
-        strokeWidth="1.5"
-        fill="rgba(255,255,255,0.03)"
+        strokeWidth="1.6"
+        fill="url(#reels-logo-fill)"
       />
-      <circle cx="7" cy="9" r="1.1" fill="#FF0055" opacity="0.9" />
-      <circle cx="17" cy="9" r="1.1" fill="#FF0055" opacity="0.9" />
-      <circle cx="7" cy="23" r="1.1" fill="#00F2EA" opacity="0.85" />
-      <circle cx="17" cy="23" r="1.1" fill="#00F2EA" opacity="0.85" />
+      <circle cx="8" cy="9.5" r="1.2" fill="#FF8A3D" opacity="0.95" />
+      <circle cx="18" cy="9.5" r="1.2" fill="#FF8A3D" opacity="0.95" />
+      <circle cx="8" cy="22.5" r="1.2" fill="#1C2D5A" opacity="0.95" />
+      <circle cx="18" cy="22.5" r="1.2" fill="#1C2D5A" opacity="0.95" />
       <path
-        d="M24 8c2.5 0 4.5 2.2 4.5 5s-2 5-4.5 5c-1.2 0-2.3-.5-3.1-1.3M24 18c2.5 0 4.5 2.2 4.5 5s-2 5-4.5 5"
+        d="M15 10.5c3.8 0 6.5 2.2 6.5 5.5s-2.7 5.5-6.5 5.5"
         stroke="url(#reels-logo-grad)"
-        strokeWidth="1.75"
+        strokeWidth="1.9"
         strokeLinecap="round"
       />
     </svg>

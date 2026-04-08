@@ -2,11 +2,9 @@
 
 import {
   ChevronDown,
-  Heart,
-  History,
+  Moon,
   Search,
-  ShoppingCart,
-  User,
+  Sun,
 } from "lucide-react";
 import {
   AnimatePresence,
@@ -20,10 +18,6 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ReelsLogo } from "@/components/ReelsLogo";
-import { SellerNotificationBell } from "@/components/SellerNotificationBell";
-import { useDopamineBasket } from "@/context/DopamineBasketContext";
-import { useRecentClips } from "@/context/RecentClipsContext";
-import { useWishlist } from "@/context/WishlistContext";
 import { MALL_CATEGORY_NAV_ITEMS as ITEMS } from "@/data/mallCategoryNav";
 import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhrases";
 
@@ -31,7 +25,7 @@ const iconStroke = 1.25;
 
 /** 상단 아이콘 — 글래스 다크 */
 const navActionClass =
-  "inline-flex items-center justify-center rounded-full bg-transparent px-2.5 py-1.5 text-zinc-300 transition-[background-color,color] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/10 hover:text-white motion-reduce:duration-250";
+  "inline-flex items-center justify-center rounded-full bg-transparent px-2.5 py-1.5 text-zinc-300 transition-[color,transform] duration-200 ease-out hover:text-white active:scale-[0.98] motion-reduce:duration-150";
 
 /** 스크롤 컴팩트 시 상단에는 베스트·추천만 노출, 나머지는 「카테고리」 메뉴로 */
 const COMPACT_PRIMARY = ITEMS.slice(0, 2);
@@ -63,13 +57,6 @@ const searchIconMotion =
   "group-focus-within:-translate-y-0.5 group-focus-within:scale-[1.1] group-focus-within:-rotate-[10deg] group-focus-within:text-reels-cyan " +
   "motion-reduce:group-hover:translate-y-0 motion-reduce:group-hover:scale-100 motion-reduce:group-hover:rotate-0 " +
   "motion-reduce:group-focus-within:translate-y-0 motion-reduce:group-focus-within:scale-100 motion-reduce:group-focus-within:rotate-0";
-
-const QUICK_MENU = [
-  { href: "/recent", label: "최근 본 조각", Icon: History },
-  { href: "/wishlist", label: "찜한 조각", Icon: Heart },
-  { href: "/cart", label: "장바구니", Icon: ShoppingCart },
-  { href: "/mypage", label: "마이페이지", Icon: User },
-] as const;
 
 const ROTATE_MS = 4500;
 
@@ -116,7 +103,7 @@ function RotatingSearchField({
         placeholder=""
         autoComplete="off"
         enterKeyHint="search"
-        className={`mall-search w-full rounded-full border text-zinc-100 outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,box-shadow,color] ${easeLayout} ${searchEase} border-white/15 bg-white/[0.06] placeholder:text-zinc-600 hover:border-reels-cyan/35 hover:bg-white/10 hover:shadow-[0_2px_20px_-8px_rgba(0,242,234,0.15)] focus:border-reels-cyan/50 focus:bg-white/[0.09] focus:shadow-[0_4px_24px_-8px_rgba(255,0,85,0.12)] focus:ring-0 ${
+        className={`mall-search w-full rounded-full border text-zinc-100 outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,box-shadow,color] ${easeLayout} ${searchEase} border-white/15 bg-white/[0.06] placeholder:text-zinc-600 hover:border-reels-cyan/35 hover:bg-white/10 hover:shadow-[0_2px_20px_-8px_rgba(155,109,255,0.18)] focus:border-reels-cyan/50 focus:bg-white/[0.09] focus:shadow-[0_4px_24px_-8px_rgba(255,79,179,0.18)] focus:ring-0 [html[data-theme='dark']_&]:border-white/20 [html[data-theme='dark']_&]:bg-white/[0.1] [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='dark']_&]:placeholder:text-zinc-300 [html[data-theme='dark']_&]:hover:bg-white/[0.14] [html[data-theme='dark']_&]:focus:bg-white/[0.16] [html[data-theme='light']_&]:border-[#b99ae6]/60 [html[data-theme='light']_&]:bg-white/95 [html[data-theme='light']_&]:text-[#2a1740] [html[data-theme='light']_&]:placeholder:text-[#7c61a6] [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:hover:border-[#9b6dff]/65 [html[data-theme='light']_&]:focus:border-[#9b6dff]/80 [html[data-theme='light']_&]:focus:bg-white ${
           compact
             ? "h-9 pl-3 pr-10 text-[13px]"
             : "h-11 pl-5 pr-12 text-[14px]"
@@ -125,7 +112,7 @@ function RotatingSearchField({
       />
       {showGuide ? (
         <div
-          className={`pointer-events-none absolute inset-y-0 left-0 flex items-center overflow-hidden text-left text-zinc-500 ${
+          className={`pointer-events-none absolute inset-y-0 left-0 flex items-center overflow-hidden text-left text-zinc-500 [html[data-theme='dark']_&]:text-zinc-300 [html[data-theme='light']_&]:text-[#7c61a6] ${
             compact ? "right-10 pl-3 text-[13px]" : "right-12 pl-5 text-[14px]"
           }`}
           aria-hidden
@@ -158,7 +145,7 @@ function RotatingSearchField({
         </div>
       ) : null}
       <span
-        className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-zinc-500 ${
+        className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-zinc-500 [html[data-theme='dark']_&]:text-zinc-200 [html[data-theme='light']_&]:text-[#8e74b4] ${
           compact ? "right-2.5" : "right-3.5"
         }`}
         aria-hidden
@@ -175,48 +162,14 @@ function RotatingSearchField({
   );
 }
 
-function CartChunkMeter({ level }: { level: number }) {
-  const slots = 5;
-  const filled = Math.min(Math.max(0, level), slots);
-  return (
-    <span
-      className="pointer-events-none absolute -bottom-0.5 left-1/2 flex -translate-x-1/2 gap-[2px]"
-      aria-hidden
-    >
-      {Array.from({ length: slots }, (_, i) => (
-        <motion.span
-          key={i}
-          className="block h-[3px] w-[3.5px] rounded-[1px] bg-reels-cyan/70"
-          initial={false}
-          animate={{
-            scale: i < filled ? 1 : 0.35,
-            opacity: i < filled ? 1 : 0.12,
-            y: i < filled ? 0 : 1,
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 440,
-            damping: 24,
-            delay: i * 0.028,
-          }}
-        />
-      ))}
-    </span>
-  );
-}
-
 function QuickMenuIcons({
   className,
-  cartAnchorRef,
-  cartFillLevel = 0,
-  wishlistCount = 0,
-  recentCount = 0,
+  themeMode = "dark",
+  onToggleTheme,
 }: {
   className?: string;
-  cartAnchorRef?: React.RefObject<HTMLAnchorElement | null>;
-  cartFillLevel?: number;
-  wishlistCount?: number;
-  recentCount?: number;
+  themeMode?: "light" | "dark";
+  onToggleTheme?: () => void;
 }) {
   return (
     <div
@@ -224,103 +177,21 @@ function QuickMenuIcons({
       aria-label="나의 활동"
       className={`flex shrink-0 items-center gap-0.5 sm:gap-1 ${className ?? ""}`}
     >
-      {QUICK_MENU.map(({ href, label, Icon }) => {
-        if (href === "/cart") {
-          return (
-            <Link
-              key={href}
-              ref={cartAnchorRef}
-              href={href}
-              className={`${navActionClass} relative`}
-              aria-label={label}
-            >
-              <motion.span
-                key={cartFillLevel}
-                className="relative inline-flex flex-col items-center"
-                initial={cartFillLevel > 0 ? { scale: 1.12 } : false}
-                animate={{ scale: 1 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 520,
-                  damping: 22,
-                }}
-              >
-                <span
-                  data-cart-fly-target
-                  className="inline-flex items-center justify-center"
-                  aria-hidden
-                >
-                  <Icon
-                    className="h-[20px] w-[20px]"
-                    strokeWidth={iconStroke}
-                    aria-hidden
-                  />
-                </span>
-                <CartChunkMeter level={cartFillLevel} />
-              </motion.span>
-            </Link>
-          );
+      <button
+        type="button"
+        onClick={onToggleTheme}
+        className={navActionClass}
+        aria-label={
+          themeMode === "dark" ? "화이트 테마로 전환" : "다크 테마로 전환"
         }
-        if (href === "/recent") {
-          const ariaRecent =
-            recentCount > 0
-              ? `${label} · Recently viewed, ${recentCount > 99 ? "99+" : recentCount}`
-              : `${label} · Recently viewed`;
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`${navActionClass} relative`}
-              aria-label={ariaRecent}
-            >
-              <Icon
-                className="h-[20px] w-[20px]"
-                strokeWidth={iconStroke}
-                aria-hidden
-              />
-              {recentCount > 0 ? (
-                <span className="absolute -right-1 -top-1 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-reels-cyan px-[3px] text-[8px] font-bold leading-none text-reels-abyss shadow-sm ring-1 ring-white/20 sm:h-4 sm:min-w-[16px] sm:text-[9px]">
-                  {recentCount > 99 ? "99+" : recentCount}
-                </span>
-              ) : null}
-            </Link>
-          );
-        }
-        if (href === "/wishlist") {
-          const ariaWishlist =
-            wishlistCount > 0
-              ? `${label} · Saved clips, ${wishlistCount > 99 ? "99+" : wishlistCount}`
-              : `${label} · Saved clips`;
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`${navActionClass} relative`}
-              aria-label={ariaWishlist}
-            >
-              <Icon
-                className="h-[20px] w-[20px]"
-                strokeWidth={iconStroke}
-                aria-hidden
-              />
-              {wishlistCount > 0 ? (
-                <span className="absolute -right-1 -top-1 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-reels-crimson px-[3px] text-[8px] font-bold leading-none text-white shadow-sm ring-1 ring-white/30 sm:h-4 sm:min-w-[16px] sm:text-[9px]">
-                  {wishlistCount > 99 ? "99+" : wishlistCount}
-                </span>
-              ) : null}
-            </Link>
-          );
-        }
-        return (
-          <Link key={href} href={href} className={navActionClass} aria-label={label}>
-            <Icon
-              className="h-[20px] w-[20px]"
-              strokeWidth={iconStroke}
-              aria-hidden
-            />
-          </Link>
-        );
-      })}
+        title={themeMode === "dark" ? "화이트 버전" : "다크 버전"}
+      >
+        {themeMode === "dark" ? (
+          <Sun className="h-[19px] w-[19px]" strokeWidth={iconStroke} />
+        ) : (
+          <Moon className="h-[19px] w-[19px]" strokeWidth={iconStroke} />
+        )}
+      </button>
     </div>
   );
 }
@@ -328,10 +199,8 @@ function QuickMenuIcons({
 export function MallTopNav() {
   const { scrollY } = useScroll();
   const heroTitleY = useTransform(scrollY, [0, 200], [0, -18]);
-  const { cartAnchorRef, cartCount } = useDopamineBasket();
-  const { count: wishlistCount } = useWishlist();
-  const { count: recentCount } = useRecentClips();
   const [q, setQ] = useState("");
+  const [themeMode, setThemeMode] = useState<"light" | "dark">("dark");
   const headerRef = useRef<HTMLElement>(null);
   const [compact, setCompact] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -344,6 +213,32 @@ export function MallTopNav() {
     left: number;
     width: number;
   } | null>(null);
+
+  const applyTheme = useCallback((next: "light" | "dark") => {
+    document.documentElement.dataset.theme = next;
+    try {
+      window.localStorage.setItem("reels-theme", next);
+    } catch {
+      /* noop */
+    }
+    setThemeMode(next);
+  }, []);
+
+  useEffect(() => {
+    const html = document.documentElement;
+    const current =
+      html.dataset.theme === "light" || html.dataset.theme === "dark"
+        ? (html.dataset.theme as "light" | "dark")
+        : window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+    html.dataset.theme = current;
+    setThemeMode(current);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    applyTheme(themeMode === "dark" ? "light" : "dark");
+  }, [applyTheme, themeMode]);
 
   useEffect(() => {
     const el = headerRef.current;
@@ -520,12 +415,9 @@ export function MallTopNav() {
             </Link>
             {!compact && (
               <div className="hidden items-center gap-0.5 sm:-mr-1 sm:flex lg:-mr-0.5">
-                <SellerNotificationBell />
                 <QuickMenuIcons
-                  cartAnchorRef={cartAnchorRef}
-                  cartFillLevel={cartCount}
-                  wishlistCount={wishlistCount}
-                  recentCount={recentCount}
+                  themeMode={themeMode}
+                  onToggleTheme={toggleTheme}
                 />
               </div>
             )}
@@ -546,18 +438,18 @@ export function MallTopNav() {
                 className="mx-auto block w-fit max-w-full rounded-sm outline-none transition-[opacity,transform] duration-200 hover:opacity-[0.9] active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-reels-cyan/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reels-abyss"
                 aria-label="홈 · 메인 화면으로 이동"
               >
-                <motion.h1
+                <motion.div
                   style={{ y: heroTitleY }}
-                  className="text-center text-[26px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:text-[30px] md:text-[32px]"
+                  className="text-center"
                 >
-                  <span className="bg-gradient-to-r from-white via-zinc-100 to-zinc-400 bg-clip-text text-transparent">
-                    Buy the Motion,
-                  </span>
-                  <br />
-                  <span className="bg-gradient-to-r from-reels-crimson via-reels-cyan to-reels-crimson bg-clip-text text-transparent">
-                    Own the Moment.
-                  </span>
-                </motion.h1>
+                  <p className="mx-auto mb-2 inline-flex items-center gap-1.5 rounded-full border border-[#1fd7d8]/45 bg-[#0c2e45]/72 px-3 py-1 text-[11px] font-semibold text-[#c9fcff] shadow-[0_0_24px_-10px_rgba(31,215,216,0.8)]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#1fd7d8] shadow-[0_0_10px_rgba(31,215,216,0.95)]" aria-hidden />
+                    바이럴 릴스를 사고, 클론하고, 성장하세요
+                  </p>
+                  <p className="mt-1 bg-gradient-to-r from-[#b9ffff] via-[#46eef1] to-[#12d8dd] bg-clip-text text-[56px] font-black leading-[0.98] tracking-tight text-transparent [text-shadow:0_10px_34px_rgba(9,26,45,0.38),0_0_24px_rgba(31,215,216,0.35)] sm:text-[68px] md:text-[80px]">
+                    ReelsMarket
+                  </p>
+                </motion.div>
               </Link>
             </div>
           </div>
@@ -687,12 +579,9 @@ export function MallTopNav() {
             <div
               className={`flex shrink-0 items-center gap-0.5 sm:-mr-1 lg:-mr-0.5 ${easeLayout}`}
             >
-              <SellerNotificationBell compact />
               <QuickMenuIcons
-                cartAnchorRef={cartAnchorRef}
-                cartFillLevel={cartCount}
-                wishlistCount={wishlistCount}
-                recentCount={recentCount}
+                themeMode={themeMode}
+                onToggleTheme={toggleTheme}
               />
             </div>
           )}

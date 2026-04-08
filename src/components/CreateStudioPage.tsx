@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
-import { KlingReskinStudio } from "@/components/KlingReskinStudio";
+import { PurchaseCustomizeStudio } from "@/components/PurchaseCustomizeStudio";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { getMarketVideoById } from "@/data/videoCommerce";
 
@@ -73,21 +73,20 @@ export function CreateStudioPage() {
           조각 상세
         </Link>
         <span className="mx-1.5 text-zinc-700">/</span>
-        <span className="text-zinc-400">AI 창작</span>
+        <span className="text-zinc-400">얼굴·배경 편집 + AI 창작</span>
       </nav>
       <header className="mb-8">
         <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl">
           창작 스튜디오
         </h1>
-        <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-zinc-500">
-          구매한 모션 권리로 나만의 영상을 만듭니다. 프로필은 마이페이지에 등록한 이미지 중에서 고르고,
-          배경은 원하는 분위기를 텍스트로 적어 주세요.
+        <p className="mt-2 max-w-2xl text-[15px] font-bold leading-relaxed text-zinc-300">
+          얼굴 선택 후 바로 생성하거나, 필요하면 맞춤 리스킨·편집(선택)으로 디테일을 조정하세요.
         </p>
         <p className="mt-1 font-mono text-[12px] text-zinc-600">
           현재 조각: {video.title} · {video.creator}
         </p>
       </header>
-      <KlingReskinStudio video={video} creationFlow />
+      <PurchaseCustomizeStudio video={video} />
     </>
   );
 }

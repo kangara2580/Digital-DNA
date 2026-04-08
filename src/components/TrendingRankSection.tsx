@@ -11,12 +11,22 @@ import { SectionMoreLink } from "./SectionMoreLink";
 import { TrendingVideoStatsFooter } from "./TrendingVideoStatsFooter";
 import { VideoCard } from "./VideoCard";
 
-/** Top 10 + 끝 더보기 — 가로 스크롤 */
+/** Top 10 + 끝 더보기 — 가로 스크롤 (lg+: 한 화면에 카드 5개 분량) */
 const TRENDING_STRIP =
-  "no-scrollbar -mx-4 flex snap-x snap-mandatory items-stretch gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:gap-2.5 sm:px-0 md:gap-3 lg:gap-4";
+  "no-scrollbar -mx-4 flex w-full snap-x snap-mandatory items-stretch gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:gap-3 sm:px-0 md:gap-3 lg:gap-4";
 
+/** 모바일·태블릿은 좁게, lg 이상은 (100% - 4×gap) / 5 로 정확히 5열 분량 */
 const CARD_SLOT =
-  "relative w-[148px] min-w-[148px] max-w-[220px] shrink-0 snap-center sm:w-[168px] sm:min-w-[168px] md:w-[180px] md:min-w-[180px]";
+  "relative shrink-0 snap-center " +
+  "w-[min(48vw,260px)] min-w-[min(48vw,168px)] max-w-[260px] " +
+  "sm:w-[min(42vw,280px)] sm:max-w-[280px] " +
+  "lg:w-[calc((100%-3rem)/4)] lg:min-w-[calc((100%-3rem)/4)] lg:max-w-[calc((100%-3rem)/4)]";
+
+const MORE_CELL =
+  "relative shrink-0 snap-center " +
+  "w-[min(48vw,260px)] min-w-[min(48vw,168px)] max-w-[260px] " +
+  "sm:w-[min(42vw,280px)] sm:max-w-[280px] " +
+  "lg:w-[calc((100%-3rem)/4)] lg:min-w-[calc((100%-3rem)/4)] lg:max-w-[calc((100%-3rem)/4)]";
 
 const ARROW_BTN =
   "pointer-events-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/60 text-zinc-200 shadow-lg shadow-black/40 backdrop-blur-md transition hover:border-reels-cyan/35 hover:text-white active:scale-[0.97] motion-reduce:transition-none";
@@ -66,7 +76,10 @@ export function TrendingRankSection() {
   const scrollByDir = (dir: 1 | -1) => {
     const el = scrollRef.current;
     if (!el) return;
-    const step = Math.max(el.clientWidth * 0.65, 200);
+    const max = el.scrollWidth - el.clientWidth;
+    if (max <= 0) return;
+    /** 한 번에 너무 멀리 가지 않아, 약 3~4번 누르면 끝(더보기)까지 도달 */
+    const step = Math.min(Math.max(el.clientWidth * 0.32, 220), max / 3.15);
     el.scrollBy({ left: dir * step, behavior: "smooth" });
   };
 
@@ -92,9 +105,6 @@ export function TrendingRankSection() {
                 LIVE
               </span>
             </h2>
-            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-zinc-500 sm:text-[16px]">
-              Top 10 클립 — 구매 누적수익이 틱마다 변동하고 순위가 자동 재정렬됩니다. (데모: 클라이언트 시뮬레이션)
-            </p>
           </div>
           <SectionMoreLink
             category="best"
@@ -121,7 +131,7 @@ export function TrendingRankSection() {
               ref={scrollRef}
               className={TRENDING_STRIP}
               role="list"
-              aria-label="인기순위 영상 목록, 누적수익 기준 실시간 정렬"
+              aria-label="인기순위 영상 목록"
             >
               {liveRows.map((entry, rankIndex) => (
                 <motion.div
@@ -157,24 +167,21 @@ export function TrendingRankSection() {
                 </motion.div>
               ))}
 
-              <div
-                className={`relative flex min-w-[76px] max-w-[76px] shrink-0 snap-center flex-col items-center justify-center rounded-xl border border-white/15 bg-white/[0.04] px-2 py-3 backdrop-blur-sm sm:min-w-[84px] sm:max-w-[84px] ${
-                  atEnd ? "reels-trending-more-sparkle" : ""
-                }`}
-                role="listitem"
-              >
+              <div className={MORE_CELL} role="listitem">
                 <Link
                   href="/category/best"
-                  className="reels-trending-more-label text-center text-[11px] font-extrabold leading-tight tracking-tight text-zinc-100 transition-colors hover:text-reels-cyan motion-reduce:transition-none"
-                  aria-label="인기순위 더 많은 영상 보기"
+                  className={`reels-trending-more-label flex h-full min-h-[280px] w-full flex-col items-center justify-center gap-1 rounded-xl border border-white/15 bg-white/[0.04] px-3 py-4 text-center backdrop-blur-sm transition-colors hover:border-reels-cyan/35 hover:bg-white/[0.07] motion-reduce:transition-none ${
+                    atEnd ? "reels-trending-more-sparkle" : ""
+                  }`}
+                  aria-label="인기순위 더 많은 영상 보기 — 전체 랭킹"
                 >
-                  더보기
+                  <span className="text-[12px] font-extrabold leading-tight tracking-tight text-zinc-100 sm:text-[13px]">
+                    더보기
+                  </span>
+                  <span className="text-[10px] font-medium leading-snug text-zinc-500 sm:text-[11px]">
+                    전체 랭킹
+                  </span>
                 </Link>
-                <span className="mt-1 text-center text-[9px] font-medium leading-tight text-zinc-500">
-                  전체
-                  <br />
-                  랭킹
-                </span>
               </div>
             </div>
           </LayoutGroup>

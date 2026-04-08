@@ -10,12 +10,15 @@ import {
   Menu,
   ShoppingCart,
   User,
+  UserPlus2,
   X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
+import { SellerNotificationBell } from "@/components/SellerNotificationBell";
+import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { MALL_CATEGORY_NAV_ITEMS } from "@/data/mallCategoryNav";
 
 const stroke = 1.75;
@@ -58,16 +61,33 @@ const RAIL_ITEMS: RailItem[] = [
     Icon: ShoppingCart,
     isActive: (p) => p.startsWith("/cart"),
   },
+  {
+    href: "/recent",
+    label: "최근 본 조각",
+    Icon: History,
+    isActive: (p) => p.startsWith("/recent"),
+  },
+  {
+    href: "/signup",
+    label: "회원가입",
+    Icon: UserPlus2,
+    isActive: (p) => p.startsWith("/signup"),
+  },
+  {
+    href: "/mypage",
+    label: "마이페이지",
+    Icon: User,
+    isActive: (p) => p.startsWith("/mypage"),
+  },
 ];
 
 const DRAWER_QUICK = [
-  { href: "/recent", label: "최근 본 조각", Icon: History },
   { href: "/upload/reels", label: "릴스 링크 등록", Icon: Link2 },
-  { href: "/mypage", label: "마이페이지", Icon: User },
 ] as const;
 
 export function ReelsLeftRail() {
   const pathname = usePathname();
+  const { cartAnchorRef } = useDopamineBasket();
   const reduceMotion = useReducedMotion() ?? false;
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -115,6 +135,7 @@ export function ReelsLeftRail() {
                 <Link
                   key={href}
                   href={href}
+                  ref={href === "/cart" ? cartAnchorRef : undefined}
                   title={label}
                   aria-label={label}
                   aria-current={on ? "page" : undefined}
@@ -127,6 +148,7 @@ export function ReelsLeftRail() {
           </nav>
 
           <div className="flex shrink-0 flex-col items-center border-t border-white/[0.06] px-0 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            <SellerNotificationBell compact />
             <button
               type="button"
               onClick={() => setOpen(true)}

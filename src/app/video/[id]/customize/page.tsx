@@ -1,0 +1,44 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { PurchaseCustomizeStudio } from "@/components/PurchaseCustomizeStudio";
+import { ALL_MARKET_VIDEO_IDS, getMarketVideoById } from "@/data/videoCommerce";
+
+export const dynamic = "force-static";
+
+export function generateStaticParams() {
+  return ALL_MARKET_VIDEO_IDS.map((id) => ({ id }));
+}
+
+export const metadata = {
+  title: "맞춤 리스킨 · 편집 — REELS MARKET",
+  description: "구매한 조각에 얼굴·배경·구간·텍스트를 지정합니다.",
+};
+
+export default async function VideoCustomizePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const video = getMarketVideoById(id);
+  if (!video) notFound();
+
+  return (
+    <div className="min-h-screen bg-reels-abyss text-zinc-100">
+      <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 lg:px-8">
+        <nav className="mb-6 flex flex-wrap items-center gap-2 font-mono text-[11px] text-zinc-500">
+          <Link href="/" className="text-reels-cyan/90 hover:text-reels-cyan">
+            홈
+          </Link>
+          <span className="text-zinc-700">/</span>
+          <Link href={`/video/${video.id}`} className="text-reels-cyan/90 hover:text-reels-cyan">
+            조각 상세
+          </Link>
+          <span className="text-zinc-700">/</span>
+          <span className="text-zinc-400">맞춤 리스킨</span>
+        </nav>
+        <PurchaseCustomizeStudio video={video} />
+      </div>
+    </div>
+  );
+}

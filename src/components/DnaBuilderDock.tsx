@@ -14,10 +14,28 @@ export function DnaBuilderDock() {
   const { builderItems, removeBuilderItem, clearBuilder } = useDopamineBasket();
   const hasItems = builderItems.length > 0;
   const [expanded, setExpanded] = useState(false);
+  const [selectedPreviewKey, setSelectedPreviewKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (!hasItems) setExpanded(false);
   }, [hasItems]);
+
+  useEffect(() => {
+    if (!hasItems) {
+      setSelectedPreviewKey(null);
+      return;
+    }
+    const latest = builderItems[builderItems.length - 1];
+    setSelectedPreviewKey((prev) =>
+      prev && builderItems.some((x) => x.key === prev) ? prev : latest.key,
+    );
+  }, [builderItems, hasItems]);
+
+  const selectedPreview =
+    builderItems.find((x) => x.key === selectedPreviewKey) ??
+    builderItems[builderItems.length - 1] ??
+    null;
+  const latestPreviewItems = builderItems.slice(-4).reverse();
 
   const spacerClass = hasItems
     ? expanded
@@ -61,6 +79,24 @@ export function DnaBuilderDock() {
                           담은 조각을 이어 붙여 보기
                         </p>
                       </div>
+                      {selectedPreview ? (
+                        <div className="hidden items-center gap-2 rounded-lg border border-white/12 bg-black/25 px-2 py-1 sm:flex">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={selectedPreview.video.poster}
+                            alt=""
+                            className="h-9 w-7 rounded border border-white/15 object-cover"
+                          />
+                          <div className="min-w-0">
+                            <p className="max-w-[200px] truncate text-[11px] font-semibold text-zinc-200">
+                              미리보기: {selectedPreview.video.title}
+                            </p>
+                            <p className="text-[10px] font-medium text-reels-cyan">
+                              최신 썸네일 클릭 시 교체
+                            </p>
+                          </div>
+                        </div>
+                      ) : null}
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
@@ -103,14 +139,23 @@ export function DnaBuilderDock() {
                           ) : null}
                           <div className="relative flex w-[52px] flex-col items-center gap-0.5 sm:w-[58px]">
                             <div className="relative w-full">
-                              <div className="aspect-[3/4] w-full overflow-hidden rounded-md border border-white/12 bg-black/40 shadow-sm ring-1 ring-reels-cyan/15">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedPreviewKey(item.key)}
+                                className={`aspect-[3/4] w-full overflow-hidden rounded-md border bg-black/40 shadow-sm ring-1 transition ${
+                                  selectedPreviewKey === item.key
+                                    ? "border-reels-cyan/45 ring-reels-cyan/45"
+                                    : "border-white/12 ring-reels-cyan/15"
+                                }`}
+                                aria-label="미리보기 선택"
+                              >
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={item.video.poster}
                                   alt=""
                                   className="h-full w-full object-cover"
                                 />
-                              </div>
+                              </button>
                               <button
                                 type="button"
                                 onClick={() => removeBuilderItem(item.key)}
@@ -161,14 +206,27 @@ export function DnaBuilderDock() {
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
                   <div className="hidden h-8 max-w-[120px] items-center gap-0.5 overflow-hidden sm:flex">
-                    {builderItems.slice(0, 4).map((item) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                    {latestPreviewItems.map((item) => (
+                      <button
                         key={item.key}
-                        src={item.video.poster}
-                        alt=""
-                        className="h-8 w-6 rounded-sm border border-white/15 object-cover"
-                      />
+                        type="button"
+                        onClick={() => {
+                          setSelectedPreviewKey(item.key);
+                          setExpanded(true);
+                        }}
+                        aria-label="최신 담기 미리보기 선택"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={item.video.poster}
+                          alt=""
+                          className={`h-8 w-6 rounded-sm border object-cover transition ${
+                            selectedPreviewKey === item.key
+                              ? "border-reels-cyan/55 ring-1 ring-reels-cyan/40"
+                              : "border-white/15"
+                          }`}
+                        />
+                      </button>
                     ))}
                   </div>
                   <Link

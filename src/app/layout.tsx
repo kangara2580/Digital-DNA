@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import {
+  Black_Han_Sans,
+  Inter,
+  Montserrat,
+  Nanum_Gothic,
+  Song_Myung,
+} from "next/font/google";
 import { DnaBuilderDock } from "@/components/DnaBuilderDock";
 import { FloatingHelp } from "@/components/FloatingHelp";
 import { MallTopNav } from "@/components/MallTopNav";
@@ -11,6 +17,25 @@ import { WishlistProvider } from "@/context/WishlistContext";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["500", "700", "800"],
+  variable: "--font-montserrat",
+});
+const blackHanSans = Black_Han_Sans({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-black-han-sans",
+});
+const nanumGothic = Nanum_Gothic({
+  subsets: ["latin"],
+  weight: ["400", "700", "800"],
+  variable: "--font-nanum-gothic",
+});
+const songMyung = Song_Myung({
+  weight: "400",
+  variable: "--font-song-myung",
+});
 
 export const metadata: Metadata = {
   title: "REELS MARKET — Buy the Motion, Own the Moment",
@@ -23,8 +48,28 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const themeBootScript = `
+    (function () {
+      try {
+        var stored = localStorage.getItem("reels-theme");
+        var isDarkSystem = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        var theme = stored === "light" || stored === "dark" ? stored : (isDarkSystem ? "dark" : "light");
+        document.documentElement.dataset.theme = theme;
+      } catch (e) {
+        document.documentElement.dataset.theme = "dark";
+      }
+    })();
+  `;
+
   return (
-    <html lang="ko" className={`${inter.variable} scroll-smooth`}>
+    <html
+      lang="ko"
+      suppressHydrationWarning
+      className={`${inter.variable} ${montserrat.variable} ${blackHanSans.variable} ${nanumGothic.variable} ${songMyung.variable} scroll-smooth`}
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+      </head>
       <body className="min-h-screen bg-reels-abyss font-sans text-zinc-100 antialiased">
         <WishlistProvider>
           <RecentClipsProvider>

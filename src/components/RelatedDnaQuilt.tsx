@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import type { FeedVideo } from "@/data/videos";
 import { getRelatedByVibe, vibeSummaryLabel } from "@/data/videoCatalog";
 
@@ -11,12 +12,14 @@ type Props = {
 
 /** 같은 Vibe를 공유하는 조각을 퀼트처럼 엮어 표시 */
 export function RelatedDnaQuilt({ video, className }: Props) {
-  const related = getRelatedByVibe(video.id, 4);
+  const related = getRelatedByVibe(video.id, 28);
   if (related.length === 0) return null;
+  const [visibleCount, setVisibleCount] = useState(6);
 
   const label = vibeSummaryLabel(video.id);
   const [hero, ...rest] = related;
   const small = rest.slice(0, 3);
+  const endlessList = useMemo(() => rest.slice(0, Math.max(visibleCount, 3)), [rest, visibleCount]);
 
   return (
     <div
@@ -84,6 +87,44 @@ export function RelatedDnaQuilt({ video, className }: Props) {
             </Link>
           ))}
         </div>
+      </div>
+      <div className="border-t border-white/10 px-2.5 pb-3 pt-2">
+        <p className="mb-2 text-[11px] font-bold text-zinc-400">더 추천 영상</p>
+        <div className="grid grid-cols-3 gap-1.5">
+          {endlessList.map((v) => (
+            <Link
+              key={`more-${video.id}-${v.id}`}
+              href={`/video/${v.id}`}
+              className="group overflow-hidden rounded-md border border-white/10 bg-black/35"
+            >
+              <div className="aspect-[4/5] w-full">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={v.poster}
+                  alt=""
+                  className="h-full w-full object-cover opacity-95 transition-opacity group-hover:opacity-100"
+                />
+              </div>
+              <div className="px-1.5 py-1">
+                <p className="line-clamp-2 text-[9px] font-medium text-zinc-200">{v.title}</p>
+                {v.priceWon != null ? (
+                  <p className="text-[9px] font-bold tabular-nums text-reels-cyan">
+                    {v.priceWon.toLocaleString("ko-KR")}원
+                  </p>
+                ) : null}
+              </div>
+            </Link>
+          ))}
+        </div>
+        {visibleCount < rest.length ? (
+          <button
+            type="button"
+            onClick={() => setVisibleCount((c) => Math.min(c + 6, rest.length))}
+            className="mt-2 w-full rounded-md border border-white/15 bg-white/[0.04] px-2 py-1.5 text-[11px] font-semibold text-zinc-200 hover:border-reels-cyan/35 hover:text-reels-cyan"
+          >
+            더 추천 영상 보기
+          </button>
+        ) : null}
       </div>
     </div>
   );

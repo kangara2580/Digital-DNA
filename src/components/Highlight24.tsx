@@ -339,7 +339,7 @@ export function Highlight24() {
 
   return (
     <section
-      className="relative mt-0 w-full overflow-hidden border-t border-slate-200 outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black/20"
+      className="highlight24-lock-white relative mt-0 w-full overflow-hidden border-t border-slate-200 outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black/20"
       aria-labelledby="highlight-24-heading"
       tabIndex={0}
       onKeyDown={(e) => {
