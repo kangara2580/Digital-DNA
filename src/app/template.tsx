@@ -13,6 +13,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
       }
       animate={{ opacity: 1, filter: "blur(0px)" }}
       transition={{ duration: 0.4, ease: "easeInOut" }}
+      style={{ willChange: reduce ? undefined : "opacity, filter" }}
     >
       {children}
     </motion.div>

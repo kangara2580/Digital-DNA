@@ -11,7 +11,7 @@ import { SectionMoreLink } from "./SectionMoreLink";
 import { TrendingVideoStatsFooter } from "./TrendingVideoStatsFooter";
 import { VideoCard } from "./VideoCard";
 
-/** 35슬롯 + 끝 더보기 — 전 구간 가로 스크롤 */
+/** Top 10 + 끝 더보기 — 가로 스크롤 */
 const TRENDING_STRIP =
   "no-scrollbar -mx-4 flex snap-x snap-mandatory items-stretch gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:gap-2.5 sm:px-0 md:gap-3 lg:gap-4";
 
@@ -93,7 +93,7 @@ export function TrendingRankSection() {
               </span>
             </h2>
             <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-zinc-500 sm:text-[16px]">
-              구매 누적수익이 틱마다 변동하고, 그에 따라 순위가 자동으로 재정렬됩니다. (데모: 클라이언트 시뮬레이션)
+              Top 10 클립 — 구매 누적수익이 틱마다 변동하고 순위가 자동 재정렬됩니다. (데모: 클라이언트 시뮬레이션)
             </p>
           </div>
           <SectionMoreLink

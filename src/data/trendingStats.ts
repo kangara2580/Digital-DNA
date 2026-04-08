@@ -67,7 +67,7 @@ function deriveMetricsFromRank(videoId: string, rankIndex: number): TrendingRank
   };
 }
 
-/** rankIndex(0~4)는 상단 5슬롯 고정 지표, 이후 슬롯은 id·순번 기반 데모 지표 */
+/** rankIndex(0~4): 상위 5 고정 지표. 5~9: 데모 변동 지표(Top 10 나머지 슬롯) */
 export function getTrendingMetrics(
   videoId: string,
   rankIndex: number,

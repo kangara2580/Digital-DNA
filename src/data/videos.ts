@@ -299,10 +299,10 @@ const TRENDING_PORTRAIT_POOL = SAMPLE_VIDEOS.filter(
   (v) => v.orientation === "portrait",
 );
 
-/** 실시간 인기순위 데모 — 상위 5 + 추가 30 = 35개 가로 스크롤(실서비스는 랭킹 API로 교체) */
+/** 실시간 인기순위 데모 — Top 10 (상위 5 고정 시드 + 5)(실서비스는 랭킹 API로 교체) */
 export const TRENDING_RANK_CLIPS: FeedVideo[] = (() => {
   const out: FeedVideo[] = [...TRENDING_RANK_TOP_FIVE];
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 5; i++) {
     out.push(TRENDING_PORTRAIT_POOL[i % TRENDING_PORTRAIT_POOL.length]);
   }
   return out;

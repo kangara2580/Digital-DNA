@@ -1,0 +1,34 @@
+---
+description: REELS MARKET — design tokens, Kling Reskin UX, and product checklist
+globs:
+  - src/**/*
+  - "**/globals.css"
+alwaysApply: false
+---
+
+# REELS MARKET (Cursor reference)
+
+## Design system
+
+- **Background:** `#050505` (`--reels-abyss`). **Crimson:** `#FF0055` (`--reels-crimson`). **Cyan / AI:** `#00F2EA` (`--reels-cyan`).
+- **Surface / glass:** `--reels-surface-card` + `.reels-glass-card` / `.reels-border-gradient` for cards.
+- **Typography:** Inter (global) + Pretendard (KR). Prefer **font-bold / extrabold (700–800)** for headings and CTAs.
+- **Page transition:** `src/app/template.tsx` — **0.4s ease-in-out**, enter with blur → clear.
+- **AI / Kling CTAs:** `.reels-ai-glow` — cyan neon + shimmer; keep for Generate / Reskin actions.
+- **Video cards:** hover scale ~**1.05**, muted hover preview (`VideoCard` + `useHoverInstantPreview`).
+- **Left rail (md+):** `ReelsLeftRail` + `--reels-rail-w`; categories: `src/data/mallCategoryNav.ts` (**12** pills in `MallTopNav`).
+
+## Product checklist
+
+1. **GNB:** Sticky glass blur (`MallTopNav`), category pills horizontal scroll when compact.
+2. **Real-time ranking:** Top **10** clips (`TRENDING_RANK_CLIPS`), live revenue ticks + reorder (`useTrendingLiveRanking`), glass rank badge.
+3. **Kling 3.0 Reskin:** `KlingReskinStudio` — left: motion guide video; right: face upload + background prompt; bottom: **motion strength 0–100%** + Generate; scan-line VFX while “generating”; split Original vs AI preview strip at bottom.
+4. **Micro DNA / flash:** low-price grids + `FlashSaleCountdown` where used.
+5. **Reviews:** before/after slider (`ReviewBeforeAfter`) on purchase review sections.
+6. **Commerce badges:** clone count, sold out, price on `VideoCard` / commerce data.
+
+## Do not
+
+- Replace brand colors with generic grays; keep crimson/cyan/abyss hierarchy.
+- Remove `template.tsx` page transition without an equivalent route transition.
+- Add autoplay audio on hover without explicit user preference (accessibility).

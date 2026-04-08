@@ -1,3 +1,10 @@
+/**
+ * REELS MARKET — Design System (Apple minimal + Cyberpunk contrast + IG-trendy)
+ * Primary: #FF0055 Electric Crimson | #00F2EA Cyber Cyan | #050505 Deep Abyss
+ * Surface/card: glass + 1px border (see .reels-glass-card)
+ * Typography: Inter (layout.tsx) + Pretendard (KR). Headings: 700–800.
+ * Motion: page enter template.tsx — 0.4s ease-in-out + blur; AI CTAs: .reels-ai-glow
+ */
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 
 @tailwind base;
@@ -10,6 +17,8 @@
   --reels-lift: #121212;
   --reels-crimson: #ff0055;
   --reels-cyan: #00f2ea;
+  /** 스펙 Surface — 글래스 카드 기본 (≈5% 화이트) */
+  --reels-surface-card: rgba(255, 255, 255, 0.05);
   --reels-glass: rgba(255, 255, 255, 0.055);
   --reels-glass-strong: rgba(255, 255, 255, 0.09);
   --reels-border: rgba(255, 255, 255, 0.12);
@@ -17,6 +26,7 @@
   --background: var(--reels-abyss);
   --foreground: #fafafa;
   --font-pretendard: "Pretendard", ui-sans-serif, system-ui, sans-serif;
+  --reels-transition-page: 0.4s ease-in-out;
   --header-height: 220px;
   /** md+ 틱톡형 좌측 레일 — 본문·헤더 패딩과 동기화 */
   --reels-rail-w: 0px;
