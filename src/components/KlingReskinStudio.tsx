@@ -1,13 +1,17 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { DEMO_FACE_PROFILES } from "@/data/demoFaceProfiles";
 import type { FeedVideo } from "@/data/videos";
 
 type Props = {
   video: FeedVideo;
+  /** 창작 탭 전용: 마이페이지 프로필 선택 + Gemini/Kling 파이프라인 안내 */
+  creationFlow?: boolean;
 };
 
-export function KlingReskinStudio({ video }: Props) {
+export function KlingReskinStudio({ video, creationFlow = false }: Props) {
+  const [profileId, setProfileId] = useState<string | null>(DEMO_FACE_PROFILES[0]?.id ?? null);
   const [faceName, setFaceName] = useState<string | null>(null);
   const [prompt, setPrompt] = useState("");
   const [strength, setStrength] = useState(62);
@@ -36,11 +40,38 @@ export function KlingReskinStudio({ video }: Props) {
             AI 리스킨 스튜디오
           </h2>
           <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-zinc-500">
-            모션 가이드를 유지한 채 얼굴·배경만 교체합니다. 실제 Kling API 연동 시 이 패널이 생성
-            파이프라인과 연결됩니다.
+            {creationFlow
+              ? "구매 후 이어지는 창작 단계입니다. 프로필·배경을 지정한 뒤 Generate로 파이프라인을 실행합니다."
+              : "모션 가이드를 유지한 채 얼굴·배경만 교체합니다. 실제 Kling API 연동 시 이 패널이 생성 파이프라인과 연결됩니다."}
           </p>
         </div>
       </div>
+
+      {creationFlow ? (
+        <div className="mb-6 reels-glass-card rounded-xl p-4 sm:p-5">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-reels-cyan">
+            서버 파이프라인 (스펙)
+          </p>
+          <ol className="mt-3 list-decimal space-y-2 pl-4 text-[12px] leading-relaxed text-zinc-400">
+            <li>
+              원본 릴스 <strong className="text-zinc-300">첫 프레임</strong> 추출 →{" "}
+              <strong className="text-reels-cyan">Gemini</strong>: 배경을 배경 프롬프트에 맞게 교체
+            </li>
+            <li>
+              그 결과 이미지 → <strong className="text-reels-cyan">Gemini</strong>: 인물을 마이페이지
+              프로필 얼굴로 교체 (포즈 유지)
+            </li>
+            <li>
+              원본 영상 파일 + 변환 프레임 →{" "}
+              <strong className="text-reels-cyan">Kling Motion Control</strong>로 모션 합성
+            </li>
+          </ol>
+          <p className="mt-3 border-t border-white/10 pt-3 text-[11px] leading-relaxed text-zinc-600">
+            SNS 링크만 있을 때는 서버에서 영상을 확보한 뒤 동일 플로우로 처리합니다. 인스타·틱톡
+            원본 파일이 없으면 다운로드 파이프라인이 선행됩니다.
+          </p>
+        </div>
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
         <div className="min-w-0">
@@ -78,9 +109,52 @@ export function KlingReskinStudio({ video }: Props) {
           <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
             소스 & 프롬프트
           </p>
+
+          {creationFlow ? (
+            <div className="reels-glass-card rounded-xl p-4">
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                ① 마이페이지 프로필
+              </p>
+              <p className="mt-1 text-[12px] text-zinc-400">
+                창작에 쓸 얼굴입니다.{" "}
+                <a href="/mypage" className="text-reels-cyan/90 underline-offset-2 hover:underline">
+                  마이페이지
+                </a>
+                에서 등록한 이미지와 동일한 데모 세트입니다.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {DEMO_FACE_PROFILES.map((p) => {
+                  const on = profileId === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => {
+                        setProfileId(p.id);
+                        setFaceName(null);
+                      }}
+                      className={`relative rounded-full p-0.5 ring-2 transition-shadow ${
+                        on ? "ring-reels-cyan shadow-[0_0_16px_-4px_rgba(0,242,234,0.5)]" : "ring-transparent hover:ring-white/20"
+                      }`}
+                      aria-pressed={on}
+                      aria-label={p.label}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={p.src}
+                        alt=""
+                        className="h-14 w-14 rounded-full object-cover"
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
           <div className="reels-glass-card rounded-xl p-4">
             <label className="block text-[12px] font-semibold text-zinc-300">
-              레퍼런스 얼굴 이미지
+              {creationFlow ? "② 다른 얼굴 이미지 (선택)" : "레퍼런스 얼굴 이미지"}
             </label>
             <input
               ref={fileRef}
@@ -90,6 +164,7 @@ export function KlingReskinStudio({ video }: Props) {
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 setFaceName(f?.name ?? null);
+                if (f) setProfileId(null);
               }}
             />
             {faceName ? (
@@ -101,7 +176,7 @@ export function KlingReskinStudio({ video }: Props) {
               htmlFor="reskin-bg-prompt"
               className="block text-[12px] font-semibold text-zinc-300"
             >
-              배경 프롬프트
+              {creationFlow ? "③ 배경 프롬프트" : "배경 프롬프트"}
             </label>
             <textarea
               id="reskin-bg-prompt"

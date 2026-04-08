@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { CloneCountAnimation } from "@/components/CloneCountAnimation";
-import { KlingReskinStudio } from "@/components/KlingReskinStudio";
 import { RelatedDnaQuilt } from "@/components/RelatedDnaQuilt";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { useRecentClips } from "@/context/RecentClipsContext";
@@ -154,28 +153,38 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
               )}
             </section>
 
-            <button
-              ref={ctaRef}
-              type="button"
-              disabled={soldOut}
-              onClick={() => {
-                const el = ctaRef.current;
-                if (el && !soldOut) {
-                  dopamine.launchFromCartButton(el, video, video.poster);
-                }
-              }}
-              className="w-full rounded-full bg-reels-crimson px-5 py-3.5 text-[14px] font-extrabold text-white shadow-reels-crimson transition-[transform,opacity] duration-300 ease-in-out hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {ctaLabel}
-            </button>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+              <button
+                ref={ctaRef}
+                type="button"
+                disabled={soldOut}
+                onClick={() => {
+                  const el = ctaRef.current;
+                  if (el && !soldOut) {
+                    dopamine.launchFromCartButton(el, video, video.poster);
+                  }
+                }}
+                className="w-full rounded-full bg-reels-crimson px-5 py-3.5 text-[14px] font-extrabold text-white shadow-reels-crimson transition-[transform,opacity] duration-300 ease-in-out hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40 sm:flex-1"
+              >
+                {ctaLabel}
+              </button>
+              <Link
+                href={`/create?videoId=${encodeURIComponent(video.id)}`}
+                className="flex w-full items-center justify-center rounded-full border border-reels-cyan/40 bg-reels-cyan/10 px-5 py-3.5 text-center text-[14px] font-extrabold text-reels-cyan shadow-[0_0_24px_-8px_rgba(0,242,234,0.35)] transition-[transform,opacity] duration-300 hover:bg-reels-cyan/18 sm:flex-1"
+              >
+                AI 창작하기
+              </Link>
+            </div>
+            <p className="text-center text-[11px] leading-relaxed text-zinc-600">
+              구매(또는 모션 권리 확보) 후 같은 조각으로 바로 창작 스튜디오에 진입할 수 있어요. 데모에서는
+              버튼으로 언제든 이동합니다.
+            </p>
 
             <div className="pt-1">
               <RelatedDnaQuilt video={video} />
             </div>
           </div>
         </div>
-
-        <KlingReskinStudio video={video} />
       </div>
     </div>
   );

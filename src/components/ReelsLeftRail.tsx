@@ -6,6 +6,7 @@ import {
   Heart,
   History,
   Home,
+  Link2,
   Menu,
   ShoppingCart,
   User,
@@ -61,6 +62,7 @@ const RAIL_ITEMS: RailItem[] = [
 
 const DRAWER_QUICK = [
   { href: "/recent", label: "최근 본 조각", Icon: History },
+  { href: "/upload/reels", label: "릴스 링크 등록", Icon: Link2 },
   { href: "/mypage", label: "마이페이지", Icon: User },
 ] as const;
 

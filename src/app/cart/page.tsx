@@ -102,6 +102,12 @@ export default function CartPage() {
                     >
                       삭제
                     </button>
+                    <Link
+                      href={`/create?videoId=${encodeURIComponent(video.id)}`}
+                      className="rounded-md px-2 py-1 text-[12px] font-semibold text-reels-cyan hover:bg-reels-cyan/10 hover:underline"
+                    >
+                      AI 창작하기
+                    </Link>
                   </div>
                 </div>
               </li>
