@@ -225,6 +225,26 @@ body {
   }
 }
 
+/** 창작 대기 모달 — 인디터미넌트 진행 막대 */
+@keyframes reels-progress-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+.reels-progress-bar {
+  animation: reels-progress-indeterminate 1.15s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reels-progress-bar {
+    animation: none;
+  }
+}
+
 /* 가로 피드 스크롤바 — 다크 + 시안 악센트 */
 .feed-scroll {
   scroll-snap-type: x mandatory;

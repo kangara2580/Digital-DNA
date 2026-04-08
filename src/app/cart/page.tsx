@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
+import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 
 export default function CartPage() {
   const { builderItems, removeBuilderItem, clearBuilder } = useDopamineBasket();
+  const { hasPurchased, markPurchased } = usePurchasedVideos();
 
   const totalWon = useMemo(
     () =>
@@ -61,7 +63,9 @@ export default function CartPage() {
       ) : (
         <>
           <ul className="mt-6 divide-y divide-white/10">
-            {builderItems.map(({ key, video }) => (
+            {builderItems.map(({ key, video }) => {
+              const owned = hasPurchased(video.id);
+              return (
               <li
                 key={key}
                 className="flex gap-4 py-4 first:pt-0 sm:gap-5 sm:py-5"
@@ -102,16 +106,30 @@ export default function CartPage() {
                     >
                       삭제
                     </button>
-                    <Link
-                      href={`/create?videoId=${encodeURIComponent(video.id)}`}
-                      className="rounded-md px-2 py-1 text-[12px] font-semibold text-reels-cyan hover:bg-reels-cyan/10 hover:underline"
-                    >
-                      AI 창작하기
-                    </Link>
+                    {!owned ? (
+                      <button
+                        type="button"
+                        onClick={() => markPurchased(video.id)}
+                        className="rounded-md px-2 py-1 text-[12px] font-semibold text-zinc-300 hover:bg-white/10"
+                      >
+                        구매 완료(데모)
+                      </button>
+                    ) : null}
+                    {owned ? (
+                      <Link
+                        href={`/create?videoId=${encodeURIComponent(video.id)}`}
+                        className="rounded-md px-2 py-1 text-[12px] font-semibold text-reels-cyan hover:bg-reels-cyan/10 hover:underline"
+                      >
+                        AI 창작하기
+                      </Link>
+                    ) : (
+                      <span className="text-[12px] text-zinc-600">창작은 구매 후</span>
+                    )}
                   </div>
                 </div>
               </li>
-            ))}
+            );
+            })}
           </ul>
 
           <footer className="mt-8 border-t border-white/10 pt-6">

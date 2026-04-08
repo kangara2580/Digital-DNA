@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ReskinGenerationQueueModal } from "@/components/ReskinGenerationQueueModal";
 import { DEMO_FACE_PROFILES } from "@/data/demoFaceProfiles";
 import type { FeedVideo } from "@/data/videos";
 
@@ -16,12 +17,27 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
   const [prompt, setPrompt] = useState("");
   const [strength, setStrength] = useState(62);
   const [generating, setGenerating] = useState(false);
+  const [queueOpen, setQueueOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const closeQueue = useCallback(() => {
+    setQueueOpen(false);
+    setGenerating(false);
+  }, []);
 
   const onGenerate = useCallback(() => {
     setGenerating(true);
-    window.setTimeout(() => setGenerating(false), 3200);
+    setQueueOpen(true);
   }, []);
+
+  useEffect(() => {
+    if (!generating && !queueOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeQueue();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [generating, queueOpen, closeQueue]);
 
   return (
     <section
@@ -50,25 +66,41 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
       {creationFlow ? (
         <div className="mb-6 reels-glass-card rounded-xl p-4 sm:p-5">
           <p className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-reels-cyan">
-            서버 파이프라인 (스펙)
+            백엔드 로직 (3단계)
           </p>
-          <ol className="mt-3 list-decimal space-y-2 pl-4 text-[12px] leading-relaxed text-zinc-400">
+          <ol className="mt-3 list-decimal space-y-3 pl-4 text-[12px] leading-relaxed text-zinc-400">
             <li>
-              원본 릴스 <strong className="text-zinc-300">첫 프레임</strong> 추출 →{" "}
-              <strong className="text-reels-cyan">Gemini</strong>: 배경을 배경 프롬프트에 맞게 교체
+              <strong className="text-zinc-200">Step 1 — 배경 합성 (Image-to-Image)</strong>
+              <br />
+              입력: 원본 릴스 <strong className="text-zinc-300">첫 프레임</strong> + 구매자 배경
+              텍스트.
+              <br />
+              <strong className="text-reels-cyan">Gemini (Nano Banana 2)</strong>에 「인물은 유지하고
+              배경만 [프롬프트]로 바꿔줘」 → 1차 수정본 이미지.
             </li>
             <li>
-              그 결과 이미지 → <strong className="text-reels-cyan">Gemini</strong>: 인물을 마이페이지
-              프로필 얼굴로 교체 (포즈 유지)
+              <strong className="text-zinc-200">Step 2 — 인물 교체 (Face / Character)</strong>
+              <br />
+              입력: Step 1 결과 + 선택한 <strong className="text-zinc-300">마이페이지 프로필</strong>{" "}
+              이미지.
+              <br />
+              <strong className="text-reels-cyan">Gemini</strong>에 「이 사진 속 사람을 프로필
+              캐릭터로 바꿔줘」 → 최종 참조 프레임.
             </li>
             <li>
-              원본 영상 파일 + 변환 프레임 →{" "}
-              <strong className="text-reels-cyan">Kling Motion Control</strong>로 모션 합성
+              <strong className="text-zinc-200">Step 3 — 영상 생성 (Motion Control)</strong>
+              <br />
+              입력: 판매자 <strong className="text-zinc-300">원본 영상 파일(mp4)</strong> + Step 2
+              최종 프레임.
+              <br />
+              <strong className="text-reels-cyan">Kling Motion Control API</strong>로 원본 모션을
+              추출해 새 캐릭터에 입힘 → 커스텀 영상 출력.
             </li>
           </ol>
           <p className="mt-3 border-t border-white/10 pt-3 text-[11px] leading-relaxed text-zinc-600">
-            SNS 링크만 있을 때는 서버에서 영상을 확보한 뒤 동일 플로우로 처리합니다. 인스타·틱톡
-            원본 파일이 없으면 다운로드 파이프라인이 선행됩니다.
+            링크만 있는 경우: 서버에서 mp4를 확보한 뒤 API에 전달해야 합니다(다운로드 파이프라인·
+            indown.io 유사 서비스 참고). 프롬프트는 인물 비율·구도 유지를 위해 네거티브/가이드라인을
+            함께 설계합니다.
           </p>
         </div>
       ) : null}
@@ -183,7 +215,7 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
               rows={3}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="예: 네온이 비치는 비 오는 도쿄 골목, 시네마틱"
+              placeholder='예: 눈 내리는 파리 에펠탑 앞, 시네마틱 · 네온이 비치는 비 오는 도쿄 골목'
               className="mt-2 w-full resize-none rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-[13px] text-zinc-100 placeholder:text-zinc-600 focus:border-reels-cyan/50 focus:outline-none focus:ring-1 focus:ring-reels-cyan/40"
             />
           </div>
@@ -218,6 +250,8 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
           <span className="relative z-10">Generate Reskin</span>
         </button>
       </div>
+
+      <ReskinGenerationQueueModal open={queueOpen} onClose={closeQueue} demoCloseMs={8000} />
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <div className="reels-glass-card rounded-xl p-3">

@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { CloneCountAnimation } from "@/components/CloneCountAnimation";
 import { RelatedDnaQuilt } from "@/components/RelatedDnaQuilt";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
+import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useRecentClips } from "@/context/RecentClipsContext";
 import type { FeedVideo } from "@/data/videos";
 import {
@@ -31,8 +32,10 @@ function editionTitleKo(meta: ReturnType<typeof getCommerceMeta>): string {
 
 export function VideoDetailView({ video }: { video: FeedVideo }) {
   const dopamine = useDopamineBasket();
+  const { hasPurchased, markPurchased } = usePurchasedVideos();
   const { recordView } = useRecentClips();
   const ctaRef = useRef<HTMLButtonElement>(null);
+  const owned = hasPurchased(video.id);
 
   useEffect(() => {
     recordView(video.id);
@@ -168,17 +171,44 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
               >
                 {ctaLabel}
               </button>
-              <Link
-                href={`/create?videoId=${encodeURIComponent(video.id)}`}
-                className="flex w-full items-center justify-center rounded-full border border-reels-cyan/40 bg-reels-cyan/10 px-5 py-3.5 text-center text-[14px] font-extrabold text-reels-cyan shadow-[0_0_24px_-8px_rgba(0,242,234,0.35)] transition-[transform,opacity] duration-300 hover:bg-reels-cyan/18 sm:flex-1"
-              >
-                AI 창작하기
-              </Link>
+              {!soldOut && !owned ? (
+                <button
+                  type="button"
+                  onClick={() => markPurchased(video.id)}
+                  className="w-full rounded-full border border-white/20 bg-white/[0.06] px-5 py-3.5 text-[14px] font-extrabold text-zinc-100 transition-colors hover:border-reels-cyan/40 hover:bg-white/10 sm:flex-1"
+                >
+                  모션 권한 구매(데모)
+                </button>
+              ) : null}
             </div>
-            <p className="text-center text-[11px] leading-relaxed text-zinc-600">
-              구매(또는 모션 권리 확보) 후 같은 조각으로 바로 창작 스튜디오에 진입할 수 있어요. 데모에서는
-              버튼으로 언제든 이동합니다.
-            </p>
+
+            <div className="flex flex-col gap-2">
+              {owned ? (
+                <p className="text-center font-mono text-[10px] font-semibold uppercase tracking-wider text-reels-cyan">
+                  구매 완료 · 창작 가능
+                </p>
+              ) : (
+                <p className="text-center text-[11px] text-zinc-500">
+                  결제 연동 전에는 「모션 권한 구매(데모)」로 창작 버튼을 켤 수 있어요.
+                </p>
+              )}
+              {owned ? (
+                <Link
+                  href={`/create?videoId=${encodeURIComponent(video.id)}`}
+                  className="flex w-full items-center justify-center rounded-full border border-reels-cyan/40 bg-reels-cyan/10 px-5 py-3.5 text-center text-[14px] font-extrabold text-reels-cyan shadow-[0_0_24px_-8px_rgba(0,242,234,0.35)] transition-[transform,opacity] duration-300 hover:bg-reels-cyan/18"
+                >
+                  AI 창작하기
+                </Link>
+              ) : (
+                <div
+                  className="flex w-full cursor-not-allowed items-center justify-center rounded-full border border-white/10 bg-white/[0.03] px-5 py-3.5 text-center text-[14px] font-extrabold text-zinc-500"
+                  aria-disabled
+                  title="먼저 모션 권한을 구매해 주세요"
+                >
+                  AI 창작하기 (구매 후 활성화)
+                </div>
+              )}
+            </div>
 
             <div className="pt-1">
               <RelatedDnaQuilt video={video} />

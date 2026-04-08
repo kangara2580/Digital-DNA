@@ -5,6 +5,7 @@ import { FloatingHelp } from "@/components/FloatingHelp";
 import { MallTopNav } from "@/components/MallTopNav";
 import { ReelsLeftRail } from "@/components/ReelsLeftRail";
 import { DopamineBasketProvider } from "@/context/DopamineBasketContext";
+import { PurchasedVideosProvider } from "@/context/PurchasedVideosContext";
 import { RecentClipsProvider } from "@/context/RecentClipsContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import "./globals.css";
@@ -27,15 +28,17 @@ export default function RootLayout({
       <body className="min-h-screen bg-reels-abyss font-sans text-zinc-100 antialiased">
         <WishlistProvider>
           <RecentClipsProvider>
-          <DopamineBasketProvider>
-            <ReelsLeftRail />
-            <div className="min-w-0 md:pl-[var(--reels-rail-w)]">
-              <MallTopNav />
-              {children}
-              <DnaBuilderDock />
-              <FloatingHelp />
-            </div>
-          </DopamineBasketProvider>
+            <DopamineBasketProvider>
+              <PurchasedVideosProvider>
+                <ReelsLeftRail />
+                <div className="min-w-0 md:pl-[var(--reels-rail-w)]">
+                  <MallTopNav />
+                  {children}
+                  <DnaBuilderDock />
+                  <FloatingHelp />
+                </div>
+              </PurchasedVideosProvider>
+            </DopamineBasketProvider>
           </RecentClipsProvider>
         </WishlistProvider>
       </body>

@@ -4,11 +4,13 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { KlingReskinStudio } from "@/components/KlingReskinStudio";
+import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { getMarketVideoById } from "@/data/videoCommerce";
 
 export function CreateStudioPage() {
   const searchParams = useSearchParams();
   const videoId = searchParams.get("videoId") ?? "";
+  const { hasPurchased } = usePurchasedVideos();
 
   const video = useMemo(() => {
     if (!videoId) return undefined;
@@ -43,6 +45,23 @@ export function CreateStudioPage() {
     );
   }
 
+  if (!hasPurchased(video.id)) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-16 text-center">
+        <p className="text-[17px] font-extrabold text-zinc-100">창작은 모션 권한 구매 후에 열려요</p>
+        <p className="mt-3 text-[14px] leading-relaxed text-zinc-500">
+          조각 상세에서 「모션 권한 구매(데모)」를 완료하면 「AI 창작하기」가 활성화됩니다.
+        </p>
+        <Link
+          href={`/video/${video.id}`}
+          className="mt-8 inline-flex rounded-full bg-reels-crimson px-6 py-3 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
+        >
+          조각 상세로 이동
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <>
       <nav className="mb-6 font-mono text-[11px] text-zinc-500">
@@ -61,8 +80,8 @@ export function CreateStudioPage() {
           창작 스튜디오
         </h1>
         <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-zinc-500">
-          구매한 모션 권리로 Gemini·Kling 파이프라인에 연결됩니다. 프로필은 마이페이지에 등록한
-          이미지 중에서 고르고, 배경은 텍스트로 지정하세요.
+          구매한 모션 권리로 Gemini(Nano Banana 2)·Kling Motion Control 파이프라인에 연결됩니다.
+          프로필은 마이페이지에 등록한 이미지 중에서 고르고, 배경은 텍스트로 지정하세요.
         </p>
         <p className="mt-1 font-mono text-[12px] text-zinc-600">
           현재 조각: {video.title} · {video.creator}
