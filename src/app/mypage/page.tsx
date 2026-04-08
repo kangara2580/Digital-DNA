@@ -10,8 +10,8 @@ export default function MyPage() {
     <main className="mx-auto min-h-[50vh] max-w-3xl px-4 py-12 text-zinc-100 sm:px-6 sm:py-16">
       <h1 className="text-2xl font-extrabold tracking-tight">마이페이지</h1>
       <p className="mt-2 text-[15px] leading-relaxed text-zinc-500">
-        판매 수익·정산·내 클립 관리는 여기로 모을 예정입니다. 창작 탭에서 쓸{" "}
-        <strong className="text-zinc-300">프로필 얼굴</strong>은 아래에 등록해 두세요 (데모 이미지).
+        판매 수익·정산·내 클립 관리는 여기로 모을 예정입니다.         창작 탭에서 쓸 <strong className="text-zinc-300">프로필 얼굴</strong>은 아래에 등록해 두세요
+        (데모 이미지).
       </p>
 
       <section className="mt-10 reels-glass-card rounded-2xl p-5 sm:p-6" aria-labelledby="profiles-heading">
@@ -19,7 +19,7 @@ export default function MyPage() {
           창작용 프로필 사진
         </h2>
         <p className="mt-2 text-[13px] leading-relaxed text-zinc-400">
-          AI 리스킨 시 Gemini가 이 얼굴을 모션에 입힙니다.{" "}
+          창작 시 이 얼굴이 영상에 반영됩니다.{" "}
           <Link href="/create?videoId=1" className="text-reels-cyan/90 hover:underline">
             창작 스튜디오
           </Link>

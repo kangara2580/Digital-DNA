@@ -20,9 +20,7 @@ export function ReelsLinkUploader() {
         릴스 링크 등록
       </h1>
       <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-zinc-500">
-        TikTok·Instagram 릴스 URL을 붙여 넣으면 아래에서 미리 재생할 수 있어요. 원본 파일이
-        없을 때는 서버에서 다운로드·정규화한 뒤 카탈로그에 올리는 파이프라인과 연결하면
-        됩니다.
+        TikTok·Instagram 릴스 URL을 붙여 넣으면 아래에서 미리 재생할 수 있어요.
       </p>
 
       <form onSubmit={onSubmit} className="mt-6">
@@ -64,8 +62,7 @@ export function ReelsLinkUploader() {
               TikTok <code className="rounded bg-black/40 px-1 text-[12px]">…/video/숫자</code> 또는
               Instagram{" "}
               <code className="rounded bg-black/40 px-1 text-[12px]">/reel/쇼트코드</code> 형식을
-              사용해 주세요. 서버 단에서 링크 다운로드(참고: 외부 다운로더 파이프라인)는 별도
-              API로 붙입니다.
+              사용해 주세요.
             </p>
             <a
               href={parsed.href.startsWith("http") ? parsed.href : `https://${parsed.href}`}

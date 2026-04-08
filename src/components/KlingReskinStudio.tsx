@@ -7,7 +7,7 @@ import type { FeedVideo } from "@/data/videos";
 
 type Props = {
   video: FeedVideo;
-  /** 창작 탭 전용: 마이페이지 프로필 선택 + Gemini/Kling 파이프라인 안내 */
+  /** 창작 탭 전용: 마이페이지 프로필 선택 등 추가 단계 */
   creationFlow?: boolean;
 };
 
@@ -57,53 +57,11 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
           </h2>
           <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-zinc-500">
             {creationFlow
-              ? "구매 후 이어지는 창작 단계입니다. 프로필·배경을 지정한 뒤 Generate로 파이프라인을 실행합니다."
-              : "모션 가이드를 유지한 채 얼굴·배경만 교체합니다. 실제 Kling API 연동 시 이 패널이 생성 파이프라인과 연결됩니다."}
+              ? "구매 후 이어지는 창작 단계입니다. 프로필과 배경을 지정한 뒤 생성을 눌러 주세요."
+              : "모션 가이드를 유지한 채 얼굴·배경만 교체합니다. 서비스 연동 시 이 화면에서 바로 결과를 받게 됩니다."}
           </p>
         </div>
       </div>
-
-      {creationFlow ? (
-        <div className="mb-6 reels-glass-card rounded-xl p-4 sm:p-5">
-          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-reels-cyan">
-            백엔드 로직 (3단계)
-          </p>
-          <ol className="mt-3 list-decimal space-y-3 pl-4 text-[12px] leading-relaxed text-zinc-400">
-            <li>
-              <strong className="text-zinc-200">Step 1 — 배경 합성 (Image-to-Image)</strong>
-              <br />
-              입력: 원본 릴스 <strong className="text-zinc-300">첫 프레임</strong> + 구매자 배경
-              텍스트.
-              <br />
-              <strong className="text-reels-cyan">Gemini (Nano Banana 2)</strong>에 「인물은 유지하고
-              배경만 [프롬프트]로 바꿔줘」 → 1차 수정본 이미지.
-            </li>
-            <li>
-              <strong className="text-zinc-200">Step 2 — 인물 교체 (Face / Character)</strong>
-              <br />
-              입력: Step 1 결과 + 선택한 <strong className="text-zinc-300">마이페이지 프로필</strong>{" "}
-              이미지.
-              <br />
-              <strong className="text-reels-cyan">Gemini</strong>에 「이 사진 속 사람을 프로필
-              캐릭터로 바꿔줘」 → 최종 참조 프레임.
-            </li>
-            <li>
-              <strong className="text-zinc-200">Step 3 — 영상 생성 (Motion Control)</strong>
-              <br />
-              입력: 판매자 <strong className="text-zinc-300">원본 영상 파일(mp4)</strong> + Step 2
-              최종 프레임.
-              <br />
-              <strong className="text-reels-cyan">Kling Motion Control API</strong>로 원본 모션을
-              추출해 새 캐릭터에 입힘 → 커스텀 영상 출력.
-            </li>
-          </ol>
-          <p className="mt-3 border-t border-white/10 pt-3 text-[11px] leading-relaxed text-zinc-600">
-            링크만 있는 경우: 서버에서 mp4를 확보한 뒤 API에 전달해야 합니다(다운로드 파이프라인·
-            indown.io 유사 서비스 참고). 프롬프트는 인물 비율·구도 유지를 위해 네거티브/가이드라인을
-            함께 설계합니다.
-          </p>
-        </div>
-      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
         <div className="min-w-0">
@@ -128,7 +86,7 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
                   <div className="reels-scan-line" />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="rounded-full border border-reels-cyan/40 bg-black/60 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-reels-cyan">
-                      Reskin pipeline…
+                      처리 중…
                     </span>
                   </div>
                 </div>

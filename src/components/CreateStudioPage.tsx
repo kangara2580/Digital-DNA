@@ -80,8 +80,8 @@ export function CreateStudioPage() {
           창작 스튜디오
         </h1>
         <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-zinc-500">
-          구매한 모션 권리로 Gemini(Nano Banana 2)·Kling Motion Control 파이프라인에 연결됩니다.
-          프로필은 마이페이지에 등록한 이미지 중에서 고르고, 배경은 텍스트로 지정하세요.
+          구매한 모션 권리로 나만의 영상을 만듭니다. 프로필은 마이페이지에 등록한 이미지 중에서 고르고,
+          배경은 원하는 분위기를 텍스트로 적어 주세요.
         </p>
         <p className="mt-1 font-mono text-[12px] text-zinc-600">
           현재 조각: {video.title} · {video.creator}

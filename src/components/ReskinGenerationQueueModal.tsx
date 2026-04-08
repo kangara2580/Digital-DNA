@@ -49,7 +49,7 @@ export function ReskinGenerationQueueModal({
           id="reskin-queue-desc"
           className="mt-2 text-center text-[14px] leading-relaxed text-zinc-400"
         >
-          약 1분 소요될 수 있어요. Gemini 배경·캐릭터 합성 후 Kling으로 모션을 입히는 중입니다.
+          약 1분 소요될 수 있어요. 잠시만 기다려 주세요.
         </p>
         <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
           <div className="reels-progress-bar h-full w-1/3 rounded-full bg-gradient-to-r from-reels-crimson via-reels-cyan to-reels-crimson" />
