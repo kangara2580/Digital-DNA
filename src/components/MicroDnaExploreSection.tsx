@@ -25,9 +25,11 @@ export function MicroDnaExploreSection() {
           <div className="min-w-0 text-left">
             <h2
               id="micro-dna-explore-heading"
-              className="text-[22px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:text-[26px] md:text-[28px]"
+              className="text-[22px] font-extrabold leading-snug tracking-tight sm:text-[26px] md:text-[28px]"
             >
-              영감이 필요한 순간, 단 100~원만 준비하세요!
+              <span className="text-zinc-100">단 ! </span>
+              <span className="text-reels-crimson">100~</span>
+              <span className="text-zinc-100"> 원만 준비하세요 !</span>
             </h2>
             <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-zinc-500 sm:text-[16px]">
               300원 이하 조각만 모았어요.
