@@ -52,7 +52,10 @@ function tryDiscoverUrl(chunk) {
   }
 }
 
-const envPort = process.env.PORT ? Number(process.env.PORT) : NaN;
+const DEFAULT_DEV_PORT = 3001;
+const envPort = process.env.PORT
+  ? Number(process.env.PORT)
+  : DEFAULT_DEV_PORT;
 const nextArgs = ["dev", "-H", host];
 if (Number.isFinite(envPort) && envPort > 0) {
   nextArgs.push("-p", String(envPort));

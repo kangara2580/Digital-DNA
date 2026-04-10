@@ -5,11 +5,11 @@ function RevenueHighlight({ won }: { won: number }) {
   const formatted = Math.max(0, Math.floor(won)).toLocaleString("ko-KR");
   return (
     <p
-      className="text-right font-mono text-[15px] font-extrabold leading-none tabular-nums tracking-tight text-emerald-300 [text-shadow:0_0_24px_rgba(16,185,129,0.35)] sm:text-[16px] [html[data-theme='light']_&]:text-violet-700 [html[data-theme='light']_&]:[text-shadow:none]"
+      className="text-right font-mono text-[15px] font-extrabold leading-none tabular-nums tracking-tight text-violet-300 [text-shadow:0_0_24px_rgba(139,92,246,0.35)] sm:text-[16px] [html[data-theme='light']_&]:text-violet-700 [html[data-theme='light']_&]:[text-shadow:none]"
       aria-label={`누적수익 ${formatted}원`}
     >
       {formatted}
-      <span className="ml-0.5 text-[13px] font-bold text-emerald-400/90 sm:text-[14px] [html[data-theme='light']_&]:text-violet-600">
+      <span className="ml-0.5 text-[13px] font-bold text-violet-400/90 sm:text-[14px] [html[data-theme='light']_&]:text-violet-600">
         원
       </span>
     </p>
@@ -46,6 +46,9 @@ const labelCls =
 const valueCls =
   "min-w-0 text-right text-[14px] font-bold leading-snug tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[15px]";
 
+const priceValueCls =
+  "min-w-0 text-right text-[14px] font-bold leading-snug tabular-nums text-reels-cyan [html[data-theme='light']_&]:text-[#6d28d9] sm:text-[15px]";
+
 export function TrendingVideoStatsFooter({ metrics, salePriceWon }: Props) {
   const g = metrics.growthPercent;
   const up = g > 0;
@@ -63,9 +66,7 @@ export function TrendingVideoStatsFooter({ metrics, salePriceWon }: Props) {
         </div>
         <div className={rowCls}>
           <dt className={labelCls}>판매가격</dt>
-          <dd
-            className={`${valueCls} text-reels-cyan [html[data-theme='light']_&]:text-[#6d28d9]`}
-          >
+          <dd className={priceValueCls}>
             {salePriceWon != null && salePriceWon > 0
               ? `${salePriceWon.toLocaleString("ko-KR")}원`
               : "—"}

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useStoredFaceProfile } from "@/hooks/useStoredFaceProfile";
 
 const MAX_BYTES = 5 * 1024 * 1024;
+const MAX_SOURCE_BYTES = 20 * 1024 * 1024;
 
 const TRIPLE_LABELS = [
   { key: "front" as const, title: "정면" },
@@ -37,9 +38,117 @@ function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
+async function drawImageToCanvas(
+  file: File,
+  width: number,
+  height: number,
+): Promise<HTMLCanvasElement> {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("canvas");
+
+  if ("createImageBitmap" in window) {
+    const bitmap = await createImageBitmap(file);
+    try {
+      ctx.drawImage(bitmap, 0, 0, width, height);
+    } finally {
+      bitmap.close();
+    }
+    return canvas;
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    img.decoding = "async";
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error("decode"));
+      img.src = objectUrl;
+    });
+    ctx.drawImage(img, 0, 0, width, height);
+    return canvas;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const r = reader.result;
+      if (typeof r === "string") resolve(r);
+      else reject(new Error("read"));
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function compressImageToDataUrl(file: File): Promise<string> {
+  if (file.size <= MAX_BYTES) return readFileAsDataUrl(file);
+
+  let sourceWidth = 0;
+  let sourceHeight = 0;
+  if ("createImageBitmap" in window) {
+    const probe = await createImageBitmap(file);
+    sourceWidth = probe.width;
+    sourceHeight = probe.height;
+    probe.close();
+  } else {
+    const objectUrl = URL.createObjectURL(file);
+    try {
+      const img = new Image();
+      img.decoding = "async";
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("decode"));
+        img.src = objectUrl;
+      });
+      sourceWidth = img.naturalWidth;
+      sourceHeight = img.naturalHeight;
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  }
+
+  const maxSide = 2048;
+  const longer = Math.max(sourceWidth, sourceHeight);
+  const scale = longer > maxSide ? maxSide / longer : 1;
+  const width = Math.max(1, Math.round(sourceWidth * scale));
+  const height = Math.max(1, Math.round(sourceHeight * scale));
+  const canvas = await drawImageToCanvas(file, width, height);
+
+  const mimeType = "image/jpeg";
+  const qualities = [0.9, 0.82, 0.74, 0.66, 0.58, 0.5];
+
+  for (const q of qualities) {
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, mimeType, q),
+    );
+    if (!blob) continue;
+    if (blob.size <= MAX_BYTES) return blobToDataUrl(blob);
+  }
+
+  const fallback = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, mimeType, 0.46),
+  );
+  if (!fallback) throw new Error("compress");
+  return blobToDataUrl(fallback);
+}
+
 type TripleDraft = { front: string | null; left: string | null; right: string | null };
 
 const emptyTriple = (): TripleDraft => ({ front: null, left: null, right: null });
+
+function titleByKey(key: keyof TripleDraft): string {
+  if (key === "front") return "정면";
+  if (key === "left") return "좌측";
+  return "우측";
+}
 
 export function FaceProfileUploadSection() {
   const { profile, setProfile, hydrated } = useStoredFaceProfile();
@@ -50,6 +159,7 @@ export function FaceProfileUploadSection() {
   const [singlePending, setSinglePending] = useState<string | null>(null);
   const [aiRunning, setAiRunning] = useState(false);
   const [aiStepIndex, setAiStepIndex] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState<string>("");
 
   const tripleInputRefs = {
     front: useRef<HTMLInputElement>(null),
@@ -80,20 +190,29 @@ export function FaceProfileUploadSection() {
       const file = e.target.files?.[0];
       e.target.value = "";
       if (!file || !file.type.startsWith("image/")) return;
-      if (file.size > MAX_BYTES) {
-        alert("5MB 이하 이미지를 선택해 주세요.");
+      if (file.size > MAX_SOURCE_BYTES) {
+        alert("원본 이미지가 너무 큽니다. 20MB 이하 파일을 선택해 주세요.");
         return;
       }
-      void readFileAsDataUrl(file).then((dataUrl) => {
-        setTripleDraft((prev) => {
-          const next = { ...prev, [key]: dataUrl };
-          if (next.front && next.left && next.right) {
-            setProfile({ kind: "triple", front: next.front, left: next.left, right: next.right });
-            setSinglePending(null);
-          }
-          return next;
+      setUploadStatus(`${titleByKey(key)} 이미지 처리 중...`);
+      void compressImageToDataUrl(file)
+        .then((dataUrl) => {
+          setTripleDraft((prev) => {
+            const next = { ...prev, [key]: dataUrl };
+            if (next.front && next.left && next.right) {
+              setProfile({ kind: "triple", front: next.front, left: next.left, right: next.right });
+              setSinglePending(null);
+              setUploadStatus("3면 이미지 등록이 완료되었습니다.");
+            } else {
+              setUploadStatus(`${titleByKey(key)} 이미지가 업로드되었습니다.`);
+            }
+            return next;
+          });
+        })
+        .catch(() => {
+          setUploadStatus("이미지 업로드에 실패했습니다. 다른 파일로 다시 시도해 주세요.");
+          alert("이미지 처리 중 문제가 발생했어요. 다른 이미지를 선택해 주세요.");
         });
-      });
     },
     [setProfile],
   );
@@ -102,14 +221,29 @@ export function FaceProfileUploadSection() {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file || !file.type.startsWith("image/")) return;
-    if (file.size > MAX_BYTES) {
-      alert("5MB 이하 이미지를 선택해 주세요.");
+    if (file.size > MAX_SOURCE_BYTES) {
+      alert("원본 이미지가 너무 큽니다. 20MB 이하 파일을 선택해 주세요.");
       return;
     }
-    void readFileAsDataUrl(file).then((dataUrl) => {
-      setSinglePending(dataUrl);
-    });
+    void compressImageToDataUrl(file)
+      .then((dataUrl) => {
+        setSinglePending(dataUrl);
+      })
+      .catch(() => {
+        alert("이미지 처리 중 문제가 발생했어요. 다른 이미지를 선택해 주세요.");
+      });
   }, []);
+
+  const clearTripleSlot = useCallback(
+    (key: keyof TripleDraft) => {
+      setTripleDraft((prev) => ({ ...prev, [key]: null }));
+      if (profile?.kind === "triple") {
+        setProfile(null);
+      }
+      setUploadStatus(`${titleByKey(key)} 이미지 선택이 취소되었습니다.`);
+    },
+    [profile, setProfile],
+  );
 
   const runAiGeneration = useCallback(async () => {
     if (!singlePending) return;
@@ -134,17 +268,11 @@ export function FaceProfileUploadSection() {
     setTripleDraft(emptyTriple());
     setSinglePending(null);
     setAiRunning(false);
+    setUploadStatus("");
   }, [setProfile]);
 
   const tripleReady =
     (tripleDraft.front && tripleDraft.left && tripleDraft.right) || profile?.kind === "triple";
-
-  const showTripleGrid =
-    profile?.kind === "triple"
-      ? ([profile.front, profile.left, profile.right] as const)
-      : tripleDraft.front && tripleDraft.left && tripleDraft.right
-        ? ([tripleDraft.front, tripleDraft.left, tripleDraft.right] as const)
-        : null;
 
   const showAiCrop = profile?.kind === "ai";
 
@@ -178,7 +306,7 @@ export function FaceProfileUploadSection() {
         <h3 className="text-[13px] font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
           ① 3면 직접 <span className="text-reels-cyan/90">(권장)</span>
         </h3>
-        <p className="mt-1 text-[12px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">정면 · 좌 · 우 각 1장</p>
+        <p className="mt-1 text-[12px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">정면 · 좌 · 우 각 1장 (원본 20MB까지 자동 압축)</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           {TRIPLE_LABELS.map(({ key, title }) => (
@@ -199,38 +327,41 @@ export function FaceProfileUploadSection() {
               >
                 {slotSrc(key) ? "다시 선택" : "선택"}
               </button>
+              {slotSrc(key) ? (
+                <button
+                  type="button"
+                  onClick={() => clearTripleSlot(key)}
+                  className="mt-2 w-full rounded-lg border border-rose-400/35 bg-rose-500/10 py-2 text-[11px] font-semibold text-rose-300 transition hover:bg-rose-500/20 [html[data-theme='light']_&]:text-rose-700"
+                >
+                  취소
+                </button>
+              ) : null}
+              {slotSrc(key) ? (
+                <div className="mt-3 overflow-hidden rounded-lg border border-white/12 bg-black/35 aspect-[3/4] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={slotSrc(key)!}
+                    alt={`${title} 업로드 미리보기`}
+                    className="h-full w-full object-cover object-center"
+                  />
+                </div>
+              ) : null}
             </div>
           ))}
         </div>
-
-        {hydrated && showTripleGrid ? (
-          <div className="mt-5">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">직접 등록 미리보기</p>
-            <ul className="mt-2 grid grid-cols-3 gap-2 sm:gap-3" role="list">
-              {showTripleGrid.map((src, i) => (
-                <li key={TRIPLE_LABELS[i].key} className="min-w-0">
-                  <div className="relative overflow-hidden rounded-xl border border-white/12 bg-black/40 aspect-[3/4] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={src} alt="" className="h-full w-full object-cover object-center" />
-                    <span className="absolute left-1.5 top-1.5 rounded bg-black/55 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-reels-cyan">
-                      직접
-                    </span>
-                  </div>
-                  <p className="mt-1.5 text-center text-[11px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                    {TRIPLE_LABELS[i].title}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </div>
+        {uploadStatus ? (
+          <p className="mt-3 text-[12px] font-semibold text-reels-cyan [html[data-theme='light']_&]:text-cyan-700">
+            {uploadStatus}
+          </p>
         ) : null}
+
       </div>
 
       <div className="mt-10 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-200">
         <h3 className="text-[13px] font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
           ② 1장 + <span className="text-reels-cyan/90">AI 3면</span>
         </h3>
-        <p className="mt-1 text-[12px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">정면 1장 올리고 → 생성</p>
+        <p className="mt-1 text-[12px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">정면 1장 올리고 → 생성 (원본 20MB까지 자동 압축)</p>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <input
@@ -310,7 +441,10 @@ export function FaceProfileUploadSection() {
       </div>
 
       {hydrated && !nothingStarted ? (
-        <div className="mt-8 flex justify-end border-t border-white/10 pt-6 [html[data-theme='light']_&]:border-zinc-200">
+        <div className="mt-8 flex justify-end gap-2 border-t border-white/10 pt-6 [html[data-theme='light']_&]:border-zinc-200">
+          <p className="mr-auto self-center text-[12px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            변경 사항은 자동 저장됩니다.
+          </p>
           <button
             type="button"
             onClick={clearAll}

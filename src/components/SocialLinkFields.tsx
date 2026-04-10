@@ -28,12 +28,19 @@ function platformLabel(url: string): string | null {
 type Props = {
   links: string[];
   onChange: (next: string[]) => void;
+  errors?: string[];
+  placeholder?: string;
 };
 
 /**
  * SNS·영상 플랫폼 URL 여러 개 — 링크 추가/삭제
  */
-export function SocialLinkFields({ links, onChange }: Props) {
+export function SocialLinkFields({
+  links,
+  onChange,
+  errors = [],
+  placeholder,
+}: Props) {
   const setAt = (index: number, value: string) => {
     const next = [...links];
     next[index] = value;
@@ -75,12 +82,20 @@ export function SocialLinkFields({ links, onChange }: Props) {
                 </p>
                 <input
                   className={`${INPUT_CLS} mt-2`}
-                  placeholder="Instagram 릴스, TikTok, YouTube(Shorts/일반), 채널 등 공개 URL"
+                  placeholder={
+                    placeholder ??
+                    "Instagram 릴스, TikTok, YouTube(Shorts/일반), 채널 등 공개 URL"
+                  }
                   value={url}
                   onChange={(e) => setAt(i, e.target.value)}
                   inputMode="url"
                   autoComplete="url"
                 />
+                {errors[i] ? (
+                  <p className="mt-1.5 text-[12px] font-semibold text-rose-400 [html[data-theme='light']_&]:text-rose-600">
+                    {errors[i]}
+                  </p>
+                ) : null}
               </div>
               {links.length > 1 ? (
                 <button

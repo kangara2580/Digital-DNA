@@ -64,7 +64,7 @@ export default function RootLayout({
     <html
       lang="ko"
       suppressHydrationWarning
-      className={`${inter.variable} ${montserrat.variable} ${blackHanSans.variable} ${nanumGothic.variable} ${songMyung.variable} scroll-smooth`}
+      className={`${inter.variable} ${montserrat.variable} ${blackHanSans.variable} ${nanumGothic.variable} ${songMyung.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />

@@ -190,21 +190,12 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
               >
                 {ctaLabel}
               </button>
-              {!soldOut && !owned ? (
-                <button
-                  type="button"
-                  onClick={() => markPurchased(video.id)}
-                  className="w-full rounded-full border border-white/20 bg-white/[0.06] px-5 py-3.5 text-[14px] font-extrabold text-zinc-100 transition-colors hover:border-reels-cyan/40 hover:bg-white/10 sm:flex-1"
-                >
-                  모션 권한 구매(데모)
-                </button>
-              ) : null}
             </div>
 
             <div className="flex flex-col gap-2">
               {!owned ? (
                 <p className="text-center text-[11px] text-zinc-500">
-                  결제 연동 전에는 「모션 권한 구매(데모)」로 창작 버튼을 켤 수 있어요.
+                  결제 완료 후 창작 버튼이 자동으로 활성화됩니다.
                 </p>
               ) : null}
               {owned ? (

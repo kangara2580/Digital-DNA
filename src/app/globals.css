@@ -115,10 +115,16 @@
 body {
   color: var(--foreground);
   background: var(--background);
+  overflow-x: clip;
   transition:
     background-color 240ms ease,
     color 240ms ease,
     background 280ms ease;
+}
+
+html {
+  overflow-x: clip;
+  scrollbar-gutter: stable;
 }
 
 ::selection {
@@ -390,6 +396,7 @@ body {
 .feed-scroll {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
   scrollbar-width: thin;
   scrollbar-color: #ffffff rgba(255, 255, 255, 0.08);
 }

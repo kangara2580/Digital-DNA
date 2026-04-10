@@ -8,7 +8,7 @@ import { SectionMoreLink } from "./SectionMoreLink";
 import { VideoCard } from "./VideoCard";
 
 const FAILURE_STRIP =
-  "no-scrollbar -mx-4 flex w-full snap-x snap-mandatory items-stretch gap-2 overflow-x-auto px-4 pb-1 pt-2 sm:mx-0 sm:gap-3 sm:px-0 md:gap-3 lg:gap-4";
+  "no-scrollbar -mx-4 flex w-full snap-x snap-proximity items-stretch gap-2 overflow-x-auto px-4 pb-1 pt-2 sm:mx-0 sm:gap-3 sm:px-0 md:gap-3 lg:gap-4";
 const CARD_SLOT =
   "relative shrink-0 snap-center " +
   "w-[min(48vw,260px)] min-w-[min(48vw,168px)] max-w-[260px] " +

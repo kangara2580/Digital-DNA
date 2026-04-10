@@ -55,3 +55,16 @@ model Notification {
   @@index([videoId, type, status])
   @@map("notifications")
 }
+
+/// 닉네임 중복 방지용 예약 레코드 (대소문자 구분 없이 unique)
+model NicknameReservation {
+  id              String   @id @default(cuid())
+  nickname        String   @unique
+  displayNickname String   @map("display_nickname")
+  reservedByEmail String?  @map("reserved_by_email")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([createdAt])
+  @@map("nickname_reservations")
+}
