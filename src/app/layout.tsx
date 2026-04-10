@@ -70,7 +70,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
-      <body className="min-h-screen bg-reels-abyss font-sans text-zinc-100 antialiased">
+      <body className="min-h-screen bg-[var(--background)] font-sans text-[var(--foreground)] antialiased">
         <WishlistProvider>
           <RecentClipsProvider>
             <DopamineBasketProvider>

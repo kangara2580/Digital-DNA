@@ -1,6 +1,6 @@
 "use client";
 
-import { Instagram, Link2, ShieldCheck, UserPlus2 } from "lucide-react";
+import { Link2, ShieldCheck, UserPlus2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
 type SignupForm = {
@@ -76,11 +76,11 @@ export default function SignupPage() {
   };
 
   return (
-    <main className="mx-auto min-h-[70vh] max-w-3xl px-4 py-10 text-zinc-100 sm:px-6 sm:py-12">
+    <main className="mx-auto min-h-[70vh] max-w-3xl px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12">
       <div className="reels-glass-card rounded-2xl p-5 sm:p-6">
         <div className="flex items-center gap-2">
           <UserPlus2 className="h-5 w-5 text-reels-cyan" />
-          <h1 className="text-2xl font-extrabold tracking-tight">회원가입</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight [html[data-theme='light']_&]:text-zinc-900">회원가입</h1>
         </div>
         <p className="mt-2 text-[13px] text-zinc-400 [html[data-theme='light']_&]:text-[#6d5a88]">
           기본 계정 생성 후 인스타그램/틱톡 링크를 연결해 릴스 소스를 빠르게 가져올 수 있어요.
@@ -112,7 +112,7 @@ export default function SignupPage() {
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <div className="rounded-lg border border-white/10 p-3 [html[data-theme='light']_&]:border-black/10">
                 <p className="inline-flex items-center gap-1 text-[13px] font-semibold">
-                  <Instagram className="h-4 w-4" /> Instagram 링크
+                  <Link2 className="h-4 w-4" /> Instagram 링크
                 </p>
                 <input
                   className={`${INPUT_CLS} mt-2`}

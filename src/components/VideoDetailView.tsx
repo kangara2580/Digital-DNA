@@ -39,14 +39,14 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
         : "바로 구매하기";
 
   return (
-    <div className="min-h-screen bg-transparent text-zinc-100">
+    <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
       <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 lg:px-8">
-        <nav className="mb-6 font-mono text-[11px] text-zinc-500">
+        <nav className="mb-6 font-mono text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           <Link href="/" className="text-reels-cyan/90 hover:text-reels-cyan">
             홈
           </Link>
-          <span className="mx-1.5 text-zinc-700">/</span>
-          <span className="text-zinc-400">조각 상세</span>
+          <span className="mx-1.5 text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
+          <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">조각 상세</span>
         </nav>
 
         <div className="flex flex-col gap-10 lg:flex-row lg:gap-12">
@@ -67,7 +67,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                 preload="metadata"
               />
             </div>
-            <p className="mt-3 text-center font-mono text-[10px] text-zinc-500">
+            <p className="mt-3 text-center font-mono text-[10px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
               Cloned:{" "}
               <span className="text-reels-cyan">
                 <CloneCountAnimation value={meta.salesCount} />
@@ -83,16 +83,16 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                   {fresh.label}
                 </span>
               ) : null}
-              <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl">
+              <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">
                 {video.title}
               </h1>
-              <p className="mt-1 text-[14px] text-zinc-400">{video.creator}</p>
-              <p className="mt-2 text-[12px] leading-relaxed text-zinc-500">{fresh.subline}</p>
+              <p className="mt-1 text-[14px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">{video.creator}</p>
+              <p className="mt-2 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">{fresh.subline}</p>
             </div>
 
-            <div className="border-t border-white/10 pt-6">
+            <div className="border-t border-white/10 pt-6 [html[data-theme='light']_&]:border-zinc-200">
               <div className="flex items-center justify-between gap-3">
-                <p className="font-mono text-[22px] font-extrabold tabular-nums text-zinc-100">
+                <p className="font-mono text-[22px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
                   {price > 0 ? `${price.toLocaleString("ko-KR")}원` : "가격 문의"}
                 </p>
                 <button
@@ -102,7 +102,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                     if (soldOut) return;
                     dopamine.launchFromCartButton(e.currentTarget, video, video.poster);
                   }}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-zinc-200 transition-colors hover:border-reels-cyan/40 hover:text-reels-cyan disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-zinc-200 transition-colors hover:border-reels-cyan/40 hover:text-reels-cyan disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800"
                   disabled={soldOut}
                   aria-label="장바구니 담기"
                 >
@@ -117,12 +117,12 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
             >
               <h2
                 id="license-heading"
-                className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500"
+                className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600"
               >
                 소유 방식 · License Type
               </h2>
               {meta.edition === "open" ? (
-                <p className="mt-3 text-[13px] leading-relaxed text-zinc-400">
+                <p className="mt-3 text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
                   이미{" "}
                   <span className="font-bold text-reels-cyan">
                     {meta.salesCount.toLocaleString("ko-KR")}명

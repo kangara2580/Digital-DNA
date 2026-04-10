@@ -24,18 +24,18 @@ export default async function VideoCustomizePage({
   if (!video) notFound();
 
   return (
-    <div className="min-h-screen bg-reels-abyss text-zinc-100">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 lg:px-8">
-        <nav className="mb-6 flex flex-wrap items-center gap-2 font-mono text-[11px] text-zinc-500">
+        <nav className="mb-6 flex flex-wrap items-center gap-2 font-mono text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           <Link href="/" className="text-reels-cyan/90 hover:text-reels-cyan">
             홈
           </Link>
-          <span className="text-zinc-700">/</span>
+          <span className="text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
           <Link href={`/video/${video.id}`} className="text-reels-cyan/90 hover:text-reels-cyan">
             조각 상세
           </Link>
-          <span className="text-zinc-700">/</span>
-          <span className="text-zinc-400">맞춤 리스킨</span>
+          <span className="text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
+          <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">맞춤 리스킨</span>
         </nav>
         <PurchaseCustomizeStudio video={video} />
       </div>

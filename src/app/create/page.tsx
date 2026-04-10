@@ -8,7 +8,7 @@ export const metadata = {
 
 function CreateFallback() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-20 text-center text-[14px] text-zinc-500">
+    <div className="mx-auto max-w-3xl px-4 py-20 text-center text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
       스튜디오 불러오는 중…
     </div>
   );
@@ -16,7 +16,7 @@ function CreateFallback() {
 
 export default function CreatePage() {
   return (
-    <div className="min-h-screen bg-reels-abyss text-zinc-100">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 lg:px-8">
         <Suspense fallback={<CreateFallback />}>
           <CreateStudioPage />
