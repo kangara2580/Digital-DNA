@@ -54,11 +54,6 @@ export function BestPurchaseReviewsSection() {
             >
               오늘의 베스트 구매평
             </h2>
-            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-zinc-500 sm:text-[16px]">
-              남들이 이 조각으로 무엇을 만들었는지 보면,
-              <br />
-              나도 할 수 있겠다는 감이 옵니다.
-            </p>
           </div>
           <SectionMoreLink
             category="best"
