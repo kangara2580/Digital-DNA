@@ -107,6 +107,36 @@ const M: Record<string, VideoCatalogMeta> = {
     vibeIds: ["village_morning", "slow_life"],
     listedAt: "2026-01-15",
   },
+  "13": {
+    categories: ["daily", "travel", "recommend"],
+    vibeIds: ["river_morning", "active_day"],
+    listedAt: "2026-03-06",
+  },
+  "14": {
+    categories: ["daily", "shortform", "recommend", "best"],
+    vibeIds: ["urban_night", "neon_city"],
+    listedAt: "2026-03-07",
+  },
+  "15": {
+    categories: ["dance", "music", "recommend", "shortform"],
+    vibeIds: ["studio_energy", "urban_fun"],
+    listedAt: "2026-03-08",
+  },
+  "16": {
+    categories: ["travel", "daily", "recommend"],
+    vibeIds: ["snow_peak", "cold_nature"],
+    listedAt: "2026-03-09",
+  },
+  "17": {
+    categories: ["travel", "daily", "recommend", "music"],
+    vibeIds: ["sunset_beach", "golden_hour"],
+    listedAt: "2026-03-03",
+  },
+  "18": {
+    categories: ["travel", "daily", "recommend"],
+    vibeIds: ["village_morning", "slow_life"],
+    listedAt: "2026-02-26",
+  },
   "dna-100-asphalt": {
     categories: ["daily", "shortform", "recommend"],
     vibeIds: ["rainy_cafe", "wet_street", "urban_wet"],

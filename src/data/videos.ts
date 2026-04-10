@@ -150,6 +150,73 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     priceWon: 2800,
     durationSec: 46,
   },
+  /** 홈 「추천 영상」 그리드 — 2행(최대 6열)까지 채우기 위한 추가 세로 클립 */
+  {
+    id: "13",
+    title: "새벽 러닝 트랙",
+    creator: "@dawn_runner",
+    src: "https://videos.pexels.com/video-files/3044475/3044475-hd_1920_1080_25fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/1571458/pexels-photo-1571458.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 1100,
+    durationSec: 22,
+  },
+  {
+    id: "14",
+    title: "네온 골목 산책",
+    creator: "@neon_walk",
+    src: "https://videos.pexels.com/video-files/3045163/3045163-hd_1920_1080_25fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/1519088/pexels-photo-1519088.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 2600,
+    durationSec: 31,
+  },
+  {
+    id: "15",
+    title: "파티 라이트 아래",
+    creator: "@party_glow",
+    src: "https://videos.pexels.com/video-files/3209828/3209828-hd_1920_1080_25fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/3757376/pexels-photo-3757376.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 1900,
+    durationSec: 19,
+  },
+  {
+    id: "16",
+    title: "눈 덮인 산 능선",
+    creator: "@peak_white",
+    src: "https://videos.pexels.com/video-files/2889030/2889030-hd_1920_1080_30fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/869258/pexels-photo-869258.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 3400,
+    durationSec: 40,
+  },
+  {
+    id: "17",
+    title: "해변 파도 소리",
+    creator: "@wave_listen",
+    src: "https://videos.pexels.com/video-files/1409899/1409899-hd_1920_1080_25fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/1683492/pexels-photo-1683492.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 1500,
+    durationSec: 27,
+  },
+  {
+    id: "18",
+    title: "마을 골목 골든아워",
+    creator: "@golden_alley",
+    src: "https://videos.pexels.com/video-files/2570934/2570934-hd_1920_1080_30fps.mp4",
+    poster:
+      "https://images.pexels.com/photos/235648/pexels-photo-235648.jpeg?auto=compress&cs=tinysrgb&w=640",
+    orientation: "portrait",
+    priceWon: 2100,
+    durationSec: 33,
+  },
   /** 100·300·500원대 — DNA 조합기·연관 무드 데모용 마이크로 조각 */
   {
     id: "dna-100-asphalt",
