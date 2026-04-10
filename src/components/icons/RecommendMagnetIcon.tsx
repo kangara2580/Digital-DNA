@@ -1,7 +1,12 @@
+import { useId } from "react";
+
 /**
- * 추천 영상 — U자 자석(위가 벌어진 말굽), 슬레이트 그레이 + 동일 원형 배경.
+ * 추천 영상 — 브랜드 그라데이션 별 + 반짝 (릴스마켓 톤)
  */
 export function RecommendMagnetIcon({ className }: { className?: string }) {
+  const uid = useId().replace(/:/g, "");
+  const gid = `rec-brand-${uid}`;
+
   return (
     <svg
       viewBox="0 0 24 24"
@@ -10,33 +15,35 @@ export function RecommendMagnetIcon({ className }: { className?: string }) {
       className={className}
       aria-hidden
     >
-      <circle
-        cx="12"
-        cy="12"
-        r="9.25"
-        className="stroke-slate-300"
-        strokeWidth="1.35"
-        fill="rgb(241 245 249)"
+      <defs>
+        <linearGradient
+          id={gid}
+          x1="3"
+          y1="4"
+          x2="21"
+          y2="20"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#FF0055" />
+          <stop offset="1" stopColor="#00F2EA" />
+        </linearGradient>
+      </defs>
+      <circle cx="12" cy="12" r="9.5" fill={`url(#${gid})`} opacity={0.14} />
+      <path
+        d="M12 5.2l1.65 3.75 4.05.35-3.05 2.7 0.9 3.95L12 14.6l-3.55 1.35 0.9-3.95-3.05-2.7 4.05-.35L12 5.2z"
+        fill={`url(#${gid})`}
+        stroke="white"
+        strokeWidth="0.35"
+        strokeLinejoin="round"
+        opacity={0.98}
       />
-      {/*
-        U자 자석을 (12,12) 원의 시각 중심에 맞춤 — 위·아래 여백이 비슷하도록 약간 하강.
-      */}
-      <g transform="translate(0 1.05)">
-        <path
-          d="M6.35 5.25L9.7 5.25 9.7 12.4Q12 14.85 14.3 12.4L14.3 5.25 17.65 5.25 17.65 12.85 Q12 20.5 6.35 12.85Z"
-          className="fill-slate-500"
-        />
-        <path
-          d="M6.35 5.25L9.7 5.25 9.7 12.4Q12 14.85 14.3 12.4L14.3 5.25 17.65 5.25 17.65 12.85 Q12 20.5 6.35 12.85Z"
-          className="stroke-slate-600/85"
-          strokeWidth="0.75"
-          fill="none"
-        />
-        <path
-          d="M7.75 6.15h1.35v2.15H7.75V6.15zm7.25 0h1.35v2.15H15V6.15z"
-          className="fill-slate-300/90"
-        />
-      </g>
+      <circle cx="6.8" cy="8.2" r="1.05" fill="#00F2EA" />
+      <circle cx="17.4" cy="15" r="0.85" fill="#FF0055" />
+      <path
+        d="M18.5 6.5l0.5 1.1-1.1 0.5-0.5-1.1 1.1-0.5z"
+        fill="#00F2EA"
+        opacity={0.85}
+      />
     </svg>
   );
 }

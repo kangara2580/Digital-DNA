@@ -46,7 +46,7 @@ export function VideoFeed() {
               id="recommended-feed-heading"
               className="flex items-center gap-2.5 text-[22px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:gap-3 sm:text-[26px] md:text-[28px]"
             >
-              <RecommendMagnetIcon className="h-7 w-7 shrink-0 text-reels-crimson sm:h-8 sm:w-8" />
+              <RecommendMagnetIcon className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
               추천 영상
             </h2>
             <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-zinc-500 sm:text-[16px]">
