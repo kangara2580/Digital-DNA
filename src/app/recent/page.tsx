@@ -9,14 +9,14 @@ import { ALL_MARKET_VIDEOS } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
 
 const SORT_OPTIONS = [
-  { value: "recent", label: "Recently viewed" },
-  { value: "oldest", label: "Oldest in history" },
-  { value: "price-asc", label: "Price · Low → high" },
-  { value: "price-desc", label: "Price · High → low" },
-  { value: "title-asc", label: "Title · A → Z" },
-  { value: "title-desc", label: "Title · Z → A" },
-  { value: "duration-asc", label: "Duration · Short first" },
-  { value: "duration-desc", label: "Duration · Long first" },
+  { value: "recent", label: "최근 본 순" },
+  { value: "oldest", label: "오래된 순" },
+  { value: "price-asc", label: "가격 낮은 순" },
+  { value: "price-desc", label: "가격 높은 순" },
+  { value: "title-asc", label: "제목 가나다 순" },
+  { value: "title-desc", label: "제목 역순" },
+  { value: "duration-asc", label: "짧은 영상 먼저" },
+  { value: "duration-desc", label: "긴 영상 먼저" },
 ] as const;
 
 type SortValue = (typeof SORT_OPTIONS)[number]["value"];
@@ -94,10 +94,6 @@ export default function RecentPage() {
             최근 본 조각
           </h1>
           <p className="mt-1 text-[15px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            <span className="font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">Recently viewed</span>
-            <span className="mx-1.5 text-zinc-600" aria-hidden>
-              ·
-            </span>
             조각 상세 페이지를 열면 자동으로 여기 쌓입니다. 우측 상단 시계
             아이콘으로도 올 수 있어요.
           </p>
@@ -105,15 +101,15 @@ export default function RecentPage() {
 
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           <label className="flex items-center gap-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            <span className="sr-only">Sort order</span>
+            <span className="sr-only">정렬 순서</span>
             <span className="hidden font-medium text-zinc-400 sm:inline [html[data-theme='light']_&]:text-zinc-700">
-              Sort
+              정렬
             </span>
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortValue)}
               className="min-w-[11.5rem] cursor-pointer rounded-lg border border-white/15 bg-reels-void/80 px-3 py-2 text-[13px] font-medium text-zinc-100 outline-none transition-colors hover:border-reels-cyan/35 focus:border-reels-cyan/50 focus:ring-2 focus:ring-reels-cyan/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
-              aria-label="Sort recently viewed clips"
+              aria-label="최근 본 조각 정렬"
             >
               {SORT_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -128,14 +124,14 @@ export default function RecentPage() {
               onClick={() => {
                 if (
                   typeof window !== "undefined" &&
-                  window.confirm("Clear all recently viewed clips on this device?")
+                  window.confirm("이 기기에서 최근 본 기록을 모두 지울까요?")
                 ) {
                   clear();
                 }
               }}
               className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-reels-crimson/35 hover:bg-white/[0.06] hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
             >
-              Clear all
+              모두 지우기
             </button>
           ) : null}
         </div>
@@ -143,24 +139,21 @@ export default function RecentPage() {
 
       {!hydrated ? (
         <p className="mt-10 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600" aria-live="polite">
-          Loading…
+          불러오는 중…
         </p>
       ) : rows.length === 0 ? (
         <div className="mx-auto mt-16 max-w-md text-center">
-          <p className="text-[16px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
-            No recently viewed clips
+          <p className="text-[16px] font-semibold leading-relaxed text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
+            아직 본 조각이 없어요. 마음에 드는 클립을 열어 보세요.
           </p>
           <p className="mt-2 text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            Open any clip detail page — it will show up here automatically.
-            <span className="mt-2 block text-[13px] text-zinc-600">
-              아직 본 조각이 없어요. 마음에 드는 클립을 열어 보세요.
-            </span>
+            조각 상세를 열면 자동으로 여기에 쌓입니다.
           </p>
           <Link
             href="/"
             className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
           >
-            Browse clips
+            조각 둘러보기
           </Link>
         </div>
       ) : (
@@ -171,7 +164,7 @@ export default function RecentPage() {
                 type="button"
                 onClick={() => remove(video.id)}
                 className="absolute right-2 top-2 z-[25] flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-reels-void/90 text-zinc-300 shadow-md backdrop-blur-md transition-colors hover:border-reels-crimson/40 hover:bg-white/10 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:bg-zinc-100"
-                aria-label={`Remove ${video.title} from recently viewed`}
+                aria-label={`${video.title} — 최근 본 목록에서 제거`}
               >
                 <X className="h-4 w-4" strokeWidth={2.2} aria-hidden />
               </button>
