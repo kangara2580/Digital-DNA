@@ -34,6 +34,12 @@
   --header-height: 220px;
   /** md+ 틱톡형 좌측 레일 — 본문·헤더 패딩과 동기화 */
   --reels-rail-w: 0px;
+  /** 릴스마켓 라이트 서피스 / 시안 포인트 (홈 영감 섹션 등) */
+  --primary-color: #00f0ff;
+  --bg-color: #ffffff;
+  --surface-color: #f8f9fa;
+  --text-main: #121212;
+  --text-sub: #666666;
 }
 
 :root[data-theme="light"] {
@@ -412,4 +418,18 @@ input.mall-search[type="search"]::-webkit-search-results-button {
   -webkit-appearance: none;
   appearance: none;
   display: none;
+}
+
+/* 「영감이 필요한 순간」— 3열 카드 · 2×2 비디오 (타이트 여백) */
+.inspiration-card {
+  padding: 16px;
+  border-radius: 24px;
+  background: var(--surface-color);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+}
+
+.inspiration-cell__video {
+  display: block;
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  box-sizing: border-box;
 }
