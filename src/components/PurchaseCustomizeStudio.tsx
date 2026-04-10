@@ -192,6 +192,9 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
   const [activeDragOverlayId, setActiveDragOverlayId] = useState<string | null>(null);
   const [previewApplying, setPreviewApplying] = useState(false);
   const [previewApplyError, setPreviewApplyError] = useState<string | null>(null);
+  const [selectedFaceSourceUrl, setSelectedFaceSourceUrl] = useState<string | null>(
+    null,
+  );
   const [pollJobId, setPollJobId] = useState<string | null>(null);
   const [remoteJob, setRemoteJob] = useState<{
     id: string;
@@ -229,6 +232,10 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
     if (!draft) return null;
     return faceOptions.find((o) => o.id === draft.faceOptionId) ?? faceOptions[0] ?? null;
   }, [draft, faceOptions]);
+
+  useEffect(() => {
+    setSelectedFaceSourceUrl(selectedFace?.src ?? null);
+  }, [selectedFace]);
 
   const trimStart = draft?.trimStart ?? 0;
   const trimEnd = draft?.trimEnd ?? 0;
@@ -379,101 +386,62 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
 
   const applyBackgroundPreview = useCallback(async (liveKeyword?: string) => {
     if (!draft) return;
-    const keyword = (liveKeyword ?? draft.backgroundPrompt).trim();
-    if (!keyword) {
-      setPreviewApplyError("배경 키워드를 먼저 입력해 주세요.");
+    if (!selectedFaceSourceUrl) {
+      setPreviewApplyError("얼굴 소스를 먼저 선택해 주세요.");
       return;
     }
+    const keyword = (liveKeyword ?? draft.backgroundPrompt).trim();
 
     setPreviewApplyError(null);
     setPreviewApplying(true);
+    setPreviewTransitionLoading(true);
     try {
-      // 디버깅용: 입력한 텍스트가 실제 API 인자로 들어가는지 확인
-      console.log("[BG PREVIEW] input keyword:", keyword);
-
-      const fetchCandidates = async (query: string, seed: number) => {
-        console.log("[BG PREVIEW] request query:", query, "seed:", seed);
-        // 경로 불일치 대응: videos 라우트 우선 -> 실패 시 /api/pexels 재시도
-        const urlsToTry = [
-          `/api/videos?q=${encodeURIComponent(query)}&mode=${encodeURIComponent(backgroundMode)}&seed=${seed}&limit=80&ts=${Date.now()}`,
-          `/api/pexels/videos?q=${encodeURIComponent(query)}&mode=${encodeURIComponent(backgroundMode)}&seed=${seed}&limit=80&ts=${Date.now()}`,
-          `/api/pexels?q=${encodeURIComponent(query)}&mode=${encodeURIComponent(backgroundMode)}&seed=${seed}&limit=80&ts=${Date.now()}`,
-        ];
-        let data: { items?: Array<{ videoUrl?: string; imageUrl?: string }> } | null = null;
-        for (const u of urlsToTry) {
-          const res = await fetch(u, { cache: "no-store" });
-          console.log("[BG PREVIEW] call path:", u, "status:", res.status);
-          if (!res.ok) {
-            const text = await res.text();
-            console.log("[BG PREVIEW] non-ok body:", text);
-            continue;
-          }
-          data = (await res.json()) as {
-            items?: Array<{ videoUrl?: string; imageUrl?: string }>;
-          };
-          break;
-        }
-        if (!data) throw new Error("search_failed");
-        const parsed = data as {
-          items?: Array<{ videoUrl?: string; imageUrl?: string }>;
-        };
-        const urls = (parsed.items ?? [])
-          .map((x) => (backgroundMode === "image" ? x.imageUrl : x.videoUrl))
-          .filter((x): x is string => Boolean(x));
-        console.log("[BG PREVIEW] candidate count:", urls.length);
-        return urls;
+      const targetVideoUrl = previewBgVideoUrl ?? video.src;
+      const res = await fetch("/api/transform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceImageUrl: selectedFaceSourceUrl,
+          targetVideoUrl,
+          backgroundPrompt: keyword || undefined,
+        }),
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        outputVideoUrl?: string;
+        error?: string;
+        message?: string;
       };
-
-      const seed = Math.floor(Math.random() * 1000000);
-      let candidates = await fetchCandidates(keyword, seed);
-
-      // 같은 영상 반복 방지: 현재 프리뷰 URL 제외
-      const currentBase = (previewBgVideoUrl ?? previewVideoSrc).split("?")[0];
-      let filtered = candidates.filter((u) => u.split("?")[0] !== currentBase);
-
-      // 후보가 없거나 전부 동일하면, 검색어에 랜덤 보정 키워드를 붙여 재검색
-      if (filtered.length === 0) {
-        const boost =
-          randomBooster[Math.floor(Math.random() * randomBooster.length)];
-        const boostedQuery = `${keyword} ${boost}`;
-        console.log("[BG PREVIEW] retry with boosted query:", boostedQuery);
-        candidates = await fetchCandidates(boostedQuery, seed + 1);
-        filtered = candidates.filter((u) => u.split("?")[0] !== currentBase);
+      if (!res.ok || !data.outputVideoUrl) {
+        throw new Error(data.message ?? data.error ?? "transform_failed");
       }
-
-      const pool = filtered.length > 0 ? filtered : candidates;
-      const picked = pool[Math.floor(Math.random() * pool.length)];
-      if (!picked) throw new Error("no_result");
-
-      console.log("[BG PREVIEW] picked url:", picked);
-      if (!picked) {
-        throw new Error("no_result");
-      }
-      // 입력한 프롬프트 텍스트와 실제 검색 결과를 미리보기 상태로 함께 반영
-      setPreviewBgPrompt(keyword);
-      setPreviewTransitionLoading(true);
+      setPreviewBgPrompt(keyword || null);
+      setPreviewCandidates([]);
+      setPreviewCandidateIndex(0);
+      setIncomingPreviewUrl(data.outputVideoUrl);
       setIncomingVisible(false);
-      if (backgroundMode === "image") {
-        setIncomingPreviewUrl(null);
-        setPreviewBgVideoUrl(picked);
-      } else {
-        setIncomingPreviewUrl(picked);
-      }
-      setPreviewCandidates(pool);
-      setPreviewCandidateIndex(Math.max(0, pool.findIndex((u) => u === picked)));
-      // 같은 URL을 다시 고른 경우에도 강제로 video를 다시 마운트
       setPreviewBgVersion((v) => v + 1);
       trackBehavior({
         type: "background_preview_applied",
-        keyword,
+        keyword: keyword || "faceswap_only",
         mode: backgroundMode,
       });
-    } catch {
-      setPreviewApplyError("검색 결과가 부족해요. 키워드를 더 간단히 입력해 주세요.");
+    } catch (e) {
+      setPreviewTransitionLoading(false);
+      setPreviewApplyError(
+        e instanceof Error ? e.message : "AI 합성에 실패했습니다.",
+      );
     } finally {
       setPreviewApplying(false);
     }
-  }, [backgroundMode, draft, previewBgVideoUrl, previewVideoSrc, randomBooster, trackBehavior]);
+  }, [
+    backgroundMode,
+    draft,
+    previewBgVideoUrl,
+    selectedFaceSourceUrl,
+    trackBehavior,
+    video.src,
+  ]);
 
   // 오프스크린 preload: 모드(영상/이미지)에 맞춰 로드
   const preloadVideoUrl = useCallback((url: string) => {
@@ -531,18 +499,7 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
     return () => window.clearTimeout(id);
   }, [backgroundMode, draft, draft?.backgroundPrompt, useAdvancedStep, preloadVideoUrl]);
 
-  // 입력창에 키워드를 쓰면 "키워드가 바뀐 경우에만" 1회 자동 미리 적용
-  useEffect(() => {
-    if (!draft || !useAdvancedStep) return;
-    const kw = draft.backgroundPrompt.trim();
-    if (!kw || kw.length < 2) return;
-    if (lastAutoAppliedKeywordRef.current === kw) return;
-    const id = window.setTimeout(() => {
-      lastAutoAppliedKeywordRef.current = kw;
-      void applyBackgroundPreview(kw);
-    }, 450);
-    return () => window.clearTimeout(id);
-  }, [draft, useAdvancedStep, applyBackgroundPreview]);
+  // 자동 적용은 끄고, 버튼 클릭으로만 적용합니다.
 
   const showPrevBackground = useCallback(() => {
     if (previewCandidates.length <= 1) return;
@@ -934,6 +891,7 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
                     key={o.id}
                     type="button"
                     onClick={() => updateDraft({ faceOptionId: o.id })}
+                    onMouseDown={() => setSelectedFaceSourceUrl(o.src)}
                     className={`relative rounded-full p-0.5 ring-2 transition-shadow ${
                       on ? "ring-reels-cyan shadow-[0_0_14px_-4px_rgba(0,242,234,0.45)]" : "ring-transparent hover:ring-white/15"
                     }`}
@@ -994,7 +952,7 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
                 disabled={previewApplying}
                 className="rounded-lg border border-reels-cyan/35 bg-reels-cyan/10 px-3 py-1.5 text-[11px] font-semibold text-reels-cyan hover:bg-reels-cyan/18"
               >
-                {previewApplying ? "적용 중..." : "미리 적용하기"}
+                {previewApplying ? "AI 적용 중..." : "미리 적용하기"}
               </button>
               {bgPreviewOn ? (
                 <button
