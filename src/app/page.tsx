@@ -1,5 +1,4 @@
 import { BestPurchaseReviewsSection } from "@/components/BestPurchaseReviewsSection";
-import { BudgetClipsSection } from "@/components/BudgetClipsSection";
 import { EditorCurationSection } from "@/components/EditorCurationSection";
 import { FailureOopsSection } from "@/components/FailureOopsSection";
 import { Highlight24 } from "@/components/Highlight24";
@@ -25,7 +24,6 @@ export default async function Home() {
         <FailureOopsSection />
         <DiscountDnaSection />
         <VideoFeed />
-        <BudgetClipsSection />
         <EditorCurationSection />
         <SellerPitchBanner />
         <MicroDnaExploreSection />
