@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TRENDING_RANK_CLIPS } from "@/data/videos";
 import { useTrendingLiveRanking } from "@/hooks/useTrendingLiveRanking";
-import { TrendingPlayIcon } from "./icons/SectionPlayIcons";
 import { SectionMoreLink } from "./SectionMoreLink";
 import { TrendingVideoStatsFooter } from "./TrendingVideoStatsFooter";
 import { VideoCard } from "./VideoCard";
@@ -92,7 +91,6 @@ export function TrendingRankSection() {
               id="trending-rank-heading"
               className="flex flex-wrap items-center gap-2.5 text-[22px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:gap-3 sm:text-[26px] md:text-[28px]"
             >
-              <TrendingPlayIcon className="h-7 w-7 shrink-0 text-reels-crimson sm:h-8 sm:w-8" />
               실시간 인기순위 영상
               <span className="inline-flex items-center gap-1.5 rounded-full border border-reels-cyan/35 bg-reels-cyan/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-reels-cyan/95 sm:text-[11px]">
                 <span
