@@ -45,12 +45,13 @@ export default function CartPage() {
       </header>
 
       {builderItems.length === 0 ? (
-        <div className="mx-auto mt-14 max-w-sm text-center">
+        <div className="mx-auto mt-14 max-w-md text-center sm:max-w-lg">
           <p className="text-[15px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
             담긴 조각이 없어요
           </p>
-          <p className="mt-2 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            영상 카드에 마우스를 올린 뒤 장바구니 아이콘을 누르면 여기에 쌓입니다.
+          <p className="mt-2 break-keep text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            영상 카드에 마우스를 올린 뒤 장바구니 아이콘을 누르면 여기에{" "}
+            <span className="whitespace-nowrap">쌓입니다.</span>
           </p>
           <Link
             href="/"
