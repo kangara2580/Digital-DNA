@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
 import type { CategorySlug } from "@/data/videoCatalog";
+import type { FeedVideo } from "@/data/videos";
 import {
   CATEGORY_LABEL,
   getVideoCatalogMeta,
@@ -72,6 +73,45 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
     }
     return next;
   }, [filtered, newestFilter, priceFilter]);
+
+  const portraitSorted = useMemo(
+    () => sorted.filter((v) => v.orientation === "portrait"),
+    [sorted],
+  );
+  const landscapeSorted = useMemo(
+    () => sorted.filter((v) => v.orientation === "landscape"),
+    [sorted],
+  );
+
+  const renderMosaicGrid = (videos: FeedVideo[]) => (
+    <div
+      className="grid grid-cols-12 gap-0 border border-white/10 [border-width:0.5px] [html[data-theme='light']_&]:border-zinc-200"
+      style={{ gridAutoFlow: "dense" as const }}
+    >
+      {videos.map((video) => {
+        const micro = isMicroDna(video);
+        const span = micro ? 2 : priceGridSpan12(video.priceWon);
+        const dense = micro || span <= 3;
+        const minH = micro ? "min-h-[96px] sm:min-h-[104px]" : minCellHeight(span);
+        return (
+          <div
+            key={video.id}
+            className={`flex min-h-0 flex-col border-b border-r border-white/10 [border-bottom-width:0.5px] [border-right-width:0.5px] [html[data-theme='light']_&]:border-zinc-200 ${minH}`}
+            style={{ gridColumn: `span ${span} / span ${span}` }}
+          >
+            <VideoCard
+              video={video}
+              flush
+              dense={dense}
+              instantPreview={false}
+              domId={`clip-${video.id}`}
+              className="h-full min-h-0 w-full flex-1"
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
@@ -186,7 +226,17 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                   {label}
                 </h1>
                 <p className="mt-2 font-mono text-[11px] leading-none text-zinc-500 sm:text-[12px] [html[data-theme='light']_&]:text-zinc-600">
-                  등록된 조각 {sorted.length}개
+                  {orientationFilter === "all" ? (
+                    <>
+                      세로 {portraitSorted.length}개 · 가로 {landscapeSorted.length}개
+                      <span className="text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
+                        {" "}
+                        (총 {sorted.length}개)
+                      </span>
+                    </>
+                  ) : (
+                    <>등록된 조각 {sorted.length}개</>
+                  )}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-1 md:hidden">
@@ -258,33 +308,59 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
             <p className="px-4 py-16 text-center font-mono text-[12px] text-zinc-500 sm:px-6 [html[data-theme='light']_&]:text-zinc-600">
               이 조건에 맞는 조각이 없어요.
             </p>
-          ) : (
-            <div
-              className="grid grid-cols-12 gap-0 border border-white/10 [border-width:0.5px] [html[data-theme='light']_&]:border-zinc-200"
-              style={{ gridAutoFlow: "dense" as const }}
-            >
-              {sorted.map((video) => {
-                const micro = isMicroDna(video);
-                const span = micro ? 2 : priceGridSpan12(video.priceWon);
-                const dense = micro || span <= 3;
-                const minH = micro ? "min-h-[96px] sm:min-h-[104px]" : minCellHeight(span);
-                return (
-                  <div
-                    key={video.id}
-                    className={`flex min-h-0 flex-col border-b border-r border-white/10 [border-bottom-width:0.5px] [border-right-width:0.5px] [html[data-theme='light']_&]:border-zinc-200 ${minH}`}
-                    style={{ gridColumn: `span ${span} / span ${span}` }}
-                  >
-                    <VideoCard
-                      video={video}
-                      flush
-                      dense={dense}
-                      instantPreview={false}
-                      domId={`clip-${video.id}`}
-                      className="h-full min-h-0 w-full flex-1"
-                    />
+          ) : orientationFilter === "all" ? (
+            <div className="space-y-0">
+              {portraitSorted.length > 0 ? (
+                <section aria-labelledby="category-portrait-heading">
+                  <div className="border-b border-white/10 bg-black/[0.12] px-4 py-4 sm:px-6 lg:px-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+                    <h2
+                      id="category-portrait-heading"
+                      className="text-[15px] font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
+                    >
+                      세로 영상
+                    </h2>
+                    <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                      릴스·숏폼 비율 · {portraitSorted.length}개
+                    </p>
                   </div>
-                );
-              })}
+                  {renderMosaicGrid(portraitSorted)}
+                </section>
+              ) : null}
+
+              {landscapeSorted.length > 0 ? (
+                <section
+                  className={
+                    portraitSorted.length > 0
+                      ? "border-t border-white/10 [html[data-theme='light']_&]:border-zinc-200"
+                      : ""
+                  }
+                  aria-labelledby="category-landscape-heading"
+                >
+                  <div className="border-b border-white/10 bg-black/[0.12] px-4 py-4 sm:px-6 lg:px-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+                    <h2
+                      id="category-landscape-heading"
+                      className="text-[15px] font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
+                    >
+                      가로 영상
+                    </h2>
+                    <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                      와이드 비율 · {landscapeSorted.length}개
+                    </p>
+                  </div>
+                  {renderMosaicGrid(landscapeSorted)}
+                </section>
+              ) : null}
+            </div>
+          ) : (
+            <div>
+              <div className="border-b border-white/10 bg-black/[0.08] px-4 py-3 sm:px-6 lg:px-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/80">
+                <p className="text-[13px] font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
+                  {orientationFilter === "portrait"
+                    ? "세로 영상만 보기"
+                    : "가로 영상만 보기"}
+                </p>
+              </div>
+              {renderMosaicGrid(sorted)}
             </div>
           )}
         </main>
