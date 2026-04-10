@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import type { FeedVideo } from "@/data/videos";
 import { SAMPLE_VIDEOS, shuffleVideos } from "@/data/videos";
 import { isMicroDna } from "@/data/videoCommerce";
-import { RecommendMagnetIcon } from "./icons/RecommendMagnetIcon";
 import { SectionMoreLink } from "./SectionMoreLink";
 import { VideoCard } from "./VideoCard";
 
@@ -44,9 +43,8 @@ export function VideoFeed() {
           <div className="min-w-0 text-left">
             <h2
               id="recommended-feed-heading"
-              className="flex items-center gap-2.5 text-[22px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:gap-3 sm:text-[26px] md:text-[28px]"
+              className="text-[22px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:text-[26px] md:text-[28px]"
             >
-              <RecommendMagnetIcon className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
               추천 영상
             </h2>
             <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-zinc-500 sm:text-[16px]">

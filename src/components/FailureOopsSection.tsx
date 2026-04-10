@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FAILURE_OOPS_CLIPS } from "@/data/videos";
-import { OopsPlayIcon } from "./icons/SectionPlayIcons";
 import { SectionMoreLink } from "./SectionMoreLink";
 import { VideoCard } from "./VideoCard";
 
@@ -88,9 +87,8 @@ export function FailureOopsSection() {
           <div className="min-w-0 text-left">
             <h2
               id="failure-oops-heading"
-              className="flex items-center gap-2.5 whitespace-nowrap text-[20px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:gap-3 sm:text-[24px] md:text-[28px]"
+              className="whitespace-nowrap text-[20px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:text-[24px] md:text-[28px]"
             >
-              <OopsPlayIcon className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
               누군가의 실패와 실수 영상
             </h2>
             <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-zinc-500 sm:text-[16px]">
