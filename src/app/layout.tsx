@@ -52,8 +52,7 @@ export default function RootLayout({
     (function () {
       try {
         var stored = localStorage.getItem("reels-theme");
-        var isDarkSystem = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-        var theme = stored === "light" || stored === "dark" ? stored : (isDarkSystem ? "dark" : "light");
+        var theme = stored === "light" || stored === "dark" ? stored : "dark";
         document.documentElement.dataset.theme = theme;
       } catch (e) {
         document.documentElement.dataset.theme = "dark";
