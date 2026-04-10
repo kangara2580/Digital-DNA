@@ -5,11 +5,68 @@ import { parseSocialReelsUrl } from "@/lib/socialReelsUrl";
 
 export function ReelsLinkUploader() {
   const [url, setUrl] = useState("");
+  /** 서버 전송 시 JSON 키 `is_ai_generated`로 매핑 */
+  const [isAiGenerated, setIsAiGenerated] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<{
+    kind: "ok" | "err";
+    text: string;
+  } | null>(null);
+
   const parsed = useMemo(() => parseSocialReelsUrl(url), [url]);
 
-  const onSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-  }, []);
+  const onSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      const trimmed = url.trim();
+      if (!trimmed) {
+        setSubmitMessage({
+          kind: "err",
+          text: "URL을 입력한 뒤 등록해 주세요.",
+        });
+        return;
+      }
+
+      setIsSubmitting(true);
+      setSubmitMessage(null);
+      try {
+        const res = await fetch("/api/upload/reels", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url: trimmed,
+            is_ai_generated: isAiGenerated,
+          }),
+        });
+        const data = (await res.json()) as {
+          ok?: boolean;
+          error?: string;
+          message?: string;
+        };
+        if (!res.ok) {
+          setSubmitMessage({
+            kind: "err",
+            text: data.message ?? "등록에 실패했습니다.",
+          });
+          return;
+        }
+        setSubmitMessage({
+          kind: "ok",
+          text: isAiGenerated
+            ? "등록되었습니다. AI 생성물로 표시됩니다."
+            : "등록되었습니다.",
+        });
+      } catch {
+        setSubmitMessage({
+          kind: "err",
+          text: "네트워크 오류로 등록하지 못했습니다.",
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [url, isAiGenerated],
+  );
 
   return (
     <div className="reels-border-gradient rounded-2xl p-5 sm:p-7">
@@ -23,7 +80,48 @@ export function ReelsLinkUploader() {
         TikTok·Instagram·YouTube(숏츠 포함) URL을 붙여 넣으면 아래에서 미리 재생할 수 있어요.
       </p>
 
-      <form onSubmit={onSubmit} className="mt-6">
+      <form onSubmit={onSubmit} className="mt-6 space-y-5">
+        <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3.5 sm:px-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p
+              id="ai-generated-label"
+              className="text-[14px] font-medium leading-snug text-zinc-200"
+            >
+              이 영상은 AI 기술로 제작되었나요?
+            </p>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isAiGenerated}
+              aria-labelledby="ai-generated-label"
+              onClick={() => {
+                setIsAiGenerated((v) => !v);
+                setSubmitMessage(null);
+              }}
+              className={`relative inline-flex h-8 w-[52px] shrink-0 cursor-pointer rounded-full border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-reels-cyan/50 ${
+                isAiGenerated
+                  ? "border-reels-cyan/50 bg-reels-cyan/25"
+                  : "border-white/15 bg-zinc-800/90"
+              }`}
+            >
+              <span className="sr-only">
+                {isAiGenerated ? "예, AI 제작" : "아니오"}
+              </span>
+              <span
+                aria-hidden
+                className={`pointer-events-none absolute top-1 left-1 h-6 w-6 rounded-full bg-white shadow-md transition-transform duration-200 ${
+                  isAiGenerated ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+          {isAiGenerated ? (
+            <p className="mt-2.5 text-[12px] leading-relaxed text-reels-cyan/90">
+              AI 생성물로 명시됩니다
+            </p>
+          ) : null}
+        </div>
+
         <label htmlFor="reels-url" className="sr-only">
           릴스 URL
         </label>
@@ -33,18 +131,34 @@ export function ReelsLinkUploader() {
             type="url"
             name="url"
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => {
+              setUrl(e.target.value);
+              setSubmitMessage(null);
+            }}
             placeholder="tiktok.com/…/video/… · instagram.com/reel/… · youtube.com/shorts/…"
             className="min-w-0 flex-1 rounded-xl border border-white/12 bg-black/35 px-4 py-3 text-[14px] text-zinc-100 placeholder:text-zinc-600 focus:border-reels-cyan/45 focus:outline-none focus:ring-1 focus:ring-reels-cyan/35"
             autoComplete="url"
           />
           <button
             type="submit"
-            className="shrink-0 rounded-xl bg-reels-crimson px-6 py-3 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
+            disabled={isSubmitting}
+            className="shrink-0 rounded-xl bg-reels-crimson px-6 py-3 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            미리보기
+            {isSubmitting ? "등록 중…" : "등록하기"}
           </button>
         </div>
+        {submitMessage ? (
+          <p
+            role="status"
+            className={
+              submitMessage.kind === "ok"
+                ? "text-[13px] font-medium text-emerald-400/95"
+                : "text-[13px] font-medium text-amber-300/95"
+            }
+          >
+            {submitMessage.text}
+          </p>
+        ) : null}
       </form>
 
       <div className="mt-8">
