@@ -421,11 +421,34 @@ input.mall-search[type="search"]::-webkit-search-results-button {
 }
 
 /* 「영감이 필요한 순간」— 3열 카드 · 2×2 비디오 (타이트 여백) */
+.inspiration-section {
+  background: var(--inspiration-section-bg);
+  transition:
+    background-color 240ms ease,
+    color 240ms ease;
+}
+
+/* 라이트: 페이지 흰 배경과 구분 — 연한 네이비 틴트(반투명) */
+html[data-theme="light"] .inspiration-section {
+  --inspiration-section-bg: rgba(15, 23, 42, 0.07);
+  --inspiration-card-bg: rgba(248, 250, 252, 0.96);
+  --inspiration-card-shadow: 0 10px 40px rgba(15, 23, 42, 0.06);
+}
+
+/* 다크: 흰 카드/배경이 튀지 않게 — 어두운 반투명 레이어 + 카드·글자 토큰 */
+html[data-theme="dark"] .inspiration-section {
+  --inspiration-section-bg: rgba(4, 8, 18, 0.82);
+  --inspiration-card-bg: rgba(255, 255, 255, 0.07);
+  --inspiration-card-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+  --text-main: #f4f4f5;
+  --text-sub: #a1a1aa;
+}
+
 .inspiration-card {
   padding: 16px;
   border-radius: 24px;
-  background: var(--surface-color);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+  background: var(--inspiration-card-bg, var(--surface-color));
+  box-shadow: var(--inspiration-card-shadow, 0 10px 40px rgba(0, 0, 0, 0.03));
 }
 
 .inspiration-cell__video {
