@@ -349,12 +349,12 @@ body {
   }
 }
 
-/* 가로 피드 스크롤바 — 다크 + 시안 악센트 */
+/* 가로 피드 스크롤바 — 불투명 흰 썸(보라 X). 다크 배경: 밝은 트랙 */
 .feed-scroll {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-  scrollbar-color: rgba(155, 109, 255, 0.35) transparent;
+  scrollbar-color: #ffffff rgba(255, 255, 255, 0.08);
 }
 
 .feed-scroll::-webkit-scrollbar {
@@ -362,16 +362,17 @@ body {
 }
 
 .feed-scroll::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .feed-scroll::-webkit-scrollbar-thumb {
   border-radius: 9999px;
-  background: rgba(155, 109, 255, 0.28);
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
 }
 
 .feed-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 79, 179, 0.35);
+  background: #f4f4f5;
 }
 
 .feed-scroll-wide::-webkit-scrollbar {
@@ -380,22 +381,23 @@ body {
 
 .feed-scroll-wide {
   scrollbar-width: auto;
-  scrollbar-color: rgba(155, 109, 255, 0.3) rgba(255, 255, 255, 0.04);
+  scrollbar-color: #ffffff rgba(255, 255, 255, 0.08);
 }
 
 .feed-scroll-wide::-webkit-scrollbar-track {
   margin-inline: 0.5rem;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .feed-scroll-wide::-webkit-scrollbar-thumb {
   border-radius: 9999px;
-  background: rgba(155, 109, 255, 0.25);
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
 }
 
 .feed-scroll-wide::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 79, 179, 0.3);
+  background: #f4f4f5;
 }
 
 /* 라이트 모드: 구매평 등 가로 스크롤 — 불투명 흰 썸 + 은은한 트랙 */
