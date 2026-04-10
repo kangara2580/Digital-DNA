@@ -45,8 +45,8 @@
 :root[data-theme="light"] {
   --reels-crimson: #ff0055;
   --reels-cyan: #00f2ea;
-  --reels-abyss: #eef3ff;
-  --reels-void: #f5f7ff;
+  --reels-abyss: #ffffff;
+  --reels-void: #fafafa;
   --reels-lift: #ffffff;
   --reels-surface-card: rgba(255, 255, 255, 0.72);
   --reels-glass: rgba(255, 255, 255, 0.68);
@@ -57,8 +57,8 @@
   --reels-icon-glass: rgba(255, 255, 255, 0.88);
   --reels-icon-border: rgba(140, 161, 208, 0.36);
   --reels-icon-text: #26334f;
-  --background: linear-gradient(180deg, #fff8ff 0%, #f8f1ff 56%, #f1e8ff 100%);
-  --foreground: #2a1740;
+  --background: #ffffff;
+  --foreground: #1a1a1a;
 }
 
 /* 라이트 모드 가독성 안전장치:
