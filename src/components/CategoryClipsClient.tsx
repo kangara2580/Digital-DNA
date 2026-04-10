@@ -125,6 +125,15 @@ function BestEndlessRankFeed({ videos }: { videos: FeedVideo[] }) {
 
 export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   const label = CATEGORY_LABEL[slug];
+  const categoryStory = useMemo(() => {
+    if (slug === "oops") {
+      return "AI가 아무리 정교해져도, 어설픈 한 박자와 뜻밖의 실수에서 나오는 감정의 진짜 결은 인간만 만들 수 있어요. 완벽하지 않아서 더 끌리는 순간들을 모았습니다.";
+    }
+    if (slug === "best") {
+      return "지금 가장 반응이 큰 조각들을 한눈에 보고, 바로 구매/활용할 수 있어요.";
+    }
+    return null;
+  }, [slug]);
   const base = useMemo(() => getVideosForCategory(slug), [slug]);
   const [orientationFilter, setOrientationFilter] =
     useState<OrientationFilter>("all");
@@ -326,6 +335,11 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                     <>등록된 조각 {sorted.length}개</>
                   )}
                 </p>
+                {categoryStory ? (
+                  <p className="mt-3 max-w-3xl text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-700 sm:text-[14px]">
+                    {categoryStory}
+                  </p>
+                ) : null}
               </div>
               <div className="flex flex-wrap items-center gap-1 md:hidden">
                 <button

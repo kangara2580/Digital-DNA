@@ -2,6 +2,7 @@
 export const MALL_CATEGORY_NAV_ITEMS = [
   { href: "/category/best", label: "베스트" },
   { href: "/category/recommend", label: "추천" },
+  { href: "/category/oops", label: "실패와 실수" },
   { href: "/category/daily", label: "일상" },
   { href: "/category/shortform", label: "숏폼·릴스" },
   { href: "/category/dance", label: "춤" },
