@@ -15,6 +15,11 @@ export type FeedVideo = {
   previewSrc?: string;
   /** 호버 프리뷰 구간 길이(초). 기본 3 */
   previewDurationSec?: number;
+  /**
+   * AI 생성 영상 여부(API·업로드의 `is_ai_generated`와 동일).
+   * `true`가 아니면 직접 촬영(Real)로 간주합니다.
+   */
+  isAiGenerated?: boolean;
 };
 
 export const SAMPLE_VIDEOS: FeedVideo[] = [
@@ -172,6 +177,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     orientation: "portrait",
     priceWon: 2600,
     durationSec: 31,
+    isAiGenerated: true,
   },
   {
     id: "15",
@@ -183,6 +189,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     orientation: "portrait",
     priceWon: 1900,
     durationSec: 19,
+    isAiGenerated: true,
   },
   {
     id: "16",
@@ -194,6 +201,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     orientation: "portrait",
     priceWon: 3400,
     durationSec: 40,
+    isAiGenerated: true,
   },
   {
     id: "17",
@@ -205,6 +213,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     orientation: "portrait",
     priceWon: 1500,
     durationSec: 27,
+    isAiGenerated: true,
   },
   {
     id: "18",

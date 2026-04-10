@@ -14,6 +14,25 @@ function isRecommendFeedClip(v: FeedVideo): boolean {
   return true;
 }
 
+/** `is_ai_generated`와 동일 — true만 AI, 그 외는 직접 촬영(Real) */
+function isAiVideo(v: FeedVideo): boolean {
+  return v.isAiGenerated === true;
+}
+
+type ContentFilter = "all" | "real" | "ai";
+
+function matchesContentFilter(v: FeedVideo, filter: ContentFilter): boolean {
+  if (filter === "all") return true;
+  if (filter === "ai") return isAiVideo(v);
+  return !isAiVideo(v);
+}
+
+const FILTER_OPTIONS: { id: ContentFilter; label: string; sub: string }[] = [
+  { id: "all", label: "전체", sub: "" },
+  { id: "real", label: "직접 촬영", sub: "Real" },
+  { id: "ai", label: "AI 제작", sub: "AI" },
+];
+
 /**
  * lg 이상 6열 → 세로 클립 12개면 정확히 2행(이전 6개면 1행만 채워짐).
  * 모바일~md는 열 수에 따라 자연스럽게 여러 행.
@@ -31,10 +50,16 @@ export function VideoFeed() {
   );
 
   const [clips, setClips] = useState(portraitBase);
+  const [contentFilter, setContentFilter] = useState<ContentFilter>("all");
 
   useEffect(() => {
     setClips(shuffleVideos([...portraitBase]));
   }, [portraitBase]);
+
+  const filteredClips = useMemo(
+    () => clips.filter((v) => matchesContentFilter(v, contentFilter)),
+    [clips, contentFilter],
+  );
 
   return (
     <section
@@ -79,27 +104,72 @@ export function VideoFeed() {
             />
           </div>
 
+          <div
+            className="mt-6 flex flex-col gap-2 sm:mt-7"
+            role="group"
+            aria-label="콘텐츠 유형 필터"
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+              콘텐츠 유형
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {FILTER_OPTIONS.map(({ id, label, sub }) => {
+                const selected = contentFilter === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setContentFilter(id)}
+                    className={`inline-flex min-h-[40px] items-center gap-2 rounded-xl border px-3.5 py-2 text-left text-[13px] font-semibold transition-colors sm:min-h-0 sm:px-4 sm:py-2.5 sm:text-[14px] ${
+                      selected
+                        ? "border-reels-cyan/45 bg-reels-cyan/15 text-zinc-100 shadow-[0_0_20px_-8px_rgba(0,242,234,0.35)]"
+                        : "border-white/10 bg-black/20 text-zinc-400 hover:border-white/20 hover:text-zinc-200"
+                    }`}
+                    aria-pressed={selected}
+                  >
+                    <span>{label}</span>
+                    {sub ? (
+                      <span
+                        className={`font-mono text-[10px] font-bold uppercase tracking-wider sm:text-[11px] ${
+                          selected ? "text-reels-cyan/95" : "text-zinc-600"
+                        }`}
+                      >
+                        {sub}
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className={`mt-8 sm:mt-9 ${REELS_GRID}`}>
-            {clips.map((video) => (
-              <div
-                key={`feed-p-${video.id}`}
-                className="group/card relative min-w-0 rounded-2xl p-[1px] transition-[filter,transform] duration-300 hover:shadow-[0_12px_40px_-12px_rgba(0,242,234,0.25)]"
-              >
-                <div
-                  className="absolute -inset-px rounded-2xl bg-gradient-to-br from-[#00f2ea]/25 via-transparent to-[#ff0055]/20 opacity-0 transition-opacity duration-300 group-hover/card:opacity-100"
-                  aria-hidden
-                />
-                <div className="relative rounded-[15px] bg-[#05070d]/80 p-1">
-                  <VideoCard
-                    video={video}
-                    domId={`clip-${video.id}`}
-                    className="min-w-0"
-                    reelLayout
-                    topBadge="추천"
-                  />
-                </div>
+            {filteredClips.length === 0 ? (
+              <div className="col-span-full rounded-xl border border-dashed border-white/15 bg-black/20 px-4 py-14 text-center text-[14px] text-zinc-500">
+                이 조건에 맞는 영상이 없습니다. 다른 필터를 선택해 보세요.
               </div>
-            ))}
+            ) : (
+              filteredClips.map((video) => (
+                <div
+                  key={`feed-p-${video.id}`}
+                  className="group/card relative min-w-0 rounded-2xl p-[1px] transition-[filter,transform] duration-300 hover:shadow-[0_12px_40px_-12px_rgba(0,242,234,0.25)]"
+                >
+                  <div
+                    className="absolute -inset-px rounded-2xl bg-gradient-to-br from-[#00f2ea]/25 via-transparent to-[#ff0055]/20 opacity-0 transition-opacity duration-300 group-hover/card:opacity-100"
+                    aria-hidden
+                  />
+                  <div className="relative rounded-[15px] bg-[#05070d]/80 p-1">
+                    <VideoCard
+                      video={video}
+                      domId={`clip-${video.id}`}
+                      className="min-w-0"
+                      reelLayout
+                      topBadge="추천"
+                    />
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
