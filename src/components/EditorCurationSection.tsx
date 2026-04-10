@@ -19,9 +19,6 @@ export function EditorCurationSection() {
           >
             이런 상황에 딱!
           </h2>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-zinc-500 sm:text-[16px]">
-            검색은 귀찮고, 지금 기분·상황에 맞는 조각만 고르고 싶을 때.
-          </p>
         </div>
 
         <div className="mt-6 flex flex-col gap-10 sm:mt-8 sm:gap-12">
@@ -42,22 +39,27 @@ export function EditorCurationSection() {
                     </span>
                   ) : null}
                   <h3 className="text-[17px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:text-[18px]">
+                    <span className="mr-1.5 inline-block" aria-hidden>
+                      {block.emoji}
+                    </span>
                     {block.title}
                   </h3>
-                  <p className="mt-1 text-[14px] leading-relaxed text-zinc-500 sm:text-[15px]">
-                    {block.description}
-                  </p>
                 </div>
                 <SectionMoreLink
                   category="recommend"
                   className="w-full shrink-0 sm:w-auto sm:self-center"
                 />
               </div>
-              <div className="no-scrollbar mt-3 flex gap-3 overflow-x-auto pb-1 sm:mt-4 sm:gap-4">
+              <div
+                className="feed-scroll feed-scroll-wide -mx-4 mt-3 flex w-full min-w-0 gap-3 overflow-x-auto px-4 pb-2 pt-1 sm:-mx-5 sm:mt-4 sm:gap-3 sm:px-5"
+                role="region"
+                aria-label={`${block.title} 클립 목록`}
+              >
                 {block.clips.map((v) => (
                   <EditorCurationClipThumb
                     key={`${block.id}-${v.id}`}
                     video={v}
+                    className="w-[calc((100%-2*0.75rem)/3)] min-w-[calc((100%-2*0.75rem)/3)] shrink-0 snap-start sm:w-[calc((100%-4*0.75rem)/5)] sm:min-w-[calc((100%-4*0.75rem)/5)] lg:w-[calc((100%-5*0.75rem)/6)] lg:min-w-[calc((100%-5*0.75rem)/6)]"
                   />
                 ))}
               </div>

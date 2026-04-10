@@ -7,9 +7,11 @@ import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
 
 type Props = {
   video: FeedVideo;
+  /** 가로 스크롤 행에서 열 너비(예: 6열 기준 calc) */
+  className?: string;
 };
 
-export function EditorCurationClipThumb({ video }: Props) {
+export function EditorCurationClipThumb({ video, className }: Props) {
   const reduceMotion = useReducedMotion() ?? false;
   const { ref, onTimeUpdate, onEnter, onLeave } = useHoverInstantPreview(
     true,
@@ -21,10 +23,14 @@ export function EditorCurationClipThumb({ video }: Props) {
   return (
     <Link
       href={`/video/${video.id}`}
-      className="group shrink-0 w-[104px] sm:w-[118px]"
+      className={
+        className
+          ? `group ${className}`
+          : "group w-[104px] shrink-0 sm:w-[118px]"
+      }
     >
       <div
-        className="relative aspect-[3/4] overflow-hidden rounded-xl border border-white/12 bg-black/35 shadow-none transition-[box-shadow,transform] duration-[400ms] ease-in-out group-hover:border-reels-cyan/30 group-hover:shadow-reels-cyan/20"
+        className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-white/12 bg-black/35 shadow-none transition-[box-shadow,transform] duration-[400ms] ease-in-out group-hover:border-reels-cyan/30 group-hover:shadow-reels-cyan/20"
         onMouseEnter={onEnter}
         onMouseLeave={onLeave}
       >
@@ -41,11 +47,11 @@ export function EditorCurationClipThumb({ video }: Props) {
           <source src={previewSrc} type="video/mp4" />
         </video>
       </div>
-      <p className="mt-2 line-clamp-2 text-left text-[12px] font-bold leading-snug text-zinc-200">
+      <p className="mt-2 line-clamp-2 text-left text-[12px] font-bold leading-snug text-zinc-200 sm:text-[13px]">
         {video.title}
       </p>
       {video.priceWon != null ? (
-        <p className="mt-0.5 text-left text-[11px] font-semibold tabular-nums text-reels-cyan">
+        <p className="mt-0.5 text-left text-[11px] font-semibold tabular-nums text-reels-cyan sm:text-[12px]">
           {video.priceWon.toLocaleString("ko-KR")}원
         </p>
       ) : null}

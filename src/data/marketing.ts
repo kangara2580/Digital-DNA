@@ -150,28 +150,29 @@ function byId(id: string): FeedVideo {
 
 export type EditorCuration = {
   id: string;
+  /** 상황에 맞는 짧은 이모지(제목 옆) */
+  emoji: string;
   title: string;
-  description: string;
   clips: FeedVideo[];
 };
 
 export const EDITOR_CURATIONS: EditorCuration[] = [
   {
     id: "cur-apology",
-    title: "여자친구한테 혼나서 빌 때 쓰기 좋은 영상 5선",
-    description: "분위기 풀어 줄 잔잔·진심 무드 클립만 모았어요.",
-    clips: ["5", "9", "3", "7", "11"].map(byId),
+    emoji: "🙇",
+    title: "여자친구한테 혼나서 빌 때 쓰기 좋은 영상 모음",
+    clips: ["5", "9", "3", "7", "11", "1", "4", "10", "6", "2"].map(byId),
   },
   {
     id: "cur-burnout",
+    emoji: "😵‍💫",
     title: "밤샘 과제 중 현타 올 때 넣는 짤 모음",
-    description: "공감 한 방에 스트레스 날리는 리얼 타이밍.",
-    clips: ["8", "5", "12", "6"].map(byId),
+    clips: ["8", "5", "12", "6", "3", "9", "11", "7", "1", "4"].map(byId),
   },
   {
     id: "cur-monday",
+    emoji: "🚇",
     title: "월요일 아침 출근길의 지옥철 풍경",
-    description: "출근 브이로그·썰 영상에 바로 얹을 수 있는 도시 리듬.",
-    clips: ["2", "7", "10", "4"].map(byId),
+    clips: ["2", "7", "10", "4", "5", "6", "8", "11", "3", "1"].map(byId),
   },
 ];
