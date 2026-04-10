@@ -23,9 +23,13 @@ import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhr
 
 const iconStroke = 1.25;
 
-/** 상단 아이콘 — 글래스 다크 */
+/** 상단 아이콘 — 다크: 글래스 / 라이트: 검정 계열 */
 const navActionClass =
-  "inline-flex items-center justify-center rounded-full bg-transparent px-2.5 py-1.5 text-zinc-300 transition-[color,transform] duration-200 ease-out hover:text-white active:scale-[0.98] motion-reduce:duration-150";
+  "inline-flex items-center justify-center rounded-full bg-transparent px-2.5 py-1.5 text-zinc-300 transition-[color,transform] duration-200 ease-out hover:text-white active:scale-[0.98] motion-reduce:duration-150 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
+
+/** 카테고리 pill — 라이트 모드에서 검정 텍스트 */
+const categoryPillClass =
+  "shrink-0 rounded-full border border-transparent bg-transparent font-semibold text-zinc-400 transition-[background-color,color,padding,font-size,border-color] hover:border-white/15 hover:bg-white/8 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-200 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
 
 /** 스크롤 컴팩트 시 상단에는 베스트·추천만 노출, 나머지는 「카테고리」 메뉴로 */
 const COMPACT_PRIMARY = ITEMS.slice(0, 2);
@@ -103,7 +107,7 @@ function RotatingSearchField({
         placeholder=""
         autoComplete="off"
         enterKeyHint="search"
-        className={`mall-search w-full rounded-full border text-zinc-100 outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,box-shadow,color] ${easeLayout} ${searchEase} border-white/15 bg-white/[0.06] placeholder:text-zinc-600 hover:border-reels-cyan/35 hover:bg-white/10 hover:shadow-[0_2px_20px_-8px_rgba(155,109,255,0.18)] focus:border-reels-cyan/50 focus:bg-white/[0.09] focus:shadow-[0_4px_24px_-8px_rgba(255,79,179,0.18)] focus:ring-0 [html[data-theme='dark']_&]:border-white/20 [html[data-theme='dark']_&]:bg-white/[0.1] [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='dark']_&]:placeholder:text-zinc-300 [html[data-theme='dark']_&]:hover:bg-white/[0.14] [html[data-theme='dark']_&]:focus:bg-white/[0.16] [html[data-theme='light']_&]:border-[#b99ae6]/60 [html[data-theme='light']_&]:bg-white/95 [html[data-theme='light']_&]:text-[#2a1740] [html[data-theme='light']_&]:placeholder:text-[#7c61a6] [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:hover:border-[#9b6dff]/65 [html[data-theme='light']_&]:focus:border-[#9b6dff]/80 [html[data-theme='light']_&]:focus:bg-white ${
+        className={`mall-search w-full rounded-full border text-zinc-100 outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,box-shadow,color] ${easeLayout} ${searchEase} border-white/15 bg-white/[0.06] placeholder:text-zinc-600 hover:border-reels-cyan/35 hover:bg-white/10 hover:shadow-[0_2px_20px_-8px_rgba(155,109,255,0.18)] focus:border-reels-cyan/50 focus:bg-white/[0.09] focus:shadow-[0_4px_24px_-8px_rgba(255,79,179,0.18)] focus:ring-0 [html[data-theme='dark']_&]:border-white/20 [html[data-theme='dark']_&]:bg-white/[0.1] [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='dark']_&]:placeholder:text-zinc-300 [html[data-theme='dark']_&]:hover:bg-white/[0.14] [html[data-theme='dark']_&]:focus:bg-white/[0.16] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-500 [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:border-zinc-400 [html[data-theme='light']_&]:focus:bg-white ${
           compact
             ? "h-9 pl-3 pr-10 text-[13px]"
             : "h-11 pl-5 pr-12 text-[14px]"
@@ -112,7 +116,7 @@ function RotatingSearchField({
       />
       {showGuide ? (
         <div
-          className={`pointer-events-none absolute inset-y-0 left-0 flex items-center overflow-hidden text-left text-zinc-500 [html[data-theme='dark']_&]:text-zinc-300 [html[data-theme='light']_&]:text-[#7c61a6] ${
+          className={`pointer-events-none absolute inset-y-0 left-0 flex items-center overflow-hidden text-left text-zinc-500 [html[data-theme='dark']_&]:text-zinc-300 [html[data-theme='light']_&]:text-zinc-500 ${
             compact ? "right-10 pl-3 text-[13px]" : "right-12 pl-5 text-[14px]"
           }`}
           aria-hidden
@@ -145,7 +149,7 @@ function RotatingSearchField({
         </div>
       ) : null}
       <span
-        className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-zinc-500 [html[data-theme='dark']_&]:text-zinc-200 [html[data-theme='light']_&]:text-[#8e74b4] ${
+        className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-zinc-500 [html[data-theme='dark']_&]:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 ${
           compact ? "right-2.5" : "right-3.5"
         }`}
         aria-hidden
@@ -378,16 +382,16 @@ export function MallTopNav() {
     return () => cancelHoverClose();
   }, [cancelHoverClose]);
 
-  const logoClass = `flex shrink-0 items-center gap-2 font-extrabold tracking-tight text-zinc-100 ${easeNav} ${
+  const logoClass = `flex shrink-0 items-center gap-2 font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 ${easeNav} ${
     compact ? "text-[12px]" : "text-sm"
   }`;
 
   return (
     <header
       ref={headerRef}
-      className={`sticky top-0 z-40 isolate border-b border-white/10 bg-reels-abyss/72 backdrop-blur-xl [transform:translateZ(0)] ${easeNav} ${
+      className={`sticky top-0 z-40 isolate border-b border-white/10 bg-reels-abyss/72 backdrop-blur-xl [transform:translateZ(0)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white/95 [html[data-theme='light']_&]:shadow-[0_1px_0_rgba(0,0,0,0.06)] ${easeNav} ${
         compact
-          ? "overflow-visible shadow-[0_12px_40px_-16px_rgba(255,0,85,0.18)]"
+          ? "overflow-visible shadow-[0_12px_40px_-16px_rgba(255,0,85,0.18)] [html[data-theme='light']_&]:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)]"
           : "shadow-none"
       }`}
     >
@@ -435,7 +439,7 @@ export function MallTopNav() {
             <div className={`${!compact ? "mt-1 sm:mt-1.5" : ""}`}>
               <Link
                 href="/"
-                className="mx-auto block w-fit max-w-full rounded-sm outline-none transition-[opacity,transform] duration-200 hover:opacity-[0.9] active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-reels-cyan/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reels-abyss"
+                className="mx-auto block w-fit max-w-full rounded-sm outline-none transition-[opacity,transform] duration-200 hover:opacity-[0.9] active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-reels-cyan/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reels-abyss [html[data-theme='light']_&]:focus-visible:ring-offset-white"
                 aria-label="홈 · 메인 화면으로 이동"
               >
                 <motion.div
@@ -476,7 +480,7 @@ export function MallTopNav() {
               className={`flex min-w-0 items-center ${easeNav} ${
                 compact
                   ? "mt-0 flex-1 justify-center gap-1 overflow-visible border-0 py-0 sm:gap-1.5"
-                  : "no-scrollbar mt-1.5 justify-center gap-1 overflow-x-auto border-t border-white/10 pt-1.5 sm:gap-1.5"
+                  : "no-scrollbar mt-1.5 justify-center gap-1 overflow-x-auto border-t border-white/10 pt-1.5 sm:gap-1.5 [html[data-theme='light']_&]:border-zinc-200"
               }`}
               aria-label="카테고리"
             >
@@ -486,7 +490,7 @@ export function MallTopNav() {
                     <Link
                       key={item.label}
                       href={item.href}
-                      className={`shrink-0 rounded-full border border-transparent bg-transparent font-semibold text-zinc-400 transition-[background-color,color,padding,font-size,border-color] ${easeLayout} hover:border-white/15 hover:bg-white/8 hover:text-white px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]`}
+                      className={`${categoryPillClass} ${easeLayout} px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]`}
                     >
                       {item.label}
                     </Link>
@@ -507,7 +511,7 @@ export function MallTopNav() {
                       aria-haspopup="true"
                       aria-controls="mall-category-more"
                       id="mall-category-trigger"
-                      className={`inline-flex items-center gap-0.5 rounded-full border border-transparent bg-transparent font-semibold text-zinc-400 transition-[background-color,color,padding,font-size,border-color] ${easeLayout} hover:border-white/15 hover:bg-white/8 hover:text-white px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]`}
+                      className={`inline-flex items-center gap-0.5 ${categoryPillClass} ${easeLayout} px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]`}
                     >
                       카테고리
                       <ChevronDown
@@ -525,7 +529,7 @@ export function MallTopNav() {
                           id="mall-category-more"
                           role="region"
                           aria-labelledby="mall-category-trigger"
-                          className="rounded-xl border border-white/15 bg-reels-void/95 shadow-[0_20px_50px_-12px_rgba(0,242,234,0.12)] backdrop-blur-xl transition-[opacity,transform] duration-200 ease-out"
+                          className="rounded-xl border border-white/15 bg-reels-void/95 shadow-[0_20px_50px_-12px_rgba(0,242,234,0.12)] backdrop-blur-xl transition-[opacity,transform] duration-200 ease-out [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_20px_40px_-16px_rgba(0,0,0,0.12)]"
                           style={{
                             position: "fixed",
                             top: menuPlace.top,
@@ -549,7 +553,7 @@ export function MallTopNav() {
                                     cancelHoverClose();
                                     setMoreOpen(false);
                                   }}
-                                  className={`shrink-0 whitespace-nowrap rounded-full px-1.5 py-1 text-[10px] font-semibold text-zinc-300 transition-colors duration-200 first:pl-2 last:pr-2 sm:px-2 sm:text-[11px] sm:first:pl-2.5 sm:last:pr-2.5 ${easeLayout} hover:bg-white/10 hover:text-white`}
+                                  className={`shrink-0 whitespace-nowrap rounded-full px-1.5 py-1 text-[10px] font-semibold text-zinc-300 transition-colors duration-200 first:pl-2 last:pr-2 sm:px-2 sm:text-[11px] sm:first:pl-2.5 sm:last:pr-2.5 ${easeLayout} hover:bg-white/10 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black`}
                                 >
                                   {item.label}
                                 </Link>
@@ -566,7 +570,7 @@ export function MallTopNav() {
                   <Link
                     key={item.label}
                     href={item.href}
-                    className={`shrink-0 rounded-full border border-transparent bg-transparent font-semibold text-zinc-400 transition-[background-color,color,padding,font-size,border-color] ${easeLayout} hover:border-white/15 hover:bg-white/8 hover:text-white px-2.5 py-1.5 text-[11px] sm:px-3 sm:py-2 sm:text-[12px]`}
+                    className={`${categoryPillClass} ${easeLayout} px-2.5 py-1.5 text-[11px] sm:px-3 sm:py-2 sm:text-[12px]`}
                   >
                     {item.label}
                   </Link>

@@ -10,7 +10,7 @@ import {
 } from "@/components/PriceSuggestionModal";
 
 const navActionClass =
-  "inline-flex items-center justify-center rounded-full bg-transparent px-2.5 py-1.5 text-white/80 transition-[background-color,color] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/10 hover:text-white motion-reduce:duration-250";
+  "inline-flex items-center justify-center rounded-full bg-transparent px-2.5 py-1.5 text-white/80 transition-[background-color,color] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/10 hover:text-white motion-reduce:duration-250 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
 
 type ApiNotification = {
   id: string;
@@ -112,25 +112,25 @@ export function SellerNotificationBell({ compact }: { compact?: boolean }) {
             className="absolute right-0 top-[calc(100%+6px)] z-[9998] w-[min(calc(100vw-24px),320px)] rounded-xl border border-white/15 bg-reels-void/95 py-1 shadow-[0_16px_48px_-12px_rgba(155,109,255,0.2)] backdrop-blur-xl [html[data-theme='light']_&]:border-black/10 [html[data-theme='light']_&]:bg-white/95 [html[data-theme='light']_&]:shadow-[0_16px_48px_-18px_rgba(90,62,127,0.28)]"
             role="menu"
           >
-            <p className="border-b border-white/10 px-3 py-2 text-[12px] font-bold text-zinc-100 [html[data-theme='light']_&]:border-black/10 [html[data-theme='light']_&]:text-[#2a1740]">
+            <p className="border-b border-white/10 px-3 py-2 text-[12px] font-bold text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
               알림
             </p>
             <ul className="max-h-[min(50vh,320px)] overflow-y-auto">
               {items.length === 0 ? (
-                <li className="px-3 py-4 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-[#6f5a8b]">알림이 없어요.</li>
+                <li className="px-3 py-4 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">알림이 없어요.</li>
               ) : (
                 items.map((n) => (
                   <li key={n.id} className="border-b border-white/5 last:border-0 [html[data-theme='light']_&]:border-black/5">
                     <button
                       type="button"
-                      className="w-full px-3 py-2.5 text-left transition-colors hover:bg-white/[0.06] [html[data-theme='light']_&]:hover:bg-[#9b6dff]/10 disabled:opacity-50"
+                      className="w-full px-3 py-2.5 text-left transition-colors hover:bg-white/[0.06] [html[data-theme='light']_&]:hover:bg-zinc-100 disabled:opacity-50"
                       disabled={n.type !== "PRICE_SUGGEST" || n.status !== "PENDING"}
                       onClick={() => openSuggestModal(n)}
                     >
-                      <span className="line-clamp-1 text-[13px] font-semibold text-zinc-100 [html[data-theme='light']_&]:text-[#2a1740]">
+                      <span className="line-clamp-1 text-[13px] font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
                         {n.title}
                       </span>
-                      <span className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-[#6f5a8b]">
+                      <span className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                         {n.body}
                       </span>
                       {n.status === "ACCEPTED" ? (
