@@ -249,10 +249,28 @@ export function VideoCard({
           </span>
         ) : null}
         {!hideCloneStrip ? (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[6] bg-gradient-to-t from-black/55 via-black/25 to-transparent px-1.5 pb-1 pt-5 sm:px-2 sm:pb-1.5 sm:pt-6">
+          <div
+            className={`pointer-events-none absolute inset-x-0 bottom-0 z-[6] bg-gradient-to-t from-black/55 via-black/25 to-transparent px-1.5 pb-1 sm:px-2 sm:pb-1.5 ${
+              reelStrip && !dense ? "pt-6 sm:pt-7" : "pt-5 sm:pt-6"
+            }`}
+          >
             {remaining == null ? (
-              <p className="font-mono text-[7px] font-medium leading-tight text-slate-200/95 sm:text-[8px]">
-                <span className="text-slate-300/90">Cloned: </span>
+              <p
+                className={`font-mono font-medium leading-snug text-slate-200/95 ${
+                  reelStrip && !dense
+                    ? "text-[10px] sm:text-[11px]"
+                    : "text-[7px] sm:text-[8px]"
+                }`}
+              >
+                <span
+                  className={
+                    reelStrip && !dense
+                      ? "text-slate-200/95"
+                      : "text-slate-300/90"
+                  }
+                >
+                  Cloned:{" "}
+                </span>
                 {dense ? (
                   <span className="tabular-nums text-slate-100">
                     {commerce.salesCount.toLocaleString("en-US")}
@@ -260,14 +278,35 @@ export function VideoCard({
                 ) : (
                   <CloneCountAnimation value={commerce.salesCount} />
                 )}
-                <span className="text-slate-300/90"> times</span>
+                <span
+                  className={
+                    reelStrip && !dense
+                      ? "text-slate-200/95"
+                      : "text-slate-300/90"
+                  }
+                >
+                  {" "}
+                  times
+                </span>
               </p>
             ) : remaining > 0 ? (
-              <p className="font-mono text-[7px] font-semibold leading-tight text-amber-100/95 sm:text-[8px]">
+              <p
+                className={`font-mono font-semibold leading-snug text-amber-100/95 ${
+                  reelStrip && !dense
+                    ? "text-[10px] sm:text-[11px]"
+                    : "text-[7px] sm:text-[8px]"
+                }`}
+              >
                 Only {remaining} clones left
               </p>
             ) : (
-              <p className="font-mono text-[7px] font-semibold leading-tight text-red-200/95 sm:text-[8px]">
+              <p
+                className={`font-mono font-semibold leading-snug text-red-200/95 ${
+                  reelStrip && !dense
+                    ? "text-[10px] sm:text-[11px]"
+                    : "text-[7px] sm:text-[8px]"
+                }`}
+              >
                 Sold out
               </p>
             )}
@@ -387,7 +426,7 @@ export function VideoCard({
           dense
             ? "min-h-[34px] px-1.5 py-1 sm:min-h-[36px]"
             : reelStrip
-              ? "min-h-[40px] px-1.5 py-1.5 sm:min-h-[42px] sm:px-2 sm:py-2"
+              ? "min-h-[44px] px-2 py-2 sm:min-h-[48px] sm:px-2.5 sm:py-2.5"
               : reelLayout
                 ? "min-h-[48px] px-2.5 py-2 sm:min-h-[52px] sm:px-3 sm:py-2.5"
                 : "min-h-[40px] px-2 py-1.5 sm:min-h-[44px] sm:px-2.5 sm:py-2"
@@ -399,7 +438,7 @@ export function VideoCard({
               dense
                 ? "text-[10px] sm:text-[10px]"
                 : reelStrip
-                  ? "text-[10px] sm:text-[11px]"
+                  ? "text-[12px] sm:text-[13px]"
                   : reelLayout
                     ? "text-[12px] sm:text-[13px]"
                     : "text-[11px] sm:text-[12px]"
@@ -409,11 +448,11 @@ export function VideoCard({
           </h3>
           {priceLabel ? (
             <span
-              className={`shrink-0 rounded-md px-1 py-0.5 text-right font-extrabold tabular-nums text-reels-cyan transition-[transform,background-color,color,box-shadow,font-weight] duration-[400ms] ease-in-out motion-reduce:transition-none group-hover:scale-[1.07] group-hover:bg-reels-crimson group-hover:font-extrabold group-hover:text-white group-hover:shadow-reels-crimson motion-reduce:group-hover:scale-100 motion-reduce:group-hover:bg-transparent motion-reduce:group-hover:font-extrabold motion-reduce:group-hover:text-reels-cyan motion-reduce:group-hover:shadow-none [html[data-theme='light']_&]:text-[#00a8b5] ${
+              className={`shrink-0 rounded-md px-1.5 py-0.5 text-right font-extrabold tabular-nums text-reels-cyan transition-[transform,background-color,color,box-shadow,font-weight] duration-[400ms] ease-in-out motion-reduce:transition-none group-hover:scale-[1.07] group-hover:bg-reels-crimson group-hover:font-extrabold group-hover:text-white group-hover:shadow-reels-crimson motion-reduce:group-hover:scale-100 motion-reduce:group-hover:bg-transparent motion-reduce:group-hover:font-extrabold motion-reduce:group-hover:text-reels-cyan motion-reduce:group-hover:shadow-none [html[data-theme='light']_&]:text-[#00a8b5] ${
                 dense
                   ? "text-[10px]"
                   : reelStrip
-                    ? "text-[10px] sm:text-[11px]"
+                    ? "text-[12px] sm:text-[13px]"
                     : reelLayout
                       ? "text-[12px] sm:text-[13px]"
                       : "text-[11px] sm:text-[12px]"
