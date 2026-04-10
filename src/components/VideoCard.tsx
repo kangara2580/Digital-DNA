@@ -106,6 +106,7 @@ export function VideoCard({
   const commerce = getCommerceMeta(video.id);
   const remaining = clonesRemaining(commerce);
   const showMicro = !hideMicroDnaBadge && isMicroDna(video);
+  const showAiBadge = video.isAiGenerated === true;
   const cartBtnRef = useRef<HTMLButtonElement>(null);
   const liked = wishlist?.isSaved(video.id) ?? false;
   const reelAspectPortrait =
@@ -209,7 +210,29 @@ export function VideoCard({
             Micro DNA
           </span>
         ) : null}
-        {topBadge ? (
+        {showAiBadge && showMicro ? (
+          <span
+            className="video-card-ai-badge pointer-events-none absolute left-1.5 top-8 z-[6] sm:left-2 sm:top-9"
+            aria-label="AI 생성 영상"
+          >
+            AI
+          </span>
+        ) : null}
+        {!showMicro && (showAiBadge || topBadge) ? (
+          <div className="pointer-events-none absolute left-1.5 top-1.5 z-[6] flex max-w-[min(100%-12px,calc(100%-3rem))] flex-wrap items-center gap-1 sm:left-2 sm:top-2">
+            {showAiBadge ? (
+              <span className="video-card-ai-badge" aria-label="AI 생성 영상">
+                AI
+              </span>
+            ) : null}
+            {topBadge ? (
+              <span className="truncate rounded-full border border-reels-crimson/35 bg-reels-crimson/85 px-1.5 py-0.5 text-[9px] font-bold leading-none text-white sm:px-2 sm:text-[10px]">
+                {topBadge}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+        {showMicro && topBadge ? (
           <span
             className={`pointer-events-none absolute z-[6] truncate rounded-full border border-reels-crimson/35 bg-reels-crimson/85 px-1.5 py-0.5 text-[9px] font-bold leading-none text-white sm:px-2 sm:text-[10px] ${topBadgePos}`}
           >

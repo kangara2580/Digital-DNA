@@ -126,6 +126,43 @@ body {
   color: #fff;
 }
 
+/**
+ * VideoCard 썸네일 좌상단 AI 표식 — 컴포넌트에 동일 클래스명으로 부착됨.
+ * 색·크기·테두리만 바꾸려면 이 블록만 수정하면 됩니다.
+ */
+.video-card-ai-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.35rem;
+  padding: 0.2rem 0.45rem;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid rgba(155, 109, 255, 0.45);
+  background: rgba(12, 8, 22, 0.82);
+  color: #ece8ff;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+@media (min-width: 640px) {
+  .video-card-ai-badge {
+    font-size: 10px;
+    padding: 0.22rem 0.5rem;
+  }
+}
+
+:root[data-theme="light"] .video-card-ai-badge {
+  background: rgba(255, 255, 255, 0.94);
+  color: #5b21b6;
+  border-color: rgba(124, 58, 237, 0.4);
+  box-shadow: 0 1px 3px rgba(56, 78, 125, 0.12);
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
