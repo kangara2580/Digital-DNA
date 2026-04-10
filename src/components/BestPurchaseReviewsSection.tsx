@@ -134,7 +134,7 @@ export function BestPurchaseReviewsSection() {
           </div>
         </div>
 
-        <p className="mx-auto mt-3 max-w-xl text-center text-[12px] font-medium tracking-wide text-zinc-600 sm:mt-4 sm:text-[13px]">
+        <p className="mx-auto mt-3 max-w-xl text-center text-[12px] font-medium tracking-wide text-zinc-600 [html[data-theme='light']_&]:text-zinc-700 sm:mt-4 sm:text-[13px]">
           옆으로 스크롤하여 더 많은 구매평을 확인하세요
         </p>
       </div>

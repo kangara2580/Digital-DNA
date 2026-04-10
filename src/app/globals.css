@@ -398,6 +398,41 @@ body {
   background: rgba(255, 79, 179, 0.3);
 }
 
+/* 라이트 모드: 구매평 등 가로 스크롤 — 불투명 흰 썸 + 은은한 트랙 */
+html[data-theme="light"] .feed-scroll {
+  scrollbar-color: #ffffff rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .feed-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme="light"] .feed-scroll::-webkit-scrollbar-thumb {
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .feed-scroll::-webkit-scrollbar-thumb:hover {
+  background: #f4f4f5;
+}
+
+html[data-theme="light"] .feed-scroll-wide {
+  scrollbar-color: #ffffff rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .feed-scroll-wide::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme="light"] .feed-scroll-wide::-webkit-scrollbar-thumb {
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .feed-scroll-wide::-webkit-scrollbar-thumb:hover {
+  background: #f4f4f5;
+}
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
