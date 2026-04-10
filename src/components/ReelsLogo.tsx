@@ -1,3 +1,9 @@
+import { useId } from "react";
+
+/**
+ * REELS MARKET — 미니멀 마크
+ * 세로 릴(동영상) + 재생 삼각형, 브랜드 네온 핑크 → 시안 그라데이션
+ */
 export function ReelsLogo({
   className = "",
   size = 28,
@@ -5,6 +11,9 @@ export function ReelsLogo({
   className?: string;
   size?: number;
 }) {
+  const uid = useId().replace(/:/g, "");
+  const gradId = `reels-brand-${uid}`;
+
   return (
     <svg
       width={size}
@@ -15,34 +24,33 @@ export function ReelsLogo({
       aria-hidden
     >
       <defs>
-        <linearGradient id="reels-logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#1C2D5A" />
-          <stop offset="100%" stopColor="#FF8A3D" />
-        </linearGradient>
-        <linearGradient id="reels-logo-fill" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="rgba(255,255,255,0.8)" />
-          <stop offset="100%" stopColor="rgba(255,255,255,0.25)" />
+        <linearGradient
+          id={gradId}
+          x1="0"
+          y1="0"
+          x2="1"
+          y2="1"
+          gradientUnits="objectBoundingBox"
+        >
+          <stop offset="0%" stopColor="#FF0055" />
+          <stop offset="100%" stopColor="#00F2EA" />
         </linearGradient>
       </defs>
+      {/* 세로 릴(핸드폰/숏폼 비율에 가깝게) */}
       <rect
-        x="3"
+        x="7"
         y="4"
-        width="21"
+        width="18"
         height="24"
-        rx="6"
-        stroke="url(#reels-logo-grad)"
-        strokeWidth="1.6"
-        fill="url(#reels-logo-fill)"
+        rx="4.5"
+        stroke={`url(#${gradId})`}
+        strokeWidth="2"
+        fill="none"
       />
-      <circle cx="8" cy="9.5" r="1.2" fill="#FF8A3D" opacity="0.95" />
-      <circle cx="18" cy="9.5" r="1.2" fill="#FF8A3D" opacity="0.95" />
-      <circle cx="8" cy="22.5" r="1.2" fill="#1C2D5A" opacity="0.95" />
-      <circle cx="18" cy="22.5" r="1.2" fill="#1C2D5A" opacity="0.95" />
+      {/* 재생 — 동영상 마켓 */}
       <path
-        d="M15 10.5c3.8 0 6.5 2.2 6.5 5.5s-2.7 5.5-6.5 5.5"
-        stroke="url(#reels-logo-grad)"
-        strokeWidth="1.9"
-        strokeLinecap="round"
+        d="M12.5 11.5v9L21 16l-8.5-4.5z"
+        fill={`url(#${gradId})`}
       />
     </svg>
   );
