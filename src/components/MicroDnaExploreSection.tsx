@@ -28,7 +28,9 @@ export function MicroDnaExploreSection() {
               className="text-[22px] font-extrabold leading-snug tracking-tight sm:text-[26px] md:text-[28px]"
             >
               <span className="text-zinc-100">단 ! </span>
-              <span className="text-reels-crimson">100~</span>
+              <span className="text-reels-cyan [text-shadow:0_0_10px_rgba(0,242,234,0.28),0_0_4px_rgba(0,242,234,0.12)]">
+                100~
+              </span>
               <span className="text-zinc-100"> 원만 준비하세요 !</span>
             </h2>
             <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-zinc-500 sm:text-[16px]">
