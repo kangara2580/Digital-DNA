@@ -78,3 +78,18 @@ export function getTrendingMetrics(
   }
   return deriveMetricsFromRank(videoId, rankIndex);
 }
+
+/**
+ * 조각 상세 등 — `videoId`마다 고정된 데모 지표(인기순위 카드와 동일 필드).
+ * `TRENDING_RANK_METRICS`에 있으면 그대로, 없으면 id 기반 시드로 생성합니다.
+ */
+export function getMetricsForVideoDetail(videoId: string): TrendingRankMetrics {
+  const explicit = TRENDING_RANK_METRICS[videoId];
+  if (explicit) return explicit;
+  let x = 0;
+  for (let i = 0; i < videoId.length; i++) {
+    x = Math.imul(31, x) + videoId.charCodeAt(i);
+  }
+  const rankIndex = Math.abs(x) % 10;
+  return deriveMetricsFromRank(videoId, rankIndex);
+}

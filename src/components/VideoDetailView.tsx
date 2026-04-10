@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { ShoppingCart } from "lucide-react";
 import { CloneCountAnimation } from "@/components/CloneCountAnimation";
 import { RelatedDnaQuilt } from "@/components/RelatedDnaQuilt";
+import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
+import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useRecentClips } from "@/context/RecentClipsContext";
@@ -37,6 +39,11 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
       : soldOut
         ? "품절"
         : "바로 구매하기";
+
+  const rankMetrics = useMemo(
+    () => getMetricsForVideoDetail(video.id),
+    [video.id],
+  );
 
   return (
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
@@ -89,6 +96,22 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
               <p className="mt-1 text-[14px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">{video.creator}</p>
               <p className="mt-2 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">{fresh.subline}</p>
             </div>
+
+            <section
+              className="reels-glass-card overflow-hidden rounded-xl"
+              aria-labelledby="video-stats-heading"
+            >
+              <h2
+                id="video-stats-heading"
+                className="border-b border-white/10 bg-black/20 px-3 py-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-600 sm:px-3.5 sm:text-[12px]"
+              >
+                실시간 성과 · 지표
+              </h2>
+              <TrendingVideoStatsFooter
+                metrics={rankMetrics}
+                salePriceWon={video.priceWon}
+              />
+            </section>
 
             <div className="border-t border-white/10 pt-6 [html[data-theme='light']_&]:border-zinc-200">
               <div className="flex items-center justify-between gap-3">
