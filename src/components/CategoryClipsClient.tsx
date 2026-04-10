@@ -17,6 +17,15 @@ type OrientationFilter = "all" | "portrait" | "landscape";
 type PriceFilter = "all" | "high" | "low";
 type NewestFilter = "all" | "newest" | "oldest";
 
+/** 사이드 필터 버튼 — 다크 / 라이트 */
+const filterBtnActive =
+  "bg-white/10 text-zinc-100 [html[data-theme='light']_&]:bg-zinc-200 [html[data-theme='light']_&]:text-zinc-900";
+const filterBtnInactive =
+  "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900";
+
+const filterSectionLabel =
+  "mb-3 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500";
+
 function minCellHeight(span: number): string {
   if (span <= 2) return "min-h-[132px]";
   if (span <= 3) return "min-h-[158px]";
@@ -65,20 +74,18 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   }, [filtered, newestFilter, priceFilter]);
 
   return (
-    <div className="min-h-screen bg-transparent text-zinc-100">
+    <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
       <div className="mx-auto flex max-w-[1800px]">
-        <aside className="hidden w-[168px] shrink-0 border-r border-white/10 [border-right-width:0.5px] md:block lg:w-[188px]">
+        <aside className="hidden w-[168px] shrink-0 border-r border-white/10 [border-right-width:0.5px] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 md:block lg:w-[188px]">
           <div className="sticky top-[var(--header-height,220px)] space-y-1 px-4 py-8">
-            <p className="mb-3 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-600">
+            <p className={filterSectionLabel}>
               방향
             </p>
             <button
               type="button"
               onClick={() => setOrientationFilter("all")}
               className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                orientationFilter === "all"
-                  ? "bg-white/10 text-zinc-100"
-                  : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
+                orientationFilter === "all" ? filterBtnActive : filterBtnInactive
               }`}
             >
               전체
@@ -88,8 +95,8 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
               onClick={() => setOrientationFilter("portrait")}
               className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
                 orientationFilter === "portrait"
-                  ? "bg-white/10 text-zinc-100"
-                  : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
+                  ? filterBtnActive
+                  : filterBtnInactive
               }`}
             >
               세로
@@ -99,23 +106,21 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
               onClick={() => setOrientationFilter("landscape")}
               className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
                 orientationFilter === "landscape"
-                  ? "bg-white/10 text-zinc-100"
-                  : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
+                  ? filterBtnActive
+                  : filterBtnInactive
               }`}
             >
               가로
             </button>
 
-            <p className="mb-3 mt-8 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-600">
+            <p className={`mt-8 ${filterSectionLabel}`}>
               가격
             </p>
             <button
               type="button"
               onClick={() => setPriceFilter("all")}
               className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                priceFilter === "all"
-                  ? "bg-white/10 text-zinc-100"
-                  : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
+                priceFilter === "all" ? filterBtnActive : filterBtnInactive
               }`}
             >
               전체
@@ -124,9 +129,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
               type="button"
               onClick={() => setPriceFilter("high")}
               className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                priceFilter === "high"
-                  ? "bg-white/10 text-zinc-100"
-                  : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
+                priceFilter === "high" ? filterBtnActive : filterBtnInactive
               }`}
             >
               높은순
@@ -135,24 +138,20 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
               type="button"
               onClick={() => setPriceFilter("low")}
               className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                priceFilter === "low"
-                  ? "bg-white/10 text-zinc-100"
-                  : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
+                priceFilter === "low" ? filterBtnActive : filterBtnInactive
               }`}
             >
               낮은순
             </button>
 
-            <p className="mb-3 mt-8 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-600">
+            <p className={`mt-8 ${filterSectionLabel}`}>
               최신
             </p>
             <button
               type="button"
               onClick={() => setNewestFilter("all")}
               className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                newestFilter === "all"
-                  ? "bg-white/10 text-zinc-100"
-                  : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
+                newestFilter === "all" ? filterBtnActive : filterBtnInactive
               }`}
             >
               전체
@@ -161,9 +160,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
               type="button"
               onClick={() => setNewestFilter("newest")}
               className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                newestFilter === "newest"
-                  ? "bg-white/10 text-zinc-100"
-                  : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
+                newestFilter === "newest" ? filterBtnActive : filterBtnInactive
               }`}
             >
               최신순
@@ -172,9 +169,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
               type="button"
               onClick={() => setNewestFilter("oldest")}
               className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                newestFilter === "oldest"
-                  ? "bg-white/10 text-zinc-100"
-                  : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
+                newestFilter === "oldest" ? filterBtnActive : filterBtnInactive
               }`}
             >
               오래된순
@@ -183,14 +178,14 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1">
-          <header className="border-b border-white/10 [border-bottom-width:0.5px] px-4 py-6 sm:px-6 lg:px-8">
+        <main className="min-w-0 flex-1 [html[data-theme='light']_&]:bg-white">
+          <header className="border-b border-white/10 [border-bottom-width:0.5px] px-4 py-6 sm:px-6 lg:px-8 [html[data-theme='light']_&]:border-zinc-200">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <h1 className="text-xl font-extrabold tracking-tight text-zinc-100 sm:text-2xl">
+                <h1 className="text-xl font-extrabold tracking-tight text-zinc-100 sm:text-2xl [html[data-theme='light']_&]:text-zinc-900">
                   {label}
                 </h1>
-                <p className="mt-2 font-mono text-[11px] leading-none text-zinc-500 sm:text-[12px]">
+                <p className="mt-2 font-mono text-[11px] leading-none text-zinc-500 sm:text-[12px] [html[data-theme='light']_&]:text-zinc-600">
                   등록된 조각 {sorted.length}개
                 </p>
               </div>
@@ -205,7 +200,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                   className={`rounded-md px-3 py-1.5 font-mono text-[11px] ${
                     orientationFilter !== "all"
                       ? "bg-reels-crimson/90 text-white"
-                      : "bg-white/[0.06] text-zinc-400"
+                      : "bg-white/[0.06] text-zinc-400 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
                   }`}
                 >
                   방향:{" "}
@@ -225,7 +220,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                   className={`rounded-md px-3 py-1.5 font-mono text-[11px] ${
                     priceFilter !== "all"
                       ? "bg-reels-crimson/90 text-white"
-                      : "bg-white/[0.06] text-zinc-400"
+                      : "bg-white/[0.06] text-zinc-400 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
                   }`}
                 >
                   가격:{" "}
@@ -245,7 +240,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                   className={`rounded-md px-3 py-1.5 font-mono text-[11px] ${
                     newestFilter !== "all"
                       ? "bg-reels-crimson/90 text-white"
-                      : "bg-white/[0.06] text-zinc-400"
+                      : "bg-white/[0.06] text-zinc-400 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
                   }`}
                 >
                   최신:{" "}
@@ -260,12 +255,12 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
           </header>
 
           {sorted.length === 0 ? (
-            <p className="px-4 py-16 text-center font-mono text-[12px] text-zinc-500 sm:px-6">
+            <p className="px-4 py-16 text-center font-mono text-[12px] text-zinc-500 sm:px-6 [html[data-theme='light']_&]:text-zinc-600">
               이 조건에 맞는 조각이 없어요.
             </p>
           ) : (
             <div
-              className="grid grid-cols-12 gap-0 border border-white/10 [border-width:0.5px]"
+              className="grid grid-cols-12 gap-0 border border-white/10 [border-width:0.5px] [html[data-theme='light']_&]:border-zinc-200"
               style={{ gridAutoFlow: "dense" as const }}
             >
               {sorted.map((video) => {
@@ -276,7 +271,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                 return (
                   <div
                     key={video.id}
-                    className={`flex min-h-0 flex-col border-b border-r border-white/10 [border-bottom-width:0.5px] [border-right-width:0.5px] ${minH}`}
+                    className={`flex min-h-0 flex-col border-b border-r border-white/10 [border-bottom-width:0.5px] [border-right-width:0.5px] [html[data-theme='light']_&]:border-zinc-200 ${minH}`}
                     style={{ gridColumn: `span ${span} / span ${span}` }}
                   >
                     <VideoCard

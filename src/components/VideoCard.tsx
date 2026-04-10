@@ -136,8 +136,8 @@ export function VideoCard({
   const shell = flush
     ? "rounded-none border-0 bg-transparent shadow-none"
     : dense
-      ? "rounded-lg border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-reels-cyan/25 hover:shadow-reels-cyan/20"
-      : "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-reels-crimson/20 hover:shadow-reels-crimson/25";
+      ? "rounded-lg border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-reels-cyan/25 hover:shadow-reels-cyan/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-reels-cyan/40"
+      : "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-reels-crimson/20 hover:shadow-reels-crimson/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-reels-crimson/35";
 
   const priceLabel =
     video.priceWon != null
@@ -353,7 +353,7 @@ export function VideoCard({
       </div>
 
       <div
-        className={`flex items-stretch border-t border-white/10 bg-black/25 ${
+        className={`flex items-stretch border-t border-white/10 bg-black/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 ${
           dense
             ? "min-h-[34px] px-1.5 py-1 sm:min-h-[36px]"
             : reelStrip
@@ -365,7 +365,7 @@ export function VideoCard({
       >
         <div className={`flex min-w-0 flex-1 items-center ${dense ? "gap-1" : "gap-2"}`}>
           <h3
-            className={`line-clamp-2 min-w-0 flex-1 text-left font-semibold leading-snug text-zinc-100 ${
+            className={`line-clamp-2 min-w-0 flex-1 text-left font-semibold leading-snug text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 ${
               dense
                 ? "text-[10px] sm:text-[10px]"
                 : reelStrip
@@ -379,7 +379,7 @@ export function VideoCard({
           </h3>
           {priceLabel ? (
             <span
-              className={`shrink-0 rounded-md px-1 py-0.5 text-right font-extrabold tabular-nums text-reels-cyan transition-[transform,background-color,color,box-shadow,font-weight] duration-[400ms] ease-in-out motion-reduce:transition-none group-hover:scale-[1.07] group-hover:bg-reels-crimson group-hover:font-extrabold group-hover:text-white group-hover:shadow-reels-crimson motion-reduce:group-hover:scale-100 motion-reduce:group-hover:bg-transparent motion-reduce:group-hover:font-extrabold motion-reduce:group-hover:text-reels-cyan motion-reduce:group-hover:shadow-none ${
+              className={`shrink-0 rounded-md px-1 py-0.5 text-right font-extrabold tabular-nums text-reels-cyan transition-[transform,background-color,color,box-shadow,font-weight] duration-[400ms] ease-in-out motion-reduce:transition-none group-hover:scale-[1.07] group-hover:bg-reels-crimson group-hover:font-extrabold group-hover:text-white group-hover:shadow-reels-crimson motion-reduce:group-hover:scale-100 motion-reduce:group-hover:bg-transparent motion-reduce:group-hover:font-extrabold motion-reduce:group-hover:text-reels-cyan motion-reduce:group-hover:shadow-none [html[data-theme='light']_&]:text-[#00a8b5] ${
                 dense
                   ? "text-[10px]"
                   : reelStrip
