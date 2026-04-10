@@ -1,5 +1,10 @@
 import type { FeedVideo } from "./videos";
-import { SAMPLE_VIDEOS } from "./videos";
+import type { CategorySlug } from "./videoCatalog";
+import {
+  ALL_MARKET_VIDEOS,
+  getVideosForCategory,
+  sortVideosByNewest,
+} from "./videoCatalog";
 
 export type PurchaseReviewPickTone =
   | "rose"
@@ -142,10 +147,31 @@ export const BEST_PURCHASE_REVIEWS: PurchaseReviewCard[] = [
   },
 ];
 
-function byId(id: string): FeedVideo {
-  const v = SAMPLE_VIDEOS.find((x) => x.id === id);
-  if (!v) throw new Error(`missing video ${id}`);
-  return v;
+/** 상황 큐레이션 한 블록당 최대 클립 수(이후 「더보기」 페이지) */
+export const EDITOR_CURATION_CLIP_LIMIT = 30;
+
+/**
+ * 카테고리 소속 클립을 최신순으로 채우고, 부족하면 마켓 전체에서 보출한다.
+ */
+export function getEditorCurationClips(slug: CategorySlug): FeedVideo[] {
+  const primary = sortVideosByNewest(getVideosForCategory(slug));
+  const seen = new Set<string>();
+  const out: FeedVideo[] = [];
+  for (const v of primary) {
+    if (out.length >= EDITOR_CURATION_CLIP_LIMIT) break;
+    if (!seen.has(v.id)) {
+      seen.add(v.id);
+      out.push(v);
+    }
+  }
+  for (const v of ALL_MARKET_VIDEOS) {
+    if (out.length >= EDITOR_CURATION_CLIP_LIMIT) break;
+    if (!seen.has(v.id)) {
+      seen.add(v.id);
+      out.push(v);
+    }
+  }
+  return out.slice(0, EDITOR_CURATION_CLIP_LIMIT);
 }
 
 export type EditorCuration = {
@@ -153,7 +179,8 @@ export type EditorCuration = {
   /** 상황에 맞는 짧은 이모지(제목 옆) */
   emoji: string;
   title: string;
-  clips: FeedVideo[];
+  /** 클립 목록·더보기 링크에 사용 */
+  categorySlug: CategorySlug;
 };
 
 export const EDITOR_CURATIONS: EditorCuration[] = [
@@ -161,18 +188,18 @@ export const EDITOR_CURATIONS: EditorCuration[] = [
     id: "cur-apology",
     emoji: "🙇",
     title: "여자친구한테 혼나서 빌 때 쓰기 좋은 영상 모음",
-    clips: ["5", "9", "3", "7", "11", "1", "4", "10", "6", "2"].map(byId),
+    categorySlug: "comedy",
   },
   {
     id: "cur-burnout",
     emoji: "😵‍💫",
     title: "밤샘 과제 중 현타 올 때 넣는 짤 모음",
-    clips: ["8", "5", "12", "6", "3", "9", "11", "7", "1", "4"].map(byId),
+    categorySlug: "daily",
   },
   {
     id: "cur-monday",
     emoji: "🚇",
     title: "월요일 아침 출근길의 지옥철 풍경",
-    clips: ["2", "7", "10", "4", "5", "6", "8", "11", "3", "1"].map(byId),
+    categorySlug: "shortform",
   },
 ];
