@@ -8,7 +8,7 @@ import { SectionMoreLink } from "./SectionMoreLink";
 import { VideoCard } from "./VideoCard";
 
 const FAILURE_STRIP =
-  "no-scrollbar -mx-4 flex w-full snap-x snap-mandatory items-stretch gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:gap-3 sm:px-0 md:gap-3 lg:gap-4";
+  "no-scrollbar -mx-4 flex w-full snap-x snap-mandatory items-stretch gap-2 overflow-x-auto px-4 pb-1 pt-2 sm:mx-0 sm:gap-3 sm:px-0 md:gap-3 lg:gap-4";
 const CARD_SLOT =
   "relative shrink-0 snap-center " +
   "w-[min(48vw,260px)] min-w-[min(48vw,168px)] max-w-[260px] " +
@@ -137,7 +137,12 @@ export function FailureOopsSection() {
                 <span className="absolute left-1.5 top-1.5 z-[25] flex h-6 min-w-[1.5rem] items-center justify-center rounded-full border border-white/20 bg-white/10 px-1.5 text-[11px] font-extrabold tabular-nums text-zinc-100 shadow-lg shadow-reels-cyan/10 backdrop-blur-md sm:left-2 sm:top-2 sm:h-7 sm:min-w-[1.75rem] sm:px-2 sm:text-[12px] md:left-2.5 md:top-2.5 md:h-8 md:min-w-[2rem] md:text-[13px]">
                   {idx + 1}
                 </span>
-                <VideoCard video={video} reelLayout className="h-full min-w-0" />
+                <VideoCard
+                  video={video}
+                  reelLayout
+                  subtleHover
+                  className="h-full min-w-0"
+                />
               </div>
             ))}
             <div className={MORE_CELL} role="listitem">

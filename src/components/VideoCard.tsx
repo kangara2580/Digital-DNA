@@ -47,6 +47,10 @@ type Props = {
    * reelLayout + 인기순위 한 줄 5열 등 — 9:16 대신 3:4로 높이를 줄여 가로 스트립에 맞춤
    */
   reelStrip?: boolean;
+  /**
+   * 가로 스트립 + 상단 해시태그 등이 있을 때 — 호버 확대를 약하게·위 기준으로 잘림 방지
+   */
+  subtleHover?: boolean;
   /** 제목·가격 아래 추가 블록(인기순위 지표 등) */
   footerExtension?: ReactNode;
 };
@@ -93,6 +97,7 @@ export function VideoCard({
   instantPreview = true,
   reelLayout = false,
   reelStrip = false,
+  subtleHover = false,
   footerExtension,
 }: Props) {
   const dopamine = useDopamineBasketOptional();
@@ -164,9 +169,11 @@ export function VideoCard({
       : "";
 
   const gridHoverScale =
-    !dense && !flush && overlapOnHover !== true
-      ? "hover:z-[2] hover:scale-[1.05] motion-reduce:hover:scale-100"
-      : "";
+    subtleHover && !dense && !flush && overlapOnHover !== true
+      ? "origin-top hover:z-[2] hover:scale-[1.02] motion-reduce:hover:scale-100"
+      : !dense && !flush && overlapOnHover !== true
+        ? "hover:z-[2] hover:scale-[1.05] motion-reduce:hover:scale-100"
+        : "";
 
   return (
     <article
