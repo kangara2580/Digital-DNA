@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { VideoCard } from "@/components/VideoCard";
+import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import type { CategorySlug } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
 import {
@@ -33,6 +35,92 @@ function minCellHeight(span: number): string {
   if (span <= 4) return "min-h-[188px]";
   if (span <= 6) return "min-h-[220px]";
   return "min-h-[260px]";
+}
+
+type EndlessFeedItem = {
+  instanceId: string;
+  video: FeedVideo;
+};
+
+function BestEndlessRankFeed({ videos }: { videos: FeedVideo[] }) {
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const [items, setItems] = useState<EndlessFeedItem[]>([]);
+
+  const appendBatch = useCallback(() => {
+    if (videos.length === 0) return;
+    setItems((prev) => {
+      const start = prev.length;
+      const next: EndlessFeedItem[] = [];
+      for (let i = 0; i < 8; i++) {
+        const idx = (start + i) % videos.length;
+        const loop = Math.floor((start + i) / videos.length);
+        const v = videos[idx];
+        next.push({
+          instanceId: `${v.id}-loop-${loop}-slot-${i}`,
+          video: v,
+        });
+      }
+      return [...prev, ...next];
+    });
+  }, [videos]);
+
+  useEffect(() => {
+    setItems([]);
+  }, [videos]);
+
+  useEffect(() => {
+    if (videos.length === 0) return;
+    if (items.length === 0) appendBatch();
+  }, [appendBatch, items.length, videos.length]);
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || videos.length === 0) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) appendBatch();
+      },
+      { rootMargin: "1400px 0px 1200px 0px" },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [appendBatch, videos.length]);
+
+  return (
+    <section className="px-4 py-5 sm:px-6 lg:px-8">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {items.map((item, idx) => (
+          <article
+            key={item.instanceId}
+            className="reels-glass-card overflow-hidden rounded-xl"
+          >
+            <VideoCard
+              video={item.video}
+              reelLayout
+              reelStrip
+              hideCloneStrip
+              className="h-full min-w-0"
+              footerExtension={
+                <TrendingVideoStatsFooter
+                  metrics={getMetricsForVideoDetail(item.video.id)}
+                  salePriceWon={item.video.priceWon}
+                />
+              }
+            />
+            <div className="border-t border-white/10 bg-black/25 px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+              <p className="text-[11px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                인기 피드 #{idx + 1}
+              </p>
+            </div>
+          </article>
+        ))}
+      </div>
+      <div ref={sentinelRef} className="h-10 w-full" aria-hidden />
+      <p className="mt-2 text-center text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        인기 영상을 계속 불러오는 중...
+      </p>
+    </section>
+  );
 }
 
 export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
@@ -304,11 +392,15 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
             </div>
           </header>
 
-          {sorted.length === 0 ? (
+          {slug === "best" ? (
+            <BestEndlessRankFeed videos={sorted} />
+          ) : null}
+
+          {slug !== "best" && sorted.length === 0 ? (
             <p className="px-4 py-16 text-center font-mono text-[12px] text-zinc-500 sm:px-6 [html[data-theme='light']_&]:text-zinc-600">
               이 조건에 맞는 조각이 없어요.
             </p>
-          ) : orientationFilter === "all" ? (
+          ) : slug !== "best" && orientationFilter === "all" ? (
             <div className="space-y-0">
               {portraitSorted.length > 0 ? (
                 <section aria-labelledby="category-portrait-heading">
@@ -351,7 +443,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                 </section>
               ) : null}
             </div>
-          ) : (
+          ) : slug !== "best" ? (
             <div>
               <div className="border-b border-white/10 bg-black/[0.08] px-4 py-3 sm:px-6 lg:px-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/80">
                 <p className="text-[13px] font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
@@ -362,7 +454,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
               </div>
               {renderMosaicGrid(sorted)}
             </div>
-          )}
+          ) : null}
         </main>
       </div>
     </div>
