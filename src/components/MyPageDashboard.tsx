@@ -5,21 +5,30 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { FaceProfileUploadSection } from "@/components/FaceProfileUploadSection";
 import { MyPageSavedDraftsSection } from "@/components/MyPageSavedDraftsSection";
+import { MyPageSellerAnalyticsSection } from "@/components/MyPageSellerAnalyticsSection";
 import { DEMO_FACE_PROFILES } from "@/data/demoFaceProfiles";
 import { useStoredFaceProfile } from "@/hooks/useStoredFaceProfile";
 import { readSavedCustomizeDraftIndex } from "@/lib/customizeDraftIndex";
 
-type MyPageTab = "basic" | "profile" | "drafts" | "samples";
+type MyPageTab = "basic" | "profile" | "drafts" | "samples" | "analytics";
 
 const TAB_ITEMS: { id: MyPageTab; label: string; href: string; desc: string }[] = [
   { id: "basic", label: "기본정보", href: "/mypage", desc: "아이디 · 활동 요약" },
+  { id: "analytics", label: "판매 분석", href: "/mypage?tab=analytics", desc: "수익·성장·영상별 지표" },
   { id: "profile", label: "프로필 관리", href: "/mypage?tab=profile", desc: "3면 얼굴 등록" },
   { id: "drafts", label: "임시 저장", href: "/mypage?tab=drafts", desc: "이어 편집 · 구매" },
   { id: "samples", label: "샘플 프로필", href: "/mypage?tab=samples", desc: "데모 얼굴 세트" },
 ];
 
 function normalizeTab(input: string | null): MyPageTab {
-  if (input === "profile" || input === "drafts" || input === "samples") return input;
+  if (
+    input === "profile" ||
+    input === "drafts" ||
+    input === "samples" ||
+    input === "analytics"
+  ) {
+    return input;
+  }
   return "basic";
 }
 
@@ -123,6 +132,9 @@ export function MyPageDashboard() {
                     <Link href="/mypage?tab=drafts" className="text-[12px] font-semibold text-reels-cyan hover:underline">
                       임시 저장 목록 보기
                     </Link>
+                    <Link href="/mypage?tab=analytics" className="text-[12px] font-semibold text-reels-cyan hover:underline">
+                      판매 실적 분석 보기
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -131,6 +143,8 @@ export function MyPageDashboard() {
 
           {currentTab === "profile" ? <FaceProfileUploadSection /> : null}
           {currentTab === "drafts" ? <MyPageSavedDraftsSection /> : null}
+
+          {currentTab === "analytics" ? <MyPageSellerAnalyticsSection /> : null}
 
           {currentTab === "samples" ? (
             <section className="reels-glass-card rounded-2xl p-5 sm:p-6" aria-labelledby="profiles-heading">
