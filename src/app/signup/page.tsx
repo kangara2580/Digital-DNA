@@ -1,7 +1,8 @@
 "use client";
 
-import { Link2, ShieldCheck, UserPlus2 } from "lucide-react";
+import { ShieldCheck, UserPlus2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { SocialLinkFields } from "@/components/SocialLinkFields";
 
 type SignupForm = {
   email: string;
@@ -14,8 +15,8 @@ type SignupForm = {
   agreeTerms: boolean;
   agreePrivacy: boolean;
   agreeMarketing: boolean;
-  instagramUrl: string;
-  tiktokUrl: string;
+  /** Instagram·TikTok·YouTube 등 공개 URL (여러 개) */
+  socialLinks: string[];
 };
 
 const INITIAL_FORM: SignupForm = {
@@ -29,8 +30,7 @@ const INITIAL_FORM: SignupForm = {
   agreeTerms: false,
   agreePrivacy: false,
   agreeMarketing: false,
-  instagramUrl: "",
-  tiktokUrl: "",
+  socialLinks: [""],
 };
 
 const INPUT_CLS =
@@ -63,8 +63,7 @@ export default function SignupPage() {
         phone: form.phone,
         country: form.country,
         social: {
-          instagramUrl: form.instagramUrl,
-          tiktokUrl: form.tiktokUrl,
+          links: form.socialLinks.map((s) => s.trim()).filter(Boolean),
         },
         savedAt: Date.now(),
       };
@@ -83,7 +82,7 @@ export default function SignupPage() {
           <h1 className="text-2xl font-extrabold tracking-tight [html[data-theme='light']_&]:text-zinc-900">회원가입</h1>
         </div>
         <p className="mt-2 text-[13px] text-zinc-400 [html[data-theme='light']_&]:text-[#6d5a88]">
-          기본 계정 생성 후 인스타그램/틱톡 링크를 연결해 릴스 소스를 빠르게 가져올 수 있어요.
+          기본 계정 생성 후 Instagram·TikTok·YouTube 등 링크를 여러 개 연결해, 가져올 수 있는 릴스·숏폼 소스를 넓혀 두세요.
         </p>
 
         <form className="mt-6 space-y-6" onSubmit={onSubmit}>
@@ -107,31 +106,13 @@ export default function SignupPage() {
           <section className="rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-black/10 [html[data-theme='light']_&]:bg-white">
             <h2 className="text-[14px] font-bold">SNS 연동 (릴스 소스 가져오기)</h2>
             <p className="mt-2 text-[12px] text-zinc-400 [html[data-theme='light']_&]:text-[#6d5a88]">
-              공개 링크 기반 가져오기만 지원합니다. 비공개 계정/권한 없는 콘텐츠는 수집하지 않으며, 플랫폼 정책과 저작권을 준수해 주세요.
+              공개 링크 기반 가져오기만 지원합니다. 유튜브 숏츠·일반 영상, 인스타 릴스, 틱톡 등 원하는 만큼 추가하세요. 비공개·권한 없는 콘텐츠는 수집하지 않으며, 플랫폼 정책과 저작권을 준수해 주세요.
             </p>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-white/10 p-3 [html[data-theme='light']_&]:border-black/10">
-                <p className="inline-flex items-center gap-1 text-[13px] font-semibold">
-                  <Link2 className="h-4 w-4" /> Instagram 링크
-                </p>
-                <input
-                  className={`${INPUT_CLS} mt-2`}
-                  placeholder="https://www.instagram.com/reel/..."
-                  value={form.instagramUrl}
-                  onChange={(e) => onChange("instagramUrl", e.target.value)}
-                />
-              </div>
-              <div className="rounded-lg border border-white/10 p-3 [html[data-theme='light']_&]:border-black/10">
-                <p className="inline-flex items-center gap-1 text-[13px] font-semibold">
-                  <Link2 className="h-4 w-4" /> TikTok 링크
-                </p>
-                <input
-                  className={`${INPUT_CLS} mt-2`}
-                  placeholder="https://www.tiktok.com/@.../video/..."
-                  value={form.tiktokUrl}
-                  onChange={(e) => onChange("tiktokUrl", e.target.value)}
-                />
-              </div>
+            <div className="mt-3">
+              <SocialLinkFields
+                links={form.socialLinks}
+                onChange={(socialLinks) => setForm((prev) => ({ ...prev, socialLinks }))}
+              />
             </div>
           </section>
 

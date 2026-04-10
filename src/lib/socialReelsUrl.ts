@@ -1,4 +1,4 @@
-/** 틱톡·인스타 릴스 URL → 임베드용 (클라이언트 미리보기) */
+/** 틱톡·인스타·유튜브 등 URL → 임베드용 (클라이언트 미리보기) */
 
 export type ParsedSocialReelsUrl =
   | {
@@ -9,6 +9,11 @@ export type ParsedSocialReelsUrl =
   | {
       platform: "instagram";
       shortcode: string;
+      embedUrl: string;
+    }
+  | {
+      platform: "youtube";
+      videoId: string;
       embedUrl: string;
     }
   | {
@@ -49,6 +54,46 @@ export function parseSocialReelsUrl(raw: string): ParsedSocialReelsUrl | null {
           platform: "instagram",
           shortcode,
           embedUrl: `https://www.instagram.com/reel/${shortcode}/embed/`,
+        };
+      }
+    }
+
+    if (u.hostname === "youtu.be") {
+      const id = u.pathname.replace(/^\//, "").split("/")[0];
+      if (id && /^[\w-]{11}$/.test(id)) {
+        return {
+          platform: "youtube",
+          videoId: id,
+          embedUrl: `https://www.youtube.com/embed/${id}`,
+        };
+      }
+    }
+
+    if (u.hostname.includes("youtube.com") || u.hostname.includes("youtu.be")) {
+      const v = u.searchParams.get("v");
+      if (v && /^[\w-]{11}$/.test(v)) {
+        return {
+          platform: "youtube",
+          videoId: v,
+          embedUrl: `https://www.youtube.com/embed/${v}`,
+        };
+      }
+      const shorts = u.pathname.match(/\/shorts\/([\w-]{11})/);
+      if (shorts) {
+        const videoId = shorts[1];
+        return {
+          platform: "youtube",
+          videoId,
+          embedUrl: `https://www.youtube.com/embed/${videoId}`,
+        };
+      }
+      const embed = u.pathname.match(/\/embed\/([\w-]{11})/);
+      if (embed) {
+        const videoId = embed[1];
+        return {
+          platform: "youtube",
+          videoId,
+          embedUrl: `https://www.youtube.com/embed/${videoId}`,
         };
       }
     }
