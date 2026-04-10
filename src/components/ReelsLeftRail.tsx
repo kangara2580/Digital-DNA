@@ -44,10 +44,10 @@ const RAIL_ITEMS: RailItem[] = [
     isActive: (p) => p === "/",
   },
   {
-    href: "/category/recommend",
+    href: "/explore",
     label: "탐색",
     Icon: Compass,
-    isActive: (p) => p.startsWith("/category/recommend"),
+    isActive: (p) => p === "/explore" || p.startsWith("/explore/"),
   },
   {
     href: "/wishlist",
