@@ -18,7 +18,7 @@ export default async function Home() {
     <div className="min-h-screen bg-transparent">
       {/* 메인 화면 배경 영상을 전역으로 깔고, 하단 버튼으로 테마를 바꿉니다. */}
       <MainBackgroundVideo />
-      <main className="relative z-10 min-w-0 pb-28 pt-1 sm:pb-32">
+      <main className="relative z-10 min-w-0 pb-28 pt-0 sm:pb-32">
         <TrendingRankSection />
         <Highlight24 />
         <InspirationCategoryGrid />

@@ -397,7 +397,7 @@ export function MallTopNav() {
     >
       <div
         className={`mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-8 ${easeNav} ${
-          compact ? "pb-1.5 pt-1" : "pb-2 pt-1"
+          compact ? "pb-1.5 pt-1" : "pb-1.5 pt-0.5"
         }`}
       >
         <div
@@ -432,11 +432,11 @@ export function MallTopNav() {
             className={`w-full overflow-hidden transition-[max-height,opacity] ${easeTitleFade} ${
               compact
                 ? "pointer-events-none absolute left-0 top-0 z-0 max-h-0 w-full opacity-0"
-                : "relative max-h-[min(320px,50vh)] opacity-100"
+                : "relative max-h-[min(300px,48vh)] opacity-100"
             }`}
             aria-hidden={compact}
           >
-            <div className={`${!compact ? "mt-1 sm:mt-1.5" : ""}`}>
+            <div className={`${!compact ? "mt-0 sm:mt-0.5" : ""}`}>
               <Link
                 href="/"
                 className="mx-auto block w-fit max-w-full rounded-sm outline-none transition-[opacity,transform] duration-200 hover:opacity-[0.9] active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-reels-cyan/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reels-abyss [html[data-theme='light']_&]:focus-visible:ring-offset-white"
@@ -446,11 +446,11 @@ export function MallTopNav() {
                   style={{ y: heroTitleY }}
                   className="text-center"
                 >
-                  <p className="mx-auto mb-2 inline-flex items-center gap-1.5 rounded-full border border-[#1fd7d8]/45 bg-[#0c2e45]/72 px-3 py-1 text-[11px] font-semibold text-[#c9fcff] shadow-[0_0_24px_-10px_rgba(31,215,216,0.8)]">
+                  <p className="mx-auto mb-1 inline-flex items-center gap-1.5 rounded-full border border-[#1fd7d8]/45 bg-[#0c2e45]/72 px-2.5 py-0.5 text-[11px] font-semibold text-[#c9fcff] shadow-[0_0_24px_-10px_rgba(31,215,216,0.8)]">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#1fd7d8] shadow-[0_0_10px_rgba(31,215,216,0.95)]" aria-hidden />
                     바이럴 릴스를 사고, 클론하고, 성장하세요
                   </p>
-                  <p className="mt-1 bg-gradient-to-r from-[#b9ffff] via-[#46eef1] to-[#12d8dd] bg-clip-text text-[56px] font-black leading-[0.98] tracking-tight text-transparent [text-shadow:0_10px_34px_rgba(9,26,45,0.38),0_0_24px_rgba(31,215,216,0.35)] sm:text-[68px] md:text-[80px]">
+                  <p className="mt-0 bg-gradient-to-r from-[#b9ffff] via-[#46eef1] to-[#12d8dd] bg-clip-text text-[52px] font-black leading-[0.96] tracking-tight text-transparent [text-shadow:0_10px_34px_rgba(9,26,45,0.38),0_0_24px_rgba(31,215,216,0.35)] sm:text-[64px] md:text-[76px]">
                     ReelsMarket
                   </p>
                 </motion.div>
@@ -470,7 +470,7 @@ export function MallTopNav() {
               className={`w-full ${easeNav} ${
                 compact
                   ? "mx-0 mt-0 max-w-[min(320px,42vw)] shrink-0 sm:max-w-md"
-                  : "mx-auto mt-1 max-w-2xl sm:mt-1.5"
+                  : "mx-auto mt-0.5 max-w-2xl sm:mt-1"
               }`}
             >
               <RotatingSearchField compact={compact} q={q} setQ={setQ} />
@@ -480,7 +480,7 @@ export function MallTopNav() {
               className={`flex min-w-0 items-center ${easeNav} ${
                 compact
                   ? "mt-0 flex-1 justify-center gap-1 overflow-visible border-0 py-0 sm:gap-1.5"
-                  : "no-scrollbar mt-1.5 justify-center gap-1 overflow-x-auto border-t border-white/10 pt-1.5 sm:gap-1.5 [html[data-theme='light']_&]:border-zinc-200"
+                  : "no-scrollbar mt-1 justify-center gap-1 overflow-x-auto border-t border-white/10 pt-1 sm:gap-1.5 [html[data-theme='light']_&]:border-zinc-200"
               }`}
               aria-label="카테고리"
             >

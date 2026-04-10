@@ -85,7 +85,7 @@ export function TrendingRankSection() {
 
   return (
     <section className="border-t border-white/10 bg-transparent" aria-labelledby="trending-rank-heading">
-      <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8">
+      <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-7 lg:px-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
           <div className="min-w-0 text-left">
             <h2
@@ -112,7 +112,7 @@ export function TrendingRankSection() {
           />
         </div>
 
-        <div className="relative mt-4 sm:mt-5">
+        <div className="relative mt-3 sm:mt-4">
           {canLeft ? (
             <div
               className="pointer-events-none absolute inset-y-2 left-0 z-10 w-11 bg-gradient-to-r from-[#050505] via-[#050505]/88 to-transparent"
