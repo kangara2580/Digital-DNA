@@ -5,13 +5,15 @@ import { TIKTOK_MOCK_DANCE_CLIPS } from "@/data/tiktokMockTrending";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-type TikTokVideoItem = {
-  id: string;
-  title: string;
-  creator: string;
-  videoUrl: string;
-  posterUrl: string;
-  durationSec?: number;
+type ResearchVideo = {
+  id?: number | string;
+  video_id?: number | string;
+  video_description?: string;
+  username?: string;
+  video_duration?: number;
+  create_time?: number;
+  like_count?: number;
+  view_count?: number;
 };
 
 function pickRandom<T>(items: T[], count: number): T[] {
@@ -43,6 +45,42 @@ function resolveDiscoveryEndpoint(raw: string | undefined): string | null {
   return endpoint;
 }
 
+function buildResearchVideoQueryUrl(): string {
+  const base =
+    resolveDiscoveryEndpoint(process.env.TIKTOK_DISCOVERY_ENDPOINT) ??
+    "https://open.tiktokapis.com/v2/research/video/query/";
+  const fields =
+    process.env.TIKTOK_RESEARCH_FIELDS?.trim() ||
+    "id,video_description,create_time,username,region_code,like_count,view_count,video_duration,hashtag_names";
+  const u = new URL(
+    base.startsWith("http") ? base : `https://${base}`,
+  );
+  u.searchParams.set("fields", fields);
+  return u.toString();
+}
+
+function ymdUtc(d: Date): string {
+  return d.toISOString().slice(0, 10).replace(/-/g, "");
+}
+
+/** Research API: end_date는 start_date로부터 최대 30일 */
+function defaultDateRange(): { start_date: string; end_date: string } {
+  const end = new Date();
+  const start = new Date(end);
+  start.setUTCDate(start.getUTCDate() - 29);
+  return { start_date: ymdUtc(start), end_date: ymdUtc(end) };
+}
+
+/** 비어 있으면 region 필터 없이 keyword만 조회(샌드박스에서 0건 방지에 유리) */
+function parseRegionCodes(): string[] {
+  const raw = process.env.TIKTOK_REGION_CODES?.trim();
+  if (!raw) return [];
+  return raw
+    .split(",")
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean);
+}
+
 async function fetchAccessTokenByClientSecret(): Promise<string | null> {
   const clientKey = process.env.TIKTOK_CLIENT_KEY?.trim();
   const clientSecret = process.env.TIKTOK_CLIENT_SECRET?.trim();
@@ -61,178 +99,201 @@ async function fetchAccessTokenByClientSecret(): Promise<string | null> {
       }),
       cache: "no-store",
     });
-    if (!res.ok) return null;
     const data = (await res.json()) as {
       access_token?: string;
       data?: { access_token?: string };
+      error?: string;
+      error_description?: string;
+      message?: string;
     };
-    return (
-      asNonEmptyString(data.access_token) ||
-      asNonEmptyString(data.data?.access_token) ||
-      null
-    );
+    if (!res.ok) return null;
+    const t = data.access_token ?? data.data?.access_token;
+    return typeof t === "string" && t.length > 0 ? t.trim() : null;
   } catch {
     return null;
   }
 }
 
-function asNonEmptyString(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
+/** Client Key+Secret이 있으면 OAuth 토큰 우선(짧은 값을 ACCESS_TOKEN에 넣은 경우 401 방지) */
+async function resolveBearerToken(): Promise<string | null> {
+  const envToken = process.env.TIKTOK_ACCESS_TOKEN?.trim() || null;
+  const hasClientCreds =
+    Boolean(process.env.TIKTOK_CLIENT_KEY?.trim()) &&
+    Boolean(process.env.TIKTOK_CLIENT_SECRET?.trim());
+  if (hasClientCreds) {
+    const oauth = await fetchAccessTokenByClientSecret();
+    if (oauth) return oauth;
+  }
+  return envToken;
 }
 
-function normalizeTikTokResponse(payload: unknown): TikTokVideoItem[] {
-  if (!payload || typeof payload !== "object") return [];
-  const root = payload as Record<string, unknown>;
-
-  const candidates =
-    (Array.isArray(root.items) ? root.items : null) ??
-    (Array.isArray(root.videos) ? root.videos : null) ??
-    ((root.data &&
-      typeof root.data === "object" &&
-      Array.isArray((root.data as Record<string, unknown>).videos)
-        ? ((root.data as Record<string, unknown>).videos as unknown[])
-        : null) ??
-      (root.data &&
-      typeof root.data === "object" &&
-      Array.isArray((root.data as Record<string, unknown>).items)
-        ? ((root.data as Record<string, unknown>).items as unknown[])
-        : null)) ??
-    [];
-
-  return candidates
-    .map((raw, index) => {
-      if (!raw || typeof raw !== "object") return null;
-      const r = raw as Record<string, unknown>;
-
-      const id =
-        asNonEmptyString(r.id) ||
-        asNonEmptyString(r.video_id) ||
-        asNonEmptyString(r.aweme_id) ||
-        `tiktok-${index + 1}`;
-      const title =
-        asNonEmptyString(r.title) ||
-        asNonEmptyString(r.desc) ||
-        "TikTok dance clip";
-      const creator =
-        asNonEmptyString(r.creator) ||
-        asNonEmptyString(r.author_name) ||
-        asNonEmptyString(r.username) ||
-        "@tiktok_creator";
-      const videoUrl =
-        asNonEmptyString(r.videoUrl) ||
-        asNonEmptyString(r.play_url) ||
-        asNonEmptyString(r.download_url) ||
-        asNonEmptyString(r.video_url);
-      const posterUrl =
-        asNonEmptyString(r.posterUrl) ||
-        asNonEmptyString(r.cover_image_url) ||
-        asNonEmptyString(r.cover_url) ||
-        asNonEmptyString(r.thumbnail_url);
-      const durationRaw =
-        typeof r.durationSec === "number"
-          ? r.durationSec
-          : typeof r.duration === "number"
-            ? r.duration
-            : undefined;
-
-      if (!videoUrl || !posterUrl) return null;
-      return {
-        id,
-        title,
-        creator: creator.startsWith("@") ? creator : `@${creator}`,
-        videoUrl,
-        posterUrl,
-        durationSec: durationRaw,
-      } satisfies TikTokVideoItem;
-    })
-    .filter((x): x is TikTokVideoItem => Boolean(x));
+function researchVideosToFeedVideos(
+  videos: ResearchVideo[],
+  limit: number,
+): FeedVideo[] {
+  const picked = pickRandom(videos, limit);
+  return picked.map((v, i) => {
+    const rawId = v.id ?? v.video_id;
+    const vid =
+      rawId !== undefined && rawId !== null ? String(rawId) : `unknown-${i}`;
+    const username = (v.username ?? "creator").replace(/^@/, "");
+    const title =
+      (v.video_description ?? "TikTok clip").trim().slice(0, 200) ||
+      "TikTok clip";
+    const watchUrl = `https://www.tiktok.com/@${username}/video/${vid}`;
+    return {
+      id: `tiktok-${i + 1}-${vid}`,
+      title,
+      creator: `@${username}`,
+      src: watchUrl,
+      previewSrc: watchUrl,
+      poster: `https://picsum.photos/seed/tiktok${encodeURIComponent(vid)}/720/1280`,
+      orientation: "portrait",
+      durationSec:
+        typeof v.video_duration === "number" && Number.isFinite(v.video_duration)
+          ? Math.round(v.video_duration)
+          : undefined,
+      priceWon: 900 + (i % 5) * 300,
+      isAiGenerated: false,
+      tiktokEmbedId: vid,
+    } satisfies FeedVideo;
+  });
 }
 
 export async function GET(request: NextRequest) {
   const limitRaw = Number(request.nextUrl.searchParams.get("limit") ?? "10") || 10;
   const limit = Math.max(1, Math.min(10, limitRaw));
-  const keyword = request.nextUrl.searchParams.get("keyword")?.trim() || "dance";
+  const keyword =
+    request.nextUrl.searchParams.get("keyword")?.trim() || "dance";
 
-  const endpoint = resolveDiscoveryEndpoint(process.env.TIKTOK_DISCOVERY_ENDPOINT);
-  const envToken = process.env.TIKTOK_ACCESS_TOKEN?.trim() || null;
-  const token = envToken || (await fetchAccessTokenByClientSecret());
-  // 승인 전에는 항상 Mock 데이터만 사용 (실호출 완전 비활성화)
-  const forceMockOnly = true;
+  const useMockOnly = process.env.TIKTOK_USE_MOCK_ONLY === "true";
 
-  if (forceMockOnly) {
+  if (useMockOnly) {
     return NextResponse.json({
-      source: "fallback",
+      source: "fallback" as const,
       reason: "mock_only_mode",
       items: pickRandom(fallbackTrendingVideos(), limit),
     });
   }
 
-  if (!endpoint || !token) {
+  const ck = process.env.TIKTOK_CLIENT_KEY?.trim();
+  const cs = process.env.TIKTOK_CLIENT_SECRET?.trim();
+  const envTokEarly = process.env.TIKTOK_ACCESS_TOKEN?.trim();
+  /** Secret만 있고 Key가 없으면 OAuth 불가 — 별도로 넣은 Bearer 토큰이 없을 때만 차단 */
+  if (cs && !ck && !envTokEarly) {
     return NextResponse.json({
-      source: "fallback",
-      reason: "missing_tiktok_env_or_token",
+      source: "fallback" as const,
+      reason: "missing_tiktok_client_key",
       items: fallbackTrendingVideos().slice(0, limit),
     });
   }
 
+  const token = await resolveBearerToken();
+
+  if (!token) {
+    return NextResponse.json({
+      source: "fallback" as const,
+      reason: "missing_tiktok_token",
+      items: fallbackTrendingVideos().slice(0, limit),
+    });
+  }
+
+  const url = buildResearchVideoQueryUrl();
+  const { start_date, end_date } = defaultDateRange();
+  const regions = parseRegionCodes();
+
+  const andConditions: Array<{
+    operation: "IN" | "EQ";
+    field_name: string;
+    field_values: string[];
+  }> = [
+    {
+      operation: "EQ",
+      field_name: "keyword",
+      field_values: [keyword],
+    },
+  ];
+  if (regions.length > 0) {
+    andConditions.unshift({
+      operation: "IN",
+      field_name: "region_code",
+      field_values: regions,
+    });
+  }
+
+  const body = {
+    query: {
+      and: andConditions,
+    },
+    start_date,
+    end_date,
+    max_count: 100,
+    cursor: 0,
+    is_random: true,
+  };
+
   try {
-    const response = await fetch(endpoint, {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        query: {
-          and: [
-            {
-              operation: "IN",
-              field_name: "keyword",
-              field_values: [keyword],
-            },
-          ],
-        },
-        max_count: Math.max(20, limit * 3),
-      }),
+      body: JSON.stringify(body),
       cache: "no-store",
     });
 
-    if (!response.ok) {
-      throw new Error(`tiktok_api_${response.status}`);
+    const rawText = await response.text();
+    let payload: unknown;
+    try {
+      payload = JSON.parse(rawText) as unknown;
+    } catch {
+      throw new Error(`tiktok_api_${response.status}_invalid_json`);
     }
 
-    const data = (await response.json()) as unknown;
-    const normalized = normalizeTikTokResponse(data);
-    const sampled = pickRandom(normalized, limit);
+    const envelopePre = payload as {
+      error?: { code?: string; message?: string; log_id?: string };
+      message?: string;
+      data?: { videos?: ResearchVideo[] };
+    };
 
-    if (!sampled.length) {
+    if (!response.ok) {
+      const hint =
+        envelopePre.error?.message ||
+        envelopePre.message ||
+        (typeof envelopePre.error?.code === "string"
+          ? String(envelopePre.error.code)
+          : "");
+      throw new Error(
+        `tiktok_api_${response.status}${hint ? `:${hint.slice(0, 200)}` : ""}`,
+      );
+    }
+
+    const envelope = envelopePre;
+    if (envelope.error?.code && envelope.error.code !== "ok") {
+      throw new Error(
+        `tiktok_api_${envelope.error.code}:${envelope.error.message ?? ""}`,
+      );
+    }
+
+    const list = envelope.data?.videos ?? [];
+    if (!Array.isArray(list) || list.length === 0) {
       return NextResponse.json({
-        source: "fallback",
+        source: "fallback" as const,
         reason: "empty_tiktok_response",
         items: fallbackTrendingVideos().slice(0, limit),
       });
     }
 
-    const items: FeedVideo[] = sampled.map((v, i) => ({
-      id: `tiktok-${i + 1}-${v.id}`,
-      title: v.title,
-      creator: v.creator,
-      src: v.videoUrl,
-      previewSrc: v.videoUrl,
-      poster: v.posterUrl,
-      orientation: "portrait",
-      durationSec: v.durationSec,
-      priceWon: 900 + (i % 5) * 300,
-      isAiGenerated: false,
-    }));
+    const items = researchVideosToFeedVideos(list, limit);
 
     return NextResponse.json({
-      source: "tiktok",
+      source: "tiktok" as const,
       items,
     });
   } catch (error) {
     return NextResponse.json({
-      source: "fallback",
+      source: "fallback" as const,
       reason: error instanceof Error ? error.message : "tiktok_unknown_error",
       items: fallbackTrendingVideos().slice(0, limit),
     });

@@ -55,7 +55,12 @@ export function TrendingRankSection() {
           items?: FeedVideo[];
         };
         const items = (data.items ?? []).filter((v) => v.orientation === "portrait");
-        if (active && data.source === "tiktok" && items.length >= 5) {
+        if (
+          active &&
+          data.source === "tiktok" &&
+          items.length >= 3 &&
+          items.some((v) => Boolean(v.tiktokEmbedId))
+        ) {
           setTrendingClips(items.slice(0, 10));
           setTrendingSource("tiktok");
         }

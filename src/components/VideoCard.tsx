@@ -124,12 +124,15 @@ export function VideoCard({
   const previewSrc = video.previewSrc ?? video.src;
   const segmentPreview = instantPreview === true;
 
+  const isTikTokEmbed = Boolean(video.tiktokEmbedId);
+  const segmentPreviewEffective = segmentPreview && !isTikTokEmbed;
+
   const {
     ref,
     onTimeUpdate,
     onEnter: previewEnter,
     onLeave: previewLeave,
-  } = useHoverInstantPreview(segmentPreview, video, reduceMotion);
+  } = useHoverInstantPreview(segmentPreviewEffective, video, reduceMotion);
 
   const play = useCallback(() => {
     previewEnter();
@@ -180,31 +183,45 @@ export function VideoCard({
     <article
       id={domId}
       className={`group flex flex-col overflow-hidden ${transitionCls} ${shell} ${overlapHover} ${gridHoverScale} ${className ?? ""}`}
-      onMouseEnter={play}
-      onMouseLeave={pause}
+      onMouseEnter={isTikTokEmbed ? undefined : play}
+      onMouseLeave={isTikTokEmbed ? undefined : pause}
     >
       <div className={`relative bg-black/40 ${aspectClass}`}>
-        <video
-          ref={ref}
-          className="absolute inset-0 z-0 h-full w-full object-cover"
-          poster={video.poster}
-          playsInline
-          muted
-          loop={!segmentPreview}
-          preload={segmentPreview ? "auto" : "metadata"}
-          onTimeUpdate={segmentPreview ? onTimeUpdate : undefined}
-        >
-          <source src={previewSrc} type="video/mp4" />
-        </video>
+        {isTikTokEmbed ? (
+          <iframe
+            title={video.title}
+            src={`https://www.tiktok.com/embed/v2/${video.tiktokEmbedId}`}
+            className="absolute inset-0 z-0 h-full w-full border-0"
+            allow="encrypted-media; fullscreen; picture-in-picture"
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+        ) : (
+          <video
+            ref={ref}
+            className="absolute inset-0 z-0 h-full w-full object-cover"
+            poster={video.poster}
+            playsInline
+            muted
+            loop={!segmentPreviewEffective}
+            preload={segmentPreviewEffective ? "auto" : "metadata"}
+            onTimeUpdate={segmentPreviewEffective ? onTimeUpdate : undefined}
+          >
+            <source src={previewSrc} type="video/mp4" />
+          </video>
+        )}
         <div
           className="pointer-events-none absolute inset-0 z-[1] bg-black/0 transition-colors duration-300 ease-out group-hover:bg-black/30 motion-reduce:group-hover:bg-black/25"
           aria-hidden
         />
-        <Link
-          href={`/video/${video.id}`}
-          className="absolute inset-0 z-[3]"
-          aria-label={`${video.title} 상세 페이지`}
-        />
+        {isTikTokEmbed ? null : (
+          <Link
+            href={`/video/${video.id}`}
+            className="absolute inset-0 z-[3]"
+            aria-label={`${video.title} 상세 페이지`}
+          />
+        )}
         {showMicro ? (
           <span className="pointer-events-none absolute left-1.5 top-1.5 z-[6] rounded border border-reels-cyan/40 bg-black/55 px-1 py-[1px] text-[6.5px] font-bold uppercase leading-tight tracking-[0.06em] text-reels-cyan sm:left-2 sm:top-2 sm:px-1.5 sm:text-[7.5px]">
             Micro DNA

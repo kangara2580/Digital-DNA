@@ -20,6 +20,11 @@ export type FeedVideo = {
    * `true`가 아니면 직접 촬영(Real)로 간주합니다.
    */
   isAiGenerated?: boolean;
+  /**
+   * TikTok Research API 등 — MP4가 없고 숫자 video id만 올 때 임베드 플레이어용
+   * (예: `https://www.tiktok.com/embed/v2/{id}`)
+   */
+  tiktokEmbedId?: string;
 };
 
 export const SAMPLE_VIDEOS: FeedVideo[] = [
