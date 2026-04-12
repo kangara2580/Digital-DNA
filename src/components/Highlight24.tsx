@@ -3,7 +3,9 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FeedVideo } from "@/data/videos";
-import { SAMPLE_VIDEOS } from "@/data/videos";
+import { LOCAL_TRENDING_FEED_VIDEOS } from "@/data/videos";
+import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
+import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { SectionMoreLink } from "@/components/SectionMoreLink";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
 
@@ -112,29 +114,31 @@ function sideFarWingPose(
   };
 }
 
-/** 링 옆 카드: 호버 시 앞 3초 무음 프리뷰 */
+/** 링 옆 카드: 로컬 샘플은 하이라이트 구간 루프, 그 외 기존 3초 프리뷰 */
 function HighlightRingSidePreview({ video }: { video: FeedVideo }) {
   const reduceMotion = useReducedMotion() ?? false;
-  const { ref, onTimeUpdate, onEnter, onLeave } = useHoverInstantPreview(
-    true,
-    video,
-    reduceMotion,
-  );
   const previewSrc = video.previewSrc ?? video.src;
+  const isLocal = isLocalPublicVideo(previewSrc);
+  const hover = useHoverInstantPreview(!isLocal, video, reduceMotion);
+  const localPb = useLocalSamplePlayback(video.id, previewSrc, {
+    enableHoverLoop: isLocal && !reduceMotion,
+    reduceMotion,
+  });
   return (
     <div
       className="absolute inset-0"
-      onMouseEnter={onEnter}
-      onMouseLeave={onLeave}
+      onMouseEnter={isLocal ? localPb.onEnter : hover.onEnter}
+      onMouseLeave={isLocal ? localPb.onLeave : hover.onLeave}
     >
       <video
-        ref={ref}
+        ref={isLocal ? localPb.ref : hover.ref}
         className="absolute inset-0 h-full w-full object-cover"
-        poster={video.poster}
+        poster={isLocal ? undefined : video.poster}
         playsInline
         muted
         preload="auto"
-        onTimeUpdate={onTimeUpdate}
+        loop={false}
+        onTimeUpdate={isLocal ? localPb.onTimeUpdate : hover.onTimeUpdate}
       >
         <source src={previewSrc} type="video/mp4" />
       </video>
@@ -155,10 +159,8 @@ function hiddenOffstagePose(radius: number): RingPose {
 }
 
 export function Highlight24() {
-  const videos = useMemo(
-    () => SAMPLE_VIDEOS.filter((v) => v.orientation === "portrait"),
-    [],
-  );
+  /** 메인 히어로 링 — 인기순위와 동일한 로컬 10종(썸네일·영상 일치) */
+  const videos = useMemo(() => [...LOCAL_TRENDING_FEED_VIDEOS], []);
   const [index, setIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const ambientVideoRef = useRef<HTMLVideoElement>(null);
@@ -357,8 +359,12 @@ export function Highlight24() {
     >
       {/* 배경: 포스터 즉시 반영 + (모션 허용 시) 메인 영상 블러로 색감이 살아 움직임 */}
       <div
-        className="absolute inset-0 scale-110 bg-cover bg-center transition-[opacity,filter] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
-        style={{ backgroundImage: `url(${active.poster})` }}
+        className="absolute inset-0 scale-110 bg-[#070708] bg-cover bg-center transition-[opacity,filter] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+        style={
+          active.poster
+            ? { backgroundImage: `url(${active.poster})` }
+            : undefined
+        }
         aria-hidden
       />
       {!reduceMotion ? (
@@ -373,7 +379,7 @@ export function Highlight24() {
             WebkitFilter: "blur(72px) saturate(1.15) brightness(1.05)",
           }}
           src={active.src}
-          poster={active.poster}
+          poster={isLocalPublicVideo(active.src) ? undefined : active.poster}
           muted
           playsInline
           loop
@@ -496,7 +502,9 @@ export function Highlight24() {
                         key={v.id}
                         ref={videoRef}
                         className="absolute inset-0 h-full w-full object-cover"
-                        poster={v.poster}
+                        poster={
+                          isLocalPublicVideo(v.src) ? undefined : v.poster
+                        }
                         playsInline
                         muted
                         loop

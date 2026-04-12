@@ -1,39 +1,8 @@
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { InspirationVideoCell } from "@/components/InspirationVideoCell";
 import { getInspirationCategories } from "@/data/inspirationCategories";
 import type { FeedVideo } from "@/data/videos";
-
-function formatPrice(v: FeedVideo): string {
-  if (v.priceWon != null) {
-    return `${v.priceWon.toLocaleString("ko-KR")}원`;
-  }
-  return "—";
-}
-
-function InspirationVideoCell({ video }: { video: FeedVideo }) {
-  return (
-    <div className="inspiration-cell flex min-w-0 flex-col gap-1.5">
-      <div className="inspiration-cell__media overflow-hidden rounded-[12px]">
-        <video
-          className="inspiration-cell__video aspect-square h-auto w-full object-cover"
-          src={video.src}
-          autoPlay
-          loop
-          muted
-          playsInline
-          aria-hidden
-        />
-      </div>
-      <div className="min-w-0 px-0.5">
-        <p className="truncate text-[13px] font-medium leading-snug text-[var(--text-main)]">
-          {video.title}
-        </p>
-        <p className="text-[13px] font-bold text-[var(--primary-color)]">
-          {formatPrice(video)}
-        </p>
-      </div>
-    </div>
-  );
-}
 
 function InspirationCard({
   title,
@@ -46,20 +15,27 @@ function InspirationCard({
 }) {
   return (
     <article className="inspiration-card flex min-w-0 flex-col">
-      <h3 className="mb-3 text-left text-base font-bold leading-tight text-[var(--text-main)]">
-        {title}
-      </h3>
-      <div className="inspiration-card__grid mb-3 grid grid-cols-2 gap-2">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <h3 className="min-w-0 flex-1 text-left text-base font-bold leading-tight text-[var(--text-main)]">
+          {title}
+        </h3>
+        <Link
+          href={href}
+          className="group/btn inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--primary-color)]/45 bg-[var(--primary-color)]/12 px-3 py-1.5 text-[13px] font-semibold leading-none text-[var(--primary-color)] shadow-[0_1px_0_rgba(255,255,255,0.06)_inset] transition-[background-color,border-color,box-shadow,transform,color] hover:border-[var(--primary-color)]/70 hover:bg-[var(--primary-color)]/20 hover:shadow-sm active:scale-[0.98] sm:px-3.5 sm:py-2 sm:text-sm"
+        >
+          더보기
+          <ArrowRight
+            className="h-4 w-4 shrink-0 transition-transform duration-200 ease-out group-hover/btn:translate-x-0.5"
+            strokeWidth={2}
+            aria-hidden
+          />
+        </Link>
+      </div>
+      <div className="inspiration-card__grid grid grid-cols-2 gap-2">
         {videos.map((v) => (
           <InspirationVideoCell key={v.id} video={v} />
         ))}
       </div>
-      <Link
-        href={href}
-        className="mt-auto self-start text-sm font-semibold text-[var(--primary-color)] underline-offset-2 hover:underline"
-      >
-        더보기
-      </Link>
     </article>
   );
 }

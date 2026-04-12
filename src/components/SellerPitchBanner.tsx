@@ -50,7 +50,7 @@ export function SellerPitchBanner() {
 
             <div className="flex w-full max-w-sm shrink-0 flex-col items-stretch gap-2 lg:w-auto lg:max-w-[min(100%,280px)] lg:items-end">
               <Link
-                href="/mypage"
+                href="/sell"
                 className="group inline-flex items-center justify-center gap-2 rounded-full bg-reels-crimson px-6 py-3 text-[14px] font-extrabold text-white shadow-reels-crimson transition-[transform,box-shadow] duration-[400ms] ease-in-out hover:brightness-110 active:scale-[0.98] sm:px-7 sm:py-3 sm:text-[15px]"
               >
                 <Store className="h-[17px] w-[17px] shrink-0 opacity-90" strokeWidth={2} aria-hidden />

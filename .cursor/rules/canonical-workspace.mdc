@@ -1,0 +1,11 @@
+---
+description: 단일 프로젝트 루트 경로 — Digital-DNA vs 띄어쓰기 폴더 혼동 방지
+alwaysApply: true
+---
+
+# 프로젝트 루트 (필수)
+
+- **이 저장소의 유일한 루트:** `/Users/gang-ahra/Digital-DNA` (`Digital`과 `DNA` 사이에 **띄어쓰기 없음**).
+- **`/Users/gang-ahra/Digital - DNA`**(띄어쓰기 있음)는 예전에 생긴 **빈/중복 폴더**였습니다. 여기에는 소스·`package.json`이 없을 수 있으니 **워크스페이스·터미널 cwd·npm 명령은 항상 `Digital-DNA`로 맞춥니다.**
+- 터미널에서 확인: `test -f package.json && test -d src` 가 성공하는 디렉터리에서만 `npm run dev` 등을 실행합니다.
+- 환경 변수 **단일 소스:** `/Users/gang-ahra/Digital-DNA/.env.local` (구 경로에 남은 `.env`는 사용하지 않음).

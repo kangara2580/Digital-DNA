@@ -258,6 +258,22 @@ export async function GET(request: NextRequest) {
     };
 
     if (!response.ok) {
+      const apiCode = envelopePre.error?.code;
+      /** 공식 FAQ: Research 신청·승인 전이거나 일반 앱 자격증명을 쓴 경우 */
+      if (apiCode === "scope_not_authorized") {
+        return NextResponse.json({
+          source: "fallback" as const,
+          reason: "tiktok_research_not_approved" as const,
+          detail:
+            "Research API 권한이 토큰에 없습니다. developers.tiktok.com/research 에서 연구 프로젝트 신청·승인 후, 해당 프로젝트의 Client Key/Secret을 사용하세요.",
+          tiktokError: {
+            code: apiCode,
+            message: envelopePre.error?.message ?? "",
+            log_id: envelopePre.error?.log_id,
+          },
+          items: fallbackTrendingVideos().slice(0, limit),
+        });
+      }
       const hint =
         envelopePre.error?.message ||
         envelopePre.message ||

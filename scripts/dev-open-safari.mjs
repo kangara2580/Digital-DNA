@@ -52,7 +52,8 @@ function tryDiscoverUrl(chunk) {
   }
 }
 
-const DEFAULT_DEV_PORT = 3001;
+/** Next.js 기본과 맞춤 — 브라우저에서 보통 열리는 http://127.0.0.1:3000 과 일치 */
+const DEFAULT_DEV_PORT = 3000;
 const envPort = process.env.PORT
   ? Number(process.env.PORT)
   : DEFAULT_DEV_PORT;

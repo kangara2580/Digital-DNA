@@ -26,6 +26,12 @@ model Video {
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
   flashSaleUntil DateTime? @map("flash_sale_until")
+  /// 판매자 등록 시 설명(마켓 상세 연동용)
+  description    String?
+  /// 해시태그 — 쉼표 또는 공백 구분 저장(예: "#일상,#vlog")
+  hashtags       String?
+  /// AI 생성 여부(직접 촬영이면 false)
+  isAiGenerated  Boolean   @default(false) @map("is_ai_generated")
 
   notifications Notification[]
 

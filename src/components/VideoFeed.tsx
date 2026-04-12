@@ -1,9 +1,13 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { FeedVideo } from "@/data/videos";
-import { SAMPLE_VIDEOS, shuffleVideos } from "@/data/videos";
+import {
+  LOCAL_TRENDING_FEED_VIDEOS,
+  SAMPLE_VIDEOS,
+  shuffleVideos,
+} from "@/data/videos";
 import { isMicroDna } from "@/data/videoCommerce";
 import { SectionMoreLink } from "./SectionMoreLink";
 import { VideoCard } from "./VideoCard";
@@ -41,20 +45,16 @@ const REELS_GRID =
   "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-6 lg:gap-4";
 
 export function VideoFeed() {
-  const portraitBase = useMemo(
-    () =>
-      SAMPLE_VIDEOS.filter(
-        (v) => v.orientation === "portrait" && isRecommendFeedClip(v),
-      ),
-    [],
-  );
+  const portraitBase = useMemo(() => {
+    const rest = SAMPLE_VIDEOS.filter(
+      (v) => v.orientation === "portrait" && isRecommendFeedClip(v),
+    );
+    return [...LOCAL_TRENDING_FEED_VIDEOS, ...rest];
+  }, []);
 
-  const [clips, setClips] = useState(portraitBase);
+  /** 마운트 시 한 번만 셔플 — 이후 effect로 순서를 바꾸면 썸네일이 깜빡임 */
+  const [clips] = useState(() => shuffleVideos([...portraitBase]));
   const [contentFilter, setContentFilter] = useState<ContentFilter>("all");
-
-  useEffect(() => {
-    setClips(shuffleVideos([...portraitBase]));
-  }, [portraitBase]);
 
   const filteredClips = useMemo(
     () => clips.filter((v) => matchesContentFilter(v, contentFilter)),
@@ -72,7 +72,7 @@ export function VideoFeed() {
         aria-hidden
       />
       <div className="relative mx-auto max-w-[1800px] px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8">
-        <div className="rounded-[28px] border border-white/[0.12] bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_24px_80px_-24px_rgba(0,0,0,0.55),0_0_60px_-20px_rgba(0,242,234,0.12)] backdrop-blur-md sm:p-7 md:p-8">
+        <div className="rounded-[28px] border border-white/[0.12] bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_24px_80px_-24px_rgba(0,0,0,0.55),0_0_60px_-20px_rgba(0,242,234,0.12)] backdrop-blur-sm sm:p-7 md:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
             <div className="min-w-0 text-left">
               <div className="flex flex-wrap items-center gap-2">
@@ -164,7 +164,6 @@ export function VideoFeed() {
                       domId={`clip-${video.id}`}
                       className="min-w-0"
                       reelLayout
-                      topBadge="추천"
                     />
                   </div>
                 </div>

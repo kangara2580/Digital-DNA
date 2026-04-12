@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { VideoCard } from "@/components/VideoCard";
 import {
   ALL_MARKET_VIDEOS,
   getVideosForCategory,
@@ -12,6 +13,8 @@ import { shuffleVideos } from "@/data/videos";
 
 const BATCH = 5;
 const MAX_SLIDES = 120;
+/** 그리드에 나열할 최대 개수 — 인기순위 카드와 비슷한 크기로 많이 노출 */
+const BROWSE_GRID_CAP = 60;
 
 function useExplorePool() {
   return useMemo(() => {
@@ -103,6 +106,13 @@ function ReelSlide({
 
 export function ExploreReelsFeed() {
   const pool = useExplorePool();
+  const browseVideos = useMemo(
+    () => pool.slice(0, Math.min(BROWSE_GRID_CAP, pool.length)),
+    [pool],
+  );
+
+  const [mode, setMode] = useState<"browse" | "watch">("browse");
+  const [watchOffset, setWatchOffset] = useState(0);
   const [count, setCount] = useState(BATCH);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -111,19 +121,37 @@ export function ExploreReelsFeed() {
     const n = Math.min(count, MAX_SLIDES);
     const out: FeedVideo[] = [];
     for (let i = 0; i < n; i++) {
-      out.push(pool[i % pool.length]);
+      out.push(pool[(watchOffset + i) % pool.length]);
     }
     return out;
-  }, [pool, count]);
+  }, [pool, count, watchOffset]);
 
   const loadMore = useCallback(() => {
     setCount((c) => Math.min(c + BATCH, MAX_SLIDES));
   }, []);
 
+  const enterWatch = useCallback(
+    (video: FeedVideo) => {
+      const idx = pool.findIndex((v) => v.id === video.id);
+      setWatchOffset(idx >= 0 ? idx : 0);
+      setCount(BATCH);
+      setMode("watch");
+    },
+    [pool],
+  );
+
+  useEffect(() => {
+    if (mode !== "watch") return;
+    const id = window.requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ top: 0, behavior: "auto" });
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [mode, watchOffset]);
+
   useEffect(() => {
     const sentinel = sentinelRef.current;
     const root = scrollRef.current;
-    if (!sentinel || !root) return;
+    if (!sentinel || !root || mode !== "watch") return;
 
     const io = new IntersectionObserver(
       (entries) => {
@@ -133,18 +161,63 @@ export function ExploreReelsFeed() {
     );
     io.observe(sentinel);
     return () => io.disconnect();
-  }, [loadMore]);
+  }, [loadMore, mode]);
+
+  useEffect(() => {
+    if (mode === "browse") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [mode]);
+
+  if (mode === "browse") {
+    return (
+      <div className="mx-auto max-w-[1800px] px-4 pb-20 pt-4 sm:px-6 md:pl-[calc(var(--reels-rail-w,0px)+1rem)] lg:px-8">
+        <p className="mb-4 text-[13px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          조각을 누르면 아래로 스와이프하며 계속 재생되는 세로 릴로 이동합니다.
+        </p>
+        <div
+          className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-4"
+          role="list"
+          aria-label="탐색 그리드"
+        >
+          {browseVideos.map((video) => (
+            <div key={video.id} className="min-w-0" role="listitem">
+              <VideoCard
+                video={video}
+                reelLayout
+                reelStrip
+                disableHoverScale
+                onPick={() => enterWatch(video)}
+                className="h-full min-w-0"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
-      <Link
-        href="/"
-        className="fixed left-3 top-[calc(var(--header-height,4.5rem)+0.5rem)] z-[45] inline-flex h-10 items-center gap-1.5 rounded-full border border-white/20 bg-black/45 px-3.5 text-[13px] font-semibold text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-reels-cyan/40 hover:bg-black/60 hover:text-white md:left-[calc(var(--reels-rail-w)+0.75rem)] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-900"
-        aria-label="홈으로"
-      >
-        <ArrowLeft className="h-4 w-4" strokeWidth={2.25} aria-hidden />
-        홈
-      </Link>
+      <div className="pointer-events-none fixed left-3 top-[calc(var(--header-height,4.5rem)+0.5rem)] z-[45] flex flex-col gap-2 sm:left-4 md:left-[calc(var(--reels-rail-w)+0.75rem)]">
+        <Link
+          href="/"
+          className="pointer-events-auto inline-flex h-10 items-center gap-1.5 rounded-full border border-white/20 bg-black/45 px-3.5 text-[13px] font-semibold text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-reels-cyan/40 hover:bg-black/60 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-900"
+          aria-label="홈으로"
+        >
+          <ArrowLeft className="h-4 w-4" strokeWidth={2.25} aria-hidden />
+          홈
+        </Link>
+        <button
+          type="button"
+          onClick={() => setMode("browse")}
+          className="pointer-events-auto inline-flex h-10 items-center gap-1.5 rounded-full border border-white/20 bg-black/45 px-3.5 text-[13px] font-semibold text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-reels-cyan/40 hover:bg-black/60 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-900"
+          aria-label="그리드 목록으로"
+        >
+          <LayoutGrid className="h-4 w-4" strokeWidth={2.25} aria-hidden />
+          목록
+        </button>
+      </div>
 
       <p className="pointer-events-none fixed left-1/2 top-[calc(var(--header-height,4.5rem)+0.65rem)] z-[44] -translate-x-1/2 rounded-full border border-white/15 bg-black/35 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-300 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/85 [html[data-theme='light']_&]:text-zinc-800">
         탐색 · 릴스
@@ -155,11 +228,11 @@ export function ExploreReelsFeed() {
         className="fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[30] overflow-y-auto overflow-x-hidden overscroll-y-contain snap-y snap-mandatory md:left-[var(--reels-rail-w)]"
         style={{ WebkitOverflowScrolling: "touch" }}
         role="feed"
-        aria-label="세로 탐색 릴스 피드"
+        aria-label="세로 탐색 릴스 피드 — 아래로 스크롤해 계속 보기"
       >
         {slides.map((video, i) => (
           <ReelSlide
-            key={`${video.id}-${i}`}
+            key={`${video.id}-${watchOffset}-${i}`}
             video={video}
             scrollRootRef={scrollRef}
           />

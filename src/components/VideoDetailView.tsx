@@ -5,6 +5,8 @@ import { useEffect, useMemo } from "react";
 import { ShoppingCart } from "lucide-react";
 import { CloneCountAnimation } from "@/components/CloneCountAnimation";
 import { RelatedDnaQuilt } from "@/components/RelatedDnaQuilt";
+import { VideoDetailRecommendations } from "@/components/VideoDetailRecommendations";
+import { VideoDetailReviewsSection } from "@/components/VideoDetailReviewsSection";
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
@@ -47,7 +49,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
 
   return (
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-      <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1800px] px-4 py-8 sm:px-6 lg:px-8">
         <nav className="mb-6 font-mono text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           <Link href="/" className="text-reels-cyan/90 hover:text-reels-cyan">
             홈
@@ -221,6 +223,9 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
             </div>
           </div>
         </div>
+
+        <VideoDetailReviewsSection videoId={video.id} />
+        <VideoDetailRecommendations video={video} />
       </div>
     </div>
   );

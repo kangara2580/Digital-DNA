@@ -10,8 +10,6 @@ import { InspirationCategoryGrid } from "@/components/InspirationCategoryGrid";
 import { VideoFeed } from "@/components/VideoFeed";
 import { MainBackgroundVideo } from "@/components/MainBackgroundVideo";
 
-export const dynamic = "force-dynamic";
-
 export default async function Home() {
   return (
     <div className="min-h-screen bg-transparent">

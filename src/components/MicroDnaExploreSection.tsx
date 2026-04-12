@@ -21,19 +21,20 @@ export function MicroDnaExploreSection() {
       aria-labelledby="micro-dna-explore-heading"
     >
       <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+        <h2
+          id="micro-dna-explore-heading"
+          className="text-left text-[18px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:text-[20px] md:text-[22px]"
+        >
+          영감이 필요한 순간을{" "}
+          <span className="text-reels-cyan [text-shadow:0_0_10px_rgba(0,242,234,0.28),0_0_4px_rgba(0,242,234,0.12)]">
+            100원
+          </span>
+          만 준비하세요~
+        </h2>
+
+        <div className="mt-4 flex flex-col gap-3 sm:mt-5 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
           <div className="min-w-0 text-left">
-            <h2
-              id="micro-dna-explore-heading"
-              className="text-[22px] font-extrabold leading-snug tracking-tight sm:text-[26px] md:text-[28px]"
-            >
-              <span className="text-zinc-100">단 ! </span>
-              <span className="text-reels-cyan [text-shadow:0_0_10px_rgba(0,242,234,0.28),0_0_4px_rgba(0,242,234,0.12)]">
-                100~
-              </span>
-              <span className="text-zinc-100"> 원만 준비하세요 !</span>
-            </h2>
-            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-zinc-500 sm:text-[16px]">
+            <p className="max-w-2xl text-[15px] leading-relaxed text-zinc-500 sm:text-[16px]">
               300원 이하 조각만 모았어요.
             </p>
           </div>

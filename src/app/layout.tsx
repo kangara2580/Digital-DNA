@@ -6,10 +6,12 @@ import {
   Nanum_Gothic,
   Song_Myung,
 } from "next/font/google";
+import { NavigationRecovery } from "@/components/NavigationRecovery";
 import { DnaBuilderDock } from "@/components/DnaBuilderDock";
 import { FloatingHelp } from "@/components/FloatingHelp";
 import { MallTopNav } from "@/components/MallTopNav";
 import { ReelsLeftRail } from "@/components/ReelsLeftRail";
+import { ReelsMarketFooter } from "@/components/ReelsMarketFooter";
 import { DopamineBasketProvider } from "@/context/DopamineBasketContext";
 import { PurchasedVideosProvider } from "@/context/PurchasedVideosContext";
 import { RecentClipsProvider } from "@/context/RecentClipsContext";
@@ -63,21 +65,24 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
+      data-theme="dark"
       suppressHydrationWarning
       className={`${inter.variable} ${montserrat.variable} ${blackHanSans.variable} ${nanumGothic.variable} ${songMyung.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
-      <body className="min-h-screen bg-[var(--background)] font-sans text-[var(--foreground)] antialiased">
+      <body className="min-h-screen bg-[var(--background,#02040a)] font-sans text-[var(--foreground,#fafafa)] antialiased">
         <WishlistProvider>
           <RecentClipsProvider>
             <DopamineBasketProvider>
               <PurchasedVideosProvider>
+                <NavigationRecovery />
                 <ReelsLeftRail />
                 <div className="min-w-0 md:pl-[var(--reels-rail-w)]">
                   <MallTopNav />
                   {children}
+                  <ReelsMarketFooter />
                   <DnaBuilderDock />
                   <FloatingHelp />
                 </div>

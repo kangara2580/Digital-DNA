@@ -5,11 +5,19 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import type { FeedVideo } from "@/data/videos";
+import { LOCAL_FACE_SWAP_VIDEO_IDS } from "@/constants/videos";
 import { buildFacePickerOptions, type FacePickerOption } from "@/lib/facePickerOptions";
 import { markCustomizeDraftSaved } from "@/lib/customizeDraftIndex";
+import { getCustomizeDraftStorageKey } from "@/lib/customizeDraftStorage";
+import {
+  consumeLocalFacePreviewSuccess,
+  FREE_LOCAL_FACE_PREVIEW_TRIES,
+  getLocalFacePreviewRemaining,
+} from "@/lib/facePreviewQuota";
+import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
+import { useVideoStartPoster } from "@/hooks/useVideoStartPoster";
 import { InputSection } from "@/components/InputSection";
-
-const customizeKey = (videoId: string) => `reels-customize-draft-${videoId}`;
+import { VideoBackgroundComposite } from "@/components/VideoBackgroundComposite";
 
 const FONT_PRETENDARD = "var(--font-pretendard)";
 const FONT_MONTSERRAT = "var(--font-montserrat), Arial, sans-serif";
@@ -86,7 +94,7 @@ function clampOverlayPosition(v: number, min = 5, max = 95): number {
 
 function loadDraft(videoId: string, options: FacePickerOption[]): CustomizeDraft {
   try {
-    const raw = localStorage.getItem(customizeKey(videoId));
+    const raw = localStorage.getItem(getCustomizeDraftStorageKey(videoId));
     if (!raw) throw new Error("empty");
     const j = JSON.parse(raw) as CustomizeDraft;
     if (!j || typeof j !== "object") throw new Error("bad");
@@ -123,11 +131,17 @@ function loadDraft(videoId: string, options: FacePickerOption[]): CustomizeDraft
           }))
         : defaultOverlays();
 
+    const backgroundMode =
+      j.backgroundMode === "image" || j.backgroundMode === "video"
+        ? j.backgroundMode
+        : "video";
+    const backgroundPrompt =
+      typeof j.backgroundPrompt === "string" ? j.backgroundPrompt : "";
+
     return {
       faceOptionId: faceOk ? j.faceOptionId : options[0]?.id ?? null,
-      backgroundMode: "video",
-      // 스튜디오 진입 시에는 항상 비어있는 초기 상태로 시작
-      backgroundPrompt: "",
+      backgroundMode,
+      backgroundPrompt,
       trimStart: typeof j.trimStart === "number" ? j.trimStart : 0,
       trimEnd: typeof j.trimEnd === "number" ? j.trimEnd : 0,
       overlays: normalizedOverlays,
@@ -146,10 +160,191 @@ function loadDraft(videoId: string, options: FacePickerOption[]): CustomizeDraft
 
 function saveDraft(videoId: string, d: CustomizeDraft) {
   try {
-    localStorage.setItem(customizeKey(videoId), JSON.stringify(d));
+    localStorage.setItem(getCustomizeDraftStorageKey(videoId), JSON.stringify(d));
   } catch {
     /* quota */
   }
+}
+
+function looksLikeVideoUrl(url: string): boolean {
+  const path = url.split("?")[0].toLowerCase();
+  return /\.(mp4|webm|mov|m4v|mkv)$/.test(path);
+}
+
+/**
+ * Replicate/HTTP 등에서 온 기술 메시지를 사용자용 한국어로만 바꿉니다.
+ * (상태 코드, 도메인, 영문 JSON 노출 방지)
+ */
+function userFacingAiErrorMessage(raw: string): string {
+  const lower = raw.toLowerCase();
+  if (
+    raw.includes("402") ||
+    lower.includes("insufficient credit") ||
+    lower.includes("payment required")
+  ) {
+    return "이용 가능한 크레딧이 부족합니다. 충전 후 다시 시도해 주세요.";
+  }
+  if (
+    raw.includes("429") ||
+    lower.includes("too many requests") ||
+    lower.includes("throttled") ||
+    lower.includes("rate limit") ||
+    lower.includes("replicate_rate_limited")
+  ) {
+    return "현재 생성 요청이 많습니다. 잠시 후 다시 시도해 주세요.";
+  }
+  if (
+    lower.includes("replicate_token_missing") ||
+    lower.includes(".env.local") ||
+    lower.includes("replicate api 토큰")
+  ) {
+    return "AI 기능을 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.";
+  }
+  if (
+    lower.includes("api.replicate.com") ||
+    raw.includes('"detail"') ||
+    /status["']?\s*:\s*\d{3}/.test(raw) ||
+    raw.length > 200
+  ) {
+    return "처리 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+  }
+  const trimmed = raw.trim();
+  if (
+    /[\uac00-\ud7a3]/.test(trimmed) &&
+    trimmed.length <= 140 &&
+    !trimmed.includes("http") &&
+    !/\b402\b|\b429\b|replicate/i.test(trimmed)
+  ) {
+    return trimmed;
+  }
+  return "처리 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+}
+
+/** 서버 생성 작업 상태 — API 값은 숨기고 한국어 안내만 노출 */
+function reelsJobPresentation(status: string): {
+  title: string;
+  line: string;
+  showMeter: boolean;
+} {
+  switch (status) {
+    case "queued":
+      return {
+        title: "순서를 기다리는 중이에요",
+        line: "곧 서버에서 AI 합성이 시작됩니다. (보통 수십 초 안에 진행돼요)",
+        showMeter: true,
+      };
+    case "running":
+      return {
+        title: "서버에서 열심히 제작 중이에요",
+        line: "완료까지 약 20~60초 정도 걸릴 수 있어요. 창을 닫아도 작업은 계속됩니다.",
+        showMeter: true,
+      };
+    case "succeeded":
+      return {
+        title: "생성이 완료되었어요",
+        line: "아래에서 결과를 확인하거나, 마이페이지에서도 다시 열어볼 수 있어요.",
+        showMeter: false,
+      };
+    case "failed":
+      return {
+        title: "생성에 문제가 생겼어요",
+        line: "잠시 후 다시 시도하거나, 임시 저장 내용을 확인해 주세요.",
+        showMeter: false,
+      };
+    default:
+      return {
+        title: "처리 중이에요",
+        line: "잠시만 기다려 주세요.",
+        showMeter: true,
+      };
+  }
+}
+
+type RemoteJobBanner = {
+  status: string;
+  progress: number;
+  outputVideoUrl?: string;
+  error?: string;
+};
+
+function ServerGenerationStatusCard({ job }: { job: RemoteJobBanner }) {
+  const pres = reelsJobPresentation(job.status);
+  const busy = job.status === "queued" || job.status === "running";
+  const pct = Math.max(0, Math.min(100, Number(job.progress) || 0));
+  const barPct = job.status === "queued" && pct < 4 ? 12 : Math.max(6, pct);
+
+  return (
+    <div className="mt-4 rounded-xl border border-reels-cyan/20 bg-gradient-to-br from-black/45 to-black/20 px-4 py-4 text-[13px] text-zinc-300">
+      <p className="text-[11px] font-bold uppercase tracking-wide text-reels-cyan/90">AI 생성</p>
+      <p className="mt-2 text-[15px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+        {pres.title}
+      </p>
+      <p className="mt-1.5 leading-relaxed text-[12px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+        {pres.line}
+      </p>
+
+      {pres.showMeter ? (
+        <div className="mt-3">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-white/10 [html[data-theme='light']_&]:bg-zinc-200/80">
+            <div
+              className={`h-full rounded-full bg-gradient-to-r from-reels-cyan/85 to-reels-crimson/70 ${
+                job.status === "queued" && pct < 5 ? "animate-pulse" : "transition-[width] duration-700"
+              }`}
+              style={{ width: `${barPct}%` }}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {busy ? (
+        <div className="mt-4 rounded-lg border border-white/10 bg-black/35 px-3 py-3 text-[12px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:border-zinc-200/80 [html[data-theme='light']_&]:bg-zinc-50/80 [html[data-theme='light']_&]:text-zinc-600">
+          <p>
+            생성이 시작되었어요.{" "}
+            <strong className="text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
+              이 페이지를 나가도 서버 작업은 중단되지 않아요.
+            </strong>{" "}
+            완료된 영상은{" "}
+            <Link
+              href="/mypage?tab=drafts"
+              className="font-semibold text-reels-cyan underline-offset-2 hover:underline"
+            >
+              마이페이지 → 임시 저장
+            </Link>
+            에서 이어서 확인할 수 있어요.
+          </p>
+          <p className="mt-2">
+            기다리는 동안{" "}
+            <Link
+              href="/#micro-dna-explore-heading"
+              className="font-semibold text-reels-cyan underline-offset-2 hover:underline"
+            >
+              100원대 Micro DNA
+            </Link>
+            조각을 구경해 보세요.
+          </p>
+        </div>
+      ) : null}
+
+      {job.status === "succeeded" && job.outputVideoUrl ? (
+        <div className="mt-3">
+          <a
+            href={job.outputVideoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex rounded-full border border-reels-cyan/40 bg-reels-cyan/15 px-4 py-2 text-[12px] font-bold text-reels-cyan hover:bg-reels-cyan/25"
+          >
+            결과 영상 열기
+          </a>
+        </div>
+      ) : null}
+
+      {job.error ? (
+        <p className="mt-3 text-[12px] font-medium text-reels-crimson" role="alert">
+          {job.error}
+        </p>
+      ) : null}
+    </div>
+  );
 }
 
 function previewToneFromPrompt(prompt: string): string {
@@ -171,7 +366,13 @@ function previewToneFromPrompt(prompt: string): string {
 
 export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
   const { hasPurchased } = usePurchasedVideos();
-  const owned = hasPurchased(video.id);
+  const isLocalFaceSwapDemo = LOCAL_FACE_SWAP_VIDEO_IDS.includes(video.id);
+  const owned = hasPurchased(video.id) || isLocalFaceSwapDemo;
+  /** 구매 전 로컬 샘플만 — AI 얼굴 미리보기(/api/transform) 무료 체험 횟수 제한 */
+  const localFacePreviewQuotaActive = useMemo(
+    () => isLocalFaceSwapDemo && !hasPurchased(video.id),
+    [hasPurchased, isLocalFaceSwapDemo, video.id],
+  );
 
   const [faceOptions, setFaceOptions] = useState<FacePickerOption[]>([]);
   const [draft, setDraft] = useState<CustomizeDraft | null>(null);
@@ -182,6 +383,11 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
   const [remoteErr, setRemoteErr] = useState<string | null>(null);
   const [previewBgPrompt, setPreviewBgPrompt] = useState<string | null>(null);
   const [previewBgVideoUrl, setPreviewBgVideoUrl] = useState<string | null>(null);
+  /** Flux 등으로 생성된 배경 이미지 URL(이미지 모드 미리보기 표시용) */
+  const [previewBgImageUrl, setPreviewBgImageUrl] = useState<string | null>(null);
+  /** 동영상 배경: RVM 전경 + 스톡 배경 합성 미리보기 */
+  const [previewCompositeFgUrl, setPreviewCompositeFgUrl] = useState<string | null>(null);
+  const [previewCompositeBgUrl, setPreviewCompositeBgUrl] = useState<string | null>(null);
   const [previewBgVersion, setPreviewBgVersion] = useState(0);
   const [incomingPreviewUrl, setIncomingPreviewUrl] = useState<string | null>(null);
   const [incomingVisible, setIncomingVisible] = useState(false);
@@ -190,11 +396,19 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
   const [previewCandidateIndex, setPreviewCandidateIndex] = useState(0);
   const [textPreviewEnabled, setTextPreviewEnabled] = useState(false);
   const [activeDragOverlayId, setActiveDragOverlayId] = useState<string | null>(null);
-  const [previewApplying, setPreviewApplying] = useState(false);
-  const [previewApplyError, setPreviewApplyError] = useState<string | null>(null);
+  const [facePreviewApplying, setFacePreviewApplying] = useState(false);
+  const [backgroundPreviewApplying, setBackgroundPreviewApplying] = useState(false);
+  const [facePreviewError, setFacePreviewError] = useState<string | null>(null);
+  const [backgroundPreviewError, setBackgroundPreviewError] = useState<string | null>(null);
+  const [backgroundPreviewInfo, setBackgroundPreviewInfo] = useState<string | null>(null);
   const [selectedFaceSourceUrl, setSelectedFaceSourceUrl] = useState<string | null>(
     null,
   );
+  /** 로컬 샘플 클립 전용 — AI 얼굴 미리보기(/api/transform) 무료 체험 남은 횟수 */
+  const [localFacePreviewRemaining, setLocalFacePreviewRemaining] = useState(
+    FREE_LOCAL_FACE_PREVIEW_TRIES,
+  );
+
   const [pollJobId, setPollJobId] = useState<string | null>(null);
   const [remoteJob, setRemoteJob] = useState<{
     id: string;
@@ -221,6 +435,11 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
   }, [video.id]);
 
   useEffect(() => {
+    if (!localFacePreviewQuotaActive) return;
+    setLocalFacePreviewRemaining(getLocalFacePreviewRemaining());
+  }, [localFacePreviewQuotaActive]);
+
+  useEffect(() => {
     if (faceOptions.length === 0 || !draft) return;
     const ok = faceOptions.some((o) => o.id === draft.faceOptionId);
     if (!ok) {
@@ -242,6 +461,26 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
   const bgPreviewOn = Boolean(previewBgPrompt);
   const backgroundMode = draft?.backgroundMode ?? "video";
   const previewVideoSrc = previewBgVideoUrl ?? video.src;
+  /** 이미지 모드: Flux 결과가 있으면 우선, 없으면 캐러셀에서 고른 이미지 URL */
+  const previewBgDisplayImageUrl = useMemo(() => {
+    if (backgroundMode !== "image" || !bgPreviewOn) return null;
+    if (previewBgImageUrl) return previewBgImageUrl;
+    if (previewBgVideoUrl && !looksLikeVideoUrl(previewBgVideoUrl)) {
+      return previewBgVideoUrl;
+    }
+    return null;
+  }, [backgroundMode, bgPreviewOn, previewBgImageUrl, previewBgVideoUrl]);
+  const needsStartFramePoster =
+    !bgPreviewOn &&
+    (!video.poster?.trim() || isLocalPublicVideo(video.src));
+  const startFramePoster = useVideoStartPoster(
+    previewVideoSrc,
+    needsStartFramePoster,
+    { timeSec: 0.08, maxWidth: 720 },
+  );
+  const previewPoster = bgPreviewOn
+    ? undefined
+    : (startFramePoster ?? (video.poster || undefined));
   const randomBooster = useMemo(
     () => ["cinematic", "4k", "dramatic light", "b-roll", "wide shot", "aerial"],
     [],
@@ -275,16 +514,29 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
 
     setPreviewBgPrompt(null);
     setPreviewBgVideoUrl(null);
+    setPreviewBgImageUrl(null);
+    setPreviewCompositeFgUrl(null);
+    setPreviewCompositeBgUrl(null);
     setIncomingPreviewUrl(null);
     setIncomingVisible(false);
     setPreviewTransitionLoading(false);
     setPreviewCandidates([]);
     setPreviewCandidateIndex(0);
-    setPreviewApplyError(null);
+    setFacePreviewError(null);
+    setBackgroundPreviewError(null);
+    setBackgroundPreviewInfo(null);
     setPreviewBgVersion((v) => v + 1);
     // 모드 전환 직후에는 자동 재적용을 막고, 사용자가 명시적으로 적용하도록 유지
     lastAutoAppliedKeywordRef.current = draft.backgroundPrompt.trim();
   }, [draft]);
+
+  const onVideoCompositeReady = useCallback(() => {
+    setPreviewTransitionLoading(false);
+  }, []);
+
+  const onVideoCompositeError = useCallback(() => {
+    setPreviewTransitionLoading(false);
+  }, []);
 
   const onVideoMeta = useCallback(() => {
     const v = videoRef.current;
@@ -384,65 +636,6 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
     }
   }, [draft, selectedFace, video.id]);
 
-  const applyBackgroundPreview = useCallback(async (liveKeyword?: string) => {
-    if (!draft) return;
-    if (!selectedFaceSourceUrl) {
-      setPreviewApplyError("얼굴 소스를 먼저 선택해 주세요.");
-      return;
-    }
-    const keyword = (liveKeyword ?? draft.backgroundPrompt).trim();
-
-    setPreviewApplyError(null);
-    setPreviewApplying(true);
-    setPreviewTransitionLoading(true);
-    try {
-      const targetVideoUrl = previewBgVideoUrl ?? video.src;
-      const res = await fetch("/api/transform", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sourceImageUrl: selectedFaceSourceUrl,
-          targetVideoUrl,
-          backgroundPrompt: keyword || undefined,
-        }),
-      });
-      const data = (await res.json()) as {
-        ok?: boolean;
-        outputVideoUrl?: string;
-        error?: string;
-        message?: string;
-      };
-      if (!res.ok || !data.outputVideoUrl) {
-        throw new Error(data.message ?? data.error ?? "transform_failed");
-      }
-      setPreviewBgPrompt(keyword || null);
-      setPreviewCandidates([]);
-      setPreviewCandidateIndex(0);
-      setIncomingPreviewUrl(data.outputVideoUrl);
-      setIncomingVisible(false);
-      setPreviewBgVersion((v) => v + 1);
-      trackBehavior({
-        type: "background_preview_applied",
-        keyword: keyword || "faceswap_only",
-        mode: backgroundMode,
-      });
-    } catch (e) {
-      setPreviewTransitionLoading(false);
-      setPreviewApplyError(
-        e instanceof Error ? e.message : "AI 합성에 실패했습니다.",
-      );
-    } finally {
-      setPreviewApplying(false);
-    }
-  }, [
-    backgroundMode,
-    draft,
-    previewBgVideoUrl,
-    selectedFaceSourceUrl,
-    trackBehavior,
-    video.src,
-  ]);
-
   // 오프스크린 preload: 모드(영상/이미지)에 맞춰 로드
   const preloadVideoUrl = useCallback((url: string) => {
     if (!url || preloadCacheRef.current.has(url)) return;
@@ -471,6 +664,197 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
     // 브라우저가 즉시 preload를 시작하도록 강제
     v.load();
   }, [backgroundMode]);
+
+  /** 얼굴 스왑 미리보기만 (배경 Flux/검색 없음) */
+  const applyFacePreview = useCallback(async () => {
+    if (!draft) return;
+    const faceUrl =
+      (selectedFace?.src ?? selectedFaceSourceUrl)?.trim() || "";
+    if (!faceUrl) {
+      setFacePreviewError("얼굴 소스를 먼저 선택해 주세요.");
+      return;
+    }
+
+    if (localFacePreviewQuotaActive && getLocalFacePreviewRemaining() <= 0) {
+      setFacePreviewError(
+        "무료 AI 얼굴 미리보기 횟수를 모두 사용했습니다. 조각 상세에서 모션 권한을 구매하면 제한 없이 이용할 수 있어요.",
+      );
+      return;
+    }
+
+    setFacePreviewError(null);
+    setFacePreviewApplying(true);
+    setPreviewTransitionLoading(true);
+    try {
+      const targetVideoUrl = previewBgVideoUrl ?? video.src;
+      const res = await fetch("/api/transform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceImageUrl: faceUrl,
+          targetVideoUrl,
+        }),
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        outputVideoUrl?: string;
+        error?: string;
+        message?: string;
+      };
+      if (!res.ok || !data.outputVideoUrl) {
+        throw new Error(data.message ?? data.error ?? "transform_failed");
+      }
+      setPreviewBgPrompt(null);
+      setPreviewCandidates([]);
+      setPreviewCandidateIndex(0);
+      setPreviewBgImageUrl(null);
+      setPreviewCompositeFgUrl(null);
+      setPreviewCompositeBgUrl(null);
+      setIncomingPreviewUrl(data.outputVideoUrl);
+      setIncomingVisible(false);
+      setPreviewBgVersion((v) => v + 1);
+      if (localFacePreviewQuotaActive) {
+        setLocalFacePreviewRemaining(consumeLocalFacePreviewSuccess());
+      }
+      trackBehavior({
+        type: "background_preview_applied",
+        keyword: "faceswap_only",
+        mode: draft.backgroundMode ?? "video",
+      });
+    } catch (e) {
+      setPreviewTransitionLoading(false);
+      const raw =
+        e instanceof Error ? e.message : "AI 합성에 실패했습니다.";
+      setFacePreviewError(userFacingAiErrorMessage(raw));
+    } finally {
+      setFacePreviewApplying(false);
+    }
+  }, [
+    draft,
+    localFacePreviewQuotaActive,
+    previewBgVideoUrl,
+    selectedFace,
+    selectedFaceSourceUrl,
+    trackBehavior,
+    video.src,
+  ]);
+
+  /** 배경 미리보기만 — 이미지: Flux만, 동영상: 스톡 검색만 (얼굴 스왑 없음) */
+  const applyBackgroundPreview = useCallback(async (liveKeyword?: string) => {
+    if (!draft) return;
+    const keyword = (liveKeyword ?? draft.backgroundPrompt).trim();
+
+    setBackgroundPreviewError(null);
+    setBackgroundPreviewInfo(null);
+    setBackgroundPreviewApplying(true);
+    setPreviewTransitionLoading(true);
+    try {
+      if (backgroundMode === "image") {
+        if (!keyword) {
+          setBackgroundPreviewError("배경 프롬프트를 입력해 주세요.");
+          setPreviewTransitionLoading(false);
+          return;
+        }
+        const res = await fetch("/api/background-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: keyword }),
+        });
+        const data = (await res.json()) as {
+          ok?: boolean;
+          backgroundOutputUrl?: string | null;
+          backgroundWarning?: string | null;
+          error?: string;
+          message?: string;
+        };
+        if (!res.ok) {
+          throw new Error(data.message ?? data.error ?? "background_failed");
+        }
+        if (data.backgroundWarning) {
+          setBackgroundPreviewInfo(data.backgroundWarning);
+        }
+        if (!data.backgroundOutputUrl) {
+          setBackgroundPreviewError(
+            data.backgroundWarning
+              ? "현재 생성 요청이 많아 배경 이미지를 만들지 못했습니다. 잠시 후 다시 시도해 주세요."
+              : userFacingAiErrorMessage(data.message ?? "배경 이미지를 생성하지 못했습니다."),
+          );
+          setPreviewTransitionLoading(false);
+          return;
+        }
+        setPreviewBgPrompt(keyword);
+        setPreviewCandidates([]);
+        setPreviewCandidateIndex(0);
+        setPreviewCompositeFgUrl(null);
+        setPreviewCompositeBgUrl(null);
+        setPreviewBgImageUrl(data.backgroundOutputUrl);
+        setIncomingPreviewUrl(null);
+        setIncomingVisible(false);
+        setPreviewTransitionLoading(false);
+        setPreviewBgVersion((v) => v + 1);
+        trackBehavior({
+          type: "background_preview_applied",
+          keyword,
+          mode: "image",
+        });
+        return;
+      }
+
+      /* 동영상 배경: 스톡 검색 + 영상 매팅으로 인물 뒤에 배경 합성 */
+      if (!keyword) {
+        setBackgroundPreviewError("배경 프롬프트를 입력해 주세요.");
+        setPreviewTransitionLoading(false);
+        return;
+      }
+      const subjectVideoUrl = previewBgVideoUrl ?? video.src;
+      const res = await fetch("/api/preview/video-background-composite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subjectVideoUrl,
+          backgroundKeyword: keyword,
+          seed: 0,
+        }),
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        foregroundVideoUrl?: string;
+        backgroundVideoUrl?: string;
+        backgroundCandidates?: string[];
+        error?: string;
+        message?: string;
+      };
+      if (!res.ok || !data.foregroundVideoUrl || !data.backgroundVideoUrl) {
+        throw new Error(data.message ?? data.error ?? "video_background_composite_failed");
+      }
+      const urls = (data.backgroundCandidates ?? []).filter(Boolean);
+      setPreviewBgPrompt(keyword);
+      setPreviewCandidates(urls.length ? urls : [data.backgroundVideoUrl]);
+      setPreviewCandidateIndex(0);
+      setPreviewBgImageUrl(null);
+      setPreviewBgVideoUrl(null);
+      setPreviewCompositeFgUrl(data.foregroundVideoUrl);
+      setPreviewCompositeBgUrl(data.backgroundVideoUrl);
+      setIncomingPreviewUrl(null);
+      setIncomingVisible(false);
+      setPreviewBgVersion((v) => v + 1);
+      urls.forEach((u) => preloadVideoUrl(u));
+      preloadVideoUrl(data.foregroundVideoUrl);
+      preloadVideoUrl(data.backgroundVideoUrl);
+      trackBehavior({
+        type: "background_preview_applied",
+        keyword,
+        mode: "video",
+      });
+    } catch (e) {
+      setPreviewTransitionLoading(false);
+      const raw =
+        e instanceof Error ? e.message : "배경 미리보기에 실패했습니다.";
+      setBackgroundPreviewError(userFacingAiErrorMessage(raw));
+    } finally {
+      setBackgroundPreviewApplying(false);
+    }
+  }, [backgroundMode, draft, preloadVideoUrl, previewBgVideoUrl, trackBehavior, video.src]);
 
   // 키워드 입력 중 미리 후보를 받아와 백그라운드 preload
   useEffect(() => {
@@ -512,12 +896,22 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
     setIncomingVisible(false);
     if (backgroundMode === "image") {
       setIncomingPreviewUrl(null);
+      setPreviewBgImageUrl(null);
       setPreviewBgVideoUrl(nextUrl);
+    } else if (previewCompositeFgUrl) {
+      setPreviewCompositeBgUrl(nextUrl);
+      setIncomingPreviewUrl(null);
     } else {
       setIncomingPreviewUrl(nextUrl);
     }
     preloadVideoUrl(nextUrl);
-  }, [backgroundMode, previewCandidateIndex, previewCandidates, preloadVideoUrl]);
+  }, [
+    backgroundMode,
+    previewCandidateIndex,
+    previewCandidates,
+    preloadVideoUrl,
+    previewCompositeFgUrl,
+  ]);
 
   const showNextBackground = useCallback(() => {
     if (previewCandidates.length <= 1) return;
@@ -528,12 +922,22 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
     setIncomingVisible(false);
     if (backgroundMode === "image") {
       setIncomingPreviewUrl(null);
+      setPreviewBgImageUrl(null);
       setPreviewBgVideoUrl(nextUrl);
+    } else if (previewCompositeFgUrl) {
+      setPreviewCompositeBgUrl(nextUrl);
+      setIncomingPreviewUrl(null);
     } else {
       setIncomingPreviewUrl(nextUrl);
     }
     preloadVideoUrl(nextUrl);
-  }, [backgroundMode, previewCandidateIndex, previewCandidates, preloadVideoUrl]);
+  }, [
+    backgroundMode,
+    previewCandidateIndex,
+    previewCandidates,
+    preloadVideoUrl,
+    previewCompositeFgUrl,
+  ]);
 
   useEffect(() => {
     if (!pollJobId) return;
@@ -659,6 +1063,40 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
 
   return (
     <div className="space-y-10">
+      {isLocalFaceSwapDemo ? (
+        <div className="rounded-xl border border-reels-cyan/25 bg-reels-cyan/10 px-4 py-3 text-[13px] leading-relaxed text-zinc-200">
+          {hasPurchased(video.id) ? (
+            <p>
+              로컬 샘플 클립입니다. 모션 권한이 적용되어 AI 얼굴 미리보기를 제한 없이 이용할 수 있어요.
+            </p>
+          ) : localFacePreviewRemaining > 0 ? (
+            <p>
+              로컬 샘플 클립입니다. AI 얼굴 미리보기(선택 얼굴로 미리보기)는 서버 부하 방지와 쾌적한 환경 제공을 위해 횟수가 제한됩니다.{" "}
+              <span className="font-extrabold text-reels-cyan/95">
+                무료 체험 {localFacePreviewRemaining}회 남음
+              </span>
+              .
+            </p>
+          ) : (
+            <p>
+              로컬 샘플 클립입니다. 무료 AI 얼굴 미리보기 횟수를 모두 사용했습니다.{" "}
+              <Link
+                href={`/video/${video.id}`}
+                className="font-semibold text-reels-cyan/95 underline-offset-2 hover:underline"
+              >
+                조각 상세
+              </Link>
+              에서 모션 권한을 구매하면 제한 없이 이용할 수 있어요.
+            </p>
+          )}
+          <p className="mt-2 text-[12px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+            <Link href="/mypage" className="font-semibold text-reels-cyan/95 underline-offset-2 hover:underline">
+              마이페이지
+            </Link>
+            에서 등록한 얼굴 프로필이 있으면 아래 「얼굴 소스」 맨 앞에 표시됩니다.
+          </p>
+        </div>
+      ) : null}
       <div>
         <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] p-1">
           <button
@@ -691,17 +1129,32 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
           <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-zinc-500">미리보기</p>
           <div className="relative mx-auto mt-3 max-w-[280px]">
             <div
-              className={`relative overflow-hidden rounded-xl border border-white/10 bg-black ${
+              className={`relative overflow-hidden rounded-xl border border-white/10 ${
+                needsStartFramePoster && !startFramePoster && !bgPreviewOn
+                  ? "bg-gradient-to-b from-zinc-900 via-zinc-950 to-black"
+                  : "bg-black"
+              } ${
                 video.orientation === "portrait" ? "aspect-[9/16]" : "aspect-video w-full max-w-md"
               }`}
             >
-              {backgroundMode === "image" && bgPreviewOn ? (
+              {backgroundMode === "video" &&
+              bgPreviewOn &&
+              previewCompositeFgUrl &&
+              previewCompositeBgUrl ? (
+                <VideoBackgroundComposite
+                  key={`${previewCompositeFgUrl}::${previewCompositeBgUrl}::${previewBgVersion}`}
+                  foregroundSrc={previewCompositeFgUrl}
+                  backgroundSrc={previewCompositeBgUrl}
+                  onReady={onVideoCompositeReady}
+                  onError={onVideoCompositeError}
+                />
+              ) : backgroundMode === "image" && bgPreviewOn && previewBgDisplayImageUrl ? (
                 <>
-                  {/* 이미지 모드: 영상 대신 배경 이미지를 직접 표시 */}
+                  {/* 이미지 모드: Flux/캐러셀 이미지 URL만 img로 표시(영상 URL을 img에 넣지 않음) */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    key={`${previewVideoSrc}::${previewBgVersion}`}
-                    src={previewVideoSrc}
+                    key={`${previewBgDisplayImageUrl}::${previewBgVersion}`}
+                    src={previewBgDisplayImageUrl}
                     alt=""
                     className="h-full w-full object-cover"
                     onLoad={() => setPreviewTransitionLoading(false)}
@@ -717,19 +1170,20 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
                     key={`${previewVideoSrc}::${previewBgVersion}`}
                     ref={videoRef}
                     className="h-full w-full object-cover"
-                    poster={bgPreviewOn ? undefined : video.poster}
+                    poster={previewPoster}
                     src={previewVideoSrc}
                     playsInline
                     muted={bgPreviewOn}
                     autoPlay={bgPreviewOn}
                     loop={bgPreviewOn}
                     controls
-                    preload="metadata"
+                    preload={bgPreviewOn ? "metadata" : "auto"}
                     onLoadedMetadata={onVideoMeta}
                     onLoadedData={(e) => {
                       console.log("[BG PREVIEW] video loaded:", e.currentTarget.currentSrc);
-                      // 사용자가 재생 버튼을 누르지 않아도 즉시 재생되도록 강제 시도
                       if (bgPreviewOn) {
+                        setPreviewTransitionLoading(false);
+                        // 사용자가 재생 버튼을 누르지 않아도 즉시 재생되도록 강제 시도
                         const p = e.currentTarget.play();
                         if (p && typeof p.catch === "function") {
                           p.catch(() => {
@@ -890,8 +1344,10 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
                   <button
                     key={o.id}
                     type="button"
-                    onClick={() => updateDraft({ faceOptionId: o.id })}
-                    onMouseDown={() => setSelectedFaceSourceUrl(o.src)}
+                    onClick={() => {
+                      setSelectedFaceSourceUrl(o.src);
+                      updateDraft({ faceOptionId: o.id });
+                    }}
                     className={`relative rounded-full p-0.5 ring-2 transition-shadow ${
                       on ? "ring-reels-cyan shadow-[0_0_14px_-4px_rgba(0,242,234,0.45)]" : "ring-transparent hover:ring-white/15"
                     }`}
@@ -902,6 +1358,31 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
                 );
               })}
             </div>
+            <p className="mt-3 text-[11px] leading-relaxed text-zinc-500">
+              얼굴만 고르면 영상이 바로 바뀌지 않습니다. 「선택 얼굴로 미리보기」는 얼굴 스왑만 실행합니다. 배경은 아래 「배경 AI 프롬프트」에서
+              별도로 미리 적용할 수 있습니다.
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                disabled={
+                  facePreviewApplying ||
+                  !selectedFace ||
+                  (localFacePreviewQuotaActive && localFacePreviewRemaining <= 0)
+                }
+                onClick={() => void applyFacePreview()}
+                className="rounded-lg border border-reels-cyan/35 bg-reels-cyan/10 px-3 py-1.5 text-[11px] font-semibold text-reels-cyan hover:bg-reels-cyan/18 disabled:opacity-50"
+              >
+                {facePreviewApplying
+                  ? "합성 중…"
+                  : localFacePreviewQuotaActive && localFacePreviewRemaining <= 0
+                    ? "무료 체험 횟수 소진"
+                    : "선택 얼굴로 미리보기"}
+              </button>
+            </div>
+            {facePreviewError ? (
+              <p className="mt-2 text-[11px] font-medium text-reels-crimson">{facePreviewError}</p>
+            ) : null}
           </section>
 
           {useAdvancedStep ? (
@@ -945,14 +1426,20 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
             <p className="mt-2 text-[11px] text-zinc-600">
               Tip: 장면 요소는 2~4개로 간단하게 쓰면 인물과 배경이 더 잘 어울립니다.
             </p>
+            {backgroundMode === "video" ? (
+              <p className="mt-2 text-[11px] leading-relaxed text-zinc-500">
+                동영상 배경은 왼쪽에 재생 중인 클립에서 사람을 분리한 뒤, 검색된 배경 영상을 뒤에 깔아 미리보기합니다. AI 처리에 시간이 걸릴 수
+                있습니다.
+              </p>
+            ) : null}
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={() => applyBackgroundPreview(bgPromptRef.current?.value)}
-                disabled={previewApplying}
-                className="rounded-lg border border-reels-cyan/35 bg-reels-cyan/10 px-3 py-1.5 text-[11px] font-semibold text-reels-cyan hover:bg-reels-cyan/18"
+                onClick={() => void applyBackgroundPreview(bgPromptRef.current?.value)}
+                disabled={backgroundPreviewApplying}
+                className="rounded-lg border border-reels-cyan/35 bg-reels-cyan/10 px-3 py-1.5 text-[11px] font-semibold text-reels-cyan hover:bg-reels-cyan/18 disabled:opacity-50"
               >
-                {previewApplying ? "AI 적용 중..." : "미리 적용하기"}
+                {backgroundPreviewApplying ? "AI 적용 중..." : "미리 적용하기"}
               </button>
               {bgPreviewOn ? (
                 <button
@@ -960,10 +1447,17 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
                   onClick={() => {
                     setPreviewBgPrompt(null);
                     setPreviewBgVideoUrl(null);
+                    setPreviewBgImageUrl(null);
+                    setPreviewCompositeFgUrl(null);
+                    setPreviewCompositeBgUrl(null);
+                    setIncomingPreviewUrl(null);
+                    setIncomingVisible(false);
+                    setPreviewTransitionLoading(false);
                     setPreviewCandidates([]);
                     setPreviewCandidateIndex(0);
                     setPreviewBgVersion((v) => v + 1);
-                    setPreviewApplyError(null);
+                    setBackgroundPreviewError(null);
+                    setBackgroundPreviewInfo(null);
                   }}
                   className="rounded-lg border border-white/15 px-3 py-1.5 text-[11px] font-medium text-zinc-400 hover:border-white/25 hover:text-zinc-200"
                 >
@@ -974,9 +1468,14 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
                 마음에 들지 않으면 해제하고 그대로 사용하셔도 됩니다.
               </p>
             </div>
-            {previewApplyError ? (
-              <p className="mt-2 text-[11px] font-medium text-reels-crimson">
-                {previewApplyError}
+            {backgroundPreviewError ? (
+              <p className="mt-3 text-[11px] font-medium leading-relaxed text-reels-crimson">
+                {backgroundPreviewError}
+              </p>
+            ) : null}
+            {backgroundPreviewInfo ? (
+              <p className="mt-2 text-[11px] font-medium leading-relaxed text-amber-200/95">
+                {backgroundPreviewInfo}
               </p>
             ) : null}
               </section>
@@ -1265,36 +1764,28 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
                 : "빠른 생성 모드입니다. 바로 서버 생성 요청을 누르세요."}
             </span>
           </div>
+          {!remoteJob ? (
+            <p className="mt-3 max-w-xl text-[11px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              서버 생성은 백그라운드에서 진행돼요. 시작한 뒤에는 이 화면을 나가도 작업은 이어지며, 결과는{" "}
+              <Link href="/mypage?tab=drafts" className="font-semibold text-reels-cyan/90 underline-offset-2 hover:underline">
+                마이페이지 → 임시 저장
+              </Link>
+              에서 다시 열어볼 수 있어요.
+            </p>
+          ) : null}
 
           {remoteErr ? (
             <p className="mt-3 text-[12px] font-medium text-reels-crimson">{remoteErr}</p>
           ) : null}
           {remoteJob ? (
-            <div className="mt-4 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-[12px] text-zinc-400">
-              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-500">백엔드 작업</p>
-              <p className="mt-1 text-zinc-200">
-                상태: <span className="font-semibold text-reels-cyan">{remoteJob.status}</span>
-                {remoteJob.status === "running" || remoteJob.status === "queued" ? (
-                  <span className="ml-2 tabular-nums text-zinc-500">{remoteJob.progress}%</span>
-                ) : null}
-              </p>
-              {remoteJob.stage ? (
-                <p className="mt-1 text-[11px] text-zinc-500">단계: {remoteJob.stage}</p>
-              ) : null}
-              {remoteJob.normalizedBackgroundPrompt ? (
-                <p className="mt-1 break-words text-[11px] text-zinc-600">
-                  보정 프롬프트: {remoteJob.normalizedBackgroundPrompt}
-                </p>
-              ) : null}
-              {remoteJob.outputVideoUrl ? (
-                <p className="mt-2 break-all text-[11px] text-zinc-500">
-                  출력 URL(모의): {remoteJob.outputVideoUrl}
-                </p>
-              ) : null}
-              {remoteJob.error ? (
-                <p className="mt-2 text-[12px] text-reels-crimson">{remoteJob.error}</p>
-              ) : null}
-            </div>
+            <ServerGenerationStatusCard
+              job={{
+                status: remoteJob.status,
+                progress: remoteJob.progress,
+                outputVideoUrl: remoteJob.outputVideoUrl,
+                error: remoteJob.error,
+              }}
+            />
           ) : null}
         </div>
       </div>

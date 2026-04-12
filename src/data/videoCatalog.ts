@@ -1,5 +1,9 @@
 import type { FeedVideo } from "@/data/videos";
-import { FAILURE_OOPS_CLIPS, SAMPLE_VIDEOS } from "@/data/videos";
+import {
+  FAILURE_OOPS_CLIPS,
+  LOCAL_TRENDING_FEED_VIDEOS,
+  SAMPLE_VIDEOS,
+} from "@/data/videos";
 
 export type VideoCatalogMeta = {
   categories: string[];
@@ -44,6 +48,7 @@ export const CATEGORY_LABEL: Record<CategorySlug, string> = {
 };
 
 export const ALL_MARKET_VIDEOS: FeedVideo[] = [
+  ...LOCAL_TRENDING_FEED_VIDEOS,
   ...SAMPLE_VIDEOS,
   ...FAILURE_OOPS_CLIPS,
 ];
@@ -313,4 +318,41 @@ export function vibeSummaryLabel(videoId: string): string | null {
   if (v.includes("forest_trail")) return "숲 · 산책 무드";
   if (v.includes("coastal_walk")) return "바다 · 산책 무드";
   return v.length ? "비슷한 무드 이어 붙이기" : null;
+}
+
+/**
+ * 상세 페이지 하단 — 무드 연관 → 같은 카테고리 → 신규 순으로 채워 쇼핑 이어가기.
+ */
+export function getShopRecommendations(videoId: string, limit = 36): FeedVideo[] {
+  const seen = new Set<string>([videoId]);
+  const out: FeedVideo[] = [];
+
+  for (const v of getRelatedByVibe(videoId, 120)) {
+    if (out.length >= limit) break;
+    if (!seen.has(v.id)) {
+      seen.add(v.id);
+      out.push(v);
+    }
+  }
+
+  const meta = getVideoCatalogMeta(videoId);
+  for (const slug of meta.categories) {
+    for (const v of sortVideosByNewest(getVideosForCategory(slug))) {
+      if (out.length >= limit) break;
+      if (!seen.has(v.id)) {
+        seen.add(v.id);
+        out.push(v);
+      }
+    }
+  }
+
+  for (const v of sortVideosByNewest(ALL_MARKET_VIDEOS)) {
+    if (out.length >= limit) break;
+    if (!seen.has(v.id)) {
+      seen.add(v.id);
+      out.push(v);
+    }
+  }
+
+  return out.slice(0, limit);
 }

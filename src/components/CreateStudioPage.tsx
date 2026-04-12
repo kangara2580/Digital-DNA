@@ -79,12 +79,6 @@ export function CreateStudioPage() {
         <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl">
           창작 스튜디오
         </h1>
-        <p className="mt-2 max-w-2xl text-[15px] font-bold leading-relaxed text-zinc-300">
-          얼굴 선택 후 바로 생성하거나, 필요하면 맞춤 리스킨·편집(선택)으로 디테일을 조정하세요.
-        </p>
-        <p className="mt-1 font-mono text-[12px] text-zinc-600">
-          현재 조각: {video.title} · {video.creator}
-        </p>
       </header>
       <PurchaseCustomizeStudio video={video} />
     </>

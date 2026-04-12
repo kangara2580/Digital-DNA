@@ -2,13 +2,22 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaceProfileUploadSection } from "@/components/FaceProfileUploadSection";
 import { MyPageSavedDraftsSection } from "@/components/MyPageSavedDraftsSection";
 import { MyPageSellerAnalyticsSection } from "@/components/MyPageSellerAnalyticsSection";
+import { ProfileAvatarPicker } from "@/components/ProfileAvatarPicker";
 import { DEMO_FACE_PROFILES } from "@/data/demoFaceProfiles";
+import { useAuthSession } from "@/hooks/useAuthSession";
 import { useStoredFaceProfile } from "@/hooks/useStoredFaceProfile";
 import { readSavedCustomizeDraftIndex } from "@/lib/customizeDraftIndex";
+import type { ProfileAvatar } from "@/lib/profileAvatarStorage";
+import {
+  readProfileAvatar,
+  resolveProfileAvatar,
+  writeProfileAvatar,
+} from "@/lib/profileAvatarStorage";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 type MyPageTab = "basic" | "profile" | "drafts" | "samples" | "analytics";
 
@@ -35,9 +44,41 @@ function normalizeTab(input: string | null): MyPageTab {
 export function MyPageDashboard() {
   const params = useSearchParams();
   const currentTab = normalizeTab(params.get("tab"));
+  const { user } = useAuthSession();
   const { profile, hydrated } = useStoredFaceProfile();
   const [draftCount, setDraftCount] = useState(0);
   const [userId, setUserId] = useState("reels_user");
+  const [profileAvatar, setProfileAvatar] = useState<ProfileAvatar | null>(null);
+
+  useEffect(() => {
+    setProfileAvatar(resolveProfileAvatar(user));
+  }, [user]);
+
+  useEffect(() => {
+    const onAvatar = () => setProfileAvatar(readProfileAvatar());
+    window.addEventListener("reels-profile-avatar-updated", onAvatar);
+    return () => window.removeEventListener("reels-profile-avatar-updated", onAvatar);
+  }, []);
+
+  const persistProfileAvatar = useCallback(
+    async (next: ProfileAvatar | null) => {
+      writeProfileAvatar(next);
+      setProfileAvatar(next);
+      const supabase = getSupabaseBrowserClient();
+      if (!supabase || !user) return;
+      try {
+        await supabase.auth.updateUser({
+          data: {
+            avatar_kind: next?.kind ?? null,
+            avatar_seed: next?.kind === "preset" ? next.seed : null,
+          },
+        });
+      } catch {
+        /* noop */
+      }
+    },
+    [user],
+  );
 
   useEffect(() => {
     const loadMeta = () => {
@@ -58,7 +99,11 @@ export function MyPageDashboard() {
     };
     loadMeta();
     window.addEventListener("focus", loadMeta);
-    return () => window.removeEventListener("focus", loadMeta);
+    window.addEventListener("reels-drafts-updated", loadMeta);
+    return () => {
+      window.removeEventListener("focus", loadMeta);
+      window.removeEventListener("reels-drafts-updated", loadMeta);
+    };
   }, []);
 
   const profileLabel = useMemo(() => {
@@ -99,7 +144,32 @@ export function MyPageDashboard() {
           {currentTab === "basic" ? (
             <div className="reels-glass-card rounded-2xl p-5 sm:p-6">
               <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">기본정보</h2>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+
+              <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+                <h3 className="text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                  프로필 이미지
+                </h3>
+                <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                  계정에 표시되는 사진이에요. 베스트 구매평과 같은 스타일의 기본 캐릭터 또는 내 사진 중 선택할 수 있습니다.{" "}
+                  <span className="font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
+                    창작용 3면 얼굴
+                  </span>
+                  은 「프로필 관리」 탭에서 따로 등록합니다.
+                </p>
+                <div className="mt-4">
+                  <ProfileAvatarPicker
+                    value={profileAvatar}
+                    onChange={persistProfileAvatar}
+                    hint={
+                      user
+                        ? "변경 시 이 기기에도 저장되며, 로그인 계정 메타데이터에 프리셋 시드가 동기화됩니다. 직접 올린 사진은 기기 저장을 우선합니다."
+                        : "로그인하면 선택한 프리셋이 계정에 연결됩니다. 직접 올린 사진은 이 브라우저에 저장됩니다."
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
                   <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">아이디</p>
                   <p className="mt-2 text-[16px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">{userId}</p>

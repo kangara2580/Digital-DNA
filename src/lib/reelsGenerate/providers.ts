@@ -14,6 +14,7 @@ import {
   isOwnAiServerEnabled,
 } from "@/lib/reelsGenerate/endpoints";
 import type { ReelsCustomizeDraft } from "@/lib/reelsGenerate/types";
+import { getReplicateApiToken } from "@/lib/replicateToken";
 
 export type StartResult = { externalId: string };
 
@@ -125,7 +126,7 @@ export async function startUpscaleJob(params: {
     return { externalId: res.jobId ?? res.externalId ?? `own-upscale-${Date.now()}` };
   }
 
-  if (!hasEnv("REPLICATE_API_TOKEN")) {
+  if (!getReplicateApiToken()) {
     await sleep(350);
     return { externalId: `upscale-mock-${Date.now()}` };
   }
@@ -195,7 +196,7 @@ export async function pollUpscaleJob(externalId: string): Promise<PollResult> {
     return pollFromOwnResponse(res);
   }
 
-  if (!hasEnv("REPLICATE_API_TOKEN")) {
+  if (!getReplicateApiToken()) {
     await sleep(500);
     return {
       done: true,

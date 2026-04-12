@@ -1,8 +1,14 @@
 "use client";
 
 import { ShieldCheck, UserPlus2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { ProfileAvatarPicker } from "@/components/ProfileAvatarPicker";
 import { SocialLinkFields } from "@/components/SocialLinkFields";
+import { DEFAULT_BEST_REVIEW_AVATAR_SEED } from "@/data/reelsAvatarPresets";
+import type { ProfileAvatar } from "@/lib/profileAvatarStorage";
+import { readProfileAvatar, writeProfileAvatar } from "@/lib/profileAvatarStorage";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 type SignupForm = {
@@ -104,8 +110,34 @@ const TIMEZONE_OPTIONS = [
   { value: "Europe/London", label: "Europe/London (GMT+0/+1)" },
 ];
 
+function SignupLoginLink() {
+  const params = useSearchParams();
+  const redirect = params.get("redirect") ?? "/sell";
+  return (
+    <p className="mt-3 text-[13px] text-zinc-400 [html[data-theme='light']_&]:text-[#6d5a88]">
+      이미 계정이 있나요?{" "}
+      <Link
+        href={`/login?redirect=${encodeURIComponent(redirect)}`}
+        className="font-bold text-reels-cyan hover:underline"
+      >
+        로그인
+      </Link>
+    </p>
+  );
+}
+
+function safeRedirectPath(raw: string | null): string {
+  if (raw && raw.startsWith("/") && !raw.startsWith("//")) return raw;
+  return "/sell";
+}
+
 export default function SignupPage() {
+  const router = useRouter();
   const [form, setForm] = useState<SignupForm>(INITIAL_FORM);
+  const [profileAvatar, setProfileAvatar] = useState<ProfileAvatar | null>({
+    kind: "preset",
+    seed: DEFAULT_BEST_REVIEW_AVATAR_SEED,
+  });
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
@@ -114,6 +146,12 @@ export default function SignupPage() {
   const [nicknameCheckMessage, setNicknameCheckMessage] = useState("");
   const [isSendingVerifyEmail, setIsSendingVerifyEmail] = useState(false);
   const [verifyEmailMessage, setVerifyEmailMessage] = useState("");
+
+  useEffect(() => {
+    const saved = readProfileAvatar();
+    if (saved) setProfileAvatar(saved);
+  }, []);
+
   const nameMissing = useMemo(
     () => !form.firstName.trim() || !form.lastName.trim(),
     [form.firstName, form.lastName],
@@ -356,7 +394,11 @@ export default function SignupPage() {
         return;
       }
 
-      const { error } = await supabase.auth.signUp({
+      const av =
+        profileAvatar ??
+        ({ kind: "preset" as const, seed: DEFAULT_BEST_REVIEW_AVATAR_SEED });
+
+      const { data: signUpData, error } = await supabase.auth.signUp({
         email: normalizedEmail,
         password: form.password,
         options: {
@@ -373,6 +415,8 @@ export default function SignupPage() {
             country: form.country,
             timezone: form.timezone,
             social_links: payload.social.links,
+            avatar_kind: av.kind,
+            avatar_seed: av.kind === "preset" ? av.seed : null,
           },
         },
       });
@@ -394,8 +438,50 @@ export default function SignupPage() {
       }
 
       window.localStorage.setItem("reels-market-signup-draft", JSON.stringify(payload));
+      writeProfileAvatar(
+        profileAvatar ??
+          ({ kind: "preset", seed: DEFAULT_BEST_REVIEW_AVATAR_SEED } satisfies ProfileAvatar),
+      );
+
+      const nextPath = safeRedirectPath(
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search).get("redirect")
+          : null,
+      );
+
+      /** 이메일 확인 OFF면 signUp 직후 session 존재 → 바로 로그인된 상태 */
+      if (signUpData.session) {
+        setMessage("회원가입이 완료되었습니다. 이동합니다…");
+        router.replace(nextPath);
+        router.refresh();
+        return;
+      }
+
+      /**
+       * 일부 설정에서는 signUp에 session이 없고, 이메일 확인이 꺼져 있으면
+       * 같은 자격으로 signIn이 곧바로 성공합니다.
+       */
+      const { data: signInData, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password: form.password,
+        });
+
+      if (signInData.session) {
+        setMessage("회원가입이 완료되어 로그인했습니다. 이동합니다…");
+        router.replace(nextPath);
+        router.refresh();
+        return;
+      }
+
+      /**
+       * 이메일 확인이 켜져 있으면: 가입은 되었으나 세션 없음 → 메일 인증 필요.
+       * signIn만 실패한 경우(비밀번호 불일치 등)는 메시지를 구분하지 않고 안내 통일.
+       */
+      void signInError;
+
       setMessage(
-        "회원가입 요청이 완료되었습니다. 입력하신 이메일로 인증 메일을 보냈어요. 메일의 인증 링크를 눌러 계정을 활성화해 주세요.",
+        "회원가입은 완료되었습니다. 프로젝트에서 이메일 확인을 켜 두었다면, 받은 메일의 링크를 누른 뒤 로그인해 주세요. (Supabase 대시보드에서 이메일 확인을 끄면 가입 직후 바로 로그인할 수 있습니다.)",
       );
     } catch {
       setMessage("저장 중 문제가 발생했어요. 다시 시도해 주세요.");
@@ -414,8 +500,24 @@ export default function SignupPage() {
         <p className="mt-2 text-[13px] text-zinc-400 [html[data-theme='light']_&]:text-[#6d5a88]">
           글로벌 크리에이터 계정을 위한 기본 정보(이름·국가·시간대)를 먼저 설정해 주세요.
         </p>
+        <Suspense fallback={null}>
+          <SignupLoginLink />
+        </Suspense>
 
         <form className="mt-6 space-y-6" onSubmit={onSubmit}>
+          <section className="rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-black/10 [html[data-theme='light']_&]:bg-white">
+            <h2 className="text-[14px] font-bold">프로필 이미지</h2>
+            <p className="mt-2 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              홈 「오늘의 베스트 구매평」과 같은 일러스트 아바타를 고르거나, 직접 사진을 올릴 수 있어요.
+            </p>
+            <div className="mt-4">
+              <ProfileAvatarPicker
+                value={profileAvatar}
+                onChange={setProfileAvatar}
+              />
+            </div>
+          </section>
+
           <section className="rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-black/10 [html[data-theme='light']_&]:bg-white">
             <h2 className="text-[14px] font-bold">기본 정보</h2>
             {requiredIdentityMessage ? (

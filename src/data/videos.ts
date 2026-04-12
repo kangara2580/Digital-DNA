@@ -1,3 +1,5 @@
+import { MOCK_VIDEOS } from "@/constants/videos";
+
 /** 다양한 출처·장소의 샘플 영상(데모용). 실제 서비스에서는 업로드·CDN URL로 교체 */
 export type FeedVideo = {
   id: string;
@@ -367,27 +369,42 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
 ];
 
-/** 인기순위 상단 5슬롯 — 기존과 동일 순서 */
-const TRENDING_RANK_TOP_FIVE: FeedVideo[] = [
-  SAMPLE_VIDEOS[0],
-  SAMPLE_VIDEOS[2],
-  SAMPLE_VIDEOS[4],
-  SAMPLE_VIDEOS[6],
-  SAMPLE_VIDEOS[8],
-];
+/**
+ * 인기순위(로컬 `public/videos`) 썸네일 규칙 — **절대 `SAMPLE_VIDEOS`와 인덱스로 섞지 않음**
+ * (과거: 같은 인덱스 Pexels 썸네일이 로컬 MP4와 엇갈려 사용자가 넣은 영상과 다른 썸네일이 나옴)
+ *
+ * 1) `MOCK_VIDEOS[].thumbnail_url`이 있으면 그대로 사용(절대·상대 URL 모두 가능)
+ * 2) 비어 있으면 `sample3.mp4` → `sample3.jpg`처럼 **같은 경로·같은 파일명의 JPG**를 시도 (`public/videos/sample3.jpg`)
+ * 3) JPG도 없으면 `poster`는 빈 문자열 → `<video>`는 포스터 없이 재생(첫 프레임 노출)
+ */
+function posterForLocalTrendingClip(
+  videoUrl: string,
+  explicitThumbnail: string,
+): string {
+  const ex = explicitThumbnail.trim();
+  if (ex) return ex;
+  if (!videoUrl.startsWith("/videos/") || !/\.mp4$/i.test(videoUrl)) return "";
+  return videoUrl.replace(/\.mp4$/i, ".jpg");
+}
 
-const TRENDING_PORTRAIT_POOL = SAMPLE_VIDEOS.filter(
-  (v) => v.orientation === "portrait",
+/** `public/videos` 로컬 샘플 — 인기순위 Top 10 (`@/constants/videos` MOCK_VIDEOS와 1:1) */
+export const LOCAL_TRENDING_FEED_VIDEOS: FeedVideo[] = MOCK_VIDEOS.map(
+  (m, i) => ({
+    id: m.id,
+    title: m.title,
+    creator: "@reels_local",
+    src: m.video_url,
+    poster: posterForLocalTrendingClip(m.video_url, m.thumbnail_url),
+    orientation: "portrait",
+    priceWon: 900 + (i % 5) * 300,
+    previewSrc: m.video_url,
+    /** SAMPLE_VIDEOS와 무관 — 데모 길이만 인덱스로 분산 */
+    durationSec: 10 + (i % 20),
+  }),
 );
 
-/** 실시간 인기순위 데모 — Top 10 (상위 5 고정 시드 + 5)(실서비스는 랭킹 API로 교체) */
-export const TRENDING_RANK_CLIPS: FeedVideo[] = (() => {
-  const out: FeedVideo[] = [...TRENDING_RANK_TOP_FIVE];
-  for (let i = 0; i < 5; i++) {
-    out.push(TRENDING_PORTRAIT_POOL[i % TRENDING_PORTRAIT_POOL.length]);
-  }
-  return out;
-})();
+/** 실시간 인기순위 데모 — 로컬 클립 10종 */
+export const TRENDING_RANK_CLIPS: FeedVideo[] = [...LOCAL_TRENDING_FEED_VIDEOS];
 
 /** #실패와실수 카테고리 데모 클립(제목·해시태그만 테마에 맞춤, 미디어는 샘플 재사용) */
 export const FAILURE_OOPS_CLIPS: FeedVideo[] = [

@@ -1,21 +1,9 @@
-"use client";
+import type { ReactNode } from "react";
 
-import { motion, useReducedMotion } from "framer-motion";
-
-export default function Template({ children }: { children: React.ReactNode }) {
-  const reduce = useReducedMotion() ?? false;
-  return (
-    <motion.div
-      initial={
-        reduce
-          ? { opacity: 1, filter: "blur(0px)" }
-          : { opacity: 0, filter: "blur(10px)" }
-      }
-      animate={{ opacity: 1, filter: "blur(0px)" }}
-      transition={{ duration: 0.4, ease: "easeInOut" }}
-      style={{ willChange: reduce ? undefined : "opacity, filter" }}
-    >
-      {children}
-    </motion.div>
-  );
+/**
+ * 페이지 전환 래퍼 — Framer Motion 제거(일부 Safari/WebKit에서 blur/opacity 조합 시
+ * 본문이 안 그려지는 사례 방지). 애니메이션은 각 섹션에서만 사용합니다.
+ */
+export default function Template({ children }: { children: ReactNode }) {
+  return children;
 }

@@ -13,7 +13,7 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   buildSellerAnalyticsSnapshot,
@@ -124,23 +124,11 @@ function RevenueBars({ data }: { data: SellerAnalyticsSnapshot["revenueByDay"] }
 
 export function MyPageSellerAnalyticsSection() {
   const [period, setPeriod] = useState<Period>(7);
-  const [now, setNow] = useState(() => new Date());
-
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(new Date()), 1000);
-    return () => window.clearInterval(id);
-  }, []);
 
   const snapshot = useMemo(
     () => buildSellerAnalyticsSnapshot(period),
     [period],
   );
-
-  const syncedLabel = now.toLocaleTimeString("ko-KR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
 
   const t = snapshot.totals;
 
@@ -149,32 +137,23 @@ export function MyPageSellerAnalyticsSection() {
       className="reels-glass-card rounded-2xl p-5 sm:p-7"
       aria-labelledby="seller-analytics-heading"
     >
-      <div className="flex flex-col gap-4 border-b border-white/10 pb-5 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-reels-cyan" aria-hidden />
-            <h2
-              id="seller-analytics-heading"
-              className="text-xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-2xl"
-            >
-              내 동영상 판매 실적 분석
-            </h2>
-            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/35 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300 [html[data-theme='light']_&]:text-emerald-700">
-              <Radio className="h-3 w-3 animate-pulse" aria-hidden />
-              실시간 동기화
-            </span>
-          </div>
-          <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600 sm:text-[14px]">
-            유튜브 스튜디오·틱톡 크리에이터 도구처럼, 노출부터 결제까지 단계별 전환과 영상별 성과를 한 화면에서 확인하세요.
-            (데모 데이터 · 실서비스는 API 연동)
-          </p>
-          <p className="mt-1 font-mono text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-            마지막 집계 시각 · {syncedLabel}
-          </p>
+      <div className="flex flex-col gap-4 border-b border-white/10 pb-5 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-reels-cyan" aria-hidden />
+          <h2
+            id="seller-analytics-heading"
+            className="text-xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-2xl"
+          >
+            내 동영상 판매 실적 분석
+          </h2>
+          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/35 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300 [html[data-theme='light']_&]:text-emerald-700">
+            <Radio className="h-3 w-3 animate-pulse" aria-hidden />
+            실시간 동기화
+          </span>
         </div>
 
         <div
-          className="flex flex-wrap gap-2"
+          className="flex shrink-0 flex-nowrap items-center gap-2"
           role="group"
           aria-label="분석 기간"
         >

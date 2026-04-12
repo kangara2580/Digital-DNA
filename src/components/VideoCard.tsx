@@ -10,11 +10,14 @@ import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
 import { useWishlistOptional } from "@/context/WishlistContext";
 import type { FeedVideo } from "@/data/videos";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
+import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
 import {
   clonesRemaining,
   getCommerceMeta,
   isMicroDna,
 } from "@/data/videoCommerce";
+import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
+import { CartIcon } from "@/components/CartIcon";
 
 type Props = {
   video: FeedVideo;
@@ -51,8 +54,14 @@ type Props = {
    * 가로 스트립 + 상단 해시태그 등이 있을 때 — 호버 확대를 약하게·위 기준으로 잘림 방지
    */
   subtleHover?: boolean;
+  /** true면 카드 전체 호버 시 확대(scale)만 끔 — 인기순위 스트립 등 */
+  disableHoverScale?: boolean;
   /** 제목·가격 아래 추가 블록(인기순위 지표 등) */
   footerExtension?: ReactNode;
+  /** 기본 `/video/{id}` 대신 사용할 상세·창작 링크 (인기순위 → 맞춤 리스킨 등) */
+  detailHref?: string;
+  /** 지정 시 썸네일 전체 클릭이 상세 링크 대신 이 콜백(탐색 → 세로 릴 등) */
+  onPick?: () => void;
 };
 
 function formatDuration(seconds: number): string {
@@ -60,27 +69,6 @@ function formatDuration(seconds: number): string {
   const m = Math.floor(s / 60);
   const r = s % 60;
   return `${m}:${r.toString().padStart(2, "0")}`;
-}
-
-function CartIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-      <path
-        d="M6 7h15l-1.5 9h-12L6 7z"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M6 7 5 3H2"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-      />
-      <circle cx="9" cy="20" r="1.35" fill="currentColor" />
-      <circle cx="17" cy="20" r="1.35" fill="currentColor" />
-    </svg>
-  );
 }
 
 export function VideoCard({
@@ -98,7 +86,10 @@ export function VideoCard({
   reelLayout = false,
   reelStrip = false,
   subtleHover = false,
+  disableHoverScale = false,
   footerExtension,
+  detailHref,
+  onPick,
 }: Props) {
   const dopamine = useDopamineBasketOptional();
   const wishlist = useWishlistOptional();
@@ -126,21 +117,34 @@ export function VideoCard({
 
   const isTikTokEmbed = Boolean(video.tiktokEmbedId);
   const segmentPreviewEffective = segmentPreview && !isTikTokEmbed;
+  const isLocal = isLocalPublicVideo(previewSrc);
 
-  const {
-    ref,
-    onTimeUpdate,
-    onEnter: previewEnter,
-    onLeave: previewLeave,
-  } = useHoverInstantPreview(segmentPreviewEffective, video, reduceMotion);
+  const hoverPreview = useHoverInstantPreview(
+    segmentPreviewEffective && !isLocal,
+    video,
+    reduceMotion,
+  );
+
+  const localPlayback = useLocalSamplePlayback(video.id, previewSrc, {
+    enableHoverLoop: isLocal && segmentPreviewEffective,
+    reduceMotion,
+  });
 
   const play = useCallback(() => {
-    previewEnter();
-  }, [previewEnter]);
+    hoverPreview.onEnter();
+  }, [hoverPreview]);
 
   const pause = useCallback(() => {
-    previewLeave();
-  }, [previewLeave]);
+    hoverPreview.onLeave();
+  }, [hoverPreview]);
+
+  const videoRef = isLocal ? localPlayback.ref : hoverPreview.ref;
+  const onVidTimeUpdate =
+    isLocal && segmentPreviewEffective
+      ? localPlayback.onTimeUpdate
+      : segmentPreviewEffective
+        ? hoverPreview.onTimeUpdate
+        : undefined;
 
   const shell = flush
     ? "rounded-none border-0 bg-transparent shadow-none"
@@ -173,18 +177,34 @@ export function VideoCard({
       : "";
 
   const gridHoverScale =
-    subtleHover && !dense && !flush && overlapOnHover !== true
-      ? "origin-top hover:z-[2] hover:scale-[1.02] motion-reduce:hover:scale-100"
-      : !dense && !flush && overlapOnHover !== true
-        ? "hover:z-[2] hover:scale-[1.05] motion-reduce:hover:scale-100"
-        : "";
+    disableHoverScale || dense || flush || overlapOnHover === true
+      ? ""
+      : subtleHover
+        ? "origin-top hover:z-[2] hover:scale-[1.02] motion-reduce:hover:scale-100"
+        : "hover:z-[2] hover:scale-[1.05] motion-reduce:hover:scale-100";
 
   return (
     <article
       id={domId}
       className={`group flex flex-col overflow-hidden ${transitionCls} ${shell} ${overlapHover} ${gridHoverScale} ${className ?? ""}`}
-      onMouseEnter={isTikTokEmbed ? undefined : play}
-      onMouseLeave={isTikTokEmbed ? undefined : pause}
+      onMouseEnter={
+        isTikTokEmbed
+          ? undefined
+          : isLocal && segmentPreviewEffective
+            ? localPlayback.onEnter
+            : !isLocal
+              ? play
+              : undefined
+      }
+      onMouseLeave={
+        isTikTokEmbed
+          ? undefined
+          : isLocal && segmentPreviewEffective
+            ? localPlayback.onLeave
+            : !isLocal
+              ? pause
+              : undefined
+      }
     >
       <div className={`relative bg-black/40 ${aspectClass}`}>
         {isTikTokEmbed ? (
@@ -199,27 +219,38 @@ export function VideoCard({
           />
         ) : (
           <video
-            ref={ref}
+            ref={videoRef}
             className="absolute inset-0 z-0 h-full w-full object-cover"
-            poster={video.poster}
+            src={previewSrc}
+            poster={video.poster?.trim() ? video.poster : undefined}
             playsInline
             muted
             loop={!segmentPreviewEffective}
-            preload={segmentPreviewEffective ? "auto" : "metadata"}
-            onTimeUpdate={segmentPreviewEffective ? onTimeUpdate : undefined}
-          >
-            <source src={previewSrc} type="video/mp4" />
-          </video>
+            /** 원격 URL에 auto를 쓰면 그리드 전체가 동시에 버퍼링·디코딩되어 렉·깜빡임 유발 → metadata만, 호버 시 프리로드 상향은 훅에서 처리 */
+            preload="metadata"
+            onTimeUpdate={onVidTimeUpdate}
+          />
         )}
         <div
           className="pointer-events-none absolute inset-0 z-[1] bg-black/0 transition-colors duration-300 ease-out group-hover:bg-black/30 motion-reduce:group-hover:bg-black/25"
           aria-hidden
         />
-        {isTikTokEmbed ? null : (
+        {isTikTokEmbed ? null : onPick ? (
+          <button
+            type="button"
+            onClick={onPick}
+            className="absolute inset-0 z-[3] cursor-pointer border-0 bg-transparent p-0"
+            aria-label={`${video.title} — 세로 릴로 보기`}
+          />
+        ) : (
           <Link
-            href={`/video/${video.id}`}
+            href={detailHref ?? `/video/${video.id}`}
             className="absolute inset-0 z-[3]"
-            aria-label={`${video.title} 상세 페이지`}
+            aria-label={
+              detailHref?.endsWith("/customize")
+                ? `${video.title} 맞춤 리스킨 스튜디오`
+                : `${video.title} 상세 페이지`
+            }
           />
         )}
         {showMicro ? (

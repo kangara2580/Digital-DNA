@@ -25,6 +25,8 @@ export function useHoverInstantPreview(
 ) {
   const ref = useRef<HTMLVideoElement>(null);
   const hoveringRef = useRef(false);
+  /** 첫 호버에서만 auto 프리로드(그리드 마운트 시 N개 동시 auto 방지) */
+  const upgradedPreloadRef = useRef(false);
   const cap = useMemo(() => getPreviewSegmentCap(video), [video]);
 
   const onTimeUpdate = useCallback(() => {
@@ -48,6 +50,14 @@ export function useHoverInstantPreview(
     if (!el) return;
     hoveringRef.current = true;
     el.muted = true;
+    if (!upgradedPreloadRef.current) {
+      upgradedPreloadRef.current = true;
+      try {
+        el.preload = "auto";
+      } catch {
+        /* noop */
+      }
+    }
     if (enabled) {
       el.currentTime = 0;
     }

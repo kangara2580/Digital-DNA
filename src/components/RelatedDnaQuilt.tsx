@@ -13,13 +13,14 @@ type Props = {
 /** 같은 Vibe를 공유하는 조각을 퀼트처럼 엮어 표시 */
 export function RelatedDnaQuilt({ video, className }: Props) {
   const related = getRelatedByVibe(video.id, 28);
-  if (related.length === 0) return null;
   const [visibleCount, setVisibleCount] = useState(6);
 
   const label = vibeSummaryLabel(video.id);
   const [hero, ...rest] = related;
   const small = rest.slice(0, 3);
   const endlessList = useMemo(() => rest.slice(0, Math.max(visibleCount, 3)), [rest, visibleCount]);
+
+  if (related.length === 0) return null;
 
   return (
     <div

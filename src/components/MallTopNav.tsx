@@ -35,24 +35,27 @@ const categoryPillClass =
 const COMPACT_PRIMARY = ITEMS.slice(0, 2);
 const COMPACT_MORE = ITEMS.slice(2);
 
-const SCROLL_COMPACT_AT = 56;
+/** 스크롤을 조금만 내려도 컴팩트가 깜빡이지 않게 진입/이탈 임계를 분리 */
+const SCROLL_COMPACT_ENTER = 72;
+/** 맨 위 복귀 시 펼침을 조금 일찍 걸어(스크롤이 EXIT 이하로 들어오면 바로 펼침) */
+const SCROLL_COMPACT_EXIT = 48;
 
 /**
- * 레이아웃·폰트·패딩을 2초 넘게 걸면 매 프레임 리플로우·리사이즈 옵저버가 겹쳐 버벅임.
- * GPU 친화 속도(≈520ms) + 블러 제거로 스크롤 역방향 복귀도 프레임 안정화.
+ * 레이아웃 전환: 조금 더 길게·부드럽게(짧은 스크롤에서 덜 덜덜 거리도록).
+ * motion-reduce에서는 짧게 유지.
  */
 const easeLayout =
-  "duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 motion-reduce:ease-linear";
+  "duration-[780ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] motion-reduce:duration-200 motion-reduce:ease-linear";
 
-/** 타이틀 페이드만 살짝 길게 — max-height/opacity는 리플로우 부담 적음 */
-const easeTitleFade =
-  "duration-[620ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 motion-reduce:ease-linear";
+/** 타이틀: 높이만 부드럽게. opacity는 전환에 넣지 않음 → 펼침 순간 글자가 바로 보임(820ms 페이드와 겹치면 ‘늦게 나타남’으로 느껴짐) */
+const easeTitleCollapse =
+  `transition-[max-height] ${easeLayout}`;
 
 const easeNav = `transition-[padding,margin,font-size,line-height,box-shadow,gap,border-color,width,max-width,flex] ${easeLayout}`;
 
-/** 검색창: 마켓형(에츠이 류) 부드러운 배경·테두리·그림자 전환 */
+/** 검색창: 높이·패딩은 easeLayout과 같은 duration(내려갈 때·맨 위로 올릴 때 동일하게 보이도록) */
 const searchEase =
-  "duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:duration-150 motion-reduce:ease-linear";
+  "duration-[780ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] motion-reduce:duration-150 motion-reduce:ease-linear";
 
 /** 돋보기 아이콘: 호버/포커스 시 살짝 커지고 기울어지며 뜨는 느낌(마켓 검색 UX) */
 const searchIconMotion =
@@ -202,11 +205,16 @@ function QuickMenuIcons({
 
 export function MallTopNav() {
   const { scrollY } = useScroll();
-  const heroTitleY = useTransform(scrollY, [0, 200], [0, -18]);
+  const reduceMotionNav = useReducedMotion() ?? false;
+  /** 패럴랙스는 원시 scrollY만(스프링 제거 — 맨 위에서 스프링이 늦게 따라와 타이틀 위치가 어긋남) */
+  const heroTitleY = useTransform(scrollY, [0, 180], [0, reduceMotionNav ? 0 : -12]);
   const [q, setQ] = useState("");
   const [themeMode, setThemeMode] = useState<"light" | "dark">("dark");
   const headerRef = useRef<HTMLElement>(null);
   const [compact, setCompact] = useState(false);
+  const pathname = usePathname();
+  /** 탐색(/explore): 메인에서 스크롤을 내린 것과 같은 컴팩트 헤더를 즉시 적용 */
+  const compactEffective = compact || pathname === "/explore";
   const [moreOpen, setMoreOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const moreWrapRef = useRef<HTMLDivElement>(null);
@@ -267,33 +275,38 @@ export function MallTopNav() {
       rafId = requestAnimationFrame(flushHeight);
     };
 
-    /** 전환 중 연속 리사이즈 → rAF만으로도 매 프레임 --header-height 갱신 → 사이드바·페인트 부담. 짧게 디바운스 */
+    /** 전환 중 연속 리사이즈 → 짧은 스크롤에서도 높이 갱신이 너무 촘촘하면 버벅임. 약간 여유 두기 */
     const scheduleHeightDebounced = () => {
       window.clearTimeout(debounceT);
       debounceT = window.setTimeout(() => {
         debounceT = 0;
         scheduleHeight();
-      }, 56);
-    };
-
-    const onScroll = () => {
-      const next = window.scrollY > SCROLL_COMPACT_AT;
-      setCompact(next);
+      }, 96);
     };
 
     const ro = new ResizeObserver(scheduleHeightDebounced);
     ro.observe(el);
     scheduleHeight();
-    onScroll();
-
-    window.addEventListener("scroll", onScroll, { passive: true });
 
     return () => {
       window.clearTimeout(debounceT);
       cancelAnimationFrame(rafId);
       ro.disconnect();
-      window.removeEventListener("scroll", onScroll);
     };
+  }, []);
+
+  /** 컴팩트: 히스테리시스는 원시 스크롤로 즉시 반영(CSS 전환만 부드럽게). 스프링으로 판정하면 맨 위에서 타이틀이 한 박자 늦게 펼쳐짐 */
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      setCompact((prev) => {
+        if (prev) return y > SCROLL_COMPACT_EXIT;
+        return y > SCROLL_COMPACT_ENTER;
+      });
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
@@ -301,8 +314,8 @@ export function MallTopNav() {
   }, []);
 
   useEffect(() => {
-    if (!compact) setMoreOpen(false);
-  }, [compact]);
+    if (!compactEffective) setMoreOpen(false);
+  }, [compactEffective]);
 
   const cancelHoverClose = useCallback(() => {
     if (hoverCloseTimerRef.current != null) {
@@ -383,26 +396,26 @@ export function MallTopNav() {
   }, [cancelHoverClose]);
 
   const logoClass = `flex shrink-0 items-center gap-2 font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 ${easeNav} ${
-    compact ? "text-[12px]" : "text-sm"
+    compactEffective ? "text-[12px]" : "text-sm"
   }`;
 
   return (
     <header
       ref={headerRef}
       className={`sticky top-0 z-40 isolate border-b border-white/10 bg-reels-abyss/72 backdrop-blur-xl [transform:translateZ(0)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white/95 [html[data-theme='light']_&]:shadow-[0_1px_0_rgba(0,0,0,0.06)] ${easeNav} ${
-        compact
+        compactEffective
           ? "overflow-visible shadow-[0_12px_40px_-16px_rgba(255,0,85,0.18)] [html[data-theme='light']_&]:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)]"
           : "shadow-none"
       }`}
     >
       <div
         className={`mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-8 ${easeNav} ${
-          compact ? "pb-1.5 pt-1" : "pb-1.5 pt-0.5"
+          compactEffective ? "pb-1.5 pt-1" : "pb-1.5 pt-0.5"
         }`}
       >
         <div
           className={`flex min-h-0 w-full [contain:layout] ${easeLayout} ${
-            compact
+            compactEffective
               ? "relative flex-row flex-nowrap items-center gap-x-2 overflow-visible sm:gap-x-3"
               : "flex-col"
           }`}
@@ -410,14 +423,14 @@ export function MallTopNav() {
           {/* 로고 줄: 펼침에서만 오른쪽 아이콘 */}
           <div
             className={`flex items-center ${easeLayout} ${
-              compact ? "shrink-0" : "w-full justify-between gap-3"
+              compactEffective ? "shrink-0" : "w-full justify-between gap-3"
             }`}
           >
             <Link href="/" className={logoClass}>
-              <ReelsLogo size={compact ? 22 : 26} className="shrink-0" />
+              <ReelsLogo size={compactEffective ? 22 : 26} className="shrink-0" />
               <span className="whitespace-nowrap">REELS MARKET</span>
             </Link>
-            {!compact && (
+            {!compactEffective && (
               <div className="hidden items-center gap-0.5 sm:-mr-1 sm:flex lg:-mr-0.5">
                 <QuickMenuIcons
                   themeMode={themeMode}
@@ -429,14 +442,14 @@ export function MallTopNav() {
 
           {/* 타이틀: grid-rows 대신 max-height+opacity만 전환(레이아웃 계산 부담 감소). 컴팩트 시 absolute로 한 줄 정렬 유지 */}
           <div
-            className={`w-full overflow-hidden transition-[max-height,opacity] ${easeTitleFade} ${
-              compact
+            className={`w-full overflow-hidden ${easeTitleCollapse} ${
+              compactEffective
                 ? "pointer-events-none absolute left-0 top-0 z-0 max-h-0 w-full opacity-0"
                 : "relative max-h-[min(300px,48vh)] opacity-100"
             }`}
-            aria-hidden={compact}
+            aria-hidden={compactEffective}
           >
-            <div className={`${!compact ? "mt-0 sm:mt-0.5" : ""}`}>
+            <div className={`${!compactEffective ? "mt-0 sm:mt-0.5" : ""}`}>
               <Link
                 href="/"
                 className="mx-auto block w-fit max-w-full rounded-sm outline-none transition-[opacity,transform] duration-200 hover:opacity-[0.9] active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-reels-cyan/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reels-abyss [html[data-theme='light']_&]:focus-visible:ring-offset-white"
@@ -461,30 +474,30 @@ export function MallTopNav() {
           {/* 검색 + 카테고리: 컴팩트에서는 가로로 붙여 검색(왼쪽)·카테고리(오른쪽) */}
           <div
             className={`flex min-h-0 w-full min-w-0 ${easeLayout} ${
-              compact
+              compactEffective
                 ? "flex-1 flex-row items-center gap-2 overflow-visible sm:gap-3"
                 : "flex flex-col"
             }`}
           >
             <div
               className={`w-full ${easeNav} ${
-                compact
+                compactEffective
                   ? "mx-0 mt-0 max-w-[min(320px,42vw)] shrink-0 sm:max-w-md"
                   : "mx-auto mt-0.5 max-w-2xl sm:mt-1"
               }`}
             >
-              <RotatingSearchField compact={compact} q={q} setQ={setQ} />
+              <RotatingSearchField compact={compactEffective} q={q} setQ={setQ} />
             </div>
 
             <nav
               className={`flex min-w-0 items-center ${easeNav} ${
-                compact
+                compactEffective
                   ? "mt-0 flex-1 justify-center gap-1 overflow-visible border-0 py-0 sm:gap-1.5"
                   : "no-scrollbar mt-1 justify-center gap-1 overflow-x-auto border-t border-white/10 pt-1 sm:gap-1.5 [html[data-theme='light']_&]:border-zinc-200"
               }`}
               aria-label="카테고리"
             >
-              {compact ? (
+              {compactEffective ? (
                 <>
                   {COMPACT_PRIMARY.map((item) => (
                     <Link
@@ -579,7 +592,7 @@ export function MallTopNav() {
             </nav>
           </div>
 
-          {compact && (
+          {compactEffective && (
             <div
               className={`flex shrink-0 items-center gap-0.5 sm:-mr-1 lg:-mr-0.5 ${easeLayout}`}
             >

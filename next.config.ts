@@ -1,8 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /** Prisma는 번들에 넣지 않음 — .prisma/client 동적 로드가 깨지면 MODULE_NOT_FOUND 발생 */
-  serverExternalPackages: ["@prisma/client"],
+  /** 대용량 동영상 업로드(판매 등록 API) — Server Actions 한도 참고 */
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "128mb",
+    },
+  },
+  /**
+   * Prisma는 서버 번들에 넣지 않음.
+   * 포함되면 `.prisma/client` 동적 로드가 깨져 `/api/*` 에서 MODULE_NOT_FOUND(500)가 날 수 있음.
+   * @see https://www.prisma.io/docs/guides/nextjs
+   */
+  serverExternalPackages: ["@prisma/client", "prisma"],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.pexels.com", pathname: "/**" },

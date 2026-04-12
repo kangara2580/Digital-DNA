@@ -4,8 +4,10 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { TRENDING_RANK_CLIPS, type FeedVideo } from "@/data/videos";
-import { TIKTOK_MOCK_DANCE_CLIPS } from "@/data/tiktokMockTrending";
+import {
+  LOCAL_TRENDING_FEED_VIDEOS,
+  type FeedVideo,
+} from "@/data/videos";
 import { useTrendingLiveRanking } from "@/hooks/useTrendingLiveRanking";
 import { SectionMoreLink } from "./SectionMoreLink";
 import { TrendingVideoStatsFooter } from "./TrendingVideoStatsFooter";
@@ -35,45 +37,7 @@ const LAYOUT_EASE = [0.22, 1, 0.36, 1] as const;
 
 export function TrendingRankSection() {
   const reduceMotion = useReducedMotion() ?? false;
-  const [trendingClips, setTrendingClips] = useState<FeedVideo[]>(
-    TIKTOK_MOCK_DANCE_CLIPS.length ? TIKTOK_MOCK_DANCE_CLIPS : TRENDING_RANK_CLIPS,
-  );
-  const [trendingSource, setTrendingSource] = useState<"tiktok" | "fallback">(
-    "fallback",
-  );
-
-  useEffect(() => {
-    let active = true;
-    const fetchTikTokTrending = async () => {
-      try {
-        const res = await fetch("/api/trending/tiktok?keyword=dance&limit=10", {
-          cache: "no-store",
-        });
-        if (!res.ok) return;
-        const data = (await res.json()) as {
-          source?: "tiktok" | "fallback";
-          items?: FeedVideo[];
-        };
-        const items = (data.items ?? []).filter((v) => v.orientation === "portrait");
-        if (
-          active &&
-          data.source === "tiktok" &&
-          items.length >= 3 &&
-          items.some((v) => Boolean(v.tiktokEmbedId))
-        ) {
-          setTrendingClips(items.slice(0, 10));
-          setTrendingSource("tiktok");
-        }
-      } catch {
-        // fallback: keep local trending clips
-      }
-    };
-
-    void fetchTikTokTrending();
-    return () => {
-      active = false;
-    };
-  }, []);
+  const [trendingClips] = useState<FeedVideo[]>(LOCAL_TRENDING_FEED_VIDEOS);
 
   const liveRows = useTrendingLiveRanking(trendingClips, {
     reducedMotion: reduceMotion,
@@ -143,17 +107,10 @@ export function TrendingRankSection() {
                 </span>
                 LIVE
               </span>
-              {trendingSource === "fallback" ? (
-                <span className="inline-flex items-center rounded-full border border-fuchsia-400/40 bg-fuchsia-500/10 px-2 py-0.5 text-[10px] font-bold tracking-[0.12em] text-fuchsia-300 sm:text-[11px]">
-                  DEMO DATA
-                </span>
-              ) : null}
+              <span className="inline-flex items-center rounded-full border border-fuchsia-400/40 bg-fuchsia-500/10 px-2 py-0.5 text-[10px] font-bold tracking-[0.12em] text-fuchsia-300 sm:text-[11px]">
+                LOCAL SAMPLE
+              </span>
             </h2>
-            <p className="mt-1 text-[12px] text-zinc-500 sm:text-[13px]">
-              {trendingSource === "fallback"
-                ? "앱 승인 전까지는 댄스형 Mock 트렌딩으로 동일 UX를 제공합니다."
-                : "TikTok 실시간 데이터로 인기 영상이 갱신됩니다."}
-            </p>
           </div>
           <SectionMoreLink
             category="best"
@@ -205,7 +162,9 @@ export function TrendingRankSection() {
                     video={entry.video}
                     reelLayout
                     reelStrip
+                    disableHoverScale
                     className="h-full min-w-0"
+                    detailHref={`/video/${entry.video.id}/customize`}
                     footerExtension={
                       <TrendingVideoStatsFooter
                         metrics={entry.metrics}

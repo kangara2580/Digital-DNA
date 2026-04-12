@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { ReviewBeforeAfter } from "@/components/ReviewBeforeAfter";
 import { SectionMoreLink } from "@/components/SectionMoreLink";
+import { buildNotionistsAvatarUrl } from "@/data/reelsAvatarPresets";
 import type { PurchaseReviewPickTone } from "@/data/marketing";
 import { BEST_PURCHASE_REVIEWS } from "@/data/marketing";
 import { HighlightedQuote } from "@/lib/highlightText";
@@ -113,7 +114,7 @@ export function BestPurchaseReviewsSection() {
 
                 <div className="mt-5 flex items-center gap-2.5">
                   <Image
-                    src={`https://api.dicebear.com/9.x/notionists/svg?seed=${encodeURIComponent(card.author)}&backgroundType=gradientLinear`}
+                    src={buildNotionistsAvatarUrl(card.author)}
                     width={40}
                     height={40}
                     alt=""
