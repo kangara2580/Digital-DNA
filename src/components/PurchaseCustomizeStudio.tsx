@@ -1068,34 +1068,31 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
         <div className="rounded-xl border border-reels-cyan/25 bg-reels-cyan/10 px-4 py-3 text-[13px] leading-relaxed text-zinc-200">
           {hasPurchased(video.id) ? (
             <p>
-              로컬 샘플 릴스입니다. AI 얼굴 미리보기를 자유롭게 사용할 수 있습니다.
+              <span className="text-zinc-400">&gt;</span> AI 프리뷰: 제한 없이 이용 가능.{" "}
+              <span className="text-zinc-400">(등록한 얼굴은 목록 최상단에 노출됩니다.)</span>
             </p>
           ) : localFacePreviewRemaining > 0 ? (
             <p>
-              로컬 샘플 릴스입니다. AI 얼굴 미리보기는 체험 횟수가 제한됩니다.{" "}
+              <span className="text-zinc-400">&gt;</span> AI 프리뷰: 무료{" "}
               <span className="font-extrabold text-reels-cyan/95">
-                무료 {localFacePreviewRemaining}회 남음
-              </span>
-              .
+                {localFacePreviewRemaining}회
+              </span>{" "}
+              가능.{" "}
+              <span className="text-zinc-400">(등록한 얼굴은 목록 최상단에 노출됩니다.)</span>
             </p>
           ) : (
             <p>
-              로컬 샘플 릴스입니다. 무료 AI 얼굴 미리보기를 모두 사용했습니다.{" "}
+              <span className="text-zinc-400">&gt;</span> AI 프리뷰: 무료 체험을 모두 사용했습니다.{" "}
               <Link
                 href={`/video/${video.id}`}
                 className="font-semibold text-reels-cyan/95 underline-offset-2 hover:underline"
               >
                 릴스 상세
               </Link>
-              에서 구매하면 계속 이용할 수 있습니다.
+              에서 구매하면 계속 이용할 수 있습니다.{" "}
+              <span className="text-zinc-400">(등록한 얼굴은 목록 최상단에 노출됩니다.)</span>
             </p>
           )}
-          <p className="mt-2 text-[12px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-            <Link href="/mypage" className="font-semibold text-reels-cyan/95 underline-offset-2 hover:underline">
-              마이페이지
-            </Link>
-            에 등록한 얼굴은 아래 목록 맨 앞에 표시됩니다.
-          </p>
         </div>
       ) : null}
       <div>
@@ -1109,7 +1106,7 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
                 : "text-zinc-500 hover:text-zinc-300"
             }`}
           >
-            빠르게 생성
+            퀵 생성 (Quick)
           </button>
           <button
             type="button"
@@ -1120,7 +1117,7 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
                 : "text-zinc-500 hover:text-zinc-300"
             }`}
           >
-            맞춤 리스킨·편집 (선택)
+            커스텀 편집 (Custom)
           </button>
         </div>
       </div>
@@ -1733,9 +1730,9 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
             </>
           ) : (
             <div className="reels-glass-card rounded-xl p-4 sm:p-5">
-              <p className="text-[13px] font-extrabold text-zinc-100">2단계 맞춤 리스킨·편집</p>
+              <p className="text-[13px] font-extrabold text-zinc-100">2단계 커스텀 편집</p>
               <p className="mt-1 text-[12px] text-zinc-500">
-                지금은 건너뛰고 빠르게 생성합니다. 필요하면 위 버튼에서 언제든 다시 켤 수 있어요.
+                지금은 건너뛰고 퀵 생성합니다. 필요하면 위 버튼에서 언제든 다시 켤 수 있어요.
               </p>
             </div>
           )}
@@ -1761,8 +1758,8 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
             </button>
             <span className="text-[12px] font-semibold text-zinc-500">
               {useAdvancedStep
-                ? "맞춤 리스킨·편집 후 서버 생성 요청을 누르세요."
-                : "빠른 생성 모드입니다. 바로 서버 생성 요청을 누르세요."}
+                ? "커스텀 편집 후 서버 생성 요청을 누르세요."
+                : "퀵 생성 모드입니다. 바로 서버 생성 요청을 누르세요."}
             </span>
           </div>
           {!remoteJob ? (
