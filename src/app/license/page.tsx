@@ -17,8 +17,9 @@ export const metadata = {
     "Digital DNA — 한 번의 소유로 만드는 무한한 가치. Free to Create & Rules for Respect.",
 };
 
+/** 추상 디지털 톤 — 특정 SNS·앱 로고 없이 라이선스·디지털 자산 무드 */
 const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&q=85&w=1800";
+  "https://images.unsplash.com/photo-1639322537504-6427a16cfd0b?auto=format&fit=crop&q=85&w=1800";
 
 const freeItems = [
   {
@@ -55,7 +56,7 @@ export default function LicensePage() {
   return (
     <FooterLegalPageShell title="라이선스 규정" withCard={false} mainMaxClass="max-w-6xl">
       <div className="space-y-14">
-        {/* 히어로: 인스타·틱톡류 랜딩에서 흔한 스플릿 + 그라데이션 타이포 */}
+        {/* 히어로: 스플릿 + 그라데이션 타이포 */}
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
           <div className="relative order-2 lg:order-1">
             <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-900/80 via-black/40 to-reels-cyan/[0.1] p-8 sm:p-10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-50 [html[data-theme='light']_&]:via-white [html[data-theme='light']_&]:to-reels-cyan/10">
@@ -80,7 +81,7 @@ export default function LicensePage() {
           <div className="relative order-1 aspect-[4/3] w-full overflow-hidden rounded-3xl border border-white/10 shadow-[0_0_50px_-14px_rgba(0,242,234,0.35)] lg:order-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:shadow-zinc-200/30">
             <Image
               src={HERO_IMAGE}
-              alt="스마트폰으로 숏폼·SNS 콘텐츠를 제작하는 장면"
+              alt="추상적인 디지털 형태와 빛 — 라이선스·디지털 소스"
               fill
               className="object-cover object-center"
               sizes="(max-width: 1024px) 100vw, 50vw"
