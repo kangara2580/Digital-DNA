@@ -143,13 +143,18 @@ export function VideoCard({
     if (isLocalPublicVideo(previewSrc)) return "";
     return poster;
   }, [video.poster, previewSrc]);
-  const [thumbnailSrc, setThumbnailSrc] = useState(normalizedPoster);
+  /** 포스터 URL이 없을 때(로컬 MP4 등) 검은 화면만 보이지 않도록 SVG 그라데이션으로 채움 */
+  const defaultThumbnail = useMemo(
+    () => normalizedPoster || fallbackPoster,
+    [normalizedPoster, fallbackPoster],
+  );
+  const [thumbnailSrc, setThumbnailSrc] = useState(defaultThumbnail);
   const [isPreviewing, setIsPreviewing] = useState(false);
 
   useEffect(() => {
-    setThumbnailSrc(normalizedPoster);
+    setThumbnailSrc(defaultThumbnail);
     setIsPreviewing(false);
-  }, [normalizedPoster]);
+  }, [defaultThumbnail]);
 
   const isTikTokEmbed = Boolean(video.tiktokEmbedId);
   const segmentPreviewEffective = segmentPreview && !isTikTokEmbed;
@@ -277,8 +282,8 @@ export function VideoCard({
             disableRemotePlayback
             controlsList="noremoteplayback nodownload nofullscreen"
             loop={!segmentPreviewEffective}
-            /** 원격 URL에 auto를 쓰면 그리드 전체가 동시에 버퍼링·디코딩되어 렉·깜빡임 유발 → metadata만, 호버 시 프리로드 상향은 훅에서 처리 */
-            preload={preloadMode}
+            /** 로컬은 첫 프레임 시크용 데이터가 필요해 auto. 원격은 metadata로 그리드 부하 완화 */
+            preload={isLocal ? "auto" : preloadMode}
             onTimeUpdate={onVidTimeUpdate}
           />
         )}

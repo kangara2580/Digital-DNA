@@ -56,7 +56,8 @@ export function useLocalSamplePlayback(
         return;
       }
 
-      const onMeta = () => {
+      /** metadata만 있으면 시크해도 디코드가 안 되어 검은 썸네일이 남을 수 있음 → 첫 프레임 데이터 이후 시크 */
+      const applyThumbSeek = () => {
         if (cancelled) return;
         const dur = Number.isFinite(el.duration) ? el.duration : 0;
         const loopStart = localHighlightStartSec(videoId, dur);
@@ -71,8 +72,15 @@ export function useLocalSamplePlayback(
         el.currentTime = thumb;
       };
 
-      if (el.readyState >= 1) onMeta();
-      else el.addEventListener("loadedmetadata", onMeta, { once: true });
+      const whenReadyForFrame = () => {
+        if (cancelled) return;
+        // HAVE_CURRENT_DATA 이상이면 시크 시 한 프레임을 그릴 수 있음
+        if (el.readyState >= 2) applyThumbSeek();
+        else el.addEventListener("loadeddata", applyThumbSeek, { once: true });
+      };
+
+      if (el.readyState >= 1) whenReadyForFrame();
+      else el.addEventListener("loadedmetadata", whenReadyForFrame, { once: true });
     };
 
     attach();
