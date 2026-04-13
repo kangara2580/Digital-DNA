@@ -60,7 +60,7 @@ export function MyPageSavedDraftsSection() {
         임시 저장한 편집
       </h2>
       <p className="mt-2 text-[13px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-        맞춤 리스킨 스튜디오에서 <strong className="font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">임시 저장</strong>한 배경·구간·자막 설정이 그대로 이어집니다. 아래에서 내용을 확인한 뒤 이어서 편집하세요.
+        <strong className="font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">임시 저장</strong>한 배경·구간·자막 설정이 그대로 이어집니다. 아래에서 내용을 확인한 뒤 이어서 편집하세요.
       </p>
       {cards.length === 0 ? (
         <p className="mt-4 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
@@ -191,7 +191,7 @@ function DraftRow({
                 onClick={onPurchaseDemo}
                 className="rounded-lg border border-reels-crimson/40 bg-reels-crimson/15 px-3 py-1.5 text-[11px] font-semibold text-reels-crimson hover:bg-reels-crimson/22"
               >
-                바로 구매(데모)
+                바로 구매
               </button>
             ) : null}
             <Link
