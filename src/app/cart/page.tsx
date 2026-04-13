@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
+import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 export default function CartPage() {
   const { builderItems, removeBuilderItem, clearBuilder } = useDopamineBasket();
@@ -76,7 +77,7 @@ export default function CartPage() {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={video.poster}
+                    src={sanitizePosterSrc(video.poster)}
                     alt=""
                     className="h-full w-full object-cover"
                   />

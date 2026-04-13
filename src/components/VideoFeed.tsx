@@ -6,7 +6,6 @@ import type { FeedVideo } from "@/data/videos";
 import {
   LOCAL_TRENDING_FEED_VIDEOS,
   SAMPLE_VIDEOS,
-  shuffleVideos,
 } from "@/data/videos";
 import { isMicroDna } from "@/data/videoCommerce";
 import { SectionMoreLink } from "./SectionMoreLink";
@@ -52,8 +51,11 @@ export function VideoFeed() {
     return [...LOCAL_TRENDING_FEED_VIDEOS, ...rest];
   }, []);
 
-  /** 마운트 시 한 번만 셔플 — 이후 effect로 순서를 바꾸면 썸네일이 깜빡임 */
-  const [clips] = useState(() => shuffleVideos([...portraitBase]));
+  /**
+   * SSR/CSR에서 동일 순서를 보장해 hydration mismatch를 방지.
+   * (랜덤 셔플은 서버/클라이언트 결과가 달라질 수 있음)
+   */
+  const [clips] = useState(() => [...portraitBase]);
   const [contentFilter, setContentFilter] = useState<ContentFilter>("all");
 
   const filteredClips = useMemo(

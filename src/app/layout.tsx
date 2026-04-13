@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-page-custom-font */
 import type { Metadata } from "next";
 import {
   Black_Han_Sans,
@@ -43,6 +44,10 @@ export const metadata: Metadata = {
   title: "REELS MARKET — Buy the Motion, Own the Moment",
   description:
     "모션 권리를 사고 Kling 3.0으로 리스킨하세요. 베스트·플래시 세일·상황 큐레이션 릴스 마켓.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
@@ -70,6 +75,14 @@ export default function RootLayout({
       className={`${inter.variable} ${montserrat.variable} ${blackHanSans.variable} ${nanumGothic.variable} ${songMyung.variable}`}
     >
       <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+        />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;500;700;800&family=Oswald:wght@400;600;700&family=Poppins:wght@400;500;700;800&display=swap"
+        />
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body className="min-h-screen bg-[var(--background,#02040a)] font-sans text-[var(--foreground,#fafafa)] antialiased">

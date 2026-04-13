@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 export type PriceSuggestionPayload = {
   id: string;
@@ -54,6 +55,7 @@ export function PriceSuggestionModal({
   }, [item, onAccepted, onClose, sellerId]);
 
   if (!open || !item) return null;
+  const posterSrc = sanitizePosterSrc(item.poster);
 
   return (
     <div
@@ -82,10 +84,10 @@ export function PriceSuggestionModal({
           <p className="mt-1 text-[13px] text-slate-600">{item.videoTitle}</p>
         </div>
         <div className="space-y-4 px-5 py-4">
-          {item.poster ? (
+          {posterSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={item.poster}
+              src={posterSrc}
               alt=""
               className="aspect-video w-full rounded-xl object-cover"
             />

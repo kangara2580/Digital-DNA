@@ -19,6 +19,7 @@ import {
   buildSellerAnalyticsSnapshot,
   type SellerAnalyticsSnapshot,
 } from "@/data/sellerAnalytics";
+import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 type Period = 7 | 28 | 90;
 
@@ -424,7 +425,7 @@ export function MyPageSellerAnalyticsSection() {
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={row.poster}
+                        src={sanitizePosterSrc(row.poster)}
                         alt=""
                         className="h-10 w-10 shrink-0 rounded-md object-cover ring-1 ring-white/10 [html[data-theme='light']_&]:ring-zinc-200"
                       />

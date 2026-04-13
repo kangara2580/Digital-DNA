@@ -3,7 +3,14 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { Heart } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useRef, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { CloneCountAnimation } from "@/components/CloneCountAnimation";
 import { RelatedDnaQuilt } from "@/components/RelatedDnaQuilt";
 import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
@@ -62,6 +69,8 @@ type Props = {
   detailHref?: string;
   /** 지정 시 썸네일 전체 클릭이 상세 링크 대신 이 콜백(탐색 → 세로 릴 등) */
   onPick?: () => void;
+  /** 비디오 preload 전략 제어 (기본 metadata) */
+  preloadMode?: "none" | "metadata" | "auto";
 };
 
 function formatDuration(seconds: number): string {
@@ -90,6 +99,7 @@ export function VideoCard({
   footerExtension,
   detailHref,
   onPick,
+  preloadMode = "metadata",
 }: Props) {
   const dopamine = useDopamineBasketOptional();
   const wishlist = useWishlistOptional();
@@ -113,14 +123,41 @@ export function VideoCard({
         ? reelAspectLandscape
         : "aspect-video w-full";
   const previewSrc = video.previewSrc ?? video.src;
+  const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(previewSrc);
+  const canLoadPreviewVideo = !isPexelsBlockedVideo;
   const segmentPreview = instantPreview === true;
+  const fallbackPoster = useMemo(() => {
+    const hash = Array.from(video.id).reduce(
+      (acc, ch) => (acc * 33 + ch.charCodeAt(0)) >>> 0,
+      11,
+    );
+    const hueA = hash % 360;
+    const hueB = (hueA + 64) % 360;
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='720' height='1280' viewBox='0 0 720 1280'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='hsl(${hueA},82%,44%)'/><stop offset='100%' stop-color='hsl(${hueB},88%,55%)'/></linearGradient></defs><rect width='720' height='1280' fill='#050505'/><rect x='24' y='24' width='672' height='1232' rx='42' fill='url(#g)' opacity='0.86'/><text x='70' y='1188' fill='rgba(255,255,255,0.95)' font-family='Inter,Arial,sans-serif' font-size='46' font-weight='700'>PREVIEW</text></svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  }, [video.id]);
+  const normalizedPoster = useMemo(() => {
+    const poster = video.poster?.trim();
+    if (!poster) return fallbackPoster;
+    if (/^\/videos\/.+\.jpg$/i.test(poster)) return fallbackPoster;
+    return poster;
+  }, [video.poster, fallbackPoster]);
+  const [thumbnailSrc, setThumbnailSrc] = useState(
+    normalizedPoster,
+  );
+  const [isPreviewing, setIsPreviewing] = useState(false);
+
+  useEffect(() => {
+    setThumbnailSrc(normalizedPoster);
+    setIsPreviewing(false);
+  }, [normalizedPoster]);
 
   const isTikTokEmbed = Boolean(video.tiktokEmbedId);
   const segmentPreviewEffective = segmentPreview && !isTikTokEmbed;
-  const isLocal = isLocalPublicVideo(previewSrc);
+  const isLocal = canLoadPreviewVideo && isLocalPublicVideo(previewSrc);
 
   const hoverPreview = useHoverInstantPreview(
-    segmentPreviewEffective && !isLocal,
+    segmentPreviewEffective && !isLocal && canLoadPreviewVideo,
     video,
     reduceMotion,
   );
@@ -131,10 +168,12 @@ export function VideoCard({
   });
 
   const play = useCallback(() => {
+    setIsPreviewing(true);
     hoverPreview.onEnter();
   }, [hoverPreview]);
 
   const pause = useCallback(() => {
+    setIsPreviewing(false);
     hoverPreview.onLeave();
   }, [hoverPreview]);
 
@@ -190,8 +229,13 @@ export function VideoCard({
       onMouseEnter={
         isTikTokEmbed
           ? undefined
+          : !canLoadPreviewVideo
+            ? undefined
           : isLocal && segmentPreviewEffective
-            ? localPlayback.onEnter
+            ? () => {
+                setIsPreviewing(true);
+                localPlayback.onEnter();
+              }
             : !isLocal
               ? play
               : undefined
@@ -199,8 +243,13 @@ export function VideoCard({
       onMouseLeave={
         isTikTokEmbed
           ? undefined
+          : !canLoadPreviewVideo
+            ? undefined
           : isLocal && segmentPreviewEffective
-            ? localPlayback.onLeave
+            ? () => {
+                setIsPreviewing(false);
+                localPlayback.onLeave();
+              }
             : !isLocal
               ? pause
               : undefined
@@ -221,16 +270,32 @@ export function VideoCard({
           <video
             ref={videoRef}
             className="absolute inset-0 z-0 h-full w-full object-cover"
-            src={previewSrc}
-            poster={video.poster?.trim() ? video.poster : undefined}
+            src={canLoadPreviewVideo ? previewSrc : undefined}
+            poster={thumbnailSrc}
             playsInline
             muted
+            disablePictureInPicture
+            disableRemotePlayback
+            controlsList="noremoteplayback nodownload nofullscreen"
             loop={!segmentPreviewEffective}
             /** 원격 URL에 auto를 쓰면 그리드 전체가 동시에 버퍼링·디코딩되어 렉·깜빡임 유발 → metadata만, 호버 시 프리로드 상향은 훅에서 처리 */
-            preload="metadata"
+            preload={preloadMode}
             onTimeUpdate={onVidTimeUpdate}
           />
         )}
+        {!isTikTokEmbed ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={thumbnailSrc}
+            alt=""
+            className={`pointer-events-none absolute inset-0 z-[2] h-full w-full object-cover transition-opacity duration-200 ${
+              isPreviewing ? "opacity-0" : "opacity-100"
+            }`}
+            loading={reelStrip ? "eager" : "lazy"}
+            decoding="async"
+            onError={() => setThumbnailSrc(fallbackPoster)}
+          />
+        ) : null}
         <div
           className="pointer-events-none absolute inset-0 z-[1] bg-black/0 transition-colors duration-300 ease-out group-hover:bg-black/30 motion-reduce:group-hover:bg-black/25"
           aria-hidden
@@ -388,7 +453,7 @@ export function VideoCard({
                 e.stopPropagation();
                 const el = cartBtnRef.current;
                 if (el && dopamine) {
-                  dopamine.launchFromCartButton(el, video, video.poster);
+                  dopamine.launchFromCartButton(el, video, thumbnailSrc);
                 }
               }}
             >

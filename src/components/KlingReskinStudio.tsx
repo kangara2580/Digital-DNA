@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ReskinGenerationQueueModal } from "@/components/ReskinGenerationQueueModal";
 import { DEMO_FACE_PROFILES } from "@/data/demoFaceProfiles";
 import type { FeedVideo } from "@/data/videos";
+import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 type Props = {
   video: FeedVideo;
@@ -19,6 +20,8 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
   const [generating, setGenerating] = useState(false);
   const [queueOpen, setQueueOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(video.src);
+  const posterSrc = sanitizePosterSrc(video.poster);
 
   const closeQueue = useCallback(() => {
     setQueueOpen(false);
@@ -74,12 +77,13 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
             >
               <video
                 className="h-full w-full object-cover"
-                poster={video.poster}
-                src={video.src}
+                poster={posterSrc}
+                src={isPexelsBlockedVideo ? undefined : video.src}
                 muted
                 playsInline
                 loop
                 autoPlay
+                preload={isPexelsBlockedVideo ? "none" : "metadata"}
               />
               {generating ? (
                 <div className="reels-scan-overlay reels-data-stream z-10 rounded-xl">
@@ -219,7 +223,7 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
           <div className="relative mt-2 aspect-video overflow-hidden rounded-lg bg-black/50">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={video.poster}
+              src={posterSrc}
               alt=""
               className="h-full w-full object-cover opacity-95"
             />

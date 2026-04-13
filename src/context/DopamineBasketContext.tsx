@@ -14,6 +14,7 @@ import {
   rectFromEl,
 } from "@/components/CartThumbnailFly";
 import type { FeedVideo } from "@/data/videos";
+import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 export type BuilderTimelineItem = {
   key: string;
@@ -77,7 +78,7 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
         ...items,
         {
           id,
-          poster: poster ?? video.poster,
+          poster: sanitizePosterSrc(poster) ?? sanitizePosterSrc(video.poster),
           from,
           to,
         },

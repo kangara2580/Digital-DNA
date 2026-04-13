@@ -103,6 +103,7 @@ function RotatingSearchField({
     <div className="group relative">
       <input
         type="search"
+        name="q"
         value={q}
         onChange={(e) => setQ(e.target.value)}
         onFocus={() => setFocused(true)}

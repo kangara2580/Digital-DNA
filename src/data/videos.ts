@@ -382,9 +382,10 @@ function posterForLocalTrendingClip(
   explicitThumbnail: string,
 ): string {
   const ex = explicitThumbnail.trim();
-  if (ex) return ex;
+  if (ex && /^https?:\/\//i.test(ex)) return ex;
   if (!videoUrl.startsWith("/videos/") || !/\.mp4$/i.test(videoUrl)) return "";
-  return videoUrl.replace(/\.mp4$/i, ".jpg");
+  // 로컬 JPG 경로는 파일 누락 시 404가 누적되므로 기본은 빈 포스터.
+  return "";
 }
 
 /** `public/videos` 로컬 샘플 — 인기순위 Top 10 (`@/constants/videos` MOCK_VIDEOS와 1:1) */

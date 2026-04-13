@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
+import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 /**
  * 장바구니에 조각이 있을 때만 하단에 항상 peek 바.
@@ -83,7 +84,7 @@ export function DnaBuilderDock() {
                         <div className="hidden items-center gap-2 rounded-lg border border-white/12 bg-black/25 px-2 py-1 sm:flex">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={selectedPreview.video.poster}
+                            src={sanitizePosterSrc(selectedPreview.video.poster)}
                             alt=""
                             className="h-9 w-7 rounded border border-white/15 object-cover"
                           />
@@ -151,7 +152,7 @@ export function DnaBuilderDock() {
                               >
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
-                                  src={item.video.poster}
+                                  src={sanitizePosterSrc(item.video.poster)}
                                   alt=""
                                   className="h-full w-full object-cover"
                                 />
@@ -218,7 +219,7 @@ export function DnaBuilderDock() {
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={item.video.poster}
+                          src={sanitizePosterSrc(item.video.poster)}
                           alt=""
                           className={`h-8 w-6 rounded-sm border object-cover transition ${
                             selectedPreviewKey === item.key

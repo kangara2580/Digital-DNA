@@ -4,6 +4,7 @@ import { useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import type { FeedVideo } from "@/data/videos";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
+import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 type Props = {
   video: FeedVideo;
@@ -13,12 +14,16 @@ type Props = {
 
 export function EditorCurationClipThumb({ video, className }: Props) {
   const reduceMotion = useReducedMotion() ?? false;
+  const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(
+    video.previewSrc ?? video.src,
+  );
   const { ref, onTimeUpdate, onEnter, onLeave } = useHoverInstantPreview(
-    true,
+    !isPexelsBlockedVideo,
     video,
     reduceMotion,
   );
   const previewSrc = video.previewSrc ?? video.src;
+  const posterSrc = sanitizePosterSrc(video.poster);
 
   return (
     <Link
@@ -31,20 +36,20 @@ export function EditorCurationClipThumb({ video, className }: Props) {
     >
       <div
         className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-white/12 bg-black/35 shadow-none transition-[box-shadow,transform] duration-[400ms] ease-in-out group-hover:border-reels-cyan/30 group-hover:shadow-reels-cyan/20"
-        onMouseEnter={onEnter}
-        onMouseLeave={onLeave}
+        onMouseEnter={isPexelsBlockedVideo ? undefined : onEnter}
+        onMouseLeave={isPexelsBlockedVideo ? undefined : onLeave}
       >
         <video
           ref={ref}
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.04]"
-          poster={video.poster}
+          poster={posterSrc}
           playsInline
           muted
-          preload="auto"
+          preload={isPexelsBlockedVideo ? "none" : "auto"}
           onTimeUpdate={onTimeUpdate}
           aria-hidden
         >
-          <source src={previewSrc} type="video/mp4" />
+          {!isPexelsBlockedVideo ? <source src={previewSrc} type="video/mp4" /> : null}
         </video>
       </div>
       <p className="mt-2 line-clamp-2 text-left text-[12px] font-bold leading-snug text-zinc-200 sm:text-[13px]">

@@ -6,6 +6,7 @@ import type { FeedVideo } from "@/data/videos";
 import { LOCAL_TRENDING_FEED_VIDEOS } from "@/data/videos";
 import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
+import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { SectionMoreLink } from "@/components/SectionMoreLink";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
 
@@ -124,6 +125,7 @@ function HighlightRingSidePreview({ video }: { video: FeedVideo }) {
     enableHoverLoop: isLocal && !reduceMotion,
     reduceMotion,
   });
+  const posterSrc = sanitizePosterSrc(video.poster);
   return (
     <div
       className="absolute inset-0"
@@ -133,7 +135,7 @@ function HighlightRingSidePreview({ video }: { video: FeedVideo }) {
       <video
         ref={isLocal ? localPb.ref : hover.ref}
         className="absolute inset-0 h-full w-full object-cover"
-        poster={isLocal ? undefined : video.poster}
+        poster={isLocal ? undefined : posterSrc}
         playsInline
         muted
         preload="auto"
@@ -182,6 +184,7 @@ export function Highlight24() {
   const n = videos.length;
   const safeIndex = n > 0 ? ((index % n) + n) % n : 0;
   const active = n > 0 ? videos[safeIndex] : undefined;
+  const activePoster = sanitizePosterSrc(active?.poster);
 
   const go = useCallback(
     (dir: -1 | 1) => {
@@ -361,8 +364,8 @@ export function Highlight24() {
       <div
         className="absolute inset-0 scale-110 bg-[#070708] bg-cover bg-center transition-[opacity,filter] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
         style={
-          active.poster
-            ? { backgroundImage: `url(${active.poster})` }
+          activePoster
+            ? { backgroundImage: `url(${activePoster})` }
             : undefined
         }
         aria-hidden
@@ -379,7 +382,7 @@ export function Highlight24() {
             WebkitFilter: "blur(72px) saturate(1.15) brightness(1.05)",
           }}
           src={active.src}
-          poster={isLocalPublicVideo(active.src) ? undefined : active.poster}
+          poster={isLocalPublicVideo(active.src) ? undefined : activePoster}
           muted
           playsInline
           loop
@@ -503,7 +506,9 @@ export function Highlight24() {
                         ref={videoRef}
                         className="absolute inset-0 h-full w-full object-cover"
                         poster={
-                          isLocalPublicVideo(v.src) ? undefined : v.poster
+                          isLocalPublicVideo(v.src)
+                            ? undefined
+                            : sanitizePosterSrc(v.poster)
                         }
                         playsInline
                         muted

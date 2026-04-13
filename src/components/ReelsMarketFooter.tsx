@@ -198,6 +198,7 @@ export function ReelsMarketFooter() {
                     언어
                   </span>
                   <select
+                    name="language"
                     className={selectShell}
                     value={lang}
                     onChange={(e) => persistLang(e.target.value)}
@@ -215,6 +216,7 @@ export function ReelsMarketFooter() {
                     ₩ · $
                   </span>
                   <select
+                    name="currency"
                     className={selectShell}
                     value={currency}
                     onChange={(e) => persistCurrency(e.target.value)}

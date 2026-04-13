@@ -10,6 +10,7 @@ import {
 } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
 import { shuffleVideos } from "@/data/videos";
+import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 const BATCH = 5;
 const MAX_SLIDES = 120;
@@ -40,6 +41,8 @@ function ReelSlide({
   const videoRef = useRef<HTMLVideoElement>(null);
   const blockRef = useRef<HTMLDivElement>(null);
   const previewSrc = video.previewSrc ?? video.src;
+  const posterSrc = sanitizePosterSrc(video.poster);
+  const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(previewSrc);
 
   useEffect(() => {
     const block = blockRef.current;
@@ -71,12 +74,12 @@ function ReelSlide({
       <video
         ref={videoRef}
         className="absolute inset-0 h-full w-full object-cover"
-        poster={video.poster}
-        src={previewSrc}
+        poster={posterSrc}
+        src={isPexelsBlockedVideo ? undefined : previewSrc}
         muted
         playsInline
         loop
-        preload="metadata"
+        preload={isPexelsBlockedVideo ? "none" : "metadata"}
       />
       <div
         className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-black/40"

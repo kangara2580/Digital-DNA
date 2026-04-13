@@ -15,6 +15,7 @@ import {
 import {
   readCustomizeDraftSummary,
 } from "@/lib/customizeDraftStorage";
+import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 function formatSec(s: number): string {
   const t = Math.max(0, s);
@@ -106,7 +107,7 @@ function DraftRow({
   onRemove: () => void;
 }) {
   const title = video?.title ?? `조각 ${videoId}`;
-  const poster = video?.poster ?? "";
+  const poster = sanitizePosterSrc(video?.poster) ?? "";
   const creator = video?.creator;
 
   return (

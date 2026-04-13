@@ -19,6 +19,7 @@ import {
   getFreshnessForVideoId,
   isLimitedFamily,
 } from "@/data/videoCommerce";
+import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 export function VideoDetailView({ video }: { video: FeedVideo }) {
   const dopamine = useDopamineBasket();
@@ -46,6 +47,8 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
     () => getMetricsForVideoDetail(video.id),
     [video.id],
   );
+  const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(video.src);
+  const posterSrc = sanitizePosterSrc(video.poster);
 
   return (
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
@@ -69,11 +72,11 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
             >
               <video
                 className="h-full w-full object-cover"
-                poster={video.poster}
-                src={video.src}
+                poster={posterSrc}
+                src={isPexelsBlockedVideo ? undefined : video.src}
                 controls
                 playsInline
-                preload="metadata"
+                preload={isPexelsBlockedVideo ? "none" : "metadata"}
               />
             </div>
             <p className="mt-3 text-center font-mono text-[10px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
@@ -125,7 +128,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                   title="장바구니 담기"
                   onClick={(e) => {
                     if (soldOut) return;
-                    dopamine.launchFromCartButton(e.currentTarget, video, video.poster);
+                    dopamine.launchFromCartButton(e.currentTarget, video, posterSrc);
                   }}
                   className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-zinc-200 transition-colors hover:border-reels-cyan/40 hover:text-reels-cyan disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800"
                   disabled={soldOut}

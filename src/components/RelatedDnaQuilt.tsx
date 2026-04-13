@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { FeedVideo } from "@/data/videos";
 import { getRelatedByVibe, vibeSummaryLabel } from "@/data/videoCatalog";
+import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 type Props = {
   video: FeedVideo;
@@ -42,7 +43,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
           <div className="aspect-[4/5] w-full sm:aspect-[3/4]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={hero.poster}
+              src={sanitizePosterSrc(hero.poster)}
               alt=""
               className="h-full w-full object-cover opacity-95 transition-opacity group-hover:opacity-100"
             />
@@ -70,7 +71,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
               <div className="aspect-square w-full">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={v.poster}
+                  src={sanitizePosterSrc(v.poster)}
                   alt=""
                   className="h-full w-full object-cover opacity-95 group-hover:opacity-100"
                 />
@@ -101,7 +102,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
               <div className="aspect-[4/5] w-full">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={v.poster}
+                  src={sanitizePosterSrc(v.poster)}
                   alt=""
                   className="h-full w-full object-cover opacity-95 transition-opacity group-hover:opacity-100"
                 />

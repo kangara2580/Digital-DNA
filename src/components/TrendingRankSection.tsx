@@ -163,6 +163,7 @@ export function TrendingRankSection() {
                     reelLayout
                     reelStrip
                     disableHoverScale
+                    preloadMode="none"
                     className="h-full min-w-0"
                     detailHref={`/video/${entry.video.id}/customize`}
                     footerExtension={

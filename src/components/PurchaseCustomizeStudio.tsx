@@ -15,6 +15,7 @@ import {
   getLocalFacePreviewRemaining,
 } from "@/lib/facePreviewQuota";
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
+import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { useVideoStartPoster } from "@/hooks/useVideoStartPoster";
 import { InputSection } from "@/components/InputSection";
 import { VideoBackgroundComposite } from "@/components/VideoBackgroundComposite";
@@ -480,7 +481,7 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
   );
   const previewPoster = bgPreviewOn
     ? undefined
-    : (startFramePoster ?? (video.poster || undefined));
+    : (startFramePoster ?? sanitizePosterSrc(video.poster));
   const randomBooster = useMemo(
     () => ["cinematic", "4k", "dramatic light", "b-roll", "wide shot", "aerial"],
     [],
