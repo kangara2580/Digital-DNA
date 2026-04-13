@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "clean": "rm -rf .next",
-    "dev": "node scripts/dev-open-safari.mjs",
+    "predev": "fuser -k 3000/tcp || true",
+    "dev": "next dev",
+    "dev:safari": "node scripts/dev-open-safari.mjs",
     "dna": "npm run dev",
     "dev:3001": "next dev -p 3001 -H 127.0.0.1",
     "dev:turbo": "next dev --turbopack",
@@ -12,10 +14,10 @@
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "build": "prisma generate && next build",
+    "build": "next build",
     "start": "next start",
     "preview": "next build && next start",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern .next --ignore-pattern node_modules"
+    "lint": "next lint"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
