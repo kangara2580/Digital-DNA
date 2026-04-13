@@ -262,6 +262,7 @@ function reelsJobPresentation(status: string): {
 }
 
 type RemoteJobBanner = {
+  jobId: string;
   status: string;
   progress: number;
   outputVideoUrl?: string;
@@ -328,14 +329,12 @@ function ServerGenerationStatusCard({ job }: { job: RemoteJobBanner }) {
 
       {job.status === "succeeded" && job.outputVideoUrl ? (
         <div className="mt-3">
-          <a
-            href={job.outputVideoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href={`/generation/result/${encodeURIComponent(job.jobId)}`}
             className="inline-flex rounded-full border border-reels-cyan/40 bg-reels-cyan/15 px-4 py-2 text-[12px] font-bold text-reels-cyan hover:bg-reels-cyan/25"
           >
-            결과 영상 열기
-          </a>
+            결과 보기
+          </Link>
         </div>
       ) : null}
 
@@ -1778,6 +1777,7 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
           {remoteJob ? (
             <ServerGenerationStatusCard
               job={{
+                jobId: remoteJob.id,
                 status: remoteJob.status,
                 progress: remoteJob.progress,
                 outputVideoUrl: remoteJob.outputVideoUrl,
