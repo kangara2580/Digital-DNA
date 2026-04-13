@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import type { FeedVideo } from "@/data/videos";
 import { LOCAL_FACE_SWAP_VIDEO_IDS } from "@/constants/videos";
@@ -377,7 +377,9 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
   const [faceOptions, setFaceOptions] = useState<FacePickerOption[]>([]);
   const [draft, setDraft] = useState<CustomizeDraft | null>(null);
   const [duration, setDuration] = useState(0);
-  const [savedFlash, setSavedFlash] = useState(false);
+  /** idle: 아직 저장 안 함 · saving: 저장 중 · saved: 완료(문구 유지, 재저장 시 다시 saving → saved) */
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const saveInFlightRef = useRef(false);
   const [useAdvancedStep, setUseAdvancedStep] = useState(true);
   const [submitRemote, setSubmitRemote] = useState(false);
   const [remoteErr, setRemoteErr] = useState<string | null>(null);
@@ -432,6 +434,8 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
     const opts = buildFacePickerOptions();
     setFaceOptions(opts);
     setDraft(loadDraft(video.id, opts));
+    setSaveStatus("idle");
+    saveInFlightRef.current = false;
   }, [video.id]);
 
   useEffect(() => {
@@ -581,22 +585,27 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
   }, []);
 
   const persist = useCallback(() => {
-    if (!draft) return;
-    saveDraft(video.id, draft);
-    markCustomizeDraftSaved(video.id);
-    trackBehavior({
-      type: "draft_saved",
-      keyword: draft.backgroundPrompt,
-      mode: draft.backgroundMode ?? "video",
-    });
-    for (const f of new Set(draft.overlays.map((o) => o.fontFamily).filter(Boolean))) {
+    if (!draft || saveInFlightRef.current) return;
+    saveInFlightRef.current = true;
+    setSaveStatus("saving");
+    const minSpinnerMs = 320;
+    window.setTimeout(() => {
+      saveDraft(video.id, draft);
+      markCustomizeDraftSaved(video.id);
       trackBehavior({
-        type: "font_selected",
-        fontFamily: f,
+        type: "draft_saved",
+        keyword: draft.backgroundPrompt,
+        mode: draft.backgroundMode ?? "video",
       });
-    }
-    setSavedFlash(true);
-    window.setTimeout(() => setSavedFlash(false), 1600);
+      for (const f of new Set(draft.overlays.map((o) => o.fontFamily).filter(Boolean))) {
+        trackBehavior({
+          type: "font_selected",
+          fontFamily: f,
+        });
+      }
+      setSaveStatus("saved");
+      saveInFlightRef.current = false;
+    }, minSpinnerMs);
   }, [draft, trackBehavior, video.id]);
 
   const submitServerGeneration = useCallback(async () => {
@@ -1740,11 +1749,17 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
             <button
               type="button"
               onClick={persist}
-              className="rounded-full bg-reels-cyan/20 px-6 py-3 text-[14px] font-extrabold text-reels-cyan ring-1 ring-reels-cyan/40 hover:bg-reels-cyan/28"
+              disabled={saveStatus === "saving"}
+              className="rounded-full bg-reels-cyan/20 px-6 py-3 text-[14px] font-extrabold text-reels-cyan ring-1 ring-reels-cyan/40 hover:bg-reels-cyan/28 disabled:cursor-not-allowed disabled:opacity-60"
             >
               임시 저장
             </button>
-            {savedFlash ? (
+            {saveStatus === "saving" ? (
+              <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-reels-cyan">
+                <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
+                저장 중…
+              </span>
+            ) : saveStatus === "saved" ? (
               <span className="text-[12px] font-semibold text-reels-cyan">마이페이지에 임시 저장됨</span>
             ) : null}
             <button
