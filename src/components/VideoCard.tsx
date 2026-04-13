@@ -143,11 +143,15 @@ export function VideoCard({
     if (isLocalPublicVideo(previewSrc)) return "";
     return poster;
   }, [video.poster, previewSrc]);
-  /** 포스터 URL이 없을 때(로컬 MP4 등) 검은 화면만 보이지 않도록 SVG 그라데이션으로 채움 */
-  const defaultThumbnail = useMemo(
-    () => normalizedPoster || fallbackPoster,
-    [normalizedPoster, fallbackPoster],
-  );
+  /**
+   * 원격 등 포스터가 없을 때만 SVG 그라데이션.
+   * 로컬 public MP4는 그라데이션 img를 쓰면 z-index로 실제 프레임 위를 덮어 썸네일이 색만 보임 → 비워 두고 비디오+시크만 사용.
+   */
+  const defaultThumbnail = useMemo(() => {
+    if (normalizedPoster) return normalizedPoster;
+    if (isLocalPublicVideo(previewSrc)) return "";
+    return fallbackPoster;
+  }, [normalizedPoster, previewSrc, fallbackPoster]);
   const [thumbnailSrc, setThumbnailSrc] = useState(defaultThumbnail);
   const [isPreviewing, setIsPreviewing] = useState(false);
 
@@ -298,7 +302,9 @@ export function VideoCard({
             loading={reelStrip ? "eager" : "lazy"}
             decoding="async"
             onError={() => {
-              if (thumbnailSrc !== fallbackPoster) setThumbnailSrc(fallbackPoster);
+              if (thumbnailSrc === fallbackPoster) return;
+              if (isLocalPublicVideo(previewSrc)) setThumbnailSrc("");
+              else setThumbnailSrc(fallbackPoster);
             }}
           />
         ) : null}
