@@ -50,9 +50,6 @@ export function VideoDetailReviewsSection({ videoId }: { videoId: string }) {
           >
             Reviews & ratings
           </h2>
-          <p className="mt-1 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            구매 후 작성된 리뷰입니다. 같은 조각으로 제작한 크리에이터들의 피드백이에요.
-          </p>
         </div>
         <div className="flex shrink-0 items-center gap-4 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
           <p className="text-[42px] font-black tabular-nums leading-none text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">

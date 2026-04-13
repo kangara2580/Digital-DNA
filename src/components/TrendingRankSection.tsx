@@ -165,7 +165,6 @@ export function TrendingRankSection() {
                     disableHoverScale
                     preloadMode="none"
                     className="h-full min-w-0"
-                    detailHref={`/video/${entry.video.id}/customize`}
                     footerExtension={
                       <TrendingVideoStatsFooter
                         metrics={entry.metrics}

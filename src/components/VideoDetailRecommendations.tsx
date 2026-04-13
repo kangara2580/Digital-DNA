@@ -37,9 +37,6 @@ export function VideoDetailRecommendations({ video }: Props) {
           >
             You may also like
           </h2>
-          <p className="mt-1 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            비슷한 무드와 카테고리 조각을 이어서 둘러보세요. 쇼핑을 끊기지 않게 골라 담았어요.
-          </p>
         </div>
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           {pool.length} picks
