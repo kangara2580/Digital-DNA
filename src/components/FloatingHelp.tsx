@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronUp } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 const SCROLL_TOP_THRESHOLD = 80;
@@ -99,11 +100,10 @@ export function FloatingHelp() {
         />
       </button>
 
-      <a
-        href="#"
-        onClick={(e) => e.preventDefault()}
+      <Link
+        href="/faq"
         className={`group pointer-events-auto flex h-14 max-w-[3.5rem] flex-row-reverse items-center overflow-hidden rounded-full ${helpLinkShell} transition-[max-width,box-shadow,border-color,background-color] duration-[400ms] ease-in-out ${easeExpand} hover:max-w-[min(92vw,20rem)] hover:border-reels-cyan/40 hover:bg-white/8 hover:shadow-reels-cyan focus-visible:max-w-[min(92vw,20rem)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reels-cyan`}
-        aria-label="도움이 필요하시나요? 고객 지원 열기"
+        aria-label="FAQ로 이동"
       >
         <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-reels-cyan/15 text-reels-cyan transition-colors duration-500 group-hover:bg-reels-cyan/25">
           <StylizedBell className="block h-[22px] w-[22px] shrink-0" />
@@ -112,10 +112,10 @@ export function FloatingHelp() {
           <span
             className={`whitespace-nowrap pl-3 pr-2 text-right text-[13px] font-semibold tracking-tight text-zinc-300 opacity-0 transition-[opacity,transform] duration-[1640ms] ease-[cubic-bezier(0.22,1,0.36,1)] delay-0 motion-reduce:transition-none translate-x-1.5 group-hover:translate-x-0 group-hover:opacity-100 group-hover:delay-[280ms] group-focus-visible:translate-x-0 group-focus-visible:opacity-100 group-focus-visible:delay-[280ms]`}
           >
-            도움이 필요하시나요?
+            FAQ에서 자주 묻는 질문 보기
           </span>
         </span>
-      </a>
+      </Link>
     </div>
   );
 }
