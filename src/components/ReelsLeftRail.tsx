@@ -17,6 +17,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
+import { ReelsLogo } from "@/components/ReelsLogo";
 import { SellerNotificationBell } from "@/components/SellerNotificationBell";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { MALL_CATEGORY_NAV_ITEMS } from "@/data/mallCategoryNav";
@@ -124,7 +125,16 @@ export function ReelsLeftRail() {
         className="fixed inset-y-0 left-0 z-[38] hidden w-[var(--reels-rail-w)] flex-col border-r border-white/[0.08] bg-reels-abyss/80 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[1px_0_0_rgba(0,0,0,0.04)] md:flex"
         aria-label="주요 메뉴"
       >
-        <div className="flex min-h-0 flex-1 flex-col items-center pt-[max(0.75rem,env(safe-area-inset-top))]">
+        <div className="flex shrink-0 items-center justify-center pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
+          <Link
+            href="/"
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-zinc-200 transition-colors hover:bg-white/[0.07] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100"
+            aria-label="홈"
+          >
+            <ReelsLogo size={22} />
+          </Link>
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col items-center pt-1">
           <nav
             className="flex flex-1 flex-col items-center gap-1 overflow-y-auto overflow-x-hidden py-2 no-scrollbar"
             aria-label="빠른 이동"

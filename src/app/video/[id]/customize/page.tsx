@@ -11,7 +11,7 @@ export function generateStaticParams() {
 
 export const metadata = {
   title: "맞춤 리스킨 · 편집 — REELS MARKET",
-  description: "구매한 조각에 얼굴·배경·구간·텍스트를 지정합니다.",
+  description: "구매한 릴스에 얼굴·배경·구간·텍스트를 지정합니다.",
 };
 
 export default async function VideoCustomizePage({
@@ -32,7 +32,7 @@ export default async function VideoCustomizePage({
           </Link>
           <span className="text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
           <Link href={`/video/${video.id}`} className="text-reels-cyan/90 hover:text-reels-cyan">
-            조각 상세
+            릴스 상세
           </Link>
           <span className="text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
           <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">맞춤 리스킨</span>

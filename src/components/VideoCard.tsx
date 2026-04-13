@@ -138,13 +138,12 @@ export function VideoCard({
   }, [video.id]);
   const normalizedPoster = useMemo(() => {
     const poster = video.poster?.trim();
-    if (!poster) return fallbackPoster;
-    if (/^\/videos\/.+\.jpg$/i.test(poster)) return fallbackPoster;
+    if (poster) return poster;
+    // 로컬 샘플은 포스터가 없으면 비디오 첫 프레임을 그대로 사용.
+    if (isLocalPublicVideo(previewSrc)) return "";
     return poster;
-  }, [video.poster, fallbackPoster]);
-  const [thumbnailSrc, setThumbnailSrc] = useState(
-    normalizedPoster,
-  );
+  }, [video.poster, previewSrc]);
+  const [thumbnailSrc, setThumbnailSrc] = useState(normalizedPoster);
   const [isPreviewing, setIsPreviewing] = useState(false);
 
   useEffect(() => {
@@ -234,7 +233,7 @@ export function VideoCard({
           : isLocal && segmentPreviewEffective
             ? () => {
                 setIsPreviewing(true);
-                localPlayback.onEnter();
+                localPlayback.onEnter?.();
               }
             : !isLocal
               ? play
@@ -248,7 +247,7 @@ export function VideoCard({
           : isLocal && segmentPreviewEffective
             ? () => {
                 setIsPreviewing(false);
-                localPlayback.onLeave();
+                localPlayback.onLeave?.();
               }
             : !isLocal
               ? pause
@@ -283,7 +282,7 @@ export function VideoCard({
             onTimeUpdate={onVidTimeUpdate}
           />
         )}
-        {!isTikTokEmbed ? (
+        {!isTikTokEmbed && thumbnailSrc ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={thumbnailSrc}
@@ -293,7 +292,9 @@ export function VideoCard({
             }`}
             loading={reelStrip ? "eager" : "lazy"}
             decoding="async"
-            onError={() => setThumbnailSrc(fallbackPoster)}
+            onError={() => {
+              if (thumbnailSrc !== fallbackPoster) setThumbnailSrc(fallbackPoster);
+            }}
           />
         ) : null}
         <div

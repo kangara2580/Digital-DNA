@@ -17,7 +17,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ReelsLogo } from "@/components/ReelsLogo";
 import { MALL_CATEGORY_NAV_ITEMS as ITEMS } from "@/data/mallCategoryNav";
 import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhrases";
 
@@ -427,9 +426,8 @@ export function MallTopNav() {
               compactEffective ? "shrink-0" : "w-full justify-between gap-3"
             }`}
           >
-            <Link href="/" className={logoClass}>
-              <ReelsLogo size={compactEffective ? 22 : 26} className="shrink-0" />
-              <span className="whitespace-nowrap">REELS MARKET</span>
+            <Link href="/" className={`${logoClass} sr-only`}>
+              홈으로 이동
             </Link>
             {!compactEffective && (
               <div className="hidden items-center gap-0.5 sm:-mr-1 sm:flex lg:-mr-0.5">

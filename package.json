@@ -15,10 +15,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "preview": "next build && next start",
-    "lint": "next lint"
-  },
-  "prisma": {
-    "seed": "npx tsx prisma/seed.ts"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern .next --ignore-pattern node_modules"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

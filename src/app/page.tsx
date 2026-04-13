@@ -5,7 +5,6 @@ import { Highlight24 } from "@/components/Highlight24";
 import { TrendingRankSection } from "@/components/TrendingRankSection";
 import { SellerPitchBanner } from "@/components/SellerPitchBanner";
 import { DiscountDnaSection } from "@/components/DiscountDnaSection";
-import { MicroDnaExploreSection } from "@/components/MicroDnaExploreSection";
 import { InspirationCategoryGrid } from "@/components/InspirationCategoryGrid";
 import { VideoFeed } from "@/components/VideoFeed";
 import { MainBackgroundVideo } from "@/components/MainBackgroundVideo";
@@ -24,7 +23,6 @@ export default async function Home() {
         <VideoFeed />
         <EditorCurationSection />
         <SellerPitchBanner />
-        <MicroDnaExploreSection />
         <BestPurchaseReviewsSection />
       </main>
     </div>

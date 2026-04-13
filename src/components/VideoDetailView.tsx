@@ -58,7 +58,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
             홈
           </Link>
           <span className="mx-1.5 text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
-          <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">조각 상세</span>
+          <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">릴스 상세</span>
         </nav>
 
         <div className="flex flex-col gap-10 lg:flex-row lg:gap-12">
@@ -155,7 +155,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                   <span className="font-bold text-reels-cyan">
                     {meta.salesCount.toLocaleString("ko-KR")}명
                   </span>
-                  의 크리에이터가 수집한 검증된 도파민 이것도 조각이에요.
+                  의 크리에이터가 선택한 인기 릴스입니다.
                   <br />
                   유튜브 배경·브이로그에 가볍게
                   얹어 보세요.

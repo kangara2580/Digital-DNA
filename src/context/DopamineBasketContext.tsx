@@ -16,6 +16,9 @@ import {
 import type { FeedVideo } from "@/data/videos";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
+const FALLBACK_FLY_POSTER =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+
 export type BuilderTimelineItem = {
   key: string;
   video: FeedVideo;
@@ -78,7 +81,10 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
         ...items,
         {
           id,
-          poster: sanitizePosterSrc(poster) ?? sanitizePosterSrc(video.poster),
+          poster:
+            sanitizePosterSrc(poster) ??
+            sanitizePosterSrc(video.poster) ??
+            FALLBACK_FLY_POSTER,
           from,
           to,
         },

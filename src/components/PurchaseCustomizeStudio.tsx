@@ -316,12 +316,12 @@ function ServerGenerationStatusCard({ job }: { job: RemoteJobBanner }) {
           <p className="mt-2">
             기다리는 동안{" "}
             <Link
-              href="/#micro-dna-explore-heading"
+              href="/explore"
               className="font-semibold text-reels-cyan underline-offset-2 hover:underline"
             >
-              100원대 Micro DNA
+              탐색 탭
             </Link>
-            조각을 구경해 보세요.
+            릴스를 구경해 보세요.
           </p>
         </div>
       ) : null}
@@ -678,7 +678,7 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
 
     if (localFacePreviewQuotaActive && getLocalFacePreviewRemaining() <= 0) {
       setFacePreviewError(
-        "무료 AI 얼굴 미리보기 횟수를 모두 사용했습니다. 조각 상세에서 모션 권한을 구매하면 제한 없이 이용할 수 있어요.",
+        "무료 AI 얼굴 미리보기를 모두 사용했습니다. 릴스 상세에서 구매하면 계속 이용할 수 있어요.",
       );
       return;
     }
@@ -1041,12 +1041,12 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
     return (
       <div className="mx-auto max-w-lg rounded-2xl border border-white/10 bg-black/30 px-6 py-14 text-center">
         <p className="text-[15px] font-semibold text-zinc-200">모션 권한 구매 후 이용할 수 있어요.</p>
-        <p className="mt-2 text-[13px] text-zinc-500">조각을 구매한 뒤 얼굴·배경·편집 설정을 저장할 수 있습니다.</p>
+        <p className="mt-2 text-[13px] text-zinc-500">릴스 구매 후 얼굴·배경·편집 설정을 저장할 수 있습니다.</p>
         <Link
           href={`/video/${video.id}`}
           className="mt-6 inline-flex rounded-full border border-reels-cyan/40 bg-reels-cyan/10 px-6 py-3 text-[14px] font-extrabold text-reels-cyan hover:bg-reels-cyan/18"
         >
-          조각 상세로 돌아가기
+          릴스 상세로 돌아가기
         </Link>
       </div>
     );
@@ -1068,33 +1068,33 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
         <div className="rounded-xl border border-reels-cyan/25 bg-reels-cyan/10 px-4 py-3 text-[13px] leading-relaxed text-zinc-200">
           {hasPurchased(video.id) ? (
             <p>
-              로컬 샘플 클립입니다. 모션 권한이 적용되어 AI 얼굴 미리보기를 제한 없이 이용할 수 있어요.
+              로컬 샘플 릴스입니다. AI 얼굴 미리보기를 자유롭게 사용할 수 있습니다.
             </p>
           ) : localFacePreviewRemaining > 0 ? (
             <p>
-              로컬 샘플 클립입니다. AI 얼굴 미리보기(선택 얼굴로 미리보기)는 서버 부하 방지와 쾌적한 환경 제공을 위해 횟수가 제한됩니다.{" "}
+              로컬 샘플 릴스입니다. AI 얼굴 미리보기는 체험 횟수가 제한됩니다.{" "}
               <span className="font-extrabold text-reels-cyan/95">
-                무료 체험 {localFacePreviewRemaining}회 남음
+                무료 {localFacePreviewRemaining}회 남음
               </span>
               .
             </p>
           ) : (
             <p>
-              로컬 샘플 클립입니다. 무료 AI 얼굴 미리보기 횟수를 모두 사용했습니다.{" "}
+              로컬 샘플 릴스입니다. 무료 AI 얼굴 미리보기를 모두 사용했습니다.{" "}
               <Link
                 href={`/video/${video.id}`}
                 className="font-semibold text-reels-cyan/95 underline-offset-2 hover:underline"
               >
-                조각 상세
+                릴스 상세
               </Link>
-              에서 모션 권한을 구매하면 제한 없이 이용할 수 있어요.
+              에서 구매하면 계속 이용할 수 있습니다.
             </p>
           )}
           <p className="mt-2 text-[12px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
             <Link href="/mypage" className="font-semibold text-reels-cyan/95 underline-offset-2 hover:underline">
               마이페이지
             </Link>
-            에서 등록한 얼굴 프로필이 있으면 아래 「얼굴 소스」 맨 앞에 표시됩니다.
+            에 등록한 얼굴은 아래 목록 맨 앞에 표시됩니다.
           </p>
         </div>
       ) : null}

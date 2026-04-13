@@ -20,7 +20,7 @@ try {
   process.exit(1);
 }
 
-/** 터미널 색 이스케이프가 URL에 붙으면 ping/파싱이 실패해 Safari가 3000 등 잘못된 포트를 엽니다 */
+/** 터미널 색 이스케이프가 URL에 붙으면 ping/파싱이 실패해 브라우저가 잘못된 포트를 열 수 있습니다 */
 function stripAnsi(s) {
   return s.replace(/\u001b\[[0-9;]*m/g, "");
 }
@@ -68,6 +68,9 @@ const child = spawn(process.execPath, [nextCli, ...nextArgs], {
   env: {
     ...process.env,
     FORCE_COLOR: process.env.FORCE_COLOR ?? "1",
+    // macOS + 대규모 워크스페이스에서 EMFILE(watch) 방지용 기본값.
+    WATCHPACK_POLLING: process.env.WATCHPACK_POLLING ?? "true",
+    CHOKIDAR_USEPOLLING: process.env.CHOKIDAR_USEPOLLING ?? "1",
   },
 });
 
@@ -109,18 +112,18 @@ function openDarwinBrowser(targetUrl) {
     p.unref();
     return p;
   };
-  const safari = run(["-a", "Safari", targetUrl]);
-  safari.on("exit", (code) => {
+  const chrome = run(["-a", "Google Chrome", targetUrl]);
+  chrome.on("exit", (code) => {
     if (code !== 0) run([targetUrl]);
   });
-  safari.on("error", () => {
+  chrome.on("error", () => {
     run([targetUrl]);
   });
 }
 
 function logOpen(url) {
   console.log(
-    `\n\x1b[36m[dev]\x1b[0m 브라우저 주소: \x1b[1m${url}\x1b[0m (Safari가 안 뜨면 주소를 직접 열어 주세요)\n`,
+    `\n\x1b[36m[dev]\x1b[0m 브라우저 주소: \x1b[1m${url}\x1b[0m (Chrome이 안 뜨면 주소를 직접 열어 주세요)\n`,
   );
 }
 
