@@ -71,6 +71,8 @@ export function MyPageDashboard() {
           data: {
             avatar_kind: next?.kind ?? null,
             avatar_seed: next?.kind === "preset" ? next.seed : null,
+            avatar_custom:
+              next?.kind === "custom" ? JSON.stringify(next.parts) : null,
           },
         });
       } catch {
@@ -182,7 +184,7 @@ export function MyPageDashboard() {
                 </div>
               </div>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
                   <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">임시 저장</p>
                   <p className="mt-1 text-[22px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">{draftCount}</p>
@@ -192,20 +194,6 @@ export function MyPageDashboard() {
                   <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">프로필 얼굴</p>
                   <p className="mt-1 text-[15px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">{profileLabel}</p>
                   <p className="text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">창작 시 적용되는 얼굴 정보</p>
-                </div>
-                <div className="rounded-xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">바로가기</p>
-                  <div className="mt-2 flex flex-col gap-1.5">
-                    <Link href="/mypage?tab=profile" className="text-[12px] font-semibold text-reels-cyan hover:underline">
-                      프로필 관리로 이동
-                    </Link>
-                    <Link href="/mypage?tab=drafts" className="text-[12px] font-semibold text-reels-cyan hover:underline">
-                      임시 저장 목록 보기
-                    </Link>
-                    <Link href="/mypage?tab=analytics" className="text-[12px] font-semibold text-reels-cyan hover:underline">
-                      판매 실적 분석 보기
-                    </Link>
-                  </div>
                 </div>
               </div>
             </div>

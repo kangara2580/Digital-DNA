@@ -1,15 +1,32 @@
 "use client";
 
 import Image from "next/image";
-import { ImagePlus, Sparkles } from "lucide-react";
-import { useCallback, useId, useRef } from "react";
+import { ChevronLeft, ChevronRight, Dices, ImagePlus, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   BEST_REVIEW_AVATAR_PRESETS,
   buildNotionistsAvatarUrl,
   DEFAULT_BEST_REVIEW_AVATAR_SEED,
 } from "@/data/reelsAvatarPresets";
+import {
+  buildNotionistsCustomAvatarUrl,
+  createDefaultCharacterParts,
+  NOTIONISTS_BROWS,
+  NOTIONISTS_BODY,
+  NOTIONISTS_EYES,
+  NOTIONISTS_HAIR,
+  NOTIONISTS_LIPS,
+  NOTIONISTS_NOSE,
+  randomCharacterSeed,
+  type CharacterFaceShape,
+  type CharacterGender,
+  type CharacterPartsV1,
+} from "@/lib/notionistsCharacter";
 import type { ProfileAvatar } from "@/lib/profileAvatarStorage";
-import { PROFILE_AVATAR_UPLOAD_MAX_CHARS } from "@/lib/profileAvatarStorage";
+import {
+  getProfileAvatarDisplayUrl,
+  PROFILE_AVATAR_UPLOAD_MAX_CHARS,
+} from "@/lib/profileAvatarStorage";
 
 function fileToSquareJpegDataUrl(file: File, maxSide: number): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -45,6 +62,13 @@ function fileToSquareJpegDataUrl(file: File, maxSide: number): Promise<string> {
   });
 }
 
+function cycleInList<T extends string>(list: readonly T[], current: T, dir: -1 | 1): T {
+  let i = list.indexOf(current);
+  if (i < 0) i = 0;
+  const idx = (i + dir + list.length) % list.length;
+  return list[idx];
+}
+
 type Props = {
   value: ProfileAvatar | null;
   onChange: (next: ProfileAvatar | null) => void;
@@ -56,16 +80,35 @@ export function ProfileAvatarPicker({ value, onChange, hint }: Props) {
   const inputId = useId();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const previewUrl =
-    value == null
-      ? buildNotionistsAvatarUrl(DEFAULT_BEST_REVIEW_AVATAR_SEED)
-      : value.kind === "preset"
-        ? buildNotionistsAvatarUrl(value.seed)
-        : value.dataUrl;
+  const [parts, setParts] = useState<CharacterPartsV1>(() =>
+    createDefaultCharacterParts(DEFAULT_BEST_REVIEW_AVATAR_SEED),
+  );
+
+  useEffect(() => {
+    if (value?.kind === "preset") {
+      setParts(createDefaultCharacterParts(value.seed));
+    } else if (value?.kind === "custom") {
+      setParts(value.parts);
+    }
+  }, [value]);
+
+  const previewUrl = useMemo(
+    () => getProfileAvatarDisplayUrl(value, DEFAULT_BEST_REVIEW_AVATAR_SEED),
+    [value],
+  );
 
   const selectPreset = useCallback(
     (seed: string) => {
       onChange({ kind: "preset", seed });
+      setParts(createDefaultCharacterParts(seed));
+    },
+    [onChange],
+  );
+
+  const applyCustom = useCallback(
+    (next: CharacterPartsV1) => {
+      setParts(next);
+      onChange({ kind: "custom", parts: next });
     },
     [onChange],
   );
@@ -89,6 +132,28 @@ export function ProfileAvatarPicker({ value, onChange, hint }: Props) {
     },
     [onChange],
   );
+
+  const customizerDisabled = value?.kind === "upload";
+
+  const randomize = useCallback(() => {
+    const pick = <T extends string>(arr: readonly T[]) =>
+      arr[Math.floor(Math.random() * arr.length)]!;
+    const genders: CharacterGender[] = ["feminine", "masculine", "neutral"];
+    const shapes: CharacterFaceShape[] = [0, 1, 2];
+    const next: CharacterPartsV1 = {
+      v: 1,
+      seed: randomCharacterSeed(),
+      gender: pick(genders),
+      hair: pick(NOTIONISTS_HAIR),
+      eyes: pick(NOTIONISTS_EYES),
+      nose: pick(NOTIONISTS_NOSE),
+      lips: pick(NOTIONISTS_LIPS),
+      brows: pick(NOTIONISTS_BROWS),
+      body: pick(NOTIONISTS_BODY),
+      faceShape: shapes[Math.floor(Math.random() * shapes.length)]!,
+    };
+    applyCustom(next);
+  }, [applyCustom]);
 
   return (
     <div className="space-y-4">
@@ -151,8 +216,7 @@ export function ProfileAvatarPicker({ value, onChange, hint }: Props) {
         </p>
         <div className="flex gap-2 overflow-x-auto pb-1 pt-0.5 [-webkit-overflow-scrolling:touch]">
           {BEST_REVIEW_AVATAR_PRESETS.map((p) => {
-            const active =
-              value?.kind === "preset" && value.seed === p.seed;
+            const active = value?.kind === "preset" && value.seed === p.seed;
             return (
               <button
                 key={p.id}
@@ -177,6 +241,197 @@ export function ProfileAvatarPicker({ value, onChange, hint }: Props) {
           })}
         </div>
       </div>
+
+      <div
+        className={`rounded-2xl border border-reels-cyan/20 bg-gradient-to-br from-black/40 to-black/20 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-100/90 [html[data-theme='light']_&]:to-white ${
+          customizerDisabled ? "opacity-50" : ""
+        }`}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p className="text-[12px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+              캐릭터 꾸미기
+            </p>
+            <p className="mt-0.5 text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              같은 Notionists 스타일로 헤어·얼굴·옷을 바꿔 보세요. 좌우로 넘기며 조합할 수 있어요.
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={customizerDisabled}
+            onClick={randomize}
+            className="inline-flex items-center gap-1.5 rounded-full border border-reels-cyan/35 bg-reels-cyan/12 px-3 py-1.5 text-[11px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Dices className="h-3.5 w-3.5" aria-hidden />
+            랜덤 조합
+          </button>
+        </div>
+
+        {customizerDisabled ? (
+          <p className="mt-3 text-[11px] text-zinc-500">
+            직접 올린 사진을 쓰는 중에는 캐릭터 조합이 꺼져 있어요. 프리셋이나 조합을 쓰려면 위에서 사진 선택을 해제해 주세요.
+          </p>
+        ) : (
+          <div className="mt-4 space-y-2.5">
+            <GenderRow
+              value={parts.gender}
+              onChange={(gender) => applyCustom({ ...parts, gender })}
+            />
+            <CycleRow
+              label="헤어 스타일"
+              current={parts.hair}
+              list={NOTIONISTS_HAIR}
+              onChange={(hair) => applyCustom({ ...parts, hair })}
+            />
+            <CycleRow
+              label="눈"
+              current={parts.eyes}
+              list={NOTIONISTS_EYES}
+              onChange={(eyes) => applyCustom({ ...parts, eyes })}
+            />
+            <CycleRow
+              label="코"
+              current={parts.nose}
+              list={NOTIONISTS_NOSE}
+              onChange={(nose) => applyCustom({ ...parts, nose })}
+            />
+            <CycleRow
+              label="입"
+              current={parts.lips}
+              list={NOTIONISTS_LIPS}
+              onChange={(lips) => applyCustom({ ...parts, lips })}
+            />
+            <CycleRow
+              label="눈썹"
+              current={parts.brows}
+              list={NOTIONISTS_BROWS}
+              onChange={(brows) => applyCustom({ ...parts, brows })}
+            />
+            <FaceShapeRow
+              value={parts.faceShape}
+              onChange={(faceShape) => applyCustom({ ...parts, faceShape })}
+            />
+            <CycleRow
+              label="옷"
+              current={parts.body}
+              list={NOTIONISTS_BODY}
+              onChange={(body) => applyCustom({ ...parts, body })}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CycleRow<T extends string>({
+  label,
+  current,
+  list,
+  onChange,
+}: {
+  label: string;
+  current: T;
+  list: readonly T[];
+  onChange: (next: T) => void;
+}) {
+  const idx = Math.max(0, list.indexOf(current));
+  return (
+    <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/25 px-2 py-1.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80">
+      <button
+        type="button"
+        onClick={() => onChange(cycleInList(list, current, -1))}
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 text-zinc-300 transition hover:border-reels-cyan/40 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+        aria-label={`${label} 이전`}
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+      <div className="min-w-0 flex-1 text-center">
+        <p className="text-[12px] font-bold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">{label}</p>
+        <p className="text-[10px] text-zinc-500">
+          {idx + 1} / {list.length}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={() => onChange(cycleInList(list, current, 1))}
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 text-zinc-300 transition hover:border-reels-cyan/40 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+        aria-label={`${label} 다음`}
+      >
+        <ChevronRight className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
+
+function GenderRow({
+  value,
+  onChange,
+}: {
+  value: CharacterGender;
+  onChange: (g: CharacterGender) => void;
+}) {
+  const opts: { id: CharacterGender; label: string }[] = [
+    { id: "feminine", label: "여성" },
+    { id: "neutral", label: "중성" },
+    { id: "masculine", label: "남성" },
+  ];
+  return (
+    <div className="rounded-xl border border-white/10 bg-black/25 px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80">
+      <p className="mb-2 text-center text-[12px] font-bold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">성별 느낌</p>
+      <div className="flex gap-1.5">
+        {opts.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            onClick={() => onChange(o.id)}
+            className={`flex-1 rounded-lg py-2 text-[11px] font-bold transition ${
+              value === o.id
+                ? "bg-reels-cyan/25 text-reels-cyan ring-1 ring-reels-cyan/40"
+                : "border border-white/10 bg-black/30 text-zinc-400 hover:border-reels-cyan/30 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
+            }`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+      <p className="mt-1.5 text-center text-[10px] text-zinc-500">수염·실루엣 확률만 살짝 바뀌어요.</p>
+    </div>
+  );
+}
+
+function FaceShapeRow({
+  value,
+  onChange,
+}: {
+  value: CharacterFaceShape;
+  onChange: (f: CharacterFaceShape) => void;
+}) {
+  const opts: { id: CharacterFaceShape; label: string }[] = [
+    { id: 0, label: "슬림" },
+    { id: 1, label: "기본" },
+    { id: 2, label: "라운드" },
+  ];
+  return (
+    <div className="rounded-xl border border-white/10 bg-black/25 px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80">
+      <p className="mb-2 text-center text-[12px] font-bold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">얼굴형</p>
+      <div className="flex gap-1.5">
+        {opts.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            onClick={() => onChange(o.id)}
+            className={`flex-1 rounded-lg py-2 text-[11px] font-bold transition ${
+              value === o.id
+                ? "bg-reels-cyan/25 text-reels-cyan ring-1 ring-reels-cyan/40"
+                : "border border-white/10 bg-black/30 text-zinc-400 hover:border-reels-cyan/30 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
+            }`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+      <p className="mt-1.5 text-center text-[10px] text-zinc-500">전체 비율만 살짝 조정해요.</p>
     </div>
   );
 }

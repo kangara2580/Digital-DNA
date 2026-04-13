@@ -417,6 +417,8 @@ export default function SignupPage() {
             social_links: payload.social.links,
             avatar_kind: av.kind,
             avatar_seed: av.kind === "preset" ? av.seed : null,
+            avatar_custom:
+              av.kind === "custom" ? JSON.stringify(av.parts) : null,
           },
         },
       });
