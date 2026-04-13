@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "clean": "rm -rf .next",
-    "predev": "fuser -k 3000/tcp || true",
+    "predev": "lsof -ti:3000 | xargs kill -9 || true",
     "dev": "next dev",
     "dev:safari": "node scripts/dev-open-safari.mjs",
     "dna": "npm run dev",
