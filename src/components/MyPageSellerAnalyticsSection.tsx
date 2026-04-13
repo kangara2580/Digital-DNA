@@ -13,7 +13,7 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   buildSellerAnalyticsSnapshot,
@@ -21,7 +21,34 @@ import {
 } from "@/data/sellerAnalytics";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
-type Period = 7 | 28 | 90;
+type PeriodState =
+  | { kind: "preset"; days: 7 | 28 | 90 }
+  | { kind: "custom"; start: string; end: string };
+
+function localYMD(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function defaultRangeDraft(): { start: string; end: string } {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(end.getDate() - 29);
+  return { start: localYMD(start), end: localYMD(end) };
+}
+
+function videoInsightHref(videoId: string, period: PeriodState): string {
+  if (period.kind === "custom") {
+    const q = new URLSearchParams({
+      from: period.start,
+      to: period.end,
+    });
+    return `/mypage/analytics/video/${encodeURIComponent(videoId)}?${q.toString()}`;
+  }
+  return `/mypage/analytics/video/${encodeURIComponent(videoId)}?days=${period.days}`;
+}
 
 function formatWon(n: number): string {
   return `${Math.round(n).toLocaleString("ko-KR")}원`;
@@ -124,12 +151,31 @@ function RevenueBars({ data }: { data: SellerAnalyticsSnapshot["revenueByDay"] }
 }
 
 export function MyPageSellerAnalyticsSection() {
-  const [period, setPeriod] = useState<Period>(7);
+  const [period, setPeriod] = useState<PeriodState>({ kind: "preset", days: 7 });
+  const [rangeDraft, setRangeDraft] = useState(defaultRangeDraft);
 
-  const snapshot = useMemo(
-    () => buildSellerAnalyticsSnapshot(period),
-    [period],
-  );
+  const snapshot = useMemo(() => {
+    if (period.kind === "preset") {
+      return buildSellerAnalyticsSnapshot(period.days);
+    }
+    return buildSellerAnalyticsSnapshot(30, {
+      dateRange: { start: period.start, end: period.end },
+    });
+  }, [period]);
+
+  const applyCustomRange = () => {
+    if (rangeDraft.start > rangeDraft.end) {
+      window.alert("시작일이 끝일보다 늦을 수 없어요.");
+      return;
+    }
+    setPeriod({ kind: "custom", start: rangeDraft.start, end: rangeDraft.end });
+  };
+
+  useEffect(() => {
+    if (period.kind === "custom") {
+      setRangeDraft({ start: period.start, end: period.end });
+    }
+  }, [period]);
 
   const t = snapshot.totals;
 
@@ -153,25 +199,62 @@ export function MyPageSellerAnalyticsSection() {
           </span>
         </div>
 
-        <div
-          className="flex shrink-0 flex-nowrap items-center gap-2"
-          role="group"
-          aria-label="분석 기간"
-        >
-          {([7, 28, 90] as const).map((d) => (
+        <div className="flex w-full max-w-xl flex-col items-stretch gap-3 sm:max-w-none sm:items-end">
+          <div
+            className="flex shrink-0 flex-wrap items-center justify-end gap-2"
+            role="group"
+            aria-label="분석 기간 프리셋"
+          >
+            {([7, 28, 90] as const).map((d) => (
+              <button
+                key={d}
+                type="button"
+                onClick={() => setPeriod({ kind: "preset", days: d })}
+                className={`rounded-xl border px-3 py-2 text-[12px] font-bold transition sm:px-4 sm:text-[13px] ${
+                  period.kind === "preset" && period.days === d
+                    ? "border-reels-cyan/45 bg-reels-cyan/15 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
+                    : "border-white/10 bg-black/20 text-zinc-400 hover:border-white/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-600"
+                }`}
+              >
+                {d === 7 ? "7일" : d === 28 ? "28일" : "90일"}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+            <span className="text-[11px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              직접 지정
+            </span>
+            <label className="flex items-center gap-1.5 text-[11px] text-zinc-400">
+              시작
+              <input
+                type="date"
+                value={rangeDraft.start}
+                onChange={(e) => setRangeDraft((r) => ({ ...r, start: e.target.value }))}
+                className="rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-[12px] text-zinc-200 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+              />
+            </label>
+            <label className="flex items-center gap-1.5 text-[11px] text-zinc-400">
+              끝
+              <input
+                type="date"
+                value={rangeDraft.end}
+                onChange={(e) => setRangeDraft((r) => ({ ...r, end: e.target.value }))}
+                className="rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-[12px] text-zinc-200 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+              />
+            </label>
             <button
-              key={d}
               type="button"
-              onClick={() => setPeriod(d)}
-              className={`rounded-xl border px-3 py-2 text-[12px] font-bold transition sm:px-4 sm:text-[13px] ${
-                period === d
-                  ? "border-reels-cyan/45 bg-reels-cyan/15 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
-                  : "border-white/10 bg-black/20 text-zinc-400 hover:border-white/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-600"
-              }`}
+              onClick={applyCustomRange}
+              className="rounded-lg border border-reels-cyan/40 bg-reels-cyan/12 px-3 py-1.5 text-[11px] font-bold text-reels-cyan hover:bg-reels-cyan/20"
             >
-              {d === 7 ? "7일" : d === 28 ? "28일" : "90일"}
+              적용
             </button>
-          ))}
+          </div>
+          {period.kind === "custom" ? (
+            <p className="text-right text-[10px] text-reels-cyan/90 [html[data-theme='light']_&]:text-reels-cyan">
+              사용자 지정: {period.start} ~ {period.end} ({snapshot.periodDays}일)
+            </p>
+          ) : null}
         </div>
       </div>
 
@@ -234,7 +317,9 @@ export function MyPageSellerAnalyticsSection() {
             <h3 className="text-[14px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[15px]">
               기간별 수익 추이
             </h3>
-            <span className="text-[11px] font-medium text-zinc-500">7구간 · 일별</span>
+            <span className="text-[11px] font-medium text-zinc-500">
+              {snapshot.revenueByDay.length}구간 · {snapshot.periodDays}일
+            </span>
           </div>
           <RevenueBars data={snapshot.revenueByDay} />
         </div>
@@ -376,7 +461,7 @@ export function MyPageSellerAnalyticsSection() {
           영상별 상세 지표
         </h3>
         <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          제목을 눌러 상세 페이지에서 동일 지표를 확인할 수 있어요.
+          행을 누르면 이 영상만의 인사이트 페이지로 이동해요 (유튜브 스튜디오 스타일).
         </p>
 
         <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 [html[data-theme='light']_&]:border-zinc-200">
@@ -420,7 +505,7 @@ export function MyPageSellerAnalyticsSection() {
                 >
                   <td className="px-3 py-2.5 sm:px-4">
                     <Link
-                      href={`/video/${row.videoId}`}
+                      href={videoInsightHref(row.videoId, period)}
                       className="flex items-center gap-2.5 group"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
