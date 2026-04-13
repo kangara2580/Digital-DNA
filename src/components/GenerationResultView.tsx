@@ -95,10 +95,6 @@ export function GenerationResultView({ jobId }: { jobId: string }) {
         <h1 className="mt-2 text-[22px] font-extrabold tracking-tight text-zinc-100 sm:text-[26px] [html[data-theme='light']_&]:text-zinc-900">
           생성 결과
         </h1>
-        <p className="mt-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          맞춤 리스킨으로 만든 영상입니다. 다운로드는 브라우저 재생 컨트롤에서
-          가능한 경우에만 제공됩니다.
-        </p>
       </header>
 
       {phase === "loading" ? (
