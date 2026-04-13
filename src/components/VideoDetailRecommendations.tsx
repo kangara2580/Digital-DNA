@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronDown } from "lucide-react";
 import { useMemo, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
 import { getShopRecommendations } from "@/data/videoCatalog";
@@ -77,13 +78,17 @@ export function VideoDetailRecommendations({ video }: Props) {
       ) : null}
 
       {gridVisible < afterStrip.length ? (
-        <button
-          type="button"
-          onClick={() => setGridVisible((n) => Math.min(n + STEP, afterStrip.length))}
-          className="mt-6 w-full rounded-xl border border-white/15 bg-white/[0.04] py-3 text-[14px] font-bold text-zinc-200 transition hover:border-reels-cyan/40 hover:bg-reels-cyan/10 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
-        >
-          Load more recommendations
-        </button>
+        <div className="mt-8 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setGridVisible((n) => Math.min(n + STEP, afterStrip.length))}
+            aria-label="추천 영상 더 보기"
+            title="추천 영상 더 보기"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-reels-cyan/40 bg-reels-cyan/10 text-reels-cyan shadow-[0_0_20px_-6px_rgba(0,242,234,0.45)] transition hover:border-reels-cyan/60 hover:bg-reels-cyan/18 hover:shadow-[0_0_28px_-4px_rgba(0,242,234,0.55)] active:scale-[0.97] [html[data-theme='light']_&]:border-reels-cyan/45 [html[data-theme='light']_&]:bg-reels-cyan/12 [html[data-theme='light']_&]:text-reels-cyan"
+          >
+            <ChevronDown className="h-5 w-5" strokeWidth={2.25} aria-hidden />
+          </button>
+        </div>
       ) : null}
     </section>
   );
