@@ -12,6 +12,7 @@ import {
   getEditorCurationClips,
   type EditorCuration,
 } from "@/data/marketing";
+import { usePassVerticalWheelToPage } from "@/hooks/usePassVerticalWheelToPage";
 
 /** 썸네일과 동일 너비 — EditorCurationClipThumb 기본과 맞춤 */
 const THUMB_SLOT =
@@ -48,6 +49,7 @@ function EditorCurationBlock({
 
   const catName = CATEGORY_LABEL[block.categorySlug];
   const scrollRef = useRef<HTMLDivElement>(null);
+  usePassVerticalWheelToPage(scrollRef);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(false);
 

@@ -8,6 +8,7 @@ import {
   LOCAL_TRENDING_FEED_VIDEOS,
   type FeedVideo,
 } from "@/data/videos";
+import { usePassVerticalWheelToPage } from "@/hooks/usePassVerticalWheelToPage";
 import { useTrendingLiveRanking } from "@/hooks/useTrendingLiveRanking";
 import { SectionMoreLink } from "./SectionMoreLink";
 import { TrendingVideoStatsFooter } from "./TrendingVideoStatsFooter";
@@ -44,6 +45,7 @@ export function TrendingRankSection() {
   });
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  usePassVerticalWheelToPage(scrollRef);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(false);
   const [atEnd, setAtEnd] = useState(false);

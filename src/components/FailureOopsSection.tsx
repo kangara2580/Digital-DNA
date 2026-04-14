@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FAILURE_OOPS_CLIPS } from "@/data/videos";
+import { usePassVerticalWheelToPage } from "@/hooks/usePassVerticalWheelToPage";
 import { SectionMoreLink } from "./SectionMoreLink";
 import { VideoCard } from "./VideoCard";
 
@@ -38,6 +39,7 @@ export function FailureOopsSection() {
     [],
   );
   const scrollRef = useRef<HTMLDivElement>(null);
+  usePassVerticalWheelToPage(scrollRef);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(false);
   const [atEnd, setAtEnd] = useState(false);
