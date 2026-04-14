@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, LayoutGrid } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import {
   useCallback,
@@ -164,6 +164,18 @@ function ExploreWatchReels({
     return () => io.disconnect();
   }, [loadMore, count]);
 
+  /** 틱톡 웹처럼 한 칸씩 스냅 이동 — 뷰포트 높이와 슬라이드 한 장 높이 일치 */
+  const scrollByOneSlide = useCallback((dir: 1 | -1) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const h = el.clientHeight;
+    if (h <= 0) return;
+    el.scrollBy({ top: dir * h, behavior: "smooth" });
+  }, []);
+
+  const goNextReel = useCallback(() => scrollByOneSlide(1), [scrollByOneSlide]);
+  const goPrevReel = useCallback(() => scrollByOneSlide(-1), [scrollByOneSlide]);
+
   return (
     <>
       <div className="pointer-events-none fixed left-3 top-[calc(var(--header-height,4.5rem)+0.5rem)] z-[45] flex flex-col gap-2 sm:left-4 md:left-[calc(var(--reels-rail-w)+0.75rem)]">
@@ -189,6 +201,28 @@ function ExploreWatchReels({
       <p className="pointer-events-none fixed left-1/2 top-[calc(var(--header-height,4.5rem)+0.65rem)] z-[44] -translate-x-1/2 rounded-full border border-white/15 bg-black/35 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-300 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/85 [html[data-theme='light']_&]:text-zinc-800">
         탐색 · 릴스
       </p>
+
+      {/* 틱톡 스타일: 위·아래로 한 영상씩 이동 */}
+      <div className="pointer-events-none fixed bottom-[max(8rem,calc(env(safe-area-inset-bottom)+5.5rem))] right-3 z-[101] flex flex-col gap-2 sm:right-5 md:right-6">
+        <button
+          type="button"
+          onClick={goPrevReel}
+          className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-reels-cyan/45 hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-reels-cyan/50"
+          aria-label="이전 영상"
+          title="이전 영상"
+        >
+          <ChevronUp className="h-6 w-6" strokeWidth={2.25} aria-hidden />
+        </button>
+        <button
+          type="button"
+          onClick={goNextReel}
+          className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-reels-cyan/45 hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-reels-cyan/50"
+          aria-label="다음 영상"
+          title="다음 영상"
+        >
+          <ChevronDown className="h-6 w-6" strokeWidth={2.25} aria-hidden />
+        </button>
+      </div>
 
       <div
         ref={scrollRef}
