@@ -66,9 +66,6 @@ function ExploreBrowseGrid({
 
   return (
     <div className="mx-auto max-w-[1800px] px-4 pb-20 pt-4 sm:px-6 md:pl-[calc(var(--reels-rail-w,0px)+1rem)] lg:px-8">
-      <p className="mb-4 text-[13px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        조각을 누르면 아래로 스와이프하며 계속 재생되는 세로 릴로 이동합니다.
-      </p>
       <div
         className="grid grid-cols-2 gap-3 sm:gap-3 md:grid-cols-3 xl:grid-cols-4 xl:gap-4"
         role="list"
