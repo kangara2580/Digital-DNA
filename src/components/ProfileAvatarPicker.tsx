@@ -3,11 +3,7 @@
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Dices, ImagePlus, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
-import {
-  BEST_REVIEW_AVATAR_PRESETS,
-  buildNotionistsAvatarUrl,
-  DEFAULT_BEST_REVIEW_AVATAR_SEED,
-} from "@/data/reelsAvatarPresets";
+import { DEFAULT_BEST_REVIEW_AVATAR_SEED } from "@/data/reelsAvatarPresets";
 import {
   buildNotionistsCustomAvatarUrl,
   createDefaultCharacterParts,
@@ -97,14 +93,6 @@ export function ProfileAvatarPicker({ value, onChange, hint }: Props) {
     [value],
   );
 
-  const selectPreset = useCallback(
-    (seed: string) => {
-      onChange({ kind: "preset", seed });
-      setParts(createDefaultCharacterParts(seed));
-    },
-    [onChange],
-  );
-
   const applyCustom = useCallback(
     (next: CharacterPartsV1) => {
       setParts(next);
@@ -185,10 +173,11 @@ export function ProfileAvatarPicker({ value, onChange, hint }: Props) {
           <p className="text-[13px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
             프로필 이미지
           </p>
-          <p className="mt-1 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            {hint ??
-              "오늘의 베스트 구매평과 같은 스타일의 기본 캐릭터를 고르거나, 본인 사진을 올려도 돼요. 기본 프로필도 충분히 트렌디합니다."}
-          </p>
+          {hint ? (
+            <p className="mt-1 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              {hint}
+            </p>
+          ) : null}
           <div className="mt-3 flex flex-wrap justify-center gap-2 sm:justify-start">
             <button
               type="button"
@@ -207,38 +196,6 @@ export function ProfileAvatarPicker({ value, onChange, hint }: Props) {
               onChange={onFile}
             />
           </div>
-        </div>
-      </div>
-
-      <div>
-        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          베스트 구매평 스타일 · 기본 프로필
-        </p>
-        <div className="flex gap-2 overflow-x-auto pb-1 pt-0.5 [-webkit-overflow-scrolling:touch]">
-          {BEST_REVIEW_AVATAR_PRESETS.map((p) => {
-            const active = value?.kind === "preset" && value.seed === p.seed;
-            return (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => selectPreset(p.seed)}
-                title={p.label}
-                className={`relative h-12 w-12 shrink-0 overflow-hidden rounded-full border-2 transition ${
-                  active
-                    ? "border-reels-cyan shadow-[0_0_0_3px_rgba(0,242,234,0.25)]"
-                    : "border-white/10 opacity-90 hover:border-reels-cyan/50 hover:opacity-100 [html[data-theme='light']_&]:border-zinc-200"
-                }`}
-              >
-                <Image
-                  src={buildNotionistsAvatarUrl(p.seed)}
-                  alt=""
-                  fill
-                  unoptimized
-                  className="object-cover"
-                />
-              </button>
-            );
-          })}
         </div>
       </div>
 

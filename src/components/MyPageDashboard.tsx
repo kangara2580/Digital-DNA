@@ -151,13 +151,6 @@ export function MyPageDashboard() {
                 <h3 className="text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
                   프로필 이미지
                 </h3>
-                <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                  계정에 표시되는 사진이에요. 베스트 구매평과 같은 스타일의 기본 캐릭터 또는 내 사진 중 선택할 수 있습니다.{" "}
-                  <span className="font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-                    창작용 3면 얼굴
-                  </span>
-                  은 「프로필 관리」 탭에서 따로 등록합니다.
-                </p>
                 <div className="mt-4">
                   <ProfileAvatarPicker
                     value={profileAvatar}
