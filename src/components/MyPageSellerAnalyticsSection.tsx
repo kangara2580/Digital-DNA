@@ -190,7 +190,7 @@ export function MyPageSellerAnalyticsSection() {
             id="seller-analytics-heading"
             className="text-xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-2xl"
           >
-            내 동영상 판매 실적 분석
+            내 판매 실적 분석
           </h2>
           <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/35 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300 [html[data-theme='light']_&]:text-emerald-700">
             <Radio className="h-3 w-3 animate-pulse" aria-hidden />
@@ -220,25 +220,24 @@ export function MyPageSellerAnalyticsSection() {
               </button>
             ))}
           </div>
-          <div className="flex min-w-0 w-full max-w-full flex-nowrap items-center justify-end gap-x-2 gap-y-0 overflow-x-auto rounded-xl border border-white/10 bg-black/20 px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:gap-2.5">
-            <span className="shrink-0 text-[11px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-              직접 지정
-            </span>
-            <label className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[11px] text-zinc-400">
-              시작
-              <input
-                type="date"
-                value={rangeDraft.start}
-                onChange={(e) => setRangeDraft((r) => ({ ...r, start: e.target.value }))}
-                className="rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-[12px] leading-none text-zinc-200 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
-              />
-            </label>
+          <div
+            className="flex min-w-0 w-full max-w-full flex-nowrap items-center justify-end gap-x-2 gap-y-0 overflow-x-auto rounded-xl border border-white/10 bg-black/20 px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:gap-2.5"
+            aria-label="기간 직접 지정"
+          >
+            <input
+              type="date"
+              value={rangeDraft.start}
+              onChange={(e) => setRangeDraft((r) => ({ ...r, start: e.target.value }))}
+              aria-label="시작일"
+              className="shrink-0 rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-[12px] leading-none text-zinc-200 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+            />
             <label className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[11px] text-zinc-400">
               끝
               <input
                 type="date"
                 value={rangeDraft.end}
                 onChange={(e) => setRangeDraft((r) => ({ ...r, end: e.target.value }))}
+                aria-label="끝일"
                 className="rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-[12px] leading-none text-zinc-200 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
               />
             </label>
