@@ -13,12 +13,7 @@ import {
 } from "react";
 import { ExploreReelSlide } from "@/components/ExploreReelSlide";
 import { VideoCard } from "@/components/VideoCard";
-import {
-  ALL_MARKET_VIDEOS,
-  getVideosForCategory,
-} from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
-import { shuffleVideos } from "@/data/videos";
 
 const BATCH = 6;
 /** 세로 릴: 풀을 순환해 이 개수까지 슬라이드 추가 (과도한 DOM 방지로 상한 유지) */
@@ -26,20 +21,6 @@ const MAX_SLIDES = 200;
 /** 그리드 초기·추가 로드 — 스크롤 하단에서 자동으로 더 불러옴 */
 const GRID_INITIAL = 24;
 const GRID_BATCH = 20;
-
-function useExplorePool() {
-  return useMemo(() => {
-    const rec = getVideosForCategory("recommend");
-    const portrait = rec.filter((v) => v.orientation === "portrait");
-    const base = portrait.length ? portrait : rec;
-    const fb =
-      base.length > 0
-        ? base
-        : ALL_MARKET_VIDEOS.filter((v) => v.orientation === "portrait");
-    const list = fb.length > 0 ? fb : ALL_MARKET_VIDEOS;
-    return shuffleVideos([...list]);
-  }, []);
-}
 
 /** 그리드 모드만 — 훅을 watch와 분리해 규칙 위반·리컨실 오류 방지 */
 function ExploreBrowseGrid({
@@ -244,8 +225,7 @@ function ExploreWatchReels({
   );
 }
 
-export function ExploreReelsFeed() {
-  const pool = useExplorePool();
+export function ExploreReelsFeed({ pool }: { pool: FeedVideo[] }) {
   const [mode, setMode] = useState<"browse" | "watch">("browse");
   const [watchOffset, setWatchOffset] = useState(0);
   const [visibleGridCount, setVisibleGridCount] = useState(GRID_INITIAL);
