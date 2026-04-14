@@ -13,6 +13,7 @@ import { FloatingHelp } from "@/components/FloatingHelp";
 import { MallTopNav } from "@/components/MallTopNav";
 import { ReelsLeftRail } from "@/components/ReelsLeftRail";
 import { ReelsMarketFooter } from "@/components/ReelsMarketFooter";
+import { SitePreferencesProvider } from "@/context/SitePreferencesContext";
 import { DopamineBasketProvider } from "@/context/DopamineBasketContext";
 import { PurchasedVideosProvider } from "@/context/PurchasedVideosContext";
 import { RecentClipsProvider } from "@/context/RecentClipsContext";
@@ -92,6 +93,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body className="min-h-screen bg-[var(--background,#02040a)] font-sans text-[var(--foreground,#fafafa)] antialiased">
+        <SitePreferencesProvider>
         <WishlistProvider>
           <RecentClipsProvider>
             <DopamineBasketProvider>
@@ -109,6 +111,7 @@ export default function RootLayout({
             </DopamineBasketProvider>
           </RecentClipsProvider>
         </WishlistProvider>
+        </SitePreferencesProvider>
       </body>
     </html>
   );

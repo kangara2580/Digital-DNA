@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  ChevronDown,
-  Moon,
-  Search,
-  Sun,
-  Wallet,
-} from "lucide-react";
+import { ChevronDown, Search, Wallet } from "lucide-react";
 import {
   AnimatePresence,
   motion,
@@ -20,17 +14,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { createPortal } from "react-dom";
 import { MALL_CATEGORY_NAV_ITEMS as ITEMS } from "@/data/mallCategoryNav";
 import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhrases";
-import {
-  applyLocaleToDocument,
-  STORAGE_THEME,
-  type SiteLocale,
-} from "@/lib/sitePreferences";
-
-const iconStroke = 1.25;
-
-/** 상단 아이콘 — 다크: 글래스 / 라이트: 검정 계열 */
-const navActionClass =
-  "inline-flex items-center justify-center rounded-full bg-transparent px-2.5 py-1.5 text-zinc-300 transition-[color,transform] duration-200 ease-out hover:text-white active:scale-[0.98] motion-reduce:duration-150 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
+import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 
 /** 카테고리 pill — 라이트 모드에서 검정 텍스트 */
 const categoryPillClass =
@@ -175,9 +159,6 @@ function RotatingSearchField({
   );
 }
 
-const localeSegClass =
-  "min-w-[2rem] rounded-full px-2 py-1 text-[11px] font-bold uppercase tracking-wide transition-colors";
-
 const subscribeNavClass =
   "inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-reels-cyan/45 bg-gradient-to-r from-reels-cyan/12 to-reels-cyan/5 text-reels-cyan shadow-[0_0_18px_-10px_rgba(0,242,234,0.35)] transition hover:border-reels-cyan/70 hover:from-reels-cyan/22 hover:to-reels-cyan/10 sm:size-10 [html[data-theme='light']_&]:border-reels-cyan/40 [html[data-theme='light']_&]:from-reels-cyan/12 [html[data-theme='light']_&]:to-white/90";
 
@@ -194,84 +175,12 @@ function SubscribeNavLink() {
   );
 }
 
-function QuickMenuIcons({
-  className,
-  themeMode = "dark",
-  onToggleTheme,
-  locale,
-  onLocaleChange,
-}: {
-  className?: string;
-  themeMode?: "light" | "dark";
-  onToggleTheme?: () => void;
-  locale: SiteLocale;
-  onLocaleChange: (next: SiteLocale) => void;
-}) {
-  return (
-    <div
-      className={`flex shrink-0 items-center gap-1 sm:gap-1.5 ${className ?? ""}`}
-    >
-      <div
-        role="group"
-        aria-label="언어 선택"
-        className="flex items-center rounded-full border border-white/10 bg-black/20 p-0.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80"
-      >
-        <button
-          type="button"
-          onClick={() => onLocaleChange("ko")}
-          className={`${localeSegClass} ${
-            locale === "ko"
-              ? "bg-reels-cyan/25 text-reels-cyan"
-              : "text-zinc-500 hover:text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900"
-          }`}
-          aria-pressed={locale === "ko"}
-          title="한국어"
-        >
-          ko
-        </button>
-        <button
-          type="button"
-          onClick={() => onLocaleChange("en")}
-          className={`${localeSegClass} ${
-            locale === "en"
-              ? "bg-reels-cyan/25 text-reels-cyan"
-              : "text-zinc-500 hover:text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900"
-          }`}
-          aria-pressed={locale === "en"}
-          title="English"
-        >
-          en
-        </button>
-      </div>
-      <div role="group" aria-label="화면 테마" className="flex items-center">
-        <button
-          type="button"
-          onClick={onToggleTheme}
-          className={navActionClass}
-          aria-label={
-            themeMode === "dark" ? "화이트 테마로 전환" : "다크 테마로 전환"
-          }
-          title={themeMode === "dark" ? "화이트 버전" : "다크 버전"}
-        >
-          {themeMode === "dark" ? (
-            <Sun className="h-[19px] w-[19px]" strokeWidth={iconStroke} />
-          ) : (
-            <Moon className="h-[19px] w-[19px]" strokeWidth={iconStroke} />
-          )}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export function MallTopNav() {
   const { scrollY } = useScroll();
   const reduceMotionNav = useReducedMotion() ?? false;
   /** 패럴랙스는 원시 scrollY만(스프링 제거 — 맨 위에서 스프링이 늦게 따라와 타이틀 위치가 어긋남) */
   const heroTitleY = useTransform(scrollY, [0, 180], [0, reduceMotionNav ? 0 : -12]);
   const [q, setQ] = useState("");
-  const [themeMode, setThemeMode] = useState<"light" | "dark">("dark");
-  const [locale, setLocale] = useState<SiteLocale>("ko");
   const headerRef = useRef<HTMLElement>(null);
   const [compact, setCompact] = useState(false);
   const pathname = usePathname();
@@ -287,39 +196,6 @@ export function MallTopNav() {
     left: number;
     width: number;
   } | null>(null);
-
-  const applyTheme = useCallback((next: "light" | "dark") => {
-    document.documentElement.dataset.theme = next;
-    try {
-      window.localStorage.setItem(STORAGE_THEME, next);
-    } catch {
-      /* noop */
-    }
-    setThemeMode(next);
-  }, []);
-
-  const applyLocale = useCallback((next: SiteLocale) => {
-    applyLocaleToDocument(next);
-    setLocale(next);
-  }, []);
-
-  useEffect(() => {
-    const html = document.documentElement;
-    const current =
-      html.dataset.theme === "light" || html.dataset.theme === "dark"
-        ? (html.dataset.theme as "light" | "dark")
-        : window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light";
-    html.dataset.theme = current;
-    setThemeMode(current);
-    const loc = html.lang === "en" ? "en" : "ko";
-    setLocale(loc);
-  }, []);
-
-  const toggleTheme = useCallback(() => {
-    applyTheme(themeMode === "dark" ? "light" : "dark");
-  }, [applyTheme, themeMode]);
 
   useEffect(() => {
     const el = headerRef.current;
@@ -501,13 +377,8 @@ export function MallTopNav() {
             {!compactEffective && (
               <div className="flex items-center gap-2 sm:gap-2.5">
                 <SubscribeNavLink />
-                <div className="hidden items-center gap-0.5 sm:flex sm:-mr-1 lg:-mr-0.5">
-                  <QuickMenuIcons
-                    themeMode={themeMode}
-                    onToggleTheme={toggleTheme}
-                    locale={locale}
-                    onLocaleChange={applyLocale}
-                  />
+                <div className="hidden items-center gap-0.5 sm:flex sm:-mr-1 lg:-mr-0.5 md:hidden">
+                  <SitePreferencesMenu />
                 </div>
               </div>
             )}
@@ -670,12 +541,9 @@ export function MallTopNav() {
               className={`flex shrink-0 items-center gap-1.5 sm:gap-2 sm:-mr-1 lg:-mr-0.5 ${easeLayout}`}
             >
               <SubscribeNavLink />
-              <QuickMenuIcons
-                themeMode={themeMode}
-                onToggleTheme={toggleTheme}
-                locale={locale}
-                onLocaleChange={applyLocale}
-              />
+              <div className="md:hidden">
+                <SitePreferencesMenu />
+              </div>
             </div>
           )}
         </div>

@@ -7,7 +7,7 @@ import {
   History,
   Home,
   Link2,
-  Menu,
+  MoreVertical,
   ShoppingCart,
   User,
   UserPlus2,
@@ -17,6 +17,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
+import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 import { ReelsLogo } from "@/components/ReelsLogo";
 import { SellerNotificationBell } from "@/components/SellerNotificationBell";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
@@ -166,9 +167,10 @@ export function ReelsLeftRail() {
               aria-expanded={open}
               aria-haspopup="dialog"
               aria-controls={drawerId}
-              title="메뉴"
+              aria-label="더보기 — 언어·화면 테마·메뉴"
+              title="더보기"
             >
-              <Menu className="h-[22px] w-[22px]" strokeWidth={stroke} aria-hidden />
+              <MoreVertical className="h-[22px] w-[22px]" strokeWidth={stroke} aria-hidden />
             </button>
           </div>
         </div>
@@ -189,7 +191,7 @@ export function ReelsLeftRail() {
                   <button
                     type="button"
                     className="absolute inset-0 bg-black/55 backdrop-blur-[2px] [html[data-theme='light']_&]:bg-black/25"
-                    aria-label="메뉴 닫기"
+                    aria-label="더보기 닫기"
                     onClick={close}
                   />
                   <motion.div
@@ -212,7 +214,7 @@ export function ReelsLeftRail() {
                         id={drawerTitleId}
                         className="text-[15px] font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
                       >
-                        메뉴
+                        더보기
                       </p>
                       <button
                         type="button"
@@ -225,6 +227,9 @@ export function ReelsLeftRail() {
                     </div>
 
                     <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 py-4">
+                      <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+                        <SitePreferencesMenu layout="stack" />
+                      </div>
                       <div>
                         <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                           바로가기
