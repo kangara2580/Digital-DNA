@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { ShoppingCart } from "lucide-react";
 import { CloneCountAnimation } from "@/components/CloneCountAnimation";
@@ -22,6 +23,7 @@ import {
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 export function VideoDetailView({ video }: { video: FeedVideo }) {
+  const router = useRouter();
   const dopamine = useDopamineBasket();
   const { hasPurchased, markPurchased } = usePurchasedVideos();
   const { recordView } = useRecentClips();
@@ -132,7 +134,9 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                 type="button"
                 disabled={soldOut}
                 onClick={() => {
-                  if (!soldOut && !owned) markPurchased(video.id);
+                  if (soldOut) return;
+                  if (!owned) markPurchased(video.id);
+                  router.push(`/create?videoId=${encodeURIComponent(video.id)}&mode=quick`);
                 }}
                 className="w-full flex-1 rounded-full bg-reels-crimson px-5 py-3.5 text-[14px] font-extrabold text-white shadow-reels-crimson transition-[transform,opacity] duration-300 ease-in-out hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
               >
@@ -151,30 +155,6 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
               >
                 <ShoppingCart className="h-5 w-5" />
               </button>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              {!owned ? (
-                <p className="text-center text-[11px] text-zinc-500">
-                  결제 완료 후 창작 버튼이 자동으로 활성화됩니다.
-                </p>
-              ) : null}
-              {owned ? (
-                <Link
-                  href={`/create?videoId=${encodeURIComponent(video.id)}`}
-                  className="flex w-full items-center justify-center rounded-full border border-reels-cyan/40 bg-reels-cyan/10 px-5 py-3.5 text-center text-[14px] font-extrabold text-reels-cyan shadow-[0_0_24px_-8px_rgba(0,242,234,0.35)] transition-[transform,opacity] duration-300 hover:bg-reels-cyan/18"
-                >
-                  AI 창작 ○ 편집
-                </Link>
-              ) : (
-                <div
-                  className="flex w-full cursor-not-allowed items-center justify-center rounded-full border border-white/10 bg-white/[0.03] px-5 py-3.5 text-center text-[14px] font-extrabold text-zinc-500"
-                  aria-disabled
-                  title="먼저 모션 권한을 구매해 주세요"
-                >
-                  AI 창작 ○ 편집 (구매 후 활성화)
-                </div>
-              )}
             </div>
 
             <div className="pt-1">

@@ -420,7 +420,13 @@ function previewToneFromPrompt(prompt: string): string {
   return "linear-gradient(140deg, rgba(255,255,255,0.12), rgba(0,0,0,0.14))";
 }
 
-export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
+export function PurchaseCustomizeStudio({
+  video,
+  startWithQuick = false,
+}: {
+  video: FeedVideo;
+  startWithQuick?: boolean;
+}) {
   const { hasPurchased } = usePurchasedVideos();
   const isLocalFaceSwapDemo = LOCAL_FACE_SWAP_VIDEO_IDS.includes(video.id);
   const owned = hasPurchased(video.id) || isLocalFaceSwapDemo;
@@ -436,7 +442,7 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
   /** idle: 아직 저장 안 함 · saving: 저장 중 · saved: 완료(문구 유지, 재저장 시 다시 saving → saved) */
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const saveInFlightRef = useRef(false);
-  const [useAdvancedStep, setUseAdvancedStep] = useState(true);
+  const [useAdvancedStep, setUseAdvancedStep] = useState(!startWithQuick);
   const [submitRemote, setSubmitRemote] = useState(false);
   const [remoteErr, setRemoteErr] = useState<string | null>(null);
   const [previewBgPrompt, setPreviewBgPrompt] = useState<string | null>(null);
@@ -535,6 +541,10 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
     setSaveStatus("idle");
     saveInFlightRef.current = false;
   }, [video.id]);
+
+  useEffect(() => {
+    setUseAdvancedStep(!startWithQuick);
+  }, [startWithQuick, video.id]);
 
   useEffect(() => {
     if (!localFacePreviewQuotaActive) return;
