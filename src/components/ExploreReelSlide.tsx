@@ -138,8 +138,10 @@ export function ExploreReelSlide({ video, scrollRootRef }: ReelSlideProps) {
   const [muted, setMuted] = useState(true);
   const [progress, setProgress] = useState(0);
   const previewSrc = video.previewSrc ?? video.src;
+  /** 상세·카드는 Pexels 직링크를 끄지만, 릴스 전체화면은 실제 MP4를 재생해야 함 */
   const posterSrc = sanitizePosterSrc(video.poster);
-  const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(previewSrc);
+  const posterFallback =
+    posterSrc ?? (video.poster?.trim() || undefined);
 
   useEffect(() => {
     const block = blockRef.current;
@@ -181,35 +183,36 @@ export function ExploreReelSlide({ video, scrollRootRef }: ReelSlideProps) {
       ref={blockRef}
       className="flex h-[calc(100dvh-var(--header-height,4.5rem))] w-full shrink-0 snap-start snap-always flex-col bg-[#050508] [html[data-theme='light']_&]:bg-zinc-100"
     >
-      <div className="flex min-h-0 w-full flex-1 flex-col md:flex-row md:items-center md:justify-center md:gap-2 md:px-3 lg:gap-3">
+      <div className="flex min-h-0 w-full flex-1 items-center justify-center px-2 pt-2 md:px-4 md:pt-0">
         {/*
-          데스크톱: 영상+레일을 한 덩어리로 두기 위해 영상 래퍼에 md:flex-none.
-          (flex-1이면 레일이 뷰포트 맨 오른쪽으로 밀림)
+          영상 열에 명시적 max-width를 두어 aspect-[9/16] + w-full 이 0으로 무너지지 않게 함.
+          레일은 같은 flex 줄에서 영상 바로 옆에만 붙음(가운데 단독 정렬 방지).
         */}
-        <div className="relative flex min-h-0 flex-1 items-center justify-center px-2 pt-2 md:flex-none md:px-0 md:pt-0">
-          <div
-            className="relative aspect-[9/16] w-full max-w-[min(420px,100%)] max-h-[min(78dvh,calc(100dvh-var(--header-height)-7rem))] overflow-hidden rounded-2xl border border-white/12 bg-black shadow-[0_24px_80px_-30px_rgba(0,0,0,0.85)] md:max-h-[min(92dvh,calc(100dvh-var(--header-height)-2rem))] [html[data-theme='light']_&]:border-zinc-200"
-          >
+        <div className="flex w-full max-w-[min(56rem,calc(100vw-var(--reels-rail-w,0px)-1.5rem))] flex-row items-center justify-center gap-2 md:gap-3 lg:gap-4">
+          <div className="relative w-[min(100%,min(420px,calc(100vw-var(--reels-rail-w,0px)-8.5rem)))] shrink-0">
+            <div
+              className="relative aspect-[9/16] w-full max-h-[min(78dvh,calc(100dvh-var(--header-height)-7rem))] overflow-hidden rounded-2xl border border-white/12 bg-black shadow-[0_24px_80px_-30px_rgba(0,0,0,0.85)] md:max-h-[min(92dvh,calc(100dvh-var(--header-height)-2rem))] [html[data-theme='light']_&]:border-zinc-200"
+            >
             <video
               ref={videoRef}
-              className="absolute inset-0 h-full w-full object-cover"
-              poster={posterSrc || undefined}
-              src={isPexelsBlockedVideo ? undefined : previewSrc}
+              className="absolute inset-0 z-0 h-full w-full object-cover"
+              poster={posterFallback || undefined}
+              src={previewSrc}
               muted={muted}
               playsInline
               loop
-              preload={isPexelsBlockedVideo ? "none" : "metadata"}
+              preload="metadata"
               onTimeUpdate={onTimeUpdate}
             />
             <div
-              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/35"
+              className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/85 via-black/10 to-black/35"
               aria-hidden
             />
 
             <button
               type="button"
               onClick={toggleMute}
-              className="pointer-events-auto absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition hover:bg-black/60"
+              className="pointer-events-auto absolute right-3 top-3 z-[3] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition hover:bg-black/60"
               aria-label={muted ? "소리 켜기" : "음소거"}
             >
               {muted ? (
@@ -241,7 +244,7 @@ export function ExploreReelSlide({ video, scrollRootRef }: ReelSlideProps) {
 
             {/* 진행 바 (틱톡 스타일) */}
             <div
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-0.5 bg-white/15"
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-0.5 bg-white/15"
               aria-hidden
             >
               <div
@@ -250,9 +253,10 @@ export function ExploreReelSlide({ video, scrollRootRef }: ReelSlideProps) {
               />
             </div>
           </div>
-        </div>
+          </div>
 
-        <ReelDesktopRail video={video} className="hidden md:flex" />
+          <ReelDesktopRail video={video} className="hidden shrink-0 md:flex" />
+        </div>
       </div>
 
       <div className="md:hidden">
