@@ -10,7 +10,14 @@ import {
 } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 import { MALL_CATEGORY_NAV_ITEMS as ITEMS } from "@/data/mallCategoryNav";
 import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhrases";
@@ -349,7 +356,7 @@ export function MallTopNav() {
   }`;
 
   return (
-    <>
+    <Fragment>
     <header
       ref={headerRef}
       className={`sticky top-0 z-40 isolate border-b border-white/10 bg-reels-abyss/72 backdrop-blur-xl [transform:translateZ(0)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white/95 [html[data-theme='light']_&]:shadow-[0_1px_0_rgba(0,0,0,0.06)] ${easeNav} ${
@@ -553,6 +560,6 @@ export function MallTopNav() {
       </div>
     </header>
     <FixedSubscribeNavLink />
-    </>
+    </Fragment>
   );
 }
