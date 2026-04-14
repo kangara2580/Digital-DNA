@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-page-custom-font */
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import {
   Black_Han_Sans,
   Inter,
@@ -7,17 +8,13 @@ import {
   Nanum_Gothic,
   Song_Myung,
 } from "next/font/google";
+import { AppProviders } from "@/components/AppProviders";
 import { NavigationRecovery } from "@/components/NavigationRecovery";
 import { DnaBuilderDock } from "@/components/DnaBuilderDock";
 import { FloatingHelp } from "@/components/FloatingHelp";
 import { MallTopNav } from "@/components/MallTopNav";
 import { ReelsLeftRail } from "@/components/ReelsLeftRail";
 import { ReelsMarketFooter } from "@/components/ReelsMarketFooter";
-import { SitePreferencesProvider } from "@/context/SitePreferencesContext";
-import { DopamineBasketProvider } from "@/context/DopamineBasketContext";
-import { PurchasedVideosProvider } from "@/context/PurchasedVideosContext";
-import { RecentClipsProvider } from "@/context/RecentClipsContext";
-import { WishlistProvider } from "@/context/WishlistContext";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -54,7 +51,7 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   const themeBootScript = `
     (function () {
@@ -93,25 +90,17 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body className="min-h-screen bg-[var(--background,#02040a)] font-sans text-[var(--foreground,#fafafa)] antialiased">
-        <SitePreferencesProvider>
-        <WishlistProvider>
-          <RecentClipsProvider>
-            <DopamineBasketProvider>
-              <PurchasedVideosProvider>
-                <NavigationRecovery />
-                <ReelsLeftRail />
-                <div className="min-w-0 md:pl-[var(--reels-rail-w)]">
-                  <MallTopNav />
-                  {children}
-                  <ReelsMarketFooter />
-                  <DnaBuilderDock />
-                  <FloatingHelp />
-                </div>
-              </PurchasedVideosProvider>
-            </DopamineBasketProvider>
-          </RecentClipsProvider>
-        </WishlistProvider>
-        </SitePreferencesProvider>
+        <AppProviders>
+          <NavigationRecovery />
+          <ReelsLeftRail />
+          <div className="min-w-0 md:pl-[var(--reels-rail-w)]">
+            <MallTopNav />
+            {children}
+            <ReelsMarketFooter />
+            <DnaBuilderDock />
+            <FloatingHelp />
+          </div>
+        </AppProviders>
       </body>
     </html>
   );
