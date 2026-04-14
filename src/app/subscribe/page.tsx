@@ -39,11 +39,8 @@ export default function SubscribePage() {
               id="subscribe-service-heading"
               className="relative mt-4 text-xl font-black leading-snug tracking-tight sm:text-2xl [html[data-theme='light']_&]:text-zinc-900"
             >
-              마켓·탐색을 구독으로 이용
+              월 구독 혜택을 받아보세요
             </h1>
-            <p className="relative mt-3 text-[14px] font-medium leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-              월 구독 혜택을 받아보세요.
-            </p>
             <div className="relative mt-8 flex flex-col gap-2">
               <button
                 type="button"
