@@ -25,10 +25,6 @@ export default function SubscribePage() {
           <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">구독</span>
         </nav>
 
-        <p className="mb-6 text-center text-[15px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600 sm:mb-8">
-          구독으로 콘텐츠를 이용하고, 카드는 결제 시점에만 청구됩니다.
-        </p>
-
         <div className="grid gap-6 md:grid-cols-2 md:gap-8">
           {/* 구독 서비스 */}
           <section className={cardShell} aria-labelledby="subscribe-service-heading">
@@ -46,7 +42,7 @@ export default function SubscribePage() {
               마켓·탐색을 구독으로 이용
             </h1>
             <p className="relative mt-3 text-[14px] font-medium leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-              플랜에 따라 추천 피드·우선 노출·지원 혜택을 드릴 예정입니다. 월 정액 또는 이용량 기준 과금 등 상세는 오픈 시 이 페이지에 안내됩니다.
+              월 구독 혜택을 받아보세요.
             </p>
             <div className="relative mt-8 flex flex-col gap-2">
               <button
@@ -78,9 +74,6 @@ export default function SubscribePage() {
             >
               카드 한 번 등록, 이용할 때마다 결제
             </h2>
-            <p className="relative mt-3 text-[14px] font-medium leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-              정액 충전 없이, 등록한 카드에서 <strong className="font-bold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">이용 시점에 실시간 청구</strong>됩니다. 조각 구매·라이선스 결제에 사용됩니다.
-            </p>
             <div className="relative mt-8 flex flex-col gap-2">
               <button
                 type="button"
