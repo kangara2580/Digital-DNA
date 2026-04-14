@@ -5,7 +5,7 @@
   "scripts": {
     "clean": "rm -rf .next",
     "predev": "lsof -ti:3000 | xargs kill -9 || true",
-    "dev": "next dev",
+    "dev": "(sleep 1 && open http://localhost:3000) & next dev",
     "dev:safari": "node scripts/dev-open-safari.mjs",
     "dna": "npm run dev",
     "dev:3001": "next dev -p 3001 -H 127.0.0.1",
