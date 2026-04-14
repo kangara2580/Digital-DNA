@@ -1362,7 +1362,6 @@ export function PurchaseCustomizeStudio({
                     preload={bgPreviewOn ? "metadata" : "auto"}
                     onLoadedMetadata={onVideoMeta}
                     onLoadedData={(e) => {
-                      console.log("[BG PREVIEW] video loaded:", e.currentTarget.currentSrc);
                       if (bgPreviewOn) {
                         setPreviewTransitionLoading(false);
                         // 사용자가 재생 버튼을 누르지 않아도 즉시 재생되도록 강제 시도
@@ -1370,7 +1369,6 @@ export function PurchaseCustomizeStudio({
                       }
                     }}
                     onError={(e) => {
-                      console.log("[BG PREVIEW] video error:", e.currentTarget.currentSrc);
                       // 일시적인 로딩/코덱 이슈에서 사용자 혼란을 줄이기 위해 경고 문구는 노출하지 않음
                       setPreviewTransitionLoading(false);
                     }}
@@ -1395,8 +1393,6 @@ export function PurchaseCustomizeStudio({
                       loop
                       preload="auto"
                       onLoadedData={(e) => {
-                        const loadedSrc = e.currentTarget.currentSrc;
-                        console.log("[BG PREVIEW] incoming loaded:", loadedSrc);
                         setIncomingVisible(true);
                         if (incomingCommitRef.current) {
                           window.clearTimeout(incomingCommitRef.current);
