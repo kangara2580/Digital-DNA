@@ -68,6 +68,21 @@ export async function GET(req: Request) {
       );
     }
 
+    /** DB 파일·테이블 미준비 등 — 판매자 벨만 깨지지 않게 빈 목록(200). 서버 로그로 원인 추적. */
+    const softFail =
+      message.includes("Unable to open database") ||
+      message.includes("Error querying the database") ||
+      message.includes("Can't reach database server") ||
+      message.includes("no such table") ||
+      message.includes("PrismaClientInitializationError") ||
+      (typeof err === "object" &&
+        err !== null &&
+        "name" in err &&
+        (err as { name: string }).name === "PrismaClientInitializationError");
+    if (softFail) {
+      return NextResponse.json({ notifications: [], unreadPending: 0 });
+    }
+
     return NextResponse.json(
       {
         error: "internal_error",
