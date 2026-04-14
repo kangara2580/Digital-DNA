@@ -144,8 +144,8 @@ export function ProfileAvatarPicker({ value, onChange, hint }: Props) {
   }, [applyCustom]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+    <div className="space-y-3">
+      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-start">
         <div className="relative shrink-0">
           <div className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-reels-cyan/35 bg-black/30 shadow-lg ring-4 ring-reels-cyan/10 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:ring-reels-cyan/15 sm:h-28 sm:w-28">
             {value?.kind === "upload" ? (
@@ -200,42 +200,37 @@ export function ProfileAvatarPicker({ value, onChange, hint }: Props) {
       </div>
 
       <div
-        className={`rounded-2xl border border-reels-cyan/20 bg-gradient-to-br from-black/40 to-black/20 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-100/90 [html[data-theme='light']_&]:to-white ${
+        className={`rounded-xl border border-reels-cyan/20 bg-gradient-to-br from-black/40 to-black/20 p-2.5 sm:p-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-100/90 [html[data-theme='light']_&]:to-white ${
           customizerDisabled ? "opacity-50" : ""
         }`}
       >
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <p className="text-[12px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-              캐릭터 꾸미기
-            </p>
-            <p className="mt-0.5 text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-              같은 Notionists 스타일로 헤어·얼굴·옷을 바꿔 보세요. 좌우로 넘기며 조합할 수 있어요.
-            </p>
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-1.5">
+          <p className="text-[11px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+            캐릭터 꾸미기
+          </p>
           <button
             type="button"
             disabled={customizerDisabled}
             onClick={randomize}
-            className="inline-flex items-center gap-1.5 rounded-full border border-reels-cyan/35 bg-reels-cyan/12 px-3 py-1.5 text-[11px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex items-center gap-1 rounded-full border border-reels-cyan/35 bg-reels-cyan/12 px-2 py-0.5 text-[10px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <Dices className="h-3.5 w-3.5" aria-hidden />
-            랜덤 조합
+            <Dices className="h-3 w-3" aria-hidden />
+            랜덤
           </button>
         </div>
 
         {customizerDisabled ? (
-          <p className="mt-3 text-[11px] text-zinc-500">
+          <p className="mt-2 text-[10px] leading-snug text-zinc-500">
             직접 올린 사진을 쓰는 중에는 캐릭터 조합이 꺼져 있어요. 프리셋이나 조합을 쓰려면 위에서 사진 선택을 해제해 주세요.
           </p>
         ) : (
-          <div className="mt-4 space-y-2.5">
+          <div className="mt-2 space-y-1">
             <GenderRow
               value={parts.gender}
               onChange={(gender) => applyCustom({ ...parts, gender })}
             />
             <CycleRow
-              label="헤어 스타일"
+              label="헤어"
               current={parts.hair}
               list={NOTIONISTS_HAIR}
               onChange={(hair) => applyCustom({ ...parts, hair })}
@@ -294,28 +289,30 @@ function CycleRow<T extends string>({
 }) {
   const idx = Math.max(0, list.indexOf(current));
   return (
-    <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/25 px-2 py-1.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80">
+    <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-black/25 px-1.5 py-0.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80">
       <button
         type="button"
         onClick={() => onChange(cycleInList(list, current, -1))}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 text-zinc-300 transition hover:border-reels-cyan/40 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/10 text-zinc-300 transition hover:border-reels-cyan/40 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
         aria-label={`${label} 이전`}
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-3.5 w-3.5" />
       </button>
       <div className="min-w-0 flex-1 text-center">
-        <p className="text-[12px] font-bold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">{label}</p>
-        <p className="text-[10px] text-zinc-500">
-          {idx + 1} / {list.length}
+        <p className="text-[10px] font-bold leading-tight text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
+          {label}{" "}
+          <span className="font-semibold tabular-nums text-zinc-500">
+            {idx + 1}/{list.length}
+          </span>
         </p>
       </div>
       <button
         type="button"
         onClick={() => onChange(cycleInList(list, current, 1))}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 text-zinc-300 transition hover:border-reels-cyan/40 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/10 text-zinc-300 transition hover:border-reels-cyan/40 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
         aria-label={`${label} 다음`}
       >
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-3.5 w-3.5" />
       </button>
     </div>
   );
@@ -333,15 +330,17 @@ function GenderRow({
     { id: "masculine", label: "남성" },
   ];
   return (
-    <div className="rounded-xl border border-white/10 bg-black/25 px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80">
-      <p className="mb-2 text-center text-[12px] font-bold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">성별 느낌</p>
-      <div className="flex gap-1.5">
+    <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/25 px-2 py-1 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80">
+      <span className="w-8 shrink-0 text-[9px] font-bold uppercase tracking-wide text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        성별
+      </span>
+      <div className="flex min-w-0 flex-1 gap-1">
         {opts.map((o) => (
           <button
             key={o.id}
             type="button"
             onClick={() => onChange(o.id)}
-            className={`flex-1 rounded-lg py-2 text-[11px] font-bold transition ${
+            className={`flex-1 rounded-md py-1 text-[10px] font-bold transition ${
               value === o.id
                 ? "bg-reels-cyan/25 text-reels-cyan ring-1 ring-reels-cyan/40"
                 : "border border-white/10 bg-black/30 text-zinc-400 hover:border-reels-cyan/30 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
@@ -351,7 +350,6 @@ function GenderRow({
           </button>
         ))}
       </div>
-      <p className="mt-1.5 text-center text-[10px] text-zinc-500">수염·실루엣 확률만 살짝 바뀌어요.</p>
     </div>
   );
 }
@@ -369,15 +367,17 @@ function FaceShapeRow({
     { id: 2, label: "라운드" },
   ];
   return (
-    <div className="rounded-xl border border-white/10 bg-black/25 px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80">
-      <p className="mb-2 text-center text-[12px] font-bold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">얼굴형</p>
-      <div className="flex gap-1.5">
+    <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/25 px-2 py-1 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80">
+      <span className="w-8 shrink-0 text-[9px] font-bold uppercase tracking-wide text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        얼굴
+      </span>
+      <div className="flex min-w-0 flex-1 gap-1">
         {opts.map((o) => (
           <button
             key={o.id}
             type="button"
             onClick={() => onChange(o.id)}
-            className={`flex-1 rounded-lg py-2 text-[11px] font-bold transition ${
+            className={`flex-1 rounded-md py-1 text-[10px] font-bold transition ${
               value === o.id
                 ? "bg-reels-cyan/25 text-reels-cyan ring-1 ring-reels-cyan/40"
                 : "border border-white/10 bg-black/30 text-zinc-400 hover:border-reels-cyan/30 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
@@ -387,7 +387,6 @@ function FaceShapeRow({
           </button>
         ))}
       </div>
-      <p className="mt-1.5 text-center text-[10px] text-zinc-500">전체 비율만 살짝 조정해요.</p>
     </div>
   );
 }
