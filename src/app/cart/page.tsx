@@ -23,9 +23,6 @@ export default function CartPage() {
           <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
             장바구니
           </h1>
-          <p className="mt-1 text-[15px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            카드·상세에서 담은 조각이 여기와 하단 DNA 조합기에 같이 반영됩니다.
-          </p>
         </div>
         {builderItems.length > 0 ? (
           <button
@@ -48,17 +45,13 @@ export default function CartPage() {
       {builderItems.length === 0 ? (
         <div className="mx-auto mt-14 max-w-md text-center sm:max-w-lg">
           <p className="text-[15px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
-            담긴 조각이 없어요
-          </p>
-          <p className="mt-2 break-keep text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            영상 카드에 마우스를 올린 뒤 장바구니 아이콘을 누르면 여기에{" "}
-            <span className="whitespace-nowrap">쌓입니다.</span>
+            담긴 영상이 없어요
           </p>
           <Link
             href="/"
             className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
           >
-            클립 둘러보기
+            둘러보기
           </Link>
         </div>
       ) : (
