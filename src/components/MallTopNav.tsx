@@ -162,11 +162,15 @@ function RotatingSearchField({
 const subscribeNavClass =
   "inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-reels-cyan/45 bg-gradient-to-r from-reels-cyan/12 to-reels-cyan/5 text-reels-cyan shadow-[0_0_18px_-10px_rgba(0,242,234,0.35)] transition hover:border-reels-cyan/70 hover:from-reels-cyan/22 hover:to-reels-cyan/10 sm:size-10 [html[data-theme='light']_&]:border-reels-cyan/40 [html[data-theme='light']_&]:from-reels-cyan/12 [html[data-theme='light']_&]:to-white/90";
 
-function SubscribeNavLink() {
+/** 스크롤과 무관하게 뷰포트 우측 상단에 고정 */
+const subscribeFixedWrap =
+  "pointer-events-auto fixed right-[max(0.75rem,env(safe-area-inset-right))] top-[max(0.5rem,env(safe-area-inset-top))] z-[45] md:right-6";
+
+function FixedSubscribeNavLink() {
   return (
     <Link
       href="/subscribe"
-      className={subscribeNavClass}
+      className={`${subscribeNavClass} ${subscribeFixedWrap}`}
       aria-label="구독·결제 페이지로 이동"
       title="구독"
     >
@@ -345,6 +349,7 @@ export function MallTopNav() {
   }`;
 
   return (
+    <>
     <header
       ref={headerRef}
       className={`sticky top-0 z-40 isolate border-b border-white/10 bg-reels-abyss/72 backdrop-blur-xl [transform:translateZ(0)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white/95 [html[data-theme='light']_&]:shadow-[0_1px_0_rgba(0,0,0,0.06)] ${easeNav} ${
@@ -376,7 +381,6 @@ export function MallTopNav() {
             </Link>
             {!compactEffective && (
               <div className="flex items-center gap-2 sm:gap-2.5">
-                <SubscribeNavLink />
                 <div className="hidden items-center gap-0.5 sm:flex sm:-mr-1 lg:-mr-0.5 md:hidden">
                   <SitePreferencesMenu />
                 </div>
@@ -540,7 +544,6 @@ export function MallTopNav() {
             <div
               className={`flex shrink-0 items-center gap-1.5 sm:gap-2 sm:-mr-1 lg:-mr-0.5 ${easeLayout}`}
             >
-              <SubscribeNavLink />
               <div className="md:hidden">
                 <SitePreferencesMenu />
               </div>
@@ -549,5 +552,7 @@ export function MallTopNav() {
         </div>
       </div>
     </header>
+    <FixedSubscribeNavLink />
+    </>
   );
 }
