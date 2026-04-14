@@ -3,6 +3,7 @@
 import { ArrowLeft, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ExploreReelSlide } from "@/components/ExploreReelSlide";
 import { VideoCard } from "@/components/VideoCard";
 import {
   ALL_MARKET_VIDEOS,
@@ -10,7 +11,6 @@ import {
 } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
 import { shuffleVideos } from "@/data/videos";
-import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 const BATCH = 6;
 /** 세로 릴: 풀을 순환해 이 개수까지 슬라이드 추가 (과도한 DOM 방지로 상한 유지) */
@@ -31,82 +31,6 @@ function useExplorePool() {
     const list = fb.length > 0 ? fb : ALL_MARKET_VIDEOS;
     return shuffleVideos([...list]);
   }, []);
-}
-
-function ReelSlide({
-  video,
-  scrollRootRef,
-}: {
-  video: FeedVideo;
-  scrollRootRef: React.RefObject<HTMLDivElement | null>;
-}) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const blockRef = useRef<HTMLDivElement>(null);
-  const previewSrc = video.previewSrc ?? video.src;
-  const posterSrc = sanitizePosterSrc(video.poster);
-  const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(previewSrc);
-
-  useEffect(() => {
-    const block = blockRef.current;
-    const root = scrollRootRef.current;
-    if (!block) return;
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        const el = videoRef.current;
-        if (!el) return;
-        const e = entries[0];
-        if (e.isIntersecting && e.intersectionRatio >= 0.42) {
-          el.play().catch(() => {});
-        } else {
-          el.pause();
-        }
-      },
-      { root: root ?? undefined, threshold: [0, 0.35, 0.55, 0.85, 1] },
-    );
-    io.observe(block);
-    return () => io.disconnect();
-  }, [scrollRootRef, video.id]);
-
-  return (
-    <div
-      ref={blockRef}
-      className="relative h-[calc(100dvh-var(--header-height,4.5rem))] w-full shrink-0 snap-start snap-always"
-    >
-      <video
-        ref={videoRef}
-        className="absolute inset-0 h-full w-full object-cover"
-        poster={posterSrc}
-        src={isPexelsBlockedVideo ? undefined : previewSrc}
-        muted
-        playsInline
-        loop
-        preload={isPexelsBlockedVideo ? "none" : "metadata"}
-      />
-      <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-black/40"
-        aria-hidden
-      />
-      <div className="absolute inset-x-0 bottom-0 z-[2] flex flex-col gap-2 p-4 pb-8 sm:p-6 sm:pb-10">
-        <p className="line-clamp-2 text-left text-[16px] font-bold leading-snug text-white sm:text-[18px]">
-          {video.title}
-        </p>
-        <div className="flex flex-wrap items-center gap-3">
-          {video.priceWon != null ? (
-            <span className="text-[15px] font-extrabold tabular-nums text-reels-cyan">
-              {video.priceWon.toLocaleString("ko-KR")}원
-            </span>
-          ) : null}
-          <Link
-            href={`/video/${video.id}`}
-            className="pointer-events-auto rounded-full border border-white/25 bg-white/10 px-4 py-2 text-[13px] font-bold text-white backdrop-blur-sm transition hover:bg-white/20"
-          >
-            상세 보기
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export function ExploreReelsFeed() {
@@ -270,7 +194,7 @@ export function ExploreReelsFeed() {
         aria-label="세로 탐색 릴스 피드 — 아래로 스크롤해 계속 보기"
       >
         {slides.map((video, i) => (
-          <ReelSlide
+          <ExploreReelSlide
             key={`${video.id}-${watchOffset}-${i}`}
             video={video}
             scrollRootRef={scrollRef}
