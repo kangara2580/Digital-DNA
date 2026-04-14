@@ -5,6 +5,7 @@ import {
   Moon,
   Search,
   Sun,
+  Wallet,
 } from "lucide-react";
 import {
   AnimatePresence,
@@ -176,6 +177,22 @@ function RotatingSearchField({
 
 const localeSegClass =
   "min-w-[2rem] rounded-full px-2 py-1 text-[11px] font-bold uppercase tracking-wide transition-colors";
+
+const rechargeNavClass =
+  "inline-flex shrink-0 items-center gap-1.5 rounded-full border border-reels-cyan/45 bg-gradient-to-r from-reels-cyan/12 to-reels-cyan/5 px-2.5 py-1.5 text-[11px] font-extrabold text-reels-cyan shadow-[0_0_18px_-10px_rgba(0,242,234,0.35)] transition hover:border-reels-cyan/70 hover:from-reels-cyan/22 hover:to-reels-cyan/10 sm:px-3 sm:text-[12px] [html[data-theme='light']_&]:border-reels-cyan/40 [html[data-theme='light']_&]:from-reels-cyan/12 [html[data-theme='light']_&]:to-white/90";
+
+function RechargeNavLink() {
+  return (
+    <Link
+      href="/recharge"
+      className={rechargeNavClass}
+      aria-label="정액충전 안내 페이지로 이동"
+    >
+      <Wallet className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={2} aria-hidden />
+      정액충전
+    </Link>
+  );
+}
 
 function QuickMenuIcons({
   className,
@@ -482,13 +499,16 @@ export function MallTopNav() {
               홈으로 이동
             </Link>
             {!compactEffective && (
-              <div className="hidden items-center gap-0.5 sm:-mr-1 sm:flex lg:-mr-0.5">
-                <QuickMenuIcons
-                  themeMode={themeMode}
-                  onToggleTheme={toggleTheme}
-                  locale={locale}
-                  onLocaleChange={applyLocale}
-                />
+              <div className="flex items-center gap-2 sm:gap-2.5">
+                <RechargeNavLink />
+                <div className="hidden items-center gap-0.5 sm:flex sm:-mr-1 lg:-mr-0.5">
+                  <QuickMenuIcons
+                    themeMode={themeMode}
+                    onToggleTheme={toggleTheme}
+                    locale={locale}
+                    onLocaleChange={applyLocale}
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -647,8 +667,9 @@ export function MallTopNav() {
 
           {compactEffective && (
             <div
-              className={`flex shrink-0 items-center gap-0.5 sm:-mr-1 lg:-mr-0.5 ${easeLayout}`}
+              className={`flex shrink-0 items-center gap-1.5 sm:gap-2 sm:-mr-1 lg:-mr-0.5 ${easeLayout}`}
             >
+              <RechargeNavLink />
               <QuickMenuIcons
                 themeMode={themeMode}
                 onToggleTheme={toggleTheme}
