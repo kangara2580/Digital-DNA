@@ -184,74 +184,76 @@ export function MyPageSellerAnalyticsSection() {
       className="reels-glass-card rounded-2xl p-5 sm:p-7"
       aria-labelledby="seller-analytics-heading"
     >
-      <div className="flex flex-col gap-4 border-b border-white/10 pb-5 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-col items-start gap-2">
-          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/35 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300 [html[data-theme='light']_&]:text-emerald-700">
-            <Radio className="h-3 w-3 animate-pulse" aria-hidden />
-            실시간 동기화
-          </span>
-          <h2
-            id="seller-analytics-heading"
-            className="text-xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-2xl"
-          >
-            내 판매 실적 분석
-          </h2>
-        </div>
-
-        <div className="flex w-full max-w-xl flex-col items-stretch gap-3 sm:max-w-none sm:items-end">
-          <div
-            className="flex shrink-0 flex-nowrap items-center justify-end gap-2"
-            role="group"
-            aria-label="분석 기간 프리셋"
-          >
-            <BarChart3 className="h-5 w-5 shrink-0 text-reels-cyan" aria-hidden />
-            {([7, 28, 90] as const).map((d) => (
-              <button
-                key={d}
-                type="button"
-                onClick={() => setPeriod({ kind: "preset", days: d })}
-                className={`rounded-xl border px-3 py-2 text-[12px] font-bold transition sm:px-4 sm:text-[13px] ${
-                  period.kind === "preset" && period.days === d
-                    ? "border-reels-cyan/45 bg-reels-cyan/15 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
-                    : "border-white/10 bg-black/20 text-zinc-400 hover:border-white/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-600"
-                }`}
-              >
-                {d === 7 ? "7일" : d === 28 ? "28일" : "90일"}
-              </button>
-            ))}
-          </div>
-          <div
-            className="flex min-w-0 w-full max-w-full flex-nowrap items-center justify-center gap-x-2 gap-y-0 overflow-x-auto rounded-xl border border-white/10 bg-black/20 px-2 py-2 sm:px-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:gap-2.5"
-            aria-label="기간 직접 지정"
-          >
-            <input
-              type="date"
-              value={rangeDraft.start}
-              onChange={(e) => setRangeDraft((r) => ({ ...r, start: e.target.value }))}
-              aria-label="시작일"
-              className="shrink-0 rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-[12px] leading-none text-zinc-200 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
-            />
-            <input
-              type="date"
-              value={rangeDraft.end}
-              onChange={(e) => setRangeDraft((r) => ({ ...r, end: e.target.value }))}
-              aria-label="끝일"
-              className="shrink-0 rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-[12px] leading-none text-zinc-200 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
-            />
-            <button
-              type="button"
-              onClick={applyCustomRange}
-              className="shrink-0 rounded-lg border border-reels-cyan/40 bg-reels-cyan/12 px-3 py-1.5 text-[11px] font-bold text-reels-cyan hover:bg-reels-cyan/20"
+      <div className="space-y-2 border-b border-white/10 pb-5 [html[data-theme='light']_&]:border-zinc-200">
+        <div className="flex flex-col gap-3 min-[520px]:flex-row min-[520px]:items-center min-[520px]:justify-between min-[520px]:gap-3 lg:gap-4">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 sm:gap-x-3">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-500/35 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-300 [html[data-theme='light']_&]:text-emerald-700 sm:px-2 sm:text-[10px]">
+              <Radio className="h-2.5 w-2.5 animate-pulse sm:h-3 sm:w-3" aria-hidden />
+              실시간 동기화
+            </span>
+            <h2
+              id="seller-analytics-heading"
+              className="min-w-0 shrink-0 text-lg font-extrabold tracking-tight whitespace-nowrap text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-xl lg:text-2xl"
             >
-              적용
-            </button>
+              내 판매 실적 분석
+            </h2>
           </div>
-          {period.kind === "custom" ? (
-            <p className="text-right text-[10px] text-reels-cyan/90 [html[data-theme='light']_&]:text-reels-cyan">
-              사용자 지정: {period.start} ~ {period.end} ({snapshot.periodDays}일)
-            </p>
-          ) : null}
+
+          <div className="flex min-w-0 w-full flex-wrap items-center justify-start gap-1.5 min-[520px]:w-auto min-[520px]:justify-end min-[520px]:flex-nowrap sm:gap-2">
+            <div
+              className="flex shrink-0 flex-nowrap items-center gap-1 sm:gap-1.5"
+              role="group"
+              aria-label="분석 기간 프리셋"
+            >
+              <BarChart3 className="h-4 w-4 shrink-0 text-reels-cyan sm:h-[18px] sm:w-[18px]" aria-hidden />
+              {([7, 28, 90] as const).map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => setPeriod({ kind: "preset", days: d })}
+                  className={`rounded-lg border px-2 py-1 text-[10px] font-bold transition sm:px-2.5 sm:py-1.5 sm:text-[11px] ${
+                    period.kind === "preset" && period.days === d
+                      ? "border-reels-cyan/45 bg-reels-cyan/15 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
+                      : "border-white/10 bg-black/20 text-zinc-400 hover:border-white/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-600"
+                  }`}
+                >
+                  {d === 7 ? "7일" : d === 28 ? "28일" : "90일"}
+                </button>
+              ))}
+            </div>
+            <div
+              className="inline-flex min-w-0 max-w-full flex-nowrap items-center gap-1 rounded-lg border border-white/10 bg-black/20 px-1 py-1 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:gap-1.5 sm:px-1.5"
+              aria-label="기간 직접 지정"
+            >
+              <input
+                type="date"
+                value={rangeDraft.start}
+                onChange={(e) => setRangeDraft((r) => ({ ...r, start: e.target.value }))}
+                aria-label="시작일"
+                className="min-w-0 max-w-[42vw] shrink rounded border border-white/15 bg-black/40 px-1 py-0.5 text-[10px] leading-tight text-zinc-200 sm:max-w-none sm:px-1.5 sm:text-[11px] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+              />
+              <input
+                type="date"
+                value={rangeDraft.end}
+                onChange={(e) => setRangeDraft((r) => ({ ...r, end: e.target.value }))}
+                aria-label="끝일"
+                className="min-w-0 max-w-[42vw] shrink rounded border border-white/15 bg-black/40 px-1 py-0.5 text-[10px] leading-tight text-zinc-200 sm:max-w-none sm:px-1.5 sm:text-[11px] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+              />
+              <button
+                type="button"
+                onClick={applyCustomRange}
+                className="shrink-0 rounded border border-reels-cyan/40 bg-reels-cyan/12 px-2 py-0.5 text-[10px] font-bold text-reels-cyan hover:bg-reels-cyan/20 sm:px-2.5 sm:py-1 sm:text-[11px]"
+              >
+                적용
+              </button>
+            </div>
+          </div>
         </div>
+        {period.kind === "custom" ? (
+          <p className="text-right text-[10px] text-reels-cyan/90 [html[data-theme='light']_&]:text-reels-cyan">
+            사용자 지정: {period.start} ~ {period.end} ({snapshot.periodDays}일)
+          </p>
+        ) : null}
       </div>
 
       {/* 요약 KPI */}
