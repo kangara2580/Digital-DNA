@@ -13,6 +13,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { getCommerceMeta } from "@/data/videoCommerce";
 import type { FeedVideo } from "@/data/videos";
+import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 function formatCompactWon(n: number): string {
@@ -153,10 +154,15 @@ export function ExploreReelSlide({ video, scrollRootRef }: ReelSlideProps) {
         const el = videoRef.current;
         if (!el) return;
         const e = entries[0];
+        if (!e) return;
         if (e.isIntersecting && e.intersectionRatio >= 0.38) {
-          el.play().catch(() => {});
+          safePlayVideo(el);
         } else {
-          el.pause();
+          try {
+            el.pause();
+          } catch {
+            /* noop */
+          }
         }
       },
       { root: root ?? undefined, threshold: [0, 0.35, 0.55, 0.85, 1] },

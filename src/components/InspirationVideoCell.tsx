@@ -8,6 +8,7 @@ import { CartIcon } from "@/components/CartIcon";
 import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
 import { useWishlistOptional } from "@/context/WishlistContext";
 import type { FeedVideo } from "@/data/videos";
+import { safePlayVideo } from "@/lib/safeVideoPlay";
 
 function formatPrice(v: FeedVideo): string {
   if (v.priceWon != null) {
@@ -48,7 +49,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
       return;
     }
     if (inView) {
-      void el.play().catch(() => {});
+      safePlayVideo(el);
     } else {
       el.pause();
     }

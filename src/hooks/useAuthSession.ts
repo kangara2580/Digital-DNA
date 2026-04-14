@@ -38,12 +38,20 @@ export function useAuthSession(): AuthSessionState {
     }
 
     let alive = true;
-    void supabase.auth.getSession().then(({ data: { session: s } }) => {
-      if (!alive) return;
-      setSession(s);
-      setUser(s?.user ?? null);
-      setLoading(false);
-    });
+    void supabase.auth
+      .getSession()
+      .then(({ data: { session: s } }) => {
+        if (!alive) return;
+        setSession(s);
+        setUser(s?.user ?? null);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!alive) return;
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+      });
 
     const {
       data: { subscription },

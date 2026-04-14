@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { safePlayVideo } from "@/lib/safeVideoPlay";
 
 type VideoBackgroundCompositeProps = {
   foregroundSrc: string;
@@ -72,8 +73,8 @@ export function VideoBackgroundComposite({
     const tryStart = () => {
       if (cancelled) return;
       if (bg.readyState < 2 || fg.readyState < 2) return;
-      void bg.play().catch(() => {});
-      void fg.play().catch(() => {});
+      safePlayVideo(bg);
+      safePlayVideo(fg);
       if (!readyRef.current) {
         readyRef.current = true;
         onReady?.();

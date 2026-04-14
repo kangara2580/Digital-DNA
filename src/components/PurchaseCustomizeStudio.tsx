@@ -15,6 +15,7 @@ import {
   getLocalFacePreviewRemaining,
 } from "@/lib/facePreviewQuota";
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
+import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { useVideoStartPoster } from "@/hooks/useVideoStartPoster";
 import { InputSection } from "@/components/InputSection";
@@ -1310,12 +1311,7 @@ export function PurchaseCustomizeStudio({ video }: { video: FeedVideo }) {
                       if (bgPreviewOn) {
                         setPreviewTransitionLoading(false);
                         // 사용자가 재생 버튼을 누르지 않아도 즉시 재생되도록 강제 시도
-                        const p = e.currentTarget.play();
-                        if (p && typeof p.catch === "function") {
-                          p.catch(() => {
-                            /* autoplay 정책으로 막히면 무시 */
-                          });
-                        }
+                        safePlayVideo(e.currentTarget);
                       }
                     }}
                     onError={(e) => {

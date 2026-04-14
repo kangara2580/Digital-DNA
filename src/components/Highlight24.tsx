@@ -6,6 +6,7 @@ import type { FeedVideo } from "@/data/videos";
 import { LOCAL_TRENDING_FEED_VIDEOS } from "@/data/videos";
 import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
+import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { SectionMoreLink } from "@/components/SectionMoreLink";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
@@ -257,7 +258,7 @@ export function Highlight24() {
     const v = videoRef.current;
     if (!v || !activeId) return;
     v.muted = true;
-    void v.play().catch(() => {});
+    safePlayVideo(v);
   }, [activeId]);
 
   useEffect(() => {
@@ -269,7 +270,7 @@ export function Highlight24() {
     const el = ambientVideoRef.current;
     if (!el) return;
     el.muted = true;
-    void el.play().catch(() => {});
+    safePlayVideo(el);
   }, [activeId, reduceMotion, ambientVideoReady]);
 
   const onTouchStart = (e: React.TouchEvent) => {

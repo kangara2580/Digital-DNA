@@ -6,6 +6,7 @@ import {
   localHighlightStartSec,
   localPreviewSegmentSec,
 } from "@/lib/localVideoHighlight";
+import { safePlayVideo } from "@/lib/safeVideoPlay";
 
 type Options = {
   /** 호버 시 하이라이트 구간 루프 재생 */
@@ -109,7 +110,7 @@ export function useLocalSamplePlayback(
     hoveringRef.current = true;
     el.muted = true;
     el.currentTime = loopStartRef.current;
-    void el.play().catch(() => {});
+    safePlayVideo(el);
   }, [enableHoverLoop, reduceMotion]);
 
   const onLeave = useCallback(() => {

@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useRef } from "react";
 import type { FeedVideo } from "@/data/videos";
+import { safePlayVideo } from "@/lib/safeVideoPlay";
 
 const DEFAULT_SEGMENT_SEC = 3;
 
@@ -61,7 +62,7 @@ export function useHoverInstantPreview(
     if (enabled) {
       el.currentTime = 0;
     }
-    void el.play().catch(() => {});
+    safePlayVideo(el);
   }, [enabled, reduceMotion]);
 
   const onLeave = useCallback(() => {
