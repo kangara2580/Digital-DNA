@@ -1,5 +1,13 @@
 import type { FeedVideo } from "@/data/videos";
 
+const PEXELS_VIDEO_RE = /^https?:\/\/videos\.pexels\.com\//i;
+
+function localFallbackVideoSrc(seed: string): string {
+  const hash = Array.from(seed).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  const idx = (Math.abs(hash) % 10) + 1;
+  return `/videos/sample${idx}.mp4`;
+}
+
 /** TikTok 앱 승인 전까지 사용하는 댄스형 Mock Top10 */
 export const TIKTOK_MOCK_DANCE_CLIPS: FeedVideo[] = [
   {
@@ -133,3 +141,13 @@ export const TIKTOK_MOCK_DANCE_CLIPS: FeedVideo[] = [
     priceWon: 1400,
   },
 ];
+
+// 데모 Top10도 Pexels 403을 피하도록 로컬 샘플 MP4로 치환.
+TIKTOK_MOCK_DANCE_CLIPS.forEach((clip, i) => {
+  if (!PEXELS_VIDEO_RE.test(clip.src)) return;
+  const fallback = localFallbackVideoSrc(`${clip.id}-${i}`);
+  clip.src = fallback;
+  if (clip.previewSrc && PEXELS_VIDEO_RE.test(clip.previewSrc)) {
+    clip.previewSrc = fallback;
+  }
+});

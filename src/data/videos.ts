@@ -29,6 +29,25 @@ export type FeedVideo = {
   tiktokEmbedId?: string;
 };
 
+const PEXELS_VIDEO_RE = /^https?:\/\/videos\.pexels\.com\//i;
+
+function localFallbackVideoSrc(seed: string): string {
+  const hash = Array.from(seed).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  const idx = (Math.abs(hash) % 10) + 1;
+  return `/videos/sample${idx}.mp4`;
+}
+
+function normalizeBlockedVideoSources(list: FeedVideo[]) {
+  list.forEach((v, i) => {
+    if (!PEXELS_VIDEO_RE.test(v.src)) return;
+    const fallback = localFallbackVideoSrc(`${v.id}-${i}`);
+    v.src = fallback;
+    if (v.previewSrc && PEXELS_VIDEO_RE.test(v.previewSrc)) {
+      v.previewSrc = fallback;
+    }
+  });
+}
+
 export const SAMPLE_VIDEOS: FeedVideo[] = [
   {
     id: "1",
@@ -498,6 +517,10 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
     priceWon: 820,
   },
 ];
+
+// 개발/데모 환경에서 Pexels 직링크 403을 피하기 위해 로컬 샘플 MP4로 치환.
+normalizeBlockedVideoSources(SAMPLE_VIDEOS);
+normalizeBlockedVideoSources(FAILURE_OOPS_CLIPS);
 
 /**
  * 입력 목록에 대해 항상 동일한 순서를 반환(Fisher–Yates + 시드 PRNG).
