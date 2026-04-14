@@ -64,7 +64,7 @@ export function MyPageSavedDraftsSection() {
       </p>
       {cards.length === 0 ? (
         <p className="mt-4 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          아직 임시 저장한 항목이 없어요. 조각 상세 → 맞춤 리스킨에서 편집 후 &quot;임시 저장&quot;을 눌러 주세요.
+          아직 임시 저장한 항목이 없어요.
         </p>
       ) : (
         <ul className="mt-4 space-y-3">
