@@ -29,7 +29,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
     >
       <div className="flex items-center justify-between gap-2 px-2 py-1.5 sm:px-2.5 sm:py-2">
         <p className="min-w-0 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">
-          연관 DNA
+          연관 릴스
         </p>
         {label ? (
           <p className="truncate text-[10px] font-medium text-reels-cyan/90">{label}</p>

@@ -36,7 +36,7 @@ type Props = {
   overlapOnHover?: boolean;
   /** 썸네일 좌상단 배지 문구(다른 배지와 겹치면 우측으로 이동) */
   topBadge?: string;
-  /** 앵커 링크용 (연관 DNA에서 스크롤) */
+  /** 앵커 링크용 (연관 릴스에서 스크롤) */
   domId?: string;
   /** 같은 무드 연관 조각 퀼트 */
   showRelatedQuilt?: boolean;

@@ -270,7 +270,7 @@ export function buildSellerVideoDetailSnapshot(
   const channels: TrafficChannel[] = [
     { id: "feed", label: "추천·피드", percent: 34 + (h % 6), deltaPercentPoints: 1.2 },
     { id: "search", label: "검색", percent: 26, deltaPercentPoints: -0.8 },
-    { id: "related", label: "연관 DNA", percent: 19, deltaPercentPoints: 2.1 },
+    { id: "related", label: "연관 릴스", percent: 19, deltaPercentPoints: 2.1 },
     { id: "profile", label: "프로필", percent: 14, deltaPercentPoints: 0.4 },
     { id: "ext", label: "외부", percent: 7, deltaPercentPoints: 0 },
   ];
