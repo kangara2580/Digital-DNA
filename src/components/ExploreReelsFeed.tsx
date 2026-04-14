@@ -21,6 +21,8 @@ const MAX_SLIDES = 200;
 /** 그리드 초기·추가 로드 — 스크롤 하단에서 자동으로 더 불러옴 */
 const GRID_INITIAL = 24;
 const GRID_BATCH = 20;
+/** 순환 로드로 스크롤 끝없이 이어지게 하되, DOM·메모리 상한 */
+const MAX_GRID_ITEMS = 800;
 
 /** 그리드 모드만 — 훅을 watch와 분리해 규칙 위반·리컨실 오류 방지 */
 function ExploreBrowseGrid({
@@ -32,12 +34,16 @@ function ExploreBrowseGrid({
   pool: FeedVideo[];
   visibleGridCount: number;
   setVisibleGridCount: Dispatch<SetStateAction<number>>;
-  onEnterWatch: (video: FeedVideo) => void;
+  onEnterWatch: (video: FeedVideo, gridIndex: number) => void;
 }) {
-  const browseVideos = useMemo(
-    () => pool.slice(0, Math.min(visibleGridCount, pool.length)),
-    [pool, visibleGridCount],
-  );
+  const browseVideos = useMemo(() => {
+    if (pool.length === 0) return [];
+    const n = Math.min(visibleGridCount, MAX_GRID_ITEMS);
+    return Array.from({ length: n }, (_, i) => {
+      const video = pool[i % pool.length]!;
+      return { video, rowKey: `${video.id}-${i}` };
+    });
+  }, [pool, visibleGridCount]);
   const gridSentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -48,15 +54,15 @@ function ExploreBrowseGrid({
       (entries) => {
         if (!entries[0]?.isIntersecting) return;
         setVisibleGridCount((n) => {
-          if (n >= pool.length) return n;
-          return Math.min(n + GRID_BATCH, pool.length);
+          if (n >= MAX_GRID_ITEMS) return n;
+          return Math.min(n + GRID_BATCH, MAX_GRID_ITEMS);
         });
       },
       { root: null, rootMargin: "320px 0px", threshold: 0 },
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [pool.length]);
+  }, [pool.length, setVisibleGridCount]);
 
   return (
     <div className="mx-auto max-w-[1800px] px-4 pb-20 pt-4 sm:px-6 md:pl-[calc(var(--reels-rail-w,0px)+1rem)] lg:px-8">
@@ -64,34 +70,30 @@ function ExploreBrowseGrid({
         조각을 누르면 아래로 스와이프하며 계속 재생되는 세로 릴로 이동합니다.
       </p>
       <div
-        className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-4"
+        className="grid grid-cols-2 gap-3 sm:gap-3 md:grid-cols-3 xl:grid-cols-4 xl:gap-4"
         role="list"
         aria-label="탐색 그리드"
       >
-        {browseVideos.map((video) => (
-          <div key={video.id} className="min-w-0" role="listitem">
+        {browseVideos.map(({ video, rowKey }, gridIndex) => (
+          <div key={rowKey} className="min-w-0" role="listitem">
             <VideoCard
               video={video}
               reelLayout
               reelStrip
               disableHoverScale
-              onPick={() => onEnterWatch(video)}
+              onPick={() => onEnterWatch(video, gridIndex)}
               className="h-full min-w-0"
             />
           </div>
         ))}
       </div>
-      {visibleGridCount < pool.length ? (
+      {pool.length > 0 && visibleGridCount < MAX_GRID_ITEMS ? (
         <div
           ref={gridSentinelRef}
           className="h-32 w-full shrink-0"
           aria-hidden
         />
-      ) : (
-        <p className="mt-8 pb-8 text-center text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          모든 추천 조각을 불러왔어요.
-        </p>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -230,14 +232,11 @@ export function ExploreReelsFeed({ pool }: { pool: FeedVideo[] }) {
   const [watchOffset, setWatchOffset] = useState(0);
   const [visibleGridCount, setVisibleGridCount] = useState(GRID_INITIAL);
 
-  const enterWatch = useCallback(
-    (video: FeedVideo) => {
-      const idx = pool.findIndex((v) => v.id === video.id);
-      setWatchOffset(idx >= 0 ? idx : 0);
-      setMode("watch");
-    },
-    [pool],
-  );
+  const enterWatch = useCallback((_video: FeedVideo, gridIndex: number) => {
+    if (pool.length === 0) return;
+    setWatchOffset(gridIndex % pool.length);
+    setMode("watch");
+  }, [pool]);
 
   const backToBrowse = useCallback(() => {
     setMode("browse");
