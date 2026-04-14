@@ -19,6 +19,11 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { createPortal } from "react-dom";
 import { MALL_CATEGORY_NAV_ITEMS as ITEMS } from "@/data/mallCategoryNav";
 import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhrases";
+import {
+  applyLocaleToDocument,
+  STORAGE_THEME,
+  type SiteLocale,
+} from "@/lib/sitePreferences";
 
 const iconStroke = 1.25;
 
@@ -169,36 +174,75 @@ function RotatingSearchField({
   );
 }
 
+const localeSegClass =
+  "min-w-[2rem] rounded-full px-2 py-1 text-[11px] font-bold uppercase tracking-wide transition-colors";
+
 function QuickMenuIcons({
   className,
   themeMode = "dark",
   onToggleTheme,
+  locale,
+  onLocaleChange,
 }: {
   className?: string;
   themeMode?: "light" | "dark";
   onToggleTheme?: () => void;
+  locale: SiteLocale;
+  onLocaleChange: (next: SiteLocale) => void;
 }) {
   return (
     <div
-      role="group"
-      aria-label="나의 활동"
-      className={`flex shrink-0 items-center gap-0.5 sm:gap-1 ${className ?? ""}`}
+      className={`flex shrink-0 items-center gap-1 sm:gap-1.5 ${className ?? ""}`}
     >
-      <button
-        type="button"
-        onClick={onToggleTheme}
-        className={navActionClass}
-        aria-label={
-          themeMode === "dark" ? "화이트 테마로 전환" : "다크 테마로 전환"
-        }
-        title={themeMode === "dark" ? "화이트 버전" : "다크 버전"}
+      <div
+        role="group"
+        aria-label="언어 선택"
+        className="flex items-center rounded-full border border-white/10 bg-black/20 p-0.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80"
       >
-        {themeMode === "dark" ? (
-          <Sun className="h-[19px] w-[19px]" strokeWidth={iconStroke} />
-        ) : (
-          <Moon className="h-[19px] w-[19px]" strokeWidth={iconStroke} />
-        )}
-      </button>
+        <button
+          type="button"
+          onClick={() => onLocaleChange("ko")}
+          className={`${localeSegClass} ${
+            locale === "ko"
+              ? "bg-reels-cyan/25 text-reels-cyan"
+              : "text-zinc-500 hover:text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900"
+          }`}
+          aria-pressed={locale === "ko"}
+          title="한국어"
+        >
+          ko
+        </button>
+        <button
+          type="button"
+          onClick={() => onLocaleChange("en")}
+          className={`${localeSegClass} ${
+            locale === "en"
+              ? "bg-reels-cyan/25 text-reels-cyan"
+              : "text-zinc-500 hover:text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900"
+          }`}
+          aria-pressed={locale === "en"}
+          title="English"
+        >
+          en
+        </button>
+      </div>
+      <div role="group" aria-label="화면 테마" className="flex items-center">
+        <button
+          type="button"
+          onClick={onToggleTheme}
+          className={navActionClass}
+          aria-label={
+            themeMode === "dark" ? "화이트 테마로 전환" : "다크 테마로 전환"
+          }
+          title={themeMode === "dark" ? "화이트 버전" : "다크 버전"}
+        >
+          {themeMode === "dark" ? (
+            <Sun className="h-[19px] w-[19px]" strokeWidth={iconStroke} />
+          ) : (
+            <Moon className="h-[19px] w-[19px]" strokeWidth={iconStroke} />
+          )}
+        </button>
+      </div>
     </div>
   );
 }
@@ -210,6 +254,7 @@ export function MallTopNav() {
   const heroTitleY = useTransform(scrollY, [0, 180], [0, reduceMotionNav ? 0 : -12]);
   const [q, setQ] = useState("");
   const [themeMode, setThemeMode] = useState<"light" | "dark">("dark");
+  const [locale, setLocale] = useState<SiteLocale>("ko");
   const headerRef = useRef<HTMLElement>(null);
   const [compact, setCompact] = useState(false);
   const pathname = usePathname();
@@ -229,11 +274,16 @@ export function MallTopNav() {
   const applyTheme = useCallback((next: "light" | "dark") => {
     document.documentElement.dataset.theme = next;
     try {
-      window.localStorage.setItem("reels-theme", next);
+      window.localStorage.setItem(STORAGE_THEME, next);
     } catch {
       /* noop */
     }
     setThemeMode(next);
+  }, []);
+
+  const applyLocale = useCallback((next: SiteLocale) => {
+    applyLocaleToDocument(next);
+    setLocale(next);
   }, []);
 
   useEffect(() => {
@@ -246,6 +296,8 @@ export function MallTopNav() {
           : "light";
     html.dataset.theme = current;
     setThemeMode(current);
+    const loc = html.lang === "en" ? "en" : "ko";
+    setLocale(loc);
   }, []);
 
   const toggleTheme = useCallback(() => {
@@ -434,6 +486,8 @@ export function MallTopNav() {
                 <QuickMenuIcons
                   themeMode={themeMode}
                   onToggleTheme={toggleTheme}
+                  locale={locale}
+                  onLocaleChange={applyLocale}
                 />
               </div>
             )}
@@ -598,6 +652,8 @@ export function MallTopNav() {
               <QuickMenuIcons
                 themeMode={themeMode}
                 onToggleTheme={toggleTheme}
+                locale={locale}
+                onLocaleChange={applyLocale}
               />
             </div>
           )}

@@ -64,6 +64,12 @@ export default function RootLayout({
       } catch (e) {
         document.documentElement.dataset.theme = "dark";
       }
+      try {
+        var loc = localStorage.getItem("reels-locale");
+        document.documentElement.lang = loc === "en" ? "en" : "ko";
+      } catch (e2) {
+        document.documentElement.lang = "ko";
+      }
     })();
   `;
 
