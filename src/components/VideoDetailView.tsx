@@ -73,12 +73,15 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
               }`}
             >
               <video
-                className="h-full w-full object-cover"
+                className="video-detail-player h-full w-full object-cover"
                 poster={posterSrc}
                 src={isPexelsBlockedVideo ? undefined : video.src}
                 controls
+                controlsList="nodownload noplaybackrate noremoteplayback"
+                disablePictureInPicture
                 playsInline
                 preload={isPexelsBlockedVideo ? "none" : "metadata"}
+                onContextMenu={(e) => e.preventDefault()}
               />
             </div>
             <p className="mt-3 text-center font-mono text-[10px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
