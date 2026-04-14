@@ -186,7 +186,6 @@ export function MyPageSellerAnalyticsSection() {
     >
       <div className="flex flex-col gap-4 border-b border-white/10 pb-5 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-reels-cyan" aria-hidden />
           <h2
             id="seller-analytics-heading"
             className="text-xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-2xl"
@@ -201,10 +200,11 @@ export function MyPageSellerAnalyticsSection() {
 
         <div className="flex w-full max-w-xl flex-col items-stretch gap-3 sm:max-w-none sm:items-end">
           <div
-            className="flex shrink-0 flex-wrap items-center justify-end gap-2"
+            className="flex shrink-0 flex-nowrap items-center justify-end gap-2"
             role="group"
             aria-label="분석 기간 프리셋"
           >
+            <BarChart3 className="h-5 w-5 shrink-0 text-reels-cyan" aria-hidden />
             {([7, 28, 90] as const).map((d) => (
               <button
                 key={d}
@@ -220,32 +220,32 @@ export function MyPageSellerAnalyticsSection() {
               </button>
             ))}
           </div>
-          <div className="flex flex-wrap items-center justify-end gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-            <span className="text-[11px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          <div className="flex min-w-0 w-full max-w-full flex-nowrap items-center justify-end gap-x-2 gap-y-0 overflow-x-auto rounded-xl border border-white/10 bg-black/20 px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:gap-2.5">
+            <span className="shrink-0 text-[11px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
               직접 지정
             </span>
-            <label className="flex items-center gap-1.5 text-[11px] text-zinc-400">
+            <label className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[11px] text-zinc-400">
               시작
               <input
                 type="date"
                 value={rangeDraft.start}
                 onChange={(e) => setRangeDraft((r) => ({ ...r, start: e.target.value }))}
-                className="rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-[12px] text-zinc-200 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+                className="rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-[12px] leading-none text-zinc-200 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
               />
             </label>
-            <label className="flex items-center gap-1.5 text-[11px] text-zinc-400">
+            <label className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[11px] text-zinc-400">
               끝
               <input
                 type="date"
                 value={rangeDraft.end}
                 onChange={(e) => setRangeDraft((r) => ({ ...r, end: e.target.value }))}
-                className="rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-[12px] text-zinc-200 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+                className="rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-[12px] leading-none text-zinc-200 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
               />
             </label>
             <button
               type="button"
               onClick={applyCustomRange}
-              className="rounded-lg border border-reels-cyan/40 bg-reels-cyan/12 px-3 py-1.5 text-[11px] font-bold text-reels-cyan hover:bg-reels-cyan/20"
+              className="shrink-0 rounded-lg border border-reels-cyan/40 bg-reels-cyan/12 px-3 py-1.5 text-[11px] font-bold text-reels-cyan hover:bg-reels-cyan/20"
             >
               적용
             </button>
