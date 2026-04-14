@@ -15,6 +15,7 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "build": "next build",
+    "build:clean": "npm run clean && next build",
     "start": "next start",
     "preview": "next build && next start",
     "lint": "next lint"
