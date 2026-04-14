@@ -3,7 +3,7 @@
  * @see https://www.dicebear.com/styles/notionists/
  */
 
-export type CharacterGender = "feminine" | "masculine" | "neutral";
+export type CharacterGender = "feminine" | "masculine";
 
 /** 얼굴형: 스케일만 살짝 바꿔 윤곽 느낌을 다르게 (동일 베이스 일러스트) */
 export type CharacterFaceShape = 0 | 1 | 2;
@@ -83,15 +83,14 @@ const FACE_SHAPE_SCALE: Record<CharacterFaceShape, number> = {
 
 function beardProbabilityForGender(g: CharacterGender): number {
   if (g === "feminine") return 0;
-  if (g === "masculine") return 22;
-  return 8;
+  return 22;
 }
 
 export function createDefaultCharacterParts(seed: string): CharacterPartsV1 {
   return {
     v: 1,
     seed: seed.trim() || "reels-market",
-    gender: "neutral",
+    gender: "feminine",
     hair: NOTIONISTS_HAIR[3],
     eyes: NOTIONISTS_EYES[2],
     nose: NOTIONISTS_NOSE[2],
@@ -115,10 +114,12 @@ export function normalizeCharacterParts(
   if (o.v !== 1) return null;
   const seed = typeof o.seed === "string" && o.seed.trim() ? o.seed.trim() : fallbackSeed;
   const base = createDefaultCharacterParts(seed);
-  const gender: CharacterGender =
-    o.gender === "feminine" || o.gender === "masculine" || o.gender === "neutral"
-      ? o.gender
-      : "neutral";
+  const g =
+    typeof (o as { gender?: unknown }).gender === "string"
+      ? String((o as { gender?: string }).gender)
+      : "";
+  /** 예전 "neutral" 저장분은 여성 쪽으로 맞춤 */
+  const gender: CharacterGender = g === "masculine" ? "masculine" : "feminine";
   const faceShape: CharacterFaceShape =
     o.faceShape === 0 || o.faceShape === 1 || o.faceShape === 2 ? o.faceShape : 1;
   return {

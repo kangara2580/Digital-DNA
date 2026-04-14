@@ -138,7 +138,7 @@ export function ProfileAvatarPicker({ value, onChange, hint }: Props) {
   const randomize = useCallback(() => {
     const pick = <T extends string>(arr: readonly T[]) =>
       arr[Math.floor(Math.random() * arr.length)]!;
-    const genders: CharacterGender[] = ["feminine", "masculine", "neutral"];
+    const genders: CharacterGender[] = ["feminine", "masculine"];
     const shapes: CharacterFaceShape[] = [0, 1, 2];
     const next: CharacterPartsV1 = {
       v: 1,
@@ -373,7 +373,6 @@ function GenderRow({
 }) {
   const opts: { id: CharacterGender; label: string }[] = [
     { id: "feminine", label: "여성" },
-    { id: "neutral", label: "중성" },
     { id: "masculine", label: "남성" },
   ];
   return (
