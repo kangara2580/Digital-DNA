@@ -115,73 +115,16 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
               <TrendingVideoStatsFooter
                 metrics={rankMetrics}
                 salePriceWon={video.priceWon}
+                salesCount={meta.salesCount}
+                stockRow={
+                  meta.edition === "open"
+                    ? null
+                    : {
+                        remaining,
+                        soldOut,
+                      }
+                }
               />
-            </section>
-
-            <div className="border-t border-white/10 pt-6 [html[data-theme='light']_&]:border-zinc-200">
-              <div className="flex items-center justify-between gap-3">
-                <p className="font-mono text-[22px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                  {price > 0 ? `${price.toLocaleString("ko-KR")}원` : "가격 문의"}
-                </p>
-                <button
-                  type="button"
-                  title="장바구니 담기"
-                  onClick={(e) => {
-                    if (soldOut) return;
-                    dopamine.launchFromCartButton(e.currentTarget, video, posterSrc);
-                  }}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-zinc-200 transition-colors hover:border-reels-cyan/40 hover:text-reels-cyan disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800"
-                  disabled={soldOut}
-                  aria-label="장바구니 담기"
-                >
-                  <ShoppingCart className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            <section
-              className="reels-glass-card rounded-xl p-5"
-              aria-labelledby="license-heading"
-            >
-              <h2
-                id="license-heading"
-                className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600"
-              >
-                소유 방식 · License Type
-              </h2>
-              {meta.edition === "open" ? (
-                <p className="mt-3 text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-                  이미{" "}
-                  <span className="font-bold text-reels-cyan">
-                    {meta.salesCount.toLocaleString("ko-KR")}명
-                  </span>
-                  의 크리에이터가 선택한 인기 릴스입니다.
-                  <br />
-                  유튜브 배경·브이로그에 가볍게
-                  얹어 보세요.
-                </p>
-              ) : (
-                <div className="mt-3 space-y-2">
-                  {soldOut ? (
-                    <p className="text-[14px] font-bold text-zinc-200">
-                      남은 수량:{" "}
-                      <span className="text-reels-crimson">0개 — 소장이 마감되었어요</span>
-                    </p>
-                  ) : (
-                    <p className="text-[14px] text-zinc-300">
-                      남은 수량:{" "}
-                      <span className="text-lg font-extrabold tabular-nums text-reels-cyan">
-                        {remaining?.toLocaleString("ko-KR")}개
-                      </span>
-                    </p>
-                  )}
-                  <p className="text-[12px] leading-relaxed text-zinc-500">
-                    {meta.edition === "private"
-                      ? "결제가 완료되면 목록에서 내려가며, 한 명만 독점 소유할 수 있어요."
-                      : "전 세계에서 정해진 인원만 같은 감성을 소장할 수 있어요."}
-                  </p>
-                </div>
-              )}
             </section>
 
             <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
@@ -191,9 +134,22 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                 onClick={() => {
                   if (!soldOut && !owned) markPurchased(video.id);
                 }}
-                className="w-full rounded-full bg-reels-crimson px-5 py-3.5 text-[14px] font-extrabold text-white shadow-reels-crimson transition-[transform,opacity] duration-300 ease-in-out hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40 sm:flex-1"
+                className="w-full flex-1 rounded-full bg-reels-crimson px-5 py-3.5 text-[14px] font-extrabold text-white shadow-reels-crimson transition-[transform,opacity] duration-300 ease-in-out hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {ctaLabel}
+              </button>
+              <button
+                type="button"
+                title="장바구니 담기"
+                onClick={(e) => {
+                  if (soldOut) return;
+                  dopamine.launchFromCartButton(e.currentTarget, video, posterSrc);
+                }}
+                className="inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center self-center rounded-full border border-white/15 bg-white/[0.06] text-zinc-200 transition-colors hover:border-reels-cyan/40 hover:text-reels-cyan disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800 sm:self-stretch"
+                disabled={soldOut}
+                aria-label="장바구니 담기"
+              >
+                <ShoppingCart className="h-5 w-5" />
               </button>
             </div>
 

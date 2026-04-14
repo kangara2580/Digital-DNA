@@ -35,6 +35,10 @@ function formatCountCompact(n: number): string {
 type Props = {
   metrics: TrendingRankMetrics;
   salePriceWon: number | undefined;
+  /** 상세 등에서만 — 누적 구매 인원 행 */
+  salesCount?: number;
+  /** 오픈 에디션이 아닐 때 남은 수량 행 */
+  stockRow?: { remaining: number | null; soldOut: boolean } | null;
 };
 
 const rowCls =
@@ -49,7 +53,12 @@ const valueCls =
 const priceValueCls =
   "min-w-0 text-right text-[14px] font-bold leading-snug tabular-nums text-reels-cyan [html[data-theme='light']_&]:text-[#6d28d9] sm:text-[15px]";
 
-export function TrendingVideoStatsFooter({ metrics, salePriceWon }: Props) {
+export function TrendingVideoStatsFooter({
+  metrics,
+  salePriceWon,
+  salesCount,
+  stockRow,
+}: Props) {
   const g = metrics.growthPercent;
   const up = g > 0;
   const down = g < 0;
@@ -80,6 +89,30 @@ export function TrendingVideoStatsFooter({ metrics, salePriceWon }: Props) {
           <dt className={labelCls}>총 좋아요</dt>
           <dd className={valueCls}>{formatCountCompact(metrics.totalLikes)}</dd>
         </div>
+        {typeof salesCount === "number" ? (
+          <div className={rowCls}>
+            <dt className={labelCls}>누적 구매 인원</dt>
+            <dd className={valueCls}>
+              {salesCount.toLocaleString("ko-KR")}명
+            </dd>
+          </div>
+        ) : null}
+        {stockRow ? (
+          <div className={rowCls}>
+            <dt className={labelCls}>남은 수량</dt>
+            <dd className={valueCls}>
+              {stockRow.soldOut ? (
+                <span className="text-reels-crimson">0개 — 품절</span>
+              ) : (
+                <span className="text-reels-cyan">
+                  {stockRow.remaining != null
+                    ? `${stockRow.remaining.toLocaleString("ko-KR")}개`
+                    : "—"}
+                </span>
+              )}
+            </dd>
+          </div>
+        ) : null}
         <div className={`${rowCls} border-b-0`}>
           <dt className={labelCls}>성장률</dt>
           <dd className="flex min-w-0 items-center justify-end gap-1 text-[14px] font-extrabold tabular-nums sm:text-[15px]">
