@@ -37,9 +37,11 @@ const FILTER_OPTIONS: { id: ContentFilter; label: string; sub: string }[] = [
 ];
 
 /**
- * lg 이상 6열 → 세로 클립 12개면 정확히 2행(이전 6개면 1행만 채워짐).
- * 모바일~md는 열 수에 따라 자연스럽게 여러 행.
+ * lg 이상 6열일 때 홈에서 최대 12클립만 노출 → 2행.
+ * (데이터 풀은 더 크지만 세로 스크롤 부담을 줄이기 위해 상한 적용)
  */
+const RECOMMEND_FEED_MAX = 12;
+
 const REELS_GRID =
   "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-6 lg:gap-4";
 
@@ -61,6 +63,11 @@ export function VideoFeed() {
   const filteredClips = useMemo(
     () => clips.filter((v) => matchesContentFilter(v, contentFilter)),
     [clips, contentFilter],
+  );
+
+  const visibleClips = useMemo(
+    () => filteredClips.slice(0, RECOMMEND_FEED_MAX),
+    [filteredClips],
   );
 
   return (
@@ -151,7 +158,7 @@ export function VideoFeed() {
                 이 조건에 맞는 영상이 없습니다. 다른 필터를 선택해 보세요.
               </div>
             ) : (
-              filteredClips.map((video) => (
+              visibleClips.map((video) => (
                 <div
                   key={`feed-p-${video.id}`}
                   className="group/card relative min-w-0 rounded-2xl p-[1px] transition-[filter,transform] duration-300 hover:shadow-[0_12px_40px_-12px_rgba(0,242,234,0.25)]"
