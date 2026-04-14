@@ -499,10 +499,34 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
   },
 ];
 
+/**
+ * 입력 목록에 대해 항상 동일한 순서를 반환(Fisher–Yates + 시드 PRNG).
+ * `Math.random()` 셔플은 SSR/클라이언트 하이드레이션 불일치를 일으키므로 사용하지 않음.
+ */
 export function shuffleVideos(list: FeedVideo[]): FeedVideo[] {
   const a = [...list];
+  if (a.length <= 1) return a;
+
+  const seedStr = [...a]
+    .map((v) => v.id)
+    .sort()
+    .join("\0");
+  let state = 2166136261;
+  for (let i = 0; i < seedStr.length; i++) {
+    state = Math.imul(state ^ seedStr.charCodeAt(i), 16777619);
+  }
+  /** mulberry32 — 서버·브라우저 동일 결과 */
+  let s = state >>> 0;
+  const next = () => {
+    s += 0x6d2b79f5;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+
   for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(next() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
