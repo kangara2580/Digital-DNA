@@ -7,13 +7,13 @@ export const metadata = {
     "Create Faster, Look Better. Explore · Acquire · Transform — Digital DNA 릴스 소스 플랫폼.",
 };
 
-/** 디지털·추상 톤 (편집실 실사 대신 서비스 무드에 맞춤) — Unsplash */
+/** 디지털·추상 톤 — Unsplash (Acquire/Transform은 이전 URL 404로 교체) */
 const IMG_EXPLORE =
   "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=85&w=1800";
 const IMG_ACQUIRE =
-  "https://images.unsplash.com/photo-1639322537504-6427a16cfd0b?auto=format&fit=crop&q=85&w=1800";
+  "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=85&w=1800";
 const IMG_TRANSFORM =
-  "https://images.unsplash.com/photo-1614850523459-c2f4c69948d0?auto=format&fit=crop&q=85&w=1800";
+  "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&q=85&w=1800";
 
 const pillars = [
   {
