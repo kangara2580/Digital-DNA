@@ -1,4 +1,3 @@
-import Image from "next/image";
 import {
   Infinity as InfinityIcon,
   Layers,
@@ -16,10 +15,6 @@ export const metadata = {
   description:
     "Digital DNA — 한 번의 소유로 만드는 무한한 가치. Free to Create & Rules for Respect.",
 };
-
-/** 추상 디지털 톤 — 특정 SNS·앱 로고 없이 라이선스·디지털 자산 무드 */
-const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1639322537504-6427a16cfd0b?auto=format&fit=crop&q=85&w=1800";
 
 const freeItems = [
   {
@@ -56,49 +51,25 @@ export default function LicensePage() {
   return (
     <FooterLegalPageShell title="라이선스 규정" withCard={false} mainMaxClass="max-w-6xl">
       <div className="space-y-14">
-        {/* 히어로: 스플릿 + 그라데이션 타이포 */}
-        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
-          <div className="relative order-2 lg:order-1">
-            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-900/80 via-black/40 to-reels-cyan/[0.1] p-8 sm:p-10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-50 [html[data-theme='light']_&]:via-white [html[data-theme='light']_&]:to-reels-cyan/10">
-              <div
-                className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-reels-cyan/20 blur-3xl"
-                aria-hidden
-              />
-              <p className="relative font-mono text-[11px] font-bold uppercase tracking-[0.28em] text-reels-cyan/90">
-                License
-              </p>
-              <h2 className="relative mt-4 text-2xl font-black leading-snug tracking-tight text-zinc-100 sm:text-3xl md:text-[1.65rem] [html[data-theme='light']_&]:text-zinc-900">
-                <span className="bg-gradient-to-r from-white via-zinc-100 to-reels-cyan/90 bg-clip-text text-transparent [html[data-theme='light']_&]:from-zinc-900 [html[data-theme='light']_&]:via-zinc-800 [html[data-theme='light']_&]:to-reels-cyan">
-                  한 번의 소유로 만드는 무한한 가치,
-                </span>
-                <br />
-                <span className="mt-1 inline-block bg-gradient-to-r from-reels-cyan to-teal-200/95 bg-clip-text text-transparent [html[data-theme='light']_&]:from-reels-cyan [html[data-theme='light']_&]:to-teal-700">
-                  Digital DNA 라이선스
-                </span>
-              </h2>
-            </div>
-          </div>
-          <div className="relative order-1 aspect-[4/3] w-full overflow-hidden rounded-3xl border border-white/10 shadow-[0_0_50px_-14px_rgba(0,242,234,0.35)] lg:order-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:shadow-zinc-200/30">
-            <Image
-              src={HERO_IMAGE}
-              alt="추상적인 디지털 형태와 빛 — 라이선스·디지털 소스"
-              fill
-              className="object-cover object-center"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              priority
-            />
+        {/* 히어로: 그라데이션 타이포 */}
+        <div className="mx-auto max-w-3xl">
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-900/80 via-black/40 to-reels-cyan/[0.1] p-8 sm:p-10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-50 [html[data-theme='light']_&]:via-white [html[data-theme='light']_&]:to-reels-cyan/10">
             <div
-              className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-reels-cyan/20"
+              className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-reels-cyan/20 blur-3xl"
               aria-hidden
             />
-            <div className="absolute bottom-4 left-4 flex flex-wrap gap-2">
-              <span className="rounded-full border border-white/25 bg-black/50 px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-white/95 backdrop-blur-md">
-                Short-form · Everywhere
+            <p className="relative font-mono text-[11px] font-bold uppercase tracking-[0.28em] text-reels-cyan/90">
+              License
+            </p>
+            <h2 className="relative mt-4 text-2xl font-black leading-snug tracking-tight text-zinc-100 sm:text-3xl md:text-[1.65rem] [html[data-theme='light']_&]:text-zinc-900">
+              <span className="bg-gradient-to-r from-white via-zinc-100 to-reels-cyan/90 bg-clip-text text-transparent [html[data-theme='light']_&]:from-zinc-900 [html[data-theme='light']_&]:via-zinc-800 [html[data-theme='light']_&]:to-reels-cyan">
+                한 번의 소유로 만드는 무한한 가치,
               </span>
-              <span className="rounded-full border border-white/25 bg-black/50 px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-white/95 backdrop-blur-md">
-                Create freely
+              <br />
+              <span className="mt-1 inline-block bg-gradient-to-r from-reels-cyan to-teal-200/95 bg-clip-text text-transparent [html[data-theme='light']_&]:from-reels-cyan [html[data-theme='light']_&]:to-teal-700">
+                Digital DNA 라이선스
               </span>
-            </div>
+            </h2>
           </div>
         </div>
 
