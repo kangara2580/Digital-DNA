@@ -2,7 +2,15 @@
 
 import { ArrowLeft, LayoutGrid } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { ExploreReelSlide } from "@/components/ExploreReelSlide";
 import { VideoCard } from "@/components/VideoCard";
 import {
@@ -33,17 +41,90 @@ function useExplorePool() {
   }, []);
 }
 
-export function ExploreReelsFeed() {
-  const pool = useExplorePool();
-  const [visibleGridCount, setVisibleGridCount] = useState(GRID_INITIAL);
+/** 그리드 모드만 — 훅을 watch와 분리해 규칙 위반·리컨실 오류 방지 */
+function ExploreBrowseGrid({
+  pool,
+  visibleGridCount,
+  setVisibleGridCount,
+  onEnterWatch,
+}: {
+  pool: FeedVideo[];
+  visibleGridCount: number;
+  setVisibleGridCount: Dispatch<SetStateAction<number>>;
+  onEnterWatch: (video: FeedVideo) => void;
+}) {
   const browseVideos = useMemo(
     () => pool.slice(0, Math.min(visibleGridCount, pool.length)),
     [pool, visibleGridCount],
   );
   const gridSentinelRef = useRef<HTMLDivElement>(null);
 
-  const [mode, setMode] = useState<"browse" | "watch">("browse");
-  const [watchOffset, setWatchOffset] = useState(0);
+  useEffect(() => {
+    const el = gridSentinelRef.current;
+    if (!el || pool.length === 0) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting) return;
+        setVisibleGridCount((n) => {
+          if (n >= pool.length) return n;
+          return Math.min(n + GRID_BATCH, pool.length);
+        });
+      },
+      { root: null, rootMargin: "320px 0px", threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [pool.length]);
+
+  return (
+    <div className="mx-auto max-w-[1800px] px-4 pb-20 pt-4 sm:px-6 md:pl-[calc(var(--reels-rail-w,0px)+1rem)] lg:px-8">
+      <p className="mb-4 text-[13px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        조각을 누르면 아래로 스와이프하며 계속 재생되는 세로 릴로 이동합니다.
+      </p>
+      <div
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-4"
+        role="list"
+        aria-label="탐색 그리드"
+      >
+        {browseVideos.map((video) => (
+          <div key={video.id} className="min-w-0" role="listitem">
+            <VideoCard
+              video={video}
+              reelLayout
+              reelStrip
+              disableHoverScale
+              onPick={() => onEnterWatch(video)}
+              className="h-full min-w-0"
+            />
+          </div>
+        ))}
+      </div>
+      {visibleGridCount < pool.length ? (
+        <div
+          ref={gridSentinelRef}
+          className="h-32 w-full shrink-0"
+          aria-hidden
+        />
+      ) : (
+        <p className="mt-8 pb-8 text-center text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          모든 추천 조각을 불러왔어요.
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** 세로 릴 시청만 */
+function ExploreWatchReels({
+  pool,
+  watchOffset,
+  onBackToBrowse,
+}: {
+  pool: FeedVideo[];
+  watchOffset: number;
+  onBackToBrowse: () => void;
+}) {
   const [count, setCount] = useState(BATCH);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -61,104 +142,27 @@ export function ExploreReelsFeed() {
     setCount((c) => Math.min(c + BATCH, MAX_SLIDES));
   }, []);
 
-  /** 목록 그리드: 뷰포트 하단 근처에서 자동으로 더 로드 (틱톡 피드처럼 끊김 없이) */
   useEffect(() => {
-    if (mode !== "browse") return;
-    const el = gridSentinelRef.current;
-    if (!el || pool.length === 0) return;
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (!entries[0]?.isIntersecting) return;
-        setVisibleGridCount((n) => {
-          if (n >= pool.length) return n;
-          return Math.min(n + GRID_BATCH, pool.length);
-        });
-      },
-      { root: null, rootMargin: "320px 0px", threshold: 0 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [mode, pool.length]);
-
-  const enterWatch = useCallback(
-    (video: FeedVideo) => {
-      const idx = pool.findIndex((v) => v.id === video.id);
-      setWatchOffset(idx >= 0 ? idx : 0);
-      setCount(BATCH);
-      setMode("watch");
-    },
-    [pool],
-  );
-
-  useEffect(() => {
-    if (mode !== "watch") return;
     const id = window.requestAnimationFrame(() => {
       scrollRef.current?.scrollTo({ top: 0, behavior: "auto" });
     });
     return () => window.cancelAnimationFrame(id);
-  }, [mode, watchOffset]);
+  }, [watchOffset]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
     const root = scrollRef.current;
-    if (!sentinel || !root || mode !== "watch") return;
+    if (!sentinel || !root) return;
 
     const io = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) loadMore();
       },
-      /** 스냅 스크롤에서도 여유 있게 미리 로드 */
       { root, rootMargin: "0px 0px 65% 0px", threshold: 0 },
     );
     io.observe(sentinel);
     return () => io.disconnect();
-  }, [loadMore, mode, count]);
-
-  useEffect(() => {
-    if (mode === "browse") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }, [mode]);
-
-  if (mode === "browse") {
-    return (
-      <div className="mx-auto max-w-[1800px] px-4 pb-20 pt-4 sm:px-6 md:pl-[calc(var(--reels-rail-w,0px)+1rem)] lg:px-8">
-        <p className="mb-4 text-[13px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          조각을 누르면 아래로 스와이프하며 계속 재생되는 세로 릴로 이동합니다.
-        </p>
-        <div
-          className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-4"
-          role="list"
-          aria-label="탐색 그리드"
-        >
-          {browseVideos.map((video) => (
-            <div key={video.id} className="min-w-0" role="listitem">
-              <VideoCard
-                video={video}
-                reelLayout
-                reelStrip
-                disableHoverScale
-                onPick={() => enterWatch(video)}
-                className="h-full min-w-0"
-              />
-            </div>
-          ))}
-        </div>
-        {visibleGridCount < pool.length ? (
-          <div
-            ref={gridSentinelRef}
-            className="h-32 w-full shrink-0"
-            aria-hidden
-          />
-        ) : (
-          <p className="mt-8 pb-8 text-center text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            모든 추천 조각을 불러왔어요.
-          </p>
-        )}
-      </div>
-    );
-  }
+  }, [loadMore, count]);
 
   return (
     <>
@@ -173,7 +177,7 @@ export function ExploreReelsFeed() {
         </Link>
         <button
           type="button"
-          onClick={() => setMode("browse")}
+          onClick={onBackToBrowse}
           className="pointer-events-auto inline-flex h-10 items-center gap-1.5 rounded-full border border-white/20 bg-black/45 px-3.5 text-[13px] font-semibold text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-reels-cyan/40 hover:bg-black/60 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-900"
           aria-label="그리드 목록으로"
         >
@@ -207,5 +211,50 @@ export function ExploreReelsFeed() {
         />
       </div>
     </>
+  );
+}
+
+export function ExploreReelsFeed() {
+  const pool = useExplorePool();
+  const [mode, setMode] = useState<"browse" | "watch">("browse");
+  const [watchOffset, setWatchOffset] = useState(0);
+  const [visibleGridCount, setVisibleGridCount] = useState(GRID_INITIAL);
+
+  const enterWatch = useCallback(
+    (video: FeedVideo) => {
+      const idx = pool.findIndex((v) => v.id === video.id);
+      setWatchOffset(idx >= 0 ? idx : 0);
+      setMode("watch");
+    },
+    [pool],
+  );
+
+  const backToBrowse = useCallback(() => {
+    setMode("browse");
+  }, []);
+
+  useEffect(() => {
+    if (mode === "browse") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [mode]);
+
+  if (mode === "browse") {
+    return (
+      <ExploreBrowseGrid
+        pool={pool}
+        visibleGridCount={visibleGridCount}
+        setVisibleGridCount={setVisibleGridCount}
+        onEnterWatch={enterWatch}
+      />
+    );
+  }
+
+  return (
+    <ExploreWatchReels
+      pool={pool}
+      watchOffset={watchOffset}
+      onBackToBrowse={backToBrowse}
+    />
   );
 }
