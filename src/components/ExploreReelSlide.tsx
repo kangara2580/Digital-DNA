@@ -181,8 +181,12 @@ export function ExploreReelSlide({ video, scrollRootRef }: ReelSlideProps) {
       ref={blockRef}
       className="flex h-[calc(100dvh-var(--header-height,4.5rem))] w-full shrink-0 snap-start snap-always flex-col bg-[#050508] [html[data-theme='light']_&]:bg-zinc-100"
     >
-      <div className="flex min-h-0 w-full flex-1 flex-col md:flex-row md:items-center md:justify-center md:gap-6 md:px-6 lg:gap-10">
-        <div className="relative flex min-h-0 flex-1 items-center justify-center px-2 pt-2 md:px-0 md:pt-0">
+      <div className="flex min-h-0 w-full flex-1 flex-col md:flex-row md:items-center md:justify-center md:gap-2 md:px-3 lg:gap-3">
+        {/*
+          데스크톱: 영상+레일을 한 덩어리로 두기 위해 영상 래퍼에 md:flex-none.
+          (flex-1이면 레일이 뷰포트 맨 오른쪽으로 밀림)
+        */}
+        <div className="relative flex min-h-0 flex-1 items-center justify-center px-2 pt-2 md:flex-none md:px-0 md:pt-0">
           <div
             className="relative aspect-[9/16] w-full max-w-[min(420px,100%)] max-h-[min(78dvh,calc(100dvh-var(--header-height)-7rem))] overflow-hidden rounded-2xl border border-white/12 bg-black shadow-[0_24px_80px_-30px_rgba(0,0,0,0.85)] md:max-h-[min(92dvh,calc(100dvh-var(--header-height)-2rem))] [html[data-theme='light']_&]:border-zinc-200"
           >

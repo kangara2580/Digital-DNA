@@ -198,10 +198,6 @@ function ExploreWatchReels({
         </button>
       </div>
 
-      <p className="pointer-events-none fixed left-1/2 top-[calc(var(--header-height,4.5rem)+0.65rem)] z-[44] -translate-x-1/2 rounded-full border border-white/15 bg-black/35 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-300 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/85 [html[data-theme='light']_&]:text-zinc-800">
-        탐색 · 릴스
-      </p>
-
       {/* 틱톡 스타일: 위·아래로 한 영상씩 이동 */}
       <div className="pointer-events-none fixed bottom-[max(8rem,calc(env(safe-area-inset-bottom)+5.5rem))] right-3 z-[101] flex flex-col gap-2 sm:right-5 md:right-6">
         <button
