@@ -193,7 +193,7 @@ export function ExploreReelSlide({ video, scrollRootRef }: ReelSlideProps) {
             <video
               ref={videoRef}
               className="absolute inset-0 h-full w-full object-cover"
-              poster={posterSrc}
+              poster={posterSrc || undefined}
               src={isPexelsBlockedVideo ? undefined : previewSrc}
               muted={muted}
               playsInline

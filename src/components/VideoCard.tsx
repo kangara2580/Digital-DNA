@@ -279,7 +279,7 @@ export function VideoCard({
             ref={videoRef}
             className="absolute inset-0 z-0 h-full w-full object-cover"
             src={canLoadPreviewVideo ? previewSrc : undefined}
-            poster={thumbnailSrc}
+            poster={thumbnailSrc || undefined}
             playsInline
             muted
             disablePictureInPicture

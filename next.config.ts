@@ -21,6 +21,16 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "picsum.photos", pathname: "/**" },
     ],
   },
+  /** 브라우저 기본 요청 `/favicon.ico` → public에 ico 없을 때 404 방지 */
+  async redirects() {
+    return [
+      {
+        source: "/favicon.ico",
+        destination: "/favicon.svg",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
