@@ -70,8 +70,14 @@ export function GenerationResultView({ jobId }: { jobId: string }) {
     };
   }, [fetchJob]);
 
+  const pollStatus = job?.status;
   useEffect(() => {
-    if (!job || (job.status !== "queued" && job.status !== "running")) return;
+    if (
+      !pollStatus ||
+      (pollStatus !== "queued" && pollStatus !== "running")
+    ) {
+      return;
+    }
     const id = window.setInterval(async () => {
       try {
         const j = await fetchJob();
@@ -81,7 +87,7 @@ export function GenerationResultView({ jobId }: { jobId: string }) {
       }
     }, 1400);
     return () => window.clearInterval(id);
-  }, [fetchJob, job?.status]);
+  }, [fetchJob, pollStatus]);
 
   const busy = job && (job.status === "queued" || job.status === "running");
   const pct = Math.max(0, Math.min(100, Number(job?.progress) || 0));
