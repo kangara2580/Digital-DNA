@@ -540,3 +540,16 @@ html[data-theme="dark"] .inspiration-section {
 .video-detail-player::-webkit-media-controls-download-button {
   display: none !important;
 }
+
+/* 상세 플레이어: 전체화면 시 세로 영상 비율 유지(잘림 방지) */
+.video-detail-player:fullscreen,
+.video-detail-player:-webkit-full-screen {
+  width: 100vw !important;
+  height: 100vh !important;
+  object-fit: contain !important;
+  background: #000 !important;
+}
+
+.video-detail-player:fullscreen::backdrop {
+  background: #000;
+}
