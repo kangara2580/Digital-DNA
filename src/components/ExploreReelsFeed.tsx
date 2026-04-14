@@ -12,10 +12,12 @@ import type { FeedVideo } from "@/data/videos";
 import { shuffleVideos } from "@/data/videos";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
-const BATCH = 5;
-const MAX_SLIDES = 120;
-/** 그리드에 나열할 최대 개수 — 인기순위 카드와 비슷한 크기로 많이 노출 */
-const BROWSE_GRID_CAP = 60;
+const BATCH = 6;
+/** 세로 릴: 풀을 순환해 이 개수까지 슬라이드 추가 (과도한 DOM 방지로 상한 유지) */
+const MAX_SLIDES = 200;
+/** 그리드 초기·추가 로드 — 스크롤 하단에서 자동으로 더 불러옴 */
+const GRID_INITIAL = 24;
+const GRID_BATCH = 20;
 
 function useExplorePool() {
   return useMemo(() => {
@@ -109,10 +111,12 @@ function ReelSlide({
 
 export function ExploreReelsFeed() {
   const pool = useExplorePool();
+  const [visibleGridCount, setVisibleGridCount] = useState(GRID_INITIAL);
   const browseVideos = useMemo(
-    () => pool.slice(0, Math.min(BROWSE_GRID_CAP, pool.length)),
-    [pool],
+    () => pool.slice(0, Math.min(visibleGridCount, pool.length)),
+    [pool, visibleGridCount],
   );
+  const gridSentinelRef = useRef<HTMLDivElement>(null);
 
   const [mode, setMode] = useState<"browse" | "watch">("browse");
   const [watchOffset, setWatchOffset] = useState(0);
@@ -132,6 +136,26 @@ export function ExploreReelsFeed() {
   const loadMore = useCallback(() => {
     setCount((c) => Math.min(c + BATCH, MAX_SLIDES));
   }, []);
+
+  /** 목록 그리드: 뷰포트 하단 근처에서 자동으로 더 로드 (틱톡 피드처럼 끊김 없이) */
+  useEffect(() => {
+    if (mode !== "browse") return;
+    const el = gridSentinelRef.current;
+    if (!el || pool.length === 0) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting) return;
+        setVisibleGridCount((n) => {
+          if (n >= pool.length) return n;
+          return Math.min(n + GRID_BATCH, pool.length);
+        });
+      },
+      { root: null, rootMargin: "320px 0px", threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [mode, pool.length]);
 
   const enterWatch = useCallback(
     (video: FeedVideo) => {
@@ -160,11 +184,12 @@ export function ExploreReelsFeed() {
       (entries) => {
         if (entries[0]?.isIntersecting) loadMore();
       },
-      { root, rootMargin: "120px 0px", threshold: 0 },
+      /** 스냅 스크롤에서도 여유 있게 미리 로드 */
+      { root, rootMargin: "0px 0px 65% 0px", threshold: 0 },
     );
     io.observe(sentinel);
     return () => io.disconnect();
-  }, [loadMore, mode]);
+  }, [loadMore, mode, count]);
 
   useEffect(() => {
     if (mode === "browse") {
@@ -196,6 +221,17 @@ export function ExploreReelsFeed() {
             </div>
           ))}
         </div>
+        {visibleGridCount < pool.length ? (
+          <div
+            ref={gridSentinelRef}
+            className="h-32 w-full shrink-0"
+            aria-hidden
+          />
+        ) : (
+          <p className="mt-8 pb-8 text-center text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            모든 추천 조각을 불러왔어요.
+          </p>
+        )}
       </div>
     );
   }
