@@ -1,10 +1,10 @@
 /**
- * 로컬 샘플 클립 전용 — AI 얼굴 미리보기(/api/transform) 무료 체험 횟수.
+ * AI 얼굴/배경 미리보기 공용 무료 체험 횟수.
  * 브라우저 localStorage 기준이며, 서버 비용 통제용 1차 필터입니다.
  */
-const LS_KEY = "reels-market-local-face-preview-remaining-v1";
+const LS_KEY = "reels-market-ai-preview-remaining-v2";
 
-export const FREE_LOCAL_FACE_PREVIEW_TRIES = 3;
+export const FREE_LOCAL_FACE_PREVIEW_TRIES = 1;
 
 export function getLocalFacePreviewRemaining(): number {
   if (typeof window === "undefined") return FREE_LOCAL_FACE_PREVIEW_TRIES;

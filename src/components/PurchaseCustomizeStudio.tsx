@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import type { User } from "@supabase/supabase-js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
+import { useAuthSession } from "@/hooks/useAuthSession";
 import type { FeedVideo } from "@/data/videos";
 import { LOCAL_FACE_SWAP_VIDEO_IDS } from "@/constants/videos";
 import { buildFacePickerOptions, type FacePickerOption } from "@/lib/facePickerOptions";
@@ -89,6 +91,36 @@ function parsePersistedPreview(raw: unknown): PersistedPreviewV1 | null {
     previewCandidateIndex: idx,
     textPreviewEnabled: o.textPreviewEnabled === true,
   };
+}
+
+function boolish(value: unknown): boolean {
+  if (value === true) return true;
+  if (typeof value !== "string") return false;
+  const v = value.trim().toLowerCase();
+  return v === "true" || v === "1" || v === "yes" || v === "active";
+}
+
+/**
+ * Supabase 메타데이터의 여러 필드명을 허용해 구독 활성 여부를 판정.
+ * 실제 빌링 연동 시 단일 필드로 정리 예정.
+ */
+function hasAiSubscription(user: User | null): boolean {
+  if (!user) return false;
+  const metas: Array<Record<string, unknown> | undefined> = [
+    user.user_metadata as Record<string, unknown> | undefined,
+    user.app_metadata as Record<string, unknown> | undefined,
+  ];
+
+  for (const meta of metas) {
+    if (!meta) continue;
+    if (boolish(meta.aiSubscriptionActive) || boolish(meta.subscriptionActive)) return true;
+    if (boolish(meta.isSubscribed) || boolish(meta.subscribed)) return true;
+    const status = String(meta.subscriptionStatus ?? "").toLowerCase();
+    if (status === "active" || status === "trialing") return true;
+    const plan = String(meta.plan ?? meta.subscriptionPlan ?? "").toLowerCase();
+    if (plan.includes("pro") || plan.includes("premium") || plan.includes("plus")) return true;
+  }
+  return false;
 }
 
 const defaultOverlays = (): TextOverlay[] => [
@@ -428,13 +460,11 @@ export function PurchaseCustomizeStudio({
   startWithQuick?: boolean;
 }) {
   const { hasPurchased } = usePurchasedVideos();
+  const { user } = useAuthSession();
+  const subscriptionActive = useMemo(() => hasAiSubscription(user), [user]);
+  const aiPreviewQuotaActive = !subscriptionActive;
   const isLocalFaceSwapDemo = LOCAL_FACE_SWAP_VIDEO_IDS.includes(video.id);
   const owned = hasPurchased(video.id) || isLocalFaceSwapDemo;
-  /** 구매 전 로컬 샘플만 — AI 얼굴 미리보기(/api/transform) 무료 체험 횟수 제한 */
-  const localFacePreviewQuotaActive = useMemo(
-    () => isLocalFaceSwapDemo && !hasPurchased(video.id),
-    [hasPurchased, isLocalFaceSwapDemo, video.id],
-  );
 
   const [faceOptions, setFaceOptions] = useState<FacePickerOption[]>([]);
   const [draft, setDraft] = useState<CustomizeDraft | null>(null);
@@ -468,7 +498,7 @@ export function PurchaseCustomizeStudio({
   const [selectedFaceSourceUrl, setSelectedFaceSourceUrl] = useState<string | null>(
     null,
   );
-  /** 로컬 샘플 클립 전용 — AI 얼굴 미리보기(/api/transform) 무료 체험 남은 횟수 */
+  /** 비구독 사용자용 AI 미리보기 무료 체험 남은 횟수 */
   const [localFacePreviewRemaining, setLocalFacePreviewRemaining] = useState(
     FREE_LOCAL_FACE_PREVIEW_TRIES,
   );
@@ -547,9 +577,9 @@ export function PurchaseCustomizeStudio({
   }, [startWithQuick, video.id]);
 
   useEffect(() => {
-    if (!localFacePreviewQuotaActive) return;
+    if (!aiPreviewQuotaActive) return;
     setLocalFacePreviewRemaining(getLocalFacePreviewRemaining());
-  }, [localFacePreviewQuotaActive]);
+  }, [aiPreviewQuotaActive]);
 
   useEffect(() => {
     if (faceOptions.length === 0 || !draft) return;
@@ -815,9 +845,9 @@ export function PurchaseCustomizeStudio({
       return;
     }
 
-    if (localFacePreviewQuotaActive && getLocalFacePreviewRemaining() <= 0) {
+    if (aiPreviewQuotaActive && getLocalFacePreviewRemaining() <= 0) {
       setFacePreviewError(
-        "무료 AI 얼굴 미리보기를 모두 사용했습니다. 릴스 상세에서 구매하면 계속 이용할 수 있어요.",
+        "무료 체험 1회를 모두 사용했습니다. AI 얼굴/배경은 구독 후 이용할 수 있어요.",
       );
       return;
     }
@@ -853,7 +883,7 @@ export function PurchaseCustomizeStudio({
       setIncomingPreviewUrl(data.outputVideoUrl);
       setIncomingVisible(false);
       setPreviewBgVersion((v) => v + 1);
-      if (localFacePreviewQuotaActive) {
+      if (aiPreviewQuotaActive) {
         setLocalFacePreviewRemaining(consumeLocalFacePreviewSuccess());
       }
       trackBehavior({
@@ -871,7 +901,7 @@ export function PurchaseCustomizeStudio({
     }
   }, [
     draft,
-    localFacePreviewQuotaActive,
+    aiPreviewQuotaActive,
     previewBgVideoUrl,
     selectedFace,
     selectedFaceSourceUrl,
@@ -883,6 +913,13 @@ export function PurchaseCustomizeStudio({
   const applyBackgroundPreview = useCallback(async (liveKeyword?: string) => {
     if (!draft) return;
     const keyword = (liveKeyword ?? draft.backgroundPrompt).trim();
+
+    if (aiPreviewQuotaActive && getLocalFacePreviewRemaining() <= 0) {
+      setBackgroundPreviewError(
+        "무료 체험 1회를 모두 사용했습니다. AI 얼굴/배경은 구독 후 이용할 수 있어요.",
+      );
+      return;
+    }
 
     setBackgroundPreviewError(null);
     setBackgroundPreviewInfo(null);
@@ -932,6 +969,9 @@ export function PurchaseCustomizeStudio({
         setIncomingVisible(false);
         setPreviewTransitionLoading(false);
         setPreviewBgVersion((v) => v + 1);
+        if (aiPreviewQuotaActive) {
+          setLocalFacePreviewRemaining(consumeLocalFacePreviewSuccess());
+        }
         trackBehavior({
           type: "background_preview_applied",
           keyword,
@@ -981,6 +1021,9 @@ export function PurchaseCustomizeStudio({
       urls.forEach((u) => preloadVideoUrl(u));
       preloadVideoUrl(data.foregroundVideoUrl);
       preloadVideoUrl(data.backgroundVideoUrl);
+      if (aiPreviewQuotaActive) {
+        setLocalFacePreviewRemaining(consumeLocalFacePreviewSuccess());
+      }
       trackBehavior({
         type: "background_preview_applied",
         keyword,
@@ -994,7 +1037,15 @@ export function PurchaseCustomizeStudio({
     } finally {
       setBackgroundPreviewApplying(false);
     }
-  }, [backgroundMode, draft, preloadVideoUrl, previewBgVideoUrl, trackBehavior, video.src]);
+  }, [
+    aiPreviewQuotaActive,
+    backgroundMode,
+    draft,
+    preloadVideoUrl,
+    previewBgVideoUrl,
+    trackBehavior,
+    video.src,
+  ]);
 
   // 키워드 입력 중 미리 후보를 받아와 백그라운드 preload
   useEffect(() => {
@@ -1203,37 +1254,31 @@ export function PurchaseCustomizeStudio({
 
   return (
     <div className="space-y-10">
-      {isLocalFaceSwapDemo ? (
-        <div className="rounded-xl border border-reels-cyan/25 bg-reels-cyan/10 px-4 py-3 text-[13px] leading-relaxed text-zinc-200">
-          {hasPurchased(video.id) ? (
-            <p>
-              <span className="text-zinc-400">&gt;</span> AI 프리뷰: 제한 없이 이용 가능.{" "}
-              <span className="text-zinc-400">(등록한 얼굴은 목록 최상단에 노출됩니다.)</span>
-            </p>
-          ) : localFacePreviewRemaining > 0 ? (
-            <p>
-              <span className="text-zinc-400">&gt;</span> AI 프리뷰: 무료{" "}
-              <span className="font-extrabold text-reels-cyan/95">
-                {localFacePreviewRemaining}회
-              </span>{" "}
-              가능.{" "}
-              <span className="text-zinc-400">(등록한 얼굴은 목록 최상단에 노출됩니다.)</span>
-            </p>
-          ) : (
-            <p>
-              <span className="text-zinc-400">&gt;</span> AI 프리뷰: 무료 체험을 모두 사용했습니다.{" "}
-              <Link
-                href={`/video/${video.id}`}
-                className="font-semibold text-reels-cyan/95 underline-offset-2 hover:underline"
-              >
-                릴스 상세
-              </Link>
-              에서 구매하면 계속 이용할 수 있습니다.{" "}
-              <span className="text-zinc-400">(등록한 얼굴은 목록 최상단에 노출됩니다.)</span>
-            </p>
-          )}
-        </div>
-      ) : null}
+      <div className="rounded-xl border border-reels-cyan/25 bg-reels-cyan/10 px-4 py-3 text-[13px] leading-relaxed text-zinc-200">
+        {subscriptionActive ? (
+          <p>
+            <span className="text-zinc-400">&gt;</span> 구독 활성 상태: AI 얼굴/배경 기능을 사용할 수 있어요.{" "}
+            <span className="text-zinc-400">(등록한 얼굴은 목록 최상단에 노출됩니다.)</span>
+          </p>
+        ) : localFacePreviewRemaining > 0 ? (
+          <p>
+            <span className="text-zinc-400">&gt;</span> AI 무료 체험{" "}
+            <span className="font-extrabold text-reels-cyan/95">{localFacePreviewRemaining}회</span> 제공 후, 계속 사용하려면{" "}
+            <Link href="/subscribe" className="font-semibold text-reels-cyan/95 underline-offset-2 hover:underline">
+              구독
+            </Link>
+            이 필요합니다.
+          </p>
+        ) : (
+          <p>
+            <span className="text-zinc-400">&gt;</span> AI 무료 체험을 모두 사용했습니다.{" "}
+            <Link href="/subscribe" className="font-semibold text-reels-cyan/95 underline-offset-2 hover:underline">
+              구독
+            </Link>
+            후 AI 얼굴/배경 기능을 이용할 수 있습니다.
+          </p>
+        )}
+      </div>
       <div>
         <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] p-1">
           <button
@@ -1500,15 +1545,15 @@ export function PurchaseCustomizeStudio({
                 disabled={
                   facePreviewApplying ||
                   !selectedFace ||
-                  (localFacePreviewQuotaActive && localFacePreviewRemaining <= 0)
+                  (aiPreviewQuotaActive && localFacePreviewRemaining <= 0)
                 }
                 onClick={() => void applyFacePreview()}
                 className="rounded-lg border border-reels-cyan/35 bg-reels-cyan/10 px-3 py-1.5 text-[11px] font-semibold text-reels-cyan hover:bg-reels-cyan/18 disabled:opacity-50"
               >
                 {facePreviewApplying
                   ? "합성 중…"
-                  : localFacePreviewQuotaActive && localFacePreviewRemaining <= 0
-                    ? "무료 체험 횟수 소진"
+                  : aiPreviewQuotaActive && localFacePreviewRemaining <= 0
+                    ? "무료 1회 소진 (구독 필요)"
                     : "선택 얼굴로 미리보기"}
               </button>
             </div>
@@ -1568,10 +1613,17 @@ export function PurchaseCustomizeStudio({
               <button
                 type="button"
                 onClick={() => void applyBackgroundPreview(bgPromptRef.current?.value)}
-                disabled={backgroundPreviewApplying}
+                disabled={
+                  backgroundPreviewApplying ||
+                  (aiPreviewQuotaActive && localFacePreviewRemaining <= 0)
+                }
                 className="rounded-lg border border-reels-cyan/35 bg-reels-cyan/10 px-3 py-1.5 text-[11px] font-semibold text-reels-cyan hover:bg-reels-cyan/18 disabled:opacity-50"
               >
-                {backgroundPreviewApplying ? "AI 적용 중..." : "미리 적용하기"}
+                {backgroundPreviewApplying
+                  ? "AI 적용 중..."
+                  : aiPreviewQuotaActive && localFacePreviewRemaining <= 0
+                    ? "무료 1회 소진 (구독 필요)"
+                    : "미리 적용하기"}
               </button>
               {bgPreviewOn ? (
                 <button
