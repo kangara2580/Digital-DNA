@@ -9,7 +9,9 @@ import {
   Wallet,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { getCommerceMeta } from "@/data/videoCommerce";
 import type { FeedVideo } from "@/data/videos";
@@ -42,6 +44,8 @@ function ReelDesktopRail({
   video: FeedVideo;
   className?: string;
 }) {
+  const router = useRouter();
+  const { hasPurchased, markPurchased } = usePurchasedVideos();
   const metrics = useMemo(() => getMetricsForVideoDetail(video.id), [video.id]);
   const commerce = useMemo(() => getCommerceMeta(video.id), [video.id]);
 
@@ -96,19 +100,25 @@ function ReelDesktopRail({
         </span>
       </div>
 
-      <Link
-        href={`/video/${video.id}`}
+      <button
+        type="button"
+        onClick={() => {
+          if (!hasPurchased(video.id)) markPurchased(video.id);
+          router.push(`/create?videoId=${encodeURIComponent(video.id)}&mode=quick`);
+        }}
         className="mt-1 flex flex-col items-center gap-1 rounded-2xl border border-reels-cyan/35 bg-reels-cyan/10 px-2 py-2.5 text-[10px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20"
       >
         <ExternalLink className="h-4 w-4" strokeWidth={2} aria-hidden />
         상세
-      </Link>
+      </button>
     </aside>
   );
 }
 
 /** 모바일: 하단 한 줄 요약 (쇼츠·릴스 하단 메타와 유사) */
 function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
+  const router = useRouter();
+  const { hasPurchased, markPurchased } = usePurchasedVideos();
   const metrics = useMemo(() => getMetricsForVideoDetail(video.id), [video.id]);
   const commerce = useMemo(() => getCommerceMeta(video.id), [video.id]);
 
@@ -123,12 +133,16 @@ function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
           조회 {formatCompactCount(metrics.totalViews)} · ♥ {formatCompactCount(metrics.totalLikes)}
         </p>
       </div>
-      <Link
-        href={`/video/${video.id}`}
+      <button
+        type="button"
+        onClick={() => {
+          if (!hasPurchased(video.id)) markPurchased(video.id);
+          router.push(`/create?videoId=${encodeURIComponent(video.id)}&mode=quick`);
+        }}
         className="shrink-0 rounded-full border border-reels-cyan/40 bg-reels-cyan/15 px-3 py-1.5 text-[11px] font-bold text-reels-cyan"
       >
         상세
-      </Link>
+      </button>
     </div>
   );
 }
