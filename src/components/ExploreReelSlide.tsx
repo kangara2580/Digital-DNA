@@ -139,7 +139,7 @@ export function ExploreReelSlide({ video, scrollRootRef }: ReelSlideProps) {
   const [muted, setMuted] = useState(true);
   const [progress, setProgress] = useState(0);
   const previewSrc = video.previewSrc ?? video.src;
-  /** 상세·카드는 Pexels 직링크를 끄지만, 릴스 전체화면은 실제 MP4를 재생해야 함 */
+  const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(previewSrc);
   const posterSrc = sanitizePosterSrc(video.poster);
   const posterFallback =
     posterSrc ?? (video.poster?.trim() || undefined);
@@ -203,11 +203,11 @@ export function ExploreReelSlide({ video, scrollRootRef }: ReelSlideProps) {
               ref={videoRef}
               className="absolute inset-0 z-0 h-full w-full object-cover"
               poster={posterFallback || undefined}
-              src={previewSrc}
+              src={isPexelsBlockedVideo ? undefined : previewSrc}
               muted={muted}
               playsInline
               loop
-              preload="metadata"
+              preload={isPexelsBlockedVideo ? "none" : "metadata"}
               onTimeUpdate={onTimeUpdate}
             />
             <div
