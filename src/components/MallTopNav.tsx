@@ -376,7 +376,7 @@ export function MallTopNav() {
             </div>
           ) : null}
 
-          {/* 펼침: 슬로건 + (로고 좌 | 검색 우) 한 줄 / 컴팩트 시 접힘 */}
+          {/* 펼침: 로고 좌 | 검색 우 / 컴팩트 시 접힘 */}
           <div
             className={`w-full overflow-hidden ${easeTitleCollapse} ${
               compactEffective
@@ -387,10 +387,6 @@ export function MallTopNav() {
           >
             {!compactEffective ? (
               <div className="pt-0.5">
-                <p className="mb-2 text-left text-[11px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                  <span className="mr-1.5 inline-block h-1 w-1 rounded-full bg-reels-cyan/80 align-middle" aria-hidden />
-                  바이럴 릴스를 사고, 클론하고, 성장하세요
-                </p>
                 <div className="flex w-full min-w-0 flex-nowrap items-center gap-2 sm:gap-5">
                   <Link
                     href="/"
