@@ -1489,7 +1489,7 @@ export function PurchaseCustomizeStudio({
               </>
             ) : null}
           </div>
-          {selectedFace ? (
+          {useAdvancedStep && selectedFace ? (
             <div className="mx-auto mt-4 flex max-w-[280px] items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={selectedFace.src} alt="" className="h-12 w-12 shrink-0 rounded-full object-cover" />
@@ -1502,6 +1502,7 @@ export function PurchaseCustomizeStudio({
         </div>
 
         <div className="min-w-0 space-y-8">
+          {useAdvancedStep ? (
           <section className="reels-glass-card rounded-xl p-4 sm:p-5">
             <h2 className="text-[13px] font-extrabold text-zinc-100">얼굴 소스</h2>
             <p className="mt-1 text-[12px] text-zinc-500">
@@ -1557,6 +1558,7 @@ export function PurchaseCustomizeStudio({
               <p className="mt-2 text-[11px] font-medium text-reels-crimson">{facePreviewError}</p>
             ) : null}
           </section>
+          ) : null}
 
           {useAdvancedStep ? (
             <>
@@ -1912,9 +1914,9 @@ export function PurchaseCustomizeStudio({
             </>
           ) : (
             <div className="reels-glass-card rounded-xl p-4 sm:p-5">
-              <p className="text-[13px] font-extrabold text-zinc-100">2단계 커스텀 편집</p>
-              <p className="mt-1 text-[12px] text-zinc-500">
-                지금은 건너뛰고 바로구매 흐름입니다. 필요하면 위 버튼에서 언제든 다시 켤 수 있어요.
+              <p className="text-[13px] font-extrabold text-zinc-100">커스텀 편집</p>
+              <p className="mt-1 text-[12px] leading-relaxed text-zinc-500">
+                AI로 얼굴·배경을 바꾸고, 원하는 톤으로 다듬을 수 있어요. 위에서 켜면 바로 조정할 수 있습니다.
               </p>
             </div>
           )}
