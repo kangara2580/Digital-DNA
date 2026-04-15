@@ -10,8 +10,6 @@ import { getMarketVideoById } from "@/data/videoCommerce";
 export function CreateStudioPage() {
   const searchParams = useSearchParams();
   const videoId = searchParams.get("videoId") ?? "";
-  const mode = searchParams.get("mode");
-  const startWithQuick = mode === "quick";
   const { hasPurchased } = usePurchasedVideos();
 
   const video = useMemo(() => {
@@ -77,7 +75,7 @@ export function CreateStudioPage() {
         <span className="mx-1.5 text-zinc-700">/</span>
         <span className="text-zinc-400">얼굴·배경 편집 + AI 창작</span>
       </nav>
-      <PurchaseCustomizeStudio video={video} startWithQuick={startWithQuick} heroTitle="창작 스튜디오" />
+      <PurchaseCustomizeStudio video={video} heroTitle="창작 스튜디오" />
     </>
   );
 }

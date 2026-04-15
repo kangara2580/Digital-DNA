@@ -104,7 +104,7 @@ function ReelDesktopRail({
         type="button"
         onClick={() => {
           if (!hasPurchased(video.id)) markPurchased(video.id);
-          router.push(`/create?videoId=${encodeURIComponent(video.id)}&mode=quick`);
+          router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
         }}
         className="mt-1 flex flex-col items-center gap-1 rounded-2xl border border-reels-cyan/35 bg-reels-cyan/10 px-2 py-2.5 text-[10px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20"
       >
@@ -137,7 +137,7 @@ function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
         type="button"
         onClick={() => {
           if (!hasPurchased(video.id)) markPurchased(video.id);
-          router.push(`/create?videoId=${encodeURIComponent(video.id)}&mode=quick`);
+          router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
         }}
         className="shrink-0 rounded-full border border-reels-cyan/40 bg-reels-cyan/15 px-3 py-1.5 text-[11px] font-bold text-reels-cyan"
       >

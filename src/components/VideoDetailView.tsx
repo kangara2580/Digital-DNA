@@ -139,7 +139,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                 onClick={() => {
                   if (soldOut) return;
                   if (!owned) markPurchased(video.id);
-                  router.push(`/create?videoId=${encodeURIComponent(video.id)}&mode=quick`);
+                  router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
                 }}
                 className="w-full flex-1 rounded-full bg-reels-crimson px-5 py-3.5 text-[14px] font-extrabold text-white shadow-reels-crimson transition-[transform,opacity] duration-300 ease-in-out hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
               >

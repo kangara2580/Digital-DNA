@@ -457,11 +457,9 @@ const quickBuyButtonClass =
 
 export function PurchaseCustomizeStudio({
   video,
-  startWithQuick = false,
   heroTitle,
 }: {
   video: FeedVideo;
-  startWithQuick?: boolean;
   /** 창작 스튜디오 등 상단 제목 — 있으면 제목 행 오른쪽에 바로구매 버튼 배치 */
   heroTitle?: string;
 }) {
@@ -478,7 +476,7 @@ export function PurchaseCustomizeStudio({
   /** idle: 아직 저장 안 함 · saving: 저장 중 · saved: 완료(문구 유지, 재저장 시 다시 saving → saved) */
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const saveInFlightRef = useRef(false);
-  const [useAdvancedStep, setUseAdvancedStep] = useState(!startWithQuick);
+  const [useAdvancedStep, setUseAdvancedStep] = useState(true);
   const [submitRemote, setSubmitRemote] = useState(false);
   const [remoteErr, setRemoteErr] = useState<string | null>(null);
   const [previewBgPrompt, setPreviewBgPrompt] = useState<string | null>(null);
@@ -541,7 +539,7 @@ export function PurchaseCustomizeStudio({
     lastAutoAppliedKeywordRef.current = loaded.draft.backgroundPrompt.trim();
 
     if (p) {
-      setUseAdvancedStep(p.useAdvancedStep);
+      setUseAdvancedStep(true);
       setPreviewBgPrompt(p.previewBgPrompt);
       setPreviewBgVideoUrl(p.previewBgVideoUrl);
       setPreviewBgImageUrl(p.previewBgImageUrl);
@@ -555,7 +553,7 @@ export function PurchaseCustomizeStudio({
       );
       setTextPreviewEnabled(p.textPreviewEnabled);
     } else {
-      setUseAdvancedStep(!startWithQuick);
+      setUseAdvancedStep(true);
       setPreviewBgPrompt(null);
       setPreviewBgVideoUrl(null);
       setPreviewBgImageUrl(null);
@@ -576,8 +574,6 @@ export function PurchaseCustomizeStudio({
     setBackgroundPreviewApplying(false);
     setSaveStatus("idle");
     saveInFlightRef.current = false;
-    // startWithQuick는 로컬 draft 없을 때만 else에서 사용. 의존성에 넣으면 같은 영상에서 URL만 바뀔 때 전체 draft 재로드가 나므로 제외.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- video.id당 한 번 로드; startWithQuick는 해당 마운트 시점 값만 사용
   }, [video.id]);
 
   useEffect(() => {
@@ -1312,32 +1308,6 @@ export function PurchaseCustomizeStudio({
           </button>
         </div>
       ) : null}
-      <div>
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] p-1">
-          <button
-            type="button"
-            onClick={() => setUseAdvancedStep(false)}
-            className={`rounded-full px-3 py-1 text-[11px] font-semibold transition ${
-              !useAdvancedStep
-                ? "bg-reels-cyan/20 text-reels-cyan"
-                : "text-zinc-500 hover:text-zinc-300"
-            }`}
-          >
-            바로구매
-          </button>
-          <button
-            type="button"
-            onClick={() => setUseAdvancedStep(true)}
-            className={`rounded-full px-3 py-1 text-[11px] font-semibold transition ${
-              useAdvancedStep
-                ? "bg-reels-cyan/20 text-reels-cyan"
-                : "text-zinc-500 hover:text-zinc-300"
-            }`}
-          >
-            커스텀 편집
-          </button>
-        </div>
-      </div>
 
       <div className="grid gap-10 lg:grid-cols-[minmax(0,340px)_1fr] lg:gap-12">
         <div className="min-w-0 lg:sticky lg:top-[calc(var(--header-height,220px)+0.75rem)] lg:self-start">
@@ -1949,7 +1919,7 @@ export function PurchaseCustomizeStudio({
             <div className="reels-glass-card rounded-xl p-4 sm:p-5">
               <p className="text-[13px] font-extrabold text-zinc-100">커스텀 편집</p>
               <p className="mt-1 text-[12px] leading-relaxed text-zinc-500">
-                AI로 얼굴·배경을 바꾸고, 원하는 톤으로 다듬을 수 있어요. 위에서 켜면 바로 조정할 수 있습니다.
+                AI로 얼굴·배경을 바꾸고, 원하는 톤으로 다듬을 수 있어요. 생성만 빠르게 하려면 상단의 바로구매를 쓰면 됩니다.
               </p>
             </div>
           )}
