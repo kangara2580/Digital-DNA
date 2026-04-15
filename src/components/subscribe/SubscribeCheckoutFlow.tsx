@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, CreditCard, Loader2, Lock, Shield } from "lucide-react";
+import { ArrowLeft, CheckCircle2, CreditCard, Loader2, Lock, Shield } from "lucide-react";
 import {
   SUBSCRIPTION_CHECKOUT_PLANS,
   parsePlanKey,
@@ -255,13 +255,14 @@ export function SubscribeCheckoutFlow() {
 
   return (
     <div className="mx-auto max-w-lg px-4 py-10">
-      <div className="mb-6 flex items-center justify-between gap-3">
+      <div className="mb-8">
         <button
           type="button"
           onClick={() => router.push("/subscribe")}
-          className="text-[13px] font-semibold text-zinc-500 hover:text-reels-cyan [html[data-theme='light']_&]:text-zinc-600"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/[0.06] px-4 py-3 text-[15px] font-extrabold text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.06)] transition hover:border-reels-cyan/35 hover:bg-reels-cyan/10 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-sm [html[data-theme='light']_&]:hover:border-reels-cyan/50 [html[data-theme='light']_&]:hover:bg-reels-cyan/10 [html[data-theme='light']_&]:hover:text-reels-cyan sm:w-auto sm:justify-start"
         >
-          ← 구독 플랜
+          <ArrowLeft className="h-5 w-5 shrink-0" aria-hidden />
+          뒤로가기
         </button>
       </div>
 
@@ -270,7 +271,7 @@ export function SubscribeCheckoutFlow() {
       </h1>
       <p className="mt-2 text-[14px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
         {isRegisterCardOnly
-          ? "영상 구매 시 사용할 카드를 등록합니다."
+          ? "등록한 카드는 결제 시 빠르게 사용할 수 있습니다."
           : "구독 결제에 사용할 카드 정보를 입력합니다."}
       </p>
 
