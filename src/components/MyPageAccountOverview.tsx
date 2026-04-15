@@ -88,9 +88,9 @@ export function MyPageAccountOverview() {
         )}
         <Link
           href="/subscribe"
-          className="mt-3 inline-block text-[12px] font-semibold text-reels-cyan hover:underline"
+          className="mt-3 inline-flex w-full items-center justify-center rounded-xl border border-reels-cyan/40 bg-reels-cyan/10 px-3 py-2 text-center text-[13px] font-extrabold text-reels-cyan transition hover:bg-reels-cyan/18"
         >
-          구독 플랜 보기
+          {sub ? "구독 플랜 관리" : "구독 시작하기"}
         </Link>
       </section>
 
