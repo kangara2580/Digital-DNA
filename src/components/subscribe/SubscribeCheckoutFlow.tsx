@@ -11,6 +11,7 @@ import {
 } from "@/data/subscriptionCheckout";
 import { addDnaCredits } from "@/lib/dnaCreditsStorage";
 import { writeStoredSubscription } from "@/lib/subscriptionStorage";
+import { CheckoutBackNav } from "@/components/subscribe/CheckoutBackNav";
 
 type Step = "payment" | "summary" | "processing" | "success";
 
@@ -78,9 +79,28 @@ export function SubscribeCheckoutFlow() {
     runProcessingThenSuccess();
   }, [runProcessingThenSuccess]);
 
+  const checkoutHeader = (
+    <header className="mb-6">
+      <nav className="font-mono text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        <Link href="/" className="text-reels-cyan/90 hover:text-reels-cyan">
+          홈
+        </Link>
+        <span className="mx-1.5 text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
+        <Link href="/subscribe" className="text-reels-cyan/90 hover:text-reels-cyan">
+          구독
+        </Link>
+        <span className="mx-1.5 text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
+        <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">결제</span>
+      </nav>
+      {step !== "success" ? <CheckoutBackNav /> : null}
+    </header>
+  );
+
   if (isRegisterCardOnly && step === "success") {
     return (
-      <div className="mx-auto max-w-lg px-4 py-12 text-center">
+      <>
+        {checkoutHeader}
+        <div className="mx-auto max-w-lg px-4 py-12 text-center">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-reels-cyan/20 text-reels-cyan">
           <CheckCircle2 className="h-8 w-8" aria-hidden />
         </div>
@@ -105,12 +125,15 @@ export function SubscribeCheckoutFlow() {
           </Link>
         </div>
       </div>
+      </>
     );
   }
 
   if (!isRegisterCardOnly && step === "success") {
     return (
-      <div className="mx-auto max-w-lg px-4 py-12 text-center">
+      <>
+        {checkoutHeader}
+        <div className="mx-auto max-w-lg px-4 py-12 text-center">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-reels-cyan/20 text-reels-cyan">
           <CheckCircle2 className="h-8 w-8" aria-hidden />
         </div>
@@ -138,12 +161,15 @@ export function SubscribeCheckoutFlow() {
           </Link>
         </p>
       </div>
+      </>
     );
   }
 
   if (step === "processing") {
     return (
-      <div className="mx-auto flex max-w-md flex-col items-center px-4 py-20 text-center">
+      <>
+        {checkoutHeader}
+        <div className="mx-auto flex max-w-md flex-col items-center px-4 py-20 text-center">
         <Loader2
           className="h-10 w-10 animate-spin text-reels-cyan"
           aria-hidden
@@ -155,13 +181,16 @@ export function SubscribeCheckoutFlow() {
           창을 닫거나 새로고침하지 마세요.
         </p>
       </div>
+      </>
     );
   }
 
   if (step === "summary") {
     if (isRegisterCardOnly) {
       return (
-        <div className="mx-auto max-w-lg px-4 py-10">
+        <>
+          {checkoutHeader}
+          <div className="mx-auto max-w-lg px-4 py-10">
           <h1 className="text-xl font-black [html[data-theme='light']_&]:text-zinc-900">
             카드 등록 확인
           </h1>
@@ -196,11 +225,14 @@ export function SubscribeCheckoutFlow() {
             </button>
           </div>
         </div>
+        </>
       );
     }
 
     return (
-      <div className="mx-auto max-w-lg px-4 py-10">
+      <>
+        {checkoutHeader}
+        <div className="mx-auto max-w-lg px-4 py-10">
         <h1 className="text-xl font-black [html[data-theme='light']_&]:text-zinc-900">
           결제 내용 확인
         </h1>
@@ -249,11 +281,14 @@ export function SubscribeCheckoutFlow() {
           </button>
         </div>
       </div>
+      </>
     );
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 pb-10 pt-2 sm:px-0">
+    <>
+      {checkoutHeader}
+      <div className="mx-auto max-w-lg px-4 pb-10 pt-2 sm:px-0">
       <h1 className="text-xl font-black [html[data-theme='light']_&]:text-zinc-900">
         {isRegisterCardOnly ? "결제 수단 등록" : "결제 수단"}
       </h1>
@@ -362,5 +397,6 @@ export function SubscribeCheckoutFlow() {
       </button>
 
     </div>
+    </>
   );
 }
