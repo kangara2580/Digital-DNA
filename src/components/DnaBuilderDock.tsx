@@ -77,7 +77,7 @@ export function DnaBuilderDock() {
                           DNA 조합기
                         </p>
                         <p className="text-[13px] font-semibold text-zinc-100">
-                          담은 조각을 이어 붙여 보기
+                          담은 릴스를 이어 붙여 보기
                         </p>
                       </div>
                       {selectedPreview ? (

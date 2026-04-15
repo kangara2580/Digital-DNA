@@ -255,7 +255,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   /** 100·300·500원대 — DNA 조합기·연관 무드 데모용 마이크로 조각 */
   {
     id: "dna-100-asphalt",
-    title: "젖은 아스팔트 조각",
+    title: "젖은 아스팔트 릴스",
     creator: "@vibe_micro",
     src: "https://videos.pexels.com/video-files/3045163/3045163-hd_1920_1080_25fps.mp4",
     poster:
@@ -266,7 +266,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "dna-300-rain-asmr",
-    title: "빗소리 ASMR 조각",
+    title: "빗소리 ASMR 릴스",
     creator: "@vibe_micro",
     src: "https://videos.pexels.com/video-files/2491284/2491284-hd_1920_1080_30fps.mp4",
     poster:

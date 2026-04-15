@@ -70,7 +70,7 @@ const RAIL_ITEMS: RailItem[] = [
   },
   {
     href: "/recent",
-    label: "최근 본 조각",
+    label: "최근 본 릴스",
     Icon: History,
     isActive: (p) => p.startsWith("/recent"),
   },

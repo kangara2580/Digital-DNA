@@ -33,7 +33,7 @@ export function SellerPitchBanner() {
               >
                 <span className="block">폰 속 &apos;망한 영상&apos;,</span>
                 <span className="mt-0.5 block text-zinc-400 sm:mt-1">
-                  누군가에겐 간절한 한 조각
+                  누군가에겐 간절한 한 릴스
                 </span>
               </h2>
 
@@ -54,7 +54,7 @@ export function SellerPitchBanner() {
                 className="group inline-flex items-center justify-center gap-2 rounded-full bg-reels-crimson px-6 py-3 text-[14px] font-extrabold text-white shadow-reels-crimson transition-[transform,box-shadow] duration-[400ms] ease-in-out hover:brightness-110 active:scale-[0.98] sm:px-7 sm:py-3 sm:text-[15px]"
               >
                 <Store className="h-[17px] w-[17px] shrink-0 opacity-90" strokeWidth={2} aria-hidden />
-                내 조각 판매 시작하기
+                내 릴스 판매 시작하기
                 <ArrowRight
                   className="h-[17px] w-[17px] shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
                   strokeWidth={2.2}

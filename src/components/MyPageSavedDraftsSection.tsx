@@ -106,7 +106,7 @@ function DraftRow({
   onPurchaseDemo: () => void;
   onRemove: () => void;
 }) {
-  const title = video?.title ?? `조각 ${videoId}`;
+  const title = video?.title ?? `릴스 ${videoId}`;
   const poster = sanitizePosterSrc(video?.poster) ?? "";
   const creator = video?.creator;
 

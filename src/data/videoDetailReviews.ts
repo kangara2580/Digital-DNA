@@ -35,7 +35,7 @@ export const VIDEO_DETAIL_REVIEWS: Record<string, VideoDetailReview[]> = {
       id: "vr-1-2",
       author: "@clip_editor_mina",
       rating: R(5),
-      body: "브이로그 인트로에 붙였는데 분위기가 바로 살아요. 짧은 조각인데 편집 시간은 확 줄었습니다.",
+      body: "브이로그 인트로에 붙였는데 분위기가 바로 살아요. 짧은 릴스인데 편집 시간은 확 줄었습니다.",
       dateLabel: "3 weeks ago",
       verifiedPurchase: true,
       helpfulCount: 64,

@@ -91,10 +91,10 @@ export default function RecentPage() {
       <header className="flex flex-col gap-4 border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">
-            최근 본 조각
+            최근 본 릴스
           </h1>
           <p className="mt-1 text-[15px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            조각 상세 페이지를 열면 자동으로 여기 쌓입니다. 우측 상단 시계
+            릴스 상세 페이지를 열면 자동으로 여기 쌓입니다. 우측 상단 시계
             아이콘으로도 올 수 있어요.
           </p>
         </div>
@@ -109,7 +109,7 @@ export default function RecentPage() {
               value={sort}
               onChange={(e) => setSort(e.target.value as SortValue)}
               className="min-w-[11.5rem] cursor-pointer rounded-lg border border-white/15 bg-reels-void/80 px-3 py-2 text-[13px] font-medium text-zinc-100 outline-none transition-colors hover:border-reels-cyan/35 focus:border-reels-cyan/50 focus:ring-2 focus:ring-reels-cyan/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
-              aria-label="최근 본 조각 정렬"
+              aria-label="최근 본 릴스 정렬"
             >
               {SORT_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -144,16 +144,16 @@ export default function RecentPage() {
       ) : rows.length === 0 ? (
         <div className="mx-auto mt-16 max-w-md text-center">
           <p className="text-[16px] font-semibold leading-relaxed text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
-            아직 본 조각이 없어요. 마음에 드는 클립을 열어 보세요.
+            아직 본 릴스가 없어요. 마음에 드는 클립을 열어 보세요.
           </p>
           <p className="mt-2 text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            조각 상세를 열면 자동으로 여기에 쌓입니다.
+            릴스 상세를 열면 자동으로 여기에 쌓입니다.
           </p>
           <Link
             href="/"
             className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
           >
-            조각 둘러보기
+            릴스 둘러보기
           </Link>
         </div>
       ) : (

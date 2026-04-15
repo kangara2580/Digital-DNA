@@ -35,7 +35,7 @@ export function MicroDnaExploreSection() {
         <div className="mt-4 flex flex-col gap-3 sm:mt-5 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
           <div className="min-w-0 text-left">
             <p className="max-w-2xl text-[15px] leading-relaxed text-zinc-500 sm:text-[16px]">
-              300원 이하 조각만 모았어요.
+              300원 이하 릴스만 모았어요.
             </p>
           </div>
           <SectionMoreLink

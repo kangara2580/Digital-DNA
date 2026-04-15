@@ -61,7 +61,7 @@ export function MyPageStudioSection() {
           href="/explore"
           className="text-[12px] font-semibold text-reels-cyan/90 hover:underline"
         >
-          새 조각 찾기
+          새 릴스 찾기
         </Link>
       </div>
 
@@ -73,7 +73,7 @@ export function MyPageStudioSection() {
         <ul className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {items.map((row) => {
             const video = getMarketVideoById(row.videoId);
-            const title = video?.title ?? `조각 ${row.videoId}`;
+            const title = video?.title ?? `릴스 ${row.videoId}`;
             const poster = video ? sanitizePosterSrc(video.poster) : "";
 
             return (

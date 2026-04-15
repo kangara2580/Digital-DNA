@@ -29,7 +29,7 @@ export async function DiscountDnaSection() {
             할인 중인 DNA
           </h2>
           <p className="mt-0.5 max-w-xl text-[13px] leading-snug text-zinc-500">
-            방금 끌올된 100원 전략 조각들이 촘촘히 모여 있어요. 작은 가격 변화로 새로운 시선을
+            방금 끌올된 100원 전략 릴스들이 촘촘히 모여 있어요. 작은 가격 변화로 새로운 시선을
             불러보세요.
           </p>
         </div>

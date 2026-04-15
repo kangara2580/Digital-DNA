@@ -37,7 +37,7 @@ export const BEST_PURCHASE_REVIEWS: PurchaseReviewCard[] = [
   {
     id: "rv-1",
     quote:
-      "'라면 끓이는 영상' 조각을 브이로그 인트로에 붙였는데 조회수 터졌어요. '이걸 어디다 쓰지?'가 한 번에 해결됐어요.",
+      "'라면 끓이는 영상' 릴스를 브이로그 인트로에 붙였는데 조회수 터졌어요. '이걸 어디다 쓰지?'가 한 번에 해결됐어요.",
     highlightPhrases: ["조회수 터졌어요"],
     author: "@clip_editor_mina",
     badge: "실제 활용 샷",
@@ -126,8 +126,8 @@ export const BEST_PURCHASE_REVIEWS: PurchaseReviewCard[] = [
   {
     id: "rv-8",
     quote:
-      "설원 하이킹 풋짐만 샀는데 여행 광고 모의편집에 넣으니 클라이언트가 바로 OK. 짧은 조각이 설득력을 만들어요.",
-    highlightPhrases: ["바로 OK", "짧은 조각이 설득력을 만들어요"],
+      "설원 하이킹 풋짐만 샀는데 여행 광고 모의편집에 넣으니 클라이언트가 바로 OK. 짧은 릴스가 설득력을 만들어요.",
+    highlightPhrases: ["바로 OK", "짧은 릴스가 설득력을 만들어요"],
     author: "@pitch_editor",
     badge: "실제 활용 샷",
     pickLabel: "Pitch Ready",

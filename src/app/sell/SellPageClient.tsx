@@ -60,7 +60,7 @@ export function SellPageClient() {
           <div className="flex items-center gap-2">
             <Store className="h-6 w-6 text-reels-cyan" strokeWidth={2} aria-hidden />
             <h1 className="text-xl font-extrabold tracking-tight sm:text-2xl">
-              조각을 판매하려면 로그인이 필요해요
+              릴스를 판매하려면 로그인이 필요해요
             </h1>
           </div>
           <p className="mt-3 text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
@@ -102,14 +102,14 @@ export function SellPageClient() {
           /
         </span>
         <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-          조각 판매 등록
+          릴스 판매 등록
         </span>
       </nav>
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">
-            조각 판매 등록
+            릴스 판매 등록
           </h1>
           <p className="mt-1 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             로그인: <span className="font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">{email}</span>

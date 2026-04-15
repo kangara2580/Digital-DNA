@@ -289,7 +289,7 @@ export function MyPageSellerAnalyticsSection() {
           icon={Gauge}
           label="평균 판매 단가"
           value={t.avgSellingPrice > 0 ? formatWon(t.avgSellingPrice) : "—"}
-          sub="전체 등록 조각 기준 가중 평균"
+          sub="전체 등록 릴스 기준 가중 평균"
           accent="violet"
         />
         <KpiCard
@@ -446,7 +446,7 @@ export function MyPageSellerAnalyticsSection() {
           </p>
         </div>
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">분석 대상 조각</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">분석 대상 릴스</p>
           <p className="mt-1 text-[18px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
             {snapshot.videos.length}개
           </p>

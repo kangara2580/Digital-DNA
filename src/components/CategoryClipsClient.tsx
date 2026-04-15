@@ -130,7 +130,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
       return "AI가 아무리 정교해져도, 어설픈 한 박자와 뜻밖의 실수에서 나오는 감정의 진짜 결은 인간만 만들 수 있어요. 완벽하지 않아서 더 끌리는 순간들을 모았습니다.";
     }
     if (slug === "best") {
-      return "지금 가장 반응이 큰 조각들을 한눈에 보고, 바로 구매/활용할 수 있어요.";
+      return "지금 가장 반응이 큰 릴스들을 한눈에 보고, 바로 구매/활용할 수 있어요.";
     }
     return null;
   }, [slug]);
@@ -332,7 +332,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                       </span>
                     </>
                   ) : (
-                    <>등록된 조각 {sorted.length}개</>
+                    <>등록된 릴스 {sorted.length}개</>
                   )}
                 </p>
                 {categoryStory ? (
@@ -412,7 +412,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
 
           {slug !== "best" && sorted.length === 0 ? (
             <p className="px-4 py-16 text-center font-mono text-[12px] text-zinc-500 sm:px-6 [html[data-theme='light']_&]:text-zinc-600">
-              이 조건에 맞는 조각이 없어요.
+              이 조건에 맞는 릴스가 없어요.
             </p>
           ) : slug !== "best" && orientationFilter === "all" ? (
             <div className="space-y-0">
