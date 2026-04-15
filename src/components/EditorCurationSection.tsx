@@ -187,12 +187,9 @@ export function EditorCurationSection() {
     >
       <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8">
         <div className="text-left">
-          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-reels-cyan">
-            Situation Curation
-          </p>
           <h2
             id="editor-curation-heading"
-            className="mt-1 text-[22px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:text-[26px] md:text-[28px]"
+            className="text-[22px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:text-[26px] md:text-[28px]"
           >
             이런 상황에 딱!
           </h2>
