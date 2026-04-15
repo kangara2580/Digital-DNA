@@ -100,11 +100,6 @@ function EditorCurationBlock({
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="min-w-0 text-left">
-          {featured ? (
-            <span className="mb-1 inline-block rounded-full border border-reels-crimson/40 bg-reels-crimson/15 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-reels-crimson">
-              Featured
-            </span>
-          ) : null}
           <h3 className="text-[17px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:text-[18px]">
             <span className="mr-1.5 inline-block" aria-hidden>
               {block.emoji}
