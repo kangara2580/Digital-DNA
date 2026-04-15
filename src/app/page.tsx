@@ -1,11 +1,9 @@
 import { BestPurchaseReviewsSection } from "@/components/BestPurchaseReviewsSection";
 import { EditorCurationSection } from "@/components/EditorCurationSection";
-import { FailureOopsSection } from "@/components/FailureOopsSection";
 import { Highlight24 } from "@/components/Highlight24";
 import { TrendingRankSection } from "@/components/TrendingRankSection";
 import { SellerPitchBanner } from "@/components/SellerPitchBanner";
 import { DiscountDnaSection } from "@/components/DiscountDnaSection";
-import { InspirationCategoryGrid } from "@/components/InspirationCategoryGrid";
 import { MainBackgroundVideo } from "@/components/MainBackgroundVideo";
 
 export default async function Home() {
@@ -16,8 +14,6 @@ export default async function Home() {
       <main className="relative z-10 min-w-0 pb-28 pt-0 sm:pb-32">
         <TrendingRankSection />
         <Highlight24 />
-        <InspirationCategoryGrid />
-        <FailureOopsSection />
         <DiscountDnaSection />
         <EditorCurationSection />
         <SellerPitchBanner />

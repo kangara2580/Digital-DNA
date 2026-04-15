@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  /**
+   * dev 서버(.next)와 production build 산출물(.next-build)을 분리해
+   * 동시/교차 실행 시 chunk·manifest 충돌(ENOENT, MODULE_NOT_FOUND)을 방지합니다.
+   */
+  distDir: process.env.NODE_ENV === "development" ? ".next" : ".next-build",
   /** 대용량 동영상 업로드(판매 등록 API) — Server Actions 한도 참고 */
   experimental: {
     serverActions: {

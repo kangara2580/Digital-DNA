@@ -11,7 +11,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { CloneCountAnimation } from "@/components/CloneCountAnimation";
 import { RelatedDnaQuilt } from "@/components/RelatedDnaQuilt";
 import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
 import { useWishlistOptional } from "@/context/WishlistContext";
@@ -373,48 +372,13 @@ export function VideoCard({
             {formatDuration(video.durationSec)}
           </span>
         ) : null}
-        {!hideCloneStrip ? (
+        {!hideCloneStrip && remaining != null ? (
           <div
             className={`pointer-events-none absolute inset-x-0 bottom-0 z-[6] bg-gradient-to-t from-black/55 via-black/25 to-transparent px-1.5 pb-1 sm:px-2 sm:pb-1.5 ${
               reelStrip && !dense ? "pt-6 sm:pt-7" : "pt-5 sm:pt-6"
             }`}
           >
-            {remaining == null ? (
-              <p
-                className={`font-mono font-medium leading-snug text-slate-200/95 ${
-                  reelStrip && !dense
-                    ? "text-[10px] sm:text-[11px]"
-                    : "text-[7px] sm:text-[8px]"
-                }`}
-              >
-                <span
-                  className={
-                    reelStrip && !dense
-                      ? "text-slate-200/95"
-                      : "text-slate-300/90"
-                  }
-                >
-                  Cloned:{" "}
-                </span>
-                {dense ? (
-                  <span className="tabular-nums text-slate-100">
-                    {commerce.salesCount.toLocaleString("en-US")}
-                  </span>
-                ) : (
-                  <CloneCountAnimation value={commerce.salesCount} />
-                )}
-                <span
-                  className={
-                    reelStrip && !dense
-                      ? "text-slate-200/95"
-                      : "text-slate-300/90"
-                  }
-                >
-                  {" "}
-                  times
-                </span>
-              </p>
-            ) : remaining > 0 ? (
+            {remaining > 0 ? (
               <p
                 className={`font-mono font-semibold leading-snug text-amber-100/95 ${
                   reelStrip && !dense

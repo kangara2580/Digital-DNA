@@ -1,8 +1,8 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { EditorCurationClipThumb } from "@/components/EditorCurationClipThumb";
 import { SectionMoreLink } from "@/components/SectionMoreLink";
 import { CATEGORY_LABEL } from "@/data/videoCatalog";
@@ -21,26 +21,10 @@ const THUMB_SLOT =
 const STRIP =
   "no-scrollbar -mx-1 flex w-full snap-x snap-proximity items-stretch gap-3 overflow-x-auto px-1 pb-1 sm:-mx-0 sm:gap-3.5 sm:px-0";
 
-/** 인기순위 스트립과 비슷하게 — 너무 검지 않게 글래스 톤 */
-const ARROW_BTN =
-  "pointer-events-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/22 bg-white/[0.12] text-zinc-100 shadow-[0_4px_20px_-6px_rgba(0,0,0,0.45)] backdrop-blur-md transition hover:border-reels-cyan/40 hover:bg-white/[0.2] hover:text-white active:scale-[0.97] motion-reduce:transition-none [html[data-theme='light']_&]:border-zinc-300/80 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-zinc-400/20";
-
-const FADE_LEFT =
-  "pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-zinc-950/55 via-zinc-950/25 to-transparent sm:w-14 [html[data-theme='light']_&]:from-white/70 [html[data-theme='light']_&]:via-white/35";
-
-const FADE_RIGHT =
-  "pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-zinc-950/55 via-zinc-950/25 to-transparent sm:w-14 [html[data-theme='light']_&]:from-white/70 [html[data-theme='light']_&]:via-white/35";
-
-/** 썸네일 박스 높이(제목 제외) — 화살표 세로 정렬 기준 */
-const THUMB_BOX_H =
-  "h-[calc(104px*4/3)] sm:h-[calc(118px*4/3)]";
-
 function EditorCurationBlock({
   block,
-  featured,
 }: {
   block: EditorCuration;
-  featured: boolean;
 }) {
   const clips = useMemo(
     () => getEditorCurationClips(block.categorySlug),
@@ -50,53 +34,10 @@ function EditorCurationBlock({
   const catName = CATEGORY_LABEL[block.categorySlug];
   const scrollRef = useRef<HTMLDivElement>(null);
   usePassVerticalWheelToPage(scrollRef);
-  const [canLeft, setCanLeft] = useState(false);
-  const [canRight, setCanRight] = useState(false);
-
-  const updateScrollState = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const { scrollLeft, clientWidth, scrollWidth } = el;
-    const max = scrollWidth - clientWidth;
-    setCanLeft(scrollLeft > 6);
-    setCanRight(max > 6 && scrollLeft < max - 6);
-  }, []);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    const ro = new ResizeObserver(() => updateScrollState());
-    ro.observe(el);
-    el.addEventListener("scroll", updateScrollState, { passive: true });
-    window.addEventListener("resize", updateScrollState);
-
-    updateScrollState();
-    requestAnimationFrame(() => updateScrollState());
-
-    return () => {
-      ro.disconnect();
-      el.removeEventListener("scroll", updateScrollState);
-      window.removeEventListener("resize", updateScrollState);
-    };
-  }, [updateScrollState, clips.length]);
-
-  const scrollByDir = (dir: 1 | -1) => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    if (max <= 0) return;
-    const step = Math.min(Math.max(el.clientWidth * 0.38, 200), max / 3.2);
-    el.scrollBy({ left: dir * step, behavior: "smooth" });
-  };
 
   return (
     <div
-      className={`min-w-0 rounded-2xl p-4 sm:p-5 ${
-        featured
-          ? "border border-reels-crimson/45 bg-reels-void/50 shadow-[0_0_40px_-12px_rgba(255,0,85,0.2)]"
-          : "border border-reels-crimson/35 bg-white/[0.03] shadow-[0_0_28px_-16px_rgba(255,0,85,0.18)]"
-      }`}
+      className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.07] p-4 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-black/10 [html[data-theme='light']_&]:bg-[rgba(248,250,252,0.96)] sm:p-5"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="min-w-0 text-left">
@@ -114,9 +55,6 @@ function EditorCurationBlock({
       </div>
 
       <div className="relative mt-3 sm:mt-4">
-        {canLeft ? <div className={FADE_LEFT} aria-hidden /> : null}
-        {canRight ? <div className={FADE_RIGHT} aria-hidden /> : null}
-
         <div
           ref={scrollRef}
           className={STRIP}
@@ -153,27 +91,6 @@ function EditorCurationBlock({
             </p>
           </Link>
         </div>
-
-        {canLeft ? (
-          <button
-            type="button"
-            className={`${ARROW_BTN} absolute left-0 top-0 z-20 flex ${THUMB_BOX_H} w-10 items-center justify-center sm:w-11`}
-            aria-label="이전 클립"
-            onClick={() => scrollByDir(-1)}
-          >
-            <ChevronLeft className="h-5 w-5" strokeWidth={2} aria-hidden />
-          </button>
-        ) : null}
-        {canRight ? (
-          <button
-            type="button"
-            className={`${ARROW_BTN} absolute right-0 top-0 z-20 flex ${THUMB_BOX_H} w-10 items-center justify-center sm:w-11`}
-            aria-label="다음 클립"
-            onClick={() => scrollByDir(1)}
-          >
-            <ChevronRight className="h-5 w-5" strokeWidth={2} aria-hidden />
-          </button>
-        ) : null}
       </div>
     </div>
   );
@@ -196,8 +113,8 @@ export function EditorCurationSection() {
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-6 sm:mt-8 sm:grid-cols-2 sm:gap-7">
-          {EDITOR_CURATIONS.map((block, i) => (
-            <EditorCurationBlock key={block.id} block={block} featured={i === 0} />
+          {EDITOR_CURATIONS.map((block) => (
+            <EditorCurationBlock key={block.id} block={block} />
           ))}
         </div>
       </div>

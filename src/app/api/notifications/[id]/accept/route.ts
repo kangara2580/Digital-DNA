@@ -1,10 +1,20 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 type Body = { sellerId?: string };
+
+async function loadPrismaRuntime(): Promise<{ prisma: any } | null> {
+  try {
+    const mod = (await import("@/lib/prisma")) as { prisma?: any };
+    if (!mod.prisma) return null;
+    return { prisma: mod.prisma };
+  } catch (err) {
+    console.error("[POST /api/notifications/:id/accept] prisma module load failed", err);
+    return null;
+  }
+}
 
 export async function POST(
   req: Request,
@@ -22,38 +32,60 @@ export async function POST(
     return NextResponse.json({ error: "sellerId required" }, { status: 400 });
   }
 
-  const notif = await prisma.notification.findUnique({
-    where: { id },
-    include: { video: true },
-  });
+  try {
+    const runtime = await loadPrismaRuntime();
+    if (!runtime) {
+      return NextResponse.json(
+        { error: "service_unavailable" },
+        { status: 503 },
+      );
+    }
+    const { prisma } = runtime;
 
-  if (!notif || notif.sellerId !== sellerId) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-  if (notif.status !== "PENDING") {
-    return NextResponse.json({ error: "Already handled" }, { status: 409 });
-  }
-
-  const flashUntil = new Date(Date.now() + 7 * 86400000);
-
-  await prisma.$transaction([
-    prisma.video.update({
-      where: { id: notif.videoId },
-      data: {
-        price: notif.newPrice,
-        flashSaleUntil: flashUntil,
-      },
-    }),
-    prisma.notification.update({
+    const notif = await prisma.notification.findUnique({
       where: { id },
-      data: { status: "ACCEPTED", read: true },
-    }),
-  ]);
+      include: { video: true },
+    });
 
-  return NextResponse.json({
-    ok: true,
-    videoId: notif.videoId,
-    newPrice: notif.newPrice,
-    flashSaleUntil: flashUntil.toISOString(),
-  });
+    if (!notif || notif.sellerId !== sellerId) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    if (notif.status !== "PENDING") {
+      return NextResponse.json({ error: "Already handled" }, { status: 409 });
+    }
+
+    const flashUntil = new Date(Date.now() + 7 * 86400000);
+
+    await prisma.$transaction([
+      prisma.video.update({
+        where: { id: notif.videoId },
+        data: {
+          price: notif.newPrice,
+          flashSaleUntil: flashUntil,
+        },
+      }),
+      prisma.notification.update({
+        where: { id },
+        data: { status: "ACCEPTED", read: true },
+      }),
+    ]);
+
+    return NextResponse.json({
+      ok: true,
+      videoId: notif.videoId,
+      newPrice: notif.newPrice,
+      flashSaleUntil: flashUntil.toISOString(),
+    });
+  } catch (err) {
+    const isDev = process.env.NODE_ENV === "development";
+    const message = err instanceof Error ? err.message : "accept failed";
+    console.error("[POST /api/notifications/:id/accept]", err);
+    return NextResponse.json(
+      {
+        error: "internal_error",
+        ...(isDev ? { message } : {}),
+      },
+      { status: 500 },
+    );
+  }
 }
