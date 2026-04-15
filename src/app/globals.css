@@ -553,9 +553,10 @@ html[data-theme="dark"] .inspiration-section {
   box-sizing: border-box;
 }
 
-/* 상세 플레이어: 점 3개 오버플로우/다운로드 노출 최소화 (WebKit 계열) */
+/* 상세 플레이어: 점 3개/다운로드/전체화면 버튼 노출 최소화 (WebKit 계열) */
 .video-detail-player::-webkit-media-controls-overflow-button,
-.video-detail-player::-webkit-media-controls-download-button {
+.video-detail-player::-webkit-media-controls-download-button,
+.video-detail-player::-webkit-media-controls-fullscreen-button {
   display: none !important;
 }
 

@@ -69,7 +69,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                 poster={posterSrc}
                 src={isPexelsBlockedVideo ? undefined : video.src}
                 controls
-                controlsList="nodownload noplaybackrate noremoteplayback"
+                controlsList="nodownload noplaybackrate noremoteplayback nofullscreen"
                 disablePictureInPicture
                 playsInline
                 preload={isPexelsBlockedVideo ? "none" : "metadata"}
