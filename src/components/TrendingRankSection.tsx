@@ -109,9 +109,6 @@ export function TrendingRankSection() {
                 </span>
                 LIVE
               </span>
-              <span className="inline-flex items-center rounded-full border border-fuchsia-400/40 bg-fuchsia-500/10 px-2 py-0.5 text-[10px] font-bold tracking-[0.12em] text-fuchsia-300 sm:text-[11px]">
-                LOCAL SAMPLE
-              </span>
             </h2>
           </div>
           <SectionMoreLink
