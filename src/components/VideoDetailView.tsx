@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { ShoppingCart } from "lucide-react";
@@ -56,14 +55,6 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
   return (
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
       <div className="mx-auto max-w-[1800px] px-4 py-8 sm:px-6 lg:px-8">
-        <nav className="mb-6 font-mono text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          <Link href="/" className="text-reels-cyan/90 hover:text-reels-cyan">
-            홈
-          </Link>
-          <span className="mx-1.5 text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
-          <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">릴스 상세</span>
-        </nav>
-
         <div className="flex flex-col gap-10 lg:flex-row lg:gap-12">
           <div className="min-w-0 flex-1">
             <div
