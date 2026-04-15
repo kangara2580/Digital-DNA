@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { ShoppingCart } from "lucide-react";
 import { RelatedDnaQuilt } from "@/components/RelatedDnaQuilt";
+import { SellerIdentityLink } from "@/components/SellerIdentityLink";
 import { VideoDetailRecommendations } from "@/components/VideoDetailRecommendations";
 import { VideoDetailReviewsSection } from "@/components/VideoDetailReviewsSection";
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
@@ -96,7 +97,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
               <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">
                 {video.title}
               </h1>
-              <p className="mt-1 text-[14px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">{video.creator}</p>
+              <SellerIdentityLink creator={video.creator} />
               {showFreshMeta ? (
                 <p className="mt-2 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                   {fresh.subline}

@@ -250,6 +250,34 @@ export function getVideosForCategory(slug: string): FeedVideo[] {
   );
 }
 
+export function normalizeSellerHandle(raw: string): string {
+  const base = raw.trim().replace(/^@+/, "").toLowerCase();
+  const cleaned = base.replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");
+  return cleaned || "seller";
+}
+
+export function getSellerNickname(rawCreator: string): string {
+  const base = rawCreator.trim().replace(/^@+/, "");
+  return base || "seller";
+}
+
+export function getVideosBySellerHandle(handle: string): FeedVideo[] {
+  const normalized = normalizeSellerHandle(handle);
+  return sortVideosByNewest(
+    ALL_MARKET_VIDEOS.filter(
+      (video) => normalizeSellerHandle(video.creator) === normalized,
+    ),
+  );
+}
+
+export function getCreatorBySellerHandle(handle: string): string | null {
+  const normalized = normalizeSellerHandle(handle);
+  const found = ALL_MARKET_VIDEOS.find(
+    (video) => normalizeSellerHandle(video.creator) === normalized,
+  );
+  return found?.creator ?? null;
+}
+
 /** 가격 구간별 12칸 그리드 span (작은 가격 = 작은 타일) */
 export function priceGridSpan12(priceWon: number | undefined): number {
   const p = priceWon ?? 0;
