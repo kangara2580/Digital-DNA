@@ -124,6 +124,24 @@ html {
   scrollbar-gutter: stable;
 }
 
+/**
+ * 뷰포트 우측 고정 UI(구독·지갑 등, z≈45)와 겹치지 않게 하는 인라인 우측 패딩.
+ * 헤더·max-width 본문 랩에 함께 사용합니다.
+ */
+.reels-pr-safe-fixed {
+  padding-right: max(1rem, calc(env(safe-area-inset-right, 0px) + 3.5rem));
+}
+@media (min-width: 640px) {
+  .reels-pr-safe-fixed {
+    padding-right: max(1.5rem, calc(env(safe-area-inset-right, 0px) + 3.5rem));
+  }
+}
+@media (min-width: 1024px) {
+  .reels-pr-safe-fixed {
+    padding-right: max(2rem, calc(env(safe-area-inset-right, 0px) + 3.5rem));
+  }
+}
+
 ::selection {
   background-color: rgba(0, 242, 234, 0.26);
   color: #fff;

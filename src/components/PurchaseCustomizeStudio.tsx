@@ -453,7 +453,7 @@ function previewToneFromPrompt(prompt: string): string {
 }
 
 const quickBuyButtonClass =
-  "shrink-0 self-start rounded-full border border-reels-crimson/45 bg-reels-crimson/15 px-4 py-2.5 text-[12px] font-extrabold text-reels-crimson shadow-[0_0_20px_-8px_rgba(255,0,85,0.4)] transition hover:bg-reels-crimson/25 sm:self-auto";
+  "inline-flex shrink-0 items-center justify-center rounded-full border border-reels-crimson/45 bg-reels-crimson/15 px-4 py-2.5 text-[12px] font-extrabold text-reels-crimson shadow-[0_0_20px_-8px_rgba(255,0,85,0.4)] transition hover:bg-reels-crimson/25 md:self-auto";
 
 export function PurchaseCustomizeStudio({
   video,
@@ -1255,17 +1255,19 @@ export function PurchaseCustomizeStudio({
   return (
     <div className="space-y-10">
       {heroTitle ? (
-        <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-          <div className="min-w-0">
-            <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl">{heroTitle}</h1>
-            <p className="mt-2 max-w-xl text-[12px] leading-relaxed text-zinc-500">
+        <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-8">
+          <div className="min-w-0 flex-1 pr-0 md:max-w-[min(100%,42rem)] md:pr-4">
+            <h1 className="text-[clamp(1.35rem,4vw,1.875rem)] font-extrabold leading-tight tracking-tight text-zinc-100 sm:text-3xl">
+              {heroTitle}
+            </h1>
+            <p className="mt-2 max-w-xl text-[12px] leading-relaxed text-zinc-500 sm:text-[13px]">
               커스텀 편집으로 얼굴·배경을 만져 본 뒤, 생성만 이어가려면 오른쪽 <span className="font-semibold text-zinc-400">바로구매</span>를 누르세요.
             </p>
           </div>
           <button
             type="button"
             onClick={() => setUseAdvancedStep(false)}
-            className={quickBuyButtonClass}
+            className={`${quickBuyButtonClass} w-full max-w-xs self-stretch md:w-auto md:max-w-none md:flex-none md:self-start`}
           >
             바로구매
           </button>
@@ -1298,12 +1300,16 @@ export function PurchaseCustomizeStudio({
         )}
       </div>
       {!heroTitle ? (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-          <p className="max-w-xl text-[12px] leading-relaxed text-zinc-500">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-6">
+          <p className="min-w-0 max-w-xl flex-1 text-[12px] leading-relaxed text-zinc-500 sm:text-[13px]">
             먼저 커스텀 편집으로 얼굴·배경을 만져 보세요. 바로 생성만 이어가려면 오른쪽{" "}
             <span className="font-semibold text-zinc-400">바로구매</span>를 누르면 됩니다.
           </p>
-          <button type="button" onClick={() => setUseAdvancedStep(false)} className={quickBuyButtonClass}>
+          <button
+            type="button"
+            onClick={() => setUseAdvancedStep(false)}
+            className={`${quickBuyButtonClass} w-full max-w-xs self-stretch md:w-auto md:max-w-none md:flex-none md:self-auto`}
+          >
             바로구매
           </button>
         </div>

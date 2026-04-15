@@ -17,7 +17,7 @@ function CreateFallback() {
 export default function CreatePage() {
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1100px] py-8 pl-4 sm:pl-6 lg:pl-8 reels-pr-safe-fixed">
         <Suspense fallback={<CreateFallback />}>
           <CreateStudioPage />
         </Suspense>

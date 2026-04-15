@@ -356,7 +356,7 @@ export function MallTopNav() {
       }`}
     >
       <div
-        className={`mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-8 ${easeNav} ${
+        className={`mx-auto max-w-[1800px] pl-4 sm:pl-6 lg:pl-8 reels-pr-safe-fixed ${easeNav} ${
           compactEffective ? "pb-1.5 pt-1" : "pb-1.5 pt-0.5"
         }`}
       >
@@ -419,7 +419,7 @@ export function MallTopNav() {
           >
             {compactEffective ? (
               <div
-                className={`w-full ${easeNav} mx-0 mt-0 max-w-[min(320px,42vw)] shrink-0 sm:max-w-md`}
+                className={`min-w-0 ${easeNav} mx-0 mt-0 max-w-[min(20rem,100%)] shrink sm:max-w-sm`}
               >
                 <RotatingSearchField compact q={q} setQ={setQ} />
               </div>

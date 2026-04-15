@@ -25,7 +25,7 @@ export default async function VideoCustomizePage({
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1100px] py-8 pl-4 sm:pl-6 lg:pl-8 reels-pr-safe-fixed">
         <nav className="mb-6 flex flex-wrap items-center gap-2 font-mono text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           <Link href="/" className="text-reels-cyan/90 hover:text-reels-cyan">
             홈
