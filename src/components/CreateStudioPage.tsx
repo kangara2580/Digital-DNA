@@ -62,20 +62,5 @@ export function CreateStudioPage() {
     );
   }
 
-  return (
-    <>
-      <nav className="mb-6 font-mono text-[11px] text-zinc-500">
-        <Link href="/" className="text-reels-cyan/90 hover:text-reels-cyan">
-          홈
-        </Link>
-        <span className="mx-1.5 text-zinc-700">/</span>
-        <Link href={`/video/${video.id}`} className="text-reels-cyan/90 hover:text-reels-cyan">
-          조각 상세
-        </Link>
-        <span className="mx-1.5 text-zinc-700">/</span>
-        <span className="text-zinc-400">얼굴·배경 편집 + AI 창작</span>
-      </nav>
-      <PurchaseCustomizeStudio video={video} heroTitle="창작 스튜디오" />
-    </>
-  );
+  return <PurchaseCustomizeStudio video={video} heroTitle="창작 스튜디오" />;
 }
