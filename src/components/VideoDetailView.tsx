@@ -35,6 +35,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
   const meta = getCommerceMeta(video.id);
   const remaining = clonesRemaining(meta);
   const fresh = getFreshnessForVideoId(video.id);
+  const showFreshMeta = fresh.tier !== "archived";
   const price = video.priceWon ?? 0;
   const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
 
@@ -95,7 +96,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
 
           <div className="flex w-full min-w-0 flex-col gap-6 lg:max-w-md">
             <div>
-              {fresh.label ? (
+              {showFreshMeta && fresh.label ? (
                 <span className="mb-2 inline-block rounded border border-reels-crimson/35 bg-reels-crimson/10 px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-reels-crimson">
                   {fresh.label}
                 </span>
@@ -104,7 +105,11 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                 {video.title}
               </h1>
               <p className="mt-1 text-[14px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">{video.creator}</p>
-              <p className="mt-2 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">{fresh.subline}</p>
+              {showFreshMeta ? (
+                <p className="mt-2 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                  {fresh.subline}
+                </p>
+              ) : null}
             </div>
 
             <section
