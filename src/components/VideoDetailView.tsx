@@ -100,16 +100,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
               ) : null}
             </div>
 
-            <section
-              className="reels-glass-card overflow-hidden rounded-xl"
-              aria-labelledby="video-stats-heading"
-            >
-              <h2
-                id="video-stats-heading"
-                className="border-b border-white/10 bg-black/20 px-3 py-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-600 sm:px-3.5 sm:text-[12px]"
-              >
-                실시간 성과 · 지표
-              </h2>
+            <section className="reels-glass-card overflow-hidden rounded-xl">
               <TrendingVideoStatsFooter
                 metrics={rankMetrics}
                 salePriceWon={video.priceWon}
