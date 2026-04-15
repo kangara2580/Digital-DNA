@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { appendMyStudioHistory } from "@/lib/myStudioHistoryStorage";
 
 type JobPayload = {
   id: string;
@@ -33,6 +34,7 @@ export function GenerationResultView({ jobId }: { jobId: string }) {
   const [job, setJob] = useState<JobPayload | null>(null);
   const [phase, setPhase] = useState<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const studioHistoryAppendedRef = useRef<string | null>(null);
 
   const fetchJob = useCallback(async () => {
     const res = await fetch(
@@ -69,6 +71,18 @@ export function GenerationResultView({ jobId }: { jobId: string }) {
       cancelled = true;
     };
   }, [fetchJob]);
+
+  useEffect(() => {
+    if (!job || job.status !== "succeeded" || !job.outputVideoUrl) return;
+    if (studioHistoryAppendedRef.current === job.id) return;
+    studioHistoryAppendedRef.current = job.id;
+    appendMyStudioHistory({
+      jobId: job.id,
+      videoId: job.videoId,
+      outputVideoUrl: job.outputVideoUrl,
+      normalizedBackgroundPrompt: job.normalizedBackgroundPrompt,
+    });
+  }, [job]);
 
   const pollStatus = job?.status;
   useEffect(() => {
