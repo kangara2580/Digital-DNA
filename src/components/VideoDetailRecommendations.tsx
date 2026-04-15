@@ -86,19 +86,6 @@ export function VideoDetailRecommendations({ video }: Props) {
       </h2>
 
       <div className="relative mt-6">
-        {canLeft ? (
-          <div
-            className="pointer-events-none absolute inset-y-2 left-0 z-10 w-11 bg-gradient-to-r from-[#050505] via-[#050505]/88 to-transparent [html[data-theme='light']_&]:from-zinc-50 [html[data-theme='light']_&]:via-zinc-50/90"
-            aria-hidden
-          />
-        ) : null}
-        {canRight ? (
-          <div
-            className="pointer-events-none absolute inset-y-2 right-0 z-10 w-11 bg-gradient-to-l from-[#050505] via-[#050505]/88 to-transparent [html[data-theme='light']_&]:from-zinc-50 [html[data-theme='light']_&]:via-zinc-50/90"
-            aria-hidden
-          />
-        ) : null}
-
         <div
           ref={scrollRef}
           className="feed-scroll -mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:-mx-0 sm:px-0"
