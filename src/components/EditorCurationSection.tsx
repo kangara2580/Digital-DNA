@@ -94,8 +94,8 @@ function EditorCurationBlock({
     <div
       className={`min-w-0 rounded-2xl p-4 sm:p-5 ${
         featured
-          ? "reels-border-gradient bg-reels-void/50 shadow-[0_0_40px_-12px_rgba(255,0,85,0.2)]"
-          : "border border-white/10 bg-white/[0.03]"
+          ? "border border-reels-crimson/45 bg-reels-void/50 shadow-[0_0_40px_-12px_rgba(255,0,85,0.2)]"
+          : "border border-reels-crimson/35 bg-white/[0.03] shadow-[0_0_28px_-16px_rgba(255,0,85,0.18)]"
       }`}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
@@ -198,7 +198,7 @@ export function EditorCurationSection() {
           </h2>
         </div>
 
-        <div className="mt-6 flex flex-col gap-10 sm:mt-8 sm:gap-12">
+        <div className="mt-6 grid grid-cols-1 gap-6 sm:mt-8 sm:grid-cols-2 sm:gap-7">
           {EDITOR_CURATIONS.map((block, i) => (
             <EditorCurationBlock key={block.id} block={block} featured={i === 0} />
           ))}

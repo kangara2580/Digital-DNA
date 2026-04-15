@@ -202,4 +202,10 @@ export const EDITOR_CURATIONS: EditorCuration[] = [
     title: "월요일 아침 출근길의 지옥철 풍경",
     categorySlug: "shortform",
   },
+  {
+    id: "cur-puppy",
+    emoji: "🐶",
+    title: "강아지가 애교 부릴 때 쓰기 좋은 릴스 모음",
+    categorySlug: "animals",
+  },
 ];
