@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { ShoppingCart } from "lucide-react";
-import { RelatedDnaQuilt } from "@/components/RelatedDnaQuilt";
 import { SellerIdentityLink } from "@/components/SellerIdentityLink";
 import { VideoDetailRecommendations } from "@/components/VideoDetailRecommendations";
 import { VideoDetailReviewsSection } from "@/components/VideoDetailReviewsSection";
@@ -144,9 +143,6 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
               </button>
             </div>
 
-            <div className="pt-1">
-              <RelatedDnaQuilt video={video} />
-            </div>
           </div>
         </div>
 
