@@ -136,9 +136,9 @@ function RotatingSearchField({
 const subscribeNavClass =
   "inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-reels-cyan/40 bg-reels-cyan/10 text-reels-cyan transition hover:bg-reels-cyan/15 sm:size-10 [html[data-theme='light']_&]:border-reels-cyan/35 [html[data-theme='light']_&]:bg-reels-cyan/10";
 
-/** 스크롤과 무관하게 뷰포트 우측 상단에 고정 */
+/** md 미만: 좌측 레일이 없어서 우측 상단 고정 유지. md+: 레일의 구독 버튼만 사용 */
 const subscribeFixedWrap =
-  "pointer-events-auto fixed right-[max(0.75rem,env(safe-area-inset-right))] top-[max(0.5rem,env(safe-area-inset-top))] z-[45] md:right-6";
+  "pointer-events-auto fixed right-[max(0.75rem,env(safe-area-inset-right))] top-[max(0.5rem,env(safe-area-inset-top))] z-[45] md:right-6 md:hidden";
 
 function FixedSubscribeNavLink() {
   return (
