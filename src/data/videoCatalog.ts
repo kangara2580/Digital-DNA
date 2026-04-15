@@ -310,16 +310,6 @@ export function getRelatedByVibe(videoId: string, limit = 4): FeedVideo[] {
   return scored.slice(0, limit).map((s) => s.video);
 }
 
-export function vibeSummaryLabel(videoId: string): string | null {
-  const v = getVideoCatalogMeta(videoId).vibeIds;
-  if (v.includes("rainy_cafe")) return "비 오는 날 · 카페 무드";
-  if (v.includes("urban_night")) return "야경 · 네온 무드";
-  if (v.includes("cafe_day")) return "카페 · 따뜻한 실내";
-  if (v.includes("forest_trail")) return "숲 · 산책 무드";
-  if (v.includes("coastal_walk")) return "바다 · 산책 무드";
-  return v.length ? "비슷한 무드 이어 붙이기" : null;
-}
-
 /**
  * 상세 페이지 하단 — 무드 연관 → 같은 카테고리 → 신규 순으로 채워 쇼핑 이어가기.
  */
