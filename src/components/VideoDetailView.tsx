@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { ShoppingCart } from "lucide-react";
-import { CloneCountAnimation } from "@/components/CloneCountAnimation";
 import { RelatedDnaQuilt } from "@/components/RelatedDnaQuilt";
 import { VideoDetailRecommendations } from "@/components/VideoDetailRecommendations";
 import { VideoDetailReviewsSection } from "@/components/VideoDetailReviewsSection";
@@ -85,13 +84,6 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                 onContextMenu={(e) => e.preventDefault()}
               />
             </div>
-            <p className="mt-3 text-center font-mono text-[10px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-              Cloned:{" "}
-              <span className="text-reels-cyan">
-                <CloneCountAnimation value={meta.salesCount} />
-              </span>{" "}
-              times · 복제 지수
-            </p>
           </div>
 
           <div className="flex w-full min-w-0 flex-col gap-6 lg:max-w-md">
