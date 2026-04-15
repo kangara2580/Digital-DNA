@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
 import { getShopRecommendations } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
