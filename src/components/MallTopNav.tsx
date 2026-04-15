@@ -1,13 +1,6 @@
 "use client";
 
 import { ChevronDown, Search, Wallet } from "lucide-react";
-import {
-  AnimatePresence,
-  motion,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-} from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -36,12 +29,9 @@ const SCROLL_COMPACT_ENTER = 72;
 /** 맨 위 복귀 시 펼침을 조금 일찍 걸어(스크롤이 EXIT 이하로 들어오면 바로 펼침) */
 const SCROLL_COMPACT_EXIT = 48;
 
-/**
- * 레이아웃 전환: 조금 더 길게·부드럽게(짧은 스크롤에서 덜 덜덜 거리도록).
- * motion-reduce에서는 짧게 유지.
- */
+/** 짧은 전환 — 긴 스크롤 구간에서 레이아웃·블러 재계산 부담을 줄임 */
 const easeLayout =
-  "duration-[780ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] motion-reduce:duration-200 motion-reduce:ease-linear";
+  "duration-300 ease-out motion-reduce:duration-150 motion-reduce:ease-linear";
 
 /** 타이틀: 높이만 부드럽게. opacity는 전환에 넣지 않음 → 펼침 순간 글자가 바로 보임(820ms 페이드와 겹치면 ‘늦게 나타남’으로 느껴짐) */
 const easeTitleCollapse =
@@ -49,17 +39,12 @@ const easeTitleCollapse =
 
 const easeNav = `transition-[padding,margin,font-size,line-height,box-shadow,gap,border-color,width,max-width,flex] ${easeLayout}`;
 
-/** 검색창: 높이·패딩은 easeLayout과 같은 duration(내려갈 때·맨 위로 올릴 때 동일하게 보이도록) */
 const searchEase =
-  "duration-[780ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] motion-reduce:duration-150 motion-reduce:ease-linear";
+  "duration-300 ease-out motion-reduce:duration-150 motion-reduce:ease-linear";
 
-/** 돋보기 아이콘: 호버/포커스 시 살짝 커지고 기울어지며 뜨는 느낌(마켓 검색 UX) */
+/** 돋보기: 색만 살짝 (변형·회전 제거로 스크롤/페인트 부담 감소) */
 const searchIconMotion =
-  "origin-[52%_54%] transition-[transform,color] duration-[320ms] ease-[cubic-bezier(0.34,1.15,0.64,1)] motion-reduce:duration-150 motion-reduce:ease-linear " +
-  "group-hover:-translate-y-0.5 group-hover:scale-[1.1] group-hover:-rotate-[10deg] group-hover:text-reels-cyan " +
-  "group-focus-within:-translate-y-0.5 group-focus-within:scale-[1.1] group-focus-within:-rotate-[10deg] group-focus-within:text-reels-cyan " +
-  "motion-reduce:group-hover:translate-y-0 motion-reduce:group-hover:scale-100 motion-reduce:group-hover:rotate-0 " +
-  "motion-reduce:group-focus-within:translate-y-0 motion-reduce:group-focus-within:scale-100 motion-reduce:group-focus-within:rotate-0";
+  "transition-colors duration-200 ease-out group-hover:text-reels-cyan group-focus-within:text-reels-cyan";
 
 const ROTATE_MS = 4500;
 
@@ -73,7 +58,6 @@ function RotatingSearchField({
   setQ: (v: string) => void;
 }) {
   const pathname = usePathname();
-  const reduceMotion = useReducedMotion() ?? false;
   const [phrases, setPhrases] = useState<string[]>(() => [...SEARCH_GUIDE_PHRASES]);
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [focused, setFocused] = useState(false);
@@ -93,7 +77,6 @@ function RotatingSearchField({
 
   const showGuide = q.trim() === "" && !focused;
   const current = phrases[phraseIdx] ?? phrases[0] ?? "";
-  const slideY = compact ? 14 : 18;
 
   return (
     <div className="group relative">
@@ -107,7 +90,7 @@ function RotatingSearchField({
         placeholder=""
         autoComplete="off"
         enterKeyHint="search"
-        className={`mall-search w-full rounded-full border text-zinc-100 outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,box-shadow,color] ${easeLayout} ${searchEase} border-white/15 bg-white/[0.06] placeholder:text-zinc-600 hover:border-reels-cyan/35 hover:bg-white/10 hover:shadow-[0_2px_20px_-8px_rgba(155,109,255,0.18)] focus:border-reels-cyan/50 focus:bg-white/[0.09] focus:shadow-[0_4px_24px_-8px_rgba(255,79,179,0.18)] focus:ring-0 [html[data-theme='dark']_&]:border-white/20 [html[data-theme='dark']_&]:bg-white/[0.1] [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='dark']_&]:placeholder:text-zinc-300 [html[data-theme='dark']_&]:hover:bg-white/[0.14] [html[data-theme='dark']_&]:focus:bg-white/[0.16] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-500 [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:border-zinc-400 [html[data-theme='light']_&]:focus:bg-white ${
+        className={`mall-search w-full rounded-full border text-zinc-100 outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,color] ${easeLayout} ${searchEase} border-white/15 bg-white/[0.06] placeholder:text-zinc-600 hover:border-reels-cyan/35 hover:bg-white/10 focus:border-reels-cyan/50 focus:bg-white/[0.09] focus:ring-0 [html[data-theme='dark']_&]:border-white/20 [html[data-theme='dark']_&]:bg-white/[0.1] [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='dark']_&]:placeholder:text-zinc-300 [html[data-theme='dark']_&]:hover:bg-white/[0.14] [html[data-theme='dark']_&]:focus:bg-white/[0.16] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-500 [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:border-zinc-400 [html[data-theme='light']_&]:focus:bg-white ${
           compact
             ? "h-9 pl-3 pr-10 text-[13px]"
             : "h-11 pl-5 pr-12 text-[14px]"
@@ -125,25 +108,9 @@ function RotatingSearchField({
             <div
               className={`overflow-hidden ${compact ? "h-[18px]" : "h-[22px]"}`}
             >
-              {reduceMotion ? (
-                <span className="block truncate">{current}</span>
-              ) : (
-                <AnimatePresence initial={false} mode="wait">
-                  <motion.span
-                    key={`${pathname}-${phraseIdx}-${current}`}
-                    initial={{ y: slideY, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -slideY, opacity: 0 }}
-                    transition={{
-                      duration: 0.42,
-                      ease: [0.22, 1, 0.36, 1],
-                    }}
-                    className="block truncate"
-                  >
-                    {current}
-                  </motion.span>
-                </AnimatePresence>
-              )}
+              <span className="block truncate transition-opacity duration-200">
+                {current}
+              </span>
             </div>
           </div>
         </div>
@@ -167,7 +134,7 @@ function RotatingSearchField({
 }
 
 const subscribeNavClass =
-  "inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-reels-cyan/45 bg-gradient-to-r from-reels-cyan/12 to-reels-cyan/5 text-reels-cyan shadow-[0_0_18px_-10px_rgba(0,242,234,0.35)] transition hover:border-reels-cyan/70 hover:from-reels-cyan/22 hover:to-reels-cyan/10 sm:size-10 [html[data-theme='light']_&]:border-reels-cyan/40 [html[data-theme='light']_&]:from-reels-cyan/12 [html[data-theme='light']_&]:to-white/90";
+  "inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-reels-cyan/40 bg-reels-cyan/10 text-reels-cyan transition hover:bg-reels-cyan/15 sm:size-10 [html[data-theme='light']_&]:border-reels-cyan/35 [html[data-theme='light']_&]:bg-reels-cyan/10";
 
 /** 스크롤과 무관하게 뷰포트 우측 상단에 고정 */
 const subscribeFixedWrap =
@@ -187,10 +154,6 @@ function FixedSubscribeNavLink() {
 }
 
 export function MallTopNav() {
-  const { scrollY } = useScroll();
-  const reduceMotionNav = useReducedMotion() ?? false;
-  /** 패럴랙스는 원시 scrollY만(스프링 제거 — 맨 위에서 스프링이 늦게 따라와 타이틀 위치가 어긋남) */
-  const heroTitleY = useTransform(scrollY, [0, 180], [0, reduceMotionNav ? 0 : -12]);
   const [q, setQ] = useState("");
   const headerRef = useRef<HTMLElement>(null);
   const [compact, setCompact] = useState(false);
@@ -359,9 +322,9 @@ export function MallTopNav() {
     <Fragment>
     <header
       ref={headerRef}
-      className={`sticky top-0 z-40 isolate border-b border-white/10 bg-reels-abyss/72 backdrop-blur-xl [transform:translateZ(0)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white/95 [html[data-theme='light']_&]:shadow-[0_1px_0_rgba(0,0,0,0.06)] ${easeNav} ${
+      className={`sticky top-0 z-40 isolate border-b border-white/10 bg-reels-abyss/90 backdrop-blur-sm [transform:translateZ(0)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white/95 [html[data-theme='light']_&]:shadow-[0_1px_0_rgba(0,0,0,0.06)] ${easeNav} ${
         compactEffective
-          ? "overflow-visible shadow-[0_12px_40px_-16px_rgba(255,0,85,0.18)] [html[data-theme='light']_&]:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)]"
+          ? "overflow-visible shadow-[0_8px_24px_-16px_rgba(0,0,0,0.35)] [html[data-theme='light']_&]:shadow-[0_6px_20px_-12px_rgba(0,0,0,0.08)]"
           : "shadow-none"
       }`}
     >
@@ -410,18 +373,15 @@ export function MallTopNav() {
                 className="mx-auto block w-fit max-w-full rounded-sm outline-none transition-[opacity,transform] duration-200 hover:opacity-[0.9] active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-reels-cyan/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reels-abyss [html[data-theme='light']_&]:focus-visible:ring-offset-white"
                 aria-label="홈 · 메인 화면으로 이동"
               >
-                <motion.div
-                  style={{ y: heroTitleY }}
-                  className="text-center"
-                >
-                  <p className="mx-auto mb-1 inline-flex items-center gap-1.5 rounded-full border border-[#1fd7d8]/45 bg-[#0c2e45]/72 px-2.5 py-0.5 text-[11px] font-semibold text-[#c9fcff] shadow-[0_0_24px_-10px_rgba(31,215,216,0.8)]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#1fd7d8] shadow-[0_0_10px_rgba(31,215,216,0.95)]" aria-hidden />
+                <div className="text-center">
+                  <p className="mx-auto mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-[11px] font-medium text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-600">
+                    <span className="h-1 w-1 rounded-full bg-reels-cyan/80" aria-hidden />
                     바이럴 릴스를 사고, 클론하고, 성장하세요
                   </p>
-                  <p className="mt-0 bg-gradient-to-r from-[#b9ffff] via-[#46eef1] to-[#12d8dd] bg-clip-text text-[52px] font-black leading-[0.96] tracking-tight text-transparent [text-shadow:0_10px_34px_rgba(9,26,45,0.38),0_0_24px_rgba(31,215,216,0.35)] sm:text-[64px] md:text-[76px]">
+                  <p className="mt-0 text-[clamp(2rem,8vw,3.25rem)] font-black leading-tight tracking-tight text-reels-cyan [html[data-theme='light']_&]:text-[#0d9488]">
                     ReelsMarket
                   </p>
-                </motion.div>
+                </div>
               </Link>
             </div>
           </div>
@@ -497,7 +457,7 @@ export function MallTopNav() {
                           id="mall-category-more"
                           role="region"
                           aria-labelledby="mall-category-trigger"
-                          className="rounded-xl border border-white/15 bg-reels-void/95 shadow-[0_20px_50px_-12px_rgba(0,242,234,0.12)] backdrop-blur-xl transition-[opacity,transform] duration-200 ease-out [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_20px_40px_-16px_rgba(0,0,0,0.12)]"
+                          className="rounded-xl border border-white/15 bg-reels-void/98 shadow-lg transition-[opacity,transform] duration-200 ease-out [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_12px_32px_-16px_rgba(0,0,0,0.12)]"
                           style={{
                             position: "fixed",
                             top: menuPlace.top,
