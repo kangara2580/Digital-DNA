@@ -77,12 +77,7 @@ export function CreateStudioPage() {
         <span className="mx-1.5 text-zinc-700">/</span>
         <span className="text-zinc-400">얼굴·배경 편집 + AI 창작</span>
       </nav>
-      <header className="mb-8">
-        <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl">
-          창작 스튜디오
-        </h1>
-      </header>
-      <PurchaseCustomizeStudio video={video} startWithQuick={startWithQuick} />
+      <PurchaseCustomizeStudio video={video} startWithQuick={startWithQuick} heroTitle="창작 스튜디오" />
     </>
   );
 }

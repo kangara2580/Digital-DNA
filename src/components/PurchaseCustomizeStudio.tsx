@@ -452,12 +452,18 @@ function previewToneFromPrompt(prompt: string): string {
   return "linear-gradient(140deg, rgba(255,255,255,0.12), rgba(0,0,0,0.14))";
 }
 
+const quickBuyButtonClass =
+  "shrink-0 self-start rounded-full border border-reels-crimson/45 bg-reels-crimson/15 px-4 py-2.5 text-[12px] font-extrabold text-reels-crimson shadow-[0_0_20px_-8px_rgba(255,0,85,0.4)] transition hover:bg-reels-crimson/25 sm:self-auto";
+
 export function PurchaseCustomizeStudio({
   video,
   startWithQuick = false,
+  heroTitle,
 }: {
   video: FeedVideo;
   startWithQuick?: boolean;
+  /** 창작 스튜디오 등 상단 제목 — 있으면 제목 행 오른쪽에 바로구매 버튼 배치 */
+  heroTitle?: string;
 }) {
   const { hasPurchased } = usePurchasedVideos();
   const { user } = useAuthSession();
@@ -549,7 +555,7 @@ export function PurchaseCustomizeStudio({
       );
       setTextPreviewEnabled(p.textPreviewEnabled);
     } else {
-      setUseAdvancedStep(true);
+      setUseAdvancedStep(!startWithQuick);
       setPreviewBgPrompt(null);
       setPreviewBgVideoUrl(null);
       setPreviewBgImageUrl(null);
@@ -570,11 +576,9 @@ export function PurchaseCustomizeStudio({
     setBackgroundPreviewApplying(false);
     setSaveStatus("idle");
     saveInFlightRef.current = false;
+    // startWithQuick는 로컬 draft 없을 때만 else에서 사용. 의존성에 넣으면 같은 영상에서 URL만 바뀔 때 전체 draft 재로드가 나므로 제외.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- video.id당 한 번 로드; startWithQuick는 해당 마운트 시점 값만 사용
   }, [video.id]);
-
-  useEffect(() => {
-    setUseAdvancedStep(!startWithQuick);
-  }, [startWithQuick, video.id]);
 
   useEffect(() => {
     if (!aiPreviewQuotaActive) return;
@@ -1254,6 +1258,24 @@ export function PurchaseCustomizeStudio({
 
   return (
     <div className="space-y-10">
+      {heroTitle ? (
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl">{heroTitle}</h1>
+            <p className="mt-2 max-w-xl text-[12px] leading-relaxed text-zinc-500">
+              커스텀 편집으로 얼굴·배경을 만져 본 뒤, 생성만 이어가려면 오른쪽 <span className="font-semibold text-zinc-400">바로구매</span>를 누르세요.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setUseAdvancedStep(false)}
+            className={quickBuyButtonClass}
+          >
+            바로구매
+          </button>
+        </header>
+      ) : null}
+
       <div className="rounded-xl border border-reels-cyan/25 bg-reels-cyan/10 px-4 py-3 text-[13px] leading-relaxed text-zinc-200">
         {subscriptionActive ? (
           <p>
@@ -1279,6 +1301,17 @@ export function PurchaseCustomizeStudio({
           </p>
         )}
       </div>
+      {!heroTitle ? (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+          <p className="max-w-xl text-[12px] leading-relaxed text-zinc-500">
+            먼저 커스텀 편집으로 얼굴·배경을 만져 보세요. 바로 생성만 이어가려면 오른쪽{" "}
+            <span className="font-semibold text-zinc-400">바로구매</span>를 누르면 됩니다.
+          </p>
+          <button type="button" onClick={() => setUseAdvancedStep(false)} className={quickBuyButtonClass}>
+            바로구매
+          </button>
+        </div>
+      ) : null}
       <div>
         <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] p-1">
           <button
