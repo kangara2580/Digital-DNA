@@ -124,7 +124,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                   if (!owned) markPurchased(video.id);
                   router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
                 }}
-                className="w-full flex-1 rounded-full bg-reels-crimson px-5 py-3.5 text-[14px] font-extrabold text-white shadow-reels-crimson transition-[transform,opacity] duration-300 ease-in-out hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+                className="h-[48px] w-full flex-1 rounded-full bg-reels-crimson px-5 text-[13px] font-extrabold text-white shadow-reels-crimson transition-[transform,opacity] duration-300 ease-in-out hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {ctaLabel}
               </button>
@@ -135,7 +135,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                   if (soldOut) return;
                   dopamine.launchFromCartButton(e.currentTarget, video, posterSrc);
                 }}
-                className="inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center self-center rounded-full border border-white/15 bg-white/[0.06] text-zinc-200 transition-colors hover:border-reels-cyan/40 hover:text-reels-cyan disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800 sm:self-stretch"
+                className="inline-flex h-[48px] w-[48px] shrink-0 items-center justify-center self-center rounded-full border border-white/15 bg-white/[0.06] text-zinc-200 transition-colors hover:border-reels-cyan/40 hover:text-reels-cyan disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800 sm:self-stretch"
                 disabled={soldOut}
                 aria-label="장바구니 담기"
               >
