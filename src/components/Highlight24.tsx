@@ -581,14 +581,6 @@ export function Highlight24() {
           >
             <ChevronLeft className="h-5 w-5 text-white drop-shadow-[0_1px_2px_rgba(15,23,42,0.45)]" />
           </button>
-          <div className="min-w-0 text-center transition-opacity duration-300 ease-out">
-            <p className="text-legible-white truncate text-[15px] font-semibold tracking-tight text-white sm:text-[16px]">
-              {active?.creator ?? ""}
-            </p>
-            <p className="text-legible-white mt-0.5 line-clamp-1 text-[11px] text-white sm:text-xs">
-              {active?.title ?? ""}
-            </p>
-          </div>
           <button
             type="button"
             onClick={() => go(1)}
