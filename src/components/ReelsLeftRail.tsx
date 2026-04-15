@@ -32,9 +32,9 @@ const railIconBtn =
 const railIconActive =
   "bg-white/[0.08] text-reels-cyan shadow-[0_0_16px_-4px_rgba(0,242,234,0.35)] [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-reels-cyan";
 
-/** 구독 — 시안 강조(레일 중앙부 배치) */
+/** 구독 — 시안 강조(테두리 없음, 글로우·배경만) */
 const subscribeRailBtn =
-  "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-reels-cyan/55 bg-reels-cyan/14 text-reels-cyan shadow-[0_0_24px_-8px_rgba(0,242,234,0.55)] transition-[background-color,border-color,box-shadow,transform] duration-200 hover:border-reels-cyan/85 hover:bg-reels-cyan/22 hover:shadow-[0_0_28px_-6px_rgba(0,242,234,0.65)] active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:border-reels-cyan/50 [html[data-theme='light']_&]:bg-reels-cyan/12 [html[data-theme='light']_&]:text-[#0d9488]";
+  "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-0 bg-reels-cyan/14 text-reels-cyan shadow-[0_0_24px_-8px_rgba(0,242,234,0.55)] transition-[background-color,box-shadow,transform] duration-200 hover:bg-reels-cyan/22 hover:shadow-[0_0_28px_-6px_rgba(0,242,234,0.65)] active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:bg-reels-cyan/12 [html[data-theme='light']_&]:text-[#0d9488]";
 
 type RailItem = {
   href: string;
@@ -169,7 +169,7 @@ export function ReelsLeftRail() {
               href="/subscribe"
               className={`${subscribeRailBtn} ${
                 pathname.startsWith("/subscribe")
-                  ? "ring-2 ring-reels-cyan/45 ring-offset-2 ring-offset-reels-abyss [html[data-theme='light']_&]:ring-offset-white"
+                  ? "bg-reels-cyan/26 shadow-[0_0_30px_-6px_rgba(0,242,234,0.72)] [html[data-theme='light']_&]:bg-reels-cyan/20"
                   : ""
               }`}
               title="구독·크레딧"
