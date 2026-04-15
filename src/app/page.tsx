@@ -6,7 +6,6 @@ import { TrendingRankSection } from "@/components/TrendingRankSection";
 import { SellerPitchBanner } from "@/components/SellerPitchBanner";
 import { DiscountDnaSection } from "@/components/DiscountDnaSection";
 import { InspirationCategoryGrid } from "@/components/InspirationCategoryGrid";
-import { VideoFeed } from "@/components/VideoFeed";
 import { MainBackgroundVideo } from "@/components/MainBackgroundVideo";
 
 export default async function Home() {
@@ -20,7 +19,6 @@ export default async function Home() {
         <InspirationCategoryGrid />
         <FailureOopsSection />
         <DiscountDnaSection />
-        <VideoFeed />
         <EditorCurationSection />
         <SellerPitchBanner />
         <BestPurchaseReviewsSection />
