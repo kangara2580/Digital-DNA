@@ -1290,7 +1290,7 @@ export function PurchaseCustomizeStudio({
                 : "text-zinc-500 hover:text-zinc-300"
             }`}
           >
-            퀵 생성 (Quick)
+            바로구매
           </button>
           <button
             type="button"
@@ -1301,7 +1301,7 @@ export function PurchaseCustomizeStudio({
                 : "text-zinc-500 hover:text-zinc-300"
             }`}
           >
-            커스텀 편집 (Custom)
+            커스텀 편집
           </button>
         </div>
       </div>
@@ -1914,7 +1914,7 @@ export function PurchaseCustomizeStudio({
             <div className="reels-glass-card rounded-xl p-4 sm:p-5">
               <p className="text-[13px] font-extrabold text-zinc-100">2단계 커스텀 편집</p>
               <p className="mt-1 text-[12px] text-zinc-500">
-                지금은 건너뛰고 퀵 생성합니다. 필요하면 위 버튼에서 언제든 다시 켤 수 있어요.
+                지금은 건너뛰고 바로구매 흐름입니다. 필요하면 위 버튼에서 언제든 다시 켤 수 있어요.
               </p>
             </div>
           )}
@@ -1947,7 +1947,7 @@ export function PurchaseCustomizeStudio({
             <span className="text-[12px] font-semibold text-zinc-500">
               {useAdvancedStep
                 ? "커스텀 편집 후 서버 생성 요청을 누르세요."
-                : "퀵 생성 모드입니다. 바로 서버 생성 요청을 누르세요."}
+                : "바로구매 모드입니다. 바로 서버 생성 요청을 누르세요."}
             </span>
           </div>
           {!remoteJob ? (
