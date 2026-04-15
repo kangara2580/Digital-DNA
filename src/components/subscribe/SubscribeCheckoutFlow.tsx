@@ -179,18 +179,18 @@ export function SubscribeCheckoutFlow() {
               카드 소유자 {holderName || "—"}
             </p>
           </div>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-3">
+          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4">
             <button
               type="button"
               onClick={onConfirmPay}
-              className="order-1 w-full rounded-2xl bg-reels-cyan py-3 text-[15px] font-extrabold text-reels-void shadow-[0_0_22px_-14px_rgba(0,242,234,0.45)] sm:order-2 sm:flex-1"
+              className="order-1 inline-flex w-48 shrink-0 items-center justify-center rounded-2xl bg-reels-cyan py-3 text-[15px] font-extrabold text-reels-void shadow-[0_0_22px_-14px_rgba(0,242,234,0.45)] sm:order-2"
             >
               등록 완료
             </button>
             <button
               type="button"
               onClick={() => setStep("payment")}
-              className="order-2 shrink-0 self-center rounded-xl border border-white/15 px-6 py-2.5 text-[13px] font-semibold text-zinc-300 transition hover:bg-white/5 sm:order-1 sm:self-auto sm:py-3 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-700"
+              className="order-2 inline-flex w-24 shrink-0 items-center justify-center rounded-xl border border-white/15 py-3 text-[13px] font-semibold text-zinc-300 transition hover:bg-white/5 sm:order-1 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-700"
             >
               수정
             </button>
