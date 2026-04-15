@@ -357,7 +357,7 @@ export function MallTopNav() {
     >
       <div
         className={`mx-auto max-w-[1800px] pl-4 sm:pl-6 lg:pl-8 reels-pr-safe-fixed ${easeNav} ${
-          compactEffective ? "pb-1.5 pt-1" : "pb-1.5 pt-0.5"
+          compactEffective ? "pb-1.5 pt-1.5" : "pb-1.5 pt-2"
         }`}
       >
         <div
@@ -393,8 +393,14 @@ export function MallTopNav() {
                     className="shrink-0 rounded-sm text-left outline-none transition-opacity duration-200 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-reels-cyan/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reels-abyss [html[data-theme='light']_&]:focus-visible:ring-offset-white"
                     aria-label="홈 · 메인 화면으로 이동"
                   >
-                    <span className="block whitespace-nowrap text-[clamp(1.15rem,3.2vw,2rem)] font-black leading-none tracking-tight text-reels-cyan [html[data-theme='light']_&]:text-[#0d9488]">
-                      ReelsMarket
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-reels-cyan/35 bg-reels-cyan/10 px-3 py-1.5 shadow-[0_0_24px_-10px_rgba(0,242,234,0.5)] [html[data-theme='light']_&]:border-reels-cyan/30 [html[data-theme='light']_&]:bg-reels-cyan/8">
+                      <span
+                        className="inline-flex h-2 w-2 rounded-full bg-reels-cyan shadow-[0_0_10px_rgba(0,242,234,0.8)]"
+                        aria-hidden
+                      />
+                      <span className="block whitespace-nowrap bg-gradient-to-r from-reels-cyan via-[#66f6ef] to-reels-cyan bg-clip-text text-[clamp(1.1rem,3vw,1.85rem)] font-black leading-none tracking-tight text-transparent [html[data-theme='light']_&]:from-[#0d9488] [html[data-theme='light']_&]:via-[#22d3c6] [html[data-theme='light']_&]:to-[#0d9488]">
+                        ReelsMarket
+                      </span>
                     </span>
                   </Link>
                   <div className="min-w-0 flex-1 sm:min-w-[12rem]">
