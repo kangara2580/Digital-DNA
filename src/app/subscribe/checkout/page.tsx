@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { CheckoutBackNav } from "@/components/subscribe/CheckoutBackNav";
 import { SubscribeCheckoutFlow } from "@/components/subscribe/SubscribeCheckoutFlow";
 
 export const metadata = {
@@ -19,17 +20,20 @@ export default function SubscribeCheckoutPage() {
   return (
     <div className="min-h-[calc(100dvh-var(--header-height,4.5rem))] text-[var(--foreground,#fafafa)] [html[data-theme='light']_&]:bg-white [html[data-theme='dark']_&]:bg-transparent">
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
-        <nav className="mb-6 font-mono text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          <Link href="/" className="text-reels-cyan/90 hover:text-reels-cyan">
-            홈
-          </Link>
-          <span className="mx-1.5 text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
-          <Link href="/subscribe" className="text-reels-cyan/90 hover:text-reels-cyan">
-            구독
-          </Link>
-          <span className="mx-1.5 text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
-          <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">결제</span>
-        </nav>
+        <header className="mb-6">
+          <nav className="font-mono text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            <Link href="/" className="text-reels-cyan/90 hover:text-reels-cyan">
+              홈
+            </Link>
+            <span className="mx-1.5 text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
+            <Link href="/subscribe" className="text-reels-cyan/90 hover:text-reels-cyan">
+              구독
+            </Link>
+            <span className="mx-1.5 text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
+            <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">결제</span>
+          </nav>
+          <CheckoutBackNav />
+        </header>
         <Suspense fallback={<CheckoutFallback />}>
           <SubscribeCheckoutFlow />
         </Suspense>

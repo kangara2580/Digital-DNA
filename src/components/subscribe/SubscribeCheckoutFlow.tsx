@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, CheckCircle2, CreditCard, Loader2, Lock, Shield } from "lucide-react";
+import { CheckCircle2, CreditCard, Loader2, Lock, Shield } from "lucide-react";
 import {
   SUBSCRIPTION_CHECKOUT_PLANS,
   parsePlanKey,
@@ -26,7 +26,6 @@ function addOneMonthIso(from: Date): string {
 }
 
 export function SubscribeCheckoutFlow() {
-  const router = useRouter();
   const params = useSearchParams();
   const mode = params.get("mode");
   const isRegisterCardOnly = mode === "register-card";
@@ -254,18 +253,7 @@ export function SubscribeCheckoutFlow() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-10">
-      <div className="mb-8">
-        <button
-          type="button"
-          onClick={() => router.push("/subscribe")}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/[0.06] px-4 py-3 text-[15px] font-extrabold text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.06)] transition hover:border-reels-cyan/35 hover:bg-reels-cyan/10 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-sm [html[data-theme='light']_&]:hover:border-reels-cyan/50 [html[data-theme='light']_&]:hover:bg-reels-cyan/10 [html[data-theme='light']_&]:hover:text-reels-cyan sm:w-auto sm:justify-start"
-        >
-          <ArrowLeft className="h-5 w-5 shrink-0" aria-hidden />
-          뒤로가기
-        </button>
-      </div>
-
+    <div className="mx-auto max-w-lg px-4 pb-10 pt-2 sm:px-0">
       <h1 className="text-xl font-black [html[data-theme='light']_&]:text-zinc-900">
         {isRegisterCardOnly ? "결제 수단 등록" : "결제 수단"}
       </h1>
