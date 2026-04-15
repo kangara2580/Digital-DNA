@@ -179,18 +179,18 @@ export function SubscribeCheckoutFlow() {
               카드 소유자 {holderName || "—"}
             </p>
           </div>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row-reverse">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-3">
             <button
               type="button"
               onClick={onConfirmPay}
-              className="w-full rounded-2xl bg-reels-cyan py-3.5 text-[15px] font-extrabold text-reels-void sm:flex-1"
+              className="order-1 w-full rounded-2xl bg-reels-cyan py-4 text-[16px] font-extrabold text-reels-void shadow-[0_0_28px_-12px_rgba(0,242,234,0.55)] sm:order-2 sm:min-h-[52px] sm:flex-1"
             >
               등록 완료
             </button>
             <button
               type="button"
               onClick={() => setStep("payment")}
-              className="w-full rounded-2xl border border-white/15 py-3.5 text-[15px] font-bold text-zinc-200 hover:bg-white/5 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-900"
+              className="order-2 shrink-0 self-center rounded-xl border border-white/15 px-6 py-2.5 text-[13px] font-semibold text-zinc-300 transition hover:bg-white/5 sm:order-1 sm:self-auto sm:py-3 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-700"
             >
               수정
             </button>
@@ -232,18 +232,18 @@ export function SubscribeCheckoutFlow() {
           </p>
         </div>
 
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row-reverse">
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-3">
           <button
             type="button"
             onClick={onConfirmPay}
-            className="w-full rounded-2xl bg-reels-cyan py-3.5 text-[15px] font-extrabold text-reels-void sm:flex-1"
+            className="order-1 w-full rounded-2xl bg-reels-cyan py-4 text-[16px] font-extrabold text-reels-void shadow-[0_0_28px_-12px_rgba(0,242,234,0.55)] sm:order-2 sm:min-h-[52px] sm:flex-1"
           >
             ${plan.priceUsd} 결제하기
           </button>
           <button
             type="button"
             onClick={() => setStep("payment")}
-            className="w-full rounded-2xl border border-white/15 py-3.5 text-[15px] font-bold text-zinc-200 hover:bg-white/5 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-900"
+            className="order-2 shrink-0 self-center rounded-xl border border-white/15 px-6 py-2.5 text-[13px] font-semibold text-zinc-300 transition hover:bg-white/5 sm:order-1 sm:self-auto sm:py-3 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-700"
           >
             이전
           </button>
