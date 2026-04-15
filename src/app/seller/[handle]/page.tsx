@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { VideoCard } from "@/components/VideoCard";
@@ -8,21 +9,9 @@ import {
   getVideosBySellerHandle,
   normalizeSellerHandle,
 } from "@/data/videoCatalog";
+import { buildNotionistsAvatarUrl } from "@/data/reelsAvatarPresets";
 
 export const dynamic = "force-static";
-
-function sellerAvatarGradient(seed: string): string {
-  const hash = Array.from(seed).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  const hueA = hash % 360;
-  const hueB = (hueA + 48) % 360;
-  return `linear-gradient(135deg, hsl(${hueA} 72% 54%), hsl(${hueB} 74% 45%))`;
-}
-
-function sellerInitials(nickname: string): string {
-  const clean = nickname.replace(/[^A-Za-z0-9가-힣]/g, "");
-  if (!clean) return "S";
-  return clean.slice(0, 2).toUpperCase();
-}
 
 export function generateStaticParams() {
   const handles = new Set<string>();
@@ -44,7 +33,6 @@ export default async function SellerPage({
 
   const creator = getCreatorBySellerHandle(normalized) ?? `@${normalized}`;
   const nickname = getSellerNickname(creator);
-  const initials = sellerInitials(nickname);
 
   return (
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
@@ -59,13 +47,14 @@ export default async function SellerPage({
 
         <section className="reels-glass-card rounded-2xl border border-white/10 bg-white/[0.04] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80 sm:p-5">
           <div className="flex items-center gap-3 sm:gap-4">
-            <span
-              className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/20 text-sm font-extrabold tracking-wide text-white shadow-[0_0_18px_-6px_rgba(0,0,0,0.65)]"
-              style={{ backgroundImage: sellerAvatarGradient(normalized) }}
-              aria-hidden
-            >
-              {initials}
-            </span>
+            <Image
+              src={buildNotionistsAvatarUrl(nickname)}
+              width={56}
+              height={56}
+              alt=""
+              unoptimized
+              className="h-14 w-14 shrink-0 rounded-full object-cover ring-2 ring-white/10 [html[data-theme='light']_&]:ring-zinc-200"
+            />
             <div className="min-w-0">
               <h1 className="truncate text-2xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-3xl">
                 {nickname}
