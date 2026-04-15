@@ -90,23 +90,23 @@ function RotatingSearchField({
         placeholder=""
         autoComplete="off"
         enterKeyHint="search"
-        className={`mall-search w-full rounded-full border text-zinc-100 outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,color] ${easeLayout} ${searchEase} border-white/15 bg-white/[0.06] placeholder:text-zinc-600 hover:border-reels-cyan/35 hover:bg-white/10 focus:border-reels-cyan/50 focus:bg-white/[0.09] focus:ring-0 [html[data-theme='dark']_&]:border-white/20 [html[data-theme='dark']_&]:bg-white/[0.1] [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='dark']_&]:placeholder:text-zinc-300 [html[data-theme='dark']_&]:hover:bg-white/[0.14] [html[data-theme='dark']_&]:focus:bg-white/[0.16] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-500 [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:border-zinc-400 [html[data-theme='light']_&]:focus:bg-white ${
+        className={`mall-search w-full rounded-full border text-zinc-100 outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,color] ${easeLayout} ${searchEase} placeholder:text-zinc-600 focus:ring-0 [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='dark']_&]:placeholder:text-zinc-300 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-500 ${
           compact
-            ? "h-9 pl-3 pr-10 text-[13px]"
-            : "h-11 pl-5 pr-12 text-[14px]"
+            ? "h-9 border-white/15 bg-white/[0.06] pl-3 pr-10 text-[13px] hover:border-reels-cyan/35 hover:bg-white/10 focus:border-reels-cyan/50 focus:bg-white/[0.09] [html[data-theme='dark']_&]:border-white/20 [html[data-theme='dark']_&]:bg-white/[0.1] [html[data-theme='dark']_&]:hover:bg-white/[0.14] [html[data-theme='dark']_&]:focus:bg-white/[0.16] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:border-zinc-400 [html[data-theme='light']_&]:focus:bg-white"
+            : "h-[3.25rem] border-2 border-white/20 bg-white/[0.08] pl-6 pr-14 text-[15px] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-reels-cyan/40 hover:bg-white/12 focus:border-reels-cyan/55 focus:bg-white/[0.1] [html[data-theme='dark']_&]:border-white/25 [html[data-theme='dark']_&]:bg-white/[0.12] [html[data-theme='dark']_&]:hover:bg-white/[0.16] [html[data-theme='dark']_&]:focus:bg-white/[0.18] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] [html[data-theme='light']_&]:hover:border-reels-cyan/35 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:focus:border-reels-cyan/35 [html[data-theme='light']_&]:focus:bg-white"
         }`}
         aria-label={`조각 검색. 안내: ${current}`}
       />
       {showGuide ? (
         <div
           className={`pointer-events-none absolute inset-y-0 left-0 flex items-center overflow-hidden text-left text-zinc-500 [html[data-theme='dark']_&]:text-zinc-300 [html[data-theme='light']_&]:text-zinc-500 ${
-            compact ? "right-10 pl-3 text-[13px]" : "right-12 pl-5 text-[14px]"
+            compact ? "right-10 pl-3 text-[13px]" : "right-14 pl-6 text-[15px]"
           }`}
           aria-hidden
         >
           <div className="relative w-full min-w-0">
             <div
-              className={`overflow-hidden ${compact ? "h-[18px]" : "h-[22px]"}`}
+              className={`overflow-hidden ${compact ? "h-[18px]" : "h-[24px]"}`}
             >
               <span className="block truncate transition-opacity duration-200">
                 {current}
@@ -117,13 +117,13 @@ function RotatingSearchField({
       ) : null}
       <span
         className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-zinc-500 [html[data-theme='dark']_&]:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 ${
-          compact ? "right-2.5" : "right-3.5"
+          compact ? "right-2.5" : "right-4"
         }`}
         aria-hidden
       >
         <span className={`block ${searchIconMotion}`}>
           <Search
-            className={`shrink-0 ${compact ? "h-4 w-4" : "h-[18px] w-[18px]"}`}
+            className={`shrink-0 ${compact ? "h-4 w-4" : "h-5 w-5"}`}
             strokeWidth={2}
             aria-hidden
           />
@@ -340,53 +340,49 @@ export function MallTopNav() {
               : "flex-col"
           }`}
         >
-          {/* 로고 줄: 펼침에서만 오른쪽 아이콘 */}
-          <div
-            className={`flex items-center ${easeLayout} ${
-              compactEffective ? "shrink-0" : "w-full justify-between gap-3"
-            }`}
-          >
-            <Link href="/" className={`${logoClass} sr-only`}>
-              홈으로 이동
-            </Link>
-            {!compactEffective && (
-              <div className="flex items-center gap-2 sm:gap-2.5">
-                <div className="hidden items-center gap-0.5 sm:flex sm:-mr-1 lg:-mr-0.5 md:hidden">
-                  <SitePreferencesMenu />
-                </div>
-              </div>
-            )}
-          </div>
+          {/* 컴팩트: 스크린리더용 홈 링크만 */}
+          {compactEffective ? (
+            <div className={`flex shrink-0 items-center ${easeLayout}`}>
+              <Link href="/" className={`${logoClass} sr-only`}>
+                홈으로 이동
+              </Link>
+            </div>
+          ) : null}
 
-          {/* 타이틀: grid-rows 대신 max-height+opacity만 전환(레이아웃 계산 부담 감소). 컴팩트 시 absolute로 한 줄 정렬 유지 */}
+          {/* 펼침: 슬로건 + (로고 좌 | 검색 우) 한 줄 / 컴팩트 시 접힘 */}
           <div
             className={`w-full overflow-hidden ${easeTitleCollapse} ${
               compactEffective
                 ? "pointer-events-none absolute left-0 top-0 z-0 max-h-0 w-full opacity-0"
-                : "relative max-h-[min(300px,48vh)] opacity-100"
+                : "relative max-h-[min(280px,50vh)] opacity-100"
             }`}
             aria-hidden={compactEffective}
           >
-            <div className={`${!compactEffective ? "mt-0 sm:mt-0.5" : ""}`}>
-              <Link
-                href="/"
-                className="mx-auto block w-fit max-w-full rounded-sm outline-none transition-[opacity,transform] duration-200 hover:opacity-[0.9] active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-reels-cyan/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reels-abyss [html[data-theme='light']_&]:focus-visible:ring-offset-white"
-                aria-label="홈 · 메인 화면으로 이동"
-              >
-                <div className="text-center">
-                  <p className="mx-auto mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-[11px] font-medium text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-600">
-                    <span className="h-1 w-1 rounded-full bg-reels-cyan/80" aria-hidden />
-                    바이럴 릴스를 사고, 클론하고, 성장하세요
-                  </p>
-                  <p className="mt-0 text-[clamp(2rem,8vw,3.25rem)] font-black leading-tight tracking-tight text-reels-cyan [html[data-theme='light']_&]:text-[#0d9488]">
-                    ReelsMarket
-                  </p>
+            {!compactEffective ? (
+              <div className="pt-0.5">
+                <p className="mb-2 text-left text-[11px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                  <span className="mr-1.5 inline-block h-1 w-1 rounded-full bg-reels-cyan/80 align-middle" aria-hidden />
+                  바이럴 릴스를 사고, 클론하고, 성장하세요
+                </p>
+                <div className="flex w-full min-w-0 flex-nowrap items-center gap-2 sm:gap-5">
+                  <Link
+                    href="/"
+                    className="shrink-0 rounded-sm text-left outline-none transition-opacity duration-200 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-reels-cyan/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reels-abyss [html[data-theme='light']_&]:focus-visible:ring-offset-white"
+                    aria-label="홈 · 메인 화면으로 이동"
+                  >
+                    <span className="block whitespace-nowrap text-[clamp(1.15rem,3.2vw,2rem)] font-black leading-none tracking-tight text-reels-cyan [html[data-theme='light']_&]:text-[#0d9488]">
+                      ReelsMarket
+                    </span>
+                  </Link>
+                  <div className="min-w-0 flex-1 sm:min-w-[12rem]">
+                    <RotatingSearchField compact={false} q={q} setQ={setQ} />
+                  </div>
                 </div>
-              </Link>
-            </div>
+              </div>
+            ) : null}
           </div>
 
-          {/* 검색 + 카테고리: 컴팩트에서는 가로로 붙여 검색(왼쪽)·카테고리(오른쪽) */}
+          {/* 검색 + 카테고리: 펼침에서는 검색은 위 행에만 / 컴팩트는 검색+카테고리 */}
           <div
             className={`flex min-h-0 w-full min-w-0 ${easeLayout} ${
               compactEffective
@@ -394,21 +390,19 @@ export function MallTopNav() {
                 : "flex flex-col"
             }`}
           >
-            <div
-              className={`w-full ${easeNav} ${
-                compactEffective
-                  ? "mx-0 mt-0 max-w-[min(320px,42vw)] shrink-0 sm:max-w-md"
-                  : "mx-auto mt-0.5 max-w-2xl sm:mt-1"
-              }`}
-            >
-              <RotatingSearchField compact={compactEffective} q={q} setQ={setQ} />
-            </div>
+            {compactEffective ? (
+              <div
+                className={`w-full ${easeNav} mx-0 mt-0 max-w-[min(320px,42vw)] shrink-0 sm:max-w-md`}
+              >
+                <RotatingSearchField compact q={q} setQ={setQ} />
+              </div>
+            ) : null}
 
             <nav
               className={`flex min-w-0 items-center ${easeNav} ${
                 compactEffective
                   ? "mt-0 flex-1 justify-center gap-1 overflow-visible border-0 py-0 sm:gap-1.5"
-                  : "no-scrollbar mt-1 justify-center gap-1 overflow-x-auto border-t border-white/10 pt-1 sm:gap-1.5 [html[data-theme='light']_&]:border-zinc-200"
+                  : "no-scrollbar mt-3 justify-center gap-1 overflow-x-auto border-t border-white/10 pt-2 sm:gap-1.5 [html[data-theme='light']_&]:border-zinc-200"
               }`}
               aria-label="카테고리"
             >
