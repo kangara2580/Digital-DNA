@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { CreditCard, Sparkles } from "lucide-react";
+import {
+  Check,
+  CreditCard,
+} from "lucide-react";
 
 export const metadata = {
   title: "구독·결제 — REELS MARKET",
@@ -7,16 +10,46 @@ export const metadata = {
     "구독 플랜과 카드 등록 후 이용 시점 결제를 한곳에서 안내합니다.",
 };
 
-const cardShell =
-  "relative overflow-hidden rounded-3xl border border-white/12 bg-gradient-to-br from-zinc-900/95 via-reels-void/90 to-reels-cyan/[0.08] px-6 py-9 text-left sm:px-8 sm:py-10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-white [html[data-theme='light']_&]:via-zinc-50 [html[data-theme='light']_&]:to-reels-cyan/10";
-
-const glow =
-  "pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-reels-cyan/20 blur-3xl [html[data-theme='light']_&]:bg-reels-cyan/15";
+const plans = [
+  {
+    planKey: "starter" as const,
+    tier: "Starter",
+    badge: "입문자",
+    price: "$19 ~ $29 / 월",
+    discount: "영상 구매 10% 할인",
+    credits: "월 100 Credits",
+    aiFeature: "배경 제거 5회 + 워터마크 없는 저장 시작",
+    cta: "Starter 선택하기",
+    highlight: false,
+  },
+  {
+    planKey: "creator" as const,
+    tier: "Creator",
+    badge: "추천",
+    price: "$49 ~ $59 / 월",
+    discount: "영상 구매 25% 할인",
+    credits: "월 300 Credits",
+    aiFeature: "얼굴/배경 생성 + 편집 기능 본격 오픈",
+    cta: "Creator 선택하기",
+    highlight: true,
+  },
+  {
+    planKey: "pro" as const,
+    tier: "Pro / Business",
+    badge: "고성능",
+    price: "$149+ / 커스텀",
+    discount: "영상 구매 40% 할인",
+    credits: "월 1,000 Credits",
+    aiFeature: "상업용 대량 처리 + 팀 단위 운영",
+    cta: "Pro 선택하기",
+    highlight: false,
+  },
+];
 
 export default function SubscribePage() {
   return (
     <div className="min-h-[calc(100dvh-var(--header-height,4.5rem))] text-[var(--foreground,#fafafa)] [html[data-theme='light']_&]:bg-white [html[data-theme='dark']_&]:bg-transparent">
-      <main className="mx-auto flex max-w-4xl flex-col px-4 py-8 sm:px-6 sm:py-12">
+      <main className="mx-auto flex max-w-6xl flex-col px-4 py-8 sm:px-6 sm:py-12">
         <nav className="mb-8 font-mono text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           <Link href="/" className="text-reels-cyan/90 hover:text-reels-cyan">
             홈
@@ -25,76 +58,79 @@ export default function SubscribePage() {
           <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">구독</span>
         </nav>
 
-        <div className="grid gap-6 md:grid-cols-2 md:gap-8">
-          {/* 구독 서비스 */}
-          <section className={cardShell} aria-labelledby="subscribe-service-heading">
-            <div className={glow} aria-hidden />
-            <p className="relative font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-reels-cyan/90">
-              구독 서비스
-            </p>
-            <div className="relative mt-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-reels-cyan/35 bg-reels-cyan/10 text-reels-cyan">
-              <Sparkles className="h-6 w-6" strokeWidth={1.75} aria-hidden />
-            </div>
-            <h1
-              id="subscribe-service-heading"
-              className="relative mt-4 text-xl font-black leading-snug tracking-tight sm:text-2xl [html[data-theme='light']_&]:text-zinc-900"
-            >
-              월 구독 혜택을 받아보세요
-            </h1>
-            <div className="relative mt-8 flex flex-col gap-2">
-              <button
-                type="button"
-                disabled
-                className="w-full rounded-2xl border border-reels-cyan/45 bg-reels-cyan/15 py-3.5 text-[15px] font-extrabold text-reels-cyan shadow-[0_0_24px_-10px_rgba(0,242,234,0.35)] [html[data-theme='light']_&]:text-[#047857] disabled:cursor-not-allowed disabled:opacity-80"
-                aria-disabled="true"
-              >
-                구독 플랜 선택하기
-              </button>
-              <p className="text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                구독 빌링(PG) 연동 후 활성화됩니다.
+        <div className="mb-5 flex justify-end">
+          <div className="relative overflow-hidden rounded-2xl border border-white/12 bg-black/30 px-4 py-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+            <div className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full bg-reels-cyan/20 blur-2xl [html[data-theme='light']_&]:bg-reels-cyan/15" aria-hidden />
+            <div className="relative flex items-center gap-3">
+              <p className="hidden text-right text-[11px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600 sm:block">
+                단건 구매가 필요하다면 카드만 간편 등록
               </p>
-            </div>
-          </section>
-
-          {/* 카드 등록 · 즉시 결제 */}
-          <section className={cardShell} aria-labelledby="subscribe-card-heading">
-            <div className={glow} aria-hidden />
-            <p className="relative font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-reels-cyan/90">
-              카드 등록 · 바로 결제
-            </p>
-            <div className="relative mt-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-reels-cyan/35 bg-reels-cyan/10 text-reels-cyan">
-              <CreditCard className="h-6 w-6" strokeWidth={1.75} aria-hidden />
-            </div>
-            <h2
-              id="subscribe-card-heading"
-              className="relative mt-4 text-xl font-black leading-snug tracking-tight sm:text-2xl [html[data-theme='light']_&]:text-zinc-900"
-            >
-              카드 한 번 등록, 이용할 때마다 결제
-            </h2>
-            <div className="relative mt-8 flex flex-col gap-2">
-              <button
-                type="button"
-                disabled
-                className="w-full rounded-2xl border border-reels-cyan/50 bg-reels-cyan py-3.5 text-[15px] font-extrabold text-reels-void shadow-[0_0_32px_-8px_rgba(0,242,234,0.45)] [html[data-theme='light']_&]:text-[#041016] disabled:cursor-not-allowed disabled:opacity-85"
-                aria-disabled="true"
+              <Link
+                href="/subscribe/checkout?mode=register-card"
+                className="inline-flex items-center gap-2 rounded-xl border border-reels-cyan/55 bg-reels-cyan/90 px-4 py-2 text-[13px] font-bold text-reels-void shadow-[0_0_24px_-12px_rgba(0,242,234,0.65)] transition hover:brightness-110"
               >
+                <CreditCard className="h-4 w-4" aria-hidden />
                 카드 등록하기
-              </button>
-              <p className="text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                PG 연동 후 바로 등록·결제할 수 있어요.
-              </p>
+              </Link>
             </div>
-          </section>
+          </div>
         </div>
+
+        <section className="grid gap-4 md:grid-cols-3" aria-label="구독 플랜 목록">
+          {plans.map((plan) => (
+            <article
+              key={plan.tier}
+              className={`reels-glass-card rounded-3xl border p-6 ${
+                plan.highlight
+                  ? "border-reels-cyan/70 bg-reels-cyan/[0.08] shadow-[0_0_38px_-22px_rgba(0,242,234,0.8)]"
+                  : "border-white/12 bg-black/30 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xl font-black [html[data-theme='light']_&]:text-zinc-900">{plan.tier}</p>
+                <span
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                    plan.highlight
+                      ? "bg-reels-cyan text-reels-void"
+                      : "border border-reels-cyan/40 bg-reels-cyan/10 text-reels-cyan"
+                  }`}
+                >
+                  {plan.badge}
+                </span>
+              </div>
+              <p className="mt-4 text-2xl font-black tracking-tight [html[data-theme='light']_&]:text-zinc-900">{plan.price}</p>
+              <ul className="mt-5 space-y-2.5 text-[13px] text-zinc-200 [html[data-theme='light']_&]:text-zinc-700">
+                <li className="flex items-start gap-2">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-reels-cyan" aria-hidden />
+                  <span>{plan.discount}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-reels-cyan" aria-hidden />
+                  <span>{plan.credits}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-reels-cyan" aria-hidden />
+                  <span>{plan.aiFeature}</span>
+                </li>
+              </ul>
+              <Link
+                href={`/subscribe/checkout?plan=${plan.planKey}`}
+                className={`mt-6 flex w-full items-center justify-center rounded-2xl py-3 text-[14px] font-extrabold transition hover:brightness-110 ${
+                  plan.highlight
+                    ? "bg-reels-cyan text-reels-void shadow-[0_0_30px_-10px_rgba(0,242,234,0.6)]"
+                    : "border border-reels-cyan/45 bg-reels-cyan/15 text-reels-cyan"
+                }`}
+              >
+                {plan.cta}
+              </Link>
+            </article>
+          ))}
+        </section>
 
         <ul className="mt-10 space-y-2 text-[13px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           <li className="flex gap-2">
             <span className="font-bold text-reels-cyan/90">·</span>
-            <span>구독과 카드 결제는 서로 다른 결제 흐름이며, 오픈 순서에 따라 단계적으로 켜집니다.</span>
-          </li>
-          <li className="flex gap-2">
-            <span className="font-bold text-reels-cyan/90">·</span>
-            <span>카드 정보는 결제사 규정에 따라 안전하게 저장·과금됩니다.</span>
+            <span>결제 정보는 결제사 규정에 따라 안전하게 저장·과금되며, 정책 고지와 실제 동작을 동일하게 유지합니다.</span>
           </li>
         </ul>
 

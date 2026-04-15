@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Coins } from "lucide-react";
 import { FaceProfileUploadSection } from "@/components/FaceProfileUploadSection";
 import { MyPageSavedDraftsSection } from "@/components/MyPageSavedDraftsSection";
 import { MyPageSellerAnalyticsSection } from "@/components/MyPageSellerAnalyticsSection";
@@ -18,6 +19,7 @@ import {
   writeProfileAvatar,
 } from "@/lib/profileAvatarStorage";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { MyPageAccountOverview } from "@/components/MyPageAccountOverview";
 
 type MyPageTab = "basic" | "profile" | "drafts" | "samples" | "analytics";
 
@@ -116,8 +118,19 @@ export function MyPageDashboard() {
 
   return (
     <main className="mx-auto min-h-[60vh] max-w-[1500px] px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12 lg:px-8">
-      <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">마이페이지</h1>
-      <p className="mt-2 text-[14px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">기본정보를 먼저 확인하고, 왼쪽 메뉴에서 세부 항목을 관리하세요.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">마이페이지</h1>
+          <p className="mt-2 text-[14px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">기본정보를 먼저 확인하고, 왼쪽 메뉴에서 세부 항목을 관리하세요.</p>
+        </div>
+        <Link
+          href="/subscribe"
+          className="inline-flex items-center gap-2 rounded-xl border border-reels-cyan/50 bg-reels-cyan/10 px-3.5 py-2 text-[13px] font-bold text-reels-cyan hover:bg-reels-cyan/20"
+        >
+          <Coins className="h-4 w-4" aria-hidden />
+          크레딧 추가 충전
+        </Link>
+      </div>
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside className="reels-glass-card rounded-2xl p-3 sm:p-4 lg:sticky lg:top-20 lg:h-fit">
@@ -145,6 +158,7 @@ export function MyPageDashboard() {
         <section className="min-w-0">
           {currentTab === "basic" ? (
             <div className="reels-glass-card rounded-2xl p-5 sm:p-6">
+              <MyPageAccountOverview />
               <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">기본정보</h2>
 
               <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
