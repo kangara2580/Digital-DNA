@@ -94,10 +94,12 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                   {fresh.label}
                 </span>
               ) : null}
-              <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">
-                {video.title}
-              </h1>
-              <SellerIdentityLink creator={video.creator} />
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                <h1 className="min-w-0 text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">
+                  {video.title}
+                </h1>
+                <SellerIdentityLink creator={video.creator} className="sm:ml-auto sm:min-w-[220px]" />
+              </div>
               {showFreshMeta ? (
                 <p className="mt-2 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                   {fresh.subline}
