@@ -90,18 +90,18 @@ export function SubscribeCheckoutFlow() {
         <p className="mt-3 text-[14px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
           이후 영상 구매 시 입력 없이 결제할 수 있습니다.
         </p>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Link
-            href="/explore"
-            className="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-[14px] font-bold text-zinc-100 hover:bg-white/10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
-          >
-            영상 둘러보기
-          </Link>
+        <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:mx-auto sm:flex-row sm:gap-3">
           <Link
             href="/mypage"
-            className="inline-flex items-center justify-center rounded-2xl bg-reels-cyan px-5 py-3 text-[14px] font-bold text-reels-void"
+            className="flex min-h-[48px] flex-1 items-center justify-center rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-[14px] font-bold text-zinc-100 transition hover:bg-white/10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
           >
             마이페이지
+          </Link>
+          <Link
+            href="/explore"
+            className="flex min-h-[48px] flex-1 items-center justify-center rounded-2xl bg-reels-cyan px-4 py-3 text-[14px] font-bold text-reels-void shadow-[0_0_20px_-10px_rgba(0,242,234,0.5)] transition hover:brightness-110"
+          >
+            영상 둘러보기
           </Link>
         </div>
       </div>
