@@ -88,10 +88,6 @@ const RAIL_ITEMS: RailItem[] = [
   },
 ];
 
-/** 홈·탐색·찜 다음에 구독을 끼워 넣어 시각적 중앙에 가깝게 둠 */
-const RAIL_BEFORE_SUBSCRIBE = RAIL_ITEMS.slice(0, 3);
-const RAIL_AFTER_SUBSCRIBE = RAIL_ITEMS.slice(3);
-
 const DRAWER_QUICK = [
   { href: "/upload/reels", label: "릴스 링크 등록", Icon: Link2 },
 ] as const;
@@ -144,41 +140,12 @@ export function ReelsLeftRail() {
             <ReelsLogo size={22} />
           </Link>
         </div>
-        <div className="flex min-h-0 flex-1 flex-col items-center pt-1">
+        <div className="flex min-h-0 flex-1 flex-col items-stretch pt-1">
           <nav
-            className="flex flex-1 flex-col items-center gap-1 overflow-y-auto overflow-x-hidden py-2 no-scrollbar"
+            className="flex shrink-0 flex-col items-center gap-1 overflow-y-auto overflow-x-hidden py-2 no-scrollbar"
             aria-label="빠른 이동"
           >
-            {RAIL_BEFORE_SUBSCRIBE.map(({ href, label, Icon, isActive }) => {
-              const on = isActive(pathname);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  ref={href === "/cart" ? cartAnchorRef : undefined}
-                  title={label}
-                  aria-label={label}
-                  aria-current={on ? "page" : undefined}
-                  className={`${railIconBtn} ${on ? railIconActive : ""}`}
-                >
-                  <Icon className="h-[22px] w-[22px]" strokeWidth={stroke} aria-hidden />
-                </Link>
-              );
-            })}
-            <Link
-              href="/subscribe"
-              className={`${subscribeRailBtn} ${
-                pathname.startsWith("/subscribe")
-                  ? "ring-2 ring-reels-cyan/45 ring-offset-2 ring-offset-reels-abyss [html[data-theme='light']_&]:ring-offset-white"
-                  : ""
-              }`}
-              title="구독·크레딧"
-              aria-label="구독·결제 페이지로 이동"
-              aria-current={pathname.startsWith("/subscribe") ? "page" : undefined}
-            >
-              <Wallet className="h-[23px] w-[23px]" strokeWidth={stroke} aria-hidden />
-            </Link>
-            {RAIL_AFTER_SUBSCRIBE.map(({ href, label, Icon, isActive }) => {
+            {RAIL_ITEMS.map(({ href, label, Icon, isActive }) => {
               const on = isActive(pathname);
               return (
                 <Link
@@ -195,6 +162,23 @@ export function ReelsLeftRail() {
               );
             })}
           </nav>
+
+          {/* 마이페이지 아래~하단 메뉴 위 남는 세로 공간 한가운데 구독 */}
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-0 py-2">
+            <Link
+              href="/subscribe"
+              className={`${subscribeRailBtn} ${
+                pathname.startsWith("/subscribe")
+                  ? "ring-2 ring-reels-cyan/45 ring-offset-2 ring-offset-reels-abyss [html[data-theme='light']_&]:ring-offset-white"
+                  : ""
+              }`}
+              title="구독·크레딧"
+              aria-label="구독·결제 페이지로 이동"
+              aria-current={pathname.startsWith("/subscribe") ? "page" : undefined}
+            >
+              <Wallet className="h-[23px] w-[23px]" strokeWidth={stroke} aria-hidden />
+            </Link>
+          </div>
 
           <div className="flex shrink-0 flex-col items-center border-t border-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 px-0 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <SellerNotificationBell compact />
