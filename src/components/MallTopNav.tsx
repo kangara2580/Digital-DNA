@@ -25,9 +25,9 @@ const COMPACT_PRIMARY = ITEMS.slice(0, 2);
 const COMPACT_MORE = ITEMS.slice(2);
 
 /** 스크롤을 조금만 내려도 컴팩트가 깜빡이지 않게 진입/이탈 임계를 분리 */
-const SCROLL_COMPACT_ENTER = 72;
+const SCROLL_COMPACT_ENTER = 96;
 /** 맨 위 복귀 시 펼침을 조금 일찍 걸어(스크롤이 EXIT 이하로 들어오면 바로 펼침) */
-const SCROLL_COMPACT_EXIT = 48;
+const SCROLL_COMPACT_EXIT = 32;
 
 /** 짧은 전환 — 긴 스크롤 구간에서 레이아웃·블러 재계산 부담을 줄임 */
 const easeLayout =
@@ -165,6 +165,10 @@ export function MallTopNav() {
   const moreWrapRef = useRef<HTMLDivElement>(null);
   const menuPortalRef = useRef<HTMLDivElement>(null);
   const hoverCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** 스크롤 핸들러마다 setState하지 않고, rAF 1프레임·실제 전환 시에만 갱신(트랙패드 미세 스크롤 버벅임 완화) */
+  const compactRafRef = useRef(0);
+  const scrollYRef = useRef(0);
+  const compactMirrorRef = useRef(false);
   const [menuPlace, setMenuPlace] = useState<{
     top: number;
     left: number;
@@ -214,18 +218,41 @@ export function MallTopNav() {
     };
   }, []);
 
-  /** 컴팩트: 히스테리시스는 원시 스크롤로 즉시 반영(CSS 전환만 부드럽게). 스프링으로 판정하면 맨 위에서 타이틀이 한 박자 늦게 펼쳐짐 */
   useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY;
-      setCompact((prev) => {
-        if (prev) return y > SCROLL_COMPACT_EXIT;
-        return y > SCROLL_COMPACT_ENTER;
-      });
+    compactMirrorRef.current = compact;
+  }, [compact]);
+
+  /** 컴팩트: rAF 1프레임에 묶고, 값이 바뀔 때만 setState — 트랙패드·관성 스크롤 시 연속 setState·레이아웃 전환 완화 */
+  useEffect(() => {
+    const applyCompactFromScroll = () => {
+      compactRafRef.current = 0;
+      const y = scrollYRef.current;
+      const prev = compactMirrorRef.current;
+      const next = prev ? y > SCROLL_COMPACT_EXIT : y > SCROLL_COMPACT_ENTER;
+      if (next !== prev) {
+        compactMirrorRef.current = next;
+        setCompact(next);
+      }
     };
-    onScroll();
+
+    const onScroll = () => {
+      scrollYRef.current = window.scrollY;
+      if (!compactRafRef.current) {
+        compactRafRef.current = window.requestAnimationFrame(applyCompactFromScroll);
+      }
+    };
+
+    scrollYRef.current = typeof window !== "undefined" ? window.scrollY : 0;
+    applyCompactFromScroll();
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (compactRafRef.current) {
+        window.cancelAnimationFrame(compactRafRef.current);
+        compactRafRef.current = 0;
+      }
+    };
   }, []);
 
   useEffect(() => {

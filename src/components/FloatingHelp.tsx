@@ -2,7 +2,7 @@
 
 import { ChevronUp } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const SCROLL_TOP_THRESHOLD = 80;
 
@@ -52,20 +52,44 @@ const helpLinkShell =
 
 export function FloatingHelp() {
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const scrollRafRef = useRef(0);
+  const showMirrorRef = useRef(false);
 
   useEffect(() => {
-    const readScroll = () => {
+    showMirrorRef.current = showScrollTop;
+  }, [showScrollTop]);
+
+  useEffect(() => {
+    const apply = () => {
+      scrollRafRef.current = 0;
       const y =
         window.scrollY ||
         window.pageYOffset ||
         document.documentElement.scrollTop ||
         document.body.scrollTop ||
         0;
-      setShowScrollTop(y > SCROLL_TOP_THRESHOLD);
+      const next = y > SCROLL_TOP_THRESHOLD;
+      if (next !== showMirrorRef.current) {
+        showMirrorRef.current = next;
+        setShowScrollTop(next);
+      }
     };
-    readScroll();
-    window.addEventListener("scroll", readScroll, { passive: true });
-    return () => window.removeEventListener("scroll", readScroll);
+
+    const onScroll = () => {
+      if (!scrollRafRef.current) {
+        scrollRafRef.current = window.requestAnimationFrame(apply);
+      }
+    };
+
+    apply();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (scrollRafRef.current) {
+        window.cancelAnimationFrame(scrollRafRef.current);
+        scrollRafRef.current = 0;
+      }
+    };
   }, []);
 
   const scrollToTop = useCallback(() => {
