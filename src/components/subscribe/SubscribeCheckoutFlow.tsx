@@ -183,7 +183,7 @@ export function SubscribeCheckoutFlow() {
             <button
               type="button"
               onClick={onConfirmPay}
-              className="order-1 w-full rounded-2xl bg-reels-cyan py-4 text-[16px] font-extrabold text-reels-void shadow-[0_0_28px_-12px_rgba(0,242,234,0.55)] sm:order-2 sm:min-h-[52px] sm:flex-1"
+              className="order-1 w-full rounded-2xl bg-reels-cyan py-3 text-[15px] font-extrabold text-reels-void shadow-[0_0_22px_-14px_rgba(0,242,234,0.45)] sm:order-2 sm:flex-1"
             >
               등록 완료
             </button>
@@ -236,7 +236,7 @@ export function SubscribeCheckoutFlow() {
           <button
             type="button"
             onClick={onConfirmPay}
-            className="order-1 w-full rounded-2xl bg-reels-cyan py-4 text-[16px] font-extrabold text-reels-void shadow-[0_0_28px_-12px_rgba(0,242,234,0.55)] sm:order-2 sm:min-h-[52px] sm:flex-1"
+            className="order-1 w-full rounded-2xl bg-reels-cyan py-3 text-[15px] font-extrabold text-reels-void shadow-[0_0_22px_-14px_rgba(0,242,234,0.45)] sm:order-2 sm:flex-1"
           >
             ${plan.priceUsd} 결제하기
           </button>
