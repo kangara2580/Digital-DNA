@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Coins } from "lucide-react";
 import { FaceProfileUploadSection } from "@/components/FaceProfileUploadSection";
 import { MyPageSavedDraftsSection } from "@/components/MyPageSavedDraftsSection";
 import { MyPageSellerAnalyticsSection } from "@/components/MyPageSellerAnalyticsSection";
@@ -126,13 +125,6 @@ export function MyPageDashboard() {
           <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">마이페이지</h1>
           <p className="mt-2 text-[14px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">기본정보를 먼저 확인하고, 왼쪽 메뉴에서 세부 항목을 관리하세요.</p>
         </div>
-        <Link
-          href="/subscribe"
-          className="inline-flex items-center gap-2 rounded-xl border border-reels-cyan/50 bg-reels-cyan/10 px-3.5 py-2 text-[13px] font-bold text-reels-cyan hover:bg-reels-cyan/20"
-        >
-          <Coins className="h-4 w-4" aria-hidden />
-          크레딧 추가 충전
-        </Link>
       </div>
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
