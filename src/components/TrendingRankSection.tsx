@@ -99,16 +99,6 @@ export function TrendingRankSection() {
               className="flex flex-wrap items-center gap-2.5 text-[22px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:gap-3 sm:text-[26px] md:text-[28px]"
             >
               실시간 인기순위 영상
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-reels-cyan/35 bg-reels-cyan/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-reels-cyan/95 sm:text-[11px]">
-                <span
-                  className="relative flex h-2 w-2 shrink-0"
-                  aria-hidden
-                >
-                  <span className="absolute inset-0 animate-ping rounded-full bg-reels-cyan/70 motion-reduce:animate-none" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-reels-cyan shadow-[0_0_10px_rgba(0,242,234,0.8)]" />
-                </span>
-                LIVE
-              </span>
             </h2>
           </div>
           <SectionMoreLink
