@@ -102,10 +102,11 @@ async function exchangeCodeForToken(
   const trimmedAccess = accessToken.trim();
   const trimmedRefresh = refreshToken.trim();
   const shouldPersistAccess = trimmedAccess.length > 0 && trimmedAccess.length <= 1400;
+  const shouldPersistRefresh = trimmedRefresh.length > 0 && trimmedRefresh.length <= 1400;
 
   return {
     ...(shouldPersistAccess ? { accessToken: trimmedAccess } : null),
-    refreshToken: trimmedRefresh,
+    ...(shouldPersistRefresh ? { refreshToken: trimmedRefresh } : null),
     expiresAt: shouldPersistAccess
       ? Math.floor(Date.now() / 1000) + Math.max(60, Number(expiresIn))
       : Math.floor(Date.now() / 1000),

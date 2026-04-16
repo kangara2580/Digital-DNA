@@ -80,6 +80,7 @@ async function refreshUserAccessToken(
   const clientKey = process.env.TIKTOK_CLIENT_KEY?.trim();
   const clientSecret = process.env.TIKTOK_CLIENT_SECRET?.trim();
   if (!clientKey || !clientSecret) return null;
+  if (!session.refreshToken) return null;
 
   try {
     const res = await fetch("https://open.tiktokapis.com/v2/oauth/token/", {
@@ -222,6 +223,18 @@ export async function GET(request: NextRequest) {
   let session = current;
   let refreshedByExpiry = false;
   if (!session.accessToken || isExpired(session)) {
+    if (!session.refreshToken) {
+      const res = NextResponse.json(
+        {
+          source: "auth" as const,
+          reason: "token_expired" as const,
+          message: toFriendlyError("token_expired"),
+        },
+        { status: 401 },
+      );
+      clearTikTokSessionCookie(res);
+      return res;
+    }
     const refreshed = await refreshUserAccessToken(session);
     if (!refreshed) {
       const res = NextResponse.json(
