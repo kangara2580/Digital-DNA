@@ -32,12 +32,18 @@ type TikTokTokenPayload = {
   message?: string;
 };
 
-function homeUrl(req: NextRequest, status: "connected" | "error", reason?: string): URL {
+function homeUrl(
+  req: NextRequest,
+  status: "connected" | "error",
+  reason?: string,
+  detail?: string,
+): URL {
   const u = new URL("/", resolveAppOrigin(req));
   if (status === "connected") {
     u.searchParams.set("tiktok", "connected");
   } else {
     u.searchParams.set("tiktok_error", reason ?? "oauth_failed");
+    if (detail) u.searchParams.set("tiktok_detail", detail);
   }
   return u;
 }
@@ -159,7 +165,16 @@ export async function GET(req: NextRequest) {
       });
     } catch (e) {
       console.error("tiktok_callback_db_write_failed", e);
-      const res2 = NextResponse.redirect(homeUrl(req, "error", "db_write_failed"));
+      const raw =
+        e instanceof Error
+          ? `${e.name}:${e.message}`
+          : typeof e === "string"
+            ? e
+            : "unknown";
+      const cleaned = raw.replace(/[\s\n\r\t]+/g, " ").slice(0, 160);
+      const res2 = NextResponse.redirect(
+        homeUrl(req, "error", "db_write_failed", cleaned),
+      );
       clearOAuthStateCookie(res2);
       return res2;
     }
