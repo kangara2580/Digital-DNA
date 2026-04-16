@@ -50,6 +50,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
   );
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(video.src);
   const posterSrc = sanitizePosterSrc(video.poster);
+  const isTikTokEmbed = Boolean(video.tiktokEmbedId);
 
   return (
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
@@ -63,17 +64,31 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                   : "aspect-video w-full"
               }`}
             >
-              <video
-                className="video-detail-player h-full w-full object-cover"
-                poster={posterSrc}
-                src={isPexelsBlockedVideo ? undefined : video.src}
-                controls
-                controlsList="nodownload noplaybackrate noremoteplayback nofullscreen"
-                disablePictureInPicture
-                playsInline
-                preload={isPexelsBlockedVideo ? "none" : "metadata"}
-                onContextMenu={(e) => e.preventDefault()}
-              />
+              {isTikTokEmbed ? (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <iframe
+                    title={video.title}
+                    src={`https://www.tiktok.com/embed/v2/${video.tiktokEmbedId}`}
+                    className="h-full w-auto max-w-full border-0 aspect-[9/16]"
+                    allow="encrypted-media; fullscreen; picture-in-picture"
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                  />
+                </div>
+              ) : (
+                <video
+                  className="video-detail-player h-full w-full object-cover"
+                  poster={posterSrc}
+                  src={isPexelsBlockedVideo ? undefined : video.src}
+                  controls
+                  controlsList="nodownload noplaybackrate noremoteplayback nofullscreen"
+                  disablePictureInPicture
+                  playsInline
+                  preload={isPexelsBlockedVideo ? "none" : "metadata"}
+                  onContextMenu={(e) => e.preventDefault()}
+                />
+              )}
             </div>
           </div>
 

@@ -184,6 +184,14 @@ export function VideoCard({
     hoverPreview.onLeave();
   }, [hoverPreview]);
 
+  const playTikTok = useCallback(() => {
+    setIsPreviewing(true);
+  }, []);
+
+  const pauseTikTok = useCallback(() => {
+    setIsPreviewing(false);
+  }, []);
+
   const videoRef = isLocal ? localPlayback.ref : hoverPreview.ref;
   const onVidTimeUpdate =
     isLocal && segmentPreviewEffective
@@ -235,7 +243,7 @@ export function VideoCard({
       className={`group flex flex-col overflow-hidden ${transitionCls} ${shell} ${overlapHover} ${gridHoverScale} ${className ?? ""}`}
       onMouseEnter={
         isTikTokEmbed
-          ? undefined
+          ? playTikTok
           : !canLoadPreviewVideo
             ? undefined
           : isLocal && segmentPreviewEffective
@@ -249,7 +257,7 @@ export function VideoCard({
       }
       onMouseLeave={
         isTikTokEmbed
-          ? undefined
+          ? pauseTikTok
           : !canLoadPreviewVideo
             ? undefined
           : isLocal && segmentPreviewEffective
@@ -262,17 +270,21 @@ export function VideoCard({
               : undefined
       }
     >
-      <div className={`relative bg-black/40 ${aspectClass}`}>
+      <div className={`relative overflow-hidden bg-black/40 ${aspectClass}`}>
         {isTikTokEmbed ? (
-          <iframe
-            title={video.title}
-            src={`https://www.tiktok.com/embed/v2/${video.tiktokEmbedId}`}
-            className="absolute inset-0 z-0 h-full w-full border-0"
-            allow="encrypted-media; fullscreen; picture-in-picture"
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="strict-origin-when-cross-origin"
-          />
+          isPreviewing ? (
+            <div className="absolute inset-0 z-0 flex items-center justify-center">
+              <iframe
+                title={video.title}
+                src={`https://www.tiktok.com/embed/v2/${video.tiktokEmbedId}?autoplay=1&mute=1&controls=0`}
+                className="h-full w-auto max-w-full border-0 aspect-[9/16]"
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
+            </div>
+          ) : null
         ) : (
           <video
             ref={videoRef}
@@ -290,14 +302,15 @@ export function VideoCard({
             onTimeUpdate={onVidTimeUpdate}
           />
         )}
-        {!isTikTokEmbed && thumbnailSrc ? (
+
+        {thumbnailSrc ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={thumbnailSrc}
             alt=""
-            className={`pointer-events-none absolute inset-0 z-[2] h-full w-full object-cover transition-opacity duration-200 ${
+            className={`pointer-events-none absolute inset-0 z-[2] h-full w-full transition-opacity duration-200 ${
               isPreviewing ? "opacity-0" : "opacity-100"
-            }`}
+            } ${isTikTokEmbed ? "object-contain bg-black" : "object-cover"}`}
             loading={reelStrip ? "eager" : "lazy"}
             decoding="async"
             onError={() => {

@@ -8,10 +8,15 @@ export type TikTokSession = {
   accessToken: string;
   refreshToken?: string;
   expiresAt: number;
-  scope?: string;
-  openId?: string;
-  tokenType?: string;
 };
+
+function shouldUseSecureCookies(): boolean {
+  return process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
+}
+
+function cookieSameSite(): "lax" | "none" {
+  return shouldUseSecureCookies() ? "none" : "lax";
+}
 
 function nowSec(): number {
   return Math.floor(Date.now() / 1000);
@@ -75,8 +80,8 @@ export function setOAuthStateCookie(res: NextResponse, state: string) {
     name: TIKTOK_OAUTH_STATE_COOKIE,
     value: state,
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: shouldUseSecureCookies(),
+    sameSite: cookieSameSite(),
     path: "/",
     maxAge: 10 * 60,
   });
@@ -91,8 +96,8 @@ export function clearOAuthStateCookie(res: NextResponse) {
     name: TIKTOK_OAUTH_STATE_COOKIE,
     value: "",
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: shouldUseSecureCookies(),
+    sameSite: cookieSameSite(),
     path: "/",
     maxAge: 0,
   });
@@ -105,8 +110,8 @@ export function setTikTokSessionCookie(res: NextResponse, session: TikTokSession
     name: TIKTOK_SESSION_COOKIE,
     value: payload,
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: shouldUseSecureCookies(),
+    sameSite: cookieSameSite(),
     path: "/",
     maxAge: ttl,
   });
@@ -126,9 +131,6 @@ export function readTikTokSession(req: NextRequest): TikTokSession | null {
       refreshToken:
         typeof parsed.refreshToken === "string" ? parsed.refreshToken : undefined,
       expiresAt: parsed.expiresAt,
-      scope: typeof parsed.scope === "string" ? parsed.scope : undefined,
-      openId: typeof parsed.openId === "string" ? parsed.openId : undefined,
-      tokenType: typeof parsed.tokenType === "string" ? parsed.tokenType : undefined,
     };
   } catch {
     return null;
@@ -140,8 +142,8 @@ export function clearTikTokSessionCookie(res: NextResponse) {
     name: TIKTOK_SESSION_COOKIE,
     value: "",
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: shouldUseSecureCookies(),
+    sameSite: cookieSameSite(),
     path: "/",
     maxAge: 0,
   });

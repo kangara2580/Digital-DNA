@@ -110,9 +110,6 @@ async function refreshUserAccessToken(
       accessToken: accessToken.trim(),
       refreshToken: nextRefreshToken?.trim(),
       expiresAt: Math.floor(Date.now() / 1000) + Math.max(60, Number(expiresIn)),
-      scope: payload.scope ?? payload.data?.scope ?? session.scope,
-      openId: payload.open_id ?? payload.data?.open_id ?? session.openId,
-      tokenType: payload.token_type ?? payload.data?.token_type ?? session.tokenType,
     };
   } catch {
     return null;

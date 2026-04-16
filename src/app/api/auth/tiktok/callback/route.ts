@@ -102,9 +102,6 @@ async function exchangeCodeForToken(
     accessToken: accessToken.trim(),
     refreshToken: refreshToken?.trim(),
     expiresAt: Math.floor(Date.now() / 1000) + Math.max(60, Number(expiresIn)),
-    scope: payload.scope ?? payload.data?.scope,
-    openId: payload.open_id ?? payload.data?.open_id,
-    tokenType: payload.token_type ?? payload.data?.token_type,
   };
 }
 
