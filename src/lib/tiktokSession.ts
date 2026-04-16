@@ -17,8 +17,8 @@ function shouldUseSecureCookies(): boolean {
   return process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
 }
 
-function cookieSameSite(): "lax" | "none" {
-  return shouldUseSecureCookies() ? "none" : "lax";
+function cookieSameSite(): "lax" {
+  return "lax";
 }
 
 function cookieDomain(): string | undefined {
