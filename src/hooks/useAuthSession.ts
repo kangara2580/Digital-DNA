@@ -38,38 +38,56 @@ export function useAuthSession(): AuthSessionState {
     }
 
     let cancelled = false;
+    // getSession()으로 실제 세션을 확인하기 전에는,
+    // onAuthStateChange에서 먼저 들어오는 `null` 이벤트를 무시합니다.
+    // (초기 레이스로 인해 user/session이 초기화되는 걸 방지)
+    let resolved = false;
     let subscription:
       | {
           unsubscribe: () => void;
         }
       | null = null;
 
+    const startAuthListener = () => {
+      const {
+        data: { subscription: sub },
+      } = supabase.auth.onAuthStateChange((event, s) => {
+        if (cancelled) return;
+
+        if (s) {
+          setSession(s);
+          setUser(s.user ?? null);
+          return;
+        }
+
+        // s === null 인 경우는 getSession()이 끝난 뒤에만 반영
+        // (단, SIGNED_OUT은 명시적으로 반영)
+        if (resolved || event === "SIGNED_OUT") {
+          setSession(null);
+          setUser(null);
+        }
+      });
+      subscription = sub;
+    };
+
+    startAuthListener();
+
     const init = async () => {
       try {
         const { data } = await supabase.auth.getSession();
         if (cancelled) return;
         const s = data.session;
+        resolved = true;
         setSession(s);
         setUser(s?.user ?? null);
       } catch {
         if (cancelled) return;
+        resolved = true;
         setSession(null);
         setUser(null);
       } finally {
         if (!cancelled) setLoading(false);
       }
-
-      // getSession() 로딩이 끝난 뒤에 구독을 시작해서,
-      // 초기 이벤트가 user/session을 덮어쓰는 레이스를 줄입니다.
-      if (cancelled) return;
-
-      const {
-        data: { subscription: sub },
-      } = supabase.auth.onAuthStateChange((_event, s) => {
-        setSession(s);
-        setUser(s?.user ?? null);
-      });
-      subscription = sub;
     };
 
     void init();
