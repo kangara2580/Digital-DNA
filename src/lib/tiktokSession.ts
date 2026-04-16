@@ -131,7 +131,6 @@ export function setOAuthStateCookie(res: NextResponse, state: string) {
     httpOnly: true,
     secure: shouldUseSecureCookies(),
     sameSite: cookieSameSite(),
-    domain: cookieDomain(),
     path: "/",
     maxAge: 10 * 60,
   });
@@ -148,7 +147,6 @@ export function clearOAuthStateCookie(res: NextResponse) {
     httpOnly: true,
     secure: shouldUseSecureCookies(),
     sameSite: cookieSameSite(),
-    domain: cookieDomain(),
     path: "/",
     maxAge: 0,
   });
@@ -166,7 +164,6 @@ export function setTikTokSidCookie(res: NextResponse, sessionId: string) {
     httpOnly: true,
     secure: shouldUseSecureCookies(),
     sameSite: cookieSameSite(),
-    domain: cookieDomain(),
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
   });
@@ -188,7 +185,6 @@ export function clearTikTokSessionCookie(res: NextResponse) {
     httpOnly: true,
     secure: shouldUseSecureCookies(),
     sameSite: cookieSameSite(),
-    domain: cookieDomain(),
     path: "/",
     maxAge: 0,
   });
