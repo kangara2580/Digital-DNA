@@ -219,9 +219,9 @@ export function TrendingRankSection() {
           </div>
           <div className="flex shrink-0 items-center gap-2 self-stretch sm:self-center">
             {authRequired ? (
-              <Link href="/api/auth/tiktok/login" className={TIKTOK_LOGIN_BTN}>
+              <a href="/api/auth/tiktok/login" className={TIKTOK_LOGIN_BTN}>
                 Login with TikTok
-              </Link>
+              </a>
             ) : null}
             {!authRequired && !loading && liveRows.length > 0 ? (
               <Link
@@ -250,9 +250,9 @@ export function TrendingRankSection() {
               </p>
               <div className="mt-3 flex items-center justify-center gap-2">
                 {authRequired ? (
-                  <Link href="/api/auth/tiktok/login" className={TIKTOK_LOGIN_BTN}>
+                  <a href="/api/auth/tiktok/login" className={TIKTOK_LOGIN_BTN}>
                     Login with TikTok
-                  </Link>
+                  </a>
                 ) : null}
                 <button
                   type="button"
