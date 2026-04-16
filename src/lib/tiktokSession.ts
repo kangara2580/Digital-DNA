@@ -5,8 +5,11 @@ export const TIKTOK_SESSION_COOKIE = "tiktok_session";
 export const TIKTOK_OAUTH_STATE_COOKIE = "tiktok_oauth_state";
 
 export type TikTokSession = {
-  accessToken: string;
-  refreshToken?: string;
+  /** access token은 길이가 길어 쿠키 4KB 제한을 넘길 수 있어 선택적으로 저장 */
+  accessToken?: string;
+  /** refresh token은 장기 세션 유지용(필수) */
+  refreshToken: string;
+  /** access token 만료 시각(초). accessToken을 저장하지 않으면 즉시 refresh 유도 */
   expiresAt: number;
 };
 
@@ -104,8 +107,13 @@ export function clearOAuthStateCookie(res: NextResponse) {
 }
 
 export function setTikTokSessionCookie(res: NextResponse, session: TikTokSession) {
-  const payload = encryptPayload(JSON.stringify(session));
-  const ttl = Math.max(60, session.expiresAt - nowSec());
+  const minimal: TikTokSession = {
+    refreshToken: session.refreshToken,
+    expiresAt: session.expiresAt,
+    ...(session.accessToken ? { accessToken: session.accessToken } : null),
+  };
+  const payload = encryptPayload(JSON.stringify(minimal));
+  const ttl = Math.max(60, minimal.expiresAt - nowSec());
   res.cookies.set({
     name: TIKTOK_SESSION_COOKIE,
     value: payload,
@@ -124,12 +132,12 @@ export function readTikTokSession(req: NextRequest): TikTokSession | null {
   if (!json) return null;
   try {
     const parsed = JSON.parse(json) as Partial<TikTokSession>;
-    if (!parsed.accessToken || typeof parsed.accessToken !== "string") return null;
+    if (!parsed.refreshToken || typeof parsed.refreshToken !== "string") return null;
     if (!parsed.expiresAt || typeof parsed.expiresAt !== "number") return null;
     return {
-      accessToken: parsed.accessToken,
-      refreshToken:
-        typeof parsed.refreshToken === "string" ? parsed.refreshToken : undefined,
+      accessToken:
+        typeof parsed.accessToken === "string" ? parsed.accessToken : undefined,
+      refreshToken: parsed.refreshToken,
       expiresAt: parsed.expiresAt,
     };
   } catch {

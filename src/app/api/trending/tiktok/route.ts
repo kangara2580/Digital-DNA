@@ -77,7 +77,6 @@ function isExpired(session: TikTokSession): boolean {
 async function refreshUserAccessToken(
   session: TikTokSession,
 ): Promise<TikTokSession | null> {
-  if (!session.refreshToken) return null;
   const clientKey = process.env.TIKTOK_CLIENT_KEY?.trim();
   const clientSecret = process.env.TIKTOK_CLIENT_SECRET?.trim();
   if (!clientKey || !clientSecret) return null;
@@ -106,10 +105,15 @@ async function refreshUserAccessToken(
       payload.refresh_token ?? payload.data?.refresh_token ?? session.refreshToken;
     const expiresIn = payload.expires_in ?? payload.data?.expires_in ?? 3600;
 
+    const trimmedAccess = accessToken.trim();
+    const shouldPersistAccess = trimmedAccess.length > 0 && trimmedAccess.length <= 1400;
+
     return {
-      accessToken: accessToken.trim(),
-      refreshToken: nextRefreshToken?.trim(),
-      expiresAt: Math.floor(Date.now() / 1000) + Math.max(60, Number(expiresIn)),
+      refreshToken: nextRefreshToken?.trim() ?? session.refreshToken,
+      ...(shouldPersistAccess ? { accessToken: trimmedAccess } : null),
+      expiresAt: shouldPersistAccess
+        ? Math.floor(Date.now() / 1000) + Math.max(60, Number(expiresIn))
+        : Math.floor(Date.now() / 1000),
     };
   } catch {
     return null;
@@ -217,7 +221,7 @@ export async function GET(request: NextRequest) {
 
   let session = current;
   let refreshedByExpiry = false;
-  if (isExpired(session)) {
+  if (!session.accessToken || isExpired(session)) {
     const refreshed = await refreshUserAccessToken(session);
     if (!refreshed) {
       const res = NextResponse.json(
@@ -235,8 +239,22 @@ export async function GET(request: NextRequest) {
     refreshedByExpiry = true;
   }
 
+  const access = session.accessToken;
+  if (!access) {
+    const res = NextResponse.json(
+      {
+        source: "auth" as const,
+        reason: "token_expired" as const,
+        message: toFriendlyError("token_expired"),
+      },
+      { status: 401 },
+    );
+    clearTikTokSessionCookie(res);
+    return res;
+  }
+
   try {
-    let { response, payload } = await fetchUserVideos(session.accessToken, limit);
+    let { response, payload } = await fetchUserVideos(access, limit);
 
     if (
       (!response.ok || (payload.error?.code && payload.error.code !== "ok")) &&
@@ -246,7 +264,20 @@ export async function GET(request: NextRequest) {
       const refreshed = await refreshUserAccessToken(session);
       if (refreshed) {
         session = refreshed;
-        ({ response, payload } = await fetchUserVideos(session.accessToken, limit));
+        const access2 = session.accessToken;
+        if (!access2) {
+          const res = NextResponse.json(
+            {
+              source: "auth" as const,
+              reason: "token_expired" as const,
+              message: toFriendlyError("token_expired"),
+            },
+            { status: 401 },
+          );
+          clearTikTokSessionCookie(res);
+          return res;
+        }
+        ({ response, payload } = await fetchUserVideos(access2, limit));
         refreshedByExpiry = true;
       }
     }

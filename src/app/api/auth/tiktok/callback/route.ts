@@ -96,12 +96,19 @@ async function exchangeCodeForToken(
   const accessToken = payload.access_token ?? payload.data?.access_token;
   if (!accessToken) return null;
   const refreshToken = payload.refresh_token ?? payload.data?.refresh_token;
+  if (!refreshToken) return null;
   const expiresIn = payload.expires_in ?? payload.data?.expires_in ?? 3600;
 
+  const trimmedAccess = accessToken.trim();
+  const trimmedRefresh = refreshToken.trim();
+  const shouldPersistAccess = trimmedAccess.length > 0 && trimmedAccess.length <= 1400;
+
   return {
-    accessToken: accessToken.trim(),
-    refreshToken: refreshToken?.trim(),
-    expiresAt: Math.floor(Date.now() / 1000) + Math.max(60, Number(expiresIn)),
+    ...(shouldPersistAccess ? { accessToken: trimmedAccess } : null),
+    refreshToken: trimmedRefresh,
+    expiresAt: shouldPersistAccess
+      ? Math.floor(Date.now() / 1000) + Math.max(60, Number(expiresIn))
+      : Math.floor(Date.now() / 1000),
   };
 }
 
