@@ -35,6 +35,23 @@ export async function GET(req: NextRequest) {
   authUrl.searchParams.set("state", state);
   authUrl.searchParams.set("disable_auto_auth", disableAutoAuth);
 
+  // 빠른 진단용: /api/auth/tiktok/login?debug=1 로 들어가면 redirect_uri가 뭔지 보여줍니다.
+  // TikTok 콘솔 등록값과 1:1로 맞추는 데 필요합니다.
+  const debug = req.nextUrl.searchParams.get("debug") === "1";
+  if (debug) {
+    return NextResponse.json(
+      {
+        redirectUri,
+        scope,
+        disableAutoAuth,
+        // state는 앱에서 검증에 쓰이므로 그대로 노출하는 게 맞습니다(비밀키는 아님).
+        state,
+        authUrl: authUrl.toString(),
+      },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
   const res = NextResponse.redirect(authUrl);
   setOAuthStateCookie(res, state);
   return res;
