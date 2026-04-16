@@ -57,6 +57,13 @@ function encryptPayload(payload: string): string {
   return `${encodePart(iv)}.${encodePart(tag)}.${encodePart(encrypted)}`;
 }
 
+function assertCookieSizeSafe(value: string) {
+  // 브라우저별 쿠키 제한(대략 4KB) 대비 여유값.
+  if (value.length > 3600) {
+    throw new Error("tiktok_session_cookie_too_large");
+  }
+}
+
 function decryptPayload(value: string): string | null {
   try {
     const [ivRaw, tagRaw, dataRaw] = value.split(".");
@@ -113,6 +120,7 @@ export function setTikTokSessionCookie(res: NextResponse, session: TikTokSession
     ...(session.refreshToken ? { refreshToken: session.refreshToken } : null),
   };
   const payload = encryptPayload(JSON.stringify(minimal));
+  assertCookieSizeSafe(payload);
   const ttl = Math.max(60, minimal.expiresAt - nowSec());
   res.cookies.set({
     name: TIKTOK_SESSION_COOKIE,

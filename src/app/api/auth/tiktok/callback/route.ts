@@ -147,7 +147,14 @@ export async function GET(req: NextRequest) {
     }
 
     const res = NextResponse.redirect(homeUrl(req, "connected"));
-    setTikTokSessionCookie(res, session);
+    try {
+      setTikTokSessionCookie(res, session);
+    } catch (e) {
+      const code = e instanceof Error ? e.message : "cookie_failed";
+      const res2 = NextResponse.redirect(homeUrl(req, "error", code));
+      clearOAuthStateCookie(res2);
+      return res2;
+    }
     clearOAuthStateCookie(res);
     return res;
   } catch {
