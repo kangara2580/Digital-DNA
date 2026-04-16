@@ -49,10 +49,13 @@ function homeUrl(
 }
 
 function resolveAppOrigin(req: NextRequest): string {
+  const currentOrigin = req.nextUrl.origin;
+
   const fromNextAuth = process.env.NEXTAUTH_URL?.trim();
   if (fromNextAuth) {
     try {
-      return new URL(fromNextAuth).origin;
+      const origin = new URL(fromNextAuth).origin;
+      if (origin === currentOrigin) return origin;
     } catch {
       /* ignore invalid env */
     }
@@ -61,13 +64,14 @@ function resolveAppOrigin(req: NextRequest): string {
   const fromRedirect = process.env.TIKTOK_REDIRECT_URI?.trim();
   if (fromRedirect) {
     try {
-      return new URL(fromRedirect).origin;
+      const origin = new URL(fromRedirect).origin;
+      if (origin === currentOrigin) return origin;
     } catch {
       /* ignore invalid env */
     }
   }
 
-  return req.nextUrl.origin;
+  return currentOrigin;
 }
 
 function resolveRedirectUri(req: NextRequest): string {
