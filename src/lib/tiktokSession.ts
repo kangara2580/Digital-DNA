@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes } from "node:crypto";
 import type { NextRequest, NextResponse } from "next/server";
 
 export const TIKTOK_SESSION_COOKIE = "tiktok_sid";
@@ -97,7 +97,31 @@ function decryptPayload(value: string): string | null {
 }
 
 export function createOAuthState(): string {
-  return randomBytes(24).toString("base64url");
+  const payload = {
+    v: 1,
+    ts: Date.now(),
+    nonce: randomBytes(16).toString("base64url"),
+  };
+  const payloadRaw = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+  const sig = createHmac("sha256", getSessionSecret()).update(payloadRaw).digest("base64url");
+  return `${payloadRaw}.${sig}`;
+}
+
+export function verifyOAuthState(state: string): boolean {
+  const [payloadRaw, sig] = state.split(".");
+  if (!payloadRaw || !sig) return false;
+  const expected = createHmac("sha256", getSessionSecret()).update(payloadRaw).digest("base64url");
+  if (expected !== sig) return false;
+  try {
+    const json = Buffer.from(payloadRaw, "base64url").toString("utf8");
+    const parsed = JSON.parse(json) as { ts?: number };
+    const ts = typeof parsed.ts === "number" ? parsed.ts : 0;
+    if (!ts) return false;
+    const ageMs = Date.now() - ts;
+    return ageMs >= 0 && ageMs <= 10 * 60 * 1000;
+  } catch {
+    return false;
+  }
 }
 
 export function setOAuthStateCookie(res: NextResponse, state: string) {

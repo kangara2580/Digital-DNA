@@ -4,6 +4,7 @@ import {
   readOAuthState,
   createTikTokSessionId,
   setTikTokSidCookie,
+  verifyOAuthState,
   type TikTokSession,
 } from "@/lib/tiktokSession";
 import { prisma } from "@/lib/prisma";
@@ -122,7 +123,9 @@ export async function GET(req: NextRequest) {
   }
 
   const cookieState = readOAuthState(req);
-  if (!state || !cookieState || state !== cookieState) {
+  const signedOk = state ? verifyOAuthState(state) : false;
+  const cookieOk = Boolean(state && cookieState && state === cookieState);
+  if (!signedOk && !cookieOk) {
     const res = NextResponse.redirect(homeUrl(req, "error", "state_mismatch"));
     clearOAuthStateCookie(res);
     return res;
