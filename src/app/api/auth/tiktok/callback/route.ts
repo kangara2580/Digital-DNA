@@ -75,8 +75,9 @@ function resolveAppOrigin(req: NextRequest): string {
 }
 
 function resolveRedirectUri(req: NextRequest): string {
-  const envUri = process.env.TIKTOK_REDIRECT_URI?.trim();
-  if (envUri) return envUri;
+  // authorize 요청에서 보낸 redirect_uri와 토큰교환 redirect_uri는
+  // 반드시 동일해야 하고, 배포 도메인이 env 값과 조금이라도 다르면
+  // TikTok에서 reject 합니다. 그래서 현재 요청의 origin 기준으로 고정합니다.
   return `${req.nextUrl.origin}/api/auth/tiktok/callback`;
 }
 

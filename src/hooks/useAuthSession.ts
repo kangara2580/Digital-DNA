@@ -37,32 +37,46 @@ export function useAuthSession(): AuthSessionState {
       return;
     }
 
-    let alive = true;
-    void supabase.auth
-      .getSession()
-      .then(({ data: { session: s } }) => {
-        if (!alive) return;
+    let cancelled = false;
+    let subscription:
+      | {
+          unsubscribe: () => void;
+        }
+      | null = null;
+
+    const init = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (cancelled) return;
+        const s = data.session;
         setSession(s);
         setUser(s?.user ?? null);
-        setLoading(false);
-      })
-      .catch(() => {
-        if (!alive) return;
+      } catch {
+        if (cancelled) return;
         setSession(null);
         setUser(null);
-        setLoading(false);
-      });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-    });
+      // getSession() 로딩이 끝난 뒤에 구독을 시작해서,
+      // 초기 이벤트가 user/session을 덮어쓰는 레이스를 줄입니다.
+      if (cancelled) return;
+
+      const {
+        data: { subscription: sub },
+      } = supabase.auth.onAuthStateChange((_event, s) => {
+        setSession(s);
+        setUser(s?.user ?? null);
+      });
+      subscription = sub;
+    };
+
+    void init();
 
     return () => {
-      alive = false;
-      subscription.unsubscribe();
+      cancelled = true;
+      subscription?.unsubscribe();
     };
   }, []);
 
