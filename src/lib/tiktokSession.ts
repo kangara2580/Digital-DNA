@@ -21,6 +21,11 @@ function cookieSameSite(): "lax" | "none" {
   return shouldUseSecureCookies() ? "none" : "lax";
 }
 
+function cookieDomain(): string | undefined {
+  const d = process.env.TIKTOK_COOKIE_DOMAIN?.trim();
+  return d ? d : undefined;
+}
+
 function nowSec(): number {
   return Math.floor(Date.now() / 1000);
 }
@@ -92,6 +97,7 @@ export function setOAuthStateCookie(res: NextResponse, state: string) {
     httpOnly: true,
     secure: shouldUseSecureCookies(),
     sameSite: cookieSameSite(),
+    domain: cookieDomain(),
     path: "/",
     maxAge: 10 * 60,
   });
@@ -108,6 +114,7 @@ export function clearOAuthStateCookie(res: NextResponse) {
     httpOnly: true,
     secure: shouldUseSecureCookies(),
     sameSite: cookieSameSite(),
+    domain: cookieDomain(),
     path: "/",
     maxAge: 0,
   });
@@ -121,13 +128,20 @@ export function setTikTokSessionCookie(res: NextResponse, session: TikTokSession
   };
   const payload = encryptPayload(JSON.stringify(minimal));
   assertCookieSizeSafe(payload);
-  const ttl = Math.max(60, minimal.expiresAt - nowSec());
+
+  // refreshToken이 있으면 재발급으로 장기 유지가 가능하므로 쿠키는 7일 유지.
+  // (토큰 자체 만료는 API 호출 시 refresh로 처리)
+  const ttl = minimal.refreshToken
+    ? 60 * 60 * 24 * 7
+    : Math.max(60, minimal.expiresAt - nowSec());
+
   res.cookies.set({
     name: TIKTOK_SESSION_COOKIE,
     value: payload,
     httpOnly: true,
     secure: shouldUseSecureCookies(),
     sameSite: cookieSameSite(),
+    domain: cookieDomain(),
     path: "/",
     maxAge: ttl,
   });
@@ -162,6 +176,7 @@ export function clearTikTokSessionCookie(res: NextResponse) {
     httpOnly: true,
     secure: shouldUseSecureCookies(),
     sameSite: cookieSameSite(),
+    domain: cookieDomain(),
     path: "/",
     maxAge: 0,
   });
