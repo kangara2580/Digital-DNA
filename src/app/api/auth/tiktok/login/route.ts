@@ -5,9 +5,10 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 function resolveRedirectUri(req: NextRequest): string {
-  // 배포 환경에서 도메인/프로토콜이 바뀌면 env 값과 redirect_uri가
-  // 미세하게 달라져서 TikTok이 로그인 거부하는 경우가 있어요.
-  // 그래서 현재 요청의 origin을 기준으로 콜백 URI를 항상 생성합니다.
+  // TikTok의 "Redirect URLs"는 env 값과 정확히 맞아야 합니다.
+  // 배포 도메인이 여러 개면 env 값으로 고정하는 게 가장 안전해요.
+  const envUri = process.env.TIKTOK_REDIRECT_URI?.trim();
+  if (envUri) return envUri;
   return `${req.nextUrl.origin}/api/auth/tiktok/callback`;
 }
 
