@@ -27,7 +27,13 @@ function cookieSameSite(): "lax" {
 
 function cookieDomain(): string | undefined {
   const d = process.env.TIKTOK_COOKIE_DOMAIN?.trim();
-  return d ? d : undefined;
+  if (!d) return undefined;
+  if (d.includes(":")) return undefined;
+  if (d.includes("/")) return undefined;
+  const lowered = d.toLowerCase();
+  if (lowered === "vercel.app") return undefined;
+  if (lowered.endsWith(".vercel.app")) return undefined;
+  return d;
 }
 
 function nowSec(): number {
