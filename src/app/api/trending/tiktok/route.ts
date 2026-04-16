@@ -365,9 +365,11 @@ export async function GET(request: NextRequest) {
     }
 
     const res = NextResponse.json({
+      source: "tiktok" as const,
+      items,
+      hasMore: payload.data?.has_more,
       ok: true,
       videos: items,
-      hasMore: payload.data?.has_more,
     });
     void refreshedByExpiry;
     return res;
