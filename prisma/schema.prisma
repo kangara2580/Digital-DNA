@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 /// 판매 중인 영상(조각). 가격·조회·판매 수는 배치·수락 API에서 갱신됩니다.
@@ -73,4 +74,17 @@ model NicknameReservation {
 
   @@index([createdAt])
   @@map("nickname_reservations")
+}
+
+model TikTokAuthSession {
+  id           String   @id @default(cuid())
+  sessionId    String   @unique @map("session_id")
+  accessToken  String?  @map("access_token")
+  refreshToken String?  @map("refresh_token")
+  expiresAt    Int      @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([expiresAt])
+  @@map("tiktok_auth_sessions")
 }

@@ -1,7 +1,7 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import type { NextRequest, NextResponse } from "next/server";
 
-export const TIKTOK_SESSION_COOKIE = "tiktok_session";
+export const TIKTOK_SESSION_COOKIE = "tiktok_sid";
 export const TIKTOK_OAUTH_STATE_COOKIE = "tiktok_oauth_state";
 
 export type TikTokSession = {
@@ -12,6 +12,10 @@ export type TikTokSession = {
   /** access token 만료 시각(초). accessToken을 저장하지 않으면 즉시 refresh 유도 */
   expiresAt: number;
 };
+
+export function createTikTokSessionId(): string {
+  return randomBytes(24).toString("base64url");
+}
 
 function shouldUseSecureCookies(): boolean {
   return process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
@@ -121,52 +125,30 @@ export function clearOAuthStateCookie(res: NextResponse) {
 }
 
 export function setTikTokSessionCookie(res: NextResponse, session: TikTokSession) {
-  const minimal: TikTokSession = {
-    expiresAt: session.expiresAt,
-    ...(session.accessToken ? { accessToken: session.accessToken } : null),
-    ...(session.refreshToken ? { refreshToken: session.refreshToken } : null),
-  };
-  const payload = encryptPayload(JSON.stringify(minimal));
-  assertCookieSizeSafe(payload);
+  void session;
+  throw new Error("deprecated_use_setTikTokSidCookie");
+}
 
-  // refreshToken이 있으면 재발급으로 장기 유지가 가능하므로 쿠키는 7일 유지.
-  // (토큰 자체 만료는 API 호출 시 refresh로 처리)
-  const ttl = minimal.refreshToken
-    ? 60 * 60 * 24 * 7
-    : Math.max(60, minimal.expiresAt - nowSec());
-
+export function setTikTokSidCookie(res: NextResponse, sessionId: string) {
   res.cookies.set({
     name: TIKTOK_SESSION_COOKIE,
-    value: payload,
+    value: sessionId,
     httpOnly: true,
     secure: shouldUseSecureCookies(),
     sameSite: cookieSameSite(),
     domain: cookieDomain(),
     path: "/",
-    maxAge: ttl,
+    maxAge: 60 * 60 * 24 * 7,
   });
 }
 
 export function readTikTokSession(req: NextRequest): TikTokSession | null {
-  const raw = req.cookies.get(TIKTOK_SESSION_COOKIE)?.value;
-  if (!raw) return null;
-  const json = decryptPayload(raw);
-  if (!json) return null;
-  try {
-    const parsed = JSON.parse(json) as Partial<TikTokSession>;
-    if (!parsed.expiresAt || typeof parsed.expiresAt !== "number") return null;
-    const hasAccess = typeof parsed.accessToken === "string" && parsed.accessToken.trim().length > 0;
-    const hasRefresh = typeof parsed.refreshToken === "string" && parsed.refreshToken.trim().length > 0;
-    if (!hasAccess && !hasRefresh) return null;
-    return {
-      accessToken:
-        typeof parsed.accessToken === "string" ? parsed.accessToken : undefined,
-      refreshToken: parsed.refreshToken,
-      expiresAt: parsed.expiresAt,
-    };
-  } catch {
-    return null;
-  }
+  void req;
+  throw new Error("deprecated_use_readTikTokSid");
+}
+
+export function readTikTokSid(req: NextRequest): string | null {
+  return req.cookies.get(TIKTOK_SESSION_COOKIE)?.value ?? null;
 }
 
 export function clearTikTokSessionCookie(res: NextResponse) {

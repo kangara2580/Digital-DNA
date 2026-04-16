@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   clearOAuthStateCookie,
-  setTikTokSessionCookie,
   readOAuthState,
+  createTikTokSessionId,
+  setTikTokSidCookie,
   type TikTokSession,
 } from "@/lib/tiktokSession";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -101,15 +103,10 @@ async function exchangeCodeForToken(
 
   const trimmedAccess = accessToken.trim();
   const trimmedRefresh = refreshToken.trim();
-  const shouldPersistAccess = trimmedAccess.length > 0 && trimmedAccess.length <= 1400;
-  const shouldPersistRefresh = trimmedRefresh.length > 0 && trimmedRefresh.length <= 1400;
-
   return {
-    ...(shouldPersistAccess ? { accessToken: trimmedAccess } : null),
-    ...(shouldPersistRefresh ? { refreshToken: trimmedRefresh } : null),
-    expiresAt: shouldPersistAccess
-      ? Math.floor(Date.now() / 1000) + Math.max(60, Number(expiresIn))
-      : Math.floor(Date.now() / 1000),
+    accessToken: trimmedAccess,
+    refreshToken: trimmedRefresh,
+    expiresAt: Math.floor(Date.now() / 1000) + Math.max(60, Number(expiresIn)),
   };
 }
 
@@ -147,14 +144,16 @@ export async function GET(req: NextRequest) {
     }
 
     const res = NextResponse.redirect(homeUrl(req, "connected"));
-    try {
-      setTikTokSessionCookie(res, session);
-    } catch (e) {
-      const code = e instanceof Error ? e.message : "cookie_failed";
-      const res2 = NextResponse.redirect(homeUrl(req, "error", code));
-      clearOAuthStateCookie(res2);
-      return res2;
-    }
+    const sessionId = createTikTokSessionId();
+    await prisma.tikTokAuthSession.create({
+      data: {
+        sessionId,
+        accessToken: session.accessToken ?? null,
+        refreshToken: session.refreshToken ?? null,
+        expiresAt: session.expiresAt,
+      },
+    });
+    setTikTokSidCookie(res, sessionId);
     clearOAuthStateCookie(res);
     return res;
   } catch {

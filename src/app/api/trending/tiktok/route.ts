@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import type { FeedVideo } from "@/data/videos";
 import {
   clearTikTokSessionCookie,
-  readTikTokSession,
-  setTikTokSessionCookie,
+  readTikTokSid,
   type TikTokSession,
 } from "@/lib/tiktokSession";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -74,6 +74,30 @@ function isExpired(session: TikTokSession): boolean {
   return session.expiresAt <= Math.floor(Date.now() / 1000) + 90;
 }
 
+async function readDbSession(sessionId: string): Promise<(TikTokSession & { id: string }) | null> {
+  const row = await prisma.tikTokAuthSession.findUnique({
+    where: { sessionId },
+  });
+  if (!row) return null;
+  return {
+    id: row.id,
+    accessToken: row.accessToken ?? undefined,
+    refreshToken: row.refreshToken ?? undefined,
+    expiresAt: row.expiresAt,
+  };
+}
+
+async function saveDbSession(id: string, session: TikTokSession): Promise<void> {
+  await prisma.tikTokAuthSession.update({
+    where: { id },
+    data: {
+      accessToken: session.accessToken ?? null,
+      refreshToken: session.refreshToken ?? null,
+      expiresAt: session.expiresAt,
+    },
+  });
+}
+
 async function refreshUserAccessToken(
   session: TikTokSession,
 ): Promise<TikTokSession | null> {
@@ -106,15 +130,10 @@ async function refreshUserAccessToken(
       payload.refresh_token ?? payload.data?.refresh_token ?? session.refreshToken;
     const expiresIn = payload.expires_in ?? payload.data?.expires_in ?? 3600;
 
-    const trimmedAccess = accessToken.trim();
-    const shouldPersistAccess = trimmedAccess.length > 0 && trimmedAccess.length <= 1400;
-
     return {
       refreshToken: nextRefreshToken?.trim() ?? session.refreshToken,
-      ...(shouldPersistAccess ? { accessToken: trimmedAccess } : null),
-      expiresAt: shouldPersistAccess
-        ? Math.floor(Date.now() / 1000) + Math.max(60, Number(expiresIn))
-        : Math.floor(Date.now() / 1000),
+      accessToken: accessToken.trim(),
+      expiresAt: Math.floor(Date.now() / 1000) + Math.max(60, Number(expiresIn)),
     };
   } catch {
     return null;
@@ -208,8 +227,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const current = readTikTokSession(request);
-  if (!current) {
+  const sid = readTikTokSid(request);
+  if (!sid) {
     return NextResponse.json(
       {
         source: "auth" as const,
@@ -220,7 +239,25 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  let session = current;
+  const loaded = await readDbSession(sid);
+  if (!loaded) {
+    const res = NextResponse.json(
+      {
+        source: "auth" as const,
+        reason: "missing_session" as const,
+        message: "TikTok 로그인이 필요합니다. Login with TikTok을 눌러주세요.",
+      },
+      { status: 401 },
+    );
+    clearTikTokSessionCookie(res);
+    return res;
+  }
+
+  let session: TikTokSession = {
+    accessToken: loaded.accessToken,
+    refreshToken: loaded.refreshToken,
+    expiresAt: loaded.expiresAt,
+  };
   let refreshedByExpiry = false;
   if (!session.accessToken || isExpired(session)) {
     if (!session.refreshToken) {
@@ -249,6 +286,7 @@ export async function GET(request: NextRequest) {
       return res;
     }
     session = refreshed;
+    await saveDbSession(loaded.id, session);
     refreshedByExpiry = true;
   }
 
@@ -327,14 +365,11 @@ export async function GET(request: NextRequest) {
     }
 
     const res = NextResponse.json({
-      source: "tiktok" as const,
-      items,
-      cursor: payload.data?.cursor,
+      ok: true,
+      videos: items,
       hasMore: payload.data?.has_more,
     });
-    if (refreshedByExpiry) {
-      setTikTokSessionCookie(res, session);
-    }
+    void refreshedByExpiry;
     return res;
   } catch {
     return NextResponse.json(
