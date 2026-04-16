@@ -145,21 +145,33 @@ export async function GET(req: NextRequest) {
 
     const res = NextResponse.redirect(homeUrl(req, "connected"));
     const sessionId = createTikTokSessionId();
-    await prisma.tikTokAuthSession.create({
-      data: {
-        sessionId,
-        accessToken: session.accessToken ?? null,
-        refreshToken: session.refreshToken ?? null,
-        expiresAt: session.expiresAt,
-      },
-    });
+    try {
+      await prisma.tikTokAuthSession.create({
+        data: {
+          sessionId,
+          accessToken: session.accessToken ?? null,
+          refreshToken: session.refreshToken ?? null,
+          expiresAt: session.expiresAt,
+        },
+      });
+    } catch (e) {
+      console.error("tiktok_callback_db_write_failed", e);
+      const res2 = NextResponse.redirect(homeUrl(req, "error", "db_write_failed"));
+      clearOAuthStateCookie(res2);
+      return res2;
+    }
     setTikTokSidCookie(res, sessionId);
     clearOAuthStateCookie(res);
     return res;
-  } catch {
-    const res = NextResponse.redirect(homeUrl(req, "error", "callback_failed"));
+  } catch (e) {
+    console.error("tiktok_callback_failed", e);
+    const message = e instanceof Error ? e.message : "callback_failed";
+    const reason =
+      message.includes("missing_tiktok") || message.includes("missing_")
+        ? "missing_env"
+        : "callback_failed";
+    const res = NextResponse.redirect(homeUrl(req, "error", reason));
     clearOAuthStateCookie(res);
     return res;
   }
 }
-
