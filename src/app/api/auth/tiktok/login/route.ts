@@ -10,19 +10,18 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 function resolveRedirectUri(req: NextRequest): string {
-  const requestOrigin = req.nextUrl.origin;
   const envUri = process.env.TIKTOK_REDIRECT_URI?.trim();
   if (envUri) {
     try {
       const parsed = new URL(envUri);
-      // env 값이 현재 요청 도메인과 같을 때만 사용합니다.
-      // (예: preview/prod 도메인이 섞일 때 redirect_uri mismatch 방지)
-      if (parsed.origin === requestOrigin) return parsed.toString();
+      // 명시적으로 설정된 Redirect URI가 있으면 우선 사용합니다.
+      // (TikTok 콘솔 등록값과 authorize/token 교환을 1:1 일치)
+      return parsed.toString();
     } catch {
       /* invalid env, fallback to request origin */
     }
   }
-  return `${requestOrigin}/api/auth/tiktok/callback`;
+  return `${req.nextUrl.origin}/api/auth/tiktok/callback`;
 }
 
 export async function GET(req: NextRequest) {
@@ -34,9 +33,9 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const redirectUri = resolveRedirectUri(req);
-  const state = createOAuthState();
   const { codeVerifier, codeChallenge } = createTikTokPkcePair();
+  const redirectUri = resolveRedirectUri(req);
+  const state = createOAuthState({ pkceVerifier: codeVerifier });
   const scope = process.env.TIKTOK_OAUTH_SCOPE?.trim() || "user.info.basic,video.list";
   const disableAutoAuth =
     process.env.TIKTOK_DISABLE_AUTO_AUTH?.trim() === "0" ? "0" : "1";
@@ -72,6 +71,8 @@ export async function GET(req: NextRequest) {
 
   const res = NextResponse.redirect(authUrl);
   setOAuthStateCookie(res, state);
+  // 쿠키 기반 PKCE는 기본 경로이며, state payload에도 verifier를 서명 저장해
+  // 호스트가 바뀌는 callback(예: localhost ↔ tunnel)에서 복구 가능하도록 합니다.
   setPkceVerifierCookie(res, codeVerifier);
   return res;
 }

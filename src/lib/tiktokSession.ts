@@ -128,32 +128,46 @@ function decryptPayload(value: string): string | null {
   }
 }
 
-export function createOAuthState(): string {
-  const payload = {
+type OAuthStatePayload = {
+  v: 1;
+  ts: number;
+  nonce: string;
+  pkceVerifier?: string;
+};
+
+export function createOAuthState(options?: { pkceVerifier?: string }): string {
+  const payload: OAuthStatePayload = {
     v: 1,
     ts: Date.now(),
     nonce: randomBytes(16).toString("base64url"),
   };
+  const pkceVerifier = options?.pkceVerifier?.trim();
+  if (pkceVerifier) payload.pkceVerifier = pkceVerifier;
   const payloadRaw = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
   const sig = createHmac("sha256", getSessionSecret()).update(payloadRaw).digest("base64url");
   return `${payloadRaw}.${sig}`;
 }
 
-export function verifyOAuthState(state: string): boolean {
+export function readOAuthStatePayload(state: string): OAuthStatePayload | null {
   const [payloadRaw, sig] = state.split(".");
-  if (!payloadRaw || !sig) return false;
+  if (!payloadRaw || !sig) return null;
   const expected = createHmac("sha256", getSessionSecret()).update(payloadRaw).digest("base64url");
-  if (expected !== sig) return false;
+  if (expected !== sig) return null;
   try {
     const json = Buffer.from(payloadRaw, "base64url").toString("utf8");
-    const parsed = JSON.parse(json) as { ts?: number };
+    const parsed = JSON.parse(json) as OAuthStatePayload;
     const ts = typeof parsed.ts === "number" ? parsed.ts : 0;
-    if (!ts) return false;
+    if (!ts) return null;
     const ageMs = Date.now() - ts;
-    return ageMs >= 0 && ageMs <= 10 * 60 * 1000;
+    if (!(ageMs >= 0 && ageMs <= 10 * 60 * 1000)) return null;
+    return parsed;
   } catch {
-    return false;
+    return null;
   }
+}
+
+export function verifyOAuthState(state: string): boolean {
+  return Boolean(readOAuthStatePayload(state));
 }
 
 export function setOAuthStateCookie(res: NextResponse, state: string) {

@@ -4,6 +4,7 @@ import {
   clearPkceVerifierCookie,
   createTikTokSessionId,
   readOAuthState,
+  readOAuthStatePayload,
   readPkceVerifier,
   setTikTokSidCookie,
   verifyOAuthState,
@@ -77,19 +78,18 @@ function resolveAppOrigin(req: NextRequest): string {
 }
 
 function resolveRedirectUri(req: NextRequest): string {
-  const requestOrigin = req.nextUrl.origin;
   const envUri = process.env.TIKTOK_REDIRECT_URI?.trim();
   if (envUri) {
     try {
       const parsed = new URL(envUri);
       // authorize 단계와 token exchange 단계 모두 같은 redirect_uri를 써야 하므로
-      // 현재 요청 도메인과 일치할 때만 env 값을 사용합니다.
-      if (parsed.origin === requestOrigin) return parsed.toString();
+      // 명시된 env 값을 항상 우선합니다.
+      return parsed.toString();
     } catch {
       /* invalid env, fallback to request origin */
     }
   }
-  return `${requestOrigin}/api/auth/tiktok/callback`;
+  return `${req.nextUrl.origin}/api/auth/tiktok/callback`;
 }
 
 async function exchangeCodeForToken(
@@ -164,7 +164,9 @@ export async function GET(req: NextRequest) {
     return res;
   }
 
-  const codeVerifier = readPkceVerifier(req)?.trim() ?? "";
+  const fromCookie = readPkceVerifier(req)?.trim() ?? "";
+  const fromState = state ? readOAuthStatePayload(state)?.pkceVerifier?.trim() ?? "" : "";
+  const codeVerifier = fromCookie || fromState;
   if (!codeVerifier) {
     const res = NextResponse.redirect(homeUrl(req, "error", "missing_code_verifier"));
     clearOAuthStateCookie(res);
