@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { VideoDetailView } from "@/components/VideoDetailView";
 import { ALL_MARKET_VIDEO_IDS, getMarketVideoById } from "@/data/videoCommerce";
+import { getManualTikTokPriceWonByVideoId } from "@/data/tiktokData";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ export default async function VideoDetailPage({
     const embedId = id.slice("tiktok-".length).trim();
     if (!embedId) notFound();
     const embedUrl = `https://www.tiktok.com/embed/v2/${embedId}`;
+    const priceWon = getManualTikTokPriceWonByVideoId(embedId);
     let title = `TikTok 영상 ${embedId}`;
     let creator = "@tiktok";
     let poster = "";
@@ -50,6 +52,7 @@ export default async function VideoDetailPage({
           poster: poster || "https://picsum.photos/seed/tiktok-detail/720/1280",
           orientation: "portrait",
           tiktokEmbedId: embedId,
+          priceWon,
         }}
       />
     );

@@ -173,3 +173,10 @@ export function manualTikTokRankingToFeedVideos(
       priceWon: 900 + (item.id % 5) * 300,
     }));
 }
+
+/** 상세 페이지에서 video id 기준으로 메인 랭킹 판매가를 맞출 때 사용 */
+export function getManualTikTokPriceWonByVideoId(videoId: string): number | undefined {
+  const item = getTikTokManualRanking().find((row) => row.videoId === videoId);
+  if (!item) return undefined;
+  return 900 + (item.id % 5) * 300;
+}
