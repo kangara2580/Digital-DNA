@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { PurchaseCustomizeStudio } from "@/components/PurchaseCustomizeStudio";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
+import { resolveManualTikTokVideoForStudio } from "@/data/tiktokData";
 import { getMarketVideoById } from "@/data/videoCommerce";
 
 export function CreateStudioPage() {
@@ -14,7 +15,7 @@ export function CreateStudioPage() {
 
   const video = useMemo(() => {
     if (!videoId) return undefined;
-    return getMarketVideoById(videoId);
+    return getMarketVideoById(videoId) ?? resolveManualTikTokVideoForStudio(videoId);
   }, [videoId]);
 
   if (!videoId) {

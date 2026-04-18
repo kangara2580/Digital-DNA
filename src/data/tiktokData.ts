@@ -180,3 +180,34 @@ export function getManualTikTokPriceWonByVideoId(videoId: string): number | unde
   if (!item) return undefined;
   return 900 + (item.id % 5) * 300;
 }
+
+/**
+ * 창작 스튜디오 진입용 videoId를 수동 TikTok 랭킹 데이터로 해석합니다.
+ * - 지원: `tiktok-{videoId}`, `tiktok-rank-{n}-{videoId}`, 순수 숫자 videoId
+ */
+export function resolveManualTikTokVideoForStudio(videoId: string): FeedVideo | undefined {
+  const normalized = videoId.trim();
+  if (!normalized) return undefined;
+
+  const pool = manualTikTokRankingToFeedVideos(getTikTokManualRanking());
+  if (!pool.length) return undefined;
+
+  const byExact = pool.find((v) => v.id === normalized);
+  if (byExact) return byExact;
+
+  const embedId =
+    normalized.startsWith("tiktok-")
+      ? normalized.slice("tiktok-".length)
+      : /^\d{10,20}$/.test(normalized)
+        ? normalized
+        : null;
+
+  if (!embedId) return undefined;
+
+  const byEmbed = pool.find((v) => v.tiktokEmbedId === embedId);
+  if (byEmbed) {
+    // 구매 직후 전달된 query id(`tiktok-...`)로 스튜디오 접근 권한 체크를 맞춥니다.
+    return { ...byEmbed, id: normalized };
+  }
+  return undefined;
+}

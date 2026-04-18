@@ -132,9 +132,9 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
 
   return (
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-      <div className="mx-auto max-w-[1800px] px-4 pb-8 pt-2 sm:px-6 sm:pt-2.5 lg:px-8">
-        <div className="flex flex-col gap-7 lg:flex-row lg:items-start lg:gap-12">
-          <div className="min-w-0 flex-1 lg:-mt-1">
+      <div className="mx-auto max-w-[1800px] px-4 pb-8 pt-0.5 sm:px-6 sm:pt-1 lg:px-8">
+        <div className="flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-center lg:gap-12">
+          <div className="min-w-0 lg:flex-none lg:-mt-2">
             <div
               className={`reels-glass-card relative overflow-hidden rounded-xl ${
                 video.orientation === "portrait"
