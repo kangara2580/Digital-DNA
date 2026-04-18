@@ -10,11 +10,13 @@ const nextConfig: NextConfig = {
     : process.env.NODE_ENV === "development"
       ? ".next"
       : ".next-build",
-  /** 대용량 동영상 업로드(판매 등록 API) — Server Actions 한도 참고 */
+  /** 대용량 동영상 업로드 — Server Actions / 미들웨어 경로의 본문 버퍼 한도 */
   experimental: {
     serverActions: {
       bodySizeLimit: "128mb",
     },
+    // 미들웨어가 실행되는 라우트에서만 적용 (Next 15+). /api 는 matcher에서 제외했지만 보험용.
+    middlewareClientMaxBodySize: "128mb",
   },
   /**
    * Prisma는 서버 번들에 넣지 않음.

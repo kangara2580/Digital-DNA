@@ -2,6 +2,10 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { mkdir, writeFile } from "fs/promises";
 import { NextResponse } from "next/server";
 import path from "path";
+import {
+  MultipartParseError,
+  parseSellUploadMultipart,
+} from "@/lib/parseMultipartSellUpload";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -165,19 +169,29 @@ export async function POST(request: Request) {
     };
   }
 
-  let form: FormData;
+  let parsed: Awaited<ReturnType<typeof parseSellUploadMultipart>>;
   try {
-    form = await request.formData();
-  } catch {
+    parsed = await parseSellUploadMultipart(request);
+  } catch (e) {
+    if (e instanceof MultipartParseError) {
+      if (e.code === "file_too_large") {
+        return NextResponse.json({ ok: false, error: e.message }, { status: 413 });
+      }
+      return NextResponse.json(
+        { ok: false, error: e.message || "요청 본문을 읽을 수 없습니다." },
+        { status: 400 },
+      );
+    }
+    const msg = e instanceof Error ? e.message : String(e);
     return NextResponse.json(
-      { ok: false, error: "요청 본문을 읽을 수 없습니다." },
+      { ok: false, error: msg || "요청 본문을 읽을 수 없습니다." },
       { status: 400 },
     );
   }
 
-  const file = form.get("video");
-  const videoUrlRaw = String(form.get("videoUrl") ?? "").trim();
-  const hasFile = file instanceof File && file.size > 0;
+  const { fields, video: videoPart } = parsed;
+  const videoUrlRaw = String(fields.videoUrl ?? "").trim();
+  const hasFile = Boolean(videoPart && videoPart.buffer.length > 0);
   const hasVideoUrl = videoUrlRaw.length > 0;
   if (!hasFile && !hasVideoUrl) {
     return NextResponse.json(
@@ -186,8 +200,8 @@ export async function POST(request: Request) {
     );
   }
 
-  if (hasFile) {
-    const mime = (file as File).type || "application/octet-stream";
+  if (hasFile && videoPart) {
+    const mime = videoPart.mime || "application/octet-stream";
     if (!ALLOWED_MIME.has(mime)) {
       return NextResponse.json(
         {
@@ -219,7 +233,7 @@ export async function POST(request: Request) {
     }
   }
 
-  const title = String(form.get("title") ?? "").trim();
+  const title = String(fields.title ?? "").trim();
   if (!title) {
     return NextResponse.json(
       { ok: false, error: "제목을 입력해 주세요." },
@@ -227,9 +241,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const description = String(form.get("description") ?? "").trim();
-  const hashtagsRaw = String(form.get("hashtags") ?? "").trim();
-  const priceRaw = String(form.get("price") ?? "").trim();
+  const description = String(fields.description ?? "").trim();
+  const hashtagsRaw = String(fields.hashtags ?? "").trim();
+  const priceRaw = String(fields.price ?? "").trim();
   const priceWon = Number.parseInt(priceRaw.replace(/,/g, ""), 10);
   if (!Number.isFinite(priceWon) || priceWon < 100) {
     return NextResponse.json(
@@ -238,16 +252,16 @@ export async function POST(request: Request) {
     );
   }
 
-  const orientationRaw = String(form.get("orientation") ?? "portrait");
+  const orientationRaw = String(fields.orientation ?? "portrait");
   const orientation =
     orientationRaw === "landscape" ? "landscape" : "portrait";
 
   const isAi =
-    String(form.get("isAiGenerated") ?? "") === "true" ||
-    String(form.get("isAiGenerated") ?? "") === "on";
+    String(fields.isAiGenerated ?? "") === "true" ||
+    String(fields.isAiGenerated ?? "") === "on";
 
-  const rightsOk = String(form.get("rightsConfirmed") ?? "") === "true";
-  const originalOk = String(form.get("confirmOriginal") ?? "") === "true";
+  const rightsOk = String(fields.rightsConfirmed ?? "") === "true";
+  const originalOk = String(fields.confirmOriginal ?? "") === "true";
   if (!rightsOk || !originalOk) {
     return NextResponse.json(
       { ok: false, error: "권리·제3자 권리 확인에 모두 동의해 주세요." },
@@ -255,11 +269,11 @@ export async function POST(request: Request) {
     );
   }
 
-  const editionKindRaw = String(form.get("editionKind") ?? "open");
+  const editionKindRaw = String(fields.editionKind ?? "open");
   const editionKind = editionKindRaw === "limited" ? "limited" : "open";
   let editionCap: number | null = null;
   if (editionKind === "limited") {
-    const cap = Number.parseInt(String(form.get("editionCap") ?? ""), 10);
+    const cap = Number.parseInt(String(fields.editionCap ?? ""), 10);
     if (!Number.isFinite(cap) || cap < 1) {
       return NextResponse.json(
         { ok: false, error: "한정 판매일 때는 판매 가능 수량(1 이상)을 입력해 주세요." },
@@ -269,7 +283,7 @@ export async function POST(request: Request) {
     editionCap = cap;
   }
 
-  const durationSecRaw = String(form.get("durationSec") ?? "").trim();
+  const durationSecRaw = String(fields.durationSec ?? "").trim();
   const durationParsed = Number.parseFloat(durationSecRaw);
   const durationSec =
     Number.isFinite(durationParsed) && durationParsed > 0
@@ -284,10 +298,10 @@ export async function POST(request: Request) {
     Boolean(url && anonKey && supabaseConfigured) &&
     Boolean(serviceRoleKey || bearerToken);
 
-  if (hasFile) {
-    const buffer = Buffer.from(await (file as File).arrayBuffer());
-    const mime = (file as File).type || "application/octet-stream";
-    const safe = sanitizeFilename((file as File).name || "clip.mp4");
+  if (hasFile && videoPart) {
+    const buffer = videoPart.buffer;
+    const mime = videoPart.mime || "application/octet-stream";
+    const safe = sanitizeFilename(videoPart.filename || "clip.mp4");
     let usedStorage = false;
 
     if (canTrySupabaseStorage) {

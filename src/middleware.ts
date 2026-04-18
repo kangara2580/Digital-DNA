@@ -53,6 +53,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    /*
+     * /api/* 제외 — 미들웨어가 요청 본문을 복제·버퍼링할 때 기본 한도를 넘는 multipart(동영상 업로드)가
+     * 잘리면 formData/파서가 실패할 수 있음. API는 Bearer 등으로 인증하고, 페이지 네비게이션에서만 세션 쿠키를 갱신합니다.
+     */
+    "/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
