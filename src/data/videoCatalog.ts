@@ -1,5 +1,9 @@
 import type { FeedVideo } from "@/data/videos";
 import {
+  getTikTokManualRanking,
+  manualTikTokRankingToFeedVideos,
+} from "@/data/tiktokData";
+import {
   FAILURE_OOPS_CLIPS,
   LOCAL_TRENDING_FEED_VIDEOS,
   SAMPLE_VIDEOS,
@@ -52,6 +56,22 @@ export const ALL_MARKET_VIDEOS: FeedVideo[] = [
   ...SAMPLE_VIDEOS,
   ...FAILURE_OOPS_CLIPS,
 ];
+
+/**
+ * 찜한 `video_id` → `FeedVideo` (마켓 카탈로그 + 실시간 TikTok 인기 스트립).
+ * 인기순위 카드 id(`tiktok-rank-{순번}-{embedId}`)는 ALL_MARKET_VIDEOS에 없어서 여기서 합칩니다.
+ */
+export function buildWishlistVideoLookup(): Map<string, FeedVideo> {
+  const m = new Map<string, FeedVideo>();
+  for (const v of ALL_MARKET_VIDEOS) m.set(v.id, v);
+  for (const v of manualTikTokRankingToFeedVideos(getTikTokManualRanking())) {
+    m.set(v.id, v);
+    if (v.tiktokEmbedId) {
+      m.set(`tiktok-${v.tiktokEmbedId}`, { ...v, id: `tiktok-${v.tiktokEmbedId}` });
+    }
+  }
+  return m;
+}
 
 const M: Record<string, VideoCatalogMeta> = {
   "1": {

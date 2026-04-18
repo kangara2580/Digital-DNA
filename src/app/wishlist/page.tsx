@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
 import { useWishlist } from "@/context/WishlistContext";
-import { ALL_MARKET_VIDEOS } from "@/data/videoCatalog";
+import { resolveManualTikTokVideoForStudio } from "@/data/tiktokData";
+import { buildWishlistVideoLookup } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
 
@@ -21,7 +22,7 @@ const SORT_OPTIONS = [
 
 type SortValue = (typeof SORT_OPTIONS)[number]["value"];
 
-type Row = { video: FeedVideo; savedAt: number };
+type Row = { entryId: string; video: FeedVideo; savedAt: number };
 
 function sortRows(rows: Row[], sort: SortValue): Row[] {
   const copy = [...rows];
@@ -73,19 +74,18 @@ export default function WishlistPage() {
   const { entries, hydrated, clear } = useWishlist();
   const [sort, setSort] = useState<SortValue>("recent");
 
-  const catalogById = useMemo(
-    () => new Map(ALL_MARKET_VIDEOS.map((v) => [v.id, v] as const)),
-    [],
-  );
+  const videoByStoredId = useMemo(() => buildWishlistVideoLookup(), []);
 
   const rows = useMemo(() => {
     const list: Row[] = [];
     for (const e of entries) {
-      const video = catalogById.get(e.id);
-      if (video) list.push({ video, savedAt: e.savedAt });
+      const fromCatalog = videoByStoredId.get(e.id);
+      const video =
+        fromCatalog ?? resolveManualTikTokVideoForStudio(e.id) ?? undefined;
+      if (video) list.push({ entryId: e.id, video, savedAt: e.savedAt });
     }
     return sortRows(list, sort);
-  }, [entries, catalogById, sort]);
+  }, [entries, videoByStoredId, sort]);
 
   const showLoginGate =
     supabaseConfigured && !authLoading && hydrated && !user;
@@ -171,11 +171,11 @@ export default function WishlistPage() {
         </div>
       ) : (
         <ul className="mt-8 grid list-none grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          {rows.map(({ video }) => (
-            <li key={video.id} className="min-w-0">
+          {rows.map(({ entryId, video }) => (
+            <li key={entryId} className="min-w-0">
               <VideoCard
                 video={video}
-                domId={`wishlist-${video.id}`}
+                domId={`wishlist-${entryId}`}
                 className="min-w-0"
               />
             </li>
