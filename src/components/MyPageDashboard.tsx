@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaceProfileUploadSection } from "@/components/FaceProfileUploadSection";
+import { MyPageMyListingsSection } from "@/components/MyPageMyListingsSection";
 import { MyPageSavedDraftsSection } from "@/components/MyPageSavedDraftsSection";
 import { MyPageSellerAnalyticsSection } from "@/components/MyPageSellerAnalyticsSection";
 import { ProfileAvatarPicker } from "@/components/ProfileAvatarPicker";
@@ -22,10 +23,11 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { MyPageAccountOverview } from "@/components/MyPageAccountOverview";
 import { MyPageProfileEditForm } from "@/components/MyPageProfileEditForm";
 
-type MyPageTab = "basic" | "profile" | "drafts" | "analytics";
+type MyPageTab = "basic" | "profile" | "drafts" | "analytics" | "listings";
 
 const TAB_ITEMS: { id: MyPageTab; label: string; href: string; desc: string }[] = [
   { id: "basic", label: "기본정보", href: "/mypage", desc: "아이디 · 활동 요약" },
+  { id: "listings", label: "내 등록 영상", href: "/mypage?tab=listings", desc: "판매로 올린 릴스" },
   { id: "analytics", label: "판매 분석", href: "/mypage?tab=analytics", desc: "수익·성장·영상별 지표" },
   { id: "profile", label: "프로필 관리", href: "/mypage?tab=profile", desc: "3면 얼굴 등록" },
   { id: "drafts", label: "임시 저장", href: "/mypage?tab=drafts", desc: "이어 편집 · 구매" },
@@ -35,7 +37,8 @@ function normalizeTab(input: string | null): MyPageTab {
   if (
     input === "profile" ||
     input === "drafts" ||
-    input === "analytics"
+    input === "analytics" ||
+    input === "listings"
   ) {
     return input;
   }
@@ -279,6 +282,20 @@ export function MyPageDashboard() {
           {currentTab === "drafts" ? <MyPageSavedDraftsSection /> : null}
 
           {currentTab === "analytics" ? <MyPageSellerAnalyticsSection /> : null}
+
+          {currentTab === "listings" ? (
+            <div className="reels-glass-card rounded-xl p-4 sm:rounded-2xl sm:p-5 lg:p-6">
+              <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">
+                내가 등록한 영상
+              </h2>
+              <p className="mt-1 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                판매 등록으로 DB에 저장된 나의 릴스입니다. 카드에서 상세·찜·장바구니를 이용할 수 있어요.
+              </p>
+              <div className="mt-6">
+                <MyPageMyListingsSection />
+              </div>
+            </div>
+          ) : null}
 
         </section>
       </div>

@@ -12,6 +12,7 @@ export function videoRowToFeedVideo(v: Video): FeedVideo {
     orientation: v.orientation === "landscape" ? "landscape" : "portrait",
     priceWon: v.price,
     durationSec: v.durationSec ?? undefined,
+    isAiGenerated: v.isAiGenerated,
   };
 }
 
