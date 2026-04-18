@@ -125,6 +125,7 @@ export function VideoCard({
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(previewSrc);
   const canLoadPreviewVideo = !isPexelsBlockedVideo;
   const segmentPreview = instantPreview === true;
+  const isTikTokEmbed = Boolean(video.tiktokEmbedId);
   const fallbackPoster = useMemo(() => {
     const hash = Array.from(video.id).reduce(
       (acc, ch) => (acc * 33 + ch.charCodeAt(0)) >>> 0,
@@ -162,7 +163,6 @@ export function VideoCard({
     setIsPreviewing(false);
   }, [defaultThumbnail]);
 
-  const isTikTokEmbed = Boolean(video.tiktokEmbedId);
   const segmentPreviewEffective = segmentPreview && !isTikTokEmbed;
   const isLocal = canLoadPreviewVideo && isLocalPublicVideo(previewSrc);
 
