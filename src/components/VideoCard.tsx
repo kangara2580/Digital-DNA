@@ -148,9 +148,12 @@ export function VideoCard({
    */
   const defaultThumbnail = useMemo(() => {
     if (normalizedPoster) return normalizedPoster;
+    // TikTok iframe은 카드를 그릴 때 정지 프레임을 이미 보여줄 수 있으므로
+    // 그라데이션 fallback을 쓰지 않습니다.
+    if (isTikTokEmbed) return "";
     if (isLocalPublicVideo(previewSrc)) return "";
     return fallbackPoster;
-  }, [normalizedPoster, previewSrc, fallbackPoster]);
+  }, [normalizedPoster, previewSrc, fallbackPoster, isTikTokEmbed]);
   const [thumbnailSrc, setThumbnailSrc] = useState(defaultThumbnail);
   const [isPreviewing, setIsPreviewing] = useState(false);
 
@@ -272,19 +275,40 @@ export function VideoCard({
     >
       <div className={`relative overflow-hidden bg-black/40 ${aspectClass}`}>
         {isTikTokEmbed ? (
-          isPreviewing ? (
-            <div className="absolute inset-0 z-0 flex items-center justify-center">
+          <>
+            {/* 썸네일 역할: autoplay=0 정지 프레임 */}
+            <div
+              className={`absolute inset-0 z-0 flex items-center justify-center transition-opacity duration-150 ${
+                isPreviewing ? "opacity-0" : "opacity-100"
+              }`}
+            >
               <iframe
-                title={video.title}
+                title={`${video.title}-still`}
+                src={`https://www.tiktok.com/embed/v2/${video.tiktokEmbedId}?autoplay=0&mute=1&controls=0`}
+                className="h-full w-auto max-w-full border-0 aspect-[9/16]"
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                allowFullScreen
+                loading="eager"
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
+            </div>
+            {/* hover 즉시 재생: 미리 로드된 autoplay iframe */}
+            <div
+              className={`absolute inset-0 z-0 flex items-center justify-center transition-opacity duration-150 ${
+                isPreviewing ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              <iframe
+                title={`${video.title}-play`}
                 src={`https://www.tiktok.com/embed/v2/${video.tiktokEmbedId}?autoplay=1&mute=1&controls=0`}
                 className="h-full w-auto max-w-full border-0 aspect-[9/16]"
                 allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                 allowFullScreen
-                loading="lazy"
+                loading="eager"
                 referrerPolicy="strict-origin-when-cross-origin"
               />
             </div>
-          ) : null
+          </>
         ) : (
           <video
             ref={videoRef}

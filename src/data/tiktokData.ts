@@ -8,7 +8,7 @@ import {
 /** 수동 랭킹 한 줄 (순위·원본 URL·추출된 video id) */
 export type TikTokManualRankItem = {
   id: number;
-  originalUrl: string;
+  url: string;
   videoId: string;
 };
 
@@ -22,7 +22,7 @@ export type TikTokManualRankItem = {
  *          이 파일에 `getTikTokManualRanking()` 안에서 디코딩 분기만 추가하면 됨.
  *
  *    예시 값:
- *    [{"id":1,"originalUrl":"https://www.tiktok.com/@user/video/123..."},{"id":2,"originalUrl":"..."}]
+ *    [{"id":1,"url":"https://www.tiktok.com/@user/video/123..."},{"id":2,"url":"..."}]
  *
  * 2) 이 파일의 `FILE_RAW_MANUAL_TIKTOK_URLS` 는 비우거나 유지.
  *    `getTikTokManualRanking()` 에서 `process.env.NEXT_PUBLIC_TRENDING_TIKTOK_URLS` 를
@@ -35,27 +35,64 @@ export type TikTokManualRankItem = {
  */
 
 /** 파일에만 둘 때: 순위 + 틱톡 영상 페이지 URL ( /@…/video/숫자 형태 권장 ) */
-export const FILE_RAW_MANUAL_TIKTOK_URLS: { id: number; originalUrl: string }[] =
-  [
-    // 예시 — 실제 URL로 교체하거나 빈 배열로 두세요.
-    // { id: 1, originalUrl: "https://www.tiktok.com/@example/video/7123456789012345678" },
-  ];
+export const FILE_RAW_MANUAL_TIKTOK_URLS: { id: number; url: string }[] = [
+  {
+    id: 1,
+    url: "https://www.tiktok.com/@d.xye03/video/7628586216069418261?is_from_webapp=1&sender_device=pc&web_id=7629249308466775570",
+  },
+  {
+    id: 2,
+    url: "https://www.tiktok.com/@mika1130_4/video/7617745412262300936?is_from_webapp=1&sender_device=pc&web_id=7629249308466775570",
+  },
+  {
+    id: 3,
+    url: "https://www.tiktok.com/@flowater_0414/video/7627546963080416520?is_from_webapp=1&sender_device=pc&web_id=7629249308466775570",
+  },
+  {
+    id: 4,
+    url: "https://www.tiktok.com/@_marioi0/video/7628867375286324488?is_from_webapp=1&sender_device=pc&web_id=7629249308466775570",
+  },
+  {
+    id: 5,
+    url: "https://www.tiktok.com/@dkssudwkendi5/video/7626765688992156936?is_from_webapp=1&sender_device=pc&web_id=7629249308466775570",
+  },
+  {
+    id: 6,
+    url: "https://www.tiktok.com/@dkssudwkendi5/video/7626765688992156936?is_from_webapp=1&sender_device=pc&web_id=7629249308466775570",
+  },
+  {
+    id: 7,
+    url: "https://www.tiktok.com/@oezxcn/video/7627723496013024519?is_from_webapp=1&sender_device=pc&web_id=7629249308466775570",
+  },
+  {
+    id: 8,
+    url: "https://www.tiktok.com/@yerin01231/video/7618544826010651925?is_from_webapp=1&sender_device=pc&web_id=7629249308466775570",
+  },
+  {
+    id: 9,
+    url: "https://www.tiktok.com/@funny88.88/video/7625163845547363606?is_from_webapp=1&sender_device=pc&web_id=7629249308466775570",
+  },
+  {
+    id: 10,
+    url: "https://www.tiktok.com/@sunn416/video/7617020596823592212?is_from_webapp=1&sender_device=pc&web_id=7629249308466775570",
+  },
+];
 
 function buildItemsFromFileRaw(): TikTokManualRankItem[] {
   const out: TikTokManualRankItem[] = [];
   for (const row of FILE_RAW_MANUAL_TIKTOK_URLS) {
     try {
-      const videoId = extractTikTokVideoIdFromUrl(row.originalUrl);
+      const videoId = extractTikTokVideoIdFromUrl(row.url);
       out.push({
         id: row.id,
-        originalUrl: row.originalUrl.trim(),
+        url: row.url.trim(),
         videoId,
       });
     } catch (e) {
       if (process.env.NODE_ENV === "development") {
         console.warn(
           "[tiktokData] URL 건너뜀:",
-          row.originalUrl,
+          row.url,
           e instanceof TikTokUrlParseError ? e.message : e,
         );
       }
@@ -76,19 +113,24 @@ function parseRankingFromEnv(): TikTokManualRankItem[] | null {
         !row ||
         typeof row !== "object" ||
         typeof (row as { id?: unknown }).id !== "number" ||
-        typeof (row as { originalUrl?: unknown }).originalUrl !== "string"
+        (typeof (row as { url?: unknown }).url !== "string" &&
+          typeof (row as { originalUrl?: unknown }).originalUrl !== "string")
       ) {
         continue;
       }
-      const { id, originalUrl } = row as { id: number; originalUrl: string };
-      const videoId = tryExtractTikTokVideoIdFromUrl(originalUrl);
+      const id = (row as { id: number }).id;
+      const url =
+        typeof (row as { url?: unknown }).url === "string"
+          ? (row as { url: string }).url
+          : (row as { originalUrl: string }).originalUrl;
+      const videoId = tryExtractTikTokVideoIdFromUrl(url);
       if (!videoId) {
         if (process.env.NODE_ENV === "development") {
-          console.warn("[tiktokData] env 항목 건너뜀 (video id 추출 실패):", originalUrl);
+          console.warn("[tiktokData] env 항목 건너뜀 (video id 추출 실패):", url);
         }
         continue;
       }
-      out.push({ id, originalUrl: originalUrl.trim(), videoId });
+      out.push({ id, url: url.trim(), videoId });
     }
     return out.length ? out.sort((a, b) => a.id - b.id) : null;
   } catch {
@@ -125,7 +167,8 @@ export function manualTikTokRankingToFeedVideos(
       title: `인기 ${item.id}위`,
       creator: "TikTok",
       src: `https://www.tiktok.com/embed/v2/${item.videoId}`,
-      poster: "",
+      // 썸네일: TikTok 공개 이미지 엔드포인트(itemId 기반)
+      poster: `https://www.tiktok.com/api/img/?itemId=${item.videoId}&location=0`,
       orientation: "portrait" as const,
       tiktokEmbedId: item.videoId,
       priceWon: 900 + (item.id % 5) * 300,
