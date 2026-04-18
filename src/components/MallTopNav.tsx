@@ -2,7 +2,7 @@
 
 import { ChevronDown, Search, Wallet } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Fragment,
   useCallback,
@@ -55,16 +55,27 @@ function RotatingSearchField({
   q,
   setQ,
   showTrailingIcon = true,
+  onAfterSearch,
 }: {
   compact: boolean;
   q: string;
   setQ: (v: string) => void;
   showTrailingIcon?: boolean;
+  /** 검색으로 이동한 직후(예: 상세 화면 검색 드롭다운 닫기) */
+  onAfterSearch?: () => void;
 }) {
+  const router = useRouter();
   const pathname = usePathname();
   const [phrases, setPhrases] = useState<string[]>(() => [...SEARCH_GUIDE_PHRASES]);
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [focused, setFocused] = useState(false);
+
+  const runSearch = useCallback(() => {
+    const t = q.trim();
+    if (!t) return;
+    router.push(`/search?q=${encodeURIComponent(t)}`);
+    onAfterSearch?.();
+  }, [q, router, onAfterSearch]);
 
   useEffect(() => {
     setPhrases(shuffleSearchGuides([...SEARCH_GUIDE_PHRASES]));
@@ -83,7 +94,13 @@ function RotatingSearchField({
   const current = phrases[phraseIdx] ?? phrases[0] ?? "";
 
   return (
-    <div className="group relative">
+    <form
+      className="group relative"
+      onSubmit={(e) => {
+        e.preventDefault();
+        runSearch();
+      }}
+    >
       <input
         type="search"
         name="q"
@@ -122,11 +139,12 @@ function RotatingSearchField({
         </div>
       ) : null}
       {showTrailingIcon ? (
-        <span
-          className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-zinc-500 [html[data-theme='dark']_&]:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 ${
-            compact ? "right-2.5" : "right-4"
+        <button
+          type="submit"
+          className={`absolute top-1/2 z-10 -translate-y-1/2 rounded-full p-1 text-zinc-500 transition-colors hover:text-reels-cyan focus-visible:outline focus-visible:ring-2 focus-visible:ring-reels-cyan/50 [html[data-theme='dark']_&]:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 ${
+            compact ? "right-1.5" : "right-3"
           }`}
-          aria-hidden
+          aria-label="검색 실행"
         >
           <span className={`block ${searchIconMotion}`}>
             <Search
@@ -135,9 +153,9 @@ function RotatingSearchField({
               aria-hidden
             />
           </span>
-        </span>
+        </button>
       ) : null}
-    </div>
+    </form>
   );
 }
 
@@ -166,6 +184,12 @@ export function MallTopNav() {
   const headerRef = useRef<HTMLElement>(null);
   const [compact, setCompact] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (pathname !== "/search" || typeof window === "undefined") return;
+    const uq = new URLSearchParams(window.location.search).get("q");
+    if (uq != null) setQ(uq);
+  }, [pathname]);
   const isVideoDetailPage =
     pathname.startsWith("/video/") && !pathname.endsWith("/customize");
   const [isExploreWatchMode, setIsExploreWatchMode] = useState(false);
@@ -436,6 +460,7 @@ export function MallTopNav() {
                       q={q}
                       setQ={setQ}
                       showTrailingIcon={false}
+                      onAfterSearch={() => setDetailSearchOpen(false)}
                     />
                     </div>
                 </div>
