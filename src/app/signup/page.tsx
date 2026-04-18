@@ -455,7 +455,6 @@ export default function SignupPage() {
       if (signUpData.session) {
         setMessage("회원가입이 완료되었습니다. 이동합니다…");
         router.replace(nextPath);
-        router.refresh();
         return;
       }
 
@@ -472,7 +471,6 @@ export default function SignupPage() {
       if (signInData.session) {
         setMessage("회원가입이 완료되어 로그인했습니다. 이동합니다…");
         router.replace(nextPath);
-        router.refresh();
         return;
       }
 

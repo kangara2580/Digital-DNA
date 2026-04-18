@@ -41,7 +41,6 @@ export function LoginForm() {
           ? redirect
           : "/sell";
       router.replace(safe);
-      router.refresh();
     } catch {
       setError("로그인 중 오류가 발생했습니다.");
     } finally {

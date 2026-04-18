@@ -38,11 +38,13 @@ const TIKTOK_LOGIN_BTN =
 function toOAuthErrorMessage(code: string): string {
   switch (code) {
     case "non_sandbox_target":
-      return "현재 TikTok 계정은 Sandbox Target User가 아니어서 로그인할 수 없어요. 개발자 콘솔에서 대상 계정으로 추가 후 다시 시도해주세요.";
+      return "TikTok Sandbox 앱이면, 개발자 포털 Sandbox settings의 Target users에 지금 로그인하는 TikTok 계정을 추가해야 해요. 프로덕션 앱·키를 쓰면 샌드박스 제한 없이 동작합니다.";
     case "access_denied":
       return "TikTok 로그인 권한이 거부되었어요. 다시 로그인해서 권한을 허용해주세요.";
     case "state_mismatch":
       return "로그인 세션이 만료되었어요. Login with TikTok을 다시 눌러주세요.";
+    case "missing_code_verifier":
+      return "PKCE 검증 정보가 없어요. Login with TikTok을 처음부터 다시 눌러주세요.";
     case "missing_code":
     case "token_exchange_failed":
       return "TikTok 인증 코드 처리에 실패했어요. 잠시 후 다시 시도해주세요.";
@@ -195,9 +197,24 @@ export function TrendingRankSection() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const oauthError = params.get("tiktok_error");
+    const oauthDetail = params.get("tiktok_detail");
     if (!oauthError) return;
     setAuthRequired(true);
-    setErrorMessage(toOAuthErrorMessage(oauthError));
+    const base = toOAuthErrorMessage(oauthError);
+    setErrorMessage(
+      oauthDetail && oauthError !== "non_sandbox_target"
+        ? `${base} (${oauthDetail})`
+        : base,
+    );
+    const u = new URL(window.location.href);
+    u.searchParams.delete("tiktok_error");
+    u.searchParams.delete("tiktok_detail");
+    const qs = u.searchParams.toString();
+    window.history.replaceState(
+      {},
+      "",
+      `${u.pathname}${qs ? `?${qs}` : ""}${u.hash}`,
+    );
   }, []);
 
   return (
