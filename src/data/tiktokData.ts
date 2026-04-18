@@ -113,16 +113,12 @@ function parseRankingFromEnv(): TikTokManualRankItem[] | null {
         !row ||
         typeof row !== "object" ||
         typeof (row as { id?: unknown }).id !== "number" ||
-        (typeof (row as { url?: unknown }).url !== "string" &&
-          typeof (row as { originalUrl?: unknown }).originalUrl !== "string")
+        typeof (row as { url?: unknown }).url !== "string"
       ) {
         continue;
       }
       const id = (row as { id: number }).id;
-      const url =
-        typeof (row as { url?: unknown }).url === "string"
-          ? (row as { url: string }).url
-          : (row as { originalUrl: string }).originalUrl;
+      const url = (row as { url: string }).url;
       const videoId = tryExtractTikTokVideoIdFromUrl(url);
       if (!videoId) {
         if (process.env.NODE_ENV === "development") {

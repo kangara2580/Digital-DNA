@@ -53,7 +53,7 @@ function tryDiscoverUrl(chunk) {
 }
 
 /** Next.js 기본과 맞춤 — 브라우저에서 보통 열리는 http://127.0.0.1:3000 과 일치 */
-// 주의: localhost 와 127.0.0.1 은 쿠키가 공유되지 않습니다. Supabase/TikTok OAuth redirect URI·북마크를
+// 주의: localhost 와 127.0.0.1 은 쿠키가 공유되지 않습니다. Supabase 로그인·북마크를
 // 이 스크립트가 여는 호스트(기본 127.0.0.1)와 통일하세요.
 const DEFAULT_DEV_PORT = 3000;
 const envPort = process.env.PORT
