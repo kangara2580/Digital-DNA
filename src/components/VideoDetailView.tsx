@@ -20,26 +20,11 @@ import {
   getFreshnessForVideoId,
   isLimitedFamily,
 } from "@/data/videoCommerce";
+import {
+  getExternalIframeForDetail,
+  getExternalLiveStatsPageUrl,
+} from "@/lib/externalEmbed/playerUrls";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
-
-function buildTikTokDetailPlayerUrl(videoId: string): string {
-  const u = new URL(`https://www.tiktok.com/player/v1/${videoId}`);
-  u.searchParams.set("autoplay", "1");
-  u.searchParams.set("muted", "1");
-  u.searchParams.set("loop", "1");
-  // 상세에서는 마우스 오버 시 기본 플레이어 컨트롤이 보이도록 유지
-  u.searchParams.set("controls", "1");
-  u.searchParams.set("progress_bar", "1");
-  u.searchParams.set("play_button", "1");
-  u.searchParams.set("volume_control", "1");
-  u.searchParams.set("fullscreen_button", "0");
-  u.searchParams.set("timestamp", "0");
-  u.searchParams.set("description", "0");
-  u.searchParams.set("music_info", "0");
-  u.searchParams.set("rel", "0");
-  u.searchParams.set("native_context_menu", "0");
-  return u.toString();
-}
 
 export function VideoDetailView({ video }: { video: FeedVideo }) {
   const router = useRouter();
@@ -105,7 +90,19 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
   } | null>(null);
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(video.src);
   const posterSrc = sanitizePosterSrc(video.poster);
-  const isTikTokEmbed = Boolean(video.tiktokEmbedId);
+  const externalEmbed = useMemo(
+    () => getExternalIframeForDetail(video),
+    [video.tiktokEmbedId, video.youtubeVideoId, video.instagramShortcode],
+  );
+  const statsPageUrl = useMemo(
+    () => getExternalLiveStatsPageUrl(video),
+    [
+      video.sourcePageUrl,
+      video.tiktokEmbedId,
+      video.youtubeVideoId,
+      video.instagramShortcode,
+    ],
+  );
   const detailMetrics = useMemo(
     () =>
       liveStats
@@ -119,7 +116,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
   );
 
   useEffect(() => {
-    if (!video.tiktokEmbedId) {
+    if (!statsPageUrl) {
       setLiveStats(null);
       return;
     }
@@ -128,7 +125,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
     const fetchLiveStats = async () => {
       try {
         const res = await fetch(
-          `/api/tiktok/live-stats?videoId=${encodeURIComponent(video.tiktokEmbedId!)}`,
+          `/api/embed/live-stats?url=${encodeURIComponent(statsPageUrl)}`,
           { cache: "no-store" },
         );
         if (!res.ok) return;
@@ -161,7 +158,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
       cancelled = true;
       window.clearInterval(t);
     };
-  }, [video.tiktokEmbedId]);
+  }, [statsPageUrl]);
 
   return (
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
@@ -181,11 +178,11 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                   : "aspect-video w-full"
               }`}
             >
-              {isTikTokEmbed ? (
+              {externalEmbed ? (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <iframe
                     title={video.title}
-                    src={buildTikTokDetailPlayerUrl(video.tiktokEmbedId!)}
+                    src={externalEmbed.src}
                     className="h-full w-full border-0"
                     allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                     allowFullScreen

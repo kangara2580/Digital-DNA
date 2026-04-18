@@ -1,43 +1,32 @@
 import type { FeedVideo } from "@/data/videos";
-import {
-  extractTikTokVideoIdFromUrl,
-  tryExtractTikTokVideoIdFromUrl,
-  TikTokUrlParseError,
-} from "@/lib/tiktokUrlParse";
+import type { ExternalProvider } from "@/lib/externalEmbed/types";
+import { parseExternalMediaUrl } from "@/lib/externalEmbed/parseUrl";
 
-/** 수동 랭킹 한 줄 (순위·원본 URL·추출된 video id) */
+/** 수동 랭킹 한 줄 — TikTok·YouTube·Instagram 공유 URL */
 export type TikTokManualRankItem = {
   id: number;
   url: string;
-  videoId: string;
+  provider: ExternalProvider;
+  /** 플랫폼별 콘텐츠 키 (TikTok 숫자 id / YouTube 11자 / IG shortcode) */
+  canonicalKey: string;
 };
 
 /**
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- * Vercel 환경변수로 옮길 때 (수동)
+ * Vercel 환경변수: `NEXT_PUBLIC_TRENDING_TIKTOK_URLS`
+ * (이름은 TikTok 시절 호환용이며, 값은 TikTok·YouTube·Instagram URL을 섞어 넣을 수 있습니다.)
  *
- * 1) Vercel → Project → Settings → Environment Variables 에 추가:
- *    이름: NEXT_PUBLIC_TRENDING_TIKTOK_URLS
- *    값:   JSON 배열 문자열 (아래 형식). 한 줄로 넣기 어렵면 Base64로 감싸는 방식은
- *          이 파일에 `getTikTokManualRanking()` 안에서 디코딩 분기만 추가하면 됨.
+ * 예시:
+ * [{"id":1,"url":"https://www.tiktok.com/@u/video/123..."},
+ *  {"id":2,"url":"https://www.youtube.com/watch?v=..."},
+ *  {"id":3,"url":"https://www.instagram.com/reel/.../"}]
  *
- *    예시 값:
- *    [{"id":1,"url":"https://www.tiktok.com/@user/video/123..."},{"id":2,"url":"..."}]
- *
- * 2) 이 파일의 `FILE_RAW_MANUAL_TIKTOK_URLS` 는 비우거나 유지.
- *    `getTikTokManualRanking()` 에서 `process.env.NEXT_PUBLIC_TRENDING_TIKTOK_URLS` 를
- *    먼저 `JSON.parse` 하고, 비어 있을 때만 파일 배열을 쓰도록 이미 분기함.
- *
- * 3) 서버 전용으로 숨기려면 NEXT_PUBLIC_ 없이 이름을 바꾸고, 랭킹 데이터는
- *    Server Component나 Route Handler에서만 주입하도록 리팩터링해야 함(클라이언트
- *    `TrendingRankSection` 은 빌드 시 번들에 포함된 env만 볼 수 있음).
- *
- * 썸네일: TikTok 직접 이미지 URL은 403이 나는 경우가 많아, 각 항목 `url`로
- * `/api/tiktok/poster?url=...` (서버 oEmbed → CDN 리다이렉트)를 씁니다.
+ * 썸네일: `/api/embed/poster?url=...` (플랫폼별 oEmbed·og:image)
+ * 실시간 지표: `/api/embed/live-stats?url=...`
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  */
 
-/** 파일에만 둘 때: 순위 + 틱톡 영상 페이지 URL ( /@…/video/숫자 형태 권장 ) */
+/** 파일 기본 랭킹 — TikTok URL (YouTube·IG 테스트 시 env 또는 여기에 URL 교체) */
 export const FILE_RAW_MANUAL_TIKTOK_URLS: { id: number; url: string }[] = [
   {
     id: 1,
@@ -84,22 +73,19 @@ export const FILE_RAW_MANUAL_TIKTOK_URLS: { id: number; url: string }[] = [
 function buildItemsFromFileRaw(): TikTokManualRankItem[] {
   const out: TikTokManualRankItem[] = [];
   for (const row of FILE_RAW_MANUAL_TIKTOK_URLS) {
-    try {
-      const videoId = extractTikTokVideoIdFromUrl(row.url);
-      out.push({
-        id: row.id,
-        url: row.url.trim(),
-        videoId,
-      });
-    } catch (e) {
+    const parsed = parseExternalMediaUrl(row.url);
+    if (!parsed) {
       if (process.env.NODE_ENV === "development") {
-        console.warn(
-          "[tiktokData] URL 건너뜀:",
-          row.url,
-          e instanceof TikTokUrlParseError ? e.message : e,
-        );
+        console.warn("[tiktokData] URL 건너뜀 (지원하지 않는 형식):", row.url);
       }
+      continue;
     }
+    out.push({
+      id: row.id,
+      url: parsed.pageUrl,
+      provider: parsed.provider,
+      canonicalKey: parsed.canonicalKey,
+    });
   }
   return out.sort((a, b) => a.id - b.id);
 }
@@ -122,14 +108,19 @@ function parseRankingFromEnv(): TikTokManualRankItem[] | null {
       }
       const id = (row as { id: number }).id;
       const url = (row as { url: string }).url;
-      const videoId = tryExtractTikTokVideoIdFromUrl(url);
-      if (!videoId) {
+      const hit = parseExternalMediaUrl(url);
+      if (!hit) {
         if (process.env.NODE_ENV === "development") {
-          console.warn("[tiktokData] env 항목 건너뜀 (video id 추출 실패):", url);
+          console.warn("[tiktokData] env 항목 건너뜀 (URL 파싱 실패):", url);
         }
         continue;
       }
-      out.push({ id, url: url.trim(), videoId });
+      out.push({
+        id,
+        url: hit.pageUrl,
+        provider: hit.provider,
+        canonicalKey: hit.canonicalKey,
+      });
     }
     return out.length ? out.sort((a, b) => a.id - b.id) : null;
   } catch {
@@ -140,50 +131,96 @@ function parseRankingFromEnv(): TikTokManualRankItem[] | null {
   }
 }
 
-/**
- * 최종 수동 랭킹 목록.
- * - `NEXT_PUBLIC_TRENDING_TIKTOK_URLS` 가 유효하면 그걸 우선.
- * - 아니면 `FILE_RAW_MANUAL_TIKTOK_URLS` 기준.
- */
 export function getTikTokManualRanking(): TikTokManualRankItem[] {
   const fromEnv = parseRankingFromEnv();
   if (fromEnv?.length) return fromEnv;
   return buildItemsFromFileRaw();
 }
 
-/**
- * `TrendingRankSection` → `VideoCard`용 `FeedVideo[]`.
- * 틱톡 공식 임베드: `tiktokEmbedId` + `src` 는 embed URL (VideoCard가 iframe으로 재생).
- */
+function rankDemoPriceWon(rankId: number): number {
+  return 900 + (rankId % 5) * 300;
+}
+
+function feedVideoFromRankItem(item: TikTokManualRankItem): FeedVideo {
+  const poster = `/api/embed/poster?url=${encodeURIComponent(item.url)}`;
+  const priceWon = rankDemoPriceWon(item.id);
+  const title = `인기 ${item.id}위`;
+
+  switch (item.provider) {
+    case "tiktok":
+      return {
+        id: `tiktok-rank-${item.id}-${item.canonicalKey}`,
+        title,
+        creator: "TikTok",
+        src: `https://www.tiktok.com/embed/v2/${item.canonicalKey}`,
+        poster,
+        orientation: "portrait",
+        tiktokEmbedId: item.canonicalKey,
+        sourcePageUrl: item.url,
+        priceWon,
+      };
+    case "youtube":
+      return {
+        id: `youtube-rank-${item.id}-${item.canonicalKey}`,
+        title,
+        creator: "YouTube",
+        src: `https://www.youtube.com/embed/${item.canonicalKey}`,
+        poster,
+        orientation: "portrait",
+        youtubeVideoId: item.canonicalKey,
+        sourcePageUrl: item.url,
+        priceWon,
+      };
+    case "instagram":
+      return {
+        id: `instagram-rank-${item.id}-${item.canonicalKey}`,
+        title,
+        creator: "Instagram",
+        src: `https://www.instagram.com/p/${item.canonicalKey}/embed`,
+        poster,
+        orientation: "portrait",
+        instagramShortcode: item.canonicalKey,
+        sourcePageUrl: item.url,
+        priceWon,
+      };
+    default: {
+      const _exhaustive: never = item.provider;
+      return _exhaustive;
+    }
+  }
+}
+
 export function manualTikTokRankingToFeedVideos(
   items: TikTokManualRankItem[],
 ): FeedVideo[] {
   return items
     .slice()
     .sort((a, b) => a.id - b.id)
-    .map((item) => ({
-      id: `tiktok-rank-${item.id}-${item.videoId}`,
-      title: `인기 ${item.id}위`,
-      creator: "TikTok",
-      src: `https://www.tiktok.com/embed/v2/${item.videoId}`,
-      // 썸네일: `api/img` 는 외부에서 403 → 서버 oEmbed 리다이렉트 (`/api/tiktok/poster`)
-      poster: `/api/tiktok/poster?url=${encodeURIComponent(item.url)}`,
-      orientation: "portrait" as const,
-      tiktokEmbedId: item.videoId,
-      priceWon: 900 + (item.id % 5) * 300,
-    }));
+    .map((item) => feedVideoFromRankItem(item));
 }
 
-/** 상세 페이지에서 video id 기준으로 메인 랭킹 판매가를 맞출 때 사용 */
+/** 상세·스튜디오 — TikTok embed id 로 데모 판매가 */
 export function getManualTikTokPriceWonByVideoId(videoId: string): number | undefined {
-  const item = getTikTokManualRanking().find((row) => row.videoId === videoId);
+  const item = getTikTokManualRanking().find(
+    (row) => row.provider === "tiktok" && row.canonicalKey === videoId,
+  );
   if (!item) return undefined;
-  return 900 + (item.id % 5) * 300;
+  return rankDemoPriceWon(item.id);
+}
+
+export function getExternalRankDemoPriceWonByCanonical(
+  provider: ExternalProvider,
+  canonicalKey: string,
+): number | undefined {
+  const item = getTikTokManualRanking().find(
+    (row) => row.provider === provider && row.canonicalKey === canonicalKey,
+  );
+  if (!item) return undefined;
+  return rankDemoPriceWon(item.id);
 }
 
 /**
- * 창작 스튜디오 진입용 videoId를 수동 TikTok 랭킹 데이터로 해석합니다.
- * - 지원: `tiktok-{videoId}`, `tiktok-rank-{n}-{videoId}`, 순수 숫자 videoId
+ * 스튜디오·찜 복원 — `tiktok-…`, `youtube-…`, `instagram-…`, `*-rank-…` id
  */
 export function resolveManualTikTokVideoForStudio(videoId: string): FeedVideo | undefined {
   const normalized = videoId.trim();
@@ -195,19 +232,24 @@ export function resolveManualTikTokVideoForStudio(videoId: string): FeedVideo | 
   const byExact = pool.find((v) => v.id === normalized);
   if (byExact) return byExact;
 
-  const embedId =
-    normalized.startsWith("tiktok-")
-      ? normalized.slice("tiktok-".length)
-      : /^\d{10,20}$/.test(normalized)
-        ? normalized
-        : null;
-
-  if (!embedId) return undefined;
-
-  const byEmbed = pool.find((v) => v.tiktokEmbedId === embedId);
-  if (byEmbed) {
-    // 구매 직후 전달된 query id(`tiktok-...`)로 스튜디오 접근 권한 체크를 맞춥니다.
-    return { ...byEmbed, id: normalized };
+  if (normalized.startsWith("tiktok-")) {
+    const key = normalized.slice("tiktok-".length);
+    const v = pool.find((p) => p.tiktokEmbedId === key);
+    return v ? { ...v, id: normalized } : undefined;
+  }
+  if (normalized.startsWith("youtube-")) {
+    const key = normalized.slice("youtube-".length);
+    const v = pool.find((p) => p.youtubeVideoId === key);
+    return v ? { ...v, id: normalized } : undefined;
+  }
+  if (normalized.startsWith("instagram-")) {
+    const key = normalized.slice("instagram-".length);
+    const v = pool.find((p) => p.instagramShortcode === key);
+    return v ? { ...v, id: normalized } : undefined;
+  }
+  if (/^\d{10,20}$/.test(normalized)) {
+    const v = pool.find((p) => p.tiktokEmbedId === normalized);
+    return v ? { ...v, id: normalized } : undefined;
   }
   return undefined;
 }

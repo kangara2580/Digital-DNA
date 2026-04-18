@@ -9,6 +9,7 @@ import {
 } from "@/data/tiktokData";
 import { getTrendingMetrics } from "@/data/trendingStats";
 import { type FeedVideo } from "@/data/videos";
+import { liveStatsKeyFromFeedVideo } from "@/lib/externalEmbed/parseUrl";
 import { usePassVerticalWheelToPage } from "@/hooks/usePassVerticalWheelToPage";
 import { SectionMoreLink } from "./SectionMoreLink";
 import { TrendingVideoStatsFooter } from "./TrendingVideoStatsFooter";
@@ -59,7 +60,7 @@ export function TrendingRankSection() {
   const [trendingClips, setTrendingClips] = useState<FeedVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [liveStatsByVideoId, setLiveStatsByVideoId] = useState<
+  const [liveStatsByKey, setLiveStatsByKey] = useState<
     Record<string, { playCount: number; diggCount: number }>
   >({});
 
@@ -71,9 +72,8 @@ export function TrendingRankSection() {
         video,
         metrics: (() => {
           const base = getTrendingMetrics(video.id, rankIndex);
-          const live = video.tiktokEmbedId
-            ? liveStatsByVideoId[video.tiktokEmbedId]
-            : undefined;
+          const liveKey = liveStatsKeyFromFeedVideo(video);
+          const live = liveKey ? liveStatsByKey[liveKey] : undefined;
           if (!live) return base;
           return {
             ...base,
@@ -82,7 +82,7 @@ export function TrendingRankSection() {
           };
         })(),
       })),
-    [trendingClips, liveStatsByVideoId],
+    [trendingClips, liveStatsByKey],
   );
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -138,7 +138,7 @@ export function TrendingRankSection() {
       setTrendingClips(next);
       if (!next.length) {
         setErrorMessage(
-          "표시할 영상이 없습니다. src/data/tiktokData.ts 의 FILE_RAW_MANUAL_TIKTOK_URLS 에 URL을 넣거나, Vercel에 NEXT_PUBLIC_TRENDING_TIKTOK_URLS 를 설정하세요.",
+          "표시할 영상이 없습니다. TikTok·YouTube·Instagram 공유 URL을 src/data/tiktokData.ts 의 FILE_RAW_MANUAL_TIKTOK_URLS 또는 Vercel NEXT_PUBLIC_TRENDING_TIKTOK_URLS 에 넣어 주세요.",
         );
       }
     } catch {
@@ -156,24 +156,29 @@ export function TrendingRankSection() {
     const settled = await Promise.allSettled(
       ranking.map(async (row) => {
         const res = await fetch(
-          `/api/tiktok/live-stats?url=${encodeURIComponent(row.url)}`,
+          `/api/embed/live-stats?url=${encodeURIComponent(row.url)}`,
           { cache: "no-store" },
         );
         if (!res.ok) return null;
         const j = (await res.json()) as {
+          provider?: string;
+          canonicalKey?: string;
           videoId?: string;
           playCount?: number;
           diggCount?: number;
         };
+        const key = j.canonicalKey ?? j.videoId;
+        const provider = j.provider;
         if (
-          !j.videoId ||
+          !provider ||
+          !key ||
           typeof j.playCount !== "number" ||
           typeof j.diggCount !== "number"
         ) {
           return null;
         }
         return {
-          videoId: j.videoId,
+          mapKey: `${provider}:${key}`,
           playCount: j.playCount,
           diggCount: j.diggCount,
         };
@@ -183,12 +188,12 @@ export function TrendingRankSection() {
     const next: Record<string, { playCount: number; diggCount: number }> = {};
     for (const row of settled) {
       if (row.status !== "fulfilled" || !row.value) continue;
-      next[row.value.videoId] = {
+      next[row.value.mapKey] = {
         playCount: row.value.playCount,
         diggCount: row.value.diggCount,
       };
     }
-    if (Object.keys(next).length) setLiveStatsByVideoId(next);
+    if (Object.keys(next).length) setLiveStatsByKey(next);
   }, []);
 
   useEffect(() => {
@@ -290,7 +295,11 @@ export function TrendingRankSection() {
                     detailHref={
                       entry.video.tiktokEmbedId
                         ? `/video/tiktok-${entry.video.tiktokEmbedId}`
-                        : `/video/${entry.video.id}`
+                        : entry.video.youtubeVideoId
+                          ? `/video/youtube-${entry.video.youtubeVideoId}`
+                          : entry.video.instagramShortcode
+                            ? `/video/instagram-${entry.video.instagramShortcode}`
+                            : `/video/${entry.video.id}`
                     }
                     className="h-full min-w-0"
                     footerExtension={

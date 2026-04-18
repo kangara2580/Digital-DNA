@@ -39,6 +39,14 @@ export type FeedVideo = {
    * (예: `https://www.tiktok.com/embed/v2/{id}`)
    */
   tiktokEmbedId?: string;
+  /** YouTube watch/shorts — 11자 영상 id, 임베드 재생용 */
+  youtubeVideoId?: string;
+  /** Instagram 릴·게시물 shortcode */
+  instagramShortcode?: string;
+  /**
+   * 원본 공유 페이지 URL — `/api/embed/poster`, 실시간 지표, 상세 복원용
+   */
+  sourcePageUrl?: string;
 };
 
 const PEXELS_VIDEO_RE = /^https?:\/\/videos\.pexels\.com\//i;

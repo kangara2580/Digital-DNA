@@ -59,7 +59,7 @@ export const ALL_MARKET_VIDEOS: FeedVideo[] = [
 
 /**
  * 찜한 `video_id` → `FeedVideo` (마켓 카탈로그 + 실시간 TikTok 인기 스트립).
- * 인기순위 카드 id(`tiktok-rank-{순번}-{embedId}`)는 ALL_MARKET_VIDEOS에 없어서 여기서 합칩니다.
+ * 인기순위 URL 카드 id(`tiktok-rank-…`, `youtube-rank-…`, `instagram-rank-…`)는 ALL_MARKET_VIDEOS에 없어서 여기서 합칩니다.
  */
 export function buildWishlistVideoLookup(): Map<string, FeedVideo> {
   const m = new Map<string, FeedVideo>();
@@ -68,6 +68,18 @@ export function buildWishlistVideoLookup(): Map<string, FeedVideo> {
     m.set(v.id, v);
     if (v.tiktokEmbedId) {
       m.set(`tiktok-${v.tiktokEmbedId}`, { ...v, id: `tiktok-${v.tiktokEmbedId}` });
+    }
+    if (v.youtubeVideoId) {
+      m.set(`youtube-${v.youtubeVideoId}`, {
+        ...v,
+        id: `youtube-${v.youtubeVideoId}`,
+      });
+    }
+    if (v.instagramShortcode) {
+      m.set(`instagram-${v.instagramShortcode}`, {
+        ...v,
+        id: `instagram-${v.instagramShortcode}`,
+      });
     }
   }
   return m;

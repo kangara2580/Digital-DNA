@@ -21,6 +21,7 @@ import {
   clonesRemaining,
   getCommerceMeta,
 } from "@/data/videoCommerce";
+import { getExternalIframeForCard } from "@/lib/externalEmbed/playerUrls";
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { CartIcon } from "@/components/CartIcon";
 
@@ -78,25 +79,6 @@ function formatDuration(seconds: number): string {
   return `${m}:${r.toString().padStart(2, "0")}`;
 }
 
-function buildTikTokPlayerUrl(videoId: string): string {
-  const u = new URL(`https://www.tiktok.com/player/v1/${videoId}`);
-  // 영상 영역만 보이도록 UI를 최대한 숨깁니다.
-  u.searchParams.set("autoplay", "1");
-  u.searchParams.set("muted", "1");
-  u.searchParams.set("loop", "1");
-  u.searchParams.set("controls", "0");
-  u.searchParams.set("progress_bar", "0");
-  u.searchParams.set("play_button", "0");
-  u.searchParams.set("volume_control", "0");
-  u.searchParams.set("fullscreen_button", "0");
-  u.searchParams.set("timestamp", "0");
-  u.searchParams.set("description", "0");
-  u.searchParams.set("music_info", "0");
-  u.searchParams.set("rel", "0");
-  u.searchParams.set("native_context_menu", "0");
-  return u.toString();
-}
-
 export function VideoCard({
   video,
   className,
@@ -121,6 +103,10 @@ export function VideoCard({
   const dopamine = useDopamineBasketOptional();
   const wishlist = useWishlist();
   const reduceMotion = useReducedMotion() ?? false;
+  const externalIframe = useMemo(
+    () => getExternalIframeForCard(video),
+    [video.tiktokEmbedId, video.youtubeVideoId, video.instagramShortcode],
+  );
   const commerce = getCommerceMeta(video.id);
   const remaining = clonesRemaining(commerce);
   // 정책 변경: MICRO DNA 배지는 모든 화면에서 노출하지 않음.
@@ -167,12 +153,11 @@ export function VideoCard({
    */
   const defaultThumbnail = useMemo(() => {
     if (normalizedPoster) return normalizedPoster;
-    // TikTok iframe은 카드를 그릴 때 정지 프레임을 이미 보여줄 수 있으므로
-    // 그라데이션 fallback을 쓰지 않습니다.
-    if (video.tiktokEmbedId) return "";
+    // TikTok iframe은 카드에서 정지 프레임이 보일 수 있어 포스터가 없을 때만 비움.
+    if (externalIframe?.kind === "tiktok") return "";
     if (isLocalPublicVideo(previewSrc)) return "";
     return fallbackPoster;
-  }, [normalizedPoster, previewSrc, fallbackPoster, video.tiktokEmbedId]);
+  }, [normalizedPoster, previewSrc, fallbackPoster, externalIframe?.kind]);
   const [thumbnailSrc, setThumbnailSrc] = useState(defaultThumbnail);
   const [isPreviewing, setIsPreviewing] = useState(false);
 
@@ -181,7 +166,7 @@ export function VideoCard({
     setIsPreviewing(false);
   }, [defaultThumbnail]);
 
-  const segmentPreviewEffective = segmentPreview && !video.tiktokEmbedId;
+  const segmentPreviewEffective = segmentPreview && !externalIframe;
   const isLocal = canLoadPreviewVideo && isLocalPublicVideo(previewSrc);
 
   const hoverPreview = useHoverInstantPreview(
@@ -263,7 +248,7 @@ export function VideoCard({
       id={domId}
       className={`group flex flex-col overflow-hidden ${transitionCls} ${shell} ${overlapHover} ${gridHoverScale} ${className ?? ""}`}
       onMouseEnter={
-        video.tiktokEmbedId
+        externalIframe
           ? playTikTok
           : !canLoadPreviewVideo
             ? undefined
@@ -277,7 +262,7 @@ export function VideoCard({
               : undefined
       }
       onMouseLeave={
-        video.tiktokEmbedId
+        externalIframe
           ? pauseTikTok
           : !canLoadPreviewVideo
             ? undefined
@@ -290,14 +275,14 @@ export function VideoCard({
               ? pause
               : undefined
       }
-      onMouseMove={video.tiktokEmbedId ? playTikTok : undefined}
+      onMouseMove={externalIframe ? playTikTok : undefined}
     >
       <div className={`relative overflow-hidden bg-black/40 ${aspectClass}`}>
-        {video.tiktokEmbedId ? (
+        {externalIframe ? (
           <div className="absolute inset-0 z-0 flex items-center justify-center">
             <iframe
-              title={`${video.title}-tiktok`}
-              src={buildTikTokPlayerUrl(video.tiktokEmbedId)}
+              title={`${video.title}-${externalIframe.kind}`}
+              src={externalIframe.src}
               className="pointer-events-none h-full w-full border-0"
               allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
               allowFullScreen
@@ -332,7 +317,7 @@ export function VideoCard({
             className={`pointer-events-none absolute inset-0 z-[2] h-full w-full transition-opacity duration-200 ${
               isPreviewing ? "opacity-0" : "opacity-100"
             } ${
-              video.tiktokEmbedId
+              externalIframe
                 ? "object-cover bg-black duration-75"
                 : "object-cover"
             }`}
