@@ -79,6 +79,25 @@ function formatDuration(seconds: number): string {
   return `${m}:${r.toString().padStart(2, "0")}`;
 }
 
+function buildTikTokPlayerUrl(videoId: string): string {
+  const u = new URL(`https://www.tiktok.com/player/v1/${videoId}`);
+  // 영상 영역만 보이도록 UI를 최대한 숨깁니다.
+  u.searchParams.set("autoplay", "1");
+  u.searchParams.set("muted", "1");
+  u.searchParams.set("loop", "1");
+  u.searchParams.set("controls", "0");
+  u.searchParams.set("progress_bar", "0");
+  u.searchParams.set("play_button", "0");
+  u.searchParams.set("volume_control", "0");
+  u.searchParams.set("fullscreen_button", "0");
+  u.searchParams.set("timestamp", "0");
+  u.searchParams.set("description", "0");
+  u.searchParams.set("music_info", "0");
+  u.searchParams.set("rel", "0");
+  u.searchParams.set("native_context_menu", "0");
+  return u.toString();
+}
+
 export function VideoCard({
   video,
   className,
@@ -278,11 +297,12 @@ export function VideoCard({
           <div className="absolute inset-0 z-0 flex items-center justify-center">
             <iframe
               title={`${video.title}-tiktok`}
-              src={`https://www.tiktok.com/embed/v2/${video.tiktokEmbedId}?autoplay=1&mute=1&controls=0`}
-              className="h-full w-auto max-w-full border-0 aspect-[9/16]"
+              src={buildTikTokPlayerUrl(video.tiktokEmbedId)}
+              className="pointer-events-none h-full w-full border-0"
               allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
               allowFullScreen
               loading="eager"
+              scrolling="no"
               referrerPolicy="strict-origin-when-cross-origin"
             />
           </div>
