@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { useAuthSession } from "@/hooks/useAuthSession";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import { syncStudioHistoryToSupabase } from "@/lib/supabaseUserSync";
-import { appendMyStudioHistory } from "@/lib/myStudioHistoryStorage";
+import { useStudioHistory } from "@/context/StudioHistoryContext";
 
 type JobPayload = {
   id: string;
@@ -34,7 +31,7 @@ function statusLabel(status: string): string {
 }
 
 export function GenerationResultView({ jobId }: { jobId: string }) {
-  const { user } = useAuthSession();
+  const { append: appendStudioHistory } = useStudioHistory();
   const [job, setJob] = useState<JobPayload | null>(null);
   const [phase, setPhase] = useState<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -80,17 +77,13 @@ export function GenerationResultView({ jobId }: { jobId: string }) {
     if (!job || job.status !== "succeeded" || !job.outputVideoUrl) return;
     if (studioHistoryAppendedRef.current === job.id) return;
     studioHistoryAppendedRef.current = job.id;
-    appendMyStudioHistory({
+    appendStudioHistory({
       jobId: job.id,
       videoId: job.videoId,
       outputVideoUrl: job.outputVideoUrl,
       normalizedBackgroundPrompt: job.normalizedBackgroundPrompt,
     });
-    if (user) {
-      const supabase = getSupabaseBrowserClient();
-      if (supabase) void syncStudioHistoryToSupabase(supabase, user.id);
-    }
-  }, [job, user]);
+  }, [job, appendStudioHistory]);
 
   const pollStatus = job?.status;
   useEffect(() => {

@@ -10,7 +10,7 @@ import type { FeedVideo } from "@/data/videos";
 import { LOCAL_FACE_SWAP_VIDEO_IDS } from "@/constants/videos";
 import { buildFacePickerOptions, type FacePickerOption } from "@/lib/facePickerOptions";
 import { markCustomizeDraftSaved } from "@/lib/customizeDraftIndex";
-import { getCustomizeDraftStorageKey } from "@/lib/customizeDraftStorage";
+import { useStoredFaceProfile } from "@/hooks/useStoredFaceProfile";
 import {
   consumeLocalFacePreviewSuccess,
   FREE_LOCAL_FACE_PREVIEW_TRIES,
@@ -19,7 +19,10 @@ import {
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import { upsertCustomizeDraftRemote } from "@/lib/supabaseUserSync";
+import {
+  fetchCustomizeDraftByVideoId,
+  upsertCustomizeDraftRemote,
+} from "@/lib/supabaseUserSync";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { useVideoStartPoster } from "@/hooks/useVideoStartPoster";
 import { InputSection } from "@/components/InputSection";
@@ -169,15 +172,13 @@ function clampOverlayPosition(v: number, min = 5, max = 95): number {
   return Math.min(max, Math.max(min, v));
 }
 
-function loadDraft(
-  videoId: string,
+function parseCustomizeDraftPayload(
+  raw: unknown,
   options: FacePickerOption[],
 ): { draft: CustomizeDraft; persistedPreview: PersistedPreviewV1 | null } {
   try {
-    const raw = localStorage.getItem(getCustomizeDraftStorageKey(videoId));
-    if (!raw) throw new Error("empty");
-    const j = JSON.parse(raw) as Record<string, unknown>;
-    if (!j || typeof j !== "object") throw new Error("bad");
+    const j = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : null;
+    if (!j) throw new Error("empty");
     const persistedPreview = parsePersistedPreview(j.persistedPreview);
     const faceOk =
       typeof j.faceOptionId === "string" &&
@@ -245,15 +246,6 @@ function loadDraft(
       },
       persistedPreview: null,
     };
-  }
-}
-
-function saveDraft(videoId: string, d: CustomizeDraft, persistedPreview: PersistedPreviewV1) {
-  try {
-    const blob = { ...d, persistedPreview };
-    localStorage.setItem(getCustomizeDraftStorageKey(videoId), JSON.stringify(blob));
-  } catch {
-    /* quota */
   }
 }
 
@@ -467,6 +459,7 @@ export function PurchaseCustomizeStudio({
 }) {
   const { hasPurchased } = usePurchasedVideos();
   const { user } = useAuthSession();
+  const { profile: faceProfile, hydrated: faceHydrated } = useStoredFaceProfile();
   const subscriptionActive = useMemo(() => hasAiSubscription(user), [user]);
   const aiPreviewQuotaActive = !subscriptionActive;
   const isLocalFaceSwapDemo = LOCAL_FACE_SWAP_VIDEO_IDS.includes(video.id);
@@ -525,58 +518,83 @@ export function PurchaseCustomizeStudio({
   const prevBackgroundModeRef = useRef<"video" | "image" | null>(null);
 
   useEffect(() => {
-    const onFocus = () => setFaceOptions(buildFacePickerOptions());
+    const onFocus = () =>
+      setFaceOptions(
+        buildFacePickerOptions(faceHydrated ? faceProfile ?? null : undefined),
+      );
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
-  }, []);
+  }, [faceHydrated, faceProfile]);
 
   useEffect(() => {
-    const opts = buildFacePickerOptions();
+    const opts = buildFacePickerOptions(faceHydrated ? faceProfile ?? null : undefined);
     setFaceOptions(opts);
-    const loaded = loadDraft(video.id, opts);
-    setDraft(loaded.draft);
-    const p = loaded.persistedPreview;
-    const mode = loaded.draft.backgroundMode ?? "video";
-    prevBackgroundModeRef.current = mode;
-    lastAutoAppliedKeywordRef.current = loaded.draft.backgroundPrompt.trim();
+    let cancelled = false;
 
-    if (p) {
-      setUseAdvancedStep(true);
-      setPreviewBgPrompt(p.previewBgPrompt);
-      setPreviewBgVideoUrl(p.previewBgVideoUrl);
-      setPreviewBgImageUrl(p.previewBgImageUrl);
-      setPreviewCompositeFgUrl(p.previewCompositeFgUrl);
-      setPreviewCompositeBgUrl(p.previewCompositeBgUrl);
-      setPreviewCandidates(p.previewCandidates);
-      setPreviewCandidateIndex(
-        p.previewCandidates.length > 0
-          ? Math.min(p.previewCandidateIndex, p.previewCandidates.length - 1)
-          : 0,
-      );
-      setTextPreviewEnabled(p.textPreviewEnabled);
-    } else {
-      setUseAdvancedStep(true);
-      setPreviewBgPrompt(null);
-      setPreviewBgVideoUrl(null);
-      setPreviewBgImageUrl(null);
-      setPreviewCompositeFgUrl(null);
-      setPreviewCompositeBgUrl(null);
-      setPreviewCandidates([]);
-      setPreviewCandidateIndex(0);
-      setTextPreviewEnabled(false);
-    }
-    setIncomingPreviewUrl(null);
-    setIncomingVisible(false);
-    setPreviewTransitionLoading(false);
-    setPreviewBgVersion((v) => v + 1);
-    setFacePreviewError(null);
-    setBackgroundPreviewError(null);
-    setBackgroundPreviewInfo(null);
-    setFacePreviewApplying(false);
-    setBackgroundPreviewApplying(false);
-    setSaveStatus("idle");
-    saveInFlightRef.current = false;
-  }, [video.id]);
+    const applyLoaded = (
+      loaded: ReturnType<typeof parseCustomizeDraftPayload>,
+    ) => {
+      if (cancelled) return;
+      setDraft(loaded.draft);
+      const p = loaded.persistedPreview;
+      const mode = loaded.draft.backgroundMode ?? "video";
+      prevBackgroundModeRef.current = mode;
+      lastAutoAppliedKeywordRef.current = loaded.draft.backgroundPrompt.trim();
+
+      if (p) {
+        setUseAdvancedStep(true);
+        setPreviewBgPrompt(p.previewBgPrompt);
+        setPreviewBgVideoUrl(p.previewBgVideoUrl);
+        setPreviewBgImageUrl(p.previewBgImageUrl);
+        setPreviewCompositeFgUrl(p.previewCompositeFgUrl);
+        setPreviewCompositeBgUrl(p.previewCompositeBgUrl);
+        setPreviewCandidates(p.previewCandidates);
+        setPreviewCandidateIndex(
+          p.previewCandidates.length > 0
+            ? Math.min(previewCandidateIndex, p.previewCandidates.length - 1)
+            : 0,
+        );
+        setTextPreviewEnabled(p.textPreviewEnabled);
+      } else {
+        setUseAdvancedStep(true);
+        setPreviewBgPrompt(null);
+        setPreviewBgVideoUrl(null);
+        setPreviewBgImageUrl(null);
+        setPreviewCompositeFgUrl(null);
+        setPreviewCompositeBgUrl(null);
+        setPreviewCandidates([]);
+        setPreviewCandidateIndex(0);
+        setTextPreviewEnabled(false);
+      }
+      setIncomingPreviewUrl(null);
+      setIncomingVisible(false);
+      setPreviewTransitionLoading(false);
+      setPreviewBgVersion((v) => v + 1);
+      setFacePreviewError(null);
+      setBackgroundPreviewError(null);
+      setBackgroundPreviewInfo(null);
+      setFacePreviewApplying(false);
+      setBackgroundPreviewApplying(false);
+      setSaveStatus("idle");
+      saveInFlightRef.current = false;
+    };
+
+    void (async () => {
+      let rawPayload: unknown = null;
+      const supabase = getSupabaseBrowserClient();
+      if (user && supabase) {
+        const row = await fetchCustomizeDraftByVideoId(supabase, user.id, video.id);
+        rawPayload = row?.payload ?? null;
+      }
+      if (cancelled) return;
+      const loaded = parseCustomizeDraftPayload(rawPayload, opts);
+      applyLoaded(loaded);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [video.id, user?.id, faceHydrated, faceProfile, user]);
 
   useEffect(() => {
     if (!aiPreviewQuotaActive) return;
@@ -740,7 +758,6 @@ export function PurchaseCustomizeStudio({
         previewCandidateIndex,
         textPreviewEnabled,
       };
-      saveDraft(video.id, draft, persistedPreview);
       markCustomizeDraftSaved(video.id);
       const cloudBlob = { ...draft, persistedPreview };
       void (async () => {

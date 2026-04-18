@@ -6,17 +6,16 @@ import { Trash2 } from "lucide-react";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import { deleteCustomizeDraftRemote } from "@/lib/supabaseUserSync";
+import {
+  deleteCustomizeDraftRemote,
+  fetchUserCustomizeDrafts,
+} from "@/lib/supabaseUserSync";
 import { getMarketVideoById } from "@/data/videoCommerce";
 import type { FeedVideo } from "@/data/videos";
 import {
-  pruneOrphanCustomizeDraftIndex,
-  readSavedCustomizeDraftIndex,
-  removeSavedCustomizeDraft,
-  type SavedCustomizeDraftItem,
-} from "@/lib/customizeDraftIndex";
-import {
-  readCustomizeDraftSummary,
+  dispatchCustomizeDraftsUpdated,
+  summarizeCustomizePayload,
+  type CustomizeDraftSummary,
 } from "@/lib/customizeDraftStorage";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
@@ -27,17 +26,41 @@ function formatSec(s: number): string {
   return `${m}:${r.toString().padStart(2, "0")}`;
 }
 
+type DraftRow = {
+  videoId: string;
+  updatedAt: string;
+  summary: CustomizeDraftSummary | null;
+};
+
 export function MyPageSavedDraftsSection() {
-  const [items, setItems] = useState<SavedCustomizeDraftItem[]>([]);
+  const [rows, setRows] = useState<DraftRow[]>([]);
   const [tick, setTick] = useState(0);
   const { hasPurchased, markPurchased } = usePurchasedVideos();
-  const { user } = useAuthSession();
+  const { user, supabaseConfigured } = useAuthSession();
 
   const reload = useCallback(() => {
-    pruneOrphanCustomizeDraftIndex();
-    setItems(readSavedCustomizeDraftIndex());
-    setTick((n) => n + 1);
-  }, []);
+    if (!user || !supabaseConfigured) {
+      setRows([]);
+      setTick((n) => n + 1);
+      return;
+    }
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      setRows([]);
+      setTick((n) => n + 1);
+      return;
+    }
+    void fetchUserCustomizeDrafts(supabase, user.id).then((list) => {
+      setRows(
+        list.map((r) => ({
+          videoId: r.video_id,
+          updatedAt: r.updated_at,
+          summary: summarizeCustomizePayload(r.payload),
+        })),
+      );
+      setTick((n) => n + 1);
+    });
+  }, [user, supabaseConfigured]);
 
   useEffect(() => {
     reload();
@@ -51,12 +74,24 @@ export function MyPageSavedDraftsSection() {
 
   const cards = useMemo(() => {
     void tick;
-    return items.map((x) => {
-      const video = getMarketVideoById(x.videoId);
-      const summary = readCustomizeDraftSummary(x.videoId);
-      return { ...x, video, summary };
+    return rows.map((r) => {
+      const video = getMarketVideoById(r.videoId);
+      return { ...r, video };
     });
-  }, [items, tick]);
+  }, [rows, tick]);
+
+  if (!user) {
+    return (
+      <section className="mt-8 reels-glass-card rounded-2xl p-5 sm:p-6">
+        <h2 className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          임시 저장한 편집
+        </h2>
+        <p className="mt-4 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          로그인하면 클라우드에 저장된 임시 편집을 이 기기에서도 이어서 열 수 있어요.
+        </p>
+      </section>
+    );
+  }
 
   return (
     <section className="mt-8 reels-glass-card rounded-2xl p-5 sm:p-6">
@@ -64,7 +99,7 @@ export function MyPageSavedDraftsSection() {
         임시 저장한 편집
       </h2>
       <p className="mt-2 text-[13px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-        <strong className="font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">임시 저장</strong>한 배경·구간·자막 설정이 그대로 이어집니다. 아래에서 내용을 확인한 뒤 이어서 편집하세요.
+        <strong className="font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">임시 저장</strong>한 배경·구간·자막 설정이 계정에 연결되어 있습니다. 아래에서 확인한 뒤 이어서 편집하세요.
       </p>
       {cards.length === 0 ? (
         <p className="mt-4 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
@@ -72,22 +107,25 @@ export function MyPageSavedDraftsSection() {
         </p>
       ) : (
         <ul className="mt-4 space-y-3">
-          {cards.map(({ videoId, savedAt, video, summary }) => (
-            <DraftRow
+          {cards.map(({ videoId, updatedAt, video, summary }) => (
+            <DraftRowView
               key={videoId}
               videoId={videoId}
-              savedAt={savedAt}
+              updatedAt={updatedAt}
               video={video}
               summary={summary}
               owned={hasPurchased(videoId)}
               onPurchaseDemo={() => markPurchased(videoId)}
               onRemove={() => {
-                removeSavedCustomizeDraft(videoId);
                 const supabase = getSupabaseBrowserClient();
                 if (supabase && user) {
-                  void deleteCustomizeDraftRemote(supabase, user.id, videoId);
+                  void deleteCustomizeDraftRemote(supabase, user.id, videoId).then(
+                    () => {
+                      dispatchCustomizeDraftsUpdated();
+                      reload();
+                    },
+                  );
                 }
-                reload();
               }}
             />
           ))}
@@ -97,9 +135,9 @@ export function MyPageSavedDraftsSection() {
   );
 }
 
-function DraftRow({
+function DraftRowView({
   videoId,
-  savedAt,
+  updatedAt,
   video,
   summary,
   owned,
@@ -107,9 +145,9 @@ function DraftRow({
   onRemove,
 }: {
   videoId: string;
-  savedAt: number;
+  updatedAt: string;
   video: FeedVideo | undefined;
-  summary: ReturnType<typeof readCustomizeDraftSummary>;
+  summary: CustomizeDraftSummary | null;
   owned: boolean;
   onPurchaseDemo: () => void;
   onRemove: () => void;
@@ -117,6 +155,11 @@ function DraftRow({
   const title = video?.title ?? `릴스 ${videoId}`;
   const poster = sanitizePosterSrc(video?.poster) ?? "";
   const creator = video?.creator;
+  const when = (() => {
+    const t = Date.parse(updatedAt);
+    if (!Number.isFinite(t)) return updatedAt;
+    return new Date(t).toLocaleString("ko-KR");
+  })();
 
   return (
     <li className="rounded-xl border border-white/10 bg-black/25 p-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
@@ -135,7 +178,7 @@ function DraftRow({
               {title}
             </p>
             <p className="text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-              {new Date(savedAt).toLocaleString("ko-KR")} 저장
+              {when} 저장
             </p>
           </div>
         </div>
@@ -149,7 +192,7 @@ function DraftRow({
               <p className="mt-0.5 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">{creator}</p>
             ) : null}
             <p className="mt-1 text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-              {new Date(savedAt).toLocaleString("ko-KR")} 저장
+              {when} 저장
               {!video ? (
                 <span className="ml-2 rounded border border-amber-500/35 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-200 [html[data-theme='light']_&]:text-amber-900">
                   카탈로그에 없는 ID — 본문만 복원됩니다
@@ -188,7 +231,7 @@ function DraftRow({
             </ul>
           ) : (
             <p className="text-[12px] text-amber-300/90 [html[data-theme='light']_&]:text-amber-800">
-              저장 본문을 찾을 수 없어요. 스튜디오에서 다시 임시 저장해 주세요.
+              저장 본문을 해석할 수 없어요. 스튜디오에서 다시 임시 저장해 주세요.
             </p>
           )}
 

@@ -13,6 +13,8 @@ export type AppProfile = {
   avatar_kind: string | null;
   avatar_seed: string | null;
   avatar_custom: string | null;
+  /** 마이페이지 3면/AI 얼굴 프로필 (JSON) — 마이그레이션 전에는 없을 수 있음 */
+  face_profile_json?: unknown | null;
 };
 
 type ProfilePatch = Partial<AppProfile>;
@@ -49,7 +51,7 @@ export async function fetchUserProfile(
     const { data, error } = await supabase
       .from("profiles")
       .select(
-        "user_id,email,nickname,first_name,last_name,phone,phone_country_code,country,timezone,avatar_kind,avatar_seed,avatar_custom",
+        "user_id,email,nickname,first_name,last_name,phone,phone_country_code,country,timezone,avatar_kind,avatar_seed,avatar_custom,face_profile_json",
       )
       .eq("user_id", userId)
       .maybeSingle();
@@ -77,7 +79,7 @@ export async function upsertUserProfile(
       .from("profiles")
       .upsert(payload, { onConflict: "user_id" })
       .select(
-        "user_id,email,nickname,first_name,last_name,phone,phone_country_code,country,timezone,avatar_kind,avatar_seed,avatar_custom",
+        "user_id,email,nickname,first_name,last_name,phone,phone_country_code,country,timezone,avatar_kind,avatar_seed,avatar_custom,face_profile_json",
       )
       .single();
 

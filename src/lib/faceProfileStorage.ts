@@ -41,3 +41,14 @@ export function parseStoredFaceProfile(raw: string | null): StoredFaceProfile | 
   }
   return null;
 }
+
+/** Supabase `profiles.face_profile_json` 등 JSON 값에서 복원 */
+export function parseStoredFaceProfileJson(data: unknown): StoredFaceProfile | null {
+  if (data == null) return null;
+  try {
+    const raw = typeof data === "string" ? data : JSON.stringify(data);
+    return parseStoredFaceProfile(raw);
+  } catch {
+    return null;
+  }
+}

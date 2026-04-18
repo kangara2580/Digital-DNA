@@ -26,8 +26,6 @@ import { sanitizePosterSrc } from "@/lib/videoPoster";
 const FALLBACK_FLY_POSTER =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 
-const GUEST_CART_KEY = "digital-dna-cart-guest-v1";
-
 export type BuilderTimelineItem = {
   key: string;
   video: FeedVideo;
@@ -60,49 +58,6 @@ export function useDopamineBasketOptional() {
   return useContext(DopamineBasketContext);
 }
 
-function loadGuestCartVideos(): FeedVideo[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(GUEST_CART_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (v): v is FeedVideo =>
-        v != null &&
-        typeof v === "object" &&
-        typeof (v as FeedVideo).id === "string",
-    ) as FeedVideo[];
-  } catch {
-    return [];
-  }
-}
-
-function saveGuestCartVideos(videos: FeedVideo[]) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(GUEST_CART_KEY, JSON.stringify(videos));
-  } catch {
-    /* quota */
-  }
-}
-
-function mergeCartVideos(server: FeedVideo[], guest: FeedVideo[]): FeedVideo[] {
-  const seen = new Set<string>();
-  const out: FeedVideo[] = [];
-  for (const v of server) {
-    if (seen.has(v.id)) continue;
-    seen.add(v.id);
-    out.push(v);
-  }
-  for (const v of guest) {
-    if (seen.has(v.id)) continue;
-    seen.add(v.id);
-    out.push(v);
-  }
-  return out;
-}
-
 function videosToBuilderItems(videos: FeedVideo[]): BuilderTimelineItem[] {
   return videos.map((video, i) => ({
     key: `b-load-${video.id}-${i}`,
@@ -127,6 +82,10 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
   const launchFromCartButton = useCallback(
     (buttonEl: HTMLElement, video: FeedVideo, poster?: string) => {
       if (typeof window === "undefined") return;
+      if (!supabaseConfigured || !user) {
+        window.alert("로그인 후 장바구니를 사용할 수 있습니다.");
+        return;
+      }
       const key = `b-${video.id}-${++builderSeq.current}`;
       setBuilderItems((items) => [...items, { key, video }]);
 
@@ -151,7 +110,7 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
         },
       ]);
     },
-    [],
+    [supabaseConfigured, user],
   );
 
   const removeBuilderItem = useCallback((key: string) => {
@@ -168,41 +127,26 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
       return;
     }
 
+    if (!supabaseConfigured || !user) {
+      setBuilderItems([]);
+      setHydrated(true);
+      return;
+    }
+
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      setBuilderItems([]);
+      setHydrated(true);
+      return;
+    }
+
     let cancelled = false;
     restoreGuardRef.current = true;
 
     void (async () => {
-      if (!supabaseConfigured) {
-        const guest = loadGuestCartVideos();
-        if (!cancelled) {
-          setBuilderItems(videosToBuilderItems(guest));
-          setHydrated(true);
-        }
-        restoreGuardRef.current = false;
-        return;
-      }
-
-      const supabase = getSupabaseBrowserClient();
-      if (!user || !supabase) {
-        const guest = loadGuestCartVideos();
-        if (!cancelled) {
-          setBuilderItems(videosToBuilderItems(guest));
-          setHydrated(true);
-        }
-        restoreGuardRef.current = false;
-        return;
-      }
-
       const server = await fetchUserCartVideos(supabase, user.id);
-      if (cancelled) return;
-      const guest = loadGuestCartVideos();
-      const merged = mergeCartVideos(server, guest);
-      if (guest.length > 0) {
-        saveGuestCartVideos([]);
-        await replaceUserCart(supabase, user.id, merged);
-      }
       if (!cancelled) {
-        setBuilderItems(videosToBuilderItems(merged));
+        setBuilderItems(videosToBuilderItems(server));
         setHydrated(true);
       }
       restoreGuardRef.current = false;
@@ -216,21 +160,13 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
   useEffect(() => {
     if (!hydrated || authLoading) return;
     if (restoreGuardRef.current) return;
-
+    if (!supabaseConfigured || !user) return;
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
     const videos = builderItems.map((b) => b.video);
     const handle = window.setTimeout(() => {
-      if (!supabaseConfigured) {
-        saveGuestCartVideos(videos);
-        return;
-      }
-      const supabase = getSupabaseBrowserClient();
-      if (!user || !supabase) {
-        saveGuestCartVideos(videos);
-        return;
-      }
       void replaceUserCart(supabase, user.id, videos);
     }, 420);
-
     return () => window.clearTimeout(handle);
   }, [builderItems, hydrated, authLoading, supabaseConfigured, user]);
 

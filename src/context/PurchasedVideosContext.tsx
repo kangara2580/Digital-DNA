@@ -15,28 +15,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import {
   addUserPurchasedVideo,
   fetchUserPurchasedIds,
-  replaceUserDemoPurchases,
 } from "@/lib/supabaseUserSync";
-
-const STORAGE_KEY = "reels-market-purchased-ids";
-
-function readIds(): Set<string> {
-  if (typeof window === "undefined") return new Set();
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return new Set();
-    const arr = JSON.parse(raw) as unknown;
-    if (!Array.isArray(arr)) return new Set();
-    return new Set(arr.filter((x): x is string => typeof x === "string"));
-  } catch {
-    return new Set();
-  }
-}
-
-function writeIds(ids: Set<string>) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
-}
 
 type Ctx = {
   hasPurchased: (videoId: string) => boolean;
@@ -53,32 +32,20 @@ export function PurchasedVideosProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (authLoading) return;
 
+    if (!supabaseConfigured || !user) {
+      setIds(new Set());
+      return;
+    }
+
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+
     let cancelled = false;
     restoreGuardRef.current = true;
 
     void (async () => {
-      if (!supabaseConfigured) {
-        if (!cancelled) setIds(readIds());
-        restoreGuardRef.current = false;
-        return;
-      }
-
-      const supabase = getSupabaseBrowserClient();
-      if (!user || !supabase) {
-        if (!cancelled) setIds(readIds());
-        restoreGuardRef.current = false;
-        return;
-      }
-
       const server = await fetchUserPurchasedIds(supabase, user.id);
-      if (cancelled) return;
-      const guest = readIds();
-      const merged = new Set([...server, ...guest]);
-      if (guest.size > 0) {
-        writeIds(new Set());
-        await replaceUserDemoPurchases(supabase, user.id, [...merged]);
-      }
-      if (!cancelled) setIds(merged);
+      if (!cancelled) setIds(new Set(server));
       restoreGuardRef.current = false;
     })();
 
@@ -94,25 +61,22 @@ export function PurchasedVideosProvider({ children }: { children: ReactNode }) {
 
   const markPurchased = useCallback(
     (videoId: string) => {
+      if (!supabaseConfigured || !user) return;
       setIds((prev) => {
         const next = new Set(prev);
         next.add(videoId);
-        if (!supabaseConfigured || !user) {
-          writeIds(next);
-        } else {
-          const supabase = getSupabaseBrowserClient();
-          if (supabase) {
-            void addUserPurchasedVideo(supabase, user.id, videoId).then((ok) => {
-              if (!ok && restoreGuardRef.current === false) {
-                void fetchUserPurchasedIds(supabase, user.id).then((remote) => {
-                  setIds(new Set(remote));
-                });
-              }
-            });
-          }
-        }
         return next;
       });
+      const supabase = getSupabaseBrowserClient();
+      if (supabase) {
+        void addUserPurchasedVideo(supabase, user.id, videoId).then((ok) => {
+          if (!ok && !restoreGuardRef.current) {
+            void fetchUserPurchasedIds(supabase, user.id).then((remote) => {
+              setIds(new Set(remote));
+            });
+          }
+        });
+      }
     },
     [supabaseConfigured, user],
   );

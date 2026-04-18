@@ -9,13 +9,9 @@ import { MyPageSellerAnalyticsSection } from "@/components/MyPageSellerAnalytics
 import { ProfileAvatarPicker } from "@/components/ProfileAvatarPicker";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useStoredFaceProfile } from "@/hooks/useStoredFaceProfile";
-import { readSavedCustomizeDraftIndex } from "@/lib/customizeDraftIndex";
+import { fetchUserCustomizeDrafts } from "@/lib/supabaseUserSync";
 import type { ProfileAvatar } from "@/lib/profileAvatarStorage";
-import {
-  readProfileAvatar,
-  resolveProfileAvatar,
-  writeProfileAvatar,
-} from "@/lib/profileAvatarStorage";
+import { resolveProfileAvatar } from "@/lib/profileAvatarStorage";
 import {
   fetchUserProfile,
   syncProfileFromAuthUser,
@@ -24,6 +20,7 @@ import {
 } from "@/lib/supabaseProfiles";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { MyPageAccountOverview } from "@/components/MyPageAccountOverview";
+import { MyPageProfileEditForm } from "@/components/MyPageProfileEditForm";
 
 type MyPageTab = "basic" | "profile" | "drafts" | "analytics";
 
@@ -48,27 +45,18 @@ function normalizeTab(input: string | null): MyPageTab {
 export function MyPageDashboard() {
   const params = useSearchParams();
   const currentTab = normalizeTab(params.get("tab"));
-  const { user } = useAuthSession();
+  const { user, supabaseConfigured } = useAuthSession();
   const { profile, hydrated } = useStoredFaceProfile();
   const [draftCount, setDraftCount] = useState(0);
-  const [userId, setUserId] = useState("reels_user");
-  const [profileAvatar, setProfileAvatar] = useState<ProfileAvatar | null>(null);
   const [profileRecord, setProfileRecord] = useState<AppProfile | null>(null);
 
-  useEffect(() => {
-    setProfileAvatar(resolveProfileAvatar(user));
-  }, [user]);
-
-  useEffect(() => {
-    const onAvatar = () => setProfileAvatar(readProfileAvatar());
-    window.addEventListener("reels-profile-avatar-updated", onAvatar);
-    return () => window.removeEventListener("reels-profile-avatar-updated", onAvatar);
-  }, []);
+  const profileAvatar = useMemo(
+    () => resolveProfileAvatar(user, profileRecord),
+    [user, profileRecord],
+  );
 
   const persistProfileAvatar = useCallback(
     async (next: ProfileAvatar | null) => {
-      writeProfileAvatar(next);
-      setProfileAvatar(next);
       const supabase = getSupabaseBrowserClient();
       if (!supabase || !user) return;
       try {
@@ -77,14 +65,22 @@ export function MyPageDashboard() {
             avatar_kind: next?.kind ?? null,
             avatar_seed: next?.kind === "preset" ? next.seed : null,
             avatar_custom:
-              next?.kind === "custom" ? JSON.stringify(next.parts) : null,
+              next?.kind === "custom"
+                ? JSON.stringify(next.parts)
+                : next?.kind === "upload"
+                  ? next.dataUrl
+                  : null,
           },
         });
         const updated = await upsertUserProfile(supabase, user.id, {
           avatar_kind: next?.kind ?? null,
           avatar_seed: next?.kind === "preset" ? next.seed : null,
           avatar_custom:
-            next?.kind === "custom" ? JSON.stringify(next.parts) : null,
+            next?.kind === "custom"
+              ? JSON.stringify(next.parts)
+              : next?.kind === "upload"
+                ? next.dataUrl
+                : null,
         });
         if (updated) setProfileRecord(updated);
       } catch {
@@ -94,31 +90,27 @@ export function MyPageDashboard() {
     [user],
   );
 
+  const refreshDraftCount = useCallback(() => {
+    if (!user || !supabaseConfigured) {
+      setDraftCount(0);
+      return;
+    }
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    void fetchUserCustomizeDrafts(supabase, user.id).then((rows) => {
+      setDraftCount(rows.length);
+    });
+  }, [user, supabaseConfigured]);
+
   useEffect(() => {
-    const loadMeta = () => {
-      try {
-        const key = "reels-market-user-id";
-        const existing = window.localStorage.getItem(key);
-        if (existing) {
-          setUserId(existing);
-        } else {
-          const next = `reels_${new Date().getFullYear()}_${Math.floor(Math.random() * 9000 + 1000)}`;
-          window.localStorage.setItem(key, next);
-          setUserId(next);
-        }
-      } catch {
-        setUserId("reels_user");
-      }
-      setDraftCount(readSavedCustomizeDraftIndex().length);
-    };
-    loadMeta();
-    window.addEventListener("focus", loadMeta);
-    window.addEventListener("reels-drafts-updated", loadMeta);
+    refreshDraftCount();
+    window.addEventListener("focus", refreshDraftCount);
+    window.addEventListener("reels-drafts-updated", refreshDraftCount);
     return () => {
-      window.removeEventListener("focus", loadMeta);
-      window.removeEventListener("reels-drafts-updated", loadMeta);
+      window.removeEventListener("focus", refreshDraftCount);
+      window.removeEventListener("reels-drafts-updated", refreshDraftCount);
     };
-  }, []);
+  }, [refreshDraftCount]);
 
   useEffect(() => {
     if (!user) {
@@ -130,15 +122,14 @@ export function MyPageDashboard() {
     let cancelled = false;
 
     const loadAndSync = async () => {
-      // auth user metadata를 기준으로 profiles 테이블을 즉시 동기화합니다.
-      const synced = await syncProfileFromAuthUser(supabase, user);
+      const existing = await fetchUserProfile(supabase, user.id);
       if (cancelled) return;
-      if (synced) {
-        setProfileRecord(synced);
+      if (existing) {
+        setProfileRecord(existing);
         return;
       }
-      const fetched = await fetchUserProfile(supabase, user.id);
-      if (!cancelled) setProfileRecord(fetched);
+      const synced = await syncProfileFromAuthUser(supabase, user);
+      if (!cancelled) setProfileRecord(synced);
     };
 
     void loadAndSync();
@@ -157,8 +148,8 @@ export function MyPageDashboard() {
     const email = String(profileRecord?.email ?? user?.email ?? "").trim();
     if (nickname) return nickname;
     if (email) return email;
-    return userId;
-  }, [profileRecord?.email, profileRecord?.nickname, user?.email, userId, userMeta.nickname]);
+    return user?.id ? `id·${user.id.slice(0, 8)}…` : "계정";
+  }, [profileRecord?.email, profileRecord?.nickname, user?.email, user?.id, userMeta.nickname]);
 
   const accountSummary = useMemo(() => {
     const firstName = String(profileRecord?.first_name ?? userMeta.first_name ?? "").trim();
@@ -229,6 +220,11 @@ export function MyPageDashboard() {
               <MyPageAccountOverview />
               <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">기본정보</h2>
 
+              <MyPageProfileEditForm
+                profileRecord={profileRecord}
+                onSaved={setProfileRecord}
+              />
+
               <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
                 <h3 className="text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
                   프로필 이미지
@@ -240,8 +236,8 @@ export function MyPageDashboard() {
                       onChange={persistProfileAvatar}
                       hint={
                         user
-                          ? "변경 시 이 기기에도 저장되며, 로그인 계정 메타데이터에 프리셋 시드가 동기화됩니다. 직접 올린 사진은 기기 저장을 우선합니다."
-                          : "로그인하면 선택한 프리셋이 계정에 연결됩니다. 직접 올린 사진은 이 브라우저에 저장됩니다."
+                          ? "변경 내용은 Supabase profiles와 로그인 메타데이터에 저장됩니다."
+                          : "로그인 후 프로필 이미지를 계정에 연결할 수 있습니다."
                       }
                     />
                   </div>

@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { Clapperboard, Download, Pencil } from "lucide-react";
+import { useStudioHistory } from "@/context/StudioHistoryContext";
+import { useAuthSession } from "@/hooks/useAuthSession";
 import { getMarketVideoById } from "@/data/videoCommerce";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
-import { readMyStudioHistory, type MyStudioHistoryItem } from "@/lib/myStudioHistoryStorage";
 
 function formatWhen(iso: string): string {
   try {
@@ -24,18 +24,8 @@ function formatWhen(iso: string): string {
 }
 
 export function MyPageStudioSection() {
-  const [items, setItems] = useState<MyStudioHistoryItem[]>([]);
-
-  useEffect(() => {
-    const sync = () => setItems(readMyStudioHistory());
-    sync();
-    window.addEventListener("reels-my-studio-updated", sync);
-    window.addEventListener("focus", sync);
-    return () => {
-      window.removeEventListener("reels-my-studio-updated", sync);
-      window.removeEventListener("focus", sync);
-    };
-  }, []);
+  const { items, hydrated } = useStudioHistory();
+  const { user } = useAuthSession();
 
   return (
     <section
@@ -53,7 +43,7 @@ export function MyPageStudioSection() {
               My Studio
             </h2>
             <p className="mt-0.5 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-              AI로 얼굴·배경을 적용해 만든 영상 기록입니다. 다시 받거나 편집을 이어가 보세요.
+              AI로 얼굴·배경을 적용해 만든 영상 기록입니다. 계정에 저장되며 기기를 바꿔도 같은 기록을 볼 수 있어요.
             </p>
           </div>
         </div>
@@ -65,9 +55,15 @@ export function MyPageStudioSection() {
         </Link>
       </div>
 
-      {items.length === 0 ? (
+      {!hydrated && user ? (
+        <p className="mt-6 rounded-xl border border-white/10 bg-black/20 px-4 py-10 text-center text-[13px] text-zinc-500 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-600">
+          기록을 불러오는 중…
+        </p>
+      ) : items.length === 0 ? (
         <p className="mt-6 rounded-xl border border-dashed border-white/15 bg-black/20 px-4 py-10 text-center text-[13px] text-zinc-500 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-600">
-          아직 저장된 스튜디오 결과가 없어요. 창작 스튜디오에서 생성이 완료되면 여기에 쌓입니다.
+          {user
+            ? "아직 저장된 스튜디오 결과가 없어요. 창작 스튜디오에서 생성이 완료되면 여기에 쌓입니다."
+            : "로그인하면 생성 완료된 영상 기록이 계정에 쌓입니다."}
         </p>
       ) : (
         <ul className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

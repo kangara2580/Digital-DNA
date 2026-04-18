@@ -17,58 +17,12 @@ import {
   type RecentClipEntrySync,
 } from "@/lib/supabaseUserSync";
 
-const STORAGE_KEY = "digital-dna-recent-v1";
 const MAX_ENTRIES = 100;
 
 export type RecentClipEntry = {
   id: string;
   viewedAt: number;
 };
-
-function parseStored(raw: string | null): RecentClipEntry[] {
-  if (!raw) return [];
-  try {
-    const p = JSON.parse(raw) as unknown;
-    if (!Array.isArray(p)) return [];
-    return p
-      .filter(
-        (x): x is RecentClipEntry =>
-          x != null &&
-          typeof x === "object" &&
-          typeof (x as RecentClipEntry).id === "string" &&
-          typeof (x as RecentClipEntry).viewedAt === "number",
-      )
-      .map((x) => ({ id: x.id, viewedAt: x.viewedAt }));
-  } catch {
-    return [];
-  }
-}
-
-function loadEntries(): RecentClipEntry[] {
-  if (typeof window === "undefined") return [];
-  return parseStored(localStorage.getItem(STORAGE_KEY));
-}
-
-function persist(entries: RecentClipEntry[]) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-  } catch {
-    /* quota / private mode */
-  }
-}
-
-function mergeRecent(a: RecentClipEntry[], b: RecentClipEntry[]): RecentClipEntry[] {
-  const map = new Map<string, number>();
-  for (const e of a) map.set(e.id, e.viewedAt);
-  for (const e of b) {
-    map.set(e.id, Math.max(map.get(e.id) ?? 0, e.viewedAt));
-  }
-  return [...map.entries()]
-    .map(([id, viewedAt]) => ({ id, viewedAt }))
-    .sort((x, y) => y.viewedAt - x.viewedAt)
-    .slice(0, MAX_ENTRIES);
-}
 
 type Ctx = {
   entries: RecentClipEntry[];
@@ -99,43 +53,26 @@ export function RecentClipsProvider({ children }: { children: React.ReactNode })
       return;
     }
 
+    if (!supabaseConfigured || !user) {
+      setEntries([]);
+      setHydrated(true);
+      return;
+    }
+
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      setEntries([]);
+      setHydrated(true);
+      return;
+    }
+
     let cancelled = false;
     restoreGuardRef.current = true;
 
     void (async () => {
-      if (!supabaseConfigured) {
-        if (!cancelled) {
-          setEntries(loadEntries());
-          setHydrated(true);
-        }
-        restoreGuardRef.current = false;
-        return;
-      }
-
-      const supabase = getSupabaseBrowserClient();
-      if (!user || !supabase) {
-        if (!cancelled) {
-          setEntries(loadEntries());
-          setHydrated(true);
-        }
-        restoreGuardRef.current = false;
-        return;
-      }
-
       const server = await fetchUserRecentViews(supabase, user.id, MAX_ENTRIES);
-      if (cancelled) return;
-      const guest = loadEntries();
-      const merged = mergeRecent(server, guest);
-      if (guest.length > 0) {
-        persist([]);
-        await replaceUserRecentViews(
-          supabase,
-          user.id,
-          merged as RecentClipEntrySync[],
-        );
-      }
       if (!cancelled) {
-        setEntries(merged);
+        setEntries(server);
         setHydrated(true);
       }
       restoreGuardRef.current = false;
@@ -148,15 +85,13 @@ export function RecentClipsProvider({ children }: { children: React.ReactNode })
 
   const recordView = useCallback(
     (videoId: string) => {
-      if (!videoId) return;
+      if (!videoId || !supabaseConfigured || !user) return;
       setEntries((prev) => {
         const filtered = prev.filter((e) => e.id !== videoId);
-        const next = [
+        return [
           { id: videoId, viewedAt: Date.now() },
           ...filtered,
         ].slice(0, MAX_ENTRIES);
-        if (!supabaseConfigured || !user) persist(next);
-        return next;
       });
     },
     [supabaseConfigured, user],
@@ -164,27 +99,21 @@ export function RecentClipsProvider({ children }: { children: React.ReactNode })
 
   const remove = useCallback(
     (videoId: string) => {
-      setEntries((prev) => {
-        const next = prev.filter((e) => e.id !== videoId);
-        if (!supabaseConfigured || !user) persist(next);
-        return next;
-      });
+      if (!supabaseConfigured || !user) return;
+      setEntries((prev) => prev.filter((e) => e.id !== videoId));
     },
     [supabaseConfigured, user],
   );
 
   const clear = useCallback(() => {
+    if (!supabaseConfigured || !user) return;
     setEntries([]);
-    if (!supabaseConfigured || !user) persist([]);
   }, [supabaseConfigured, user]);
 
   useEffect(() => {
     if (!hydrated || authLoading) return;
     if (restoreGuardRef.current) return;
-    if (!supabaseConfigured || !user) {
-      persist(entries);
-      return;
-    }
+    if (!supabaseConfigured || !user) return;
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
     const handle = window.setTimeout(() => {

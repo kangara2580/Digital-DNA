@@ -1,18 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { FeedVideo } from "@/data/videos";
-import {
-  CUSTOMIZE_DRAFT_INDEX_STORAGE_KEY,
-  type SavedCustomizeDraftItem,
-} from "@/lib/customizeDraftIndex";
-import {
-  dispatchCustomizeDraftsUpdated,
-  getCustomizeDraftStorageKey,
-} from "@/lib/customizeDraftStorage";
-import {
-  MY_STUDIO_HISTORY_STORAGE_KEY,
-  readMyStudioHistory,
-  type MyStudioHistoryItem,
-} from "@/lib/myStudioHistoryStorage";
 
 export const STUDIO_HISTORY_BLOB_KEY = "studio_history";
 
@@ -223,7 +210,8 @@ export async function fetchUserCustomizeDrafts(
     const { data, error } = await supabase
       .from("user_customize_drafts")
       .select("video_id,payload,updated_at")
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false });
 
     if (error || !data) return [];
     return data as { video_id: string; payload: unknown; updated_at: string }[];
@@ -232,37 +220,24 @@ export async function fetchUserCustomizeDrafts(
   }
 }
 
-/** 로그인 시 로컬 임시저장과 병합해 반영 */
-export function applyCustomizeDraftsToLocalStorage(
-  rows: { video_id: string; payload: unknown; updated_at: string }[],
-): void {
-  if (typeof window === "undefined") return;
-  const index: SavedCustomizeDraftItem[] = [];
-  for (const r of rows) {
-    try {
-      window.localStorage.setItem(
-        getCustomizeDraftStorageKey(r.video_id),
-        JSON.stringify(r.payload),
-      );
-      const t = Date.parse(r.updated_at);
-      index.push({
-        videoId: r.video_id,
-        savedAt: Number.isFinite(t) ? t : Date.now(),
-      });
-    } catch {
-      /* quota */
-    }
-  }
-  index.sort((a, b) => b.savedAt - a.savedAt);
+export async function fetchCustomizeDraftByVideoId(
+  supabase: SupabaseClient,
+  userId: string,
+  videoId: string,
+): Promise<{ payload: unknown; updated_at: string } | null> {
   try {
-    window.localStorage.setItem(
-      CUSTOMIZE_DRAFT_INDEX_STORAGE_KEY,
-      JSON.stringify(index.slice(0, 60)),
-    );
+    const { data, error } = await supabase
+      .from("user_customize_drafts")
+      .select("payload,updated_at")
+      .eq("user_id", userId)
+      .eq("video_id", videoId)
+      .maybeSingle();
+
+    if (error || !data) return null;
+    return data as { payload: unknown; updated_at: string };
   } catch {
-    /* noop */
+    return null;
   }
-  dispatchCustomizeDraftsUpdated();
 }
 
 export async function fetchUserDataBlob(
@@ -307,44 +282,3 @@ export async function upsertUserDataBlob(
   }
 }
 
-export async function syncStudioHistoryToSupabase(
-  supabase: SupabaseClient,
-  userId: string,
-): Promise<void> {
-  const items = readMyStudioHistory();
-  await upsertUserDataBlob(supabase, userId, STUDIO_HISTORY_BLOB_KEY, items);
-}
-
-export function applyStudioHistoryBlobToLocal(data: unknown): void {
-  if (typeof window === "undefined") return;
-  if (!Array.isArray(data)) return;
-  const cleaned: MyStudioHistoryItem[] = [];
-  for (const x of data) {
-    if (!x || typeof x !== "object") continue;
-    const o = x as Partial<MyStudioHistoryItem>;
-    if (
-      typeof o.jobId !== "string" ||
-      typeof o.videoId !== "string" ||
-      typeof o.outputVideoUrl !== "string" ||
-      typeof o.createdAtIso !== "string"
-    ) {
-      continue;
-    }
-    cleaned.push({
-      jobId: o.jobId,
-      videoId: o.videoId,
-      outputVideoUrl: o.outputVideoUrl,
-      createdAtIso: o.createdAtIso,
-      normalizedBackgroundPrompt:
-        typeof o.normalizedBackgroundPrompt === "string"
-          ? o.normalizedBackgroundPrompt
-          : undefined,
-    });
-  }
-  try {
-    window.localStorage.setItem(MY_STUDIO_HISTORY_STORAGE_KEY, JSON.stringify(cleaned));
-    window.dispatchEvent(new Event("reels-my-studio-updated"));
-  } catch {
-    /* noop */
-  }
-}

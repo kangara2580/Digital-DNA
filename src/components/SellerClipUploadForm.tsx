@@ -1,18 +1,35 @@
 "use client";
 
 import { AlertCircle, CheckCircle2, Film, Loader2, Upload } from "lucide-react";
-import { useCallback, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useAuthSession } from "@/hooks/useAuthSession";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import {
+  deleteSellerUploadDraft,
+  fetchSellerUploadDraft,
+  upsertSellerUploadDraft,
+  type SellerUploadDraftPayload,
+} from "@/lib/supabaseSellerUploadDraft";
 
 const INPUT =
   "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none transition focus:border-reels-cyan/45 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
 
 const LABEL = "mb-1.5 block text-[12px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600";
 
+function normalizeVideoUrl(raw: string): string {
+  const t = raw.trim();
+  if (!t) return t;
+  if (t.startsWith("http://") || t.startsWith("https://")) return t;
+  if (t.startsWith("/")) return t;
+  return `https://${t}`;
+}
+
 export function SellerClipUploadForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
   const hid = useId();
+  const { user, supabaseConfigured } = useAuthSession();
+  const [sellerDraftReady, setSellerDraftReady] = useState(false);
 
   const [file, setFile] = useState<File | null>(null);
   const [sourceType, setSourceType] = useState<"file" | "url">("file");
@@ -46,6 +63,102 @@ export function SellerClipUploadForm() {
     setFile(null);
     setDurationSec(null);
   }, [previewUrl]);
+
+  useEffect(() => {
+    if (!user || !supabaseConfigured) {
+      setSellerDraftReady(true);
+      return;
+    }
+    setSellerDraftReady(false);
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      setSellerDraftReady(true);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      const d = await fetchSellerUploadDraft(supabase, user.id);
+      if (cancelled || !d) {
+        if (!cancelled) setSellerDraftReady(true);
+        return;
+      }
+      setSourceType(d.sourceType);
+      setVideoUrl(d.videoUrl);
+      setTitle(d.title);
+      setDescription(d.description);
+      setHashtags(d.hashtags);
+      setPrice(d.price);
+      setIsAi(d.isAi);
+      setEditionKind(d.editionKind);
+      setEditionCap(d.editionCap);
+      setRights(d.rights);
+      setConfirmOriginal(d.confirmOriginal);
+      setDurationSec(d.durationSec);
+      setOrientation(d.orientation);
+      if (d.sourceType === "url" && d.videoUrl.trim()) {
+        setFile(null);
+        setPreviewUrl(normalizeVideoUrl(d.videoUrl.trim()));
+      } else {
+        setFile(null);
+        setPreviewUrl(null);
+      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (d.hadLocalFile) {
+        setMessage({
+          ok: true,
+          text: "임시 저장된 양식을 불러왔어요. 동영상 파일은 보안상 서버에 남지 않으니 다시 선택해 주세요.",
+        });
+      }
+      if (!cancelled) setSellerDraftReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, supabaseConfigured]);
+
+  useEffect(() => {
+    if (!sellerDraftReady || !user || !supabaseConfigured) return;
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    const payload: SellerUploadDraftPayload = {
+      sourceType,
+      videoUrl,
+      title,
+      description,
+      hashtags,
+      price,
+      isAi,
+      editionKind,
+      editionCap,
+      rights,
+      confirmOriginal,
+      durationSec,
+      orientation,
+      hadLocalFile: Boolean(file),
+    };
+    const t = window.setTimeout(() => {
+      void upsertSellerUploadDraft(supabase, user.id, payload);
+    }, 500);
+    return () => window.clearTimeout(t);
+  }, [
+    sellerDraftReady,
+    user,
+    supabaseConfigured,
+    sourceType,
+    videoUrl,
+    title,
+    description,
+    hashtags,
+    price,
+    isAi,
+    editionKind,
+    editionCap,
+    rights,
+    confirmOriginal,
+    durationSec,
+    orientation,
+    file,
+  ]);
 
   const onPickFile = (f: File | null) => {
     resetPreview();
@@ -145,6 +258,10 @@ export function SellerClipUploadForm() {
           text: data.error ?? "업로드에 실패했습니다.",
         });
         return;
+      }
+
+      if (session?.user?.id && supabase) {
+        void deleteSellerUploadDraft(supabase, session.user.id);
       }
 
       setMessage({
