@@ -117,7 +117,6 @@ export function MyPageDashboard() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">마이페이지</h1>
-          <p className="mt-2 text-[14px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">기본정보를 먼저 확인하고, 왼쪽 메뉴에서 세부 항목을 관리하세요.</p>
         </div>
       </div>
 
