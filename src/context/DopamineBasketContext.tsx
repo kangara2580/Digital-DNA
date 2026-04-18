@@ -83,6 +83,8 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
   const restoreGuardRef = useRef(false);
   const lastGoodCartRef = useRef<BuilderTimelineItem[]>([]);
   const cartFetchGenRef = useRef(0);
+  /** 서버 초기 로드가 끝나기 전에는 빈 목록으로 replaceUserCart가 호출되면 안 됨 */
+  const cartInitialFetchDoneRef = useRef(false);
 
   const removeFly = useCallback((id: string) => {
     setFlyItems((items) => items.filter((x) => x.id !== id));
@@ -137,6 +139,7 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
 
     if (!supabaseConfigured || !userId) {
       cartFetchGenRef.current += 1;
+      cartInitialFetchDoneRef.current = true;
       setBuilderItems([]);
       lastGoodCartRef.current = [];
       setHydrated(true);
@@ -145,6 +148,7 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
 
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
+      cartInitialFetchDoneRef.current = true;
       setHydrated(true);
       return;
     }
@@ -152,6 +156,9 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
     const gen = ++cartFetchGenRef.current;
     let cancelled = false;
     restoreGuardRef.current = true;
+    cartInitialFetchDoneRef.current = false;
+    /** 서버에서 장바구니를 불러오기 전에는 동기화 이펙트가 빈 배열로 DB를 덮어쓰면 안 됨 */
+    setHydrated(false);
 
     void (async () => {
       const tokenReady = await waitForSupabaseAccessToken(supabase);
@@ -181,6 +188,7 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
         );
       }
       restoreGuardRef.current = false;
+      cartInitialFetchDoneRef.current = true;
       setHydrated(true);
     })();
 
@@ -191,6 +199,7 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
 
   useEffect(() => {
     if (!hydrated || authLoading) return;
+    if (!cartInitialFetchDoneRef.current) return;
     if (restoreGuardRef.current) return;
     if (!supabaseConfigured || !userId) return;
     const supabase = getSupabaseBrowserClient();

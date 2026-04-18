@@ -4,6 +4,7 @@ import { ShieldCheck, UserPlus2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
+import { GoogleOAuthButton } from "@/components/GoogleOAuthButton";
 import { ProfileAvatarPicker } from "@/components/ProfileAvatarPicker";
 import { SocialLinkFields } from "@/components/SocialLinkFields";
 import { DEFAULT_BEST_REVIEW_AVATAR_SEED } from "@/data/reelsAvatarPresets";
@@ -124,6 +125,33 @@ function SignupLoginLink() {
         로그인
       </Link>
     </p>
+  );
+}
+
+function SignupGoogleSection() {
+  const params = useSearchParams();
+  const redirect = params.get("redirect");
+  return (
+    <div className="mt-5 space-y-3">
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center" aria-hidden>
+          <span className="w-full border-t border-white/15 [html[data-theme='light']_&]:border-zinc-300" />
+        </div>
+        <div className="relative flex justify-center text-[11px] font-semibold uppercase tracking-wider">
+          <span className="bg-[#07080f] px-3 text-zinc-500 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-500">
+            또는 Google로 가입·로그인
+          </span>
+        </div>
+      </div>
+      <GoogleOAuthButton nextPath={redirect} label="Google 계정으로 계속하기" />
+      <p className="text-center text-[11px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        Google로 처음 들어오면 계정이 만들어집니다. 이메일·이름은 Google에 등록된 정보가
+        인증에 사용됩니다.{" "}
+        <Link href="/privacy" className="font-semibold text-reels-cyan hover:underline">
+          개인정보처리방침
+        </Link>
+      </p>
+    </div>
   );
 }
 
@@ -605,6 +633,9 @@ export default function SignupPage() {
         ) : null}
         <Suspense fallback={null}>
           <SignupLoginLink />
+        </Suspense>
+        <Suspense fallback={null}>
+          <SignupGoogleSection />
         </Suspense>
 
         <form className="mt-6 space-y-6" onSubmit={onSubmit}>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
+import { GoogleOAuthButton } from "@/components/GoogleOAuthButton";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { postLoginRedirectPath } from "@/lib/postLoginRedirect";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
@@ -29,6 +30,11 @@ export function LoginPageClient() {
     if (emailFromQuery) setEmail(emailFromQuery);
     if (registered === "1") {
       setNotice("회원가입이 완료되었습니다. 방금 만든 계정으로 로그인해 주세요.");
+    }
+    if (searchParams.get("error") === "oauth") {
+      setError(
+        "Google 로그인에 실패했습니다. Supabase 대시보드에서 Google 제공자를 켜고, 리다이렉트 URL에 이 사이트 주소를 등록했는지 확인해 주세요.",
+      );
     }
   }, [searchParams]);
 
@@ -161,6 +167,25 @@ export function LoginPageClient() {
             {busy ? "로그인 중…" : "홈으로 로그인"}
           </button>
         </form>
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center" aria-hidden>
+            <span className="w-full border-t border-white/15 [html[data-theme='light']_&]:border-zinc-300" />
+          </div>
+          <div className="relative flex justify-center text-[11px] font-semibold uppercase tracking-wider">
+            <span className="bg-[#07080f] px-3 text-zinc-500 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-500">
+              또는
+            </span>
+          </div>
+        </div>
+
+        <GoogleOAuthButton
+          nextPath={searchParams.get("redirect")}
+          label="Google로 로그인"
+        />
+        <p className="mt-3 text-center text-[11px] leading-relaxed text-zinc-500">
+          처음이면 Google 계정으로 가입됩니다. Supabase에서 Google 제공자를 활성화해야 합니다.
+        </p>
 
         <p className="mt-4 text-center text-xs text-zinc-500">
           아직 계정이 없다면{" "}

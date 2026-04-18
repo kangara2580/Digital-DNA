@@ -38,6 +38,13 @@ export default function PrivacyPage() {
             </li>
             <li>
               <strong className="font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
+                소셜 로그인(Google):
+              </strong>{" "}
+              Google 계정으로 로그인·회원가입을 선택하면 Google이 제공하는 식별자·이메일·이름 등이
+              Supabase 인증 처리를 위해 전달되며, 본인 확인·계정 연결 목적에만 사용됩니다.
+            </li>
+            <li>
+              <strong className="font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
                 서비스 이용 기록:
               </strong>{" "}
               결제 내역, 소스 다운로드 기록 (구매 내역 증빙 및 라이선스 관리용)
@@ -95,6 +102,10 @@ export default function PrivacyPage() {
           <ul className="list-disc space-y-3 pl-5 text-[14px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
             <li>
               우리는 사용자의 동의 없이 개인정보를 외부에 판매하거나 제공하지 않습니다.
+            </li>
+            <li>
+              소셜 로그인 시 인증 제공자(Google LLC 등)가 본인 확인을 위해 정보를 처리할 수
+              있습니다. 자세한 내용은 해당 서비스의 개인정보처리방침을 참고해 주세요.
             </li>
             <li>모든 데이터는 최신 보안 기술을 통해 암호화되어 관리됩니다.</li>
           </ul>
