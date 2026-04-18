@@ -8,7 +8,7 @@ function localFallbackVideoSrc(seed: string): string {
   return `/videos/sample${idx}.mp4`;
 }
 
-/** TikTok 앱 승인 전까지 사용하는 댄스형 Mock Top10 */
+/** 홈 「실시간 인기순위」 데모용 샘플 클립 Top 10 (`TrendingRankSection`) */
 export const TIKTOK_MOCK_DANCE_CLIPS: FeedVideo[] = [
   {
     id: "mock-dance-1",

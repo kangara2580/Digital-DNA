@@ -4,12 +4,15 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { TIKTOK_MOCK_DANCE_CLIPS } from "@/data/tiktokMockTrending";
 import { type FeedVideo } from "@/data/videos";
 import { usePassVerticalWheelToPage } from "@/hooks/usePassVerticalWheelToPage";
 import { useTrendingLiveRanking } from "@/hooks/useTrendingLiveRanking";
 import { SectionMoreLink } from "./SectionMoreLink";
 import { TrendingVideoStatsFooter } from "./TrendingVideoStatsFooter";
 import { VideoCard } from "./VideoCard";
+
+const TRENDING_SAMPLE_TOP10 = TIKTOK_MOCK_DANCE_CLIPS.slice(0, 10);
 
 /** Top 10 + 끝 더보기 — 가로 스크롤 (lg+: 한 화면에 카드 5개 분량) */
 const TRENDING_STRIP =
@@ -32,48 +35,6 @@ const ARROW_BTN =
   "pointer-events-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/60 text-zinc-200 shadow-lg shadow-black/40 backdrop-blur-md transition hover:border-reels-cyan/35 hover:text-white active:scale-[0.97] motion-reduce:transition-none";
 
 const LAYOUT_EASE = [0.22, 1, 0.36, 1] as const;
-const TIKTOK_LOGIN_BTN =
-  "inline-flex items-center justify-center rounded-full border border-reels-cyan/35 bg-reels-cyan/15 px-3 py-1.5 text-[12px] font-bold text-reels-cyan transition-colors hover:border-reels-cyan/60 hover:bg-reels-cyan/25";
-
-function toOAuthErrorMessage(code: string): string {
-  switch (code) {
-    case "non_sandbox_target":
-      return "TikTok Sandbox 앱이면, 개발자 포털 Sandbox settings의 Target users에 지금 로그인하는 TikTok 계정을 추가해야 해요. 프로덕션 앱·키를 쓰면 샌드박스 제한 없이 동작합니다.";
-    case "access_denied":
-      return "TikTok 로그인 권한이 거부되었어요. 다시 로그인해서 권한을 허용해주세요.";
-    case "state_mismatch":
-      return "로그인 세션이 만료되었어요. Login with TikTok을 다시 눌러주세요.";
-    case "missing_code_verifier":
-      return "PKCE 검증 정보가 없어요. Login with TikTok을 처음부터 다시 눌러주세요.";
-    case "missing_code":
-    case "token_exchange_failed":
-      return "TikTok 인증 코드 처리에 실패했어요. 잠시 후 다시 시도해주세요.";
-    default:
-      return `TikTok 로그인에 실패했어요. (${code})`;
-  }
-}
-
-type TrendingApiResult =
-  | {
-      source: "tiktok";
-      items: FeedVideo[];
-      cursor?: number;
-      hasMore?: boolean;
-    }
-  | {
-      source: "fallback";
-      reason: string;
-      message: string;
-      detail?: string;
-      items: FeedVideo[];
-    }
-  | {
-      source: "auth" | "error";
-      reason: string;
-      message: string;
-      detail?: string;
-      items?: FeedVideo[];
-    };
 
 function SkeletonRow() {
   return (
@@ -98,7 +59,6 @@ export function TrendingRankSection() {
   const [trendingClips, setTrendingClips] = useState<FeedVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [authRequired, setAuthRequired] = useState(false);
 
   const liveRows = useTrendingLiveRanking(trendingClips, {
     reducedMotion: reduceMotion,
@@ -144,47 +104,22 @@ export function TrendingRankSection() {
     if (!el) return;
     const max = el.scrollWidth - el.clientWidth;
     if (max <= 0) return;
-    /** 한 번에 너무 멀리 가지 않아, 약 3~4번 누르면 끝(더보기)까지 도달 */
     const step = Math.min(Math.max(el.clientWidth * 0.32, 220), max / 3.15);
     el.scrollBy({ left: dir * step, behavior: "smooth" });
   };
 
-  const loadTrending = useCallback(async () => {
+  const loadTrending = useCallback(() => {
     setLoading(true);
     setErrorMessage(null);
-    setAuthRequired(false);
     try {
-      const res = await fetch("/api/trending/tiktok?limit=10", {
-        cache: "no-store",
-      });
-      const data = (await res.json()) as TrendingApiResult;
-      if (res.status === 401 || data.source === "auth") {
-        const authMessage =
-          data.source === "auth"
-            ? data.message
-            : "로그인이 필요합니다. Login with TikTok을 눌러주세요.";
-        setTrendingClips([]);
-        setAuthRequired(true);
-        setErrorMessage(authMessage);
-        return;
-      }
-      if (data.source === "error") {
-        setTrendingClips(data.items ?? []);
-        setErrorMessage(
-          data.detail
-            ? `${data.message || "영상을 불러오지 못했어요."} (${data.detail})`
-            : data.message || "영상을 불러오지 못했어요.",
-        );
-        return;
-      }
-
-      setTrendingClips(Array.isArray(data.items) ? data.items : []);
-      if (!data.items?.length) {
-        setErrorMessage("표시할 TikTok 영상이 없어요.");
+      const next = TRENDING_SAMPLE_TOP10.map((v) => ({ ...v }));
+      setTrendingClips(next);
+      if (!next.length) {
+        setErrorMessage("표시할 인기 영상이 없습니다.");
       }
     } catch {
       setTrendingClips([]);
-      setErrorMessage("네트워크 오류가 발생했어요. 잠시 후 다시 시도해주세요.");
+      setErrorMessage("목록을 불러오지 못했어요. 다시 시도해주세요.");
     } finally {
       setLoading(false);
     }
@@ -193,29 +128,6 @@ export function TrendingRankSection() {
   useEffect(() => {
     void loadTrending();
   }, [loadTrending]);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const oauthError = params.get("tiktok_error");
-    const oauthDetail = params.get("tiktok_detail");
-    if (!oauthError) return;
-    setAuthRequired(true);
-    const base = toOAuthErrorMessage(oauthError);
-    setErrorMessage(
-      oauthDetail && oauthError !== "non_sandbox_target"
-        ? `${base} (${oauthDetail})`
-        : base,
-    );
-    const u = new URL(window.location.href);
-    u.searchParams.delete("tiktok_error");
-    u.searchParams.delete("tiktok_detail");
-    const qs = u.searchParams.toString();
-    window.history.replaceState(
-      {},
-      "",
-      `${u.pathname}${qs ? `?${qs}` : ""}${u.hash}`,
-    );
-  }, []);
 
   return (
     <section className="border-t border-white/10 bg-transparent" aria-labelledby="trending-rank-heading">
@@ -228,6 +140,9 @@ export function TrendingRankSection() {
             >
               실시간 인기순위 영상
             </h2>
+            <p className="mt-1 text-[12px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              데모용 샘플 클립 Top 10
+            </p>
             {errorMessage ? (
               <p className="mt-1.5 text-[12px] font-medium text-rose-300 [html[data-theme='light']_&]:text-rose-600">
                 {errorMessage}
@@ -235,19 +150,6 @@ export function TrendingRankSection() {
             ) : null}
           </div>
           <div className="flex shrink-0 items-center gap-2 self-stretch sm:self-center">
-            {authRequired ? (
-              <a href="/api/auth/tiktok/login" className={TIKTOK_LOGIN_BTN}>
-                Login with TikTok
-              </a>
-            ) : null}
-            {!authRequired && !loading && liveRows.length > 0 ? (
-              <Link
-                href="/api/auth/tiktok/logout?next=/"
-                className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-zinc-200 transition-colors hover:border-white/35 hover:bg-white/10"
-              >
-                로그아웃
-              </Link>
-            ) : null}
             <SectionMoreLink
               category="best"
               className="shrink-0 self-stretch sm:self-center"
@@ -261,16 +163,9 @@ export function TrendingRankSection() {
           {!loading && liveRows.length === 0 ? (
             <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-6 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
               <p className="text-[14px] font-medium text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-                {authRequired
-                  ? "TikTok 로그인 후 영상 목록을 불러올 수 있어요."
-                  : "표시할 인기 영상이 없습니다."}
+                표시할 인기 영상이 없습니다.
               </p>
               <div className="mt-3 flex items-center justify-center gap-2">
-                {authRequired ? (
-                  <a href="/api/auth/tiktok/login" className={TIKTOK_LOGIN_BTN}>
-                    Login with TikTok
-                  </a>
-                ) : null}
                 <button
                   type="button"
                   className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-zinc-200 transition-colors hover:border-white/35 hover:bg-white/10"
