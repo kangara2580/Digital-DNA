@@ -151,10 +151,10 @@ export function VideoCard({
     if (normalizedPoster) return normalizedPoster;
     // TikTok iframe은 카드를 그릴 때 정지 프레임을 이미 보여줄 수 있으므로
     // 그라데이션 fallback을 쓰지 않습니다.
-    if (isTikTokEmbed) return "";
+    if (video.tiktokEmbedId) return "";
     if (isLocalPublicVideo(previewSrc)) return "";
     return fallbackPoster;
-  }, [normalizedPoster, previewSrc, fallbackPoster, isTikTokEmbed]);
+  }, [normalizedPoster, previewSrc, fallbackPoster, video.tiktokEmbedId]);
   const [thumbnailSrc, setThumbnailSrc] = useState(defaultThumbnail);
   const [isPreviewing, setIsPreviewing] = useState(false);
 
