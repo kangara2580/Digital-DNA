@@ -53,10 +53,12 @@ function RotatingSearchField({
   compact,
   q,
   setQ,
+  showTrailingIcon = true,
 }: {
   compact: boolean;
   q: string;
   setQ: (v: string) => void;
+  showTrailingIcon?: boolean;
 }) {
   const pathname = usePathname();
   const [phrases, setPhrases] = useState<string[]>(() => [...SEARCH_GUIDE_PHRASES]);
@@ -93,15 +95,17 @@ function RotatingSearchField({
         enterKeyHint="search"
         className={`mall-search w-full rounded-full border text-zinc-100 outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,color] ${easeLayout} ${searchEase} placeholder:text-zinc-600 focus:ring-0 [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='dark']_&]:placeholder:text-zinc-300 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-500 ${
           compact
-            ? "h-9 border-white/15 bg-white/[0.06] pl-3 pr-10 text-[13px] hover:border-reels-cyan/35 hover:bg-white/10 focus:border-reels-cyan/50 focus:bg-white/[0.09] [html[data-theme='dark']_&]:border-white/20 [html[data-theme='dark']_&]:bg-white/[0.1] [html[data-theme='dark']_&]:hover:bg-white/[0.14] [html[data-theme='dark']_&]:focus:bg-white/[0.16] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:border-zinc-400 [html[data-theme='light']_&]:focus:bg-white"
-            : "h-[3.25rem] border-2 border-white/20 bg-white/[0.08] pl-6 pr-14 text-[15px] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-reels-cyan/40 hover:bg-white/12 focus:border-reels-cyan/55 focus:bg-white/[0.1] [html[data-theme='dark']_&]:border-white/25 [html[data-theme='dark']_&]:bg-white/[0.12] [html[data-theme='dark']_&]:hover:bg-white/[0.16] [html[data-theme='dark']_&]:focus:bg-white/[0.18] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] [html[data-theme='light']_&]:hover:border-reels-cyan/35 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:focus:border-reels-cyan/35 [html[data-theme='light']_&]:focus:bg-white"
+            ? `h-9 border-white/15 bg-white/[0.06] pl-3 ${showTrailingIcon ? "pr-10" : "pr-3"} text-[13px] hover:border-reels-cyan/35 hover:bg-white/10 focus:border-reels-cyan/50 focus:bg-white/[0.09] [html[data-theme='dark']_&]:border-white/20 [html[data-theme='dark']_&]:bg-white/[0.1] [html[data-theme='dark']_&]:hover:bg-white/[0.14] [html[data-theme='dark']_&]:focus:bg-white/[0.16] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:border-zinc-400 [html[data-theme='light']_&]:focus:bg-white`
+            : `h-[3.25rem] border-2 border-white/20 bg-white/[0.08] pl-6 ${showTrailingIcon ? "pr-14" : "pr-6"} text-[15px] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-reels-cyan/40 hover:bg-white/12 focus:border-reels-cyan/55 focus:bg-white/[0.1] [html[data-theme='dark']_&]:border-white/25 [html[data-theme='dark']_&]:bg-white/[0.12] [html[data-theme='dark']_&]:hover:bg-white/[0.16] [html[data-theme='dark']_&]:focus:bg-white/[0.18] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] [html[data-theme='light']_&]:hover:border-reels-cyan/35 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:focus:border-reels-cyan/35 [html[data-theme='light']_&]:focus:bg-white`
         }`}
         aria-label={`릴스 검색. 안내: ${current}`}
       />
       {showGuide ? (
         <div
           className={`pointer-events-none absolute inset-y-0 left-0 flex items-center overflow-hidden text-left text-zinc-500 [html[data-theme='dark']_&]:text-zinc-300 [html[data-theme='light']_&]:text-zinc-500 ${
-            compact ? "right-10 pl-3 text-[13px]" : "right-14 pl-6 text-[15px]"
+            compact
+              ? `${showTrailingIcon ? "right-10" : "right-3"} pl-3 text-[13px]`
+              : `${showTrailingIcon ? "right-14" : "right-6"} pl-6 text-[15px]`
           }`}
           aria-hidden
         >
@@ -116,20 +120,22 @@ function RotatingSearchField({
           </div>
         </div>
       ) : null}
-      <span
-        className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-zinc-500 [html[data-theme='dark']_&]:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 ${
-          compact ? "right-2.5" : "right-4"
-        }`}
-        aria-hidden
-      >
-        <span className={`block ${searchIconMotion}`}>
-          <Search
-            className={`shrink-0 ${compact ? "h-4 w-4" : "h-5 w-5"}`}
-            strokeWidth={2}
-            aria-hidden
-          />
+      {showTrailingIcon ? (
+        <span
+          className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-zinc-500 [html[data-theme='dark']_&]:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 ${
+            compact ? "right-2.5" : "right-4"
+          }`}
+          aria-hidden
+        >
+          <span className={`block ${searchIconMotion}`}>
+            <Search
+              className={`shrink-0 ${compact ? "h-4 w-4" : "h-5 w-5"}`}
+              strokeWidth={2}
+              aria-hidden
+            />
+          </span>
         </span>
-      </span>
+      ) : null}
     </div>
   );
 }
@@ -416,13 +422,22 @@ export function MallTopNav() {
                   className="ml-0.5 h-6 w-px bg-white/25 [html[data-theme='light']_&]:bg-zinc-300"
                   aria-hidden
                 />
-                {detailSearchOpen ? (
-                  <div className="absolute left-0 top-[calc(100%+0.4rem)] z-50 w-[min(68vw,380px)]">
-                    <div className="rounded-full border border-white/12 bg-black/12 px-2 py-1 backdrop-blur-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/30">
-                      <RotatingSearchField compact q={q} setQ={setQ} />
+                <div
+                  className={`absolute right-0 top-[calc(100%+0.4rem)] z-50 w-[min(68vw,380px)] origin-top-right transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1.28,0.36,1)] ${
+                    detailSearchOpen
+                      ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
+                      : "pointer-events-none -translate-y-1 scale-[0.88] opacity-0"
+                  }`}
+                >
+                  <div className="rounded-full border border-white/12 bg-black/12 px-2 py-1 backdrop-blur-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/30">
+                    <RotatingSearchField
+                      compact
+                      q={q}
+                      setQ={setQ}
+                      showTrailingIcon={false}
+                    />
                     </div>
-                  </div>
-                ) : null}
+                </div>
               </div>
             ) : (
               <div className={`flex shrink-0 items-center ${easeLayout}`}>
