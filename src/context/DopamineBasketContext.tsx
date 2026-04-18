@@ -22,6 +22,7 @@ import {
   replaceUserCart,
 } from "@/lib/supabaseUserSync";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
+import { waitForSupabaseAccessToken } from "@/lib/waitSupabaseSessionReady";
 
 const FALLBACK_FLY_POSTER =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
@@ -66,7 +67,13 @@ function videosToBuilderItems(videos: FeedVideo[]): BuilderTimelineItem[] {
 }
 
 export function DopamineBasketProvider({ children }: { children: React.ReactNode }) {
-  const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
+  const {
+    user,
+    session,
+    loading: authLoading,
+    supabaseConfigured,
+  } = useAuthSession();
+  const userId = user?.id ?? null;
   const cartAnchorRef = useRef<HTMLAnchorElement | null>(null);
   const [builderItems, setBuilderItems] = useState<BuilderTimelineItem[]>([]);
   const [flyItems, setFlyItems] = useState<CartFlyItem[]>([]);
@@ -74,6 +81,8 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
   const builderSeq = useRef(0);
   const flySeq = useRef(0);
   const restoreGuardRef = useRef(false);
+  const lastGoodCartRef = useRef<BuilderTimelineItem[]>([]);
+  const cartFetchGenRef = useRef(0);
 
   const removeFly = useCallback((id: string) => {
     setFlyItems((items) => items.filter((x) => x.id !== id));
@@ -82,7 +91,7 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
   const launchFromCartButton = useCallback(
     (buttonEl: HTMLElement, video: FeedVideo, poster?: string) => {
       if (typeof window === "undefined") return;
-      if (!supabaseConfigured || !user) {
+      if (!supabaseConfigured || !userId) {
         window.alert("로그인 후 장바구니를 사용할 수 있습니다.");
         return;
       }
@@ -110,7 +119,7 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
         },
       ]);
     },
-    [supabaseConfigured, user],
+    [supabaseConfigured, userId],
   );
 
   const removeBuilderItem = useCallback((key: string) => {
@@ -123,52 +132,75 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
 
   useEffect(() => {
     if (authLoading) {
-      setHydrated(false);
       return;
     }
 
-    if (!supabaseConfigured || !user) {
+    if (!supabaseConfigured || !userId) {
+      cartFetchGenRef.current += 1;
       setBuilderItems([]);
+      lastGoodCartRef.current = [];
       setHydrated(true);
       return;
     }
 
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
-      setBuilderItems([]);
       setHydrated(true);
       return;
     }
 
+    const gen = ++cartFetchGenRef.current;
     let cancelled = false;
     restoreGuardRef.current = true;
 
     void (async () => {
-      const server = await fetchUserCartVideos(supabase, user.id);
-      if (!cancelled) {
-        setBuilderItems(videosToBuilderItems(server));
+      const tokenReady = await waitForSupabaseAccessToken(supabase);
+      if (cancelled || gen !== cartFetchGenRef.current) return;
+      if (!tokenReady) {
+        if (process.env.NODE_ENV === "development") {
+          console.warn("[cart] initial fetch skipped — session token not ready");
+        }
+        restoreGuardRef.current = false;
         setHydrated(true);
+        return;
+      }
+
+      const result = await fetchUserCartVideos(supabase, userId);
+      if (cancelled || gen !== cartFetchGenRef.current) return;
+
+      if (result.ok) {
+        const items = videosToBuilderItems(result.videos);
+        lastGoodCartRef.current = items;
+        setBuilderItems(items);
+      } else {
+        if (process.env.NODE_ENV === "development") {
+          console.warn("[cart] fetch failed — keeping previous items", result.errorMessage);
+        }
+        setBuilderItems((prev) =>
+          prev.length > 0 ? prev : lastGoodCartRef.current,
+        );
       }
       restoreGuardRef.current = false;
+      setHydrated(true);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [authLoading, supabaseConfigured, user]);
+  }, [authLoading, supabaseConfigured, userId, session?.access_token]);
 
   useEffect(() => {
     if (!hydrated || authLoading) return;
     if (restoreGuardRef.current) return;
-    if (!supabaseConfigured || !user) return;
+    if (!supabaseConfigured || !userId) return;
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
     const videos = builderItems.map((b) => b.video);
     const handle = window.setTimeout(() => {
-      void replaceUserCart(supabase, user.id, videos);
+      void replaceUserCart(supabase, userId, videos);
     }, 420);
     return () => window.clearTimeout(handle);
-  }, [builderItems, hydrated, authLoading, supabaseConfigured, user]);
+  }, [builderItems, hydrated, authLoading, supabaseConfigured, userId]);
 
   const cartCount = builderItems.length;
 

@@ -12,11 +12,15 @@ function isFeedVideo(v: unknown): v is FeedVideo {
   return typeof o.id === "string" && typeof o.title === "string";
 }
 
+export type FetchCartVideosResult =
+  | { ok: true; videos: FeedVideo[] }
+  | { ok: false; errorMessage: string; errorCode?: string };
+
 /** 장바구니: 서버에서 영상 순서대로 로드 */
 export async function fetchUserCartVideos(
   supabase: SupabaseClient,
   userId: string,
-): Promise<FeedVideo[]> {
+): Promise<FetchCartVideosResult> {
   try {
     const { data, error } = await supabase
       .from("user_cart_items")
@@ -24,12 +28,20 @@ export async function fetchUserCartVideos(
       .eq("user_id", userId)
       .order("sort_index", { ascending: true });
 
-    if (error || !data) return [];
-    return (data as { video: unknown }[])
-      .map((r) => r.video)
+    if (error) {
+      return {
+        ok: false,
+        errorMessage: error.message,
+        errorCode: error.code,
+      };
+    }
+    const videos = (data ?? [])
+      .map((r: { video: unknown }) => r.video)
       .filter(isFeedVideo);
-  } catch {
-    return [];
+    return { ok: true, videos };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { ok: false, errorMessage: msg };
   }
 }
 

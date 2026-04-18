@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import type { FeedVideo } from "@/data/videos";
@@ -18,6 +19,7 @@ import {
   type FavoriteRow,
 } from "@/lib/supabaseFavorites";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { waitForSupabaseAccessToken } from "@/lib/waitSupabaseSessionReady";
 
 export type WishlistEntry = {
   id: string;
@@ -25,15 +27,13 @@ export type WishlistEntry = {
 };
 
 function rowsToWishlistEntries(rows: FavoriteRow[]): WishlistEntry[] {
-  return rows
-    .filter((r) => r.kind === "wishlist")
-    .map((r) => {
-      const t = Date.parse(r.created_at);
-      return {
-        id: r.video_id,
-        savedAt: Number.isFinite(t) ? t : Date.now(),
-      };
-    });
+  return rows.map((r) => {
+    const t = Date.parse(r.created_at);
+    return {
+      id: r.video_id,
+      savedAt: Number.isFinite(t) ? t : Date.now(),
+    };
+  });
 }
 
 type Ctx = {
@@ -59,48 +59,95 @@ export function useWishlistOptional() {
 }
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
-  const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
+  const {
+    user,
+    session,
+    loading: authLoading,
+    supabaseConfigured,
+  } = useAuthSession();
+  const userId = user?.id ?? null;
   const [entries, setEntries] = useState<WishlistEntry[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  /** fetch 실패 시 빈 배열로 덮어쓰지 않기 위한 마지막 성공 스냅샷 */
+  const lastGoodEntriesRef = useRef<WishlistEntry[]>([]);
+  const fetchGenerationRef = useRef(0);
 
   const reloadFromServer = useCallback(async () => {
     const supabase = getSupabaseBrowserClient();
-    if (!user || !supabase) return;
-    const rows = await fetchUserFavorites(supabase, user.id);
-    setEntries(rowsToWishlistEntries(rows));
-  }, [user]);
+    if (!userId || !supabase) return;
+    const ready = await waitForSupabaseAccessToken(supabase);
+    if (!ready) {
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[wishlist] reload skipped — no access token");
+      }
+      return;
+    }
+    const result = await fetchUserFavorites(supabase, userId);
+    if (result.ok) {
+      const next = rowsToWishlistEntries(result.rows);
+      lastGoodEntriesRef.current = next;
+      setEntries(next);
+    } else if (process.env.NODE_ENV === "development") {
+      console.warn("[wishlist] reload failed", result.errorMessage, result.errorCode);
+    }
+  }, [userId]);
 
   useEffect(() => {
     if (authLoading) {
-      setHydrated(false);
       return;
     }
 
-    if (!supabaseConfigured || !user) {
+    if (!supabaseConfigured || !userId) {
+      fetchGenerationRef.current += 1;
       setEntries([]);
+      lastGoodEntriesRef.current = [];
       setHydrated(true);
       return;
     }
 
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
-      setEntries([]);
       setHydrated(true);
       return;
     }
 
+    const gen = ++fetchGenerationRef.current;
     let cancelled = false;
+
     void (async () => {
-      const rows = await fetchUserFavorites(supabase, user.id);
-      if (cancelled) return;
-      setEntries(rowsToWishlistEntries(rows));
+      const tokenReady = await waitForSupabaseAccessToken(supabase);
+      if (cancelled || gen !== fetchGenerationRef.current) return;
+      if (!tokenReady) {
+        if (process.env.NODE_ENV === "development") {
+          console.warn("[wishlist] initial fetch skipped — session token not ready");
+        }
+        setHydrated(true);
+        return;
+      }
+
+      const result = await fetchUserFavorites(supabase, userId);
+      if (cancelled || gen !== fetchGenerationRef.current) return;
+
+      if (result.ok) {
+        const next = rowsToWishlistEntries(result.rows);
+        lastGoodEntriesRef.current = next;
+        setEntries(next);
+      } else {
+        if (process.env.NODE_ENV === "development") {
+          console.warn("[wishlist] fetch failed — keeping previous entries", {
+            message: result.errorMessage,
+            code: result.errorCode,
+          });
+        }
+        setEntries((prev) => (prev.length > 0 ? prev : lastGoodEntriesRef.current));
+      }
       setHydrated(true);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [authLoading, supabaseConfigured, user]);
+  }, [authLoading, supabaseConfigured, userId, session?.access_token]);
 
   const isSaved = useCallback(
     (videoId: string) => entries.some((e) => e.id === videoId),
@@ -110,51 +157,79 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const toggle = useCallback(
     (video: FeedVideo) => {
       if (authLoading) return;
-      if (!supabaseConfigured || !user) {
+      if (!supabaseConfigured || !userId) {
         if (typeof window !== "undefined") {
           window.alert("로그인 후 이용 가능합니다.");
         }
         return;
       }
       const supabase = getSupabaseBrowserClient();
-      if (!supabase) return;
-
-      const on = entries.some((e) => e.id === video.id);
-      if (on) {
-        setEntries((prev) => prev.filter((e) => e.id !== video.id));
-        void removeFavorite(supabase, user.id, video.id, "wishlist").then(
-          (ok) => {
-            if (!ok) void reloadFromServer();
-          },
-        );
-      } else {
-        const now = Date.now();
-        setEntries((prev) => [{ id: video.id, savedAt: now }, ...prev]);
-        void addFavorite(supabase, user.id, video.id, "wishlist").then((ok) => {
-          if (!ok) void reloadFromServer();
-        });
+      if (!supabase) {
+        if (typeof window !== "undefined") {
+          window.alert("로그인 후 이용 가능합니다.");
+        }
+        return;
       }
+
+      setEntries((prev) => {
+        const on = prev.some((e) => e.id === video.id);
+        if (on) {
+          const removed = prev.find((e) => e.id === video.id);
+          void removeFavorite(supabase, userId, video.id, "wishlist").then((r) => {
+            if (!r.ok && removed) {
+              setEntries((p) =>
+                p.some((e) => e.id === video.id) ? p : [removed, ...p],
+              );
+              void reloadFromServer();
+            }
+          });
+          return prev.filter((e) => e.id !== video.id);
+        }
+
+        const now = Date.now();
+        const optimistic: WishlistEntry = { id: video.id, savedAt: now };
+        void addFavorite(supabase, userId, video.id, "wishlist", now).then((r) => {
+          if (!r.ok) {
+            if (process.env.NODE_ENV === "development") {
+              console.warn("[wishlist] addFavorite failed", r.errorMessage, r.errorCode);
+            }
+            setEntries((p) => p.filter((e) => e.id !== video.id));
+            void reloadFromServer();
+          }
+        });
+        return [optimistic, ...prev];
+      });
     },
-    [authLoading, supabaseConfigured, user, entries, reloadFromServer],
+    [authLoading, supabaseConfigured, userId, reloadFromServer],
   );
 
   const remove = useCallback(
     (videoId: string) => {
       if (authLoading) return;
-      if (!supabaseConfigured || !user) return;
+      if (!supabaseConfigured || !userId) return;
       const supabase = getSupabaseBrowserClient();
       if (!supabase) return;
-      setEntries((prev) => prev.filter((e) => e.id !== videoId));
-      void removeFavorite(supabase, user.id, videoId, "wishlist").then((ok) => {
-        if (!ok) void reloadFromServer();
+
+      setEntries((prev) => {
+        const removed = prev.find((e) => e.id === videoId);
+        void removeFavorite(supabase, userId, videoId, "wishlist").then((r) => {
+          if (!r.ok && removed) {
+            setEntries((p) =>
+              p.some((e) => e.id === videoId) ? p : [removed, ...p],
+            );
+            void reloadFromServer();
+          }
+        });
+        return prev.filter((e) => e.id !== videoId);
       });
     },
-    [authLoading, supabaseConfigured, user, reloadFromServer],
+    [authLoading, supabaseConfigured, userId, reloadFromServer],
   );
 
   const clear = useCallback(async () => {
-    if (!supabaseConfigured || !user) {
+    if (!supabaseConfigured || !userId) {
       setEntries([]);
+      lastGoodEntriesRef.current = [];
       return;
     }
     const supabase = getSupabaseBrowserClient();
@@ -162,10 +237,14 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       setEntries([]);
       return;
     }
-    const ok = await removeAllWishlistForUser(supabase, user.id);
-    if (ok) setEntries([]);
-    else await reloadFromServer();
-  }, [supabaseConfigured, user, reloadFromServer]);
+    const ok = await removeAllWishlistForUser(supabase, userId);
+    if (ok) {
+      setEntries([]);
+      lastGoodEntriesRef.current = [];
+    } else {
+      await reloadFromServer();
+    }
+  }, [supabaseConfigured, userId, reloadFromServer]);
 
   const value = useMemo(
     () => ({

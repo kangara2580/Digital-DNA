@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { CartIcon } from "@/components/CartIcon";
 import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
-import { useWishlistOptional } from "@/context/WishlistContext";
+import { useWishlist } from "@/context/WishlistContext";
 import type { FeedVideo } from "@/data/videos";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 
@@ -20,13 +20,13 @@ function formatPrice(v: FeedVideo): string {
 /** 「영감이 필요한 순간」 그리드 셀 — VideoCard와 동일하게 호버 시 장바구니·찜 노출 */
 export function InspirationVideoCell({ video }: { video: FeedVideo }) {
   const dopamine = useDopamineBasketOptional();
-  const wishlist = useWishlistOptional();
+  const wishlist = useWishlist();
   const reduceMotion = useReducedMotion() ?? false;
   const cartBtnRef = useRef<HTMLButtonElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const inView = useInView(wrapRef, { amount: 0.2, margin: "0px 0px -8% 0px", once: false });
-  const liked = wishlist?.isSaved(video.id) ?? false;
+  const liked = wishlist.isSaved(video.id);
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(video.src);
   const fallbackPoster = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#ff0055'/><stop offset='100%' stop-color='#00f2ea'/></linearGradient></defs><rect width='600' height='600' fill='#050505'/><rect x='20' y='20' width='560' height='560' rx='36' fill='url(#g)' opacity='0.86'/></svg>",
@@ -109,7 +109,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                wishlist?.toggle(video);
+                wishlist.toggle(video);
               }}
             >
               <span className="relative isolate block h-7 w-7 shrink-0 sm:h-8 sm:w-8">

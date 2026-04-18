@@ -13,7 +13,7 @@ import {
 } from "react";
 import { RelatedDnaQuilt } from "@/components/RelatedDnaQuilt";
 import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
-import { useWishlistOptional } from "@/context/WishlistContext";
+import { useWishlist } from "@/context/WishlistContext";
 import type { FeedVideo } from "@/data/videos";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
 import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
@@ -119,7 +119,7 @@ export function VideoCard({
   preloadMode = "metadata",
 }: Props) {
   const dopamine = useDopamineBasketOptional();
-  const wishlist = useWishlistOptional();
+  const wishlist = useWishlist();
   const reduceMotion = useReducedMotion() ?? false;
   const commerce = getCommerceMeta(video.id);
   const remaining = clonesRemaining(commerce);
@@ -127,7 +127,7 @@ export function VideoCard({
   const showMicro = false;
   const showAiBadge = video.isAiGenerated === true;
   const cartBtnRef = useRef<HTMLButtonElement>(null);
-  const liked = wishlist?.isSaved(video.id) ?? false;
+  const liked = wishlist.isSaved(video.id);
   const reelAspectPortrait =
     reelLayout && reelStrip ? "aspect-[3/4] w-full" : "aspect-[9/16] w-full";
   const reelAspectLandscape =
@@ -499,7 +499,7 @@ export function VideoCard({
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                wishlist?.toggle(video);
+                wishlist.toggle(video);
               }}
             >
               <span
