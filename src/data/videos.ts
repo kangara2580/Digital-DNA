@@ -22,6 +22,10 @@ export type FeedVideo = {
    * `true`가 아니면 직접 촬영(Real)로 간주합니다.
    */
   isAiGenerated?: boolean;
+  /** 판매 등록 시 저장된 설명 */
+  description?: string;
+  /** 정규화된 해시태그 문자열(예: "#일상,#vlog") */
+  hashtags?: string;
   /**
    * TikTok Research API 등 — MP4가 없고 숫자 video id만 올 때 임베드 플레이어용
    * (예: `https://www.tiktok.com/embed/v2/{id}`)

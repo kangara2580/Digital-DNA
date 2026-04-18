@@ -4,6 +4,7 @@ import { AlertCircle, CheckCircle2, Film, Loader2, Upload } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { captureFrameFromVideo } from "@/lib/captureVideoFrame";
 import {
   deleteSellerUploadDraft,
   fetchSellerUploadDraft,
@@ -36,6 +37,8 @@ export function SellerClipUploadForm() {
   const [videoUrl, setVideoUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [durationSec, setDurationSec] = useState<number | null>(null);
+  /** 썸네일로 쓸 프레임 시점(초) — 기본 0(첫 화면) */
+  const [thumbTimeSec, setThumbTimeSec] = useState(0);
   const [orientation, setOrientation] = useState<"portrait" | "landscape">(
     "portrait",
   );
@@ -62,6 +65,7 @@ export function SellerClipUploadForm() {
     setPreviewUrl(null);
     setFile(null);
     setDurationSec(null);
+    setThumbTimeSec(0);
   }, [previewUrl]);
 
   useEffect(() => {
@@ -186,9 +190,19 @@ export function SellerClipUploadForm() {
     const d = el.duration;
     if (Number.isFinite(d) && d > 0) {
       setDurationSec(Math.round(d));
+      setThumbTimeSec((prev) => (prev > d ? Math.max(0, d - 0.05) : prev));
     }
     setOrientation(el.videoWidth >= el.videoHeight ? "landscape" : "portrait");
   };
+
+  useEffect(() => {
+    const el = videoPreviewRef.current;
+    if (!el || !previewUrl) return;
+    const d = el.duration;
+    const cap = Number.isFinite(d) && d > 0 ? d - 0.04 : undefined;
+    const t = cap !== undefined ? Math.min(thumbTimeSec, cap) : thumbTimeSec;
+    el.currentTime = Number.isFinite(t) ? t : 0;
+  }, [thumbTimeSec, previewUrl]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -237,6 +251,18 @@ export function SellerClipUploadForm() {
       fd.append("confirmOriginal", confirmOriginal ? "true" : "false");
       if (durationSec != null) {
         fd.append("durationSec", String(durationSec));
+      }
+
+      if (previewUrl && videoPreviewRef.current) {
+        const posterBlob = await captureFrameFromVideo(
+          videoPreviewRef.current,
+          thumbTimeSec,
+          "image/jpeg",
+          0.92,
+        );
+        if (posterBlob) {
+          fd.append("poster", posterBlob, "poster.jpg");
+        }
       }
 
       const res = await fetch("/api/sell/upload", {
@@ -300,8 +326,9 @@ export function SellerClipUploadForm() {
         </h2>
       </div>
       <p className="mt-2 text-[13px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        파일은 서버에 저장되며 DB에 목록이 생성됩니다. 썸네일은 심사·노출 단계에서
-        교체될 수 있어요.
+        파일은 서버에 저장되며 DB에 목록이 생성됩니다. 미리보기에서 썸네일로 쓸
+        장면(기본: 첫 화면)을 고를 수 있고, 심사·노출 단계에서 다시 조정될 수
+        있어요.
       </p>
 
       {message ? (
@@ -370,6 +397,7 @@ export function SellerClipUploadForm() {
                       ref={videoPreviewRef}
                       className="aspect-[9/16] w-full object-cover sm:aspect-video"
                       src={previewUrl}
+                      crossOrigin="anonymous"
                       muted
                       playsInline
                       controls
@@ -409,6 +437,7 @@ export function SellerClipUploadForm() {
                     ref={videoPreviewRef}
                     className="aspect-[9/16] w-full object-cover"
                     src={previewUrl}
+                    crossOrigin="anonymous"
                     muted
                     playsInline
                     controls
@@ -421,6 +450,44 @@ export function SellerClipUploadForm() {
               </p>
             </>
           )}
+
+          {previewUrl ? (
+            <div className="mt-4 rounded-xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+              <span className={LABEL}>썸네일 장면</span>
+              <p className="mb-3 text-[11px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                슬라이더로 장면을 맞추면 등록 시 그 화면이 썸네일로 저장됩니다.
+                일부 외부 URL은 보안 정책으로 썸네일 추출이 안 될 수 있어요(그때는
+                기본 이미지가 들어갑니다).
+              </p>
+              <input
+                type="range"
+                min={0}
+                max={
+                  durationSec != null && durationSec > 0
+                    ? durationSec
+                    : 1
+                }
+                step={0.05}
+                value={
+                  durationSec != null && durationSec > 0
+                    ? Math.min(thumbTimeSec, durationSec)
+                    : thumbTimeSec
+                }
+                onChange={(e) => setThumbTimeSec(parseFloat(e.target.value))}
+                className="w-full accent-reels-cyan"
+                aria-label="썸네일 시점(초)"
+              />
+              <div className="mt-1 flex justify-between text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                <span>0초</span>
+                <span className="font-mono">{thumbTimeSec.toFixed(2)}초</span>
+                <span>
+                  {durationSec != null && durationSec > 0
+                    ? `총 ${durationSec}초`
+                    : "길이 로딩…"}
+                </span>
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">

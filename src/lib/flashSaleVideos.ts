@@ -13,6 +13,8 @@ export function videoRowToFeedVideo(v: Video): FeedVideo {
     priceWon: v.price,
     durationSec: v.durationSec ?? undefined,
     isAiGenerated: v.isAiGenerated,
+    description: v.description ?? undefined,
+    hashtags: v.hashtags ?? undefined,
   };
 }
 

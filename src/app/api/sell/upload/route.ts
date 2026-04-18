@@ -6,6 +6,7 @@ import {
   MultipartParseError,
   parseSellUploadMultipart,
 } from "@/lib/parseMultipartSellUpload";
+import { normalizeSellHashtags } from "@/lib/sellHashtags";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -16,6 +17,12 @@ const ALLOWED_MIME = new Set([
   "video/quicktime",
   "video/webm",
   "video/x-msvideo",
+]);
+
+const ALLOWED_POSTER_MIME = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
 ]);
 
 const DEFAULT_POSTER =
@@ -57,14 +64,17 @@ async function fetchDefaultPosterBuffer(): Promise<Buffer | null> {
   }
 }
 
-async function uploadSellVideoAndPoster(params: {
+async function uploadSellVideoWithOptionalCustomPoster(params: {
   client: SupabaseClient;
   userId: string;
   videoBuffer: Buffer;
   videoMime: string;
   safeFileName: string;
+  posterBuffer: Buffer | null;
+  posterMime: string | null;
 }): Promise<{ videoUrl: string; posterUrl: string } | null> {
-  const { client, userId, videoBuffer, videoMime, safeFileName } = params;
+  const { client, userId, videoBuffer, videoMime, safeFileName, posterBuffer, posterMime } =
+    params;
   const stamp = Date.now();
   const videoPath = `sell/${userId}/${stamp}_${safeFileName}`;
 
@@ -75,6 +85,19 @@ async function uploadSellVideoAndPoster(params: {
   if (vErr) return null;
 
   const videoUrl = client.storage.from("videos").getPublicUrl(videoPath).data.publicUrl;
+
+  if (posterBuffer && posterBuffer.length > 0 && posterMime && ALLOWED_POSTER_MIME.has(posterMime)) {
+    const ext = posterMime === "image/png" ? "png" : posterMime === "image/webp" ? "webp" : "jpg";
+    const thumbPath = `sell/${userId}/${stamp}_poster.${ext}`;
+    const { error: tErr } = await client.storage.from("thumbnails").upload(thumbPath, posterBuffer, {
+      contentType: posterMime,
+      upsert: true,
+    });
+    if (!tErr) {
+      const posterUrl = client.storage.from("thumbnails").getPublicUrl(thumbPath).data.publicUrl;
+      return { videoUrl, posterUrl };
+    }
+  }
 
   const posterBuf = await fetchDefaultPosterBuffer();
   if (!posterBuf) {
@@ -91,6 +114,24 @@ async function uploadSellVideoAndPoster(params: {
   }
   const posterUrl = client.storage.from("thumbnails").getPublicUrl(thumbPath).data.publicUrl;
   return { videoUrl, posterUrl };
+}
+
+async function uploadCustomPosterBuffer(
+  client: SupabaseClient,
+  userId: string,
+  buffer: Buffer,
+  mime: string,
+): Promise<string | null> {
+  if (!ALLOWED_POSTER_MIME.has(mime)) return null;
+  const ext = mime === "image/png" ? "png" : mime === "image/webp" ? "webp" : "jpg";
+  const stamp = Date.now();
+  const thumbPath = `sell/${userId}/${stamp}_poster.${ext}`;
+  const { error } = await client.storage.from("thumbnails").upload(thumbPath, buffer, {
+    contentType: mime,
+    upsert: true,
+  });
+  if (error) return null;
+  return client.storage.from("thumbnails").getPublicUrl(thumbPath).data.publicUrl;
 }
 
 async function uploadSellPosterOnly(
@@ -189,7 +230,19 @@ export async function POST(request: Request) {
     );
   }
 
-  const { fields, video: videoPart } = parsed;
+  const { fields, video: videoPart, poster: posterPart } = parsed;
+
+  if (posterPart && posterPart.buffer.length > 0 && !ALLOWED_POSTER_MIME.has(posterPart.mime)) {
+    return NextResponse.json(
+      { ok: false, error: "썸네일은 JPEG, PNG, WebP만 가능합니다." },
+      { status: 400 },
+    );
+  }
+  const customPoster =
+    posterPart && posterPart.buffer.length > 0
+      ? { buffer: posterPart.buffer, mime: posterPart.mime }
+      : null;
+
   const videoUrlRaw = String(fields.videoUrl ?? "").trim();
   const hasFile = Boolean(videoPart && videoPart.buffer.length > 0);
   const hasVideoUrl = videoUrlRaw.length > 0;
@@ -310,12 +363,14 @@ export async function POST(request: Request) {
           serviceRoleKey,
           userJwt: serviceRoleKey ? null : bearerToken,
         });
-        const uploaded = await uploadSellVideoAndPoster({
+        const uploaded = await uploadSellVideoWithOptionalCustomPoster({
           client: storageClient,
           userId: user.id,
           videoBuffer: buffer,
           videoMime: mime,
           safeFileName: safe,
+          posterBuffer: customPoster?.buffer ?? null,
+          posterMime: customPoster?.mime ?? null,
         });
         if (uploaded) {
           publicSrc = uploaded.videoUrl;
@@ -331,11 +386,24 @@ export async function POST(request: Request) {
       const relDir = path.posix.join("uploads", "sell", user.id);
       const diskDir = path.join(process.cwd(), "public", relDir);
       await mkdir(diskDir, { recursive: true });
-      const fileName = `${Date.now()}_${safe}`;
+      const stamp = Date.now();
+      const fileName = `${stamp}_${safe}`;
       const diskPath = path.join(diskDir, fileName);
       await writeFile(diskPath, buffer);
       publicSrc = `/${relDir.replace(/\\/g, "/")}/${fileName}`;
-      posterForDb = DEFAULT_POSTER;
+      if (customPoster) {
+        const ext =
+          customPoster.mime === "image/png"
+            ? "png"
+            : customPoster.mime === "image/webp"
+              ? "webp"
+              : "jpg";
+        const posterName = `${stamp}_poster.${ext}`;
+        await writeFile(path.join(diskDir, posterName), customPoster.buffer);
+        posterForDb = `/${relDir.replace(/\\/g, "/")}/${posterName}`;
+      } else {
+        posterForDb = DEFAULT_POSTER;
+      }
     }
   } else if (hasVideoUrl && canTrySupabaseStorage) {
     try {
@@ -343,22 +411,24 @@ export async function POST(request: Request) {
         serviceRoleKey,
         userJwt: serviceRoleKey ? null : bearerToken,
       });
-      const thumb = await uploadSellPosterOnly(storageClient, user.id);
-      if (thumb) posterForDb = thumb;
+      if (customPoster) {
+        const thumb = await uploadCustomPosterBuffer(
+          storageClient,
+          user.id,
+          customPoster.buffer,
+          customPoster.mime,
+        );
+        if (thumb) posterForDb = thumb;
+      } else {
+        const thumb = await uploadSellPosterOnly(storageClient, user.id);
+        if (thumb) posterForDb = thumb;
+      }
     } catch {
       /* 기본 포스터 유지 */
     }
   }
 
-  const hashtagsNormalized = hashtagsRaw
-    ? hashtagsRaw
-        .split(/[\s,]+/)
-        .map((t) => t.replace(/^#+/, "").trim())
-        .filter(Boolean)
-        .slice(0, 24)
-        .map((t) => `#${t}`)
-        .join(",")
-    : null;
+  const hashtagsNormalized = normalizeSellHashtags(hashtagsRaw);
 
   const creator = displayNameFromUser(user);
 

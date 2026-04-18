@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Film, Loader2 } from "lucide-react";
+import { MyListingEditDialog } from "@/components/MyListingEditDialog";
 import { VideoCard } from "@/components/VideoCard";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
@@ -11,6 +12,7 @@ import type { FeedVideo } from "@/data/videos";
 export function MyPageMyListingsSection() {
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const [videos, setVideos] = useState<FeedVideo[]>([]);
+  const [editing, setEditing] = useState<FeedVideo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -155,11 +157,29 @@ export function MyPageMyListingsSection() {
       </div>
       <ul className="grid list-none grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
         {videos.map((v) => (
-          <li key={v.id} className="min-w-0">
+          <li key={v.id} className="group relative min-w-0">
             <VideoCard video={v} className="min-w-0" />
+            <button
+              type="button"
+              onClick={() => setEditing(v)}
+              className="absolute right-1.5 top-1.5 z-10 rounded-lg border border-white/20 bg-black/60 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-md backdrop-blur-sm transition hover:bg-black/75 sm:right-2 sm:top-2 sm:px-2.5 sm:py-1.5 sm:text-[11px]"
+            >
+              편집
+            </button>
           </li>
         ))}
       </ul>
+
+      {editing ? (
+        <MyListingEditDialog
+          video={editing}
+          open
+          onClose={() => setEditing(null)}
+          onSaved={(updated) => {
+            setVideos((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+          }}
+        />
+      ) : null}
     </div>
   );
 }
