@@ -58,7 +58,7 @@ export function DnaBuilderDock() {
             className="fixed inset-x-0 bottom-0 z-[55] flex flex-col"
             style={{ paddingBottom: "max(0px, env(safe-area-inset-bottom))" }}
             role="region"
-            aria-label="DNA 조합기"
+            aria-label="릴스"
           >
             <AnimatePresence initial={false}>
               {expanded ? (
@@ -74,7 +74,7 @@ export function DnaBuilderDock() {
                     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2">
                       <div>
                         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-reels-cyan">
-                          DNA 조합기
+                          릴스
                         </p>
                         <p className="text-[13px] font-semibold text-zinc-100">
                           담은 릴스를 이어 붙여 보기
@@ -199,7 +199,7 @@ export function DnaBuilderDock() {
                 </button>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[12px] font-bold text-zinc-100 sm:text-[13px]">
-                    DNA 조합기
+                    릴스
                     <span className="ml-1.5 font-mono text-[11px] font-medium text-reels-cyan sm:text-[12px]">
                       {builderItems.length}개
                     </span>
