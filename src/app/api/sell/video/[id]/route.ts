@@ -54,6 +54,54 @@ async function uploadCustomPosterBuffer(
 }
 
 /**
+ * GET /api/sell/video/[id]
+ * Authorization: Bearer — 본인이 등록한 영상만 조회(수정 페이지용)
+ */
+export async function GET(
+  request: Request,
+  context: { params: Promise<{ id: string }> },
+) {
+  const { id } = await context.params;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseConfigured = Boolean(url && anonKey);
+
+  let userId: string;
+
+  if (supabaseConfigured) {
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice("Bearer ".length).trim()
+      : null;
+    if (!token) {
+      return NextResponse.json({ ok: false, error: "login_required" }, { status: 401 });
+    }
+    const supabaseAuth = createClient(url!, anonKey!, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const {
+      data: { user },
+      error: userErr,
+    } = await supabaseAuth.auth.getUser(token);
+    if (userErr || !user) {
+      return NextResponse.json({ ok: false, error: "invalid_session" }, { status: 401 });
+    }
+    userId = user.id;
+  } else {
+    userId = process.env.NEXT_PUBLIC_DEMO_SELLER_ID ?? "seller-demo";
+  }
+
+  const row = await prisma.video.findFirst({
+    where: { id, sellerId: userId },
+  });
+  if (!row) {
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
+  }
+
+  return NextResponse.json({ ok: true, video: videoRowToFeedVideo(row) });
+}
+
+/**
  * PATCH /api/sell/video/[id]
  * multipart/form-data: title, description, hashtags, optional poster (File)
  */

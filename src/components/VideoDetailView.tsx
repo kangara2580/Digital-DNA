@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ShoppingCart } from "lucide-react";
@@ -11,6 +12,7 @@ import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useRecentClips } from "@/context/RecentClipsContext";
+import { useAuthSession } from "@/hooks/useAuthSession";
 import type { FeedVideo } from "@/data/videos";
 import {
   clonesRemaining,
@@ -41,17 +43,37 @@ function buildTikTokDetailPlayerUrl(videoId: string): string {
 
 export function VideoDetailView({ video }: { video: FeedVideo }) {
   const router = useRouter();
+  const { user } = useAuthSession();
   const dopamine = useDopamineBasket();
   const { hasPurchased, markPurchased } = usePurchasedVideos();
   const { recordView } = useRecentClips();
   const owned = hasPurchased(video.id);
+  const isOwner = Boolean(
+    user?.id && video.listing?.sellerId && user.id === video.listing.sellerId,
+  );
 
   useEffect(() => {
     recordView(video.id);
   }, [video.id, recordView]);
-  const meta = getCommerceMeta(video.id);
+
+  const meta = useMemo(
+    () =>
+      video.listing
+        ? { salesCount: video.listing.salesCount, edition: "open" as const }
+        : getCommerceMeta(video.id),
+    [video],
+  );
   const remaining = clonesRemaining(meta);
-  const fresh = getFreshnessForVideoId(video.id);
+  const fresh = useMemo(() => {
+    if (video.listing) {
+      return {
+        tier: "active" as const,
+        label: "",
+        subline: "판매자가 등록한 릴스 조각입니다.",
+      };
+    }
+    return getFreshnessForVideoId(video.id);
+  }, [video]);
   const showFreshMeta = fresh.tier !== "archived";
   const price = video.priceWon ?? 0;
   const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
@@ -63,10 +85,20 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
         ? "품절"
         : "바로 구매하기";
 
-  const rankMetrics = useMemo(
-    () => getMetricsForVideoDetail(video.id),
-    [video.id],
-  );
+  const rankMetrics = useMemo(() => {
+    if (video.listing) {
+      const views = video.listing.views;
+      const sales = video.listing.salesCount;
+      const p = video.priceWon ?? 0;
+      return {
+        cumulativeRevenueWon: p * sales,
+        totalViews: Math.max(0, views),
+        totalLikes: Math.max(0, Math.floor(views * 0.028)),
+        growthPercent: 0,
+      };
+    }
+    return getMetricsForVideoDetail(video.id);
+  }, [video]);
   const [liveStats, setLiveStats] = useState<{
     playCount: number;
     diggCount: number;
@@ -183,24 +215,50 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
 
           <div className="flex w-full min-w-0 flex-col gap-6 lg:max-w-md">
             <div>
-              {showFreshMeta && fresh.label ? (
-                <span className="mb-2 inline-block rounded border border-reels-crimson/35 bg-reels-crimson/10 px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-reels-crimson">
-                  {fresh.label}
-                </span>
-              ) : null}
-              <SellerIdentityLink
-                creator={video.creator}
-                size="compact"
-                className="mb-2 w-fit"
-              />
-              <h1 className="min-w-0 text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">
-                {video.title}
-              </h1>
-              {showFreshMeta ? (
-                <p className="mt-2 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                  {fresh.subline}
-                </p>
-              ) : null}
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  {showFreshMeta && fresh.label ? (
+                    <span className="mb-2 inline-block rounded border border-reels-crimson/35 bg-reels-crimson/10 px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-reels-crimson">
+                      {fresh.label}
+                    </span>
+                  ) : null}
+                  <SellerIdentityLink
+                    creator={video.creator}
+                    size="compact"
+                    className="mb-2 w-fit"
+                  />
+                  <h1 className="min-w-0 text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">
+                    {video.title}
+                  </h1>
+                  {video.description ? (
+                    <p className="mt-3 whitespace-pre-wrap text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
+                      {video.description}
+                    </p>
+                  ) : null}
+                  {video.hashtags ? (
+                    <p className="mt-2 text-[13px] leading-relaxed text-reels-cyan/95 [html[data-theme='light']_&]:text-[#6d28d9]">
+                      {video.hashtags
+                        .split(",")
+                        .map((t) => t.trim())
+                        .filter(Boolean)
+                        .join(" ")}
+                    </p>
+                  ) : null}
+                  {showFreshMeta ? (
+                    <p className="mt-2 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                      {fresh.subline}
+                    </p>
+                  ) : null}
+                </div>
+                {isOwner ? (
+                  <Link
+                    href={`/video/${encodeURIComponent(video.id)}/edit`}
+                    className="shrink-0 rounded-full border border-white/20 bg-white/[0.08] px-3 py-1.5 text-[12px] font-extrabold text-zinc-100 transition hover:border-reels-cyan/45 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+                  >
+                    수정하기
+                  </Link>
+                ) : null}
+              </div>
             </div>
 
             <section className="reels-glass-card overflow-hidden rounded-xl">

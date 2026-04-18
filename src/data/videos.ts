@@ -27,6 +27,14 @@ export type FeedVideo = {
   /** 정규화된 해시태그 문자열(예: "#일상,#vlog") */
   hashtags?: string;
   /**
+   * DB 업로드(판매 등록) 영상 — 집계·판매자 식별(상세에서 수정 버튼 등)
+   */
+  listing?: {
+    sellerId: string;
+    views: number;
+    salesCount: number;
+  };
+  /**
    * TikTok Research API 등 — MP4가 없고 숫자 video id만 올 때 임베드 플레이어용
    * (예: `https://www.tiktok.com/embed/v2/{id}`)
    */

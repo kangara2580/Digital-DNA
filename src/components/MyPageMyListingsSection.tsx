@@ -177,6 +177,7 @@ export function MyPageMyListingsSection() {
           onClose={() => setEditing(null)}
           onSaved={(updated) => {
             setVideos((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+            setEditing(null);
           }}
         />
       ) : null}

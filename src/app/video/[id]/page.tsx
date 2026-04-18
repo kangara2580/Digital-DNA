@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import { VideoDetailView } from "@/components/VideoDetailView";
-import { ALL_MARKET_VIDEO_IDS, getMarketVideoById } from "@/data/videoCommerce";
+import { getMarketVideoById } from "@/data/videoCommerce";
 import { getManualTikTokPriceWonByVideoId } from "@/data/tiktokData";
+import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -58,7 +60,19 @@ export default async function VideoDetailPage({
     );
   }
 
-  const video = getMarketVideoById(id);
-  if (!video) notFound();
-  return <VideoDetailView video={video} />;
+  const catalogVideo = getMarketVideoById(id);
+  if (catalogVideo) {
+    return <VideoDetailView video={catalogVideo} />;
+  }
+
+  try {
+    const row = await prisma.video.findUnique({ where: { id } });
+    if (row) {
+      return <VideoDetailView video={videoRowToFeedVideo(row)} />;
+    }
+  } catch {
+    /* DB 미연결 등 */
+  }
+
+  notFound();
 }
