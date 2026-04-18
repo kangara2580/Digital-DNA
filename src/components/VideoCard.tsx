@@ -20,7 +20,6 @@ import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
 import {
   clonesRemaining,
   getCommerceMeta,
-  isMicroDna,
 } from "@/data/videoCommerce";
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { CartIcon } from "@/components/CartIcon";
@@ -124,7 +123,8 @@ export function VideoCard({
   const reduceMotion = useReducedMotion() ?? false;
   const commerce = getCommerceMeta(video.id);
   const remaining = clonesRemaining(commerce);
-  const showMicro = !hideMicroDnaBadge && isMicroDna(video);
+  // 정책 변경: MICRO DNA 배지는 모든 화면에서 노출하지 않음.
+  const showMicro = false;
   const showAiBadge = video.isAiGenerated === true;
   const cartBtnRef = useRef<HTMLButtonElement>(null);
   const liked = wishlist?.isSaved(video.id) ?? false;
