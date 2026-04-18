@@ -8,7 +8,8 @@ export type SavedCustomizeDraftItem = {
   savedAt: number;
 };
 
-const STORAGE_KEY = "reels-customize-saved-index-v1";
+export const CUSTOMIZE_DRAFT_INDEX_STORAGE_KEY = "reels-customize-saved-index-v1";
+const STORAGE_KEY = CUSTOMIZE_DRAFT_INDEX_STORAGE_KEY;
 
 export function readSavedCustomizeDraftIndex(): SavedCustomizeDraftItem[] {
   if (typeof window === "undefined") return [];

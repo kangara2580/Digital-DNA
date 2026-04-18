@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { postLoginRedirectPath } from "@/lib/postLoginRedirect";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 const INPUT =
@@ -11,7 +12,7 @@ const INPUT =
 export function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const redirect = params.get("redirect") ?? "/sell";
+  const redirect = params.get("redirect") ?? "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,11 +37,11 @@ export function LoginForm() {
         setError(signErr.message || "로그인에 실패했습니다.");
         return;
       }
-      const safe =
+      const path =
         redirect.startsWith("/") && !redirect.startsWith("//")
           ? redirect
-          : "/sell";
-      router.replace(safe);
+          : null;
+      router.replace(postLoginRedirectPath(path));
     } catch {
       setError("로그인 중 오류가 발생했습니다.");
     } finally {

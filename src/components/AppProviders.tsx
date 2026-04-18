@@ -6,11 +6,13 @@ import { DopamineBasketProvider } from "@/context/DopamineBasketContext";
 import { PurchasedVideosProvider } from "@/context/PurchasedVideosContext";
 import { RecentClipsProvider } from "@/context/RecentClipsContext";
 import { WishlistProvider } from "@/context/WishlistContext";
+import { SupabaseUserBlobHydration } from "@/components/SupabaseUserBlobHydration";
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <SitePreferencesProvider>
       <WishlistProvider>
+        <SupabaseUserBlobHydration />
         <RecentClipsProvider>
           <DopamineBasketProvider>
             <PurchasedVideosProvider>{children}</PurchasedVideosProvider>

@@ -15,7 +15,6 @@ import {
   fetchUserFavorites,
   removeAllWishlistForUser,
   removeFavorite,
-  type FavoriteKind,
   type FavoriteRow,
 } from "@/lib/supabaseFavorites";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
@@ -69,9 +68,9 @@ function clearLegacyStorage() {
   }
 }
 
-function rowsToEntries(rows: FavoriteRow[], kind: FavoriteKind): WishlistEntry[] {
+function rowsToWishlistEntries(rows: FavoriteRow[]): WishlistEntry[] {
   return rows
-    .filter((r) => r.kind === kind)
+    .filter((r) => r.kind === "wishlist")
     .map((r) => {
       const t = Date.parse(r.created_at);
       return {
@@ -103,14 +102,10 @@ async function mergeLegacyWishlistIntoRemote(
 
 type Ctx = {
   entries: WishlistEntry[];
-  likeEntries: WishlistEntry[];
   hydrated: boolean;
   count: number;
-  likeCount: number;
   isSaved: (videoId: string) => boolean;
-  isLiked: (videoId: string) => boolean;
   toggle: (video: FeedVideo) => void;
-  toggleLike: (video: FeedVideo) => void;
   remove: (videoId: string) => void;
   clear: () => Promise<void>;
 };
@@ -130,15 +125,13 @@ export function useWishlistOptional() {
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const [entries, setEntries] = useState<WishlistEntry[]>([]);
-  const [likeEntries, setLikeEntries] = useState<WishlistEntry[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
   const reloadFromServer = useCallback(async () => {
     const supabase = getSupabaseBrowserClient();
     if (!user || !supabase) return;
     const rows = await fetchUserFavorites(supabase, user.id);
-    setEntries(rowsToEntries(rows, "wishlist"));
-    setLikeEntries(rowsToEntries(rows, "like"));
+    setEntries(rowsToWishlistEntries(rows));
   }, [user]);
 
   useEffect(() => {
@@ -152,7 +145,6 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     void (async () => {
       if (!supabaseConfigured) {
         setEntries(loadLegacyEntries());
-        setLikeEntries([]);
         if (!cancelled) setHydrated(true);
         return;
       }
@@ -160,7 +152,6 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       const supabase = getSupabaseBrowserClient();
       if (!user || !supabase) {
         setEntries([]);
-        setLikeEntries([]);
         if (!cancelled) setHydrated(true);
         return;
       }
@@ -172,8 +163,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       const rowsAfter = await fetchUserFavorites(supabase, user.id);
       if (cancelled) return;
 
-      setEntries(rowsToEntries(rowsAfter, "wishlist"));
-      setLikeEntries(rowsToEntries(rowsAfter, "like"));
+      setEntries(rowsToWishlistEntries(rowsAfter));
       setHydrated(true);
     })();
 
@@ -185,11 +175,6 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const isSaved = useCallback(
     (videoId: string) => entries.some((e) => e.id === videoId),
     [entries],
-  );
-
-  const isLiked = useCallback(
-    (videoId: string) => likeEntries.some((e) => e.id === videoId),
-    [likeEntries],
   );
 
   const toggle = useCallback(
@@ -235,62 +220,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         });
       }
     },
-    [
-      authLoading,
-      supabaseConfigured,
-      user,
-      entries,
-      reloadFromServer,
-    ],
-  );
-
-  const toggleLike = useCallback(
-    (video: FeedVideo) => {
-      if (authLoading) return;
-
-      if (supabaseConfigured && !user) {
-        if (typeof window !== "undefined") {
-          window.alert("로그인 후 이용 가능합니다.");
-        }
-        return;
-      }
-
-      if (!supabaseConfigured) {
-        setLikeEntries((prev) => {
-          const i = prev.findIndex((e) => e.id === video.id);
-          const next =
-            i >= 0
-              ? prev.filter((_, j) => j !== i)
-              : [...prev, { id: video.id, savedAt: Date.now() }];
-          return next;
-        });
-        return;
-      }
-
-      const supabase = getSupabaseBrowserClient();
-      if (!user || !supabase) return;
-
-      const on = likeEntries.some((e) => e.id === video.id);
-      if (on) {
-        setLikeEntries((prev) => prev.filter((e) => e.id !== video.id));
-        void removeFavorite(supabase, user.id, video.id, "like").then((ok) => {
-          if (!ok) void reloadFromServer();
-        });
-      } else {
-        const now = Date.now();
-        setLikeEntries((prev) => [{ id: video.id, savedAt: now }, ...prev]);
-        void addFavorite(supabase, user.id, video.id, "like").then((ok) => {
-          if (!ok) void reloadFromServer();
-        });
-      }
-    },
-    [
-      authLoading,
-      supabaseConfigured,
-      user,
-      likeEntries,
-      reloadFromServer,
-    ],
+    [authLoading, supabaseConfigured, user, entries, reloadFromServer],
   );
 
   const remove = useCallback(
@@ -348,28 +278,14 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(
     () => ({
       entries,
-      likeEntries,
       hydrated,
       count: entries.length,
-      likeCount: likeEntries.length,
       isSaved,
-      isLiked,
       toggle,
-      toggleLike,
       remove,
       clear,
     }),
-    [
-      entries,
-      likeEntries,
-      hydrated,
-      isSaved,
-      isLiked,
-      toggle,
-      toggleLike,
-      remove,
-      clear,
-    ],
+    [entries, hydrated, isSaved, toggle, remove, clear],
   );
 
   return (

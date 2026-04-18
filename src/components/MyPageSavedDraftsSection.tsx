@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
+import { useAuthSession } from "@/hooks/useAuthSession";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { deleteCustomizeDraftRemote } from "@/lib/supabaseUserSync";
 import { getMarketVideoById } from "@/data/videoCommerce";
 import type { FeedVideo } from "@/data/videos";
 import {
@@ -28,6 +31,7 @@ export function MyPageSavedDraftsSection() {
   const [items, setItems] = useState<SavedCustomizeDraftItem[]>([]);
   const [tick, setTick] = useState(0);
   const { hasPurchased, markPurchased } = usePurchasedVideos();
+  const { user } = useAuthSession();
 
   const reload = useCallback(() => {
     pruneOrphanCustomizeDraftIndex();
@@ -79,6 +83,10 @@ export function MyPageSavedDraftsSection() {
               onPurchaseDemo={() => markPurchased(videoId)}
               onRemove={() => {
                 removeSavedCustomizeDraft(videoId);
+                const supabase = getSupabaseBrowserClient();
+                if (supabase && user) {
+                  void deleteCustomizeDraftRemote(supabase, user.id, videoId);
+                }
                 reload();
               }}
             />

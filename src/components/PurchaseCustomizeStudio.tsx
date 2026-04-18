@@ -18,6 +18,8 @@ import {
 } from "@/lib/facePreviewQuota";
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { upsertCustomizeDraftRemote } from "@/lib/supabaseUserSync";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { useVideoStartPoster } from "@/hooks/useVideoStartPoster";
 import { InputSection } from "@/components/InputSection";
@@ -740,6 +742,14 @@ export function PurchaseCustomizeStudio({
       };
       saveDraft(video.id, draft, persistedPreview);
       markCustomizeDraftSaved(video.id);
+      const cloudBlob = { ...draft, persistedPreview };
+      void (async () => {
+        const supabase = getSupabaseBrowserClient();
+        if (!supabase) return;
+        const { data: auth } = await supabase.auth.getUser();
+        if (!auth.user) return;
+        await upsertCustomizeDraftRemote(supabase, auth.user.id, video.id, cloudBlob);
+      })();
       trackBehavior({
         type: "draft_saved",
         keyword: draft.backgroundPrompt,

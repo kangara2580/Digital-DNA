@@ -1,4 +1,5 @@
-const KEY = "reels-my-studio-history-v1";
+export const MY_STUDIO_HISTORY_STORAGE_KEY = "reels-my-studio-history-v1";
+const KEY = MY_STUDIO_HISTORY_STORAGE_KEY;
 const MAX_ITEMS = 48;
 
 export type MyStudioHistoryItem = {

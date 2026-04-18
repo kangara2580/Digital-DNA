@@ -4,17 +4,13 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { postLoginRedirectPath } from "@/lib/postLoginRedirect";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 const INPUT_CLASS =
   "w-full rounded-xl border border-white/20 bg-black/30 px-3.5 py-3 text-sm text-zinc-100 outline-none backdrop-blur-sm transition placeholder:text-zinc-500 focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-500/30";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function safeRedirectPath(raw: string | null): string {
-  if (raw && raw.startsWith("/") && !raw.startsWith("//")) return raw;
-  return "/";
-}
 
 export function LoginPageClient() {
   const router = useRouter();
@@ -38,7 +34,10 @@ export function LoginPageClient() {
 
   useEffect(() => {
     if (authLoading || !user) return;
-    router.replace(safeRedirectPath(searchParams.get("redirect")));
+    const raw = searchParams.get("redirect");
+    const path =
+      raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : null;
+    router.replace(postLoginRedirectPath(path));
   }, [authLoading, router, searchParams, user]);
 
   const validateForm = () => {
@@ -80,7 +79,10 @@ export function LoginPageClient() {
         setError("로그인에 실패했습니다. 이메일 또는 비밀번호를 확인해 주세요.");
         return;
       }
-      router.replace(safeRedirectPath(searchParams.get("redirect")));
+      const raw = searchParams.get("redirect");
+      const path =
+        raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : null;
+      router.replace(postLoginRedirectPath(path));
       router.refresh();
     } catch {
       setError("요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");

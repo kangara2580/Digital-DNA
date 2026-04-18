@@ -6,9 +6,17 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
+import { useAuthSession } from "@/hooks/useAuthSession";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import {
+  addUserPurchasedVideo,
+  fetchUserPurchasedIds,
+  replaceUserDemoPurchases,
+} from "@/lib/supabaseUserSync";
 
 const STORAGE_KEY = "reels-market-purchased-ids";
 
@@ -31,34 +39,83 @@ function writeIds(ids: Set<string>) {
 }
 
 type Ctx = {
-  /** 모션 권리 구매(데모) 완료 여부 */
   hasPurchased: (videoId: string) => boolean;
-  /** 구매 완료 처리 — 창작하기 버튼 활성화 */
   markPurchased: (videoId: string) => void;
 };
 
 const PurchasedVideosContext = createContext<Ctx | null>(null);
 
 export function PurchasedVideosProvider({ children }: { children: ReactNode }) {
+  const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const [ids, setIds] = useState<Set<string>>(new Set());
+  const restoreGuardRef = useRef(false);
 
   useEffect(() => {
-    setIds(readIds());
-  }, []);
+    if (authLoading) return;
+
+    let cancelled = false;
+    restoreGuardRef.current = true;
+
+    void (async () => {
+      if (!supabaseConfigured) {
+        if (!cancelled) setIds(readIds());
+        restoreGuardRef.current = false;
+        return;
+      }
+
+      const supabase = getSupabaseBrowserClient();
+      if (!user || !supabase) {
+        if (!cancelled) setIds(readIds());
+        restoreGuardRef.current = false;
+        return;
+      }
+
+      const server = await fetchUserPurchasedIds(supabase, user.id);
+      if (cancelled) return;
+      const guest = readIds();
+      const merged = new Set([...server, ...guest]);
+      if (guest.size > 0) {
+        writeIds(new Set());
+        await replaceUserDemoPurchases(supabase, user.id, [...merged]);
+      }
+      if (!cancelled) setIds(merged);
+      restoreGuardRef.current = false;
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, supabaseConfigured, user]);
 
   const hasPurchased = useCallback(
     (videoId: string) => ids.has(videoId),
     [ids],
   );
 
-  const markPurchased = useCallback((videoId: string) => {
-    setIds((prev) => {
-      const next = new Set(prev);
-      next.add(videoId);
-      writeIds(next);
-      return next;
-    });
-  }, []);
+  const markPurchased = useCallback(
+    (videoId: string) => {
+      setIds((prev) => {
+        const next = new Set(prev);
+        next.add(videoId);
+        if (!supabaseConfigured || !user) {
+          writeIds(next);
+        } else {
+          const supabase = getSupabaseBrowserClient();
+          if (supabase) {
+            void addUserPurchasedVideo(supabase, user.id, videoId).then((ok) => {
+              if (!ok && restoreGuardRef.current === false) {
+                void fetchUserPurchasedIds(supabase, user.id).then((remote) => {
+                  setIds(new Set(remote));
+                });
+              }
+            });
+          }
+        }
+        return next;
+      });
+    },
+    [supabaseConfigured, user],
+  );
 
   const value = useMemo(
     () => ({ hasPurchased, markPurchased }),

@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { useAuthSession } from "@/hooks/useAuthSession";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { syncStudioHistoryToSupabase } from "@/lib/supabaseUserSync";
 import { appendMyStudioHistory } from "@/lib/myStudioHistoryStorage";
 
 type JobPayload = {
@@ -31,6 +34,7 @@ function statusLabel(status: string): string {
 }
 
 export function GenerationResultView({ jobId }: { jobId: string }) {
+  const { user } = useAuthSession();
   const [job, setJob] = useState<JobPayload | null>(null);
   const [phase, setPhase] = useState<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -82,7 +86,11 @@ export function GenerationResultView({ jobId }: { jobId: string }) {
       outputVideoUrl: job.outputVideoUrl,
       normalizedBackgroundPrompt: job.normalizedBackgroundPrompt,
     });
-  }, [job]);
+    if (user) {
+      const supabase = getSupabaseBrowserClient();
+      if (supabase) void syncStudioHistoryToSupabase(supabase, user.id);
+    }
+  }, [job, user]);
 
   const pollStatus = job?.status;
   useEffect(() => {

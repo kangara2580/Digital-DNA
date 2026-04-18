@@ -113,7 +113,7 @@ const TIMEZONE_OPTIONS = [
 
 function SignupLoginLink() {
   const params = useSearchParams();
-  const redirect = params.get("redirect") ?? "/sell";
+  const redirect = params.get("redirect") ?? "/";
   return (
     <p className="mt-3 text-[13px] text-zinc-400 [html[data-theme='light']_&]:text-[#6d5a88]">
       이미 계정이 있나요?{" "}
