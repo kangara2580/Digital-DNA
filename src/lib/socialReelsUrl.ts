@@ -1,5 +1,7 @@
 /** 틱톡·인스타·유튜브 등 URL → 임베드용 (클라이언트 미리보기) */
 
+import { tryExtractTikTokVideoIdFromUrl } from "@/lib/tiktokUrlParse";
+
 export type ParsedSocialReelsUrl =
   | {
       platform: "tiktok";
@@ -33,10 +35,8 @@ export function parseSocialReelsUrl(raw: string): ParsedSocialReelsUrl | null {
     const u = new URL(input.startsWith("http") ? input : `https://${input}`);
 
     if (u.hostname.includes("tiktok.com")) {
-      const path = u.pathname;
-      const m = path.match(/\/video\/(\d{10,20})/);
-      if (m) {
-        const videoId = m[1];
+      const videoId = tryExtractTikTokVideoIdFromUrl(u.toString());
+      if (videoId) {
         return {
           platform: "tiktok",
           videoId,

@@ -4,15 +4,16 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { TIKTOK_MOCK_DANCE_CLIPS } from "@/data/tiktokMockTrending";
+import {
+  getTikTokManualRanking,
+  manualTikTokRankingToFeedVideos,
+} from "@/data/tiktokData";
 import { type FeedVideo } from "@/data/videos";
 import { usePassVerticalWheelToPage } from "@/hooks/usePassVerticalWheelToPage";
 import { useTrendingLiveRanking } from "@/hooks/useTrendingLiveRanking";
 import { SectionMoreLink } from "./SectionMoreLink";
 import { TrendingVideoStatsFooter } from "./TrendingVideoStatsFooter";
 import { VideoCard } from "./VideoCard";
-
-const TRENDING_SAMPLE_TOP10 = TIKTOK_MOCK_DANCE_CLIPS.slice(0, 10);
 
 /** Top 10 + 끝 더보기 — 가로 스크롤 (lg+: 한 화면에 카드 5개 분량) */
 const TRENDING_STRIP =
@@ -112,10 +113,13 @@ export function TrendingRankSection() {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const next = TRENDING_SAMPLE_TOP10.map((v) => ({ ...v }));
+      const ranking = getTikTokManualRanking();
+      const next = manualTikTokRankingToFeedVideos(ranking).map((v) => ({ ...v }));
       setTrendingClips(next);
       if (!next.length) {
-        setErrorMessage("표시할 인기 영상이 없습니다.");
+        setErrorMessage(
+          "표시할 영상이 없습니다. src/data/tiktokData.ts 의 FILE_RAW_MANUAL_TIKTOK_URLS 에 URL을 넣거나, Vercel에 NEXT_PUBLIC_TRENDING_TIKTOK_URLS 를 설정하세요.",
+        );
       }
     } catch {
       setTrendingClips([]);
@@ -141,7 +145,7 @@ export function TrendingRankSection() {
               실시간 인기순위 영상
             </h2>
             <p className="mt-1 text-[12px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-              데모용 샘플 클립 Top 10
+              수동 큐레이션 · TikTok URL 기준 (임베드 재생)
             </p>
             {errorMessage ? (
               <p className="mt-1.5 text-[12px] font-medium text-rose-300 [html[data-theme='light']_&]:text-rose-600">
