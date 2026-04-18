@@ -271,6 +271,7 @@ export function VideoCard({
               ? pause
               : undefined
       }
+      onMouseMove={video.tiktokEmbedId ? playTikTok : undefined}
     >
       <div className={`relative overflow-hidden bg-black/40 ${aspectClass}`}>
         {video.tiktokEmbedId ? (
@@ -281,7 +282,7 @@ export function VideoCard({
               className="h-full w-auto max-w-full border-0 aspect-[9/16]"
               allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
               allowFullScreen
-              loading={reelStrip ? "eager" : "lazy"}
+              loading="eager"
               referrerPolicy="strict-origin-when-cross-origin"
             />
           </div>
@@ -310,7 +311,11 @@ export function VideoCard({
             alt=""
             className={`pointer-events-none absolute inset-0 z-[2] h-full w-full transition-opacity duration-200 ${
               isPreviewing ? "opacity-0" : "opacity-100"
-            } ${video.tiktokEmbedId ? "object-contain bg-black" : "object-cover"}`}
+            } ${
+              video.tiktokEmbedId
+                ? "object-contain bg-black duration-75"
+                : "object-cover"
+            }`}
             loading={reelStrip ? "eager" : "lazy"}
             decoding="async"
             onError={() => {
