@@ -158,6 +158,8 @@ export function MallTopNav() {
   const headerRef = useRef<HTMLElement>(null);
   const [compact, setCompact] = useState(false);
   const pathname = usePathname();
+  const [isExploreWatchMode, setIsExploreWatchMode] = useState(false);
+  const showCategoryNav = pathname === "/explore" && !isExploreWatchMode;
   /** 탐색(/explore): 메인에서 스크롤을 내린 것과 같은 컴팩트 헤더를 즉시 적용 */
   const compactEffective = compact || pathname === "/explore";
   const [moreOpen, setMoreOpen] = useState(false);
@@ -257,6 +259,20 @@ export function MallTopNav() {
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const syncExploreMode = () => {
+      if (typeof document === "undefined") return;
+      setIsExploreWatchMode(
+        document.documentElement.dataset.exploreMode === "watch",
+      );
+    };
+    syncExploreMode();
+    window.addEventListener("reels:explore-mode", syncExploreMode);
+    return () => {
+      window.removeEventListener("reels:explore-mode", syncExploreMode);
+    };
   }, []);
 
   useEffect(() => {
@@ -427,107 +443,109 @@ export function MallTopNav() {
               </div>
             ) : null}
 
-            <nav
-              className={`flex min-w-0 items-center ${easeNav} ${
-                compactEffective
-                  ? "mt-0 flex-1 justify-center gap-1 overflow-visible border-0 py-0 sm:gap-1.5"
-                  : "no-scrollbar mt-3 justify-center gap-1 overflow-x-auto border-t border-white/10 pt-2 sm:gap-1.5 [html[data-theme='light']_&]:border-zinc-200"
-              }`}
-              aria-label="카테고리"
-            >
-              {compactEffective ? (
-                <>
-                  {COMPACT_PRIMARY.map((item) => (
+            {showCategoryNav ? (
+              <nav
+                className={`flex min-w-0 items-center ${easeNav} ${
+                  compactEffective
+                    ? "mt-0 flex-1 justify-center gap-1 overflow-visible border-0 py-0 sm:gap-1.5"
+                    : "no-scrollbar mt-3 justify-center gap-1 overflow-x-auto border-t border-white/10 pt-2 sm:gap-1.5 [html[data-theme='light']_&]:border-zinc-200"
+                }`}
+                aria-label="카테고리"
+              >
+                {compactEffective ? (
+                  <>
+                    {COMPACT_PRIMARY.map((item) => (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        className={`${categoryPillClass} ${easeLayout} px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]`}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                    <div
+                      ref={moreWrapRef}
+                      className="relative shrink-0"
+                      onMouseEnter={openCategoryMenu}
+                      onMouseLeave={scheduleHoverClose}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => {
+                          cancelHoverClose();
+                          setMoreOpen((o) => !o);
+                        }}
+                        aria-expanded={moreOpen}
+                        aria-haspopup="true"
+                        aria-controls="mall-category-more"
+                        id="mall-category-trigger"
+                        className={`inline-flex items-center gap-0.5 ${categoryPillClass} ${easeLayout} px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]`}
+                      >
+                        카테고리
+                        <ChevronDown
+                          className={`h-3.5 w-3.5 shrink-0 opacity-70 transition-transform duration-200 ${moreOpen ? "rotate-180" : ""}`}
+                          strokeWidth={2}
+                          aria-hidden
+                        />
+                      </button>
+                      {mounted &&
+                        moreOpen &&
+                        menuPlace &&
+                        createPortal(
+                          <div
+                            ref={menuPortalRef}
+                            id="mall-category-more"
+                            role="region"
+                            aria-labelledby="mall-category-trigger"
+                            className="rounded-xl border border-white/15 bg-reels-void/98 shadow-lg transition-[opacity,transform] duration-200 ease-out [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_12px_32px_-16px_rgba(0,0,0,0.12)]"
+                            style={{
+                              position: "fixed",
+                              top: menuPlace.top,
+                              left: menuPlace.left,
+                              width: menuPlace.width,
+                              zIndex: 9999,
+                            }}
+                            onMouseEnter={openCategoryMenu}
+                            onMouseLeave={scheduleHoverClose}
+                          >
+                            <div className="no-scrollbar flex justify-center overflow-x-auto px-2 py-1 sm:px-2.5 sm:py-1.5">
+                              <nav
+                                className="inline-flex min-w-0 flex-nowrap items-center justify-center gap-1 sm:gap-1.5"
+                                aria-label="추가 카테고리"
+                              >
+                                {COMPACT_MORE.map((item) => (
+                                  <Link
+                                    key={item.label}
+                                    href={item.href}
+                                    onClick={() => {
+                                      cancelHoverClose();
+                                      setMoreOpen(false);
+                                    }}
+                                    className={`shrink-0 whitespace-nowrap rounded-full px-1.5 py-1 text-[10px] font-semibold text-zinc-300 transition-colors duration-200 first:pl-2 last:pr-2 sm:px-2 sm:text-[11px] sm:first:pl-2.5 sm:last:pr-2.5 ${easeLayout} hover:bg-white/10 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black`}
+                                  >
+                                    {item.label}
+                                  </Link>
+                                ))}
+                              </nav>
+                            </div>
+                          </div>,
+                          document.body,
+                        )}
+                    </div>
+                  </>
+                ) : (
+                  ITEMS.map((item) => (
                     <Link
                       key={item.label}
                       href={item.href}
-                      className={`${categoryPillClass} ${easeLayout} px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]`}
+                      className={`${categoryPillClass} ${easeLayout} px-2.5 py-1.5 text-[11px] sm:px-3 sm:py-2 sm:text-[12px]`}
                     >
                       {item.label}
                     </Link>
-                  ))}
-                  <div
-                    ref={moreWrapRef}
-                    className="relative shrink-0"
-                    onMouseEnter={openCategoryMenu}
-                    onMouseLeave={scheduleHoverClose}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        cancelHoverClose();
-                        setMoreOpen((o) => !o);
-                      }}
-                      aria-expanded={moreOpen}
-                      aria-haspopup="true"
-                      aria-controls="mall-category-more"
-                      id="mall-category-trigger"
-                      className={`inline-flex items-center gap-0.5 ${categoryPillClass} ${easeLayout} px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]`}
-                    >
-                      카테고리
-                      <ChevronDown
-                        className={`h-3.5 w-3.5 shrink-0 opacity-70 transition-transform duration-200 ${moreOpen ? "rotate-180" : ""}`}
-                        strokeWidth={2}
-                        aria-hidden
-                      />
-                    </button>
-                    {mounted &&
-                      moreOpen &&
-                      menuPlace &&
-                      createPortal(
-                        <div
-                          ref={menuPortalRef}
-                          id="mall-category-more"
-                          role="region"
-                          aria-labelledby="mall-category-trigger"
-                          className="rounded-xl border border-white/15 bg-reels-void/98 shadow-lg transition-[opacity,transform] duration-200 ease-out [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_12px_32px_-16px_rgba(0,0,0,0.12)]"
-                          style={{
-                            position: "fixed",
-                            top: menuPlace.top,
-                            left: menuPlace.left,
-                            width: menuPlace.width,
-                            zIndex: 9999,
-                          }}
-                          onMouseEnter={openCategoryMenu}
-                          onMouseLeave={scheduleHoverClose}
-                        >
-                          <div className="no-scrollbar flex justify-center overflow-x-auto px-2 py-1 sm:px-2.5 sm:py-1.5">
-                            <nav
-                              className="inline-flex min-w-0 flex-nowrap items-center justify-center gap-1 sm:gap-1.5"
-                              aria-label="추가 카테고리"
-                            >
-                              {COMPACT_MORE.map((item) => (
-                                <Link
-                                  key={item.label}
-                                  href={item.href}
-                                  onClick={() => {
-                                    cancelHoverClose();
-                                    setMoreOpen(false);
-                                  }}
-                                  className={`shrink-0 whitespace-nowrap rounded-full px-1.5 py-1 text-[10px] font-semibold text-zinc-300 transition-colors duration-200 first:pl-2 last:pr-2 sm:px-2 sm:text-[11px] sm:first:pl-2.5 sm:last:pr-2.5 ${easeLayout} hover:bg-white/10 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black`}
-                                >
-                                  {item.label}
-                                </Link>
-                              ))}
-                            </nav>
-                          </div>
-                        </div>,
-                        document.body,
-                      )}
-                  </div>
-                </>
-              ) : (
-                ITEMS.map((item) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className={`${categoryPillClass} ${easeLayout} px-2.5 py-1.5 text-[11px] sm:px-3 sm:py-2 sm:text-[12px]`}
-                  >
-                    {item.label}
-                  </Link>
-                ))
-              )}
-            </nav>
+                  ))
+                )}
+              </nav>
+            ) : null}
           </div>
 
           {compactEffective && (

@@ -138,7 +138,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
             <div
               className={`reels-glass-card relative overflow-hidden rounded-xl ${
                 video.orientation === "portrait"
-                  ? "mx-auto max-w-md aspect-[9/16]"
+                  ? "mx-auto w-full max-w-[23rem] aspect-[9/16]"
                   : "aspect-video w-full"
               }`}
             >
