@@ -59,6 +59,9 @@ export function TrendingRankSection() {
   const [trendingClips, setTrendingClips] = useState<FeedVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [liveStatsByVideoId, setLiveStatsByVideoId] = useState<
+    Record<string, { playCount: number; diggCount: number }>
+  >({});
 
   // 순위 고정: 새로고침(loadTrending) 시에만 목록을 갱신하고, 렌더 중에는 재정렬하지 않습니다.
   const rankedRows = useMemo(
@@ -66,9 +69,20 @@ export function TrendingRankSection() {
       trendingClips.map((video, rankIndex) => ({
         key: `fixed-${rankIndex}-${video.id}`,
         video,
-        metrics: getTrendingMetrics(video.id, rankIndex),
+        metrics: (() => {
+          const base = getTrendingMetrics(video.id, rankIndex);
+          const live = video.tiktokEmbedId
+            ? liveStatsByVideoId[video.tiktokEmbedId]
+            : undefined;
+          if (!live) return base;
+          return {
+            ...base,
+            totalViews: live.playCount,
+            totalLikes: live.diggCount,
+          };
+        })(),
       })),
-    [trendingClips],
+    [trendingClips, liveStatsByVideoId],
   );
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -135,9 +149,59 @@ export function TrendingRankSection() {
     }
   }, []);
 
+  const refreshLiveStats = useCallback(async () => {
+    const ranking = getTikTokManualRanking();
+    if (!ranking.length) return;
+
+    const settled = await Promise.allSettled(
+      ranking.map(async (row) => {
+        const res = await fetch(
+          `/api/tiktok/live-stats?url=${encodeURIComponent(row.url)}`,
+          { cache: "no-store" },
+        );
+        if (!res.ok) return null;
+        const j = (await res.json()) as {
+          videoId?: string;
+          playCount?: number;
+          diggCount?: number;
+        };
+        if (
+          !j.videoId ||
+          typeof j.playCount !== "number" ||
+          typeof j.diggCount !== "number"
+        ) {
+          return null;
+        }
+        return {
+          videoId: j.videoId,
+          playCount: j.playCount,
+          diggCount: j.diggCount,
+        };
+      }),
+    );
+
+    const next: Record<string, { playCount: number; diggCount: number }> = {};
+    for (const row of settled) {
+      if (row.status !== "fulfilled" || !row.value) continue;
+      next[row.value.videoId] = {
+        playCount: row.value.playCount,
+        diggCount: row.value.diggCount,
+      };
+    }
+    if (Object.keys(next).length) setLiveStatsByVideoId(next);
+  }, []);
+
   useEffect(() => {
     void loadTrending();
   }, [loadTrending]);
+
+  useEffect(() => {
+    void refreshLiveStats();
+    const t = window.setInterval(() => {
+      void refreshLiveStats();
+    }, 45_000);
+    return () => window.clearInterval(t);
+  }, [refreshLiveStats]);
 
   return (
     <section className="border-t border-white/10 bg-transparent" aria-labelledby="trending-rank-heading">
