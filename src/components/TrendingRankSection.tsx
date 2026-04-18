@@ -223,6 +223,11 @@ export function TrendingRankSection() {
                     reelStrip
                     disableHoverScale
                     preloadMode="none"
+                    detailHref={
+                      entry.video.tiktokEmbedId
+                        ? `/video/tiktok-${entry.video.tiktokEmbedId}`
+                        : `/video/${entry.video.id}`
+                    }
                     className="h-full min-w-0"
                     footerExtension={
                       <TrendingVideoStatsFooter

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FeedVideo } from "@/data/videos";
 import { LOCAL_TRENDING_FEED_VIDEOS } from "@/data/videos";
@@ -162,6 +163,7 @@ function hiddenOffstagePose(radius: number): RingPose {
 }
 
 export function Highlight24() {
+  const router = useRouter();
   /** 메인 히어로 링 — 인기순위와 동일한 로컬 10종(썸네일·영상 일치) */
   const videos = useMemo(() => [...LOCAL_TRENDING_FEED_VIDEOS], []);
   const [index, setIndex] = useState(0);
@@ -474,7 +476,7 @@ export function Highlight24() {
                   role="presentation"
                   className={`group absolute left-1/2 top-1/2 overflow-hidden rounded-2xl border bg-black/40 [transform-style:preserve-3d] ${
                     isMain
-                      ? "cursor-default border-white/35 shadow-[0_32px_100px_-24px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.14)] ring-1 ring-inset ring-white/20"
+                      ? "cursor-pointer border-white/35 shadow-[0_32px_100px_-24px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.14)] ring-1 ring-inset ring-white/20"
                       : "cursor-pointer border-white/14 shadow-[0_28px_90px_-26px_rgba(0,0,0,0.88)]"
                   } ${pose.opacity < 0.02 ? "pointer-events-none" : ""}`}
                   style={{
@@ -495,7 +497,12 @@ export function Highlight24() {
                   }}
                   transition={transition}
                   onClick={() => {
-                    if (!isMain && pose.opacity >= 0.02) setIndex(i);
+                    if (pose.opacity < 0.02) return;
+                    if (isMain) {
+                      router.push(`/video/${v.id}`);
+                      return;
+                    }
+                    setIndex(i);
                   }}
                 >
                   <div
@@ -573,6 +580,20 @@ export function Highlight24() {
         </div>
 
         <div className="mx-auto flex max-w-6xl items-center justify-center gap-5 py-4 sm:gap-8 sm:py-5 md:max-w-7xl">
+          <button
+            type="button"
+            onClick={() => router.push(`/video/${active.id}`)}
+            className="inline-flex h-10 items-center justify-center rounded-full border border-white/45 bg-white/15 px-4 text-[12px] font-extrabold text-white shadow-[0_1px_3px_rgba(15,23,42,0.35)] backdrop-blur-sm transition hover:border-white/60 hover:bg-white/20 sm:h-11 sm:px-5 sm:text-[13px]"
+          >
+            구매 페이지
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push(`/create?videoId=${encodeURIComponent(active.id)}`)}
+            className="inline-flex h-10 items-center justify-center rounded-full bg-reels-crimson px-4 text-[12px] font-extrabold text-white shadow-reels-crimson transition hover:brightness-110 sm:h-11 sm:px-5 sm:text-[13px]"
+          >
+            창작 스튜디오
+          </button>
           <button
             type="button"
             onClick={() => go(-1)}

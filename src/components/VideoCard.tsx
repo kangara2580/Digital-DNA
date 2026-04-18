@@ -333,7 +333,7 @@ export function VideoCard({
               isPreviewing ? "opacity-0" : "opacity-100"
             } ${
               video.tiktokEmbedId
-                ? "object-contain bg-black duration-75"
+                ? "object-cover bg-black duration-75"
                 : "object-cover"
             }`}
             loading={reelStrip ? "eager" : "lazy"}
@@ -349,7 +349,7 @@ export function VideoCard({
           className="pointer-events-none absolute inset-0 z-[1] bg-black/0 transition-colors duration-300 ease-out group-hover:bg-black/30 motion-reduce:group-hover:bg-black/25"
           aria-hidden
         />
-        {video.tiktokEmbedId ? null : onPick ? (
+        {onPick ? (
           <button
             type="button"
             onClick={onPick}
