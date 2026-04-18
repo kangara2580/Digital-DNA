@@ -20,6 +20,24 @@ import {
 } from "@/data/videoCommerce";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
+function buildTikTokDetailPlayerUrl(videoId: string): string {
+  const u = new URL(`https://www.tiktok.com/player/v1/${videoId}`);
+  u.searchParams.set("autoplay", "1");
+  u.searchParams.set("muted", "1");
+  u.searchParams.set("loop", "1");
+  u.searchParams.set("controls", "0");
+  u.searchParams.set("progress_bar", "0");
+  u.searchParams.set("play_button", "0");
+  u.searchParams.set("volume_control", "0");
+  u.searchParams.set("fullscreen_button", "0");
+  u.searchParams.set("timestamp", "0");
+  u.searchParams.set("description", "0");
+  u.searchParams.set("music_info", "0");
+  u.searchParams.set("rel", "0");
+  u.searchParams.set("native_context_menu", "0");
+  return u.toString();
+}
+
 export function VideoDetailView({ video }: { video: FeedVideo }) {
   const router = useRouter();
   const dopamine = useDopamineBasket();
@@ -120,7 +138,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
             <div
               className={`reels-glass-card relative overflow-hidden rounded-xl ${
                 video.orientation === "portrait"
-                  ? "mx-auto max-w-md aspect-[3/4]"
+                  ? "mx-auto max-w-md aspect-[9/16]"
                   : "aspect-video w-full"
               }`}
             >
@@ -128,11 +146,12 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <iframe
                     title={video.title}
-                    src={`https://www.tiktok.com/embed/v2/${video.tiktokEmbedId}`}
-                    className="h-full w-auto max-w-full border-0 aspect-[9/16]"
-                    allow="encrypted-media; fullscreen; picture-in-picture"
+                    src={buildTikTokDetailPlayerUrl(video.tiktokEmbedId!)}
+                    className="h-full w-full border-0"
+                    allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                     allowFullScreen
-                    loading="lazy"
+                    loading="eager"
+                    scrolling="no"
                     referrerPolicy="strict-origin-when-cross-origin"
                   />
                 </div>
