@@ -31,6 +31,9 @@ export type TikTokManualRankItem = {
  * 3) 서버 전용으로 숨기려면 NEXT_PUBLIC_ 없이 이름을 바꾸고, 랭킹 데이터는
  *    Server Component나 Route Handler에서만 주입하도록 리팩터링해야 함(클라이언트
  *    `TrendingRankSection` 은 빌드 시 번들에 포함된 env만 볼 수 있음).
+ *
+ * 썸네일: TikTok 직접 이미지 URL은 403이 나는 경우가 많아, 각 항목 `url`로
+ * `/api/tiktok/poster?url=...` (서버 oEmbed → CDN 리다이렉트)를 씁니다.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  */
 
@@ -163,8 +166,8 @@ export function manualTikTokRankingToFeedVideos(
       title: `인기 ${item.id}위`,
       creator: "TikTok",
       src: `https://www.tiktok.com/embed/v2/${item.videoId}`,
-      // 썸네일: TikTok 공개 이미지 엔드포인트(itemId 기반)
-      poster: `https://www.tiktok.com/api/img/?itemId=${item.videoId}&location=0`,
+      // 썸네일: `api/img` 는 외부에서 403 → 서버 oEmbed 리다이렉트 (`/api/tiktok/poster`)
+      poster: `/api/tiktok/poster?url=${encodeURIComponent(item.url)}`,
       orientation: "portrait" as const,
       tiktokEmbedId: item.videoId,
       priceWon: 900 + (item.id % 5) * 300,
