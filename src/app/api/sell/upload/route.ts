@@ -39,36 +39,45 @@ function displayNameFromUser(user: {
 export async function POST(request: Request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) {
-    return NextResponse.json(
-      { ok: false, error: "Supabase 환경변수가 설정되어 있지 않습니다." },
-      { status: 503 },
-    );
-  }
+  const supabaseConfigured = Boolean(url && anonKey);
 
-  const authHeader = request.headers.get("authorization");
-  const token = authHeader?.startsWith("Bearer ")
-    ? authHeader.slice("Bearer ".length).trim()
-    : null;
-  if (!token) {
-    return NextResponse.json(
-      { ok: false, error: "로그인이 필요합니다." },
-      { status: 401 },
-    );
-  }
+  let user: {
+    id: string;
+    email?: string | null;
+    user_metadata?: Record<string, unknown>;
+  };
+  if (supabaseConfigured) {
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice("Bearer ".length).trim()
+      : null;
+    if (!token) {
+      return NextResponse.json(
+        { ok: false, error: "로그인이 필요합니다." },
+        { status: 401 },
+      );
+    }
 
-  const supabaseAuth = createClient(url, anonKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  const {
-    data: { user },
-    error: userErr,
-  } = await supabaseAuth.auth.getUser(token);
-  if (userErr || !user) {
-    return NextResponse.json(
-      { ok: false, error: "세션이 유효하지 않습니다. 다시 로그인해 주세요." },
-      { status: 401 },
-    );
+    const supabaseAuth = createClient(url!, anonKey!, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const {
+      data: { user: verifiedUser },
+      error: userErr,
+    } = await supabaseAuth.auth.getUser(token);
+    if (userErr || !verifiedUser) {
+      return NextResponse.json(
+        { ok: false, error: "세션이 유효하지 않습니다. 다시 로그인해 주세요." },
+        { status: 401 },
+      );
+    }
+    user = verifiedUser;
+  } else {
+    user = {
+      id: process.env.NEXT_PUBLIC_DEMO_SELLER_ID ?? "seller-demo",
+      email: "demo@local",
+      user_metadata: { nickname: "demo_seller" },
+    };
   }
 
   let form: FormData;
@@ -82,22 +91,47 @@ export async function POST(request: Request) {
   }
 
   const file = form.get("video");
-  if (!(file instanceof File) || file.size === 0) {
+  const videoUrlRaw = String(form.get("videoUrl") ?? "").trim();
+  const hasFile = file instanceof File && file.size > 0;
+  const hasVideoUrl = videoUrlRaw.length > 0;
+  if (!hasFile && !hasVideoUrl) {
     return NextResponse.json(
-      { ok: false, error: "동영상 파일을 선택해 주세요." },
+      { ok: false, error: "동영상 파일 또는 동영상 URL을 입력해 주세요." },
       { status: 400 },
     );
   }
 
-  const mime = file.type || "application/octet-stream";
-  if (!ALLOWED_MIME.has(mime)) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: "지원하는 형식은 MP4, MOV, WebM, AVI 계열입니다.",
-      },
-      { status: 400 },
-    );
+  if (hasFile) {
+    const mime = (file as File).type || "application/octet-stream";
+    if (!ALLOWED_MIME.has(mime)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "지원하는 형식은 MP4, MOV, WebM, AVI 계열입니다.",
+        },
+        { status: 400 },
+      );
+    }
+  }
+
+  let normalizedVideoUrl: string | null = null;
+  if (hasVideoUrl) {
+    if (videoUrlRaw.startsWith("/")) {
+      normalizedVideoUrl = videoUrlRaw;
+    } else {
+      try {
+        const u = new URL(videoUrlRaw.startsWith("http") ? videoUrlRaw : `https://${videoUrlRaw}`);
+        if (!(u.protocol === "http:" || u.protocol === "https:")) {
+          throw new Error("bad protocol");
+        }
+        normalizedVideoUrl = u.toString();
+      } catch {
+        return NextResponse.json(
+          { ok: false, error: "동영상 URL 형식이 올바르지 않습니다." },
+          { status: 400 },
+        );
+      }
+    }
   }
 
   const title = String(form.get("title") ?? "").trim();
@@ -157,16 +191,18 @@ export async function POST(request: Request) {
       ? Math.round(durationParsed)
       : null;
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const safe = sanitizeFilename(file.name || "clip.mp4");
-  const relDir = path.posix.join("uploads", "sell", user.id);
-  const diskDir = path.join(process.cwd(), "public", relDir);
-  await mkdir(diskDir, { recursive: true });
-  const fileName = `${Date.now()}_${safe}`;
-  const diskPath = path.join(diskDir, fileName);
-  await writeFile(diskPath, buffer);
-
-  const publicSrc = `/${relDir.replace(/\\/g, "/")}/${fileName}`;
+  let publicSrc = normalizedVideoUrl ?? "";
+  if (hasFile) {
+    const buffer = Buffer.from(await (file as File).arrayBuffer());
+    const safe = sanitizeFilename((file as File).name || "clip.mp4");
+    const relDir = path.posix.join("uploads", "sell", user.id);
+    const diskDir = path.join(process.cwd(), "public", relDir);
+    await mkdir(diskDir, { recursive: true });
+    const fileName = `${Date.now()}_${safe}`;
+    const diskPath = path.join(diskDir, fileName);
+    await writeFile(diskPath, buffer);
+    publicSrc = `/${relDir.replace(/\\/g, "/")}/${fileName}`;
+  }
 
   const hashtagsNormalized = hashtagsRaw
     ? hashtagsRaw

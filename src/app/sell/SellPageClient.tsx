@@ -27,28 +27,31 @@ export function SellPageClient() {
 
   if (!supabaseConfigured) {
     return (
-      <main className="mx-auto max-w-3xl px-4 py-12 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-        <div className="reels-glass-card rounded-2xl p-6 sm:p-8">
-          <h1 className="text-xl font-extrabold tracking-tight sm:text-2xl">
-            로그인 환경이 준비되지 않았어요
-          </h1>
-          <p className="mt-3 text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            <code className="rounded bg-black/30 px-1.5 py-0.5 text-[12px] text-reels-cyan [html[data-theme='light']_&]:bg-zinc-100">
-              NEXT_PUBLIC_SUPABASE_URL
-            </code>{" "}
-            와{" "}
-            <code className="rounded bg-black/30 px-1.5 py-0.5 text-[12px] text-reels-cyan [html[data-theme='light']_&]:bg-zinc-100">
-              NEXT_PUBLIC_SUPABASE_ANON_KEY
-            </code>
-            를 설정한 뒤 다시 시도해 주세요.
-          </p>
-          <Link
-            href="/"
-            className="mt-6 inline-flex text-[14px] font-semibold text-reels-cyan hover:underline"
-          >
-            홈으로
+      <main className="mx-auto max-w-3xl px-4 py-10 text-zinc-100 sm:px-6 sm:py-14 [html[data-theme='light']_&]:text-zinc-900">
+        <nav className="mb-6 font-mono text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          <Link href="/" className="text-reels-cyan/90 hover:text-reels-cyan">
+            홈
           </Link>
+          <span className="mx-1.5 text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">
+            /
+          </span>
+          <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+            릴스 판매 등록
+          </span>
+        </nav>
+
+        <div className="mb-6 reels-glass-card rounded-2xl p-5 sm:p-6">
+          <h1 className="text-xl font-extrabold tracking-tight sm:text-2xl">
+            릴스 판매 등록 (데모 모드)
+          </h1>
+          <p className="mt-2 text-[13px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            로그인 없이도 등록 폼을 사용할 수 있도록 임시 판매 모드로 열었습니다.
+            파일 업로드 또는 영상 URL 등록, 제목/설명/가격/권리 동의까지 한 번에
+            진행할 수 있어요.
+          </p>
         </div>
+
+        <SellerClipUploadForm />
       </main>
     );
   }

@@ -15,6 +15,8 @@ export function SellerClipUploadForm() {
   const hid = useId();
 
   const [file, setFile] = useState<File | null>(null);
+  const [sourceType, setSourceType] = useState<"file" | "url">("file");
+  const [videoUrl, setVideoUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [durationSec, setDurationSec] = useState<number | null>(null);
   const [orientation, setOrientation] = useState<"portrait" | "landscape">(
@@ -53,6 +55,18 @@ export function SellerClipUploadForm() {
     setPreviewUrl(url);
   };
 
+  const onApplyVideoUrl = () => {
+    const raw = videoUrl.trim();
+    if (!raw) return;
+    const normalized = raw.startsWith("http://") || raw.startsWith("https://")
+      ? raw
+      : raw.startsWith("/")
+        ? raw
+        : `https://${raw}`;
+    resetPreview();
+    setPreviewUrl(normalized);
+  };
+
   const onVideoMeta = () => {
     const el = videoPreviewRef.current;
     if (!el) return;
@@ -67,8 +81,12 @@ export function SellerClipUploadForm() {
     e.preventDefault();
     setMessage(null);
 
-    if (!file) {
+    if (sourceType === "file" && !file) {
       setMessage({ ok: false, text: "동영상 파일을 선택해 주세요." });
+      return;
+    }
+    if (sourceType === "url" && !videoUrl.trim()) {
+      setMessage({ ok: false, text: "동영상 URL을 입력해 주세요." });
       return;
     }
     if (!rights || !confirmOriginal) {
@@ -80,25 +98,18 @@ export function SellerClipUploadForm() {
     }
 
     const supabase = getSupabaseBrowserClient();
-    if (!supabase) {
-      setMessage({
-        ok: false,
-        text: "Supabase 설정이 없어 업로드할 수 없습니다.",
-      });
-      return;
-    }
-
-    const { data: sessionData } = await supabase.auth.getSession();
+    const { data: sessionData } = (await supabase?.auth.getSession()) ?? { data: { session: null } };
     const session = sessionData.session;
-    if (!session?.access_token) {
-      setMessage({ ok: false, text: "로그인 세션이 만료되었습니다. 다시 로그인해 주세요." });
-      return;
-    }
 
     setSubmitting(true);
     try {
       const fd = new FormData();
-      fd.append("video", file);
+      if (sourceType === "file" && file) {
+        fd.append("video", file);
+      }
+      if (sourceType === "url") {
+        fd.append("videoUrl", videoUrl.trim());
+      }
       fd.append("title", title.trim());
       fd.append("description", description.trim());
       fd.append("hashtags", hashtags.trim());
@@ -117,7 +128,9 @@ export function SellerClipUploadForm() {
 
       const res = await fetch("/api/sell/upload", {
         method: "POST",
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers: session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : undefined,
         body: fd,
       });
       const data = (await res.json()) as {
@@ -147,6 +160,8 @@ export function SellerClipUploadForm() {
       setEditionCap("50");
       setRights(false);
       setConfirmOriginal(false);
+      setVideoUrl("");
+      setSourceType("file");
       resetPreview();
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch {
@@ -192,35 +207,103 @@ export function SellerClipUploadForm() {
 
       <div className="mt-6 space-y-6">
         <div>
-          <label className={LABEL} htmlFor={`${hid}-video`}>
-            동영상 파일 (필수)
-          </label>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-            <input
-              id={`${hid}-video`}
-              ref={fileInputRef}
-              type="file"
-              accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
-              className="block w-full text-[13px] text-zinc-300 file:mr-3 file:rounded-lg file:border-0 file:bg-reels-crimson/90 file:px-3 file:py-2 file:text-[13px] file:font-bold file:text-white [html[data-theme='light']_&]:text-zinc-800"
-              onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
-            />
-            {previewUrl ? (
-              <div className="w-full max-w-[200px] shrink-0 overflow-hidden rounded-xl border border-white/15 bg-black/50">
-                <video
-                  ref={videoPreviewRef}
-                  className="aspect-[9/16] w-full object-cover sm:aspect-video"
-                  src={previewUrl}
-                  muted
-                  playsInline
-                  controls
-                  onLoadedMetadata={onVideoMeta}
-                />
-              </div>
-            ) : null}
+          <span className={LABEL}>영상 소스 선택</span>
+          <div className="mb-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setSourceType("file")}
+              className={`rounded-xl border px-3 py-2 text-[13px] font-bold transition ${
+                sourceType === "file"
+                  ? "border-reels-cyan/50 bg-reels-cyan/15 text-zinc-100"
+                  : "border-white/12 bg-black/20 text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
+              }`}
+            >
+              직접 업로드
+            </button>
+            <button
+              type="button"
+              onClick={() => setSourceType("url")}
+              className={`rounded-xl border px-3 py-2 text-[13px] font-bold transition ${
+                sourceType === "url"
+                  ? "border-reels-cyan/50 bg-reels-cyan/15 text-zinc-100"
+                  : "border-white/12 bg-black/20 text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
+              }`}
+            >
+              동영상 URL 입력
+            </button>
           </div>
-          <p className="mt-1.5 text-[11px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-            MP4·MOV·WebM 권장. 미리보기에서 재생 길이·가로/세로를 자동 추정합니다.
-          </p>
+
+          {sourceType === "file" ? (
+            <>
+              <label className={LABEL} htmlFor={`${hid}-video`}>
+                동영상 파일 (필수)
+              </label>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                <input
+                  id={`${hid}-video`}
+                  ref={fileInputRef}
+                  type="file"
+                  accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
+                  className="block w-full text-[13px] text-zinc-300 file:mr-3 file:rounded-lg file:border-0 file:bg-reels-crimson/90 file:px-3 file:py-2 file:text-[13px] file:font-bold file:text-white [html[data-theme='light']_&]:text-zinc-800"
+                  onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
+                />
+                {previewUrl ? (
+                  <div className="w-full max-w-[200px] shrink-0 overflow-hidden rounded-xl border border-white/15 bg-black/50">
+                    <video
+                      ref={videoPreviewRef}
+                      className="aspect-[9/16] w-full object-cover sm:aspect-video"
+                      src={previewUrl}
+                      muted
+                      playsInline
+                      controls
+                      onLoadedMetadata={onVideoMeta}
+                    />
+                  </div>
+                ) : null}
+              </div>
+              <p className="mt-1.5 text-[11px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
+                MP4·MOV·WebM 권장. 미리보기에서 재생 길이·가로/세로를 자동 추정합니다.
+              </p>
+            </>
+          ) : (
+            <>
+              <label className={LABEL} htmlFor={`${hid}-video-url`}>
+                동영상 URL (필수)
+              </label>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  id={`${hid}-video-url`}
+                  className={`${INPUT} flex-1`}
+                  value={videoUrl}
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                  placeholder="https://... 또는 /videos/sample1.mp4"
+                />
+                <button
+                  type="button"
+                  onClick={onApplyVideoUrl}
+                  className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/[0.08] px-4 py-2.5 text-[13px] font-bold text-zinc-200 hover:border-reels-cyan/40 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800"
+                >
+                  미리보기
+                </button>
+              </div>
+              {previewUrl ? (
+                <div className="mt-3 w-full max-w-[260px] overflow-hidden rounded-xl border border-white/15 bg-black/50">
+                  <video
+                    ref={videoPreviewRef}
+                    className="aspect-[9/16] w-full object-cover"
+                    src={previewUrl}
+                    muted
+                    playsInline
+                    controls
+                    onLoadedMetadata={onVideoMeta}
+                  />
+                </div>
+              ) : null}
+              <p className="mt-1.5 text-[11px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
+                직접 업로드가 어렵다면 영상 URL로도 등록할 수 있습니다.
+              </p>
+            </>
+          )}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
