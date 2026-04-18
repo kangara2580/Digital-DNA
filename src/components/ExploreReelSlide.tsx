@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  ExternalLink,
-  Eye,
-  Heart,
-  Volume2,
-  VolumeX,
-  Wallet,
-} from "lucide-react";
+import { Eye, Heart, Volume2, VolumeX, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -99,18 +92,6 @@ function ReelDesktopRail({
           {commerce.salesCount.toLocaleString("ko-KR")}
         </span>
       </div>
-
-      <button
-        type="button"
-        onClick={() => {
-          if (!hasPurchased(video.id)) markPurchased(video.id);
-          router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
-        }}
-        className="mt-1 flex flex-col items-center gap-1 rounded-2xl border border-reels-cyan/35 bg-reels-cyan/10 px-2 py-2.5 text-[10px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20"
-      >
-        <ExternalLink className="h-4 w-4" strokeWidth={2} aria-hidden />
-        상세
-      </button>
     </aside>
   );
 }
@@ -133,16 +114,9 @@ function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
           조회 {formatCompactCount(metrics.totalViews)} · ♥ {formatCompactCount(metrics.totalLikes)}
         </p>
       </div>
-      <button
-        type="button"
-        onClick={() => {
-          if (!hasPurchased(video.id)) markPurchased(video.id);
-          router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
-        }}
-        className="shrink-0 rounded-full border border-reels-cyan/40 bg-reels-cyan/15 px-3 py-1.5 text-[11px] font-bold text-reels-cyan"
-      >
-        상세
-      </button>
+      <span className="shrink-0 rounded-full border border-reels-cyan/30 bg-reels-cyan/10 px-3 py-1.5 text-[11px] font-bold text-reels-cyan">
+        재생 중
+      </span>
     </div>
   );
 }
@@ -255,9 +229,9 @@ export function ExploreReelSlide({ video, scrollRootRef }: ReelSlideProps) {
                 ) : null}
                 <Link
                   href={`/video/${video.id}`}
-                  className="rounded-full border border-white/30 bg-white/15 px-3 py-1.5 text-[12px] font-bold text-white backdrop-blur-sm transition hover:bg-white/25"
+                  className="rounded-full border border-reels-crimson/60 bg-reels-crimson px-3.5 py-1.5 text-[12px] font-extrabold text-white shadow-reels-crimson transition hover:brightness-110"
                 >
-                  구매·라이선스
+                  구매
                 </Link>
               </div>
             </div>

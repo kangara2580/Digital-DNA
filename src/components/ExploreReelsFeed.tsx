@@ -156,6 +156,45 @@ function ExploreWatchReels({
   const goNextReel = useCallback(() => scrollByOneSlide(1), [scrollByOneSlide]);
   const goPrevReel = useCallback(() => scrollByOneSlide(-1), [scrollByOneSlide]);
 
+  // 휠/트랙패드/키보드 이동을 한 칸씩 부드럽게 통일
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    let wheelLocked = false;
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) < 18) return;
+      e.preventDefault();
+      if (wheelLocked) return;
+      wheelLocked = true;
+      scrollByOneSlide(e.deltaY > 0 ? 1 : -1);
+      window.setTimeout(() => {
+        wheelLocked = false;
+      }, 320);
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowDown" || e.key === "PageDown") {
+        e.preventDefault();
+        goNextReel();
+      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
+        e.preventDefault();
+        goPrevReel();
+      } else if (e.key === " " || e.code === "Space") {
+        e.preventDefault();
+        if (e.shiftKey) goPrevReel();
+        else goNextReel();
+      }
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      el.removeEventListener("wheel", onWheel as EventListener);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [goNextReel, goPrevReel, scrollByOneSlide]);
+
   return (
     <>
       <div className="pointer-events-none fixed left-3 top-[calc(var(--header-height,4.5rem)+0.5rem)] z-[45] flex flex-col gap-2 sm:left-4 md:left-[calc(var(--reels-rail-w)+0.75rem)]">
@@ -202,7 +241,7 @@ function ExploreWatchReels({
 
       <div
         ref={scrollRef}
-        className="fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[30] overflow-y-auto overflow-x-hidden overscroll-y-contain snap-y snap-mandatory md:left-[var(--reels-rail-w)]"
+        className="fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[30] overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth snap-y snap-proximity md:left-[var(--reels-rail-w)]"
         style={{ WebkitOverflowScrolling: "touch" }}
         role="feed"
         aria-label="세로 탐색 릴스 피드 — 아래로 스크롤해 계속 보기"
