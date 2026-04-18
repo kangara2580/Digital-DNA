@@ -214,9 +214,6 @@ export function TrendingRankSection() {
             >
               실시간 인기순위 영상
             </h2>
-            <p className="mt-1 text-[12px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-              수동 큐레이션 · TikTok URL 기준 (임베드 재생)
-            </p>
             {errorMessage ? (
               <p className="mt-1.5 text-[12px] font-medium text-rose-300 [html[data-theme='light']_&]:text-rose-600">
                 {errorMessage}
