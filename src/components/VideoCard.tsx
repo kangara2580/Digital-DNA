@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { Heart } from "lucide-react";
+import { Heart, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 import {
   useCallback,
@@ -128,6 +128,7 @@ export function VideoCard({
   const showAiBadge = video.isAiGenerated === true;
   const cartBtnRef = useRef<HTMLButtonElement>(null);
   const liked = wishlist?.isSaved(video.id) ?? false;
+  const thumbLiked = wishlist?.isLiked(video.id) ?? false;
   const reelAspectPortrait =
     reelLayout && reelStrip ? "aspect-[3/4] w-full" : "aspect-[9/16] w-full";
   const reelAspectLandscape =
@@ -482,6 +483,66 @@ export function VideoCard({
                         : "h-8 w-8"
                 }`}
               />
+            </button>
+            <button
+              type="button"
+              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-reels-cyan opacity-90 transition-transform duration-300 ease-out hover:scale-110 ${
+                dense
+                  ? "h-8 w-8"
+                  : reelStrip
+                    ? "h-9 w-9 sm:h-10 sm:w-10"
+                    : reelLayout
+                      ? "h-11 w-11 sm:h-12 sm:w-12"
+                      : "h-10 w-10"
+              }`}
+              aria-label={thumbLiked ? "좋아요 취소" : "좋아요"}
+              aria-pressed={thumbLiked}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                wishlist?.toggleLike(video);
+              }}
+            >
+              <span
+                className={`relative isolate block shrink-0 ${
+                  dense
+                    ? "h-6 w-6"
+                    : reelStrip
+                      ? "h-7 w-7 sm:h-8 sm:w-8"
+                      : reelLayout
+                        ? "h-9 w-9 sm:h-10 sm:w-10"
+                        : "h-8 w-8"
+                }`}
+              >
+                <motion.span
+                  className="absolute inset-0 overflow-hidden"
+                  initial={false}
+                  animate={{
+                    clipPath: thumbLiked
+                      ? "inset(0% 0% 0% 0%)"
+                      : "inset(0% 0% 100% 0%)",
+                  }}
+                  transition={{
+                    duration: reduceMotion ? 0 : 0.52,
+                    ease: [0.22, 0.99, 0.36, 1],
+                  }}
+                >
+                  <ThumbsUp
+                    className="block h-full w-full"
+                    fill="currentColor"
+                    stroke="none"
+                    strokeWidth={0}
+                    aria-hidden
+                  />
+                </motion.span>
+                <ThumbsUp
+                  className="pointer-events-none absolute inset-0 z-[1] block h-full w-full drop-shadow-md"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.75}
+                  aria-hidden
+                />
+              </span>
             </button>
             <button
               type="button"

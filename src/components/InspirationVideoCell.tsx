@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useInView, useReducedMotion } from "framer-motion";
-import { Heart } from "lucide-react";
+import { Heart, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { CartIcon } from "@/components/CartIcon";
@@ -27,6 +27,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const inView = useInView(wrapRef, { amount: 0.2, margin: "0px 0px -8% 0px", once: false });
   const liked = wishlist?.isSaved(video.id) ?? false;
+  const thumbLiked = wishlist?.isLiked(video.id) ?? false;
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(video.src);
   const fallbackPoster = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#ff0055'/><stop offset='100%' stop-color='#00f2ea'/></linearGradient></defs><rect width='600' height='600' fill='#050505'/><rect x='20' y='20' width='560' height='560' rx='36' fill='url(#g)' opacity='0.86'/></svg>",
@@ -83,7 +84,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
         />
         <div className="pointer-events-none absolute inset-0 z-[7] flex items-center justify-center p-3">
           <div
-            className="flex items-center justify-center gap-5 opacity-0 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 translate-y-1 group-hover:translate-y-0 group-hover:opacity-100 sm:gap-6"
+            className="flex items-center justify-center gap-3 opacity-0 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 translate-y-1 group-hover:translate-y-0 group-hover:opacity-100 sm:gap-4"
           >
             <button
               ref={cartBtnRef}
@@ -100,6 +101,48 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
               }}
             >
               <CartIcon className="h-7 w-7 shrink-0 drop-shadow-md sm:h-8 sm:w-8" />
+            </button>
+            <button
+              type="button"
+              className="pointer-events-auto relative z-[8] inline-flex h-9 w-9 items-center justify-center rounded-full text-reels-cyan opacity-90 transition-transform duration-300 ease-out hover:scale-110 sm:h-10 sm:w-10"
+              aria-label={thumbLiked ? "좋아요 취소" : "좋아요"}
+              aria-pressed={thumbLiked}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                wishlist?.toggleLike(video);
+              }}
+            >
+              <span className="relative isolate block h-7 w-7 shrink-0 sm:h-8 sm:w-8">
+                <motion.span
+                  className="absolute inset-0 overflow-hidden"
+                  initial={false}
+                  animate={{
+                    clipPath: thumbLiked
+                      ? "inset(0% 0% 0% 0%)"
+                      : "inset(0% 0% 100% 0%)",
+                  }}
+                  transition={{
+                    duration: reduceMotion ? 0 : 0.52,
+                    ease: [0.22, 0.99, 0.36, 1],
+                  }}
+                >
+                  <ThumbsUp
+                    className="block h-full w-full"
+                    fill="currentColor"
+                    stroke="none"
+                    strokeWidth={0}
+                    aria-hidden
+                  />
+                </motion.span>
+                <ThumbsUp
+                  className="pointer-events-none absolute inset-0 z-[1] block h-full w-full drop-shadow-md"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.75}
+                  aria-hidden
+                />
+              </span>
             </button>
             <button
               type="button"

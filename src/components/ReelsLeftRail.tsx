@@ -59,7 +59,7 @@ const RAIL_ITEMS: RailItem[] = [
   },
   {
     href: "/wishlist",
-    label: "찜",
+    label: "Wishlist (찜한 목록)",
     Icon: Heart,
     isActive: (p) => p.startsWith("/wishlist"),
   },

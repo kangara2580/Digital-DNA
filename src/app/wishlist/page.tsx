@@ -6,6 +6,7 @@ import { VideoCard } from "@/components/VideoCard";
 import { useWishlist } from "@/context/WishlistContext";
 import { ALL_MARKET_VIDEOS } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
+import { useAuthSession } from "@/hooks/useAuthSession";
 
 const SORT_OPTIONS = [
   { value: "recent", label: "최근 찜한 순" },
@@ -68,6 +69,7 @@ function sortRows(rows: Row[], sort: SortValue): Row[] {
 }
 
 export default function WishlistPage() {
+  const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const { entries, hydrated, clear } = useWishlist();
   const [sort, setSort] = useState<SortValue>("recent");
 
@@ -85,54 +87,73 @@ export default function WishlistPage() {
     return sortRows(list, sort);
   }, [entries, catalogById, sort]);
 
+  const showLoginGate =
+    supabaseConfigured && !authLoading && hydrated && !user;
+
   return (
     <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12 lg:px-8">
       <header className="flex flex-col gap-4 border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">
-            찜한 릴스
+            Wishlist · 찜한 목록
           </h1>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-          <label className="flex items-center gap-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            <span className="sr-only">정렬 기준</span>
-            <span className="hidden font-medium text-zinc-400 sm:inline [html[data-theme='light']_&]:text-zinc-700">
-              정렬
-            </span>
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortValue)}
-              className="min-w-[11.5rem] cursor-pointer rounded-lg border border-white/15 bg-reels-void/80 px-3 py-2 text-[13px] font-medium text-zinc-100 outline-none transition-colors hover:border-reels-cyan/35 focus:border-reels-cyan/50 focus:ring-2 focus:ring-reels-cyan/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
-              aria-label="찜한 릴스 정렬"
-            >
-              {SORT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          {hydrated && entries.length > 0 ? (
-            <button
-              type="button"
-              onClick={() => {
-                if (
-                  typeof window !== "undefined" &&
-                  window.confirm("찜한 릴스를 모두 목록에서 삭제할까요?")
-                ) {
-                  clear();
-                }
-              }}
-              className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-reels-crimson/35 hover:bg-white/[0.06] hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
-            >
-              전체 삭제
-            </button>
-          ) : null}
-        </div>
+        {!showLoginGate ? (
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+            <label className="flex items-center gap-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              <span className="sr-only">정렬 기준</span>
+              <span className="hidden font-medium text-zinc-400 sm:inline [html[data-theme='light']_&]:text-zinc-700">
+                정렬
+              </span>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as SortValue)}
+                className="min-w-[11.5rem] cursor-pointer rounded-lg border border-white/15 bg-reels-void/80 px-3 py-2 text-[13px] font-medium text-zinc-100 outline-none transition-colors hover:border-reels-cyan/35 focus:border-reels-cyan/50 focus:ring-2 focus:ring-reels-cyan/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+                aria-label="찜한 릴스 정렬"
+              >
+                {SORT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {hydrated && entries.length > 0 ? (
+              <button
+                type="button"
+                onClick={() => {
+                  void (async () => {
+                    if (
+                      typeof window !== "undefined" &&
+                      window.confirm("찜한 릴스를 모두 목록에서 삭제할까요?")
+                    ) {
+                      await clear();
+                    }
+                  })();
+                }}
+                className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-reels-crimson/35 hover:bg-white/[0.06] hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
+              >
+                전체 삭제
+              </button>
+            ) : null}
+          </div>
+        ) : null}
       </header>
 
-      {!hydrated ? (
+      {showLoginGate ? (
+        <div className="mx-auto mt-16 max-w-md text-center">
+          <p className="text-[15px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            로그인하면 찜한 릴스가 저장되고, 이 페이지에서만 모아 볼 수 있어요.
+          </p>
+          <Link
+            href={`/login?redirect=${encodeURIComponent("/wishlist")}`}
+            className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
+          >
+            로그인
+          </Link>
+        </div>
+      ) : !hydrated ? (
         <p className="mt-10 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600" aria-live="polite">
           불러오는 중…
         </p>
