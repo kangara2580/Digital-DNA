@@ -7,7 +7,6 @@ import { FaceProfileUploadSection } from "@/components/FaceProfileUploadSection"
 import { MyPageSavedDraftsSection } from "@/components/MyPageSavedDraftsSection";
 import { MyPageSellerAnalyticsSection } from "@/components/MyPageSellerAnalyticsSection";
 import { ProfileAvatarPicker } from "@/components/ProfileAvatarPicker";
-import { DEMO_FACE_PROFILES } from "@/data/demoFaceProfiles";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useStoredFaceProfile } from "@/hooks/useStoredFaceProfile";
 import { readSavedCustomizeDraftIndex } from "@/lib/customizeDraftIndex";
@@ -20,21 +19,19 @@ import {
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { MyPageAccountOverview } from "@/components/MyPageAccountOverview";
 
-type MyPageTab = "basic" | "profile" | "drafts" | "samples" | "analytics";
+type MyPageTab = "basic" | "profile" | "drafts" | "analytics";
 
 const TAB_ITEMS: { id: MyPageTab; label: string; href: string; desc: string }[] = [
   { id: "basic", label: "기본정보", href: "/mypage", desc: "아이디 · 활동 요약" },
   { id: "analytics", label: "판매 분석", href: "/mypage?tab=analytics", desc: "수익·성장·영상별 지표" },
   { id: "profile", label: "프로필 관리", href: "/mypage?tab=profile", desc: "3면 얼굴 등록" },
   { id: "drafts", label: "임시 저장", href: "/mypage?tab=drafts", desc: "이어 편집 · 구매" },
-  { id: "samples", label: "샘플 프로필", href: "/mypage?tab=samples", desc: "데모 얼굴 세트" },
 ];
 
 function normalizeTab(input: string | null): MyPageTab {
   if (
     input === "profile" ||
     input === "drafts" ||
-    input === "samples" ||
     input === "analytics"
   ) {
     return input;
@@ -202,29 +199,6 @@ export function MyPageDashboard() {
 
           {currentTab === "analytics" ? <MyPageSellerAnalyticsSection /> : null}
 
-          {currentTab === "samples" ? (
-            <section className="reels-glass-card rounded-2xl p-5 sm:p-6" aria-labelledby="profiles-heading">
-              <h2 id="profiles-heading" className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                샘플 프로필 (창작 데모)
-              </h2>
-              <p className="mt-2 text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                창작 시 이 얼굴이 영상에 반영됩니다.{" "}
-                <Link href="/create?videoId=1" className="text-reels-cyan/90 hover:underline">
-                  창작 스튜디오
-                </Link>
-                에서도 동일 세트를 선택할 수 있어요.
-              </p>
-              <ul className="mt-4 flex flex-wrap gap-4">
-                {DEMO_FACE_PROFILES.map((p) => (
-                  <li key={p.id} className="text-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.src} alt="" className="mx-auto h-20 w-20 rounded-full border border-white/12 object-cover [html[data-theme='light']_&]:border-zinc-200" />
-                    <p className="mt-1.5 text-[11px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">{p.label}</p>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
         </section>
       </div>
     </main>
