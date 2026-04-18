@@ -185,7 +185,7 @@ export function ProfileAvatarPicker({ value, onChange, hint }: Props) {
               className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/[0.06] px-3 py-2 text-[12px] font-bold text-zinc-200 transition hover:border-reels-cyan/40 hover:bg-reels-cyan/10 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
             >
               <ImagePlus className="h-4 w-4 text-reels-cyan" aria-hidden />
-              내 사진 올리기
+              이미지 올리기
             </button>
             <input
               ref={fileRef}
@@ -200,7 +200,7 @@ export function ProfileAvatarPicker({ value, onChange, hint }: Props) {
       </div>
 
       <div
-        className={`rounded-xl border border-reels-cyan/20 bg-gradient-to-br from-black/40 to-black/20 p-2.5 sm:p-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-100/90 [html[data-theme='light']_&]:to-white ${
+        className={`rounded-xl border border-reels-cyan/20 bg-gradient-to-br from-black/40 to-black/20 p-2.5 sm:p-3 lg:max-w-[560px] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-100/90 [html[data-theme='light']_&]:to-white ${
           customizerDisabled ? "opacity-50" : ""
         }`}
       >
@@ -258,10 +258,6 @@ export function ProfileAvatarPicker({ value, onChange, hint }: Props) {
               current={parts.brows}
               list={NOTIONISTS_BROWS}
               onChange={(brows) => applyCustom({ ...parts, brows })}
-            />
-            <FaceShapeRow
-              value={parts.faceShape}
-              onChange={(faceShape) => applyCustom({ ...parts, faceShape })}
             />
             <CycleRow
               label="옷"
@@ -354,39 +350,3 @@ function GenderRow({
   );
 }
 
-function FaceShapeRow({
-  value,
-  onChange,
-}: {
-  value: CharacterFaceShape;
-  onChange: (f: CharacterFaceShape) => void;
-}) {
-  const opts: { id: CharacterFaceShape; label: string }[] = [
-    { id: 0, label: "슬림" },
-    { id: 1, label: "기본" },
-    { id: 2, label: "라운드" },
-  ];
-  return (
-    <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/25 px-2 py-1 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80">
-      <span className="w-8 shrink-0 text-[9px] font-bold uppercase tracking-wide text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        얼굴
-      </span>
-      <div className="flex min-w-0 flex-1 gap-1">
-        {opts.map((o) => (
-          <button
-            key={o.id}
-            type="button"
-            onClick={() => onChange(o.id)}
-            className={`flex-1 rounded-md py-1 text-[10px] font-bold transition ${
-              value === o.id
-                ? "bg-reels-cyan/25 text-reels-cyan ring-1 ring-reels-cyan/40"
-                : "border border-white/10 bg-black/30 text-zinc-400 hover:border-reels-cyan/30 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
-            }`}
-          >
-            {o.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
