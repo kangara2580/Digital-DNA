@@ -125,7 +125,6 @@ export function VideoCard({
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(previewSrc);
   const canLoadPreviewVideo = !isPexelsBlockedVideo;
   const segmentPreview = instantPreview === true;
-  const isTikTokEmbed = Boolean(video.tiktokEmbedId);
   const fallbackPoster = useMemo(() => {
     const hash = Array.from(video.id).reduce(
       (acc, ch) => (acc * 33 + ch.charCodeAt(0)) >>> 0,
@@ -163,7 +162,7 @@ export function VideoCard({
     setIsPreviewing(false);
   }, [defaultThumbnail]);
 
-  const segmentPreviewEffective = segmentPreview && !isTikTokEmbed;
+  const segmentPreviewEffective = segmentPreview && !video.tiktokEmbedId;
   const isLocal = canLoadPreviewVideo && isLocalPublicVideo(previewSrc);
 
   const hoverPreview = useHoverInstantPreview(
@@ -245,7 +244,7 @@ export function VideoCard({
       id={domId}
       className={`group flex flex-col overflow-hidden ${transitionCls} ${shell} ${overlapHover} ${gridHoverScale} ${className ?? ""}`}
       onMouseEnter={
-        isTikTokEmbed
+        video.tiktokEmbedId
           ? playTikTok
           : !canLoadPreviewVideo
             ? undefined
@@ -259,7 +258,7 @@ export function VideoCard({
               : undefined
       }
       onMouseLeave={
-        isTikTokEmbed
+        video.tiktokEmbedId
           ? pauseTikTok
           : !canLoadPreviewVideo
             ? undefined
@@ -274,7 +273,7 @@ export function VideoCard({
       }
     >
       <div className={`relative overflow-hidden bg-black/40 ${aspectClass}`}>
-        {isTikTokEmbed ? (
+        {video.tiktokEmbedId ? (
           <div className="absolute inset-0 z-0 flex items-center justify-center">
             <iframe
               title={`${video.title}-tiktok`}
@@ -311,7 +310,7 @@ export function VideoCard({
             alt=""
             className={`pointer-events-none absolute inset-0 z-[2] h-full w-full transition-opacity duration-200 ${
               isPreviewing ? "opacity-0" : "opacity-100"
-            } ${isTikTokEmbed ? "object-contain bg-black" : "object-cover"}`}
+            } ${video.tiktokEmbedId ? "object-contain bg-black" : "object-cover"}`}
             loading={reelStrip ? "eager" : "lazy"}
             decoding="async"
             onError={() => {
@@ -325,7 +324,7 @@ export function VideoCard({
           className="pointer-events-none absolute inset-0 z-[1] bg-black/0 transition-colors duration-300 ease-out group-hover:bg-black/30 motion-reduce:group-hover:bg-black/25"
           aria-hidden
         />
-        {isTikTokEmbed ? null : onPick ? (
+        {video.tiktokEmbedId ? null : onPick ? (
           <button
             type="button"
             onClick={onPick}
