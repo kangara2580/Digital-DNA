@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
 
 /**
  * Supabase 세션 쿠키를 미들웨어에서 갱신합니다.
@@ -15,7 +16,10 @@ export async function middleware(request: NextRequest) {
 
   let supabaseResponse = NextResponse.next({ request });
 
+  const cookieBase = getSupabaseAuthCookieOptions();
+
   const supabase = createServerClient(url, key, {
+    cookieOptions: cookieBase,
     cookies: {
       getAll() {
         return request.cookies.getAll();
@@ -31,7 +35,17 @@ export async function middleware(request: NextRequest) {
   });
 
   // createServerClient 직후 다른 로직을 끼우면 세션/로그아웃 버그가 나기 쉬움 — getUser()만 호출
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  /** 메인(/)은 로그인 필수 — 비로그인 시 로그인으로 */
+  if (request.nextUrl.pathname === "/" && !user) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/login";
+    redirectUrl.searchParams.set("redirect", "/");
+    return NextResponse.redirect(redirectUrl);
+  }
 
   return supabaseResponse;
 }

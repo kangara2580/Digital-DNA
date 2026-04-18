@@ -23,6 +23,7 @@ import { ReelsLogo } from "@/components/ReelsLogo";
 import { SellerNotificationBell } from "@/components/SellerNotificationBell";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { MALL_CATEGORY_NAV_ITEMS } from "@/data/mallCategoryNav";
+import { useAuthSession } from "@/hooks/useAuthSession";
 
 const stroke = 1.75;
 
@@ -95,11 +96,18 @@ const DRAWER_QUICK = [
 export function ReelsLeftRail() {
   const pathname = usePathname();
   const { cartAnchorRef } = useDopamineBasket();
+  const { user } = useAuthSession();
   const reduceMotion = useReducedMotion() ?? false;
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const drawerTitleId = useId();
   const drawerId = useId();
+
+  const visibleRailItems = RAIL_ITEMS.filter((item) => {
+    // 로그인 사용자는 가입 버튼을 다시 볼 필요가 없으므로 숨깁니다.
+    if (item.href === "/signup" && user) return false;
+    return true;
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -145,7 +153,7 @@ export function ReelsLeftRail() {
             className="flex shrink-0 flex-col items-center gap-1 overflow-y-auto overflow-x-hidden py-2 no-scrollbar"
             aria-label="빠른 이동"
           >
-            {RAIL_ITEMS.map(({ href, label, Icon, isActive }) => {
+            {visibleRailItems.map(({ href, label, Icon, isActive }) => {
               const on = isActive(pathname);
               return (
                 <Link

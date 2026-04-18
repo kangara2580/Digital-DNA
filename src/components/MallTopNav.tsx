@@ -16,6 +16,7 @@ import { MALL_CATEGORY_NAV_ITEMS as ITEMS } from "@/data/mallCategoryNav";
 import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhrases";
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 import { ReelsLogo } from "@/components/ReelsLogo";
+import { MainTopUserMenu } from "@/components/MainTopUserMenu";
 
 /** 카테고리 pill — 라이트 모드에서 검정 텍스트 */
 const categoryPillClass =
@@ -475,6 +476,7 @@ export function MallTopNav() {
                       </span>
                     </span>
                   </Link>
+                  <MainTopUserMenu compact={false} />
                   <div className="min-w-0 flex-1 sm:min-w-[12rem]">
                     <RotatingSearchField compact={false} q={q} setQ={setQ} />
                   </div>
@@ -612,6 +614,7 @@ export function MallTopNav() {
             <div
               className={`flex shrink-0 items-center gap-1.5 sm:gap-2 sm:-mr-1 lg:-mr-0.5 ${easeLayout}`}
             >
+              {pathname === "/" ? <MainTopUserMenu compact /> : null}
               <div className="md:hidden">
                 <SitePreferencesMenu />
               </div>

@@ -10,6 +10,7 @@ import { DEFAULT_BEST_REVIEW_AVATAR_SEED } from "@/data/reelsAvatarPresets";
 import type { ProfileAvatar } from "@/lib/profileAvatarStorage";
 import { readProfileAvatar, writeProfileAvatar } from "@/lib/profileAvatarStorage";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { upsertUserProfile } from "@/lib/supabaseProfiles";
 
 type SignupForm = {
   firstName: string;
@@ -49,7 +50,7 @@ const INITIAL_FORM: SignupForm = {
 };
 
 const INPUT_CLS =
-  "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none transition focus:border-reels-cyan/45 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
+  "w-full rounded-xl border border-white/20 bg-black/30 px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none backdrop-blur-sm transition placeholder:text-zinc-500 focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-500/30";
 
 const COUNTRY_OPTIONS = [
   { code: "KR", label: "대한민국" },
@@ -126,10 +127,7 @@ function SignupLoginLink() {
   );
 }
 
-function safeRedirectPath(raw: string | null): string {
-  if (raw && raw.startsWith("/") && !raw.startsWith("//")) return raw;
-  return "/sell";
-}
+const SIGNUP_DRAFT_KEY = "reels-market-signup-draft";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -146,10 +144,35 @@ export default function SignupPage() {
   const [nicknameCheckMessage, setNicknameCheckMessage] = useState("");
   const [isSendingVerifyEmail, setIsSendingVerifyEmail] = useState(false);
   const [verifyEmailMessage, setVerifyEmailMessage] = useState("");
+  const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
+  const [phoneCode, setPhoneCode] = useState("");
+  const [phoneCodeInput, setPhoneCodeInput] = useState("");
+  const [phoneCodeSentAt, setPhoneCodeSentAt] = useState<number | null>(null);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [phoneVerifyMessage, setPhoneVerifyMessage] = useState("");
+  const [draftStatus, setDraftStatus] = useState("");
 
   useEffect(() => {
     const saved = readProfileAvatar();
     if (saved) setProfileAvatar(saved);
+  }, []);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(SIGNUP_DRAFT_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as {
+        form?: Partial<SignupForm>;
+        phoneVerified?: boolean;
+      };
+      if (parsed.form) {
+        setForm((prev) => ({ ...prev, ...parsed.form }));
+      }
+      setPhoneVerified(Boolean(parsed.phoneVerified));
+      setDraftStatus("이전에 저장한 임시 입력값을 불러왔어요.");
+    } catch {
+      setDraftStatus("");
+    }
   }, []);
 
   const nameMissing = useMemo(
@@ -235,6 +258,7 @@ export default function SignupPage() {
     if (!form.nickname.trim()) return false;
     if (nicknameNotVerified) return false;
     if (phoneError) return false;
+    if (!phoneVerified) return false;
     if (hasInvalidSocialLink) return false;
     if (!form.agreeAge || !form.agreeTerms || !form.agreePrivacy) return false;
     return true;
@@ -248,11 +272,32 @@ export default function SignupPage() {
     passwordConfirmError,
     passwordError,
     phoneError,
+    phoneVerified,
   ]);
 
   const onChange = <K extends keyof SignupForm>(key: K, value: SignupForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
+
+  useEffect(() => {
+    // 입력이 바뀔 때마다 임시저장해서 새로고침/재접속 시 복원합니다.
+    const timer = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(
+          SIGNUP_DRAFT_KEY,
+          JSON.stringify({
+            form,
+            phoneVerified,
+            savedAt: Date.now(),
+          }),
+        );
+        setDraftStatus("입력 내용이 자동 저장되었습니다.");
+      } catch {
+        setDraftStatus("자동 저장에 실패했습니다.");
+      }
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [form, phoneVerified]);
 
   const checkNickname = async () => {
     const nickname = form.nickname.trim();
@@ -339,6 +384,53 @@ export default function SignupPage() {
     } finally {
       setIsSendingVerifyEmail(false);
     }
+  };
+
+  const sendPhoneVerificationCode = async () => {
+    setPhoneVerifyMessage("");
+    if (phoneError) {
+      setPhoneVerifyMessage("휴대폰 번호를 올바르게 입력한 뒤 인증해 주세요.");
+      return;
+    }
+
+    setIsSendingPhoneCode(true);
+    try {
+      // TODO: 실제 운영에서는 SMS 제공업체(예: Solapi/Twilio) API 호출로 교체하세요.
+      // 현재는 개발용 인증 흐름 점검을 위한 임시 코드 발급입니다.
+      const generated = String(Math.floor(100000 + Math.random() * 900000));
+      setPhoneCode(generated);
+      setPhoneCodeSentAt(Date.now());
+      setPhoneCodeInput("");
+      setPhoneVerified(false);
+      setPhoneVerifyMessage(
+        `인증번호를 발송했습니다. (개발모드 테스트 코드: ${generated})`
+      );
+    } finally {
+      setIsSendingPhoneCode(false);
+    }
+  };
+
+  const verifyPhoneCode = () => {
+    if (!phoneCode) {
+      setPhoneVerifyMessage("먼저 인증번호 발송 버튼을 눌러 주세요.");
+      return;
+    }
+    const expired =
+      phoneCodeSentAt !== null && Date.now() - phoneCodeSentAt > 3 * 60 * 1000;
+    if (expired) {
+      setPhoneVerified(false);
+      setPhoneVerifyMessage(
+        "인증번호 유효시간(3분)이 지났습니다. 다시 발송해 주세요."
+      );
+      return;
+    }
+    if (phoneCodeInput.trim() !== phoneCode) {
+      setPhoneVerified(false);
+      setPhoneVerifyMessage("인증번호가 일치하지 않습니다. 다시 확인해 주세요.");
+      return;
+    }
+    setPhoneVerified(true);
+    setPhoneVerifyMessage("휴대폰 인증이 완료되었습니다.");
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -439,50 +531,55 @@ export default function SignupPage() {
         return;
       }
 
-      window.localStorage.setItem("reels-market-signup-draft", JSON.stringify(payload));
       writeProfileAvatar(
         profileAvatar ??
           ({ kind: "preset", seed: DEFAULT_BEST_REVIEW_AVATAR_SEED } satisfies ProfileAvatar),
       );
 
-      const nextPath = safeRedirectPath(
-        typeof window !== "undefined"
-          ? new URLSearchParams(window.location.search).get("redirect")
-          : null,
-      );
+      const profilePayload = {
+        email: normalizedEmail,
+        nickname: form.nickname.trim() || null,
+        first_name: form.firstName.trim() || null,
+        last_name: form.lastName.trim() || null,
+        phone: `${form.phoneCountryCode}${normalizedPhone}`,
+        phone_country_code: form.phoneCountryCode,
+        country: form.country,
+        timezone: form.timezone,
+        avatar_kind: av.kind,
+        avatar_seed: av.kind === "preset" ? av.seed : null,
+        avatar_custom: av.kind === "custom" ? JSON.stringify(av.parts) : null,
+      };
 
-      /** 이메일 확인 OFF면 signUp 직후 session 존재 → 바로 로그인된 상태 */
-      if (signUpData.session) {
-        setMessage("회원가입이 완료되었습니다. 이동합니다…");
-        router.replace(nextPath);
-        return;
+      let userId = signUpData.user?.id ?? null;
+      let session = signUpData.session;
+
+      // 이메일 확인 ON 등으로 signUp 직후 세션이 없으면 같은 자격으로 로그인 시도
+      if (!session && userId) {
+        const { data: signInData, error: signInErr } =
+          await supabase.auth.signInWithPassword({
+            email: normalizedEmail,
+            password: form.password,
+          });
+        if (!signInErr && signInData.session) {
+          session = signInData.session;
+          userId = signInData.user?.id ?? userId;
+        }
       }
 
-      /**
-       * 일부 설정에서는 signUp에 session이 없고, 이메일 확인이 꺼져 있으면
-       * 같은 자격으로 signIn이 곧바로 성공합니다.
-       */
-      const { data: signInData, error: signInError } =
-        await supabase.auth.signInWithPassword({
-          email: normalizedEmail,
-          password: form.password,
-        });
+      window.localStorage.removeItem(SIGNUP_DRAFT_KEY);
 
-      if (signInData.session) {
-        setMessage("회원가입이 완료되어 로그인했습니다. 이동합니다…");
-        router.replace(nextPath);
+      if (session && userId) {
+        await upsertUserProfile(supabase, userId, profilePayload);
+        setMessage("회원가입이 완료되었습니다. 홈으로 이동합니다…");
+        router.replace("/");
+        router.refresh();
         return;
       }
-
-      /**
-       * 이메일 확인이 켜져 있으면: 가입은 되었으나 세션 없음 → 메일 인증 필요.
-       * signIn만 실패한 경우(비밀번호 불일치 등)는 메시지를 구분하지 않고 안내 통일.
-       */
-      void signInError;
 
       setMessage(
-        "회원가입은 완료되었습니다. 프로젝트에서 이메일 확인을 켜 두었다면, 받은 메일의 링크를 누른 뒤 로그인해 주세요. (Supabase 대시보드에서 이메일 확인을 끄면 가입 직후 바로 로그인할 수 있습니다.)",
+        "회원가입은 완료되었습니다. 이메일 인증이 필요한 경우 메일 확인 후 로그인해 주세요.",
       );
+      router.replace(`/login?registered=1&email=${encodeURIComponent(normalizedEmail)}`);
     } catch {
       setMessage("저장 중 문제가 발생했어요. 다시 시도해 주세요.");
     } finally {
@@ -491,23 +588,29 @@ export default function SignupPage() {
   };
 
   return (
-    <main className="mx-auto min-h-[70vh] max-w-3xl px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12">
-      <div className="reels-glass-card rounded-2xl p-5 sm:p-6">
+    <main className="relative min-h-screen overflow-hidden bg-[#07080f] px-4 py-10 text-zinc-100 sm:px-6 sm:py-12">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(236,72,153,0.18),transparent_40%),radial-gradient(circle_at_85%_90%,rgba(59,130,246,0.16),transparent_45%),linear-gradient(180deg,#05060b_0%,#080913_100%)]" />
+      <div className="relative mx-auto w-full max-w-3xl rounded-2xl border border-white/15 bg-white/[0.04] p-5 shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:p-6">
         <div className="flex items-center gap-2">
-          <UserPlus2 className="h-5 w-5 text-reels-cyan" />
-          <h1 className="text-2xl font-extrabold tracking-tight [html[data-theme='light']_&]:text-zinc-900">회원가입</h1>
+          <UserPlus2 className="h-5 w-5 text-fuchsia-300" />
+          <h1 className="text-2xl font-extrabold tracking-tight text-white">회원가입</h1>
         </div>
-        <p className="mt-2 text-[13px] text-zinc-400 [html[data-theme='light']_&]:text-[#6d5a88]">
+        <p className="mt-2 text-[13px] text-zinc-400">
           글로벌 크리에이터 계정을 위한 기본 정보(이름·국가·시간대)를 먼저 설정해 주세요.
         </p>
+        {draftStatus ? (
+          <p className="mt-2 rounded-lg border border-fuchsia-400/35 bg-fuchsia-500/10 px-3 py-2 text-[12px] font-semibold text-fuchsia-200">
+            {draftStatus}
+          </p>
+        ) : null}
         <Suspense fallback={null}>
           <SignupLoginLink />
         </Suspense>
 
         <form className="mt-6 space-y-6" onSubmit={onSubmit}>
-          <section className="rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-black/10 [html[data-theme='light']_&]:bg-white">
+          <section className="rounded-xl border border-white/15 bg-black/25 p-4 backdrop-blur-sm">
             <h2 className="text-[14px] font-bold">프로필 이미지</h2>
-            <p className="mt-2 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            <p className="mt-2 text-[12px] text-zinc-400">
               홈 「오늘의 베스트 구매평」과 같은 일러스트 아바타를 고르거나, 직접 사진을 올릴 수 있어요.
             </p>
             <div className="mt-4">
@@ -518,10 +621,10 @@ export default function SignupPage() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-black/10 [html[data-theme='light']_&]:bg-white">
+          <section className="rounded-xl border border-white/15 bg-black/25 p-4 backdrop-blur-sm">
             <h2 className="text-[14px] font-bold">기본 정보</h2>
             {requiredIdentityMessage ? (
-              <p className="mt-2 rounded-lg border border-rose-500/45 bg-rose-500/10 px-3 py-2 text-[12px] font-extrabold text-rose-300 [html[data-theme='light']_&]:text-rose-700">
+              <p className="mt-2 rounded-lg border border-rose-500/45 bg-rose-500/10 px-3 py-2 text-[12px] font-extrabold text-rose-300">
                 {requiredIdentityMessage}
               </p>
             ) : null}
@@ -542,13 +645,13 @@ export default function SignupPage() {
                     type="button"
                     onClick={sendVerificationEmail}
                     disabled={isSendingVerifyEmail}
-                    className="shrink-0 rounded-xl border border-reels-cyan/40 bg-reels-cyan/10 px-3 py-2 text-[12px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20 disabled:opacity-50"
+                    className="shrink-0 rounded-xl border border-fuchsia-400/40 bg-fuchsia-500/10 px-3 py-2 text-[12px] font-bold text-fuchsia-200 transition hover:bg-fuchsia-500/20 disabled:opacity-50"
                   >
                     {isSendingVerifyEmail ? "발송 중..." : "인증 메일 보내기"}
                   </button>
                 </div>
                 {emailError ? (
-                  <p className="mt-1.5 text-[12px] font-semibold text-rose-400 [html[data-theme='light']_&]:text-rose-600">
+                  <p className="mt-1.5 text-[12px] font-semibold text-rose-400">
                     {emailError}
                   </p>
                 ) : null}
@@ -556,8 +659,8 @@ export default function SignupPage() {
                   <p
                     className={`mt-1.5 text-[12px] font-semibold ${
                       verifyEmailMessage.includes("보냈어요")
-                        ? "text-emerald-400 [html[data-theme='light']_&]:text-emerald-700"
-                        : "text-rose-400 [html[data-theme='light']_&]:text-rose-600"
+                        ? "text-emerald-400"
+                        : "text-rose-400"
                     }`}
                   >
                     {verifyEmailMessage}
@@ -579,7 +682,7 @@ export default function SignupPage() {
                     type="button"
                     onClick={checkNickname}
                     disabled={isCheckingNickname}
-                    className="shrink-0 rounded-xl border border-reels-cyan/40 bg-reels-cyan/10 px-3 py-2 text-[12px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20 disabled:opacity-50"
+                    className="shrink-0 rounded-xl border border-fuchsia-400/40 bg-fuchsia-500/10 px-3 py-2 text-[12px] font-bold text-fuchsia-200 transition hover:bg-fuchsia-500/20 disabled:opacity-50"
                   >
                     {isCheckingNickname ? "확인 중..." : "중복확인"}
                   </button>
@@ -588,8 +691,8 @@ export default function SignupPage() {
                   <p
                     className={`mt-1.5 text-[12px] font-semibold ${
                       nicknameCheckedAvailable && !nicknameChangedAfterCheck
-                        ? "text-emerald-400 [html[data-theme='light']_&]:text-emerald-700"
-                        : "text-rose-400 [html[data-theme='light']_&]:text-rose-600"
+                        ? "text-emerald-400"
+                        : "text-rose-400"
                     }`}
                   >
                     {nicknameCheckMessage}
@@ -606,7 +709,7 @@ export default function SignupPage() {
                   autoComplete="new-password"
                 />
                 {passwordError ? (
-                  <p className="mt-1.5 text-[12px] font-semibold text-rose-400 [html[data-theme='light']_&]:text-rose-600">
+                  <p className="mt-1.5 text-[12px] font-semibold text-rose-400">
                     {passwordError}
                   </p>
                 ) : null}
@@ -621,7 +724,7 @@ export default function SignupPage() {
                   autoComplete="new-password"
                 />
                 {passwordConfirmError ? (
-                  <p className="mt-1.5 text-[12px] font-semibold text-rose-400 [html[data-theme='light']_&]:text-rose-600">
+                  <p className="mt-1.5 text-[12px] font-semibold text-rose-400">
                     {passwordConfirmError}
                   </p>
                 ) : null}
@@ -631,7 +734,10 @@ export default function SignupPage() {
                   <select
                     className={INPUT_CLS}
                     value={form.phoneCountryCode}
-                    onChange={(e) => onChange("phoneCountryCode", e.target.value)}
+                    onChange={(e) => {
+                      onChange("phoneCountryCode", e.target.value);
+                      setPhoneVerified(false);
+                    }}
                   >
                     <option value="+82">+82 (KR)</option>
                     <option value="+1">+1 (US/CA)</option>
@@ -644,14 +750,60 @@ export default function SignupPage() {
                     className={INPUT_CLS}
                     placeholder="휴대폰 번호* (숫자만 입력)"
                     value={form.phone}
-                    onChange={(e) => onChange("phone", e.target.value)}
+                    onChange={(e) => {
+                      onChange("phone", e.target.value);
+                      setPhoneVerified(false);
+                    }}
                     inputMode="numeric"
                     autoComplete="tel-national"
                   />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={sendPhoneVerificationCode}
+                      disabled={isSendingPhoneCode}
+                      className="shrink-0 rounded-xl border border-fuchsia-400/40 bg-fuchsia-500/10 px-3 py-2 text-[12px] font-bold text-fuchsia-200 transition hover:bg-fuchsia-500/20 disabled:opacity-50"
+                    >
+                      {isSendingPhoneCode ? "발송 중..." : "인증번호 발송"}
+                    </button>
+                    {phoneVerified ? (
+                      <span className="inline-flex items-center rounded-xl border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-[12px] font-bold text-emerald-300">
+                        인증 완료
+                      </span>
+                    ) : null}
+                  </div>
+                  {phoneCode ? (
+                    <div className="flex gap-2">
+                      <input
+                        className={INPUT_CLS}
+                        placeholder="인증번호 6자리 입력"
+                        value={phoneCodeInput}
+                        onChange={(e) => setPhoneCodeInput(e.target.value)}
+                        inputMode="numeric"
+                        maxLength={6}
+                      />
+                      <button
+                        type="button"
+                        onClick={verifyPhoneCode}
+                        className="shrink-0 rounded-xl border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-[12px] font-bold text-emerald-300 transition hover:bg-emerald-500/20"
+                      >
+                        인증 확인
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
                 {phoneError ? (
-                  <p className="mt-1.5 text-[12px] font-semibold text-rose-400 [html[data-theme='light']_&]:text-rose-600">
+                  <p className="mt-1.5 text-[12px] font-semibold text-rose-400">
                     {phoneError}
+                  </p>
+                ) : null}
+                {phoneVerifyMessage ? (
+                  <p
+                    className={`mt-1.5 text-[12px] font-semibold ${
+                      phoneVerified ? "text-emerald-400" : "text-zinc-300"
+                    }`}
+                  >
+                    {phoneVerifyMessage}
                   </p>
                 ) : null}
               </div>
@@ -672,12 +824,12 @@ export default function SignupPage() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-black/10 [html[data-theme='light']_&]:bg-white">
+          <section className="rounded-xl border border-white/15 bg-black/25 p-4 backdrop-blur-sm">
             <h2 className="text-[14px] font-bold">SNS 연동 (릴스 소스 가져오기)</h2>
-            <p className="mt-2 rounded-lg border border-reels-cyan/35 bg-reels-cyan/10 px-3 py-2 text-[12px] font-semibold text-reels-cyan">
+            <p className="mt-2 rounded-lg border border-fuchsia-400/35 bg-fuchsia-500/10 px-3 py-2 text-[12px] font-semibold text-fuchsia-200">
               본인의 인스타그램이나 유튜브 링크를 연결하면 판매 신뢰도가 높아집니다!
             </p>
-            <p className="mt-2 text-[12px] text-zinc-400 [html[data-theme='light']_&]:text-[#6d5a88]">
+            <p className="mt-2 text-[12px] text-zinc-400">
               공개 링크 기반 가져오기만 지원합니다. 유튜브 숏츠·일반 영상, 인스타 릴스, 틱톡 등 원하는 만큼 추가하세요. 비공개·권한 없는 콘텐츠는 수집하지 않으며, 플랫폼 정책과 저작권을 준수해 주세요.
             </p>
             <div className="mt-3">
@@ -689,17 +841,44 @@ export default function SignupPage() {
               />
             </div>
             {hasInvalidSocialLink ? (
-              <p className="mt-3 rounded-lg border border-rose-500/45 bg-rose-500/10 px-3 py-2 text-[12px] font-extrabold text-rose-300 [html[data-theme='light']_&]:text-rose-700">
+              <p className="mt-3 rounded-lg border border-rose-500/45 bg-rose-500/10 px-3 py-2 text-[12px] font-extrabold text-rose-300">
                 올바른 링크 주소를 입력해주세요
               </p>
             ) : null}
           </section>
 
-          <section className="rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-black/10 [html[data-theme='light']_&]:bg-white">
+          <section className="rounded-xl border border-white/15 bg-black/25 p-4 backdrop-blur-sm">
             <h2 className="inline-flex items-center gap-1 text-[14px] font-bold">
-              <ShieldCheck className="h-4 w-4 text-reels-cyan" />
+              <ShieldCheck className="h-4 w-4 text-fuchsia-300" />
               약관 동의
             </h2>
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={() => {
+                  const shouldSelectAll =
+                    !form.agreeAge ||
+                    !form.agreeTerms ||
+                    !form.agreePrivacy ||
+                    !form.agreeMarketing;
+                  setForm((prev) => ({
+                    ...prev,
+                    agreeAge: shouldSelectAll,
+                    agreeTerms: shouldSelectAll,
+                    agreePrivacy: shouldSelectAll,
+                    agreeMarketing: shouldSelectAll,
+                  }));
+                }}
+                className="rounded-xl border border-fuchsia-400/40 bg-fuchsia-500/10 px-3 py-2 text-[12px] font-bold text-fuchsia-200 transition hover:bg-fuchsia-500/20"
+              >
+                {form.agreeAge &&
+                form.agreeTerms &&
+                form.agreePrivacy &&
+                form.agreeMarketing
+                  ? "전체해제"
+                  : "전체선택"}
+              </button>
+            </div>
             <div className="mt-3 space-y-2 text-[13px]">
               <label className="flex items-center gap-2"><input type="checkbox" checked={form.agreeAge} onChange={(e) => onChange("agreeAge", e.target.checked)} /> 만 14세 이상입니다. (필수)</label>
               <label className="flex items-center gap-2"><input type="checkbox" checked={form.agreeTerms} onChange={(e) => onChange("agreeTerms", e.target.checked)} /> 서비스 이용약관 동의 (필수)</label>
@@ -711,13 +890,11 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={!canSubmit || isSubmitting}
-            className="w-full rounded-xl bg-reels-crimson px-4 py-3 text-[14px] font-extrabold text-white shadow-reels-crimson transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-45"
+            className="w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 px-4 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_30px_rgba(168,85,247,0.45)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-45"
           >
             {isSubmitting ? "회원가입 처리 중..." : "회원가입 완료"}
           </button>
-          {message ? (
-            <p className="text-[13px] font-semibold text-reels-cyan">{message}</p>
-          ) : null}
+          {message ? <p className="text-[13px] font-semibold text-fuchsia-200">{message}</p> : null}
         </form>
       </div>
     </main>

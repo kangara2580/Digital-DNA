@@ -16,6 +16,12 @@ import {
   resolveProfileAvatar,
   writeProfileAvatar,
 } from "@/lib/profileAvatarStorage";
+import {
+  fetchUserProfile,
+  syncProfileFromAuthUser,
+  upsertUserProfile,
+  type AppProfile,
+} from "@/lib/supabaseProfiles";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { MyPageAccountOverview } from "@/components/MyPageAccountOverview";
 
@@ -47,6 +53,7 @@ export function MyPageDashboard() {
   const [draftCount, setDraftCount] = useState(0);
   const [userId, setUserId] = useState("reels_user");
   const [profileAvatar, setProfileAvatar] = useState<ProfileAvatar | null>(null);
+  const [profileRecord, setProfileRecord] = useState<AppProfile | null>(null);
 
   useEffect(() => {
     setProfileAvatar(resolveProfileAvatar(user));
@@ -73,6 +80,13 @@ export function MyPageDashboard() {
               next?.kind === "custom" ? JSON.stringify(next.parts) : null,
           },
         });
+        const updated = await upsertUserProfile(supabase, user.id, {
+          avatar_kind: next?.kind ?? null,
+          avatar_seed: next?.kind === "preset" ? next.seed : null,
+          avatar_custom:
+            next?.kind === "custom" ? JSON.stringify(next.parts) : null,
+        });
+        if (updated) setProfileRecord(updated);
       } catch {
         /* noop */
       }
@@ -105,6 +119,69 @@ export function MyPageDashboard() {
       window.removeEventListener("reels-drafts-updated", loadMeta);
     };
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setProfileRecord(null);
+      return;
+    }
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    let cancelled = false;
+
+    const loadAndSync = async () => {
+      // auth user metadata를 기준으로 profiles 테이블을 즉시 동기화합니다.
+      const synced = await syncProfileFromAuthUser(supabase, user);
+      if (cancelled) return;
+      if (synced) {
+        setProfileRecord(synced);
+        return;
+      }
+      const fetched = await fetchUserProfile(supabase, user.id);
+      if (!cancelled) setProfileRecord(fetched);
+    };
+
+    void loadAndSync();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  const userMeta = useMemo(() => {
+    return (user?.user_metadata ?? {}) as Record<string, unknown>;
+  }, [user]);
+
+  const displayId = useMemo(() => {
+    const nickname = String(profileRecord?.nickname ?? userMeta.nickname ?? "").trim();
+    const email = String(profileRecord?.email ?? user?.email ?? "").trim();
+    if (nickname) return nickname;
+    if (email) return email;
+    return userId;
+  }, [profileRecord?.email, profileRecord?.nickname, user?.email, userId, userMeta.nickname]);
+
+  const accountSummary = useMemo(() => {
+    const firstName = String(profileRecord?.first_name ?? userMeta.first_name ?? "").trim();
+    const lastName = String(profileRecord?.last_name ?? userMeta.last_name ?? "").trim();
+    const phone = String(profileRecord?.phone ?? userMeta.phone ?? "").trim();
+    const country = String(profileRecord?.country ?? userMeta.country ?? "").trim();
+    const timezone = String(profileRecord?.timezone ?? userMeta.timezone ?? "").trim();
+    const name = `${lastName}${firstName}`.trim();
+    const details = [name, phone, country, timezone].filter(Boolean);
+    if (details.length > 0) return details.join(" · ");
+    return "가입 정보가 없으면 다음 로그인 시 동기화됩니다.";
+  }, [
+    profileRecord?.country,
+    profileRecord?.first_name,
+    profileRecord?.last_name,
+    profileRecord?.phone,
+    profileRecord?.timezone,
+    userMeta.country,
+    userMeta.first_name,
+    userMeta.last_name,
+    userMeta.phone,
+    userMeta.timezone,
+  ]);
 
   const profileLabel = useMemo(() => {
     if (!hydrated) return "불러오는 중";
@@ -173,17 +250,17 @@ export function MyPageDashboard() {
                     <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
                       <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">아이디</p>
                       <p className="mt-2 break-all text-[16px] font-extrabold leading-snug text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                        {userId}
+                        {displayId}
                       </p>
                       <p className="mt-1 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                        닉네임/이메일 연동 전 기본 계정입니다.
+                        {user?.email ? `이메일: ${user.email}` : "닉네임/이메일 연동 전 기본 계정입니다."}
                       </p>
                     </div>
                     <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
                       <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">계정 상태</p>
                       <p className="mt-2 text-[16px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">정상</p>
                       <p className="mt-1 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                        홈 · 카테고리 · 창작 스튜디오 이용 가능
+                        {accountSummary}
                       </p>
                     </div>
                     <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
