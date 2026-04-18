@@ -1,8 +1,40 @@
-import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes } from "node:crypto";
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  createHmac,
+  randomBytes,
+  randomInt,
+} from "node:crypto";
 import type { NextRequest, NextResponse } from "next/server";
 
 export const TIKTOK_SESSION_COOKIE = "tiktok_sid";
 export const TIKTOK_OAUTH_STATE_COOKIE = "tiktok_oauth_state";
+/** PKCE code_verifier (authorize → token 교환까지 보관) */
+export const TIKTOK_OAUTH_PKCE_COOKIE = "tiktok_oauth_pkce";
+
+const PKCE_VERIFIER_CHARS =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+
+/**
+ * TikTok Login Kit: PKCE S256 이되 code_challenge는 RFC7636의 Base64URL이 아니라
+ * SHA256(code_verifier)의 **hex** 문자열입니다.
+ * @see https://developers.tiktok.com/doc/login-kit-desktop/
+ */
+export function createTikTokPkcePair(): {
+  codeVerifier: string;
+  codeChallenge: string;
+} {
+  const len = 64;
+  let codeVerifier = "";
+  for (let i = 0; i < len; i++) {
+    codeVerifier += PKCE_VERIFIER_CHARS[randomInt(0, PKCE_VERIFIER_CHARS.length)]!;
+  }
+  const codeChallenge = createHash("sha256")
+    .update(codeVerifier, "utf8")
+    .digest("hex");
+  return { codeVerifier, codeChallenge };
+}
 
 export type TikTokSession = {
   /** access token은 길이가 길어 쿠키 4KB 제한을 넘길 수 있어 선택적으로 저장 */
@@ -143,6 +175,35 @@ export function readOAuthState(req: NextRequest): string | null {
 export function clearOAuthStateCookie(res: NextResponse) {
   res.cookies.set({
     name: TIKTOK_OAUTH_STATE_COOKIE,
+    value: "",
+    httpOnly: true,
+    secure: shouldUseSecureCookies(),
+    sameSite: cookieSameSite(),
+    path: "/",
+    maxAge: 0,
+  });
+}
+
+export function setPkceVerifierCookie(res: NextResponse, codeVerifier: string) {
+  assertCookieSizeSafe(codeVerifier);
+  res.cookies.set({
+    name: TIKTOK_OAUTH_PKCE_COOKIE,
+    value: codeVerifier,
+    httpOnly: true,
+    secure: shouldUseSecureCookies(),
+    sameSite: cookieSameSite(),
+    path: "/",
+    maxAge: 10 * 60,
+  });
+}
+
+export function readPkceVerifier(req: NextRequest): string | null {
+  return req.cookies.get(TIKTOK_OAUTH_PKCE_COOKIE)?.value ?? null;
+}
+
+export function clearPkceVerifierCookie(res: NextResponse) {
+  res.cookies.set({
+    name: TIKTOK_OAUTH_PKCE_COOKIE,
     value: "",
     httpOnly: true,
     secure: shouldUseSecureCookies(),

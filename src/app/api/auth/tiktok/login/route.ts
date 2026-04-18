@@ -1,15 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createOAuthState, setOAuthStateCookie } from "@/lib/tiktokSession";
+import {
+  createOAuthState,
+  createTikTokPkcePair,
+  setOAuthStateCookie,
+  setPkceVerifierCookie,
+} from "@/lib/tiktokSession";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 function resolveRedirectUri(req: NextRequest): string {
-  // TikTok의 "Redirect URLs"는 env 값과 정확히 맞아야 합니다.
-  // 배포 도메인이 여러 개면 env 값으로 고정하는 게 가장 안전해요.
+  const requestOrigin = req.nextUrl.origin;
   const envUri = process.env.TIKTOK_REDIRECT_URI?.trim();
-  if (envUri) return envUri;
-  return `${req.nextUrl.origin}/api/auth/tiktok/callback`;
+  if (envUri) {
+    try {
+      const parsed = new URL(envUri);
+      // env 값이 현재 요청 도메인과 같을 때만 사용합니다.
+      // (예: preview/prod 도메인이 섞일 때 redirect_uri mismatch 방지)
+      if (parsed.origin === requestOrigin) return parsed.toString();
+    } catch {
+      /* invalid env, fallback to request origin */
+    }
+  }
+  return `${requestOrigin}/api/auth/tiktok/callback`;
 }
 
 export async function GET(req: NextRequest) {
@@ -23,6 +36,7 @@ export async function GET(req: NextRequest) {
 
   const redirectUri = resolveRedirectUri(req);
   const state = createOAuthState();
+  const { codeVerifier, codeChallenge } = createTikTokPkcePair();
   const scope = process.env.TIKTOK_OAUTH_SCOPE?.trim() || "user.info.basic,video.list";
   const disableAutoAuth =
     process.env.TIKTOK_DISABLE_AUTO_AUTH?.trim() === "0" ? "0" : "1";
@@ -33,6 +47,8 @@ export async function GET(req: NextRequest) {
   authUrl.searchParams.set("scope", scope);
   authUrl.searchParams.set("redirect_uri", redirectUri);
   authUrl.searchParams.set("state", state);
+  authUrl.searchParams.set("code_challenge", codeChallenge);
+  authUrl.searchParams.set("code_challenge_method", "S256");
   authUrl.searchParams.set("disable_auto_auth", disableAutoAuth);
 
   // 빠른 진단용: /api/auth/tiktok/login?debug=1 로 들어가면 redirect_uri가 뭔지 보여줍니다.
@@ -46,6 +62,8 @@ export async function GET(req: NextRequest) {
         disableAutoAuth,
         // state는 앱에서 검증에 쓰이므로 그대로 노출하는 게 맞습니다(비밀키는 아님).
         state,
+        codeChallengeMethod: "S256",
+        codeChallengePrefix: `${codeChallenge.slice(0, 12)}…`,
         authUrl: authUrl.toString(),
       },
       { headers: { "Cache-Control": "no-store" } },
@@ -54,6 +72,7 @@ export async function GET(req: NextRequest) {
 
   const res = NextResponse.redirect(authUrl);
   setOAuthStateCookie(res, state);
+  setPkceVerifierCookie(res, codeVerifier);
   return res;
 }
 

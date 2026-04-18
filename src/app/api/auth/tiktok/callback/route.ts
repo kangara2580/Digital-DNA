@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   clearOAuthStateCookie,
-  readOAuthState,
+  clearPkceVerifierCookie,
   createTikTokSessionId,
+  readOAuthState,
+  readPkceVerifier,
   setTikTokSidCookie,
   verifyOAuthState,
   type TikTokSession,
@@ -75,16 +77,25 @@ function resolveAppOrigin(req: NextRequest): string {
 }
 
 function resolveRedirectUri(req: NextRequest): string {
-  // authorize 요청에서 보낸 redirect_uri와 토큰교환 redirect_uri는
-  // 반드시 동일해야 합니다. env 값이 있으면 env로 고정합니다.
+  const requestOrigin = req.nextUrl.origin;
   const envUri = process.env.TIKTOK_REDIRECT_URI?.trim();
-  if (envUri) return envUri;
-  return `${req.nextUrl.origin}/api/auth/tiktok/callback`;
+  if (envUri) {
+    try {
+      const parsed = new URL(envUri);
+      // authorize 단계와 token exchange 단계 모두 같은 redirect_uri를 써야 하므로
+      // 현재 요청 도메인과 일치할 때만 env 값을 사용합니다.
+      if (parsed.origin === requestOrigin) return parsed.toString();
+    } catch {
+      /* invalid env, fallback to request origin */
+    }
+  }
+  return `${requestOrigin}/api/auth/tiktok/callback`;
 }
 
 async function exchangeCodeForToken(
   code: string,
   redirectUri: string,
+  codeVerifier: string,
 ): Promise<TikTokSession | null> {
   const clientKey = process.env.TIKTOK_CLIENT_KEY?.trim();
   const clientSecret = process.env.TIKTOK_CLIENT_SECRET?.trim();
@@ -101,6 +112,7 @@ async function exchangeCodeForToken(
       code,
       grant_type: "authorization_code",
       redirect_uri: redirectUri,
+      code_verifier: codeVerifier,
     }),
     cache: "no-store",
   });
@@ -131,6 +143,7 @@ export async function GET(req: NextRequest) {
   if (err) {
     const res = NextResponse.redirect(homeUrl(req, "error", err));
     clearOAuthStateCookie(res);
+    clearPkceVerifierCookie(res);
     return res;
   }
 
@@ -140,21 +153,32 @@ export async function GET(req: NextRequest) {
   if (!signedOk && !cookieOk) {
     const res = NextResponse.redirect(homeUrl(req, "error", "state_mismatch"));
     clearOAuthStateCookie(res);
+    clearPkceVerifierCookie(res);
     return res;
   }
 
   if (!code) {
     const res = NextResponse.redirect(homeUrl(req, "error", "missing_code"));
     clearOAuthStateCookie(res);
+    clearPkceVerifierCookie(res);
+    return res;
+  }
+
+  const codeVerifier = readPkceVerifier(req)?.trim() ?? "";
+  if (!codeVerifier) {
+    const res = NextResponse.redirect(homeUrl(req, "error", "missing_code_verifier"));
+    clearOAuthStateCookie(res);
+    clearPkceVerifierCookie(res);
     return res;
   }
 
   try {
     const redirectUri = resolveRedirectUri(req);
-    const session = await exchangeCodeForToken(code, redirectUri);
+    const session = await exchangeCodeForToken(code, redirectUri, codeVerifier);
     if (!session) {
       const res = NextResponse.redirect(homeUrl(req, "error", "token_exchange_failed"));
       clearOAuthStateCookie(res);
+      clearPkceVerifierCookie(res);
       return res;
     }
 
@@ -182,10 +206,12 @@ export async function GET(req: NextRequest) {
         homeUrl(req, "error", "db_write_failed", cleaned),
       );
       clearOAuthStateCookie(res2);
+      clearPkceVerifierCookie(res2);
       return res2;
     }
     setTikTokSidCookie(res, sessionId);
     clearOAuthStateCookie(res);
+    clearPkceVerifierCookie(res);
     return res;
   } catch (e) {
     console.error("tiktok_callback_failed", e);
@@ -196,6 +222,7 @@ export async function GET(req: NextRequest) {
         : "callback_failed";
     const res = NextResponse.redirect(homeUrl(req, "error", reason));
     clearOAuthStateCookie(res);
+    clearPkceVerifierCookie(res);
     return res;
   }
 }
