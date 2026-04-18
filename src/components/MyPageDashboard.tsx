@@ -113,30 +113,33 @@ export function MyPageDashboard() {
   }, [hydrated, profile]);
 
   return (
-    <main className="mx-auto min-h-[60vh] max-w-[1500px] px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12 lg:px-8">
+    <main className="mx-auto min-h-[60vh] max-w-[1500px] px-3 py-8 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-5 sm:py-10 lg:px-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">마이페이지</h1>
         </div>
       </div>
 
-      <div className="mt-6 grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
-        <aside className="reels-glass-card rounded-2xl p-3 sm:p-4 lg:sticky lg:top-20 lg:h-fit">
-          <nav aria-label="마이페이지 메뉴" className="space-y-1.5">
+      {/* 작은 화면에서도 사이드바는 왼쪽 고정 너비, 본문만 유연하게 — 메뉴가 가로로 과하게 늘어나지 않음 */}
+      <div className="mt-4 grid items-start gap-2 sm:mt-6 sm:gap-3 lg:gap-5 [grid-template-columns:minmax(10.5rem,12.5rem)_minmax(0,1fr)] lg:grid-cols-[260px_minmax(0,1fr)]">
+        <aside className="reels-glass-card w-full min-w-0 max-w-[12.5rem] justify-self-start rounded-xl p-2 sm:max-w-none sm:rounded-2xl sm:p-3 lg:sticky lg:top-20 lg:h-fit lg:max-w-none lg:p-4">
+          <nav aria-label="마이페이지 메뉴" className="space-y-1 sm:space-y-1.5">
             {TAB_ITEMS.map((item) => {
               const active = item.id === currentTab;
               return (
                 <Link
                   key={item.id}
                   href={item.href}
-                  className={`block rounded-xl border px-3 py-2.5 transition ${
+                  className={`block rounded-lg border px-2 py-2 transition sm:rounded-xl sm:px-3 sm:py-2.5 ${
                     active
                       ? "border-reels-cyan/45 bg-reels-cyan/15 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
                       : "border-white/10 bg-black/20 text-zinc-400 hover:border-white/20 hover:text-zinc-200 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:text-zinc-900"
                   }`}
                 >
-                  <p className="text-[13px] font-bold">{item.label}</p>
-                  <p className="mt-0.5 text-[11px]">{item.desc}</p>
+                  <p className="text-[12px] font-bold leading-snug sm:text-[13px]">{item.label}</p>
+                  <p className="mt-0.5 text-[10px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[11px]">
+                    {item.desc}
+                  </p>
                 </Link>
               );
             })}
@@ -145,7 +148,7 @@ export function MyPageDashboard() {
 
         <section className="min-w-0">
           {currentTab === "basic" ? (
-            <div className="reels-glass-card rounded-2xl p-5 sm:p-6">
+            <div className="reels-glass-card rounded-xl p-4 sm:rounded-2xl sm:p-5 lg:p-6">
               <MyPageAccountOverview />
               <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">기본정보</h2>
 
