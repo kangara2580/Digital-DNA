@@ -200,7 +200,7 @@ export function ProfileAvatarPicker({ value, onChange, hint }: Props) {
       </div>
 
       <div
-        className={`rounded-xl border border-reels-cyan/20 bg-gradient-to-br from-black/40 to-black/20 p-2.5 sm:p-3 lg:max-w-[560px] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-100/90 [html[data-theme='light']_&]:to-white ${
+        className={`rounded-xl border border-reels-cyan/20 bg-gradient-to-br from-black/40 to-black/20 p-2.5 sm:p-3 lg:max-w-[360px] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-100/90 [html[data-theme='light']_&]:to-white ${
           customizerDisabled ? "opacity-50" : ""
         }`}
       >

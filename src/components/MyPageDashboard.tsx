@@ -160,7 +160,7 @@ export function MyPageDashboard() {
                 <h3 className="text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
                   프로필 이미지
                 </h3>
-                <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,0.58fr)_minmax(0,0.42fr)]">
+                <div className="mt-4 grid gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">
                   <div>
                     <ProfileAvatarPicker
                       value={profileAvatar}
@@ -173,7 +173,7 @@ export function MyPageDashboard() {
                     />
                   </div>
 
-                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
                     <div className="rounded-xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
                       <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">아이디</p>
                       <p className="mt-2 text-[16px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">{userId}</p>
