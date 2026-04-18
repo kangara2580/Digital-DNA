@@ -1,16 +1,15 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getTikTokManualRanking,
   manualTikTokRankingToFeedVideos,
 } from "@/data/tiktokData";
+import { getTrendingMetrics } from "@/data/trendingStats";
 import { type FeedVideo } from "@/data/videos";
 import { usePassVerticalWheelToPage } from "@/hooks/usePassVerticalWheelToPage";
-import { useTrendingLiveRanking } from "@/hooks/useTrendingLiveRanking";
 import { SectionMoreLink } from "./SectionMoreLink";
 import { TrendingVideoStatsFooter } from "./TrendingVideoStatsFooter";
 import { VideoCard } from "./VideoCard";
@@ -35,8 +34,6 @@ const MORE_CELL =
 const ARROW_BTN =
   "pointer-events-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/60 text-zinc-200 shadow-lg shadow-black/40 backdrop-blur-md transition hover:border-reels-cyan/35 hover:text-white active:scale-[0.97] motion-reduce:transition-none";
 
-const LAYOUT_EASE = [0.22, 1, 0.36, 1] as const;
-
 function SkeletonRow() {
   return (
     <div className={TRENDING_STRIP} role="status" aria-live="polite" aria-label="인기순위 영상 불러오는 중">
@@ -56,14 +53,20 @@ function SkeletonRow() {
 }
 
 export function TrendingRankSection() {
-  const reduceMotion = useReducedMotion() ?? false;
   const [trendingClips, setTrendingClips] = useState<FeedVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const liveRows = useTrendingLiveRanking(trendingClips, {
-    reducedMotion: reduceMotion,
-  });
+  // 순위 고정: 새로고침(loadTrending) 시에만 목록을 갱신하고, 렌더 중에는 재정렬하지 않습니다.
+  const rankedRows = useMemo(
+    () =>
+      trendingClips.map((video, rankIndex) => ({
+        key: `fixed-${rankIndex}-${video.id}`,
+        video,
+        metrics: getTrendingMetrics(video.id, rankIndex),
+      })),
+    [trendingClips],
+  );
 
   const scrollRef = useRef<HTMLDivElement>(null);
   usePassVerticalWheelToPage(scrollRef);
@@ -164,7 +167,7 @@ export function TrendingRankSection() {
         <div className="relative mt-3 sm:mt-4">
           {loading ? <SkeletonRow /> : null}
 
-          {!loading && liveRows.length === 0 ? (
+          {!loading && rankedRows.length === 0 ? (
             <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-6 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
               <p className="text-[14px] font-medium text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
                 표시할 인기 영상이 없습니다.
@@ -181,7 +184,7 @@ export function TrendingRankSection() {
             </div>
           ) : null}
 
-          {!loading && liveRows.length > 0 ? (
+          {!loading && rankedRows.length > 0 ? (
             <>
           {canLeft ? (
             <div
@@ -196,23 +199,15 @@ export function TrendingRankSection() {
             />
           ) : null}
 
-          <LayoutGroup id="trending-live-board">
             <div
               ref={scrollRef}
               className={TRENDING_STRIP}
               role="list"
               aria-label="인기순위 영상 목록"
             >
-              {liveRows.map((entry, rankIndex) => (
-                <motion.div
-                  key={entry.instanceId}
-                  layout={!reduceMotion}
-                  transition={{
-                    layout: {
-                      duration: reduceMotion ? 0 : 0.48,
-                      ease: LAYOUT_EASE,
-                    },
-                  }}
+              {rankedRows.map((entry, rankIndex) => (
+                <div
+                  key={entry.key}
                   className={CARD_SLOT}
                   role="listitem"
                 >
@@ -236,7 +231,7 @@ export function TrendingRankSection() {
                       />
                     }
                   />
-                </motion.div>
+                </div>
               ))}
 
               <div className={MORE_CELL} role="listitem">
@@ -256,7 +251,6 @@ export function TrendingRankSection() {
                 </Link>
               </div>
             </div>
-          </LayoutGroup>
 
           {canLeft ? (
             <button
