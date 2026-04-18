@@ -134,11 +134,17 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
       <div className="mx-auto max-w-[1800px] px-4 pb-8 pt-0.5 sm:px-6 sm:pt-1 lg:px-8">
         <div className="flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-center lg:gap-12">
-          <div className="min-w-0 lg:flex-none lg:-mt-2">
+          <div
+            className={`min-w-0 lg:-mt-2 ${
+              video.orientation === "portrait"
+                ? "w-full lg:w-[23rem] lg:flex-none"
+                : "w-full lg:flex-1"
+            }`}
+          >
             <div
               className={`reels-glass-card relative overflow-hidden rounded-xl ${
                 video.orientation === "portrait"
-                  ? "mx-auto lg:mx-0 w-full max-w-[23rem] aspect-[9/16]"
+                  ? "mx-auto lg:mx-0 w-full aspect-[9/16]"
                   : "aspect-video w-full"
               }`}
             >
@@ -160,11 +166,12 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                   className="video-detail-player h-full w-full object-cover"
                   poster={posterSrc}
                   src={isPexelsBlockedVideo ? undefined : video.src}
-                  controls
-                  controlsList="nodownload noplaybackrate noremoteplayback nofullscreen"
+                  autoPlay
+                  muted
+                  loop
                   disablePictureInPicture
                   playsInline
-                  preload={isPexelsBlockedVideo ? "none" : "metadata"}
+                  preload={isPexelsBlockedVideo ? "none" : "auto"}
                   onContextMenu={(e) => e.preventDefault()}
                 />
               )}
