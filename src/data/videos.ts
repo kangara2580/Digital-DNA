@@ -407,6 +407,20 @@ function posterForLocalTrendingClip(
   return "";
 }
 
+/**
+ * 인기순위를 제외한 전체 카드도 `public/videos/sample*.mp4`만 사용하도록 통일.
+ * 썸네일/호버 프리뷰가 서로 다른 소스를 보지 않게 src/preview/poster를 같은 출처로 맞춥니다.
+ */
+function enforceLocalUserSamples(list: FeedVideo[]) {
+  if (!MOCK_VIDEOS.length) return;
+  list.forEach((video, i) => {
+    const pick = MOCK_VIDEOS[i % MOCK_VIDEOS.length]!;
+    video.src = pick.video_url;
+    video.previewSrc = pick.video_url;
+    video.poster = posterForLocalTrendingClip(pick.video_url, pick.thumbnail_url);
+  });
+}
+
 /** `public/videos` 로컬 샘플 — 인기순위 Top 10 (`@/constants/videos` MOCK_VIDEOS와 1:1) */
 export const LOCAL_TRENDING_FEED_VIDEOS: FeedVideo[] = MOCK_VIDEOS.map(
   (m, i) => ({
@@ -518,7 +532,11 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
   },
 ];
 
-// 개발/데모 환경에서 Pexels 직링크 403을 피하기 위해 로컬 샘플 MP4로 치환.
+// 인기순위 외 모든 카드도 사용자 로컬 샘플로 강제 통일.
+enforceLocalUserSamples(SAMPLE_VIDEOS);
+enforceLocalUserSamples(FAILURE_OOPS_CLIPS);
+
+// 안전망: 외부 직링크가 남아 있어도 로컬 샘플 MP4로 치환.
 normalizeBlockedVideoSources(SAMPLE_VIDEOS);
 normalizeBlockedVideoSources(FAILURE_OOPS_CLIPS);
 
