@@ -582,20 +582,6 @@ export function Highlight24() {
         <div className="mx-auto flex max-w-6xl items-center justify-center gap-5 py-4 sm:gap-8 sm:py-5 md:max-w-7xl">
           <button
             type="button"
-            onClick={() => router.push(`/video/${active.id}`)}
-            className="inline-flex h-10 items-center justify-center rounded-full border border-white/45 bg-white/15 px-4 text-[12px] font-extrabold text-white shadow-[0_1px_3px_rgba(15,23,42,0.35)] backdrop-blur-sm transition hover:border-white/60 hover:bg-white/20 sm:h-11 sm:px-5 sm:text-[13px]"
-          >
-            구매 페이지
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push(`/create?videoId=${encodeURIComponent(active.id)}`)}
-            className="inline-flex h-10 items-center justify-center rounded-full bg-reels-crimson px-4 text-[12px] font-extrabold text-white shadow-reels-crimson transition hover:brightness-110 sm:h-11 sm:px-5 sm:text-[13px]"
-          >
-            창작 스튜디오
-          </button>
-          <button
-            type="button"
             onClick={() => go(-1)}
             className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/12 text-white shadow-[0_1px_3px_rgba(15,23,42,0.35)] backdrop-blur-sm transition hover:border-white/55 hover:bg-white/18 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
             aria-label="이전"
