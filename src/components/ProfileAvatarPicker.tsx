@@ -75,10 +75,16 @@ type Props = {
 export function ProfileAvatarPicker({ value, onChange, hint }: Props) {
   const inputId = useId();
   const fileRef = useRef<HTMLInputElement>(null);
+  /** SSR과 첫 클라이언트 페인트에서 `value`/프로필 로드 타이밍 차이로 미리보기 URL이 달라질 수 있어, 마운트 후에만 이미지 src를 렌더링 */
+  const [previewReady, setPreviewReady] = useState(false);
 
   const [parts, setParts] = useState<CharacterPartsV1>(() =>
     createDefaultCharacterParts(DEFAULT_BEST_REVIEW_AVATAR_SEED),
   );
+
+  useEffect(() => {
+    setPreviewReady(true);
+  }, []);
 
   useEffect(() => {
     if (value?.kind === "preset") {
@@ -148,7 +154,12 @@ export function ProfileAvatarPicker({ value, onChange, hint }: Props) {
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-start">
         <div className="relative shrink-0">
           <div className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-reels-cyan/35 bg-black/30 shadow-lg ring-4 ring-reels-cyan/10 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:ring-reels-cyan/15 sm:h-28 sm:w-28">
-            {value?.kind === "upload" ? (
+            {!previewReady ? (
+              <div
+                className="h-full w-full animate-pulse bg-zinc-600/35 [html[data-theme='light']_&]:bg-zinc-300/50"
+                aria-hidden
+              />
+            ) : value?.kind === "upload" ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={previewUrl}
