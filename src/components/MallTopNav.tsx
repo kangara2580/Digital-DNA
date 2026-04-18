@@ -160,6 +160,7 @@ export function MallTopNav() {
   const pathname = usePathname();
   const [isExploreWatchMode, setIsExploreWatchMode] = useState(false);
   const showCategoryNav = pathname === "/explore" && !isExploreWatchMode;
+  const showAllCategoriesInline = pathname === "/explore" && !isExploreWatchMode;
   /** 탐색(/explore): 메인에서 스크롤을 내린 것과 같은 컴팩트 헤더를 즉시 적용 */
   const compactEffective = compact || pathname === "/explore";
   const [moreOpen, setMoreOpen] = useState(false);
@@ -446,13 +447,15 @@ export function MallTopNav() {
             {showCategoryNav ? (
               <nav
                 className={`flex min-w-0 items-center ${easeNav} ${
-                  compactEffective
+                  showAllCategoriesInline
+                    ? "no-scrollbar mt-0 flex-1 justify-center gap-1 overflow-x-auto border-0 py-0 sm:gap-1.5"
+                    : compactEffective
                     ? "mt-0 flex-1 justify-center gap-1 overflow-visible border-0 py-0 sm:gap-1.5"
                     : "no-scrollbar mt-3 justify-center gap-1 overflow-x-auto border-t border-white/10 pt-2 sm:gap-1.5 [html[data-theme='light']_&]:border-zinc-200"
                 }`}
                 aria-label="카테고리"
               >
-                {compactEffective ? (
+                {compactEffective && !showAllCategoriesInline ? (
                   <>
                     {COMPACT_PRIMARY.map((item) => (
                       <Link
