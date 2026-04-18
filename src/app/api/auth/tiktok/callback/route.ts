@@ -10,6 +10,7 @@ import {
   verifyOAuthState,
   type TikTokSession,
 } from "@/lib/tiktokSession";
+import { normalizeTikTokRedirectUri } from "@/lib/tiktokRedirectUri";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -84,12 +85,14 @@ function resolveRedirectUri(req: NextRequest): string {
       const parsed = new URL(envUri);
       // authorize 단계와 token exchange 단계 모두 같은 redirect_uri를 써야 하므로
       // 명시된 env 값을 항상 우선합니다.
-      return parsed.toString();
+      return normalizeTikTokRedirectUri(parsed.toString());
     } catch {
       /* invalid env, fallback to request origin */
     }
   }
-  return `${req.nextUrl.origin}/api/auth/tiktok/callback`;
+  return normalizeTikTokRedirectUri(
+    `${req.nextUrl.origin}/api/auth/tiktok/callback`,
+  );
 }
 
 async function exchangeCodeForToken(

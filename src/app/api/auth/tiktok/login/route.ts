@@ -5,6 +5,7 @@ import {
   setOAuthStateCookie,
   setPkceVerifierCookie,
 } from "@/lib/tiktokSession";
+import { normalizeTikTokRedirectUri } from "@/lib/tiktokRedirectUri";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -16,12 +17,14 @@ function resolveRedirectUri(req: NextRequest): string {
       const parsed = new URL(envUri);
       // 명시적으로 설정된 Redirect URI가 있으면 우선 사용합니다.
       // (TikTok 콘솔 등록값과 authorize/token 교환을 1:1 일치)
-      return parsed.toString();
+      return normalizeTikTokRedirectUri(parsed.toString());
     } catch {
       /* invalid env, fallback to request origin */
     }
   }
-  return `${req.nextUrl.origin}/api/auth/tiktok/callback`;
+  return normalizeTikTokRedirectUri(
+    `${req.nextUrl.origin}/api/auth/tiktok/callback`,
+  );
 }
 
 export async function GET(req: NextRequest) {
