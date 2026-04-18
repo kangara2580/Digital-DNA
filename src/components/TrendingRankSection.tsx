@@ -34,6 +34,9 @@ const MORE_CELL =
 const ARROW_BTN =
   "pointer-events-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/60 text-zinc-200 shadow-lg shadow-black/40 backdrop-blur-md transition hover:border-reels-cyan/35 hover:text-white active:scale-[0.97] motion-reduce:transition-none";
 
+const RIGHT_MINI_ARROW_BTN =
+  "pointer-events-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/30 bg-black text-white shadow-lg shadow-black/50 transition active:scale-[0.97] disabled:cursor-default disabled:border-white/15 disabled:bg-zinc-900 disabled:text-zinc-500 motion-reduce:transition-none";
+
 function SkeletonRow() {
   return (
     <div className={TRENDING_STRIP} role="status" aria-live="polite" aria-label="인기순위 영상 불러오는 중">
@@ -267,16 +270,15 @@ export function TrendingRankSection() {
               <ChevronLeft className="h-5 w-5" strokeWidth={2} aria-hidden />
             </button>
           ) : null}
-          {canRight ? (
-            <button
-              type="button"
-              className={`${ARROW_BTN} absolute right-0 top-1/2 z-20 -translate-y-1/2`}
-              aria-label="다음 인기 영상"
-              onClick={() => scrollByDir(1)}
-            >
-              <ChevronRight className="h-5 w-5" strokeWidth={2} aria-hidden />
-            </button>
-          ) : null}
+          <button
+            type="button"
+            className={`${RIGHT_MINI_ARROW_BTN} absolute right-0 top-1/2 z-20 -translate-y-1/2`}
+            aria-label="다음 인기 영상"
+            onClick={() => scrollByDir(1)}
+            disabled={!canRight}
+          >
+            <ChevronRight className="h-4 w-4" strokeWidth={2.4} aria-hidden />
+          </button>
             </>
           ) : null}
         </div>
