@@ -25,10 +25,11 @@ function buildTikTokDetailPlayerUrl(videoId: string): string {
   u.searchParams.set("autoplay", "1");
   u.searchParams.set("muted", "1");
   u.searchParams.set("loop", "1");
-  u.searchParams.set("controls", "0");
-  u.searchParams.set("progress_bar", "0");
-  u.searchParams.set("play_button", "0");
-  u.searchParams.set("volume_control", "0");
+  // 상세에서는 마우스 오버 시 기본 플레이어 컨트롤이 보이도록 유지
+  u.searchParams.set("controls", "1");
+  u.searchParams.set("progress_bar", "1");
+  u.searchParams.set("play_button", "1");
+  u.searchParams.set("volume_control", "1");
   u.searchParams.set("fullscreen_button", "0");
   u.searchParams.set("timestamp", "0");
   u.searchParams.set("description", "0");
@@ -166,6 +167,8 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                   className="video-detail-player h-full w-full object-cover"
                   poster={posterSrc}
                   src={isPexelsBlockedVideo ? undefined : video.src}
+                  controls
+                  controlsList="nodownload noplaybackrate noremoteplayback nofullscreen"
                   autoPlay
                   muted
                   loop
