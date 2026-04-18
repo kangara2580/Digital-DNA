@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, Heart, Volume2, VolumeX, Wallet } from "lucide-react";
+import { Eye, Sparkles, Volume2, VolumeX, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -78,7 +78,7 @@ function ReelDesktopRail({
       </div>
 
       <div className="flex flex-col items-center gap-1">
-        <Heart className="h-5 w-5 text-reels-crimson/90" strokeWidth={1.75} aria-hidden />
+        <Sparkles className="h-5 w-5 text-amber-400/90 [html[data-theme='light']_&]:text-amber-600" strokeWidth={1.75} aria-hidden />
         <span className="font-mono text-[11px] font-bold tabular-nums text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
           {formatCompactCount(metrics.totalLikes)}
         </span>
@@ -111,7 +111,7 @@ function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
           {commerce.salesCount.toLocaleString("ko-KR")}
         </p>
         <p className="truncate font-mono text-[10px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          조회 {formatCompactCount(metrics.totalViews)} · ♥ {formatCompactCount(metrics.totalLikes)}
+          조회 {formatCompactCount(metrics.totalViews)} · 반응 {formatCompactCount(metrics.totalLikes)}
         </p>
       </div>
       <span className="shrink-0 rounded-full border border-reels-cyan/30 bg-reels-cyan/10 px-3 py-1.5 text-[11px] font-bold text-reels-cyan">

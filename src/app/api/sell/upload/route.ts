@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { mkdir, writeFile } from "fs/promises";
 import { NextResponse } from "next/server";
 import path from "path";
@@ -22,6 +22,89 @@ function sanitizeFilename(name: string): string {
   return base || "clip.mp4";
 }
 
+function createStorageClient(
+  supabaseUrl: string,
+  anonKey: string,
+  opts: { serviceRoleKey?: string | null; userJwt?: string | null },
+): SupabaseClient {
+  const srk = opts.serviceRoleKey?.trim();
+  if (srk) {
+    return createClient(supabaseUrl, srk, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+  }
+  const jwt = opts.userJwt?.trim();
+  if (!jwt) {
+    throw new Error("storage_auth_missing");
+  }
+  return createClient(supabaseUrl, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${jwt}` } },
+  });
+}
+
+async function fetchDefaultPosterBuffer(): Promise<Buffer | null> {
+  try {
+    const res = await fetch(DEFAULT_POSTER);
+    if (!res.ok) return null;
+    return Buffer.from(await res.arrayBuffer());
+  } catch {
+    return null;
+  }
+}
+
+async function uploadSellVideoAndPoster(params: {
+  client: SupabaseClient;
+  userId: string;
+  videoBuffer: Buffer;
+  videoMime: string;
+  safeFileName: string;
+}): Promise<{ videoUrl: string; posterUrl: string } | null> {
+  const { client, userId, videoBuffer, videoMime, safeFileName } = params;
+  const stamp = Date.now();
+  const videoPath = `sell/${userId}/${stamp}_${safeFileName}`;
+
+  const { error: vErr } = await client.storage.from("videos").upload(videoPath, videoBuffer, {
+    contentType: videoMime,
+    upsert: true,
+  });
+  if (vErr) return null;
+
+  const videoUrl = client.storage.from("videos").getPublicUrl(videoPath).data.publicUrl;
+
+  const posterBuf = await fetchDefaultPosterBuffer();
+  if (!posterBuf) {
+    return { videoUrl, posterUrl: DEFAULT_POSTER };
+  }
+
+  const thumbPath = `sell/${userId}/${stamp}_poster.jpg`;
+  const { error: tErr } = await client.storage.from("thumbnails").upload(thumbPath, posterBuf, {
+    contentType: "image/jpeg",
+    upsert: true,
+  });
+  if (tErr) {
+    return { videoUrl, posterUrl: DEFAULT_POSTER };
+  }
+  const posterUrl = client.storage.from("thumbnails").getPublicUrl(thumbPath).data.publicUrl;
+  return { videoUrl, posterUrl };
+}
+
+async function uploadSellPosterOnly(
+  client: SupabaseClient,
+  userId: string,
+): Promise<string | null> {
+  const posterBuf = await fetchDefaultPosterBuffer();
+  if (!posterBuf) return null;
+  const stamp = Date.now();
+  const thumbPath = `sell/${userId}/${stamp}_poster.jpg`;
+  const { error } = await client.storage.from("thumbnails").upload(thumbPath, posterBuf, {
+    contentType: "image/jpeg",
+    upsert: true,
+  });
+  if (error) return null;
+  return client.storage.from("thumbnails").getPublicUrl(thumbPath).data.publicUrl;
+}
+
 function displayNameFromUser(user: {
   email?: string | null;
   user_metadata?: Record<string, unknown>;
@@ -40,6 +123,7 @@ export async function POST(request: Request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const supabaseConfigured = Boolean(url && anonKey);
+  let bearerToken: string | null = null;
 
   let user: {
     id: string;
@@ -57,6 +141,7 @@ export async function POST(request: Request) {
         { status: 401 },
       );
     }
+    bearerToken = token;
 
     const supabaseAuth = createClient(url!, anonKey!, {
       auth: { persistSession: false, autoRefreshToken: false },
@@ -192,16 +277,63 @@ export async function POST(request: Request) {
       : null;
 
   let publicSrc = normalizedVideoUrl ?? "";
+  let posterForDb = DEFAULT_POSTER;
+
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || null;
+  const canTrySupabaseStorage =
+    Boolean(url && anonKey && supabaseConfigured) &&
+    Boolean(serviceRoleKey || bearerToken);
+
   if (hasFile) {
     const buffer = Buffer.from(await (file as File).arrayBuffer());
+    const mime = (file as File).type || "application/octet-stream";
     const safe = sanitizeFilename((file as File).name || "clip.mp4");
-    const relDir = path.posix.join("uploads", "sell", user.id);
-    const diskDir = path.join(process.cwd(), "public", relDir);
-    await mkdir(diskDir, { recursive: true });
-    const fileName = `${Date.now()}_${safe}`;
-    const diskPath = path.join(diskDir, fileName);
-    await writeFile(diskPath, buffer);
-    publicSrc = `/${relDir.replace(/\\/g, "/")}/${fileName}`;
+    let usedStorage = false;
+
+    if (canTrySupabaseStorage) {
+      try {
+        const storageClient = createStorageClient(url!, anonKey!, {
+          serviceRoleKey,
+          userJwt: serviceRoleKey ? null : bearerToken,
+        });
+        const uploaded = await uploadSellVideoAndPoster({
+          client: storageClient,
+          userId: user.id,
+          videoBuffer: buffer,
+          videoMime: mime,
+          safeFileName: safe,
+        });
+        if (uploaded) {
+          publicSrc = uploaded.videoUrl;
+          posterForDb = uploaded.posterUrl;
+          usedStorage = true;
+        }
+      } catch {
+        /* 로컬 폴백 */
+      }
+    }
+
+    if (!usedStorage) {
+      const relDir = path.posix.join("uploads", "sell", user.id);
+      const diskDir = path.join(process.cwd(), "public", relDir);
+      await mkdir(diskDir, { recursive: true });
+      const fileName = `${Date.now()}_${safe}`;
+      const diskPath = path.join(diskDir, fileName);
+      await writeFile(diskPath, buffer);
+      publicSrc = `/${relDir.replace(/\\/g, "/")}/${fileName}`;
+      posterForDb = DEFAULT_POSTER;
+    }
+  } else if (hasVideoUrl && canTrySupabaseStorage) {
+    try {
+      const storageClient = createStorageClient(url!, anonKey!, {
+        serviceRoleKey,
+        userJwt: serviceRoleKey ? null : bearerToken,
+      });
+      const thumb = await uploadSellPosterOnly(storageClient, user.id);
+      if (thumb) posterForDb = thumb;
+    } catch {
+      /* 기본 포스터 유지 */
+    }
   }
 
   const hashtagsNormalized = hashtagsRaw
@@ -221,7 +353,7 @@ export async function POST(request: Request) {
       title,
       creator,
       src: publicSrc,
-      poster: DEFAULT_POSTER,
+      poster: posterForDb,
       orientation,
       durationSec: durationSec,
       price: priceWon,

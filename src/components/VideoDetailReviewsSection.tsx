@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { CheckCircle2, Star, ThumbsUp } from "lucide-react";
+import { CheckCircle2, Star } from "lucide-react";
 import { buildNotionistsAvatarUrl } from "@/data/reelsAvatarPresets";
 import {
   getAverageRatingForVideo,
@@ -105,15 +105,9 @@ export function VideoDetailReviewsSection({ videoId }: { videoId: string }) {
                 <p className="mt-2 text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
                   {r.body}
                 </p>
-                <div className="mt-3 flex items-center gap-2">
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold text-zinc-400 transition hover:border-reels-cyan/35 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600"
-                  >
-                    <ThumbsUp className="h-3.5 w-3.5" aria-hidden />
-                    Helpful · {r.helpfulCount.toLocaleString("en-US")}
-                  </button>
-                </div>
+                <p className="mt-3 text-[11px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                  도움됨 {r.helpfulCount.toLocaleString("en-US")}
+                </p>
               </div>
             </div>
           </article>
