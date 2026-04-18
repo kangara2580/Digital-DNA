@@ -19,13 +19,11 @@ import {
 } from "@/lib/profileAvatarStorage";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { MyPageAccountOverview } from "@/components/MyPageAccountOverview";
-import { MyPageStudioSection } from "@/components/MyPageStudioSection";
 
-type MyPageTab = "basic" | "profile" | "drafts" | "samples" | "analytics" | "studio";
+type MyPageTab = "basic" | "profile" | "drafts" | "samples" | "analytics";
 
 const TAB_ITEMS: { id: MyPageTab; label: string; href: string; desc: string }[] = [
   { id: "basic", label: "기본정보", href: "/mypage", desc: "아이디 · 활동 요약" },
-  { id: "studio", label: "My Studio", href: "/mypage?tab=studio", desc: "AI 생성 기록 · 재다운로드" },
   { id: "analytics", label: "판매 분석", href: "/mypage?tab=analytics", desc: "수익·성장·영상별 지표" },
   { id: "profile", label: "프로필 관리", href: "/mypage?tab=profile", desc: "3면 얼굴 등록" },
   { id: "drafts", label: "임시 저장", href: "/mypage?tab=drafts", desc: "이어 편집 · 구매" },
@@ -37,8 +35,7 @@ function normalizeTab(input: string | null): MyPageTab {
     input === "profile" ||
     input === "drafts" ||
     input === "samples" ||
-    input === "analytics" ||
-    input === "studio"
+    input === "analytics"
   ) {
     return input;
   }
@@ -202,8 +199,6 @@ export function MyPageDashboard() {
 
           {currentTab === "profile" ? <FaceProfileUploadSection /> : null}
           {currentTab === "drafts" ? <MyPageSavedDraftsSection /> : null}
-
-          {currentTab === "studio" ? <MyPageStudioSection /> : null}
 
           {currentTab === "analytics" ? <MyPageSellerAnalyticsSection /> : null}
 
