@@ -15,6 +15,7 @@ import { createPortal } from "react-dom";
 import { MALL_CATEGORY_NAV_ITEMS as ITEMS } from "@/data/mallCategoryNav";
 import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhrases";
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
+import { ReelsLogo } from "@/components/ReelsLogo";
 
 /** 카테고리 pill — 라이트 모드에서 검정 텍스트 */
 const categoryPillClass =
@@ -394,13 +395,35 @@ export function MallTopNav() {
           {/* 컴팩트: 스크린리더용 홈 링크만 */}
           {compactEffective ? (
             isVideoDetailPage ? (
-              <Link
-                href="/"
-                className={`flex shrink-0 items-center gap-1.5 rounded-full border border-reels-cyan/30 bg-reels-cyan/8 px-2 py-1 text-[11px] font-black leading-none tracking-tight text-reels-cyan ${easeLayout}`}
-                aria-label="홈으로 이동"
-              >
-                ReelsMarket
-              </Link>
+              <div className="relative flex shrink-0 items-center gap-1.5">
+                <Link
+                  href="/"
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-reels-cyan/30 bg-reels-cyan/8 ${easeLayout}`}
+                  aria-label="홈으로 이동"
+                >
+                  <ReelsLogo size={18} />
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setDetailSearchOpen((v) => !v)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-zinc-100 transition hover:border-reels-cyan/40 hover:bg-white/15 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800"
+                  aria-label="검색 열기"
+                  aria-expanded={detailSearchOpen}
+                >
+                  <Search className="h-4 w-4" strokeWidth={2} aria-hidden />
+                </button>
+                <span
+                  className="ml-0.5 h-6 w-px bg-white/25 [html[data-theme='light']_&]:bg-zinc-300"
+                  aria-hidden
+                />
+                {detailSearchOpen ? (
+                  <div className="absolute left-0 top-[calc(100%+0.4rem)] z-50 w-[min(68vw,380px)]">
+                    <div className="rounded-full border border-white/12 bg-black/12 px-2 py-1 backdrop-blur-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/30">
+                      <RotatingSearchField compact q={q} setQ={setQ} />
+                    </div>
+                  </div>
+                ) : null}
+              </div>
             ) : (
               <div className={`flex shrink-0 items-center ${easeLayout}`}>
                 <Link href="/" className={`${logoClass} sr-only`}>
@@ -454,26 +477,7 @@ export function MallTopNav() {
             }`}
           >
             {compactEffective ? (
-              isVideoDetailPage ? (
-                <div className="relative ml-auto shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setDetailSearchOpen((v) => !v)}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-zinc-100 transition hover:border-reels-cyan/40 hover:bg-white/15 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800"
-                    aria-label="검색 열기"
-                    aria-expanded={detailSearchOpen}
-                  >
-                    <Search className="h-4 w-4" strokeWidth={2} aria-hidden />
-                  </button>
-                  {detailSearchOpen ? (
-                    <div className="absolute right-0 top-[calc(100%+0.4rem)] z-50 w-[min(68vw,380px)]">
-                      <div className="rounded-full border border-white/15 bg-black/22 px-2 py-1 backdrop-blur-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/35">
-                        <RotatingSearchField compact q={q} setQ={setQ} />
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              ) : (
+              isVideoDetailPage ? null : (
                 <div
                   className={`min-w-0 ${easeNav} mx-0 mt-0 max-w-[min(20rem,100%)] shrink sm:max-w-sm`}
                 >
