@@ -11,6 +11,11 @@ const INPUT_CLASS =
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function safeRedirectPath(raw: string | null): string {
+  if (raw && raw.startsWith("/") && !raw.startsWith("//")) return raw;
+  return "/";
+}
+
 export function LoginPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -33,8 +38,8 @@ export function LoginPageClient() {
 
   useEffect(() => {
     if (authLoading || !user) return;
-    router.replace("/");
-  }, [authLoading, router, user]);
+    router.replace(safeRedirectPath(searchParams.get("redirect")));
+  }, [authLoading, router, searchParams, user]);
 
   const validateForm = () => {
     const trimmedEmail = email.trim();
@@ -75,7 +80,7 @@ export function LoginPageClient() {
         setError("로그인에 실패했습니다. 이메일 또는 비밀번호를 확인해 주세요.");
         return;
       }
-      router.replace("/");
+      router.replace(safeRedirectPath(searchParams.get("redirect")));
       router.refresh();
     } catch {
       setError("요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");

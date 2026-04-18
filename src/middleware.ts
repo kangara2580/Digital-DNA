@@ -39,11 +39,12 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  /** 메인(/)은 로그인 필수 — 비로그인 시 로그인으로 */
-  if (request.nextUrl.pathname === "/" && !user) {
+  /** 마이페이지만 로그인 필요 — 메인 등은 비회원도 볼 수 있음 */
+  if (request.nextUrl.pathname.startsWith("/mypage") && !user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
-    redirectUrl.searchParams.set("redirect", "/");
+    const returnTo = request.nextUrl.pathname + request.nextUrl.search;
+    redirectUrl.searchParams.set("redirect", returnTo);
     return NextResponse.redirect(redirectUrl);
   }
 
