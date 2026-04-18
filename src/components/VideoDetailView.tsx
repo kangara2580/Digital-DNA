@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ShoppingCart } from "lucide-react";
 import { SellerIdentityLink } from "@/components/SellerIdentityLink";
 import { VideoDetailRecommendations } from "@/components/VideoDetailRecommendations";
@@ -48,9 +48,69 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
     () => getMetricsForVideoDetail(video.id),
     [video.id],
   );
+  const [liveStats, setLiveStats] = useState<{
+    playCount: number;
+    diggCount: number;
+  } | null>(null);
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(video.src);
   const posterSrc = sanitizePosterSrc(video.poster);
   const isTikTokEmbed = Boolean(video.tiktokEmbedId);
+  const detailMetrics = useMemo(
+    () =>
+      liveStats
+        ? {
+            ...rankMetrics,
+            totalViews: liveStats.playCount,
+            totalLikes: liveStats.diggCount,
+          }
+        : rankMetrics,
+    [liveStats, rankMetrics],
+  );
+
+  useEffect(() => {
+    if (!video.tiktokEmbedId) {
+      setLiveStats(null);
+      return;
+    }
+
+    let cancelled = false;
+    const fetchLiveStats = async () => {
+      try {
+        const res = await fetch(
+          `/api/tiktok/live-stats?videoId=${encodeURIComponent(video.tiktokEmbedId!)}`,
+          { cache: "no-store" },
+        );
+        if (!res.ok) return;
+        const j = (await res.json()) as {
+          playCount?: number;
+          diggCount?: number;
+        };
+        if (
+          cancelled ||
+          typeof j.playCount !== "number" ||
+          typeof j.diggCount !== "number"
+        ) {
+          return;
+        }
+        setLiveStats({
+          playCount: j.playCount,
+          diggCount: j.diggCount,
+        });
+      } catch {
+        /* ignore and keep fallback metrics */
+      }
+    };
+
+    void fetchLiveStats();
+    const t = window.setInterval(() => {
+      void fetchLiveStats();
+    }, 45_000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(t);
+    };
+  }, [video.tiktokEmbedId]);
 
   return (
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
@@ -116,7 +176,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
 
             <section className="reels-glass-card overflow-hidden rounded-xl">
               <TrendingVideoStatsFooter
-                metrics={rankMetrics}
+                metrics={detailMetrics}
                 salePriceWon={video.priceWon}
                 salesCount={meta.salesCount}
                 stockRow={

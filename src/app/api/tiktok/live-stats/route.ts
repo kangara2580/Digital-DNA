@@ -48,16 +48,21 @@ function parseLiveStatsFromEmbedHtml(html: string, videoId: string): TikTokLiveS
 }
 
 export async function GET(request: NextRequest) {
+  const rawVideoId = request.nextUrl.searchParams.get("videoId")?.trim();
   const rawUrl = request.nextUrl.searchParams.get("url")?.trim();
-  if (!rawUrl) {
-    return NextResponse.json({ error: "missing url" }, { status: 400 });
-  }
 
   let videoId: string;
-  try {
-    videoId = extractTikTokVideoIdFromUrl(rawUrl);
-  } catch {
-    return NextResponse.json({ error: "invalid tiktok video url" }, { status: 400 });
+  if (rawVideoId && /^\d{10,20}$/.test(rawVideoId)) {
+    videoId = rawVideoId;
+  } else {
+    if (!rawUrl) {
+      return NextResponse.json({ error: "missing url or videoId" }, { status: 400 });
+    }
+    try {
+      videoId = extractTikTokVideoIdFromUrl(rawUrl);
+    } catch {
+      return NextResponse.json({ error: "invalid tiktok video url" }, { status: 400 });
+    }
   }
 
   const embedUrl = `https://www.tiktok.com/embed/v2/${videoId}`;
