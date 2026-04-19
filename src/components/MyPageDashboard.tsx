@@ -228,6 +228,7 @@ export function MyPageDashboard() {
                 <div className="mt-4 grid gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">
                   <div>
                     <ProfileAvatarPicker
+                      density="comfortable"
                       value={profileAvatar}
                       onChange={persistProfileAvatar}
                       hint={
