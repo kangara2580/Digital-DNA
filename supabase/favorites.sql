@@ -34,3 +34,7 @@ create policy "favorites_delete_own"
 on public.favorites
 for delete
 using (auth.uid() = user_id);
+
+-- SQL Editor로만 만든 테이블은 Table Editor와 달리 역할 권한이 없을 수 있음 → API(anon JWT 경유)에서 permission denied 방지
+grant select, insert, delete on table public.favorites to authenticated;
+grant all on table public.favorites to service_role;
