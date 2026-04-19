@@ -185,10 +185,15 @@ export function MallTopNav() {
   const [compact, setCompact] = useState(false);
   const pathname = usePathname();
 
+  /** 검색 페이지가 아니면 입력란 유지(다른 페이지로 가도 이전 검색어가 남지 않게) */
   useEffect(() => {
-    if (pathname !== "/search" || typeof window === "undefined") return;
+    if (typeof window === "undefined") return;
+    if (pathname !== "/search") {
+      setQ("");
+      return;
+    }
     const uq = new URLSearchParams(window.location.search).get("q");
-    if (uq != null) setQ(uq);
+    setQ(uq ?? "");
   }, [pathname]);
   const isVideoDetailPage =
     pathname.startsWith("/video/") && !pathname.endsWith("/customize");
