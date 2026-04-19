@@ -27,6 +27,9 @@ function formatCompactCount(n: number): string {
 type ReelSlideProps = {
   video: FeedVideo;
   scrollRootRef: React.RefObject<HTMLDivElement | null>;
+  /** 탐색 세션 전체에서 공유 — 영상 넘겨도 유지 */
+  muted: boolean;
+  onMutedChange: (muted: boolean) => void;
 };
 
 /** 데스크톱: 틱톡 웹 우측 컬럼 — 마켓 수치 + 상세 이동 */
@@ -121,10 +124,14 @@ function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
   );
 }
 
-export function ExploreReelSlide({ video, scrollRootRef }: ReelSlideProps) {
+export function ExploreReelSlide({
+  video,
+  scrollRootRef,
+  muted,
+  onMutedChange,
+}: ReelSlideProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const blockRef = useRef<HTMLDivElement>(null);
-  const [muted, setMuted] = useState(true);
   const [progress, setProgress] = useState(0);
   const previewSrc = video.previewSrc ?? video.src;
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(previewSrc);
@@ -166,11 +173,13 @@ export function ExploreReelSlide({ video, scrollRootRef }: ReelSlideProps) {
   }, []);
 
   const toggleMute = useCallback(() => {
+    onMutedChange(!muted);
+  }, [muted, onMutedChange]);
+
+  useEffect(() => {
     const el = videoRef.current;
-    if (!el) return;
-    el.muted = !el.muted;
-    setMuted(el.muted);
-  }, []);
+    if (el) el.muted = muted;
+  }, [muted]);
 
   return (
     <div

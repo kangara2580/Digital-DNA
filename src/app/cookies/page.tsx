@@ -99,7 +99,11 @@ export default function CookiesPage() {
             <code className="rounded bg-black/30 px-1 font-mono text-[12px] [html[data-theme='light']_&]:bg-zinc-200">
               {`reels-locale`}
             </code>
-            )를 저장해, 상단 메뉴에서 선택한 값을 다음 방문 시에도 유지합니다. (UI 번역은 단계적으로 확대할 수
+            )·탐색 화면에서 소리를 켠 여부(
+            <code className="rounded bg-black/30 px-1 font-mono text-[12px] [html[data-theme='light']_&]:bg-zinc-200">
+              {`reels-explore-audio-unlocked`}
+            </code>
+            )를 저장해, 상단 메뉴·탐색 설정을 다음 방문 시에도 유지합니다. (UI 번역은 단계적으로 확대할 수
             있습니다.)
           </p>
         </section>

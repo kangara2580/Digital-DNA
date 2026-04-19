@@ -24,6 +24,9 @@ const GRID_BATCH = 20;
 /** 순환 로드로 스크롤 끝없이 이어지게 하되, DOM·메모리 상한 */
 const MAX_GRID_ITEMS = 800;
 
+/** 탐색 세로 릴: 소리 켠 상태를 영상 전환·재진입 후에도 유지 */
+const EXPLORE_AUDIO_UNLOCKED_KEY = "reels-explore-audio-unlocked";
+
 /** 그리드 모드만 — 훅을 watch와 분리해 규칙 위반·리컨실 오류 방지 */
 function ExploreBrowseGrid({
   pool,
@@ -106,8 +109,29 @@ function ExploreWatchReels({
   onBackToBrowse: () => void;
 }) {
   const [count, setCount] = useState(BATCH);
+  const [reelMuted, setReelMutedState] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(EXPLORE_AUDIO_UNLOCKED_KEY) === "true") {
+        setReelMutedState(false);
+      }
+    } catch {
+      /* noop */
+    }
+  }, []);
+
+  const setReelMuted = useCallback((muted: boolean) => {
+    setReelMutedState(muted);
+    try {
+      if (muted) localStorage.removeItem(EXPLORE_AUDIO_UNLOCKED_KEY);
+      else localStorage.setItem(EXPLORE_AUDIO_UNLOCKED_KEY, "true");
+    } catch {
+      /* noop */
+    }
+  }, []);
 
   const slides = useMemo(() => {
     const n = Math.min(count, MAX_SLIDES);
@@ -251,6 +275,8 @@ function ExploreWatchReels({
             key={`${video.id}-${watchOffset}-${i}`}
             video={video}
             scrollRootRef={scrollRef}
+            muted={reelMuted}
+            onMutedChange={setReelMuted}
           />
         ))}
         <div
