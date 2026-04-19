@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { FeedVideo } from "@/data/videos";
+import { getCartTableName, supabaseTables } from "@/lib/supabaseTableNames";
 
 export const STUDIO_HISTORY_BLOB_KEY = "studio_history";
 
@@ -10,6 +11,21 @@ function isFeedVideo(v: unknown): v is FeedVideo {
   if (!v || typeof v !== "object") return false;
   const o = v as FeedVideo;
   return typeof o.id === "string" && typeof o.title === "string";
+}
+
+/** DB jsonb가 예전 형식이어도 id·제목을 복구해 새로고침 후에도 목록이 비지 않게 함 */
+function normalizeCartVideoPayload(
+  video: unknown,
+  fallbackVideoId: string,
+): FeedVideo | null {
+  if (!video || typeof video !== "object") return null;
+  const o = video as Record<string, unknown>;
+  const id =
+    typeof o.id === "string" && o.id.length > 0 ? o.id : fallbackVideoId;
+  if (typeof id !== "string" || id.length === 0) return null;
+  const title = typeof o.title === "string" ? o.title : "";
+  const base = { ...o, id, title } as FeedVideo;
+  return isFeedVideo(base) ? base : null;
 }
 
 export type FetchCartVideosResult =
@@ -23,8 +39,8 @@ export async function fetchUserCartVideos(
 ): Promise<FetchCartVideosResult> {
   try {
     const { data, error } = await supabase
-      .from("user_cart_items")
-      .select("video,sort_index")
+      .from(getCartTableName())
+      .select("video_id,video,sort_index")
       .eq("user_id", userId)
       .order("sort_index", { ascending: true });
 
@@ -35,9 +51,21 @@ export async function fetchUserCartVideos(
         errorCode: error.code,
       };
     }
-    const videos = (data ?? [])
-      .map((r: { video: unknown }) => r.video)
-      .filter(isFeedVideo);
+    const rows = (data ?? []) as {
+      video_id: string;
+      video: unknown;
+    }[];
+    const videos = rows
+      .map((r) => normalizeCartVideoPayload(r.video, r.video_id))
+      .filter((v): v is FeedVideo => v != null);
+    /** 행은 있는데 파싱이 전부 실패하면 ok로 두면 빈 동기화로 DB가 지워질 수 있음 */
+    if (rows.length > 0 && videos.length === 0) {
+      return {
+        ok: false,
+        errorMessage:
+          "장바구니 행은 있으나 영상 정보를 읽을 수 없습니다. video 컬럼 형식을 확인해 주세요.",
+      };
+    }
     return { ok: true, videos };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -52,7 +80,7 @@ export async function replaceUserCart(
 ): Promise<boolean> {
   try {
     const { error: delErr } = await supabase
-      .from("user_cart_items")
+      .from(getCartTableName())
       .delete()
       .eq("user_id", userId);
     if (delErr) return false;
@@ -63,7 +91,9 @@ export async function replaceUserCart(
       video: v,
       sort_index: i,
     }));
-    const { error: insErr } = await supabase.from("user_cart_items").insert(rows);
+    const { error: insErr } = await supabase
+      .from(getCartTableName())
+      .insert(rows);
     return !insErr;
   } catch {
     return false;
@@ -77,7 +107,7 @@ export async function fetchUserRecentViews(
 ): Promise<RecentClipEntrySync[]> {
   try {
     const { data, error } = await supabase
-      .from("user_recent_views")
+      .from(supabaseTables.recentViews)
       .select("video_id,viewed_at")
       .eq("user_id", userId)
       .order("viewed_at", { ascending: false })
@@ -103,7 +133,7 @@ export async function replaceUserRecentViews(
 ): Promise<boolean> {
   try {
     const { error: delErr } = await supabase
-      .from("user_recent_views")
+      .from(supabaseTables.recentViews)
       .delete()
       .eq("user_id", userId);
     if (delErr) return false;
@@ -113,7 +143,9 @@ export async function replaceUserRecentViews(
       video_id: e.id,
       viewed_at: new Date(e.viewedAt).toISOString(),
     }));
-    const { error: insErr } = await supabase.from("user_recent_views").insert(rows);
+    const { error: insErr } = await supabase
+      .from(supabaseTables.recentViews)
+      .insert(rows);
     return !insErr;
   } catch {
     return false;
@@ -126,7 +158,7 @@ export async function fetchUserPurchasedIds(
 ): Promise<string[]> {
   try {
     const { data, error } = await supabase
-      .from("user_demo_purchases")
+      .from(supabaseTables.demoPurchases)
       .select("video_id")
       .eq("user_id", userId);
 
@@ -143,7 +175,7 @@ export async function addUserPurchasedVideo(
   videoId: string,
 ): Promise<boolean> {
   try {
-    const { error } = await supabase.from("user_demo_purchases").upsert(
+    const { error } = await supabase.from(supabaseTables.demoPurchases).upsert(
       { user_id: userId, video_id: videoId },
       { onConflict: "user_id,video_id" },
     );
@@ -160,14 +192,14 @@ export async function replaceUserDemoPurchases(
 ): Promise<boolean> {
   try {
     const { error: delErr } = await supabase
-      .from("user_demo_purchases")
+      .from(supabaseTables.demoPurchases)
       .delete()
       .eq("user_id", userId);
     if (delErr) return false;
     if (videoIds.length === 0) return true;
     const rows = videoIds.map((video_id) => ({ user_id: userId, video_id }));
     const { error: insErr } = await supabase
-      .from("user_demo_purchases")
+      .from(supabaseTables.demoPurchases)
       .insert(rows);
     return !insErr;
   } catch {
@@ -182,7 +214,7 @@ export async function upsertCustomizeDraftRemote(
   payload: unknown,
 ): Promise<boolean> {
   try {
-    const { error } = await supabase.from("user_customize_drafts").upsert(
+    const { error } = await supabase.from(supabaseTables.customizeDrafts).upsert(
       {
         user_id: userId,
         video_id: videoId,
@@ -204,7 +236,7 @@ export async function deleteCustomizeDraftRemote(
 ): Promise<boolean> {
   try {
     const { error } = await supabase
-      .from("user_customize_drafts")
+      .from(supabaseTables.customizeDrafts)
       .delete()
       .eq("user_id", userId)
       .eq("video_id", videoId);
@@ -220,7 +252,7 @@ export async function fetchUserCustomizeDrafts(
 ): Promise<{ video_id: string; payload: unknown; updated_at: string }[]> {
   try {
     const { data, error } = await supabase
-      .from("user_customize_drafts")
+      .from(supabaseTables.customizeDrafts)
       .select("video_id,payload,updated_at")
       .eq("user_id", userId)
       .order("updated_at", { ascending: false });
@@ -239,7 +271,7 @@ export async function fetchCustomizeDraftByVideoId(
 ): Promise<{ payload: unknown; updated_at: string } | null> {
   try {
     const { data, error } = await supabase
-      .from("user_customize_drafts")
+      .from(supabaseTables.customizeDrafts)
       .select("payload,updated_at")
       .eq("user_id", userId)
       .eq("video_id", videoId)
@@ -259,7 +291,7 @@ export async function fetchUserDataBlob(
 ): Promise<unknown | null> {
   try {
     const { data, error } = await supabase
-      .from("user_data_blobs")
+      .from(supabaseTables.dataBlobs)
       .select("data")
       .eq("user_id", userId)
       .eq("blob_key", blobKey)
@@ -279,7 +311,7 @@ export async function upsertUserDataBlob(
   data: unknown,
 ): Promise<boolean> {
   try {
-    const { error } = await supabase.from("user_data_blobs").upsert(
+    const { error } = await supabase.from(supabaseTables.dataBlobs).upsert(
       {
         user_id: userId,
         blob_key: blobKey,
