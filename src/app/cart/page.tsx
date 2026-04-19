@@ -1,20 +1,80 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
+import { useAuthSession } from "@/hooks/useAuthSession";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 export default function CartPage() {
-  const { builderItems, removeBuilderItem, clearBuilder } = useDopamineBasket();
+  const { loading: authLoading } = useAuthSession();
+  const {
+    builderItems,
+    cartSyncReady,
+    removeBuilderItem,
+    removeBuilderItemsByKeys,
+    clearBuilder,
+  } = useDopamineBasket();
+  /** 로그인·서버 장바구니 로드 전에는 builderItems가 잠깐 []라 빈 화면이 깜빡이지 않게 함 */
+  const cartUiReady = !authLoading && cartSyncReady;
   const { hasPurchased, markPurchased } = usePurchasedVideos();
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+
+  const allKeys = useMemo(() => builderItems.map((b) => b.key), [builderItems]);
+
+  const toggleKey = useCallback((key: string) => {
+    setSelected((s) => {
+      const n = new Set(s);
+      if (n.has(key)) n.delete(key);
+      else n.add(key);
+      return n;
+    });
+  }, []);
+
+  const selectAll = useCallback(() => {
+    setSelected(new Set(allKeys));
+  }, [allKeys]);
+
+  const clearSelection = useCallback(() => setSelected(new Set()), []);
 
   const totalWon = useMemo(
     () =>
       builderItems.reduce((sum, { video }) => sum + (video.priceWon ?? 0), 0),
     [builderItems],
   );
+
+  const selectedTotal = useMemo(() => {
+    let sum = 0;
+    for (const { key, video } of builderItems) {
+      if (selected.has(key)) sum += video.priceWon ?? 0;
+    }
+    return sum;
+  }, [builderItems, selected]);
+
+  const deleteSelected = useCallback(() => {
+    if (selected.size === 0) return;
+    if (
+      typeof window !== "undefined" &&
+      !window.confirm(`선택한 ${selected.size}개를 장바구니에서 뺄까요?`)
+    ) {
+      return;
+    }
+    removeBuilderItemsByKeys([...selected]);
+    setSelected(new Set());
+  }, [selected, removeBuilderItemsByKeys]);
+
+  const purchaseSelected = useCallback(() => {
+    const ids = builderItems
+      .filter((b) => selected.has(b.key) && !hasPurchased(b.video.id))
+      .map((b) => b.video.id);
+    if (ids.length === 0) {
+      window.alert("선택한 항목이 없거나 이미 구매 처리된 영상입니다.");
+      return;
+    }
+    for (const id of ids) markPurchased(id);
+    window.alert(`${ids.length}개 영상을 구매 완료로 표시했습니다.`);
+  }, [builderItems, selected, hasPurchased, markPurchased]);
 
   return (
     <main className="mx-auto min-h-[50vh] max-w-2xl px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12">
@@ -24,25 +84,81 @@ export default function CartPage() {
             장바구니
           </h1>
         </div>
-        {builderItems.length > 0 ? (
-          <button
-            type="button"
-            onClick={() => {
-              if (
-                typeof window !== "undefined" &&
-                window.confirm("장바구니와 타임라인에서 모두 빼시겠어요?")
-              ) {
-                clearBuilder();
-              }
-            }}
-            className="shrink-0 self-start rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-reels-cyan/35 hover:bg-white/[0.06] hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900 sm:self-auto"
-          >
-            전체 비우기
-          </button>
+        {cartUiReady && builderItems.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={selectAll}
+              className="shrink-0 rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:border-reels-cyan/35 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-800"
+            >
+              전체 선택
+            </button>
+            <button
+              type="button"
+              onClick={clearSelection}
+              disabled={selected.size === 0}
+              className="shrink-0 rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:border-white/25 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-800"
+            >
+              선택 해제
+            </button>
+            <button
+              type="button"
+              onClick={deleteSelected}
+              disabled={selected.size === 0}
+              className="shrink-0 rounded-lg border border-rose-500/35 px-3 py-2 text-[13px] font-medium text-rose-300 transition-colors hover:bg-rose-500/10 disabled:opacity-40 [html[data-theme='light']_&]:text-rose-800"
+            >
+              선택 삭제
+            </button>
+            <button
+              type="button"
+              onClick={purchaseSelected}
+              disabled={selected.size === 0}
+              className="shrink-0 rounded-lg border border-reels-cyan/40 px-3 py-2 text-[13px] font-semibold text-reels-cyan transition-colors hover:bg-reels-cyan/10 disabled:opacity-40"
+            >
+              선택 구매 완료
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (
+                  typeof window !== "undefined" &&
+                  window.confirm("장바구니와 타임라인에서 모두 빼시겠어요?")
+                ) {
+                  clearBuilder();
+                  setSelected(new Set());
+                }
+              }}
+              className="shrink-0 self-start rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-reels-cyan/35 hover:bg-white/[0.06] hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900 sm:self-auto"
+            >
+              전체 비우기
+            </button>
+          </div>
         ) : null}
       </header>
 
-      {builderItems.length === 0 ? (
+      {!cartUiReady ? (
+        <div className="mx-auto mt-14 max-w-md space-y-4 sm:max-w-lg" aria-busy="true" aria-live="polite">
+          <div className="mx-auto h-4 w-40 animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
+          <div className="space-y-3">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="flex gap-3 py-2 sm:gap-5"
+              >
+                <div className="h-[88px] w-[66px] shrink-0 animate-pulse rounded-lg bg-white/10 sm:h-[100px] sm:w-[75px] [html[data-theme='light']_&]:bg-zinc-200" />
+                <div className="min-w-0 flex-1 space-y-2 pt-1">
+                  <div className="h-4 w-[80%] max-w-sm animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
+                  <div className="h-3 w-24 animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
+                  <div className="h-3 w-32 animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            장바구니를 불러오는 중…
+          </p>
+        </div>
+      ) : builderItems.length === 0 ? (
         <div className="mx-auto mt-14 max-w-md text-center sm:max-w-lg">
           <p className="text-[15px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
             담긴 영상이 없어요
@@ -59,70 +175,87 @@ export default function CartPage() {
           <ul className="mt-6 divide-y divide-white/10 [html[data-theme='light']_&]:divide-zinc-200">
             {builderItems.map(({ key, video }) => {
               const owned = hasPurchased(video.id);
+              const checked = selected.has(key);
               return (
-              <li
-                key={key}
-                className="flex gap-4 py-4 first:pt-0 sm:gap-5 sm:py-5"
-              >
-                <Link
-                  href={`/video/${video.id}`}
-                  className="relative h-[88px] w-[66px] shrink-0 overflow-hidden rounded-lg border border-white/12 bg-black/40 sm:h-[100px] sm:w-[75px]"
+                <li
+                  key={key}
+                  className="flex gap-3 py-4 first:pt-0 sm:gap-5 sm:py-5"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={sanitizePosterSrc(video.poster)}
-                    alt=""
-                    className="h-full w-full object-cover"
-                  />
-                </Link>
-                <div className="min-w-0 flex-1">
+                  <label className="flex shrink-0 cursor-pointer items-start pt-1">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleKey(key)}
+                      className="h-4 w-4 rounded border-white/25 bg-black/40 accent-reels-cyan [html[data-theme='light']_&]:border-zinc-300"
+                    />
+                    <span className="sr-only">선택</span>
+                  </label>
                   <Link
                     href={`/video/${video.id}`}
-                    className="line-clamp-2 text-left text-[15px] font-bold leading-snug text-zinc-100 hover:text-reels-cyan [html[data-theme='light']_&]:text-zinc-900"
+                    className="relative h-[88px] w-[66px] shrink-0 overflow-hidden rounded-lg border border-white/12 bg-black/40 sm:h-[100px] sm:w-[75px]"
                   >
-                    {video.title}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={sanitizePosterSrc(video.poster)}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
                   </Link>
-                  <p className="mt-1 truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                    {video.creator}
-                  </p>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    {video.priceWon != null ? (
-                      <span className="text-[15px] font-extrabold tabular-nums text-reels-cyan">
-                        {video.priceWon.toLocaleString("ko-KR")}원
-                      </span>
-                    ) : (
-                      <span className="text-[14px] text-zinc-500">가격 문의</span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => removeBuilderItem(key)}
-                      className="rounded-md px-2 py-1 text-[12px] font-medium text-zinc-500 underline-offset-2 hover:bg-white/10 hover:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      href={`/video/${video.id}`}
+                      className="line-clamp-2 text-left text-[15px] font-bold leading-snug text-zinc-100 hover:text-reels-cyan [html[data-theme='light']_&]:text-zinc-900"
                     >
-                      삭제
-                    </button>
-                    {!owned ? (
+                      {video.title}
+                    </Link>
+                    <p className="mt-1 truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                      {video.creator}
+                    </p>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      {video.priceWon != null ? (
+                        <span className="text-[15px] font-extrabold tabular-nums text-reels-cyan">
+                          {video.priceWon.toLocaleString("ko-KR")}원
+                        </span>
+                      ) : (
+                        <span className="text-[14px] text-zinc-500">가격 문의</span>
+                      )}
                       <button
                         type="button"
-                        onClick={() => markPurchased(video.id)}
-                        className="rounded-md px-2 py-1 text-[12px] font-semibold text-zinc-300 hover:bg-white/10 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100"
+                        onClick={() => {
+                          removeBuilderItem(key);
+                          setSelected((s) => {
+                            const n = new Set(s);
+                            n.delete(key);
+                            return n;
+                          });
+                        }}
+                        className="rounded-md px-2 py-1 text-[12px] font-medium text-zinc-500 underline-offset-2 hover:bg-white/10 hover:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
                       >
-                        구매 완료(데모)
+                        삭제
                       </button>
-                    ) : null}
-                    {owned ? (
-                      <Link
-                        href={`/create?videoId=${encodeURIComponent(video.id)}`}
-                        className="rounded-md px-2 py-1 text-[12px] font-semibold text-reels-cyan hover:bg-reels-cyan/10 hover:underline"
-                      >
-                        AI 창작하기
-                      </Link>
-                    ) : (
-                      <span className="text-[12px] text-zinc-600">창작은 구매 후</span>
-                    )}
+                      {!owned ? (
+                        <button
+                          type="button"
+                          onClick={() => markPurchased(video.id)}
+                          className="rounded-md px-2 py-1 text-[12px] font-semibold text-zinc-300 hover:bg-white/10 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100"
+                        >
+                          이 영상 구매 완료
+                        </button>
+                      ) : null}
+                      {owned ? (
+                        <Link
+                          href={`/create?videoId=${encodeURIComponent(video.id)}`}
+                          className="rounded-md px-2 py-1 text-[12px] font-semibold text-reels-cyan hover:bg-reels-cyan/10 hover:underline"
+                        >
+                          AI 창작하기
+                        </Link>
+                      ) : (
+                        <span className="text-[12px] text-zinc-600">창작은 구매 후</span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </li>
-            );
+                </li>
+              );
             })}
           </ul>
 
@@ -135,10 +268,15 @@ export default function CartPage() {
                 {totalWon.toLocaleString("ko-KR")}원
               </span>
             </div>
-            <p className="mt-3 text-[12px] leading-relaxed text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-              결제 연동 전 데모 화면입니다. 하단 DNA 조합기에서 순서를 바꿔
-              이어 붙여 볼 수 있어요.
-            </p>
+            {selected.size > 0 ? (
+              <p className="mt-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                선택 합계:{" "}
+                <span className="font-bold tabular-nums text-reels-cyan">
+                  {selectedTotal.toLocaleString("ko-KR")}원
+                </span>{" "}
+                ({selected.size}개)
+              </p>
+            ) : null}
             <button
               type="button"
               disabled
