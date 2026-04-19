@@ -31,14 +31,14 @@ export function ReskinGenerationQueueModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/72 px-4 backdrop-blur-md"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/72 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:px-4"
       role="alertdialog"
       aria-live="assertive"
       aria-modal="true"
       aria-labelledby="reskin-queue-title"
       aria-describedby="reskin-queue-desc"
     >
-      <div className="w-full max-w-md rounded-2xl border border-white/12 bg-reels-void/95 p-6 shadow-[0_24px_80px_-20px_rgba(0,242,234,0.15)]">
+      <div className="max-h-[min(92dvh,calc(100dvh-1.5rem))] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl border border-white/12 bg-reels-void/95 p-5 shadow-[0_24px_80px_-20px_rgba(0,242,234,0.15)] sm:p-6">
         <p
           id="reskin-queue-title"
           className="text-center text-lg font-extrabold tracking-tight text-zinc-100"

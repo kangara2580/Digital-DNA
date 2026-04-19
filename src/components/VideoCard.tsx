@@ -430,7 +430,7 @@ export function VideoCard({
           }`}
         >
           <div
-            className={`flex items-center justify-center opacity-0 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 translate-y-1 group-hover:translate-y-0 group-hover:opacity-100 ${
+            className={`flex items-center justify-center opacity-100 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 max-lg:translate-y-0 max-lg:opacity-100 translate-y-1 lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 ${
               dense ? "gap-5" : reelStrip ? "gap-4 sm:gap-6" : reelLayout ? "gap-8 sm:gap-12" : "gap-10"
             }`}
           >

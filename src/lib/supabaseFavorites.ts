@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { supabaseTables } from "@/lib/supabaseTableNames";
 
 export type FavoriteKind = "wishlist" | "like";
 
@@ -10,11 +11,9 @@ export type FavoriteRow = {
   created_at: string;
 };
 
-/** Supabase 테이블명 (기본 `favorites`). 대시보드에서 `user_favorites`만 쓰는 경우 .env에 맞춤 */
+/** 찜/좋아요 테이블명 — `supabaseTableNames`·NEXT_PUBLIC_SUPABASE_FAVORITES_TABLE */
 export function getFavoritesTableName(): string {
-  return (
-    process.env.NEXT_PUBLIC_SUPABASE_FAVORITES_TABLE?.trim() || "favorites"
-  );
+  return supabaseTables.favorites;
 }
 
 export type FetchFavoritesResult =

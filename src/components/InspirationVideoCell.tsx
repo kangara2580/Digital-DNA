@@ -83,7 +83,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
         />
         <div className="pointer-events-none absolute inset-0 z-[7] flex items-center justify-center p-3">
           <div
-            className="flex items-center justify-center gap-5 opacity-0 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 translate-y-1 group-hover:translate-y-0 group-hover:opacity-100 sm:gap-6"
+            className="flex items-center justify-center gap-5 opacity-100 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 max-lg:translate-y-0 max-lg:opacity-100 translate-y-1 lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 sm:gap-6"
           >
             <button
               ref={cartBtnRef}

@@ -6,6 +6,7 @@ import {
   MultipartParseError,
   parseSellUploadMultipart,
 } from "@/lib/parseMultipartSellUpload";
+import { getNeutralPosterBuffer, NEUTRAL_POSTER_DATA_URL } from "@/lib/neutralPoster";
 import { normalizeSellHashtags } from "@/lib/sellHashtags";
 import { prisma } from "@/lib/prisma";
 
@@ -24,9 +25,6 @@ const ALLOWED_POSTER_MIME = new Set([
   "image/png",
   "image/webp",
 ]);
-
-const DEFAULT_POSTER =
-  "https://images.pexels.com/photos/2387873/pexels-photo-2387873.jpeg?auto=compress&cs=tinysrgb&w=640";
 
 function sanitizeFilename(name: string): string {
   const base = name.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 120);
@@ -52,16 +50,6 @@ function createStorageClient(
     auth: { persistSession: false, autoRefreshToken: false },
     global: { headers: { Authorization: `Bearer ${jwt}` } },
   });
-}
-
-async function fetchDefaultPosterBuffer(): Promise<Buffer | null> {
-  try {
-    const res = await fetch(DEFAULT_POSTER);
-    if (!res.ok) return null;
-    return Buffer.from(await res.arrayBuffer());
-  } catch {
-    return null;
-  }
 }
 
 async function uploadSellVideoWithOptionalCustomPoster(params: {
@@ -99,10 +87,7 @@ async function uploadSellVideoWithOptionalCustomPoster(params: {
     }
   }
 
-  const posterBuf = await fetchDefaultPosterBuffer();
-  if (!posterBuf) {
-    return { videoUrl, posterUrl: DEFAULT_POSTER };
-  }
+  const posterBuf = getNeutralPosterBuffer();
 
   const thumbPath = `sell/${userId}/${stamp}_poster.jpg`;
   const { error: tErr } = await client.storage.from("thumbnails").upload(thumbPath, posterBuf, {
@@ -110,7 +95,7 @@ async function uploadSellVideoWithOptionalCustomPoster(params: {
     upsert: true,
   });
   if (tErr) {
-    return { videoUrl, posterUrl: DEFAULT_POSTER };
+    return { videoUrl, posterUrl: NEUTRAL_POSTER_DATA_URL };
   }
   const posterUrl = client.storage.from("thumbnails").getPublicUrl(thumbPath).data.publicUrl;
   return { videoUrl, posterUrl };
@@ -138,8 +123,7 @@ async function uploadSellPosterOnly(
   client: SupabaseClient,
   userId: string,
 ): Promise<string | null> {
-  const posterBuf = await fetchDefaultPosterBuffer();
-  if (!posterBuf) return null;
+  const posterBuf = getNeutralPosterBuffer();
   const stamp = Date.now();
   const thumbPath = `sell/${userId}/${stamp}_poster.jpg`;
   const { error } = await client.storage.from("thumbnails").upload(thumbPath, posterBuf, {
@@ -344,7 +328,7 @@ export async function POST(request: Request) {
       : null;
 
   let publicSrc = normalizedVideoUrl ?? "";
-  let posterForDb = DEFAULT_POSTER;
+  let posterForDb = NEUTRAL_POSTER_DATA_URL;
 
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || null;
   const canTrySupabaseStorage =
@@ -402,7 +386,7 @@ export async function POST(request: Request) {
         await writeFile(path.join(diskDir, posterName), customPoster.buffer);
         posterForDb = `/${relDir.replace(/\\/g, "/")}/${posterName}`;
       } else {
-        posterForDb = DEFAULT_POSTER;
+        posterForDb = NEUTRAL_POSTER_DATA_URL;
       }
     }
   } else if (hasVideoUrl && canTrySupabaseStorage) {

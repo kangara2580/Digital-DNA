@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
 import { useWishlist } from "@/context/WishlistContext";
 import { resolveManualTikTokVideoForStudio } from "@/data/tiktokData";
@@ -71,8 +71,9 @@ function sortRows(rows: Row[], sort: SortValue): Row[] {
 
 export default function WishlistPage() {
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
-  const { entries, hydrated, clear } = useWishlist();
+  const { entries, hydrated, clear, removeMany } = useWishlist();
   const [sort, setSort] = useState<SortValue>("recent");
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
 
   const videoByStoredId = useMemo(() => buildWishlistVideoLookup(), []);
 
@@ -87,8 +88,41 @@ export default function WishlistPage() {
     return sortRows(list, sort);
   }, [entries, videoByStoredId, sort]);
 
+  const allEntryIds = useMemo(() => rows.map((r) => r.entryId), [rows]);
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelected((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  }, []);
+
+  const selectAllWishlist = useCallback(() => {
+    setSelected(new Set(allEntryIds));
+  }, [allEntryIds]);
+
+  const clearWishlistSelection = useCallback(() => setSelected(new Set()), []);
+
+  const deleteSelectedWishlist = useCallback(() => {
+    if (selected.size === 0) return;
+    if (
+      typeof window !== "undefined" &&
+      !window.confirm(`선택한 ${selected.size}개를 찜 목록에서 뺄까요?`)
+    ) {
+      return;
+    }
+    void removeMany([...selected]).then(() => setSelected(new Set()));
+  }, [selected, removeMany]);
+
+  /** 로그인 없이도 localStorage 찜이 있으면 목록 표시 */
   const showLoginGate =
-    supabaseConfigured && !authLoading && hydrated && !user;
+    supabaseConfigured &&
+    !authLoading &&
+    hydrated &&
+    !user &&
+    entries.length === 0;
 
   return (
     <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12 lg:px-8">
@@ -120,22 +154,48 @@ export default function WishlistPage() {
               </select>
             </label>
             {hydrated && entries.length > 0 ? (
-              <button
-                type="button"
-                onClick={() => {
-                  void (async () => {
-                    if (
-                      typeof window !== "undefined" &&
-                      window.confirm("찜한 릴스를 모두 목록에서 삭제할까요?")
-                    ) {
-                      await clear();
-                    }
-                  })();
-                }}
-                className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-reels-crimson/35 hover:bg-white/[0.06] hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
-              >
-                전체 삭제
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={selectAllWishlist}
+                  className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-reels-cyan/35 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+                >
+                  전체 선택
+                </button>
+                <button
+                  type="button"
+                  onClick={clearWishlistSelection}
+                  disabled={selected.size === 0}
+                  className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-white/25 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+                >
+                  선택 해제
+                </button>
+                <button
+                  type="button"
+                  onClick={deleteSelectedWishlist}
+                  disabled={selected.size === 0}
+                  className="rounded-lg border border-rose-500/35 px-3 py-2 text-[13px] font-medium text-rose-300 transition-colors hover:bg-rose-500/10 disabled:opacity-40 [html[data-theme='light']_&]:text-rose-800"
+                >
+                  선택 삭제
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void (async () => {
+                      if (
+                        typeof window !== "undefined" &&
+                        window.confirm("찜한 릴스를 모두 목록에서 삭제할까요?")
+                      ) {
+                        await clear();
+                        setSelected(new Set());
+                      }
+                    })();
+                  }}
+                  className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-reels-crimson/35 hover:bg-white/[0.06] hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
+                >
+                  전체 삭제
+                </button>
+              </>
             ) : null}
           </div>
         ) : null}
@@ -144,7 +204,7 @@ export default function WishlistPage() {
       {showLoginGate ? (
         <div className="mx-auto mt-16 max-w-md text-center">
           <p className="text-[15px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            로그인하면 찜한 릴스가 저장되고, 이 페이지에서만 모아 볼 수 있어요.
+            로그인하면 찜한 릴스가 계정에 동기화되고, 다른 기기에서도 이어서 볼 수 있어요.
           </p>
           <Link
             href={`/login?redirect=${encodeURIComponent("/wishlist")}`}
@@ -172,7 +232,16 @@ export default function WishlistPage() {
       ) : (
         <ul className="mt-8 grid list-none grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {rows.map(({ entryId, video }) => (
-            <li key={entryId} className="min-w-0">
+            <li key={entryId} className="relative min-w-0">
+              <label className="absolute left-2 top-2 z-[20] flex cursor-pointer items-center rounded-md bg-black/55 px-1.5 py-1 backdrop-blur-sm">
+                <input
+                  type="checkbox"
+                  checked={selected.has(entryId)}
+                  onChange={() => toggleSelect(entryId)}
+                  className="h-4 w-4 rounded border-white/30 accent-reels-cyan"
+                />
+                <span className="sr-only">선택</span>
+              </label>
               <VideoCard
                 video={video}
                 domId={`wishlist-${entryId}`}

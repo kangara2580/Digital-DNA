@@ -1,10 +1,14 @@
 "use client";
 
 import { AlertCircle, CheckCircle2, Film, Loader2, Upload } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import { captureFrameFromVideo } from "@/lib/captureVideoFrame";
+import {
+  captureFrameFromVideo,
+  capturePosterFromFile,
+} from "@/lib/captureVideoFrame";
 import {
   deleteSellerUploadDraft,
   fetchSellerUploadDraft,
@@ -26,6 +30,7 @@ function normalizeVideoUrl(raw: string): string {
 }
 
 export function SellerClipUploadForm() {
+  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
   const hid = useId();
@@ -48,8 +53,6 @@ export function SellerClipUploadForm() {
   const [hashtags, setHashtags] = useState("");
   const [price, setPrice] = useState("1000");
   const [isAi, setIsAi] = useState(false);
-  const [editionKind, setEditionKind] = useState<"open" | "limited">("open");
-  const [editionCap, setEditionCap] = useState("50");
   const [rights, setRights] = useState(false);
   const [confirmOriginal, setConfirmOriginal] = useState(false);
 
@@ -93,8 +96,6 @@ export function SellerClipUploadForm() {
       setHashtags(d.hashtags);
       setPrice(d.price);
       setIsAi(d.isAi);
-      setEditionKind(d.editionKind);
-      setEditionCap(d.editionCap);
       setRights(d.rights);
       setConfirmOriginal(d.confirmOriginal);
       setDurationSec(d.durationSec);
@@ -132,8 +133,6 @@ export function SellerClipUploadForm() {
       hashtags,
       price,
       isAi,
-      editionKind,
-      editionCap,
       rights,
       confirmOriginal,
       durationSec,
@@ -155,14 +154,22 @@ export function SellerClipUploadForm() {
     hashtags,
     price,
     isAi,
-    editionKind,
-    editionCap,
     rights,
     confirmOriginal,
     durationSec,
     orientation,
     file,
   ]);
+
+  /** 미리보기 비디오: 슬라이더(thumbTimeSec)와 동기 시 seek (훅은 항상 동일 순서로 유지) */
+  useEffect(() => {
+    const el = videoPreviewRef.current;
+    if (!el || !previewUrl) return;
+    const d = el.duration;
+    const cap = Number.isFinite(d) && d > 0 ? d - 0.04 : undefined;
+    const t = cap !== undefined ? Math.min(thumbTimeSec, cap) : thumbTimeSec;
+    el.currentTime = Number.isFinite(t) ? t : 0;
+  }, [thumbTimeSec, previewUrl]);
 
   const onPickFile = (f: File | null) => {
     resetPreview();
@@ -194,15 +201,6 @@ export function SellerClipUploadForm() {
     }
     setOrientation(el.videoWidth >= el.videoHeight ? "landscape" : "portrait");
   };
-
-  useEffect(() => {
-    const el = videoPreviewRef.current;
-    if (!el || !previewUrl) return;
-    const d = el.duration;
-    const cap = Number.isFinite(d) && d > 0 ? d - 0.04 : undefined;
-    const t = cap !== undefined ? Math.min(thumbTimeSec, cap) : thumbTimeSec;
-    el.currentTime = Number.isFinite(t) ? t : 0;
-  }, [thumbTimeSec, previewUrl]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -243,17 +241,36 @@ export function SellerClipUploadForm() {
       fd.append("price", price.trim());
       fd.append("orientation", orientation);
       fd.append("isAiGenerated", isAi ? "true" : "false");
-      fd.append("editionKind", editionKind);
-      if (editionKind === "limited") {
-        fd.append("editionCap", editionCap.trim());
-      }
+      fd.append("editionKind", "open");
       fd.append("rightsConfirmed", rights ? "true" : "false");
       fd.append("confirmOriginal", confirmOriginal ? "true" : "false");
       if (durationSec != null) {
         fd.append("durationSec", String(durationSec));
       }
 
-      if (previewUrl && videoPreviewRef.current) {
+      if (sourceType === "file" && file) {
+        let posterBlob: Blob | null = null;
+        if (previewUrl && videoPreviewRef.current) {
+          posterBlob = await captureFrameFromVideo(
+            videoPreviewRef.current,
+            thumbTimeSec,
+            "image/jpeg",
+            0.92,
+          );
+        }
+        if (!posterBlob) {
+          posterBlob = await capturePosterFromFile(file, thumbTimeSec);
+        }
+        if (!posterBlob) {
+          setMessage({
+            ok: false,
+            text:
+              "영상에서 썸네일을 만들 수 없습니다. MP4 등 지원 형식인지 확인하거나 잠시 후 다시 시도해 주세요.",
+          });
+          return;
+        }
+        fd.append("poster", posterBlob, "poster.jpg");
+      } else if (sourceType === "url" && previewUrl && videoPreviewRef.current) {
         const posterBlob = await captureFrameFromVideo(
           videoPreviewRef.current,
           thumbTimeSec,
@@ -290,23 +307,23 @@ export function SellerClipUploadForm() {
         void deleteSellerUploadDraft(supabase, session.user.id);
       }
 
-      setMessage({
-        ok: true,
-        text: data.message ?? "등록이 완료되었습니다.",
-      });
       setTitle("");
       setDescription("");
       setHashtags("");
       setPrice("1000");
       setIsAi(false);
-      setEditionKind("open");
-      setEditionCap("50");
       setRights(false);
       setConfirmOriginal(false);
       setVideoUrl("");
       setSourceType("file");
       resetPreview();
       if (fileInputRef.current) fileInputRef.current.value = "";
+      setMessage(null);
+
+      // 상태 플러시·언마운트 후 이동 — refresh 병행 시 RSC/클라이언트 트리 불일치로 훅 오류가 날 수 있음
+      queueMicrotask(() => {
+        router.replace("/mypage?tab=listings");
+      });
     } catch {
       setMessage({ ok: false, text: "네트워크 오류가 발생했습니다." });
     } finally {
@@ -379,23 +396,43 @@ export function SellerClipUploadForm() {
 
           {sourceType === "file" ? (
             <>
-              <label className={LABEL} htmlFor={`${hid}-video`}>
-                동영상 파일 (필수)
-              </label>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-                <input
-                  id={`${hid}-video`}
-                  ref={fileInputRef}
-                  type="file"
-                  accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
-                  className="block w-full text-[13px] text-zinc-300 file:mr-3 file:rounded-lg file:border-0 file:bg-reels-crimson/90 file:px-3 file:py-2 file:text-[13px] file:font-bold file:text-white [html[data-theme='light']_&]:text-zinc-800"
-                  onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
-                />
+              <span className={LABEL}>동영상 파일 (필수)</span>
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,520px)] lg:items-start lg:gap-6">
+                <div className="min-w-0 space-y-1.5">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <input
+                      id={`${hid}-video`}
+                      ref={fileInputRef}
+                      type="file"
+                      accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
+                      tabIndex={-1}
+                      className="sr-only"
+                      aria-hidden
+                      onChange={(e) => {
+                        onPickFile(e.target.files?.[0] ?? null);
+                        e.target.value = "";
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="inline-flex shrink-0 cursor-pointer rounded-lg bg-reels-crimson/90 px-3 py-2 text-[13px] font-bold text-white shadow-sm transition hover:brightness-110"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      파일 선택
+                    </button>
+                    <span className="pointer-events-none min-w-0 flex-1 truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                      {file?.name ?? "선택된 파일 없음"}
+                    </span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
+                    MP4·MOV·WebM 권장. 미리보기에서 재생 길이·가로/세로를 자동 추정합니다.
+                  </p>
+                </div>
                 {previewUrl ? (
-                  <div className="w-full max-w-[200px] shrink-0 overflow-hidden rounded-xl border border-white/15 bg-black/50">
+                  <div className="flex w-full min-w-0 justify-center overflow-hidden rounded-xl border border-white/15 bg-zinc-950/90 shadow-inner [html[data-theme='light']_&]:bg-zinc-900">
                     <video
                       ref={videoPreviewRef}
-                      className="aspect-[9/16] w-full object-cover sm:aspect-video"
+                      className="max-h-[min(52vh,480px)] w-full object-contain"
                       src={previewUrl}
                       crossOrigin="anonymous"
                       muted
@@ -406,9 +443,6 @@ export function SellerClipUploadForm() {
                   </div>
                 ) : null}
               </div>
-              <p className="mt-1.5 text-[11px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-                MP4·MOV·WebM 권장. 미리보기에서 재생 길이·가로/세로를 자동 추정합니다.
-              </p>
             </>
           ) : (
             <>
@@ -432,10 +466,10 @@ export function SellerClipUploadForm() {
                 </button>
               </div>
               {previewUrl ? (
-                <div className="mt-3 w-full max-w-[260px] overflow-hidden rounded-xl border border-white/15 bg-black/50">
+                <div className="mt-3 flex w-full justify-center overflow-hidden rounded-xl border border-white/15 bg-zinc-950/90 shadow-inner [html[data-theme='light']_&]:bg-zinc-900">
                   <video
                     ref={videoPreviewRef}
-                    className="aspect-[9/16] w-full object-cover"
+                    className="max-h-[min(52vh,480px)] w-full object-contain"
                     src={previewUrl}
                     crossOrigin="anonymous"
                     muted
@@ -594,50 +628,6 @@ export function SellerClipUploadForm() {
                 </span>
               </span>
             </label>
-          </div>
-
-          <div className="sm:col-span-2">
-            <span className={LABEL}>판매 방식</span>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setEditionKind("open")}
-                className={`rounded-xl border px-3 py-2 text-[13px] font-bold transition ${
-                  editionKind === "open"
-                    ? "border-reels-cyan/50 bg-reels-cyan/15 text-zinc-100"
-                    : "border-white/12 bg-black/20 text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white"
-                }`}
-              >
-                무제한(오픈)
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditionKind("limited")}
-                className={`rounded-xl border px-3 py-2 text-[13px] font-bold transition ${
-                  editionKind === "limited"
-                    ? "border-reels-cyan/50 bg-reels-cyan/15 text-zinc-100"
-                    : "border-white/12 bg-black/20 text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white"
-                }`}
-              >
-                한정 판매(수량 제한)
-              </button>
-            </div>
-            {editionKind === "limited" ? (
-              <div className="mt-3">
-                <label className={LABEL} htmlFor={`${hid}-cap`}>
-                  판매 가능 수량
-                </label>
-                <input
-                  id={`${hid}-cap`}
-                  className={INPUT}
-                  inputMode="numeric"
-                  value={editionCap}
-                  onChange={(e) =>
-                    setEditionCap(e.target.value.replace(/[^\d]/g, ""))
-                  }
-                />
-              </div>
-            ) : null}
           </div>
 
           <div className="sm:col-span-2 space-y-3 rounded-xl border border-amber-500/25 bg-amber-500/[0.07] p-4 [html[data-theme='light']_&]:border-amber-400/35 [html[data-theme='light']_&]:bg-amber-50">

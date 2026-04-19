@@ -13,12 +13,10 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import {
-  buildSellerAnalyticsSnapshot,
-  type SellerAnalyticsSnapshot,
-} from "@/data/sellerAnalytics";
+import type { SellerAnalyticsSnapshot } from "@/data/sellerAnalytics";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 type PeriodState =
@@ -153,15 +151,70 @@ function RevenueBars({ data }: { data: SellerAnalyticsSnapshot["revenueByDay"] }
 export function MyPageSellerAnalyticsSection() {
   const [period, setPeriod] = useState<PeriodState>({ kind: "preset", days: 7 });
   const [rangeDraft, setRangeDraft] = useState(defaultRangeDraft);
+  const [snapshot, setSnapshot] = useState<SellerAnalyticsSnapshot | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const snapshot = useMemo(() => {
+  const analyticsUrl = useMemo(() => {
     if (period.kind === "preset") {
-      return buildSellerAnalyticsSnapshot(period.days);
+      return `/api/mypage/seller-analytics?days=${period.days}`;
     }
-    return buildSellerAnalyticsSnapshot(30, {
-      dateRange: { start: period.start, end: period.end },
+    const q = new URLSearchParams({
+      from: period.start,
+      to: period.end,
     });
+    return `/api/mypage/seller-analytics?${q.toString()}`;
   }, [period]);
+
+  const fetchSnapshot = useCallback(async () => {
+    setLoadError(null);
+    setLoading(true);
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const { data: sessionData } = (await supabase?.auth.getSession()) ?? {
+        data: { session: null },
+      };
+      const token = sessionData.session?.access_token;
+      if (!token) {
+        setLoadError("로그인이 필요합니다.");
+        return;
+      }
+      const res = await fetch(analyticsUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        snapshot?: SellerAnalyticsSnapshot;
+        error?: string;
+      };
+      if (!res.ok || !data.ok || !data.snapshot) {
+        setLoadError(
+          data.error === "login_required"
+            ? "로그인이 필요합니다."
+            : "분석 데이터를 불러오지 못했습니다.",
+        );
+        return;
+      }
+      setSnapshot(data.snapshot);
+      setLoadError(null);
+    } catch {
+      setLoadError("네트워크 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  }, [analyticsUrl]);
+
+  useEffect(() => {
+    void fetchSnapshot();
+  }, [fetchSnapshot]);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      if (document.visibilityState === "visible") void fetchSnapshot();
+    }, 60_000);
+    return () => window.clearInterval(id);
+  }, [fetchSnapshot]);
 
   const applyCustomRange = () => {
     if (rangeDraft.start > rangeDraft.end) {
@@ -177,6 +230,32 @@ export function MyPageSellerAnalyticsSection() {
     }
   }, [period]);
 
+  if (loading && !snapshot) {
+    return (
+      <section
+        className="reels-glass-card rounded-2xl p-5 sm:p-7"
+        aria-labelledby="seller-analytics-heading"
+      >
+        <p className="text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          판매 분석을 불러오는 중…
+        </p>
+      </section>
+    );
+  }
+
+  if (!snapshot) {
+    return (
+      <section
+        className="reels-glass-card rounded-2xl p-5 sm:p-7"
+        aria-labelledby="seller-analytics-heading"
+      >
+        <p className="text-[13px] text-rose-300 [html[data-theme='light']_&]:text-rose-800">
+          {loadError ?? "표시할 데이터가 없습니다."}
+        </p>
+      </section>
+    );
+  }
+
   const t = snapshot.totals;
 
   return (
@@ -189,7 +268,7 @@ export function MyPageSellerAnalyticsSection() {
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 sm:gap-x-3">
             <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-500/35 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-300 [html[data-theme='light']_&]:text-emerald-700 sm:px-2 sm:text-[10px]">
               <Radio className="h-2.5 w-2.5 animate-pulse sm:h-3 sm:w-3" aria-hidden />
-              실시간 동기화
+              {loading ? "동기화 중…" : "주기 갱신(60초)"}
             </span>
             <h2
               id="seller-analytics-heading"
@@ -254,6 +333,11 @@ export function MyPageSellerAnalyticsSection() {
             사용자 지정: {period.start} ~ {period.end} ({snapshot.periodDays}일)
           </p>
         ) : null}
+        {loadError && snapshot ? (
+          <p className="text-right text-[10px] text-amber-300/95 [html[data-theme='light']_&]:text-amber-900">
+            {loadError}
+          </p>
+        ) : null}
       </div>
 
       {/* 요약 KPI */}
@@ -276,11 +360,11 @@ export function MyPageSellerAnalyticsSection() {
           value={`${t.totalSalesCount.toLocaleString("ko-KR")}건`}
           sub={
             <>
-              판매 건 추이{" "}
+              전 기간 대비{" "}
               <span className="font-semibold text-emerald-400 [html[data-theme='light']_&]:text-emerald-600">
-                +{t.salesGrowthPercent}%
-              </span>{" "}
-              (데모)
+                {t.salesGrowthPercent >= 0 ? "+" : ""}
+                {t.salesGrowthPercent}%
+              </span>
             </>
           }
           accent="crimson"
@@ -328,7 +412,7 @@ export function MyPageSellerAnalyticsSection() {
             전환 퍼널
           </h3>
           <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            노출 대비 각 단계 유입 비율 (데모)
+            조회수·판매 건 기반 추정(일별 이벤트 로그 도입 시 세분화 가능)
           </p>
           <ul className="mt-4 space-y-3">
             {snapshot.funnel.map((stage, i) => (
@@ -363,7 +447,7 @@ export function MyPageSellerAnalyticsSection() {
             </h3>
           </div>
           <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            조회 유입이 어디서 왔는지 (전주 대비 증감)
+            유입 채널 세분 데이터가 없을 때는 앱·마켓 통합으로 표시됩니다.
           </p>
           <ul className="mt-4 space-y-3">
             {snapshot.channels.map((ch) => (
@@ -406,7 +490,7 @@ export function MyPageSellerAnalyticsSection() {
             </h3>
           </div>
           <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            구간별 잔존 시청자 비율 (집계)
+            조회·판매 비율에서 추정한 잔존 곡선(정밀 시청 이벤트 수집 시 교체)
           </p>
           <ul className="mt-4 space-y-2.5">
             {snapshot.retention.map((r) => (

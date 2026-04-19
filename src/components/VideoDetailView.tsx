@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { ShoppingCart } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
 import { SellerIdentityLink } from "@/components/SellerIdentityLink";
 import { VideoDetailRecommendations } from "@/components/VideoDetailRecommendations";
 import { VideoDetailReviewsSection } from "@/components/VideoDetailReviewsSection";
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useRecentClips } from "@/context/RecentClipsContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -30,6 +31,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
   const router = useRouter();
   const { user } = useAuthSession();
   const dopamine = useDopamineBasket();
+  const { isSaved, toggle: toggleWishlist } = useWishlist();
   const { hasPurchased, markPurchased } = usePurchasedVideos();
   const { recordView } = useRecentClips();
   const owned = hasPurchased(video.id);
@@ -62,6 +64,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
   const showFreshMeta = fresh.tier !== "archived";
   const price = video.priceWon ?? 0;
   const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
+  const wishlisted = isSaved(video.id);
 
   const ctaLabel =
     price === 100
@@ -283,23 +286,46 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                   if (!owned) markPurchased(video.id);
                   router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
                 }}
-                className="h-[48px] w-full flex-1 rounded-full bg-reels-crimson px-5 text-[13px] font-extrabold text-white shadow-reels-crimson transition-[transform,opacity] duration-300 ease-in-out hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+                className="h-[48px] w-full min-w-0 flex-1 rounded-full bg-reels-crimson px-5 text-[13px] font-extrabold text-white shadow-reels-crimson transition-[transform,opacity] duration-300 ease-in-out hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40 sm:max-w-[min(22rem,calc(100%-7.5rem))]"
               >
                 {ctaLabel}
               </button>
-              <button
-                type="button"
-                title="장바구니 담기"
-                onClick={(e) => {
-                  if (soldOut) return;
-                  dopamine.launchFromCartButton(e.currentTarget, video, posterSrc);
-                }}
-                className="inline-flex h-[48px] w-[48px] shrink-0 items-center justify-center self-center rounded-full border border-white/15 bg-white/[0.06] text-zinc-200 transition-colors hover:border-reels-cyan/40 hover:text-reels-cyan disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800 sm:self-stretch"
-                disabled={soldOut}
-                aria-label="장바구니 담기"
-              >
-                <ShoppingCart className="h-5 w-5" />
-              </button>
+              <div className="flex shrink-0 items-center justify-center gap-2 self-center sm:self-stretch">
+                <button
+                  type="button"
+                  title="장바구니 담기"
+                  onClick={(e) => {
+                    if (soldOut) return;
+                    dopamine.launchFromCartButton(e.currentTarget, video, posterSrc);
+                  }}
+                  className="inline-flex h-[48px] w-[48px] items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-zinc-200 transition-colors hover:border-reels-cyan/40 hover:text-reels-cyan disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800"
+                  disabled={soldOut}
+                  aria-label="장바구니 담기"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  title={wishlisted ? "찜 해제" : "찜하기"}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (soldOut) return;
+                    toggleWishlist(video);
+                  }}
+                  className={`inline-flex h-[48px] w-[48px] items-center justify-center rounded-full border border-white/15 bg-white/[0.06] transition-colors hover:border-reels-crimson/50 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 ${
+                    wishlisted
+                      ? "text-reels-crimson [html[data-theme='light']_&]:text-reels-crimson"
+                      : "text-zinc-200 hover:text-reels-crimson [html[data-theme='light']_&]:text-zinc-800"
+                  }`}
+                  disabled={soldOut}
+                  aria-label={wishlisted ? "찜 해제" : "찜하기"}
+                  aria-pressed={wishlisted}
+                >
+                  <Heart
+                    className={`h-5 w-5 ${wishlisted ? "fill-current" : ""}`}
+                  />
+                </button>
+              </div>
             </div>
 
           </div>

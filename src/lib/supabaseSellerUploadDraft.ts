@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { supabaseTables } from "@/lib/supabaseTableNames";
 
 export type SellerUploadDraftPayload = {
   sourceType: "file" | "url";
@@ -8,8 +9,6 @@ export type SellerUploadDraftPayload = {
   hashtags: string;
   price: string;
   isAi: boolean;
-  editionKind: "open" | "limited";
-  editionCap: string;
   rights: boolean;
   confirmOriginal: boolean;
   durationSec: number | null;
@@ -24,7 +23,7 @@ export async function fetchSellerUploadDraft(
 ): Promise<SellerUploadDraftPayload | null> {
   try {
     const { data, error } = await supabase
-      .from("seller_upload_drafts")
+      .from(supabaseTables.sellerUploadDrafts)
       .select("payload")
       .eq("user_id", userId)
       .maybeSingle();
@@ -42,7 +41,7 @@ export async function upsertSellerUploadDraft(
   payload: SellerUploadDraftPayload,
 ): Promise<boolean> {
   try {
-    const { error } = await supabase.from("seller_upload_drafts").upsert(
+    const { error } = await supabase.from(supabaseTables.sellerUploadDrafts).upsert(
       {
         user_id: userId,
         payload,
@@ -62,7 +61,7 @@ export async function deleteSellerUploadDraft(
 ): Promise<boolean> {
   try {
     const { error } = await supabase
-      .from("seller_upload_drafts")
+      .from(supabaseTables.sellerUploadDrafts)
       .delete()
       .eq("user_id", userId);
     return !error;

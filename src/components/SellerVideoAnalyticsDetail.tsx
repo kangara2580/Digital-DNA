@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   BarChart3,
@@ -13,7 +13,8 @@ import {
   Tv,
   Tablet,
 } from "lucide-react";
-import { buildSellerVideoDetailSnapshot } from "@/data/sellerAnalytics";
+import type { SellerVideoDetailSnapshot } from "@/data/sellerAnalytics";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 function formatWon(n: number): string {
@@ -35,13 +36,84 @@ type Props = {
 };
 
 export function SellerVideoAnalyticsDetail({ videoId, days, from, to }: Props) {
-  const detail = useMemo(() => {
-    const range =
+  const [detail, setDetail] = useState<SellerVideoDetailSnapshot | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const queryUrl = useMemo(() => {
+    const q =
       from && to && /^\d{4}-\d{2}-\d{2}$/.test(from) && /^\d{4}-\d{2}-\d{2}$/.test(to)
-        ? { start: from, end: to }
-        : undefined;
-    return buildSellerVideoDetailSnapshot(videoId, days, range);
+        ? new URLSearchParams({ from, to })
+        : new URLSearchParams({ days: String(days) });
+    return `/api/mypage/seller-analytics/video/${encodeURIComponent(videoId)}?${q.toString()}`;
   }, [videoId, days, from, to]);
+
+  const load = useCallback(async () => {
+    setLoadError(null);
+    setLoading(true);
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const { data: sessionData } = (await supabase?.auth.getSession()) ?? {
+        data: { session: null },
+      };
+      const token = sessionData.session?.access_token;
+      if (!token) {
+        setLoadError("로그인이 필요합니다.");
+        setDetail(null);
+        return;
+      }
+      const res = await fetch(queryUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        detail?: SellerVideoDetailSnapshot;
+        error?: string;
+      };
+      if (res.status === 404 || data.error === "not_found") {
+        setDetail(null);
+        setLoadError(null);
+        return;
+      }
+      if (!res.ok || !data.ok || !data.detail) {
+        setLoadError(
+          data.error === "login_required"
+            ? "로그인이 필요합니다."
+            : "데이터를 불러오지 못했습니다.",
+        );
+        return;
+      }
+      setDetail(data.detail);
+    } catch {
+      setLoadError("네트워크 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  }, [queryUrl]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  if (loading && !detail) {
+    return (
+      <div className="reels-glass-card rounded-2xl p-8 text-center text-zinc-400">
+        <p className="font-semibold">불러오는 중…</p>
+      </div>
+    );
+  }
+
+  if (loadError && !detail) {
+    return (
+      <div className="reels-glass-card rounded-2xl p-8 text-center text-rose-300">
+        <p className="font-semibold">{loadError}</p>
+        <Link href="/mypage?tab=analytics" className="mt-4 inline-block text-reels-cyan hover:underline">
+          판매 분석으로 돌아가기
+        </Link>
+      </div>
+    );
+  }
 
   if (!detail) {
     return (
@@ -89,7 +161,7 @@ export function SellerVideoAnalyticsDetail({ videoId, days, from, to }: Props) {
               {detail.title}
             </h1>
             <p className="mt-2 text-[13px] text-zinc-500">
-              기간 내 추정 성과 · 클릭·시청·전환을 한 화면에서 확인해요 (데모 지표)
+              등록된 조회·판매 데이터를 기준으로 한 기간 추정 지표입니다.
             </p>
           </div>
         </div>
@@ -109,7 +181,17 @@ export function SellerVideoAnalyticsDetail({ videoId, days, from, to }: Props) {
             {formatWon(detail.periodRevenueWon)}
           </p>
           <p className="mt-1 text-[11px] text-zinc-500">
-            전월 대비 <span className="text-emerald-400">+{detail.revenueMomPercent}%</span>
+            직전 동일 길이 기간 대비{" "}
+            <span
+              className={
+                detail.revenueMomPercent >= 0
+                  ? "text-emerald-400"
+                  : "text-rose-400"
+              }
+            >
+              {detail.revenueMomPercent >= 0 ? "+" : ""}
+              {detail.revenueMomPercent}%
+            </span>
           </p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
@@ -118,7 +200,15 @@ export function SellerVideoAnalyticsDetail({ videoId, days, from, to }: Props) {
             {formatCompact(row.totalViews)}
           </p>
           <p className="mt-1 text-[11px] text-zinc-500">
-            추이 <span className="text-reels-cyan">+{detail.viewsMomPercent}%</span>
+            직전 대비 추정 조회{" "}
+            <span
+              className={
+                detail.viewsMomPercent >= 0 ? "text-reels-cyan" : "text-rose-400"
+              }
+            >
+              {detail.viewsMomPercent >= 0 ? "+" : ""}
+              {detail.viewsMomPercent}%
+            </span>
           </p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">

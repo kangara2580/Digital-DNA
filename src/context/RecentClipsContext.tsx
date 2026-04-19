@@ -16,8 +16,24 @@ import {
   replaceUserRecentViews,
   type RecentClipEntrySync,
 } from "@/lib/supabaseUserSync";
+import { waitForSupabaseAccessToken } from "@/lib/waitSupabaseSessionReady";
 
 const MAX_ENTRIES = 100;
+
+function mergeRecentServerWithLocal(
+  server: RecentClipEntry[],
+  local: RecentClipEntry[],
+): RecentClipEntry[] {
+  const map = new Map<string, RecentClipEntry>();
+  for (const e of server) map.set(e.id, e);
+  for (const e of local) {
+    const prev = map.get(e.id);
+    if (!prev || e.viewedAt > prev.viewedAt) map.set(e.id, e);
+  }
+  return [...map.values()]
+    .sort((a, b) => b.viewedAt - a.viewedAt)
+    .slice(0, MAX_ENTRIES);
+}
 
 export type RecentClipEntry = {
   id: string;
@@ -42,7 +58,7 @@ export function useRecentClips() {
 }
 
 export function RecentClipsProvider({ children }: { children: React.ReactNode }) {
-  const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
+  const { user, session, loading: authLoading, supabaseConfigured } = useAuthSession();
   const [entries, setEntries] = useState<RecentClipEntry[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const restoreGuardRef = useRef(false);
@@ -70,9 +86,16 @@ export function RecentClipsProvider({ children }: { children: React.ReactNode })
     restoreGuardRef.current = true;
 
     void (async () => {
+      const tokenReady = await waitForSupabaseAccessToken(supabase);
+      if (cancelled) return;
+      if (!tokenReady) {
+        restoreGuardRef.current = false;
+        setHydrated(true);
+        return;
+      }
       const server = await fetchUserRecentViews(supabase, user.id, MAX_ENTRIES);
       if (!cancelled) {
-        setEntries(server);
+        setEntries((prev) => mergeRecentServerWithLocal(server, prev));
         setHydrated(true);
       }
       restoreGuardRef.current = false;
@@ -81,7 +104,7 @@ export function RecentClipsProvider({ children }: { children: React.ReactNode })
     return () => {
       cancelled = true;
     };
-  }, [authLoading, supabaseConfigured, user]);
+  }, [authLoading, supabaseConfigured, user, session?.access_token]);
 
   const recordView = useCallback(
     (videoId: string) => {
@@ -117,11 +140,15 @@ export function RecentClipsProvider({ children }: { children: React.ReactNode })
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
     const handle = window.setTimeout(() => {
-      void replaceUserRecentViews(
-        supabase,
-        user.id,
-        entries as RecentClipEntrySync[],
-      );
+      void (async () => {
+        const ok = await waitForSupabaseAccessToken(supabase);
+        if (!ok) return;
+        await replaceUserRecentViews(
+          supabase,
+          user.id,
+          entries as RecentClipEntrySync[],
+        );
+      })();
     }, 400);
     return () => window.clearTimeout(handle);
   }, [entries, hydrated, authLoading, supabaseConfigured, user]);

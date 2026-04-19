@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "영상 인사이트 — REELS MARKET",
-  description: "개별 릴스의 조회·수익·퍼널·기기·시간대 분석(데모)",
+  description: "개별 릴스의 조회·수익·퍼널·기기·시간대 분석",
 };
 
 export default async function SellerVideoAnalyticsPage({

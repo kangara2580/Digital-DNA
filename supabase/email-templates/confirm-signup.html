@@ -1,96 +1,55 @@
 <!--
   Supabase → Authentication → Email Templates → Confirm signup
-  Paste this as the template body. Button href must remain: {{ .ConfirmationURL }}
+  Paste the full file. href must use: {{ .ConfirmationURL }}
+  (Some wording/CSS in richer templates may be blocked by provider filters — this lean version is editor-safe.)
 -->
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Confirm your email — REELS MARKET</title>
-    <!--[if mso]>
-    <noscript>
-      <xml>
-        <o:OfficeDocumentSettings>
-          <o:PixelsPerInch>96</o:PixelsPerInch>
-        </o:OfficeDocumentSettings>
-      </xml>
-    </noscript>
-    <![endif]-->
-  </head>
-  <body style="margin:0;padding:0;background-color:#02040a;-webkit-font-smoothing:antialiased;">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#02040a;background-image:linear-gradient(180deg,#050a16 0%,#02040a 55%,#010308 100%);">
-      <tr>
-        <td align="center" style="padding:40px 16px 48px;">
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;border-collapse:separate;border-radius:16px;overflow:hidden;border:1px solid rgba(0,242,234,0.22);background-color:#070f1f;box-shadow:0 24px 60px rgba(0,0,0,0.45);">
-            <tr>
-              <td style="height:3px;background:linear-gradient(90deg,#ff0055 0%,#00f2ea 50%,#ff0055 100%);font-size:0;line-height:0;">&nbsp;</td>
-            </tr>
-            <tr>
-              <td align="center" style="padding:32px 28px 8px;">
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
-                  <tr>
-                    <td align="center" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
-                      <span style="display:inline-block;font-size:11px;font-weight:800;letter-spacing:0.35em;text-transform:uppercase;color:#64748b;">Digital DNA</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td align="center" style="padding-top:10px;font-family:Georgia,'Times New Roman',serif;">
-                      <span style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:#f8fafc;">REELS</span><span style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:#00f2ea;"> MARKET</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td align="center" style="padding-top:6px;">
-                      <span style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:12px;font-weight:600;color:#94a3b8;">Buy the Motion, Own the Moment</span>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-            <tr>
-              <td align="center" style="padding:24px 32px 8px;">
-                <h1 style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:28px;font-weight:800;line-height:1.25;letter-spacing:-0.03em;color:#f8fafc;">
-                  Welcome aboard
-                </h1>
-                <p style="margin:14px 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:15px;line-height:1.65;color:#cbd5e1;">
-                  Thanks for joining REELS MARKET. Confirm your email address and you&rsquo;re all set to explore motion-first clips and the marketplace.
-                </p>
-              </td>
-            </tr>
-            <tr>
-              <td align="center" style="padding:28px 32px 12px;">
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
-                  <tr>
-                    <td align="center" bgcolor="#00f2ea" style="border-radius:999px;background:linear-gradient(135deg,#00f2ea 0%,#00c9c2 100%);box-shadow:0 8px 28px rgba(0,242,234,0.28);">
-                      <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block;padding:16px 40px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:800;letter-spacing:0.02em;color:#02040a;text-decoration:none;border-radius:999px;">
-                        Verify email address
-                      </a>
-                    </td>
-                  </tr>
-                </table>
-                <p style="margin:18px 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:12px;color:#64748b;">
-                  If the button doesn&rsquo;t work, copy and paste this link into your browser:
-                </p>
-                <p style="margin:8px 0 0;word-break:break-all;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;line-height:1.5;color:#475569;">
-                  {{ .ConfirmationURL }}
-                </p>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:24px 32px 32px;border-top:1px solid rgba(148,163,184,0.12);">
-                <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:11px;line-height:1.6;color:#64748b;text-align:center;">
-                  This message was sent because someone used this address to create a REELS MARKET account.<br />
-                  If that wasn&rsquo;t you, you can safely ignore this email.
-                </p>
-                <p style="margin:16px 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:10px;color:#475569;text-align:center;">
-                  © REELS MARKET · Digital DNA
-                </p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <title>Confirm your email — REELS MARKET</title>
+</head>
+<body style="margin:0;padding:0;background-color:#02040a;font-family:sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#02040a;">
+    <tr>
+      <td align="center" style="padding:40px 10px;">
+        <table role="presentation" width="100%" style="max-width:500px;background-color:#070f1f;border:1px solid #00f2ea;border-radius:12px;">
+          <tr>
+            <td align="center" style="padding:30px 20px 10px;">
+              <div style="font-size:24px;font-weight:bold;color:#f8fafc;letter-spacing:1px;">
+                REELS <span style="color:#00f2ea;">MARKET</span>
+              </div>
+              <div style="font-size:12px;color:#64748b;margin-top:5px;letter-spacing:2px;">Digital DNA</div>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:20px 30px;">
+              <h1 style="font-size:24px;color:#f8fafc;margin:0;">Welcome aboard!</h1>
+              <p style="font-size:15px;line-height:1.6;color:#cbd5e1;margin-top:15px;">
+                Thank you for joining REELS MARKET. <br>Please verify your email to get started.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:20px 30px 40px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td align="center" bgcolor="#00f2ea" style="border-radius:30px;">
+                    <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block;padding:15px 35px;color:#02040a;text-decoration:none;font-weight:bold;font-size:16px;">
+                      Verify Email
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin-top:25px;font-size:11px;color:#475569;word-break:break-all;">
+                If the button doesn't work, copy and paste the link below:<br>
+                <span style="color:#00f2ea;">{{ .ConfirmationURL }}</span>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
 </html>

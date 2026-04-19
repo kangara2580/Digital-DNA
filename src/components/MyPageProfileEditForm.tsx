@@ -4,6 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import {
+  buildInternationalPhone,
+  derivePhoneFieldsForForm,
+  fetchUserProfile,
+  mergeProfileRowWithAuthUser,
   upsertUserProfile,
   type AppProfile,
 } from "@/lib/supabaseProfiles";
@@ -14,10 +18,11 @@ function nz(s: string): string | null {
 }
 
 export function MyPageProfileEditForm({
-  profileRecord,
+  profileForForm,
   onSaved,
 }: {
-  profileRecord: AppProfile | null;
+  /** DB 행 + 로그인 메타 병합 결과 (부모에서 mergeProfileRowWithAuthUser 로 생성) */
+  profileForForm: AppProfile | null;
   onSaved: (p: AppProfile) => void;
 }) {
   const { user, supabaseConfigured } = useAuthSession();
@@ -27,19 +32,30 @@ export function MyPageProfileEditForm({
   const [phone, setPhone] = useState("");
   const [phoneCountryCode, setPhoneCountryCode] = useState("");
   const [country, setCountry] = useState("");
-  const [timezone, setTimezone] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    setNickname(profileRecord?.nickname ?? "");
-    setFirstName(profileRecord?.first_name ?? "");
-    setLastName(profileRecord?.last_name ?? "");
-    setPhone(profileRecord?.phone ?? "");
-    setPhoneCountryCode(profileRecord?.phone_country_code ?? "");
-    setCountry(profileRecord?.country ?? "");
-    setTimezone(profileRecord?.timezone ?? "");
-  }, [profileRecord]);
+    if (!profileForForm) {
+      setNickname("");
+      setFirstName("");
+      setLastName("");
+      setPhone("");
+      setPhoneCountryCode("+82");
+      setCountry("");
+      return;
+    }
+    setNickname(profileForForm.nickname ?? "");
+    setFirstName(profileForForm.first_name ?? "");
+    setLastName(profileForForm.last_name ?? "");
+    const { phoneCountryCode: code, phoneNational } = derivePhoneFieldsForForm(
+      profileForForm,
+      user?.phone,
+    );
+    setPhoneCountryCode(code || "+82");
+    setPhone(phoneNational);
+    setCountry(profileForForm.country ?? "");
+  }, [profileForForm, user?.phone]);
 
   const save = useCallback(async () => {
     setMessage(null);
@@ -54,14 +70,15 @@ export function MyPageProfileEditForm({
     }
     setBusy(true);
     try {
+      const phoneIntl = buildInternationalPhone(phoneCountryCode, phone);
       const patch = {
         nickname: nz(nickname),
         first_name: nz(firstName),
         last_name: nz(lastName),
-        phone: nz(phone),
+        phone: phoneIntl,
         phone_country_code: nz(phoneCountryCode),
         country: nz(country),
-        timezone: nz(timezone),
+        timezone: null,
       };
       const { error: authErr } = await supabase.auth.updateUser({
         data: {
@@ -71,7 +88,7 @@ export function MyPageProfileEditForm({
           phone: patch.phone,
           phone_country_code: patch.phone_country_code,
           country: patch.country,
-          timezone: patch.timezone,
+          timezone: null,
         },
       });
       if (authErr) {
@@ -80,14 +97,24 @@ export function MyPageProfileEditForm({
       }
       const updated = await upsertUserProfile(supabase, user.id, {
         ...patch,
-        email: user.email ?? profileRecord?.email ?? null,
+        email: user.email ?? profileForForm?.email ?? null,
       });
-      if (!updated) {
-        setMessage("profiles 테이블 저장에 실패했습니다. RLS·테이블 생성 여부를 확인해 주세요.");
+      if (updated) {
+        onSaved(updated);
+        setMessage(null);
         return;
       }
-      onSaved(updated);
-      setMessage("저장되었습니다.");
+      /* profiles upsert가 null이어도 위에서 auth.updateUser는 이미 반영됨.
+         새로고침 시 merge는 메타데이터를 쓰므로, 최신 Auth 유저로 병합해 UI만 맞춤 */
+      const { data: authFresh, error: refreshErr } = await supabase.auth.getUser();
+      const freshUser = authFresh.user;
+      if (refreshErr || !freshUser) {
+        setMessage("저장 상태를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
+      const row = await fetchUserProfile(supabase, user.id);
+      onSaved(mergeProfileRowWithAuthUser(row, freshUser));
+      setMessage(null);
     } finally {
       setBusy(false);
     }
@@ -100,15 +127,14 @@ export function MyPageProfileEditForm({
     phone,
     phoneCountryCode,
     country,
-    timezone,
-    profileRecord?.email,
+    profileForForm?.email,
     onSaved,
   ]);
 
   if (!user) {
     return (
       <p className="text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        로그인하면 프로필 정보를 수정하고 Supabase에 저장할 수 있습니다.
+        로그인하면 프로필 정보를 수정할 수 있습니다.
       </p>
     );
   }
@@ -121,9 +147,6 @@ export function MyPageProfileEditForm({
       <h3 className="text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
         프로필 정보 수정
       </h3>
-      <p className="text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        아래 내용은 <strong className="font-semibold">Supabase <code className="text-[11px]">profiles</code></strong> 테이블과 로그인 메타데이터에 함께 반영됩니다.
-      </p>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
           닉네임
@@ -134,12 +157,24 @@ export function MyPageProfileEditForm({
           <input className={`${input} opacity-70`} value={user.email ?? ""} readOnly />
         </label>
         <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          이름 (First)
-          <input className={input} value={firstName} onChange={(e) => setFirstName(e.target.value)} autoComplete="given-name" />
+          First name
+          <input
+            className={input}
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            autoComplete="given-name"
+            placeholder="e.g. Ara"
+          />
         </label>
         <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          성 (Last)
-          <input className={input} value={lastName} onChange={(e) => setLastName(e.target.value)} autoComplete="family-name" />
+          Last name
+          <input
+            className={input}
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            autoComplete="family-name"
+            placeholder="e.g. Kang"
+          />
         </label>
         <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
           전화 국가번호
@@ -150,12 +185,15 @@ export function MyPageProfileEditForm({
           <input className={input} value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
         </label>
         <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          국가
-          <input className={input} value={country} onChange={(e) => setCountry(e.target.value)} autoComplete="country-name" />
-        </label>
-        <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          시간대
-          <input className={input} value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="Asia/Seoul" />
+          국가 (ISO 코드, 예: KR)
+          <input
+            className={input}
+            value={country}
+            onChange={(e) => setCountry(e.target.value.toUpperCase())}
+            placeholder="KR"
+            maxLength={2}
+            autoComplete="country"
+          />
         </label>
       </div>
       {message ? (
