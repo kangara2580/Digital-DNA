@@ -23,7 +23,6 @@ type SignupForm = {
   phone: string;
   phoneCountryCode: string;
   country: string;
-  timezone: string;
   agreeAge: boolean;
   agreeTerms: boolean;
   agreePrivacy: boolean;
@@ -42,7 +41,6 @@ const INITIAL_FORM: SignupForm = {
   phone: "",
   phoneCountryCode: "+82",
   country: "KR",
-  timezone: "Asia/Seoul",
   agreeAge: false,
   agreeTerms: false,
   agreePrivacy: false,
@@ -101,15 +99,6 @@ const COUNTRY_OPTIONS = [
   { code: "NZ", label: "New Zealand" },
   { code: "ID", label: "Indonesia" },
   { code: "SG", label: "Singapore" },
-];
-
-const TIMEZONE_OPTIONS = [
-  { value: "Asia/Seoul", label: "Asia/Seoul (GMT+9)" },
-  { value: "Asia/Tokyo", label: "Asia/Tokyo (GMT+9)" },
-  { value: "Asia/Jakarta", label: "Asia/Jakarta (GMT+7)" },
-  { value: "Asia/Singapore", label: "Asia/Singapore (GMT+8)" },
-  { value: "America/Los_Angeles", label: "America/Los_Angeles (GMT-8/-7)" },
-  { value: "Europe/London", label: "Europe/London (GMT+0/+1)" },
 ];
 
 function SignupLoginLink() {
@@ -178,7 +167,6 @@ export default function SignupPage() {
   const [phoneCodeSentAt, setPhoneCodeSentAt] = useState<number | null>(null);
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [phoneVerifyMessage, setPhoneVerifyMessage] = useState("");
-  const [draftStatus, setDraftStatus] = useState("");
 
   useEffect(() => {
     const saved = readProfileAvatar();
@@ -197,9 +185,8 @@ export default function SignupPage() {
         setForm((prev) => ({ ...prev, ...parsed.form }));
       }
       setPhoneVerified(Boolean(parsed.phoneVerified));
-      setDraftStatus("이전에 저장한 임시 입력값을 불러왔어요.");
     } catch {
-      setDraftStatus("");
+      /* noop */
     }
   }, []);
 
@@ -319,9 +306,8 @@ export default function SignupPage() {
             savedAt: Date.now(),
           }),
         );
-        setDraftStatus("입력 내용이 자동 저장되었습니다.");
       } catch {
-        setDraftStatus("자동 저장에 실패했습니다.");
+        /* noop — 자동 저장 실패는 조용히 무시 */
       }
     }, 250);
     return () => window.clearTimeout(timer);
@@ -477,7 +463,6 @@ export default function SignupPage() {
         phone: `${form.phoneCountryCode}${normalizedPhone}`,
         phoneCountryCode: form.phoneCountryCode,
         country: form.country,
-        timezone: form.timezone,
         social: {
           links: form.socialLinks.map((s) => s.trim()).filter(Boolean),
         },
@@ -533,7 +518,6 @@ export default function SignupPage() {
             phone: `${form.phoneCountryCode}${normalizedPhone}`,
             phone_country_code: form.phoneCountryCode,
             country: form.country,
-            timezone: form.timezone,
             social_links: payload.social.links,
             avatar_kind: av.kind,
             avatar_seed: av.kind === "preset" ? av.seed : null,
@@ -572,7 +556,6 @@ export default function SignupPage() {
         phone: `${form.phoneCountryCode}${normalizedPhone}`,
         phone_country_code: form.phoneCountryCode,
         country: form.country,
-        timezone: form.timezone,
         avatar_kind: av.kind,
         avatar_seed: av.kind === "preset" ? av.seed : null,
         avatar_custom: av.kind === "custom" ? JSON.stringify(av.parts) : null,
@@ -623,14 +606,6 @@ export default function SignupPage() {
           <UserPlus2 className="h-5 w-5 text-fuchsia-300" />
           <h1 className="text-2xl font-extrabold tracking-tight text-white">회원가입</h1>
         </div>
-        <p className="mt-2 text-[13px] text-zinc-400">
-          글로벌 크리에이터 계정을 위한 기본 정보(이름·국가·시간대)를 먼저 설정해 주세요.
-        </p>
-        {draftStatus ? (
-          <p className="mt-2 rounded-lg border border-fuchsia-400/35 bg-fuchsia-500/10 px-3 py-2 text-[12px] font-semibold text-fuchsia-200">
-            {draftStatus}
-          </p>
-        ) : null}
         <Suspense fallback={null}>
           <SignupLoginLink />
         </Suspense>
@@ -660,8 +635,20 @@ export default function SignupPage() {
               </p>
             ) : null}
             <div className="mt-3 space-y-3">
-              <input className={INPUT_CLS} placeholder="First name*" value={form.firstName} onChange={(e) => onChange("firstName", e.target.value)} autoComplete="given-name" />
-              <input className={INPUT_CLS} placeholder="Last name*" value={form.lastName} onChange={(e) => onChange("lastName", e.target.value)} autoComplete="family-name" />
+              <input
+                className={INPUT_CLS}
+                placeholder="First name*"
+                value={form.firstName}
+                onChange={(e) => onChange("firstName", e.target.value)}
+                autoComplete="given-name"
+              />
+              <input
+                className={INPUT_CLS}
+                placeholder="Last name*"
+                value={form.lastName}
+                onChange={(e) => onChange("lastName", e.target.value)}
+                autoComplete="family-name"
+              />
               <div>
                 <div className="flex gap-2">
                   <input
@@ -838,20 +825,21 @@ export default function SignupPage() {
                   </p>
                 ) : null}
               </div>
-              <select className={INPUT_CLS} value={form.country} onChange={(e) => onChange("country", e.target.value)}>
-                {COUNTRY_OPTIONS.map((opt) => (
-                  <option key={opt.code} value={opt.code}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-              <select className={INPUT_CLS} value={form.timezone} onChange={(e) => onChange("timezone", e.target.value)}>
-                {TIMEZONE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+              <label className="block text-[12px] font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
+                국가 / Country
+                <select
+                  className={`${INPUT_CLS} mt-1`}
+                  value={form.country}
+                  onChange={(e) => onChange("country", e.target.value)}
+                  aria-label="국가 선택"
+                >
+                  {COUNTRY_OPTIONS.map((opt) => (
+                    <option key={opt.code} value={opt.code}>
+                      {opt.label} ({opt.code})
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
           </section>
 
