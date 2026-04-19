@@ -215,6 +215,11 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
       } else {
         if (process.env.NODE_ENV === "development") {
           console.warn("[cart] fetch failed — keeping previous items", result.errorMessage);
+          if (/could not find the table|schema cache/i.test(result.errorMessage ?? "")) {
+            console.warn(
+              "[cart] Supabase에 테이블이 없습니다. Dashboard → SQL Editor에서 저장소 `supabase/user_sync.sql` 전체를 붙여 넣고 Run(1회) 하세요. 그 후 새로고침하면 장바구니가 로드됩니다.",
+            );
+          }
         }
         /** 읽기 실패 시 서버 내용을 모름 — 빈 배열 동기화는 아래 이펙트에서 막음 */
         serverCartReadSucceededRef.current = false;
