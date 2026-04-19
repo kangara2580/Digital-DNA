@@ -145,17 +145,9 @@ export function LoginPageClient() {
           </div>
 
           <div>
-            <div className="mb-1.5 flex items-center justify-between gap-2">
-              <label className="block text-[12px] font-bold text-zinc-300">
-                비밀번호 (8자 이상)
-              </label>
-              <Link
-                href="/forgot-password"
-                className="shrink-0 text-[11px] font-semibold text-fuchsia-300/90 hover:text-fuchsia-200 hover:underline"
-              >
-                비밀번호 찾기
-              </Link>
-            </div>
+            <label className="mb-1.5 block text-[12px] font-bold text-zinc-300">
+              비밀번호 (8자 이상)
+            </label>
             <input
               className={INPUT_CLASS}
               type="password"
@@ -167,12 +159,21 @@ export function LoginPageClient() {
             />
           </div>
 
-          <p className="text-center text-[12px] text-zinc-500">
+          <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-[12px] text-zinc-500">
             <Link
               href="/login/find-id"
               className="font-semibold text-fuchsia-300/90 hover:text-fuchsia-200 hover:underline"
             >
               아이디(이메일) 찾기
+            </Link>
+            <span className="text-zinc-600" aria-hidden>
+              |
+            </span>
+            <Link
+              href="/forgot-password"
+              className="font-semibold text-fuchsia-300/90 hover:text-fuchsia-200 hover:underline"
+            >
+              비밀번호 찾기
             </Link>
           </p>
 
