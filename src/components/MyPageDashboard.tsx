@@ -14,13 +14,14 @@ import { fetchUserCustomizeDrafts } from "@/lib/supabaseUserSync";
 import type { ProfileAvatar } from "@/lib/profileAvatarStorage";
 import { resolveProfileAvatar } from "@/lib/profileAvatarStorage";
 import {
-  fetchUserProfile,
-  syncProfileFromAuthUser,
+  loadProfileMergedWithBackfill,
+  mergeProfileRowWithAuthUser,
   upsertUserProfile,
   type AppProfile,
 } from "@/lib/supabaseProfiles";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { MyPageAccountOverview } from "@/components/MyPageAccountOverview";
+import { MyPagePasswordSection } from "@/components/MyPagePasswordSection";
 import { MyPageProfileEditForm } from "@/components/MyPageProfileEditForm";
 
 type MyPageTab = "basic" | "profile" | "drafts" | "analytics" | "listings";
@@ -53,9 +54,15 @@ export function MyPageDashboard() {
   const [draftCount, setDraftCount] = useState(0);
   const [profileRecord, setProfileRecord] = useState<AppProfile | null>(null);
 
+  /** DB에 아직 행이 없거나 비어 있어도, 세션·로그인 메타와 합쳐 폼에 바로 표시 */
+  const profileForForm = useMemo(
+    () => (user ? mergeProfileRowWithAuthUser(profileRecord, user) : null),
+    [profileRecord, user],
+  );
+
   const profileAvatar = useMemo(
-    () => resolveProfileAvatar(user, profileRecord),
-    [user, profileRecord],
+    () => resolveProfileAvatar(user, profileForForm),
+    [user, profileForForm],
   );
 
   const persistProfileAvatar = useCallback(
@@ -125,14 +132,9 @@ export function MyPageDashboard() {
     let cancelled = false;
 
     const loadAndSync = async () => {
-      const existing = await fetchUserProfile(supabase, user.id);
+      const merged = await loadProfileMergedWithBackfill(supabase, user);
       if (cancelled) return;
-      if (existing) {
-        setProfileRecord(existing);
-        return;
-      }
-      const synced = await syncProfileFromAuthUser(supabase, user);
-      if (!cancelled) setProfileRecord(synced);
+      setProfileRecord(merged);
     };
 
     void loadAndSync();
@@ -142,39 +144,28 @@ export function MyPageDashboard() {
     };
   }, [user]);
 
-  const userMeta = useMemo(() => {
-    return (user?.user_metadata ?? {}) as Record<string, unknown>;
-  }, [user]);
-
   const displayId = useMemo(() => {
-    const nickname = String(profileRecord?.nickname ?? userMeta.nickname ?? "").trim();
-    const email = String(profileRecord?.email ?? user?.email ?? "").trim();
+    const nickname = String(profileForForm?.nickname ?? "").trim();
+    const email = String(profileForForm?.email ?? user?.email ?? "").trim();
     if (nickname) return nickname;
     if (email) return email;
     return user?.id ? `id·${user.id.slice(0, 8)}…` : "계정";
-  }, [profileRecord?.email, profileRecord?.nickname, user?.email, user?.id, userMeta.nickname]);
+  }, [profileForForm?.email, profileForForm?.nickname, user?.email, user?.id]);
 
   const accountSummary = useMemo(() => {
-    const firstName = String(profileRecord?.first_name ?? userMeta.first_name ?? "").trim();
-    const lastName = String(profileRecord?.last_name ?? userMeta.last_name ?? "").trim();
-    const phone = String(profileRecord?.phone ?? userMeta.phone ?? "").trim();
-    const country = String(profileRecord?.country ?? userMeta.country ?? "").trim();
-    const timezone = String(profileRecord?.timezone ?? userMeta.timezone ?? "").trim();
-    const name = `${lastName}${firstName}`.trim();
-    const details = [name, phone, country, timezone].filter(Boolean);
+    const firstName = String(profileForForm?.first_name ?? "").trim();
+    const lastName = String(profileForForm?.last_name ?? "").trim();
+    const phone = String(profileForForm?.phone ?? "").trim();
+    const country = String(profileForForm?.country ?? "").trim();
+    const name = [firstName, lastName].filter(Boolean).join(" ").trim();
+    const details = [name, phone, country].filter(Boolean);
     if (details.length > 0) return details.join(" · ");
     return "가입 정보가 없으면 다음 로그인 시 동기화됩니다.";
   }, [
-    profileRecord?.country,
-    profileRecord?.first_name,
-    profileRecord?.last_name,
-    profileRecord?.phone,
-    profileRecord?.timezone,
-    userMeta.country,
-    userMeta.first_name,
-    userMeta.last_name,
-    userMeta.phone,
-    userMeta.timezone,
+    profileForForm?.country,
+    profileForForm?.first_name,
+    profileForForm?.last_name,
+    profileForForm?.phone,
   ]);
 
   const profileLabel = useMemo(() => {
@@ -224,9 +215,11 @@ export function MyPageDashboard() {
               <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">기본정보</h2>
 
               <MyPageProfileEditForm
-                profileRecord={profileRecord}
+                profileForForm={profileForForm}
                 onSaved={setProfileRecord}
               />
+
+              {user ? <MyPagePasswordSection /> : null}
 
               <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
                 <h3 className="text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
@@ -239,7 +232,7 @@ export function MyPageDashboard() {
                       onChange={persistProfileAvatar}
                       hint={
                         user
-                          ? "변경 내용은 Supabase profiles와 로그인 메타데이터에 저장됩니다."
+                          ? "변경 내용은 계정에 저장됩니다."
                           : "로그인 후 프로필 이미지를 계정에 연결할 수 있습니다."
                       }
                     />
@@ -288,9 +281,6 @@ export function MyPageDashboard() {
               <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">
                 내가 등록한 영상
               </h2>
-              <p className="mt-1 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                판매 등록으로 DB에 저장된 나의 릴스입니다. 카드에서 상세·찜·장바구니를 이용할 수 있어요.
-              </p>
               <div className="mt-6">
                 <MyPageMyListingsSection />
               </div>
