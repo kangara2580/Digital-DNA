@@ -25,7 +25,6 @@ import {
 } from "@/lib/supabaseUserSync";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { useVideoStartPoster } from "@/hooks/useVideoStartPoster";
-import { InputSection } from "@/components/InputSection";
 import { VideoBackgroundComposite } from "@/components/VideoBackgroundComposite";
 
 const FONT_PRETENDARD = "var(--font-pretendard)";
@@ -44,6 +43,7 @@ type TextOverlay = {
   leftPct: number;
   opacity: number;
   shadow: number;
+  shadowColor: string;
   strokeWidth: number;
   strokeColor: string;
 };
@@ -139,6 +139,7 @@ const defaultOverlays = (): TextOverlay[] => [
     leftPct: 50,
     opacity: 1,
     shadow: 0.65,
+    shadowColor: "#000000",
     strokeWidth: 0,
     strokeColor: "#000000",
   },
@@ -170,6 +171,21 @@ function normalizeFontFamily(input: unknown): string {
 
 function clampOverlayPosition(v: number, min = 5, max = 95): number {
   return Math.min(max, Math.max(min, v));
+}
+
+function normalizeHexColor(input: unknown, fallback: string): string {
+  if (typeof input !== "string") return fallback;
+  const t = input.trim();
+  if (/^#[0-9A-Fa-f]{6}$/.test(t)) return t;
+  return fallback;
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  const h = normalizeHexColor(hex, "#000000").replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
 }
 
 function parseCustomizeDraftPayload(
@@ -205,6 +221,10 @@ function parseCustomizeDraftPayload(
               typeof (o as Partial<TextOverlay>).shadow === "number"
                 ? Math.max(0, Math.min(1, (o as Partial<TextOverlay>).shadow!))
                 : 0.65,
+            shadowColor: normalizeHexColor(
+              (o as Partial<TextOverlay>).shadowColor,
+              "#000000",
+            ),
             strokeWidth:
               typeof (o as Partial<TextOverlay>).strokeWidth === "number"
                 ? Math.max(0, Math.min(6, (o as Partial<TextOverlay>).strokeWidth!))
@@ -446,9 +466,6 @@ function previewToneFromPrompt(prompt: string): string {
   return "linear-gradient(140deg, rgba(255,255,255,0.12), rgba(0,0,0,0.14))";
 }
 
-const quickBuyButtonClass =
-  "inline-flex shrink-0 items-center justify-center rounded-full border border-reels-crimson/45 bg-reels-crimson/15 px-4 py-2.5 text-[12px] font-extrabold text-reels-crimson shadow-[0_0_20px_-8px_rgba(255,0,85,0.4)] transition hover:bg-reels-crimson/25 md:self-auto";
-
 export function PurchaseCustomizeStudio({
   video,
   heroTitle,
@@ -490,13 +507,24 @@ export function PurchaseCustomizeStudio({
   const [textPreviewEnabled, setTextPreviewEnabled] = useState(false);
   const [activeDragOverlayId, setActiveDragOverlayId] = useState<string | null>(null);
   const [facePreviewApplying, setFacePreviewApplying] = useState(false);
-  const [backgroundPreviewApplying, setBackgroundPreviewApplying] = useState(false);
   const [facePreviewError, setFacePreviewError] = useState<string | null>(null);
+  const [backgroundPreviewApplying, setBackgroundPreviewApplying] = useState(false);
   const [backgroundPreviewError, setBackgroundPreviewError] = useState<string | null>(null);
   const [backgroundPreviewInfo, setBackgroundPreviewInfo] = useState<string | null>(null);
   const [selectedFaceSourceUrl, setSelectedFaceSourceUrl] = useState<string | null>(
     null,
   );
+  const [angleGenerating, setAngleGenerating] = useState(false);
+  const [angleError, setAngleError] = useState<string | null>(null);
+  const [angleImages, setAngleImages] = useState<string[]>([]);
+  const [fuseGenerating, setFuseGenerating] = useState(false);
+  const [fuseError, setFuseError] = useState<string | null>(null);
+  const [fusedFrameUrl, setFusedFrameUrl] = useState<string | null>(null);
+  const [klingGenerating, setKlingGenerating] = useState(false);
+  const [klingTaskId, setKlingTaskId] = useState<string | null>(null);
+  const [klingStatus, setKlingStatus] = useState<string | null>(null);
+  const [klingVideoUrl, setKlingVideoUrl] = useState<string | null>(null);
+  const [klingError, setKlingError] = useState<string | null>(null);
   /** 비구독 사용자용 AI 미리보기 무료 체험 남은 횟수 */
   const [localFacePreviewRemaining, setLocalFacePreviewRemaining] = useState(
     FREE_LOCAL_FACE_PREVIEW_TRIES,
@@ -513,7 +541,6 @@ export function PurchaseCustomizeStudio({
     error?: string;
   } | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const bgPromptRef = useRef<HTMLTextAreaElement>(null);
   const lastAutoAppliedKeywordRef = useRef<string>("");
   const prevBackgroundModeRef = useRef<"video" | "image" | null>(null);
 
@@ -649,6 +676,34 @@ export function PurchaseCustomizeStudio({
   );
   const preloadCacheRef = useRef<Set<string>>(new Set());
   const incomingCommitRef = useRef<number | null>(null);
+
+  const ensureDataImageUrl = useCallback(async (src: string): Promise<string> => {
+    if (src.startsWith("data:image/")) return src;
+    const response = await fetch(src);
+    if (!response.ok) throw new Error("얼굴 이미지를 불러오지 못했습니다.");
+    const blob = await response.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") resolve(reader.result);
+        else reject(new Error("이미지 인코딩에 실패했습니다."));
+      };
+      reader.onerror = () => reject(new Error("이미지 인코딩 중 오류가 발생했습니다."));
+      reader.readAsDataURL(blob);
+    });
+  }, []);
+
+  const resolveFaceImageForAdvanced = useCallback((): string | null => {
+    if (fusedFrameUrl) return fusedFrameUrl;
+    return (selectedFace?.src ?? selectedFaceSourceUrl)?.trim() || null;
+  }, [fusedFrameUrl, selectedFace, selectedFaceSourceUrl]);
+
+  const resolveBackgroundImageForFusion = useCallback((): string | null => {
+    if (previewBgDisplayImageUrl) return previewBgDisplayImageUrl;
+    if (previewBgImageUrl) return previewBgImageUrl;
+    const fallbackPoster = startFramePoster ?? sanitizePosterSrc(video.poster);
+    return fallbackPoster || null;
+  }, [previewBgDisplayImageUrl, previewBgImageUrl, startFramePoster, video.poster]);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -936,11 +991,13 @@ export function PurchaseCustomizeStudio({
     video.src,
   ]);
 
-  /** 배경 미리보기만 — 이미지: Flux만, 동영상: 스톡 검색만 (얼굴 스왑 없음) */
-  const applyBackgroundPreview = useCallback(async (liveKeyword?: string) => {
+  const applyBackgroundPreview = useCallback(async () => {
     if (!draft) return;
-    const keyword = (liveKeyword ?? draft.backgroundPrompt).trim();
-
+    const keyword = draft.backgroundPrompt.trim();
+    if (!keyword) {
+      setBackgroundPreviewError("배경 프롬프트를 입력해 주세요.");
+      return;
+    }
     if (aiPreviewQuotaActive && getLocalFacePreviewRemaining() <= 0) {
       setBackgroundPreviewError(
         "무료 체험 1회를 모두 사용했습니다. AI 얼굴/배경은 구독 후 이용할 수 있어요.",
@@ -954,11 +1011,6 @@ export function PurchaseCustomizeStudio({
     setPreviewTransitionLoading(true);
     try {
       if (backgroundMode === "image") {
-        if (!keyword) {
-          setBackgroundPreviewError("배경 프롬프트를 입력해 주세요.");
-          setPreviewTransitionLoading(false);
-          return;
-        }
         const res = await fetch("/api/background-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -971,20 +1023,11 @@ export function PurchaseCustomizeStudio({
           error?: string;
           message?: string;
         };
-        if (!res.ok) {
+        if (!res.ok || !data.backgroundOutputUrl) {
           throw new Error(data.message ?? data.error ?? "background_failed");
         }
         if (data.backgroundWarning) {
           setBackgroundPreviewInfo(data.backgroundWarning);
-        }
-        if (!data.backgroundOutputUrl) {
-          setBackgroundPreviewError(
-            data.backgroundWarning
-              ? "현재 생성 요청이 많아 배경 이미지를 만들지 못했습니다. 잠시 후 다시 시도해 주세요."
-              : userFacingAiErrorMessage(data.message ?? "배경 이미지를 생성하지 못했습니다."),
-          );
-          setPreviewTransitionLoading(false);
-          return;
         }
         setPreviewBgPrompt(keyword);
         setPreviewCandidates([]);
@@ -996,71 +1039,55 @@ export function PurchaseCustomizeStudio({
         setIncomingVisible(false);
         setPreviewTransitionLoading(false);
         setPreviewBgVersion((v) => v + 1);
-        if (aiPreviewQuotaActive) {
-          setLocalFacePreviewRemaining(consumeLocalFacePreviewSuccess());
-        }
-        trackBehavior({
-          type: "background_preview_applied",
-          keyword,
-          mode: "image",
+      } else {
+        const subjectVideoUrl = previewBgVideoUrl ?? video.src;
+        const res = await fetch("/api/preview/video-background-composite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            subjectVideoUrl,
+            backgroundKeyword: keyword,
+            seed: 0,
+          }),
         });
-        return;
+        const data = (await res.json()) as {
+          foregroundVideoUrl?: string;
+          backgroundVideoUrl?: string;
+          backgroundCandidates?: string[];
+          error?: string;
+          message?: string;
+        };
+        if (!res.ok || !data.foregroundVideoUrl || !data.backgroundVideoUrl) {
+          throw new Error(data.message ?? data.error ?? "video_background_composite_failed");
+        }
+        const urls = (data.backgroundCandidates ?? []).filter(Boolean);
+        setPreviewBgPrompt(keyword);
+        setPreviewCandidates(urls.length > 0 ? urls : [data.backgroundVideoUrl]);
+        setPreviewCandidateIndex(0);
+        setPreviewBgImageUrl(null);
+        setPreviewBgVideoUrl(null);
+        setPreviewCompositeFgUrl(data.foregroundVideoUrl);
+        setPreviewCompositeBgUrl(data.backgroundVideoUrl);
+        setIncomingPreviewUrl(null);
+        setIncomingVisible(false);
+        setPreviewBgVersion((v) => v + 1);
+        urls.forEach((url) => preloadVideoUrl(url));
+        preloadVideoUrl(data.foregroundVideoUrl);
+        preloadVideoUrl(data.backgroundVideoUrl);
       }
 
-      /* 동영상 배경: 스톡 검색 + 영상 매팅으로 인물 뒤에 배경 합성 */
-      if (!keyword) {
-        setBackgroundPreviewError("배경 프롬프트를 입력해 주세요.");
-        setPreviewTransitionLoading(false);
-        return;
-      }
-      const subjectVideoUrl = previewBgVideoUrl ?? video.src;
-      const res = await fetch("/api/preview/video-background-composite", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          subjectVideoUrl,
-          backgroundKeyword: keyword,
-          seed: 0,
-        }),
-      });
-      const data = (await res.json()) as {
-        ok?: boolean;
-        foregroundVideoUrl?: string;
-        backgroundVideoUrl?: string;
-        backgroundCandidates?: string[];
-        error?: string;
-        message?: string;
-      };
-      if (!res.ok || !data.foregroundVideoUrl || !data.backgroundVideoUrl) {
-        throw new Error(data.message ?? data.error ?? "video_background_composite_failed");
-      }
-      const urls = (data.backgroundCandidates ?? []).filter(Boolean);
-      setPreviewBgPrompt(keyword);
-      setPreviewCandidates(urls.length ? urls : [data.backgroundVideoUrl]);
-      setPreviewCandidateIndex(0);
-      setPreviewBgImageUrl(null);
-      setPreviewBgVideoUrl(null);
-      setPreviewCompositeFgUrl(data.foregroundVideoUrl);
-      setPreviewCompositeBgUrl(data.backgroundVideoUrl);
-      setIncomingPreviewUrl(null);
-      setIncomingVisible(false);
-      setPreviewBgVersion((v) => v + 1);
-      urls.forEach((u) => preloadVideoUrl(u));
-      preloadVideoUrl(data.foregroundVideoUrl);
-      preloadVideoUrl(data.backgroundVideoUrl);
       if (aiPreviewQuotaActive) {
         setLocalFacePreviewRemaining(consumeLocalFacePreviewSuccess());
       }
       trackBehavior({
         type: "background_preview_applied",
         keyword,
-        mode: "video",
+        mode: backgroundMode,
       });
-    } catch (e) {
-      setPreviewTransitionLoading(false);
-      const raw =
-        e instanceof Error ? e.message : "배경 미리보기에 실패했습니다.";
+    } catch (error) {
+      const raw = error instanceof Error ? error.message : "배경 미리보기에 실패했습니다.";
       setBackgroundPreviewError(userFacingAiErrorMessage(raw));
+      setPreviewTransitionLoading(false);
     } finally {
       setBackgroundPreviewApplying(false);
     }
@@ -1074,34 +1101,21 @@ export function PurchaseCustomizeStudio({
     video.src,
   ]);
 
-  // 키워드 입력 중 미리 후보를 받아와 백그라운드 preload
-  useEffect(() => {
-    if (!draft || !useAdvancedStep) return;
-    const kw = draft.backgroundPrompt.trim();
-    if (kw.length < 2) return;
-    const id = window.setTimeout(async () => {
-      try {
-        const res = await fetch(
-          `/api/videos?q=${encodeURIComponent(kw)}&mode=${encodeURIComponent(backgroundMode)}&seed=0&limit=80&prefetch=1`,
-          { cache: "no-store" },
-        );
-        if (!res.ok) return;
-        const data = (await res.json()) as {
-          items?: Array<{ videoUrl?: string; imageUrl?: string }>;
-        };
-        const urls = (data.items ?? [])
-          .map((x) => (backgroundMode === "image" ? x.imageUrl : x.videoUrl))
-          .filter((x): x is string => Boolean(x))
-          .slice(0, 3);
-        urls.forEach(preloadVideoUrl);
-      } catch {
-        /* ignore prefetch errors */
-      }
-    }, 220);
-    return () => window.clearTimeout(id);
-  }, [backgroundMode, draft, draft?.backgroundPrompt, useAdvancedStep, preloadVideoUrl]);
-
-  // 자동 적용은 끄고, 버튼 클릭으로만 적용합니다.
+  const clearBackgroundPreview = useCallback(() => {
+    setPreviewBgPrompt(null);
+    setPreviewBgVideoUrl(null);
+    setPreviewBgImageUrl(null);
+    setPreviewCompositeFgUrl(null);
+    setPreviewCompositeBgUrl(null);
+    setIncomingPreviewUrl(null);
+    setIncomingVisible(false);
+    setPreviewTransitionLoading(false);
+    setPreviewCandidates([]);
+    setPreviewCandidateIndex(0);
+    setPreviewBgVersion((v) => v + 1);
+    setBackgroundPreviewError(null);
+    setBackgroundPreviewInfo(null);
+  }, []);
 
   const showPrevBackground = useCallback(() => {
     if (previewCandidates.length <= 1) return;
@@ -1193,6 +1207,184 @@ export function PurchaseCustomizeStudio({
     };
   }, [pollJobId]);
 
+  useEffect(() => {
+    if (!klingTaskId) return;
+    let stopped = false;
+    const poll = async () => {
+      try {
+        const response = await fetch(`/api/kling/task/${encodeURIComponent(klingTaskId)}`, {
+          cache: "no-store",
+        });
+        const payload = (await response.json()) as {
+          code?: number;
+          message?: string;
+          data?: {
+            task_status?: string | number;
+            task_result?: { videos?: Array<{ url?: string }> };
+          };
+        };
+        if (stopped) return;
+        const rawStatus = payload?.data?.task_status;
+        const statusStr = typeof rawStatus === "number" ? String(rawStatus) : (rawStatus ?? "unknown");
+        setKlingStatus(statusStr);
+        if (payload.code !== undefined && payload.code !== 0) {
+          setKlingError(payload.message ?? "Kling 작업 조회에 실패했습니다.");
+          setKlingGenerating(false);
+          setKlingTaskId(null);
+          return;
+        }
+
+        if (rawStatus === 99 || rawStatus === "succeed" || rawStatus === "succeeded") {
+          const out = payload?.data?.task_result?.videos?.[0]?.url ?? null;
+          setKlingVideoUrl(out);
+          setKlingGenerating(false);
+          setKlingTaskId(null);
+          return;
+        }
+        if (rawStatus === 100 || rawStatus === "failed") {
+          setKlingError(payload.message ?? "Kling 생성이 실패했습니다.");
+          setKlingGenerating(false);
+          setKlingTaskId(null);
+          return;
+        }
+      } catch {
+        if (!stopped) {
+          setKlingError("Kling 상태 확인 중 네트워크 오류가 발생했습니다.");
+          setKlingGenerating(false);
+          setKlingTaskId(null);
+        }
+        return;
+      }
+      if (!stopped) {
+        window.setTimeout(poll, 4500);
+      }
+    };
+    void poll();
+    return () => {
+      stopped = true;
+    };
+  }, [klingTaskId]);
+
+  const generateAnglesFromFace = useCallback(async () => {
+    const face = resolveFaceImageForAdvanced();
+    if (!face) {
+      setAngleError("얼굴 이미지를 먼저 선택해 주세요.");
+      return;
+    }
+    setAngleError(null);
+    setAngleGenerating(true);
+    try {
+      const imageUrl = await ensureDataImageUrl(face);
+      const res = await fetch("/api/generate-angles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl }),
+      });
+      const data = (await res.json()) as {
+        success?: boolean;
+        resultAngles?: string[];
+        error?: string;
+        message?: string;
+      };
+      if (!res.ok || !data.success || !Array.isArray(data.resultAngles) || data.resultAngles.length === 0) {
+        throw new Error(data.message ?? data.error ?? "angles_generation_failed");
+      }
+      setAngleImages(data.resultAngles.slice(0, 3));
+    } catch (error) {
+      setAngleError(userFacingAiErrorMessage(error instanceof Error ? error.message : "angles_generation_failed"));
+    } finally {
+      setAngleGenerating(false);
+    }
+  }, [ensureDataImageUrl, resolveFaceImageForAdvanced]);
+
+  const fuseDnaFrame = useCallback(async () => {
+    const face = resolveFaceImageForAdvanced();
+    const backgroundUrl = resolveBackgroundImageForFusion();
+    if (!face) {
+      setFuseError("얼굴 이미지를 먼저 선택해 주세요.");
+      return;
+    }
+    if (!backgroundUrl) {
+      setFuseError("배경 이미지를 찾지 못했습니다. 배경 미리보기를 먼저 적용해 주세요.");
+      return;
+    }
+    setFuseError(null);
+    setFuseGenerating(true);
+    try {
+      const res = await fetch("/api/fuse-dna", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          avatarUrl: face,
+          backgroundUrl,
+          orientation: video.orientation ?? "portrait",
+          backgroundPrompt: draft?.backgroundPrompt ?? "",
+          outfitPrompt: "",
+        }),
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        fusionOutputUrl?: string;
+        error?: string;
+        message?: string;
+      };
+      if (!res.ok || !data.ok || !data.fusionOutputUrl) {
+        throw new Error(data.message ?? data.error ?? "dna_fusion_failed");
+      }
+      setFusedFrameUrl(data.fusionOutputUrl);
+      setSelectedFaceSourceUrl(data.fusionOutputUrl);
+    } catch (error) {
+      setFuseError(userFacingAiErrorMessage(error instanceof Error ? error.message : "dna_fusion_failed"));
+    } finally {
+      setFuseGenerating(false);
+    }
+  }, [draft?.backgroundPrompt, resolveBackgroundImageForFusion, resolveFaceImageForAdvanced, video.orientation]);
+
+  const generateKlingMotionDirect = useCallback(async () => {
+    const imageUrl = resolveFaceImageForAdvanced();
+    const videoUrl = previewBgVideoUrl ?? video.src;
+    if (!imageUrl || !videoUrl) {
+      setKlingError("Kling 생성을 위한 얼굴/모션 소스를 찾지 못했습니다.");
+      return;
+    }
+    setKlingError(null);
+    setKlingVideoUrl(null);
+    setKlingGenerating(true);
+    setKlingStatus("queued");
+    try {
+      const promptText =
+        draft?.backgroundPrompt?.trim() ||
+        "cinematic dance motion, one person only, keep identity and body proportions natural";
+      const res = await fetch("/api/kling/motion-control", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageUrl,
+          videoUrl,
+          prompt: `${promptText}, one person only, solo dancer`,
+          characterOrientation: "image",
+        }),
+      });
+      const data = (await res.json()) as {
+        code?: number;
+        data?: { task_id?: string };
+        message?: string;
+        error?: string;
+      };
+      if (!res.ok || (data.code !== undefined && data.code !== 0)) {
+        throw new Error(data.message ?? data.error ?? "kling_generation_failed");
+      }
+      const taskId = data?.data?.task_id;
+      if (!taskId) {
+        throw new Error("kling_task_id_missing");
+      }
+      setKlingTaskId(taskId);
+    } catch (error) {
+      setKlingError(userFacingAiErrorMessage(error instanceof Error ? error.message : "kling_generation_failed"));
+      setKlingGenerating(false);
+    }
+  }, [draft?.backgroundPrompt, previewBgVideoUrl, resolveFaceImageForAdvanced, video.src]);
+
   const addOverlay = useCallback(() => {
     setDraft((prev) => {
       if (!prev) return prev;
@@ -1211,6 +1403,7 @@ export function PurchaseCustomizeStudio({
             leftPct: 50,
             opacity: 1,
             shadow: 0.65,
+            shadowColor: "#000000",
             strokeWidth: 0,
             strokeColor: "#000000",
           },
@@ -1287,17 +1480,7 @@ export function PurchaseCustomizeStudio({
             <h1 className="text-[clamp(1.35rem,4vw,1.875rem)] font-extrabold leading-tight tracking-tight text-zinc-100 sm:text-3xl">
               {heroTitle}
             </h1>
-            <p className="mt-2 max-w-xl text-[12px] leading-relaxed text-zinc-500 sm:text-[13px]">
-              커스텀 편집으로 얼굴·배경을 만져 본 뒤, 생성만 이어가려면 오른쪽 <span className="font-semibold text-zinc-400">바로구매</span>를 누르세요.
-            </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setUseAdvancedStep(false)}
-            className={`${quickBuyButtonClass} w-full max-w-xs self-stretch md:w-auto md:max-w-none md:flex-none md:self-start`}
-          >
-            바로구매
-          </button>
         </header>
       ) : null}
 
@@ -1327,20 +1510,35 @@ export function PurchaseCustomizeStudio({
         )}
       </div>
       {!heroTitle ? (
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-6">
-          <p className="min-w-0 max-w-xl flex-1 text-[12px] leading-relaxed text-zinc-500 sm:text-[13px]">
-            먼저 커스텀 편집으로 얼굴·배경을 만져 보세요. 바로 생성만 이어가려면 오른쪽{" "}
-            <span className="font-semibold text-zinc-400">바로구매</span>를 누르면 됩니다.
-          </p>
-          <button
-            type="button"
-            onClick={() => setUseAdvancedStep(false)}
-            className={`${quickBuyButtonClass} w-full max-w-xs self-stretch md:w-auto md:max-w-none md:flex-none md:self-auto`}
-          >
-            바로구매
-          </button>
+        <div className="text-[12px] leading-relaxed text-zinc-500 sm:text-[13px]">
+          동업자 코드 기반 AI 생성 기능을 메인 탭으로 두었습니다.
         </div>
       ) : null}
+
+      <div className="inline-flex items-center gap-1 rounded-full border border-white/12 bg-white/[0.04] p-1">
+        <button
+          type="button"
+          onClick={() => setUseAdvancedStep(true)}
+          className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${
+            useAdvancedStep
+              ? "bg-reels-cyan/20 text-reels-cyan"
+              : "text-zinc-500 hover:text-zinc-300"
+          }`}
+        >
+          AI 생성 기능
+        </button>
+        <button
+          type="button"
+          onClick={() => setUseAdvancedStep(false)}
+          className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${
+            !useAdvancedStep
+              ? "bg-reels-cyan/20 text-reels-cyan"
+              : "text-zinc-500 hover:text-zinc-300"
+          }`}
+        >
+          바로구매
+        </button>
+      </div>
 
       <div className="grid gap-10 lg:grid-cols-[minmax(0,340px)_1fr] lg:gap-12">
         <div className="min-w-0 lg:sticky lg:top-[calc(var(--header-height,220px)+0.75rem)] lg:self-start">
@@ -1454,7 +1652,7 @@ export function PurchaseCustomizeStudio({
                 ? draft.overlays.map((o) => (
                     <div
                       key={o.id}
-                      className="pointer-events-none absolute z-[10] max-w-[88%] text-center font-extrabold leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
+                      className="pointer-events-none absolute z-[10] max-w-[88%] text-center font-extrabold leading-tight"
                       style={{
                         top: `${o.topPct}%`,
                         left: `${o.leftPct ?? 50}%`,
@@ -1467,7 +1665,10 @@ export function PurchaseCustomizeStudio({
                           (o.strokeWidth ?? 0) > 0
                             ? `${o.strokeWidth}px ${o.strokeColor ?? "#000000"}`
                             : undefined,
-                        textShadow: `0 2px 8px rgba(0,0,0,${0.85 * (o.shadow ?? 0.65)})`,
+                        textShadow: `0 2px 8px ${hexToRgba(
+                          o.shadowColor ?? "#000000",
+                          0.85 * (o.shadow ?? 0.65),
+                        )}`,
                       }}
                     >
                       {o.text}
@@ -1569,8 +1770,7 @@ export function PurchaseCustomizeStudio({
               })}
             </div>
             <p className="mt-3 text-[11px] leading-relaxed text-zinc-500">
-              얼굴만 고르면 영상이 바로 바뀌지 않습니다. 「선택 얼굴로 미리보기」는 얼굴 스왑만 실행합니다. 배경은 아래 「배경 AI 프롬프트」에서
-              별도로 미리 적용할 수 있습니다.
+              얼굴만 고르면 영상이 바로 바뀌지 않습니다. 「선택 얼굴로 미리보기」는 얼굴 스왑만 실행합니다.
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <button
@@ -1599,103 +1799,139 @@ export function PurchaseCustomizeStudio({
           {useAdvancedStep ? (
             <>
               <section className="reels-glass-card rounded-xl p-4 sm:p-5">
-            <h2 className="text-[13px] font-extrabold text-zinc-100">배경 AI 프롬프트</h2>
-            <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-white/12 bg-white/[0.04] p-1">
-              <button
-                type="button"
-                onClick={() => updateDraft({ backgroundMode: "image" })}
-                className={`rounded-full px-3 py-1 text-[11px] font-semibold transition ${
-                  backgroundMode === "image"
-                    ? "bg-reels-cyan/20 text-reels-cyan"
-                    : "text-zinc-500 hover:text-zinc-300"
-                }`}
-              >
-                이미지 배경
-              </button>
-              <button
-                type="button"
-                onClick={() => updateDraft({ backgroundMode: "video" })}
-                className={`rounded-full px-3 py-1 text-[11px] font-semibold transition ${
-                  backgroundMode === "video"
-                    ? "bg-reels-cyan/20 text-reels-cyan"
-                    : "text-zinc-500 hover:text-zinc-300"
-                }`}
-              >
-                동영상 배경
-              </button>
-            </div>
-            <p className="mt-1 text-[12px] text-zinc-500">
-              원하는 장소·분위기를 짧고 명확하게 적어 주세요. (예: “저녁 네온 골목, 비, 시네마틱”)
-            </p>
-            <InputSection
-              ref={bgPromptRef}
-              value={draft.backgroundPrompt}
-              onChange={(value) => updateDraft({ backgroundPrompt: value })}
-              rows={3}
-              placeholder="예: 골목"
-            />
-            <p className="mt-2 text-[11px] text-zinc-600">
-              Tip: 장면 요소는 2~4개로 간단하게 쓰면 인물과 배경이 더 잘 어울립니다.
-            </p>
-            {backgroundMode === "video" ? (
-              <p className="mt-2 text-[11px] leading-relaxed text-zinc-500">
-                동영상 배경은 왼쪽에 재생 중인 클립에서 사람을 분리한 뒤, 검색된 배경 영상을 뒤에 깔아 미리보기합니다. AI 처리에 시간이 걸릴 수
-                있습니다.
-              </p>
-            ) : null}
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => void applyBackgroundPreview(bgPromptRef.current?.value)}
-                disabled={
-                  backgroundPreviewApplying ||
-                  (aiPreviewQuotaActive && localFacePreviewRemaining <= 0)
-                }
-                className="rounded-lg border border-reels-cyan/35 bg-reels-cyan/10 px-3 py-1.5 text-[11px] font-semibold text-reels-cyan hover:bg-reels-cyan/18 disabled:opacity-50"
-              >
-                {backgroundPreviewApplying
-                  ? "AI 적용 중..."
-                  : aiPreviewQuotaActive && localFacePreviewRemaining <= 0
-                    ? "무료 1회 소진 (구독 필요)"
-                    : "미리 적용하기"}
-              </button>
-              {bgPreviewOn ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPreviewBgPrompt(null);
-                    setPreviewBgVideoUrl(null);
-                    setPreviewBgImageUrl(null);
-                    setPreviewCompositeFgUrl(null);
-                    setPreviewCompositeBgUrl(null);
-                    setIncomingPreviewUrl(null);
-                    setIncomingVisible(false);
-                    setPreviewTransitionLoading(false);
-                    setPreviewCandidates([]);
-                    setPreviewCandidateIndex(0);
-                    setPreviewBgVersion((v) => v + 1);
-                    setBackgroundPreviewError(null);
-                    setBackgroundPreviewInfo(null);
-                  }}
-                  className="rounded-lg border border-white/15 px-3 py-1.5 text-[11px] font-medium text-zinc-400 hover:border-white/25 hover:text-zinc-200"
-                >
-                  미리보기 해제
-                </button>
-              ) : null}
-              <p className="text-[11px] text-zinc-500">
-                마음에 들지 않으면 해제하고 그대로 사용하셔도 됩니다.
-              </p>
-            </div>
-            {backgroundPreviewError ? (
-              <p className="mt-3 text-[11px] font-medium leading-relaxed text-reels-crimson">
-                {backgroundPreviewError}
-              </p>
-            ) : null}
-            {backgroundPreviewInfo ? (
-              <p className="mt-2 text-[11px] font-medium leading-relaxed text-amber-200/95">
-                {backgroundPreviewInfo}
-              </p>
-            ) : null}
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="text-[13px] font-extrabold text-zinc-100">배경 프롬프트</h2>
+                  <div className="inline-flex items-center gap-1 rounded-full border border-white/12 bg-white/[0.04] p-1">
+                    <button
+                      type="button"
+                      onClick={() => updateDraft({ backgroundMode: "image" })}
+                      className={`rounded-full px-2.5 py-1 text-[10px] font-semibold transition ${
+                        backgroundMode === "image"
+                          ? "bg-reels-cyan/20 text-reels-cyan"
+                          : "text-zinc-500 hover:text-zinc-300"
+                      }`}
+                    >
+                      이미지
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateDraft({ backgroundMode: "video" })}
+                      className={`rounded-full px-2.5 py-1 text-[10px] font-semibold transition ${
+                        backgroundMode === "video"
+                          ? "bg-reels-cyan/20 text-reels-cyan"
+                          : "text-zinc-500 hover:text-zinc-300"
+                      }`}
+                    >
+                      영상
+                    </button>
+                  </div>
+                </div>
+                <textarea
+                  value={draft.backgroundPrompt}
+                  onChange={(e) => updateDraft({ backgroundPrompt: e.target.value })}
+                  rows={2}
+                  placeholder="예: 비오는 네온 골목"
+                  className="mt-2 w-full resize-none rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-[12px] text-zinc-100 placeholder:text-zinc-600 focus:border-reels-cyan/50 focus:outline-none focus:ring-1 focus:ring-reels-cyan/35"
+                />
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void applyBackgroundPreview()}
+                    disabled={
+                      backgroundPreviewApplying ||
+                      (aiPreviewQuotaActive && localFacePreviewRemaining <= 0)
+                    }
+                    className="rounded-lg border border-reels-cyan/35 bg-reels-cyan/10 px-3 py-1.5 text-[11px] font-semibold text-reels-cyan hover:bg-reels-cyan/18 disabled:opacity-50"
+                  >
+                    {backgroundPreviewApplying ? "적용 중…" : "배경 적용"}
+                  </button>
+                  {bgPreviewOn ? (
+                    <button
+                      type="button"
+                      onClick={clearBackgroundPreview}
+                      className="rounded-lg border border-white/15 px-3 py-1.5 text-[11px] font-medium text-zinc-400 hover:border-white/25 hover:text-zinc-200"
+                    >
+                      해제
+                    </button>
+                  ) : null}
+                </div>
+                {backgroundPreviewError ? (
+                  <p className="mt-2 text-[11px] text-reels-crimson">{backgroundPreviewError}</p>
+                ) : null}
+                {backgroundPreviewInfo ? (
+                  <p className="mt-2 text-[11px] text-amber-200/95">{backgroundPreviewInfo}</p>
+                ) : null}
+              </section>
+
+              <section className="reels-glass-card rounded-xl p-4 sm:p-5">
+                <h2 className="text-[13px] font-extrabold text-zinc-100">AI 생성 기능</h2>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void generateAnglesFromFace()}
+                    disabled={angleGenerating || !resolveFaceImageForAdvanced()}
+                    className="rounded-lg border border-white/15 px-3 py-1.5 text-[11px] font-semibold text-zinc-200 hover:border-reels-cyan/35 hover:text-reels-cyan disabled:opacity-50"
+                  >
+                    {angleGenerating ? "3면도 생성 중…" : "3면도 생성"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void fuseDnaFrame()}
+                    disabled={fuseGenerating || !resolveFaceImageForAdvanced()}
+                    className="rounded-lg border border-white/15 px-3 py-1.5 text-[11px] font-semibold text-zinc-200 hover:border-reels-cyan/35 hover:text-reels-cyan disabled:opacity-50"
+                  >
+                    {fuseGenerating ? "DNA 융합 중…" : "DNA 프레임 융합"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void generateKlingMotionDirect()}
+                    disabled={klingGenerating || !resolveFaceImageForAdvanced()}
+                    className="rounded-lg border border-reels-cyan/30 bg-reels-cyan/10 px-3 py-1.5 text-[11px] font-semibold text-reels-cyan hover:bg-reels-cyan/18 disabled:opacity-50"
+                  >
+                    {klingGenerating ? "Kling 생성 중…" : "Kling 직접 생성"}
+                  </button>
+                </div>
+                {angleError ? <p className="mt-2 text-[11px] text-reels-crimson">{angleError}</p> : null}
+                {fuseError ? <p className="mt-2 text-[11px] text-reels-crimson">{fuseError}</p> : null}
+                {klingError ? <p className="mt-2 text-[11px] text-reels-crimson">{klingError}</p> : null}
+                {klingTaskId ? (
+                  <p className="mt-2 text-[11px] text-zinc-400">
+                    Kling 작업 진행 중 · task `{klingTaskId}` · 상태 {klingStatus ?? "queued"}
+                  </p>
+                ) : null}
+                {angleImages.length > 0 ? (
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    {angleImages.map((img, index) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        key={`angle-${index}-${img.slice(0, 24)}`}
+                        src={img}
+                        alt=""
+                        className="aspect-[4/5] w-full rounded-lg border border-white/10 object-cover"
+                      />
+                    ))}
+                  </div>
+                ) : null}
+                {fusedFrameUrl ? (
+                  <div className="mt-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={fusedFrameUrl}
+                      alt=""
+                      className="mx-auto aspect-[9/16] w-full max-w-[180px] rounded-lg border border-reels-cyan/35 object-cover"
+                    />
+                  </div>
+                ) : null}
+                {klingVideoUrl ? (
+                  <div className="mt-3">
+                    <video
+                      src={klingVideoUrl}
+                      controls
+                      playsInline
+                      className="w-full rounded-lg border border-white/10 bg-black"
+                    />
+                  </div>
+                ) : null}
               </section>
 
               <section className="reels-glass-card rounded-xl p-4 sm:p-5">
@@ -1835,6 +2071,15 @@ export function PurchaseCustomizeStudio({
                         className="min-w-[100px] flex-1 accent-reels-cyan"
                       />
                     </label>
+                    <label className="flex items-center gap-2 text-[11px] text-zinc-500">
+                      그림자 색
+                      <input
+                        type="color"
+                        value={normalizeHexColor(o.shadowColor, "#000000")}
+                        onChange={(e) => patchOverlay(o.id, { shadowColor: e.target.value })}
+                        className="h-8 w-10 cursor-pointer rounded border border-white/15 bg-transparent"
+                      />
+                    </label>
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-3">
                     <label className="flex items-center gap-2 text-[11px] text-zinc-500">
@@ -1948,14 +2193,7 @@ export function PurchaseCustomizeStudio({
             </ul>
               </section>
             </>
-          ) : (
-            <div className="reels-glass-card rounded-xl p-4 sm:p-5">
-              <p className="text-[13px] font-extrabold text-zinc-100">커스텀 편집</p>
-              <p className="mt-1 text-[12px] leading-relaxed text-zinc-500">
-                AI로 얼굴·배경을 바꾸고, 원하는 톤으로 다듬을 수 있어요. 생성만 빠르게 하려면 상단의 바로구매를 쓰면 됩니다.
-              </p>
-            </div>
-          )}
+          ) : null}
 
           <div className="flex flex-wrap items-center gap-3">
             <button
@@ -1980,12 +2218,12 @@ export function PurchaseCustomizeStudio({
               onClick={submitServerGeneration}
               className="rounded-full border border-reels-crimson/40 bg-reels-crimson/15 px-5 py-3 text-[13px] font-extrabold text-reels-crimson hover:bg-reels-crimson/25 disabled:opacity-50"
             >
-              {submitRemote ? "요청 중…" : "서버 생성 요청"}
+              {submitRemote ? "처리 중…" : "바로구매"}
             </button>
             <span className="text-[12px] font-semibold text-zinc-500">
               {useAdvancedStep
-                ? "커스텀 편집 후 서버 생성 요청을 누르세요."
-                : "바로구매 모드입니다. 바로 서버 생성 요청을 누르세요."}
+                ? "AI 생성 기능 결과를 확인한 뒤 필요하면 바로구매를 누르세요."
+                : "바로구매 탭입니다. 설정을 마친 뒤 바로구매를 누르세요."}
             </span>
           </div>
           {!remoteJob ? (
