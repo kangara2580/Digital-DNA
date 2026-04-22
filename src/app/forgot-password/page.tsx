@@ -56,6 +56,11 @@ export default function ForgotPasswordPage() {
     setBusy(true);
     try {
       let lastError = "";
+      const configuredSupabaseOrigin = normalizeBaseUrl(
+        process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+      );
+      const currentOrigin =
+        typeof window !== "undefined" ? normalizeBaseUrl(window.location.origin) : "";
       // 1) 가장 안전한 기본 경로: redirectTo 없이 발송 (Supabase Site URL 사용)
       const { error: defaultErr } = await supabase.auth.resetPasswordForEmail(trimmed);
       if (!defaultErr) {
@@ -84,7 +89,7 @@ export default function ForgotPasswordPage() {
 
       if (/invalid path specified/i.test(lastError)) {
         setError(
-          "재설정 링크 URL 설정이 맞지 않습니다. Supabase Site URL/Redirect URLs 저장값을 다시 확인해 주세요.",
+          `재설정 링크 URL 설정이 맞지 않습니다. Supabase Site URL/Redirect URLs 저장값을 다시 확인해 주세요. (앱 Supabase URL: ${configuredSupabaseOrigin || "비어있음"}, 현재 도메인: ${currentOrigin || "확인불가"})`,
         );
         return;
       }
