@@ -55,40 +55,40 @@ export default function ForgotPasswordPage() {
     }
     setBusy(true);
     try {
-      const candidates = buildResetRedirectCandidates();
       let lastError = "";
-      let sent = false;
-      for (const redirectTo of candidates) {
-        const { error: rpErr } = await supabase.auth.resetPasswordForEmail(trimmed, {
-          redirectTo,
-        });
-        if (!rpErr) {
-          sent = true;
-          break;
-        }
-        lastError = rpErr.message || "";
-        // Supabase Redirect URL 허용 목록과 일치하지 않으면 다음 후보 URL로 재시도
-        if (!/invalid path specified/i.test(lastError)) {
-          break;
-        }
-      }
-      if (!sent) {
-        // 마지막 폴백: redirectTo 없이 발송 (Supabase Site URL 기본값 사용)
-        const { error: fallbackErr } = await supabase.auth.resetPasswordForEmail(trimmed);
-        if (!fallbackErr) {
-          setDone(true);
-          return;
-        }
-        lastError = fallbackErr.message || lastError;
-
-        if (/invalid path specified/i.test(lastError)) {
-          setError("재설정 링크 URL 설정이 맞지 않습니다. 잠시 후 다시 시도해 주세요.");
-          return;
-        }
-        setError(lastError || "메일 발송에 실패했습니다.");
+      // 1) 가장 안전한 기본 경로: redirectTo 없이 발송 (Supabase Site URL 사용)
+      const { error: defaultErr } = await supabase.auth.resetPasswordForEmail(trimmed);
+      if (!defaultErr) {
+        setDone(true);
         return;
       }
-      setDone(true);
+      lastError = defaultErr.message || "";
+
+      // 2) URL 매칭 오류일 때만 후보 redirectTo 재시도
+      if (/invalid path specified/i.test(lastError)) {
+        const candidates = buildResetRedirectCandidates();
+        for (const redirectTo of candidates) {
+          const { error: rpErr } = await supabase.auth.resetPasswordForEmail(trimmed, {
+            redirectTo,
+          });
+          if (!rpErr) {
+            setDone(true);
+            return;
+          }
+          lastError = rpErr.message || lastError;
+          if (!/invalid path specified/i.test(lastError)) {
+            break;
+          }
+        }
+      }
+
+      if (/invalid path specified/i.test(lastError)) {
+        setError(
+          "재설정 링크 URL 설정이 맞지 않습니다. Supabase Site URL/Redirect URLs 저장값을 다시 확인해 주세요.",
+        );
+        return;
+      }
+      setError(lastError || "메일 발송에 실패했습니다.");
     } catch {
       setError("요청 처리 중 오류가 발생했습니다.");
     } finally {
