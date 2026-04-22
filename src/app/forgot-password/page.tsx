@@ -7,6 +7,33 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 const INPUT =
   "w-full rounded-xl border border-white/20 bg-black/30 px-3.5 py-3 text-sm text-zinc-100 outline-none backdrop-blur-sm transition placeholder:text-zinc-500 focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-500/30";
 
+function normalizeBaseUrl(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    const u = new URL(withProtocol);
+    return u.origin;
+  } catch {
+    return "";
+  }
+}
+
+function buildResetRedirectCandidates(): string[] {
+  const out: string[] = [];
+  const fromWindow =
+    typeof window !== "undefined" ? normalizeBaseUrl(window.location.origin) : "";
+  const fromEnv = normalizeBaseUrl(process.env.NEXT_PUBLIC_SITE_URL ?? "");
+  const push = (base: string) => {
+    if (!base) return;
+    const redirect = `${base}/reset-password`;
+    if (!out.includes(redirect)) out.push(redirect);
+  };
+  push(fromWindow);
+  push(fromEnv);
+  return out;
+}
+
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
@@ -28,13 +55,29 @@ export default function ForgotPasswordPage() {
     }
     setBusy(true);
     try {
-      const origin =
-        typeof window !== "undefined" ? window.location.origin : "";
-      const { error: rpErr } = await supabase.auth.resetPasswordForEmail(trimmed, {
-        redirectTo: `${origin}/reset-password`,
-      });
-      if (rpErr) {
-        setError(rpErr.message || "메일 발송에 실패했습니다.");
+      const candidates = buildResetRedirectCandidates();
+      let lastError = "";
+      let sent = false;
+      for (const redirectTo of candidates) {
+        const { error: rpErr } = await supabase.auth.resetPasswordForEmail(trimmed, {
+          redirectTo,
+        });
+        if (!rpErr) {
+          sent = true;
+          break;
+        }
+        lastError = rpErr.message || "";
+        // Supabase Redirect URL 허용 목록과 일치하지 않으면 다음 후보 URL로 재시도
+        if (!/invalid path specified/i.test(lastError)) {
+          break;
+        }
+      }
+      if (!sent) {
+        if (/invalid path specified/i.test(lastError)) {
+          setError("재설정 링크 URL 설정이 맞지 않습니다. 잠시 후 다시 시도해 주세요.");
+          return;
+        }
+        setError(lastError || "메일 발송에 실패했습니다.");
         return;
       }
       setDone(true);
