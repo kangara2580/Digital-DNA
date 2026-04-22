@@ -1,19 +1,19 @@
 "use client";
 
 import { Link2, Plus, Trash2 } from "lucide-react";
-import { parseSocialReelsUrl } from "@/lib/socialReelsUrl";
+import { SellerSocialPlatformIcon } from "@/components/SellerSocialPlatformIcon";
+import {
+  getSellerSocialPlatformFromInput,
+  type SellerSocialPlatform,
+} from "@/lib/sellerSocialLinks";
 
 const INPUT_CLS =
   "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none transition focus:border-reels-cyan/45 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
 
 const MAX_LINKS = 20;
 
-function platformLabel(url: string): string | null {
-  const t = url.trim();
-  if (!t) return null;
-  const p = parseSocialReelsUrl(t);
-  if (!p) return null;
-  switch (p.platform) {
+function platformLabel(platform: SellerSocialPlatform): string {
+  switch (platform) {
     case "tiktok":
       return "TikTok";
     case "instagram":
@@ -65,7 +65,8 @@ export function SocialLinkFields({
   return (
     <div className="space-y-3">
       {links.map((url, i) => {
-        const label = platformLabel(url);
+        const platform = getSellerSocialPlatformFromInput(url);
+        const label = platform ? platformLabel(platform) : null;
         return (
           <div
             key={i}
@@ -76,8 +77,12 @@ export function SocialLinkFields({
                 <p className="inline-flex flex-wrap items-center gap-1.5 text-[13px] font-semibold">
                   <Link2 className="h-4 w-4 shrink-0" />
                   링크 {i + 1}
-                  {label ? (
-                    <span className="rounded-full border border-reels-cyan/35 bg-reels-cyan/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-reels-cyan">
+                  {label && platform ? (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-reels-cyan/35 bg-reels-cyan/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-reels-cyan">
+                      <SellerSocialPlatformIcon
+                        platform={platform}
+                        className="h-3 w-3 shrink-0"
+                      />
                       {label}
                     </span>
                   ) : null}

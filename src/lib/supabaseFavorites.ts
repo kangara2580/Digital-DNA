@@ -24,13 +24,21 @@ export async function fetchUserFavorites(
   supabase: SupabaseClient,
   userId: string,
 ): Promise<FetchFavoritesResult> {
+  return fetchUserFavoritesByKind(supabase, userId, "wishlist");
+}
+
+export async function fetchUserFavoritesByKind(
+  supabase: SupabaseClient,
+  userId: string,
+  kind: FavoriteKind,
+): Promise<FetchFavoritesResult> {
   const table = getFavoritesTableName();
   try {
     const { data, error } = await supabase
       .from(table)
       .select("id,user_id,video_id,kind,created_at")
       .eq("user_id", userId)
-      .eq("kind", "wishlist")
+      .eq("kind", kind)
       .order("created_at", { ascending: false });
 
     if (error) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { AtSign, Camera, Heart, Link as LinkIcon, Music2, Play } from "lucide-react";
+import { AtSign, Bookmark, Camera, Heart, Link as LinkIcon, Music2, Play } from "lucide-react";
 import Link from "next/link";
 import {
   useCallback,
@@ -25,6 +25,8 @@ import { getExternalIframeForCard } from "@/lib/externalEmbed/playerUrls";
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { CartIcon } from "@/components/CartIcon";
 import type { SellerSocialLink } from "@/lib/sellerSocialLinks";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { useAuthSession } from "@/hooks/useAuthSession";
 
 type Props = {
   video: FeedVideo;
@@ -151,11 +153,12 @@ export function VideoCard({
   preloadMode = "metadata",
 }: Props) {
   const dopamine = useDopamineBasketOptional();
+  const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const wishlist = useWishlist();
   const reduceMotion = useReducedMotion() ?? false;
   const externalIframe = useMemo(
     () => getExternalIframeForCard(video),
-    [video.tiktokEmbedId, video.youtubeVideoId, video.instagramShortcode],
+    [video],
   );
   const commerce = getCommerceMeta(video.id);
   const remaining = clonesRemaining(commerce);
@@ -163,7 +166,10 @@ export function VideoCard({
   const showMicro = false;
   const showAiBadge = video.isAiGenerated === true;
   const cartBtnRef = useRef<HTMLButtonElement>(null);
-  const liked = wishlist.isSaved(video.id);
+  const wishlisted = wishlist.isSaved(video.id);
+  const [likedByMe, setLikedByMe] = useState(false);
+  const [likeBusy, setLikeBusy] = useState(false);
+  const [likePulse, setLikePulse] = useState(false);
   const reelAspectPortrait =
     reelLayout && reelStrip ? "aspect-[3/4] w-full" : "aspect-[9/16] w-full";
   const reelAspectLandscape =
@@ -250,6 +256,80 @@ export function VideoCard({
       window.removeEventListener("seller-social-links-updated", handler as EventListener);
     };
   }, [video.listing?.sellerId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLikedByMe(false);
+    void (async () => {
+      try {
+        const supabase = getSupabaseBrowserClient();
+        const session = supabase ? await supabase.auth.getSession() : null;
+        const token = session?.data.session?.access_token;
+        const headers = token
+          ? { Authorization: `Bearer ${token}` }
+          : undefined;
+        const res = await fetch(
+          `/api/video/likes?videoId=${encodeURIComponent(video.id)}`,
+          { cache: "no-store", headers },
+        );
+        if (!res.ok || cancelled) return;
+        const body = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          likedByMe?: boolean;
+        };
+        if (!body.ok || cancelled) return;
+        setLikedByMe(Boolean(body.likedByMe));
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [video.id, user?.id]);
+
+  const toggleInternalLike = useCallback(async () => {
+    if (likeBusy || authLoading) return;
+    if (!supabaseConfigured || !user) {
+      if (typeof window !== "undefined") {
+        window.alert("좋아요 기능은 로그인 후 이용할 수 있어요.");
+      }
+      return;
+    }
+    const nextLiked = !likedByMe;
+    const prevLiked = likedByMe;
+    setLikedByMe(nextLiked);
+    setLikePulse(true);
+    window.setTimeout(() => setLikePulse(false), 170);
+    setLikeBusy(true);
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const session = supabase ? await supabase.auth.getSession() : null;
+      const token = session?.data.session?.access_token;
+      if (!token) throw new Error("no_token");
+      const res = await fetch("/api/video/likes", {
+        method: nextLiked ? "POST" : "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ videoId: video.id }),
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        likedByMe?: boolean;
+      };
+      if (!res.ok || !body.ok) throw new Error("toggle_failed");
+      setLikedByMe(Boolean(body.likedByMe));
+    } catch {
+      setLikedByMe(prevLiked);
+      if (typeof window !== "undefined") {
+        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
+      }
+    } finally {
+      setLikeBusy(false);
+    }
+  }, [likeBusy, authLoading, supabaseConfigured, user, likedByMe, video.id]);
 
   const segmentPreviewEffective = segmentPreview && !externalIframe;
   const isLocal = canLoadPreviewVideo && isLocalPublicVideo(previewSrc);
@@ -566,8 +646,42 @@ export function VideoCard({
                       ? "h-11 w-11 sm:h-12 sm:w-12"
                       : "h-10 w-10"
               }`}
-              aria-label={liked ? "찜 해제" : "찜하기"}
-              aria-pressed={liked}
+              aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+              aria-pressed={likedByMe}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                void toggleInternalLike();
+              }}
+              disabled={likeBusy}
+            >
+              <Heart
+                className={`shrink-0 drop-shadow-md transition-all duration-200 ${
+                  dense
+                    ? "h-6 w-6"
+                    : reelStrip
+                      ? "h-7 w-7 sm:h-8 sm:w-8"
+                      : reelLayout
+                        ? "h-9 w-9 sm:h-10 sm:w-10"
+                        : "h-8 w-8"
+                } ${likedByMe ? "fill-current text-reels-crimson" : "text-white"} ${
+                  likePulse ? "scale-110" : "scale-100"
+                }`}
+              />
+            </button>
+            <button
+              type="button"
+              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 ${
+                dense
+                  ? "h-8 w-8"
+                  : reelStrip
+                    ? "h-9 w-9 sm:h-10 sm:w-10"
+                    : reelLayout
+                      ? "h-11 w-11 sm:h-12 sm:w-12"
+                      : "h-10 w-10"
+              }`}
+              aria-label={wishlisted ? "찜 해제" : "찜하기"}
+              aria-pressed={wishlisted}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -585,12 +699,12 @@ export function VideoCard({
                         : "h-8 w-8"
                 }`}
               >
-                {/* 찜 클릭 시에만 아래→위 채움 — fill만 써서 바깥 stroke와 동일 실루엣 */}
+                {/* 찜(북마크) 클릭 시에만 아래→위 채움 */}
                 <motion.span
                   className="absolute inset-0 overflow-hidden"
                   initial={false}
                   animate={{
-                    clipPath: liked
+                    clipPath: wishlisted
                       ? "inset(0% 0% 0% 0%)"
                       : "inset(0% 0% 100% 0%)",
                   }}
@@ -599,7 +713,7 @@ export function VideoCard({
                     ease: [0.22, 0.99, 0.36, 1],
                   }}
                 >
-                  <Heart
+                  <Bookmark
                     className="block h-full w-full"
                     fill="white"
                     stroke="none"
@@ -607,7 +721,7 @@ export function VideoCard({
                     aria-hidden
                   />
                 </motion.span>
-                <Heart
+                <Bookmark
                   className="pointer-events-none absolute inset-0 z-[1] block h-full w-full drop-shadow-md"
                   fill="none"
                   stroke="white"

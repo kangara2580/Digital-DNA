@@ -253,38 +253,55 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
             isComfortable ? "p-3 sm:p-4" : "p-2.5 sm:p-3"
           } ${customizerDisabled ? "opacity-50" : ""}`}
         >
-          <div className={isComfortable ? "flex min-h-[36px] items-center gap-2" : "flex min-h-[30px] items-center gap-2"}>
-            <p
-              className={
-                isComfortable
-                  ? "shrink-0 text-[12px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
-                  : "shrink-0 text-[11px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
-              }
-            >
-              캐릭터 꾸미기
-            </p>
-            <div className="flex min-w-0 flex-1 justify-center px-0.5">
-              <GenderHeaderToggle
-                density={density}
-                disabled={customizerDisabled}
-                value={parts.gender}
-                onChange={(gender) => applyCustom({ ...parts, gender })}
-              />
+          {isComfortable ? (
+            <div className="flex flex-col gap-2.5">
+              <div className="flex min-h-[36px] items-center justify-between gap-2">
+                <p className="shrink-0 text-[12px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                  캐릭터 꾸미기
+                </p>
+                <button
+                  type="button"
+                  disabled={customizerDisabled}
+                  onClick={randomize}
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full border border-reels-cyan/35 bg-reels-cyan/12 px-2.5 py-1 text-[11px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Dices className="h-3.5 w-3.5" aria-hidden />
+                  랜덤
+                </button>
+              </div>
+              <div className="flex justify-center sm:justify-start">
+                <GenderHeaderToggle
+                  density={density}
+                  disabled={customizerDisabled}
+                  value={parts.gender}
+                  onChange={(gender) => applyCustom({ ...parts, gender })}
+                />
+              </div>
             </div>
-            <button
-              type="button"
-              disabled={customizerDisabled}
-              onClick={randomize}
-              className={
-                isComfortable
-                  ? "inline-flex shrink-0 items-center gap-1 rounded-full border border-reels-cyan/35 bg-reels-cyan/12 px-2.5 py-1 text-[11px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
-                  : "inline-flex shrink-0 items-center gap-1 rounded-full border border-reels-cyan/35 bg-reels-cyan/12 px-2 py-0.5 text-[10px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
-              }
-            >
-              <Dices className={isComfortable ? "h-3.5 w-3.5" : "h-3 w-3"} aria-hidden />
-              랜덤
-            </button>
-          </div>
+          ) : (
+            <div className="flex min-h-[30px] items-center gap-2">
+              <p className="shrink-0 text-[11px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                캐릭터 꾸미기
+              </p>
+              <div className="flex min-w-0 flex-1 justify-center px-0.5">
+                <GenderHeaderToggle
+                  density={density}
+                  disabled={customizerDisabled}
+                  value={parts.gender}
+                  onChange={(gender) => applyCustom({ ...parts, gender })}
+                />
+              </div>
+              <button
+                type="button"
+                disabled={customizerDisabled}
+                onClick={randomize}
+                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-reels-cyan/35 bg-reels-cyan/12 px-2 py-0.5 text-[10px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Dices className="h-3 w-3" aria-hidden />
+                랜덤
+              </button>
+            </div>
+          )}
 
           {customizerDisabled ? (
             <p className={`mt-2 leading-snug text-zinc-500 ${isComfortable ? "text-[11px]" : "text-[10px]"}`}>
@@ -367,7 +384,7 @@ function CycleRow<T extends string>({
     <div
       className={
         isComfortable
-          ? "flex min-w-0 items-center gap-1 rounded-lg border border-white/10 bg-black/25 px-1.5 py-1 sm:gap-1.5 sm:px-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
+          ? "flex min-w-0 items-center gap-1.5 rounded-lg border border-white/10 bg-black/25 px-2 py-1.5 sm:px-2.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
           : "flex min-w-0 items-center gap-0.5 rounded-lg border border-white/10 bg-black/25 px-1 py-0.5 sm:gap-1 sm:px-1.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
       }
     >
@@ -385,20 +402,25 @@ function CycleRow<T extends string>({
           className={isComfortable ? "h-3.5 w-3.5 sm:h-4 sm:w-4" : "h-3 w-3 sm:h-3.5 sm:w-3.5"}
         />
       </button>
-      <div className="min-w-0 flex-1 text-center">
-        <p
-          className={
-            isComfortable
-              ? "truncate text-[10px] font-bold leading-tight text-zinc-200 [html[data-theme='light']_&]:text-zinc-900 sm:text-[11px]"
-              : "truncate text-[9px] font-bold leading-tight text-zinc-200 [html[data-theme='light']_&]:text-zinc-900 sm:text-[10px]"
-          }
-        >
-          {label}{" "}
-          <span className="font-semibold tabular-nums text-zinc-500">
+      {isComfortable ? (
+        <div className="min-w-[4.75rem] flex-1 text-center">
+          <p className="truncate text-[11px] font-extrabold leading-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+            {label}
+          </p>
+          <p className="mt-0.5 text-[10px] font-semibold tabular-nums leading-tight text-zinc-500">
             {idx + 1}/{list.length}
-          </span>
-        </p>
-      </div>
+          </p>
+        </div>
+      ) : (
+        <div className="min-w-0 flex-1 text-center">
+          <p className="truncate text-[9px] font-bold leading-tight text-zinc-200 [html[data-theme='light']_&]:text-zinc-900 sm:text-[10px]">
+            {label}{" "}
+            <span className="font-semibold tabular-nums text-zinc-500">
+              {idx + 1}/{list.length}
+            </span>
+          </p>
+        </div>
+      )}
       <button
         type="button"
         onClick={() => onChange(cycleInList(list, current, 1))}

@@ -13,7 +13,6 @@ const selectShell =
   "w-full rounded-lg border border-white/12 bg-black/30 px-2.5 py-2 text-[12px] font-semibold text-zinc-200 outline-none transition focus:border-reels-cyan/40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900";
 
 const LS_LANG = "reels-footer-lang";
-const LS_CUR = "reels-footer-currency";
 
 function XIcon({ className }: { className?: string }) {
   return (
@@ -66,14 +65,11 @@ function TikTokIcon({ className }: { className?: string }) {
 export function ReelsMarketFooter() {
   const baseId = useId();
   const [lang, setLang] = useState("ko");
-  const [currency, setCurrency] = useState("KRW");
 
   useEffect(() => {
     try {
       const l = window.localStorage.getItem(LS_LANG);
-      const c = window.localStorage.getItem(LS_CUR);
       if (l === "ko" || l === "en") setLang(l);
-      if (c === "KRW" || c === "USD") setCurrency(c);
     } catch {
       /* noop */
     }
@@ -83,15 +79,6 @@ export function ReelsMarketFooter() {
     setLang(v);
     try {
       window.localStorage.setItem(LS_LANG, v);
-    } catch {
-      /* noop */
-    }
-  }, []);
-
-  const persistCurrency = useCallback((v: string) => {
-    setCurrency(v);
-    try {
-      window.localStorage.setItem(LS_CUR, v);
     } catch {
       /* noop */
     }
@@ -206,24 +193,6 @@ export function ReelsMarketFooter() {
                   >
                     <option value="ko">한국어</option>
                     <option value="en">English</option>
-                  </select>
-                </label>
-                <label className="flex flex-col gap-1">
-                  <span
-                    className="text-[11px] font-extrabold tabular-nums tracking-[0.12em] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500"
-                    aria-hidden="true"
-                  >
-                    ₩ · $
-                  </span>
-                  <select
-                    name="currency"
-                    className={selectShell}
-                    value={currency}
-                    onChange={(e) => persistCurrency(e.target.value)}
-                    aria-label="표시 통화 (KRW / USD)"
-                  >
-                    <option value="KRW">KRW (₩)</option>
-                    <option value="USD">USD ($)</option>
                   </select>
                 </label>
                 <div>

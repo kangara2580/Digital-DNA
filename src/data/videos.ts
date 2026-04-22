@@ -444,6 +444,16 @@ function enforceLocalUserSamples(list: FeedVideo[]) {
   });
 }
 
+/**
+ * 현재 데모 소스(`public/videos/sample*.mp4`)가 전부 세로 기준일 때
+ * 카테고리 필터 결과와 실제 재생 화면이 어긋나지 않도록 방향 메타를 통일.
+ */
+function enforcePortraitOrientationForLocalDemo(list: FeedVideo[]) {
+  list.forEach((video) => {
+    video.orientation = "portrait";
+  });
+}
+
 /** `public/videos` 로컬 샘플 — 인기순위 Top 10 (`@/constants/videos` MOCK_VIDEOS와 1:1) */
 export const LOCAL_TRENDING_FEED_VIDEOS: FeedVideo[] = MOCK_VIDEOS.map(
   (m, i) => ({
@@ -558,6 +568,8 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
 // 인기순위 외 모든 카드도 사용자 로컬 샘플로 강제 통일.
 enforceLocalUserSamples(SAMPLE_VIDEOS);
 enforceLocalUserSamples(FAILURE_OOPS_CLIPS);
+enforcePortraitOrientationForLocalDemo(SAMPLE_VIDEOS);
+enforcePortraitOrientationForLocalDemo(FAILURE_OOPS_CLIPS);
 
 // 안전망: 외부 직링크가 남아 있어도 로컬 샘플 MP4로 치환.
 normalizeBlockedVideoSources(SAMPLE_VIDEOS);

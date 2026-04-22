@@ -8,7 +8,7 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 export default function CartPage() {
-  const { loading: authLoading } = useAuthSession();
+  const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const {
     builderItems,
     cartSyncReady,
@@ -18,6 +18,7 @@ export default function CartPage() {
   } = useDopamineBasket();
   /** 로그인·서버 장바구니 로드 전에는 builderItems가 잠깐 []라 빈 화면이 깜빡이지 않게 함 */
   const cartUiReady = !authLoading && cartSyncReady;
+  const showLoginGate = supabaseConfigured && !authLoading && !user;
   const { hasPurchased, markPurchased } = usePurchasedVideos();
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
 
@@ -77,7 +78,7 @@ export default function CartPage() {
   }, [builderItems, selected, hasPurchased, markPurchased]);
 
   return (
-    <main className="mx-auto min-h-[50vh] max-w-2xl px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12">
+    <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12 lg:px-8">
       <header className="flex flex-col gap-3 border-b border-white/10 pb-6 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
@@ -136,7 +137,19 @@ export default function CartPage() {
         ) : null}
       </header>
 
-      {!cartUiReady ? (
+      {showLoginGate ? (
+        <div className="mx-auto mt-14 max-w-md text-center sm:max-w-lg">
+          <p className="text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            로그인하면 장바구니를 사용할 수 있어요.
+          </p>
+          <Link
+            href={`/login?redirect=${encodeURIComponent("/cart")}`}
+            className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
+          >
+            로그인
+          </Link>
+        </div>
+      ) : !cartUiReady ? (
         <div className="mx-auto mt-14 max-w-md space-y-4 sm:max-w-lg" aria-busy="true" aria-live="polite">
           <div className="mx-auto h-4 w-40 animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
           <div className="space-y-3">

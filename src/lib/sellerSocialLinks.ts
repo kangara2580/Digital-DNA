@@ -10,7 +10,7 @@ export type SellerSocialLink = {
   url: string;
 };
 
-function normalizeUrl(input: string): string | null {
+export function normalizeSellerSocialUrl(input: string): string | null {
   const raw = input.trim();
   if (!raw) return null;
   try {
@@ -24,7 +24,7 @@ function normalizeUrl(input: string): string | null {
   }
 }
 
-function detectPlatform(url: string): SellerSocialPlatform {
+export function detectSellerSocialPlatform(url: string): SellerSocialPlatform {
   try {
     const u = new URL(url);
     const host = u.hostname.toLowerCase();
@@ -38,13 +38,21 @@ function detectPlatform(url: string): SellerSocialPlatform {
   }
 }
 
+export function getSellerSocialPlatformFromInput(
+  input: string,
+): SellerSocialPlatform | null {
+  const normalized = normalizeSellerSocialUrl(input);
+  if (!normalized) return null;
+  return detectSellerSocialPlatform(normalized);
+}
+
 export function normalizeSellerSocialLinksInput(rawLinks: string[]): SellerSocialLink[] {
   const out: SellerSocialLink[] = [];
   const seen = new Set<string>();
   for (const raw of rawLinks) {
-    const url = normalizeUrl(raw);
+    const url = normalizeSellerSocialUrl(raw);
     if (!url) continue;
-    const platform = detectPlatform(url);
+    const platform = detectSellerSocialPlatform(url);
     const key = `${platform}::${url}`;
     if (seen.has(key)) continue;
     seen.add(key);

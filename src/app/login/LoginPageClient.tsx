@@ -98,9 +98,9 @@ export function LoginPageClient() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#07080f] px-4 py-12 text-zinc-100 sm:px-6">
+    <main className="relative min-h-screen overflow-hidden bg-[#07080f] px-4 py-6 text-zinc-100 sm:px-6 sm:py-8">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(236,72,153,0.18),transparent_40%),radial-gradient(circle_at_80%_90%,rgba(59,130,246,0.16),transparent_45%),linear-gradient(180deg,#05060b_0%,#080913_100%)]" />
-      <div className="relative mx-auto mt-10 w-full max-w-md rounded-2xl border border-white/15 bg-white/[0.04] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:mt-16 sm:p-8">
+      <div className="relative mx-auto mt-1 w-full max-w-md rounded-2xl border border-white/15 bg-white/[0.04] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:mt-4 sm:p-8">
         <p className="text-xs uppercase tracking-[0.35em] text-zinc-400">
           Reels Market
         </p>
@@ -201,20 +201,14 @@ export function LoginPageClient() {
           nextPath={searchParams.get("redirect")}
           label="Google로 로그인"
         />
-        <p className="mt-3 text-center text-[11px] leading-relaxed text-zinc-500">
-          처음이면 Google 계정으로 가입됩니다. Supabase에서 Google 제공자를 활성화해야 합니다.
-        </p>
-
-        <p className="mt-4 text-center text-xs text-zinc-500">
-          아직 계정이 없다면{" "}
-          <Link href="/signup" className="font-semibold text-fuchsia-300 hover:underline">
+        <div className="mt-5">
+          <Link
+            href="/signup"
+            className="inline-flex w-full items-center justify-center rounded-full border border-fuchsia-400/45 bg-fuchsia-500/20 px-5 py-3.5 text-[15px] font-extrabold text-fuchsia-100 shadow-[0_10px_28px_rgba(192,38,211,0.32)] transition hover:bg-fuchsia-500/30 hover:brightness-110"
+          >
             회원가입
           </Link>
-          을 진행해 주세요.
-        </p>
-        <p className="mt-2 text-center text-xs text-zinc-500">
-          처음 방문이라면 Supabase Dashboard에서 이메일 회원가입을 먼저 허용해 주세요.
-        </p>
+        </div>
       </div>
     </main>
   );

@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
+  Bookmark,
   Compass,
   Heart,
   History,
@@ -20,7 +21,6 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 import { ReelsLogo } from "@/components/ReelsLogo";
-import { SellerNotificationBell } from "@/components/SellerNotificationBell";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { MALL_CATEGORY_NAV_ITEMS } from "@/data/mallCategoryNav";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -58,9 +58,15 @@ const RAIL_ITEMS: RailItem[] = [
     isActive: (p) => p === "/explore" || p.startsWith("/explore/"),
   },
   {
-    href: "/wishlist",
-    label: "Wishlist (찜한 목록)",
+    href: "/likes",
+    label: "좋아요한 릴스",
     Icon: Heart,
+    isActive: (p) => p.startsWith("/likes"),
+  },
+  {
+    href: "/wishlist",
+    label: "찜한 목록",
+    Icon: Bookmark,
     isActive: (p) => p.startsWith("/wishlist"),
   },
   {
@@ -189,7 +195,6 @@ export function ReelsLeftRail() {
           </div>
 
           <div className="flex shrink-0 flex-col items-center border-t border-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 px-0 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-            <SellerNotificationBell compact />
             <button
               type="button"
               onClick={() => setOpen(true)}

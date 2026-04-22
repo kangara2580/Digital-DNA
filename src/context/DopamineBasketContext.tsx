@@ -21,10 +21,6 @@ import {
   fetchUserCartVideos,
   replaceUserCart,
 } from "@/lib/supabaseUserSync";
-import {
-  readGuestCartVideos,
-  writeGuestCartVideos,
-} from "@/lib/guestListStorage";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { waitForSupabaseAccessToken } from "@/lib/waitSupabaseSessionReady";
 
@@ -107,6 +103,10 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
     (buttonEl: HTMLElement, video: FeedVideo, poster?: string) => {
       if (typeof window === "undefined") return;
       const isGuest = !supabaseConfigured || !userId;
+      if (isGuest) {
+        window.alert("장바구니는 로그인 후 이용할 수 있어요.");
+        return;
+      }
       if (!isGuest && !cartSyncReady) {
         window.alert("장바구니를 불러오는 중입니다. 잠시 후 다시 눌러 주세요.");
         return;
@@ -161,10 +161,8 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
       serverCartReadSucceededRef.current = false;
       cartInitialFetchDoneRef.current = true;
       setCartSyncReady(true);
-      const guestVideos = readGuestCartVideos();
-      const guestItems = videosToBuilderItems(guestVideos);
-      lastGoodCartRef.current = guestItems;
-      setBuilderItems(guestItems);
+      lastGoodCartRef.current = [];
+      setBuilderItems([]);
       setHydrated(true);
       return;
     }
@@ -260,13 +258,6 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
     }, 420);
     return () => window.clearTimeout(handle);
   }, [builderItems, hydrated, authLoading, supabaseConfigured, userId]);
-
-  useEffect(() => {
-    if (authLoading) return;
-    if (supabaseConfigured && userId) return;
-    if (!hydrated) return;
-    writeGuestCartVideos(builderItems.map((b) => b.video));
-  }, [builderItems, authLoading, supabaseConfigured, userId, hydrated]);
 
   const cartCount = builderItems.length;
 

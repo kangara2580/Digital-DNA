@@ -18,10 +18,6 @@ import {
   removeFavorite,
   type FavoriteRow,
 } from "@/lib/supabaseFavorites";
-import {
-  readGuestWishlist,
-  writeGuestWishlist,
-} from "@/lib/guestListStorage";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { waitForSupabaseAccessToken } from "@/lib/waitSupabaseSessionReady";
 
@@ -82,6 +78,11 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const fetchGenerationRef = useRef(0);
   const [wishlistSyncReady, setWishlistSyncReady] = useState(false);
 
+  const alertLoginRequired = useCallback(() => {
+    if (typeof window === "undefined") return;
+    window.alert("찜 기능은 로그인 후 이용할 수 있어요.");
+  }, []);
+
   const reloadFromServer = useCallback(async () => {
     const supabase = getSupabaseBrowserClient();
     if (!userId || !supabase) return;
@@ -109,9 +110,8 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
     if (!supabaseConfigured || !userId) {
       fetchGenerationRef.current += 1;
-      const guest = readGuestWishlist();
-      lastGoodEntriesRef.current = guest;
-      setEntries(guest);
+      lastGoodEntriesRef.current = [];
+      setEntries([]);
       setWishlistSyncReady(true);
       setHydrated(true);
       return;
@@ -175,15 +175,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     (video: FeedVideo) => {
       if (authLoading) return;
       if (!supabaseConfigured || !userId) {
-        setEntries((prev) => {
-          const on = prev.some((e) => e.id === video.id);
-          const next = on
-            ? prev.filter((e) => e.id !== video.id)
-            : [{ id: video.id, savedAt: Date.now() }, ...prev];
-          lastGoodEntriesRef.current = next;
-          writeGuestWishlist(next);
-          return next;
-        });
+        alertLoginRequired();
         return;
       }
       if (!wishlistSyncReady) {
@@ -252,19 +244,21 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         return [optimistic, ...prev];
       });
     },
-    [authLoading, supabaseConfigured, userId, wishlistSyncReady, reloadFromServer],
+    [
+      authLoading,
+      supabaseConfigured,
+      userId,
+      wishlistSyncReady,
+      reloadFromServer,
+      alertLoginRequired,
+    ],
   );
 
   const remove = useCallback(
     (videoId: string) => {
       if (authLoading) return;
       if (!supabaseConfigured || !userId) {
-        setEntries((prev) => {
-          const next = prev.filter((e) => e.id !== videoId);
-          lastGoodEntriesRef.current = next;
-          writeGuestWishlist(next);
-          return next;
-        });
+        alertLoginRequired();
         return;
       }
       const supabase = getSupabaseBrowserClient();
@@ -283,7 +277,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         return prev.filter((e) => e.id !== videoId);
       });
     },
-    [authLoading, supabaseConfigured, userId, reloadFromServer],
+    [authLoading, supabaseConfigured, userId, reloadFromServer, alertLoginRequired],
   );
 
   const removeMany = useCallback(
@@ -291,13 +285,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       const uniq = [...new Set(videoIds)].filter(Boolean);
       if (uniq.length === 0) return;
       if (!supabaseConfigured || !userId) {
-        setEntries((prev) => {
-          const rm = new Set(uniq);
-          const next = prev.filter((e) => !rm.has(e.id));
-          lastGoodEntriesRef.current = next;
-          writeGuestWishlist(next);
-          return next;
-        });
+        alertLoginRequired();
         return;
       }
       const supabase = getSupabaseBrowserClient();
@@ -314,14 +302,12 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         await reloadFromServer();
       }
     },
-    [supabaseConfigured, userId, reloadFromServer],
+    [supabaseConfigured, userId, reloadFromServer, alertLoginRequired],
   );
 
   const clear = useCallback(async () => {
     if (!supabaseConfigured || !userId) {
-      setEntries([]);
-      lastGoodEntriesRef.current = [];
-      writeGuestWishlist([]);
+      alertLoginRequired();
       return;
     }
     const supabase = getSupabaseBrowserClient();
@@ -336,7 +322,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     } else {
       await reloadFromServer();
     }
-  }, [supabaseConfigured, userId, reloadFromServer]);
+  }, [supabaseConfigured, userId, reloadFromServer, alertLoginRequired]);
 
   const value = useMemo(
     () => ({
