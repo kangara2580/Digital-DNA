@@ -90,11 +90,6 @@ export async function middleware(request: NextRequest) {
 
   /** 마이페이지만 로그인 필요 — 메인 등은 비회원도 볼 수 있음 */
   if (request.nextUrl.pathname.startsWith("/mypage")) {
-    if (recoveryInProgress) {
-      const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = "/reset-password";
-      return NextResponse.redirect(redirectUrl);
-    }
     if (!user) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/login";
