@@ -3,7 +3,20 @@
 import { createBrowserClient } from "@supabase/ssr";
 import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+function normalizeSupabaseUrl(raw: string | undefined): string | null {
+  const trimmed = raw?.trim() ?? "";
+  if (!trimmed) return null;
+  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    const parsed = new URL(withProtocol);
+    // 운영 중 실수로 `/reset-password` 같은 path가 env에 들어가도 origin으로 보정
+    return parsed.origin;
+  } catch {
+    return null;
+  }
+}
+
+const url = normalizeSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 /**
