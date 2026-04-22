@@ -15,6 +15,25 @@ type Body = {
   context?: SmsProofContext;
 };
 
+function mapTwilioErrorMessage(error: unknown): string {
+  const fallback = error instanceof Error ? error.message : "인증번호 확인에 실패했습니다.";
+  const code =
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof (error as { code?: unknown }).code === "number"
+      ? (error as { code: number }).code
+      : null;
+
+  if (code === 20003) {
+    return "Twilio 인증에 실패했습니다. TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN 값을 다시 확인해 주세요.";
+  }
+  if (code === 20404) {
+    return "Twilio Verify Service SID를 찾을 수 없습니다. TWILIO_VERIFY_SERVICE_SID 값을 확인해 주세요.";
+  }
+  return fallback;
+}
+
 function validateTwilioConfig(input: {
   accountSid?: string;
   authToken?: string;
@@ -97,7 +116,7 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ ok: true, phone, proof });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "인증번호 확인에 실패했습니다.";
+    const message = mapTwilioErrorMessage(e);
     return NextResponse.json({ ok: false, message }, { status: 400 });
   }
 }
