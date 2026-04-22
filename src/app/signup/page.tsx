@@ -181,7 +181,13 @@ export default function SignupPage() {
         phoneVerified?: boolean;
       };
       if (parsed.form) {
-        setForm((prev) => ({ ...prev, ...parsed.form }));
+        const safeDraft = { ...parsed.form };
+        // 민감값/인증값은 자동 복원하지 않아 예기치 않은 자동 입력을 방지합니다.
+        delete safeDraft.password;
+        delete safeDraft.passwordConfirm;
+        delete safeDraft.phone;
+        delete safeDraft.phoneCountryCode;
+        setForm((prev) => ({ ...prev, ...safeDraft }));
       }
       // SMS 인증 토큰은 서버 발급 단기값이므로 새 세션에서는 재인증을 요구합니다.
       setPhoneVerified(false);
@@ -303,7 +309,14 @@ export default function SignupPage() {
         window.localStorage.setItem(
           SIGNUP_DRAFT_KEY,
           JSON.stringify({
-            form,
+            form: {
+              ...form,
+              // 비밀번호/휴대폰 값은 로컬 자동복원에서 제외합니다.
+              password: "",
+              passwordConfirm: "",
+              phone: "",
+              phoneCountryCode: INITIAL_FORM.phoneCountryCode,
+            },
             phoneVerified,
             savedAt: Date.now(),
           }),
@@ -797,7 +810,8 @@ export default function SignupPage() {
                       setPhoneVerificationProof("");
                     }}
                     inputMode="numeric"
-                    autoComplete="tel-national"
+                    autoComplete="off"
+                    name="signup-phone-manual"
                   />
                   <div className="flex gap-2">
                     <button

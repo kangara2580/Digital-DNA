@@ -6,7 +6,7 @@ import type { SmsProofContext } from "@/lib/smsProof";
 export const runtime = "nodejs";
 
 const WINDOW_MS = 10 * 60 * 1000;
-const MAX_PER_WINDOW = 10;
+const MAX_PER_WINDOW = 30;
 const rateBucket = new Map<string, { n: number; t: number }>();
 
 function getClientIp(request: Request): string {
@@ -38,7 +38,14 @@ type Body = {
 export async function POST(request: Request) {
   const ip = getClientIp(request);
   if (!allowRate(ip)) {
-    return NextResponse.json({ ok: false, error: "too_many_requests" }, { status: 429 });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "too_many_requests",
+        message: "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
+      },
+      { status: 429 },
+    );
   }
 
   let body: Body;
@@ -81,7 +88,10 @@ export async function POST(request: Request) {
       .verifications.create({ to: phone, channel: "sms" });
     return NextResponse.json({ ok: true, phone });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "인증번호 발송에 실패했습니다.";
+    const raw = e instanceof Error ? e.message : "인증번호 발송에 실패했습니다.";
+    const message = /unverified|trial|permission/i.test(raw)
+      ? "Twilio Trial 계정은 검증된 수신 번호로만 보낼 수 있습니다. Twilio Console에서 대상 번호를 Verify 해 주세요."
+      : raw;
     return NextResponse.json({ ok: false, message }, { status: 400 });
   }
 }
