@@ -62,6 +62,10 @@ export default function ForgotPasswordPage() {
       const currentOrigin =
         typeof window !== "undefined" ? normalizeBaseUrl(window.location.origin) : "";
       const candidates = buildResetRedirectCandidates();
+      if (candidates.length === 0) {
+        setError("재설정 링크를 만들 수 없습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
 
       // 1) 우선 /reset-password로 이동하는 링크를 강제 시도 (정상 UX)
       for (const redirectTo of candidates) {
@@ -76,16 +80,6 @@ export default function ForgotPasswordPage() {
         if (!/invalid path specified/i.test(lastError)) {
           break;
         }
-      }
-
-      // 2) 위가 전부 실패할 때만 기본 링크 폴백 (최후 수단)
-      if (!lastError || /invalid path specified/i.test(lastError)) {
-        const { error: fallbackErr } = await supabase.auth.resetPasswordForEmail(trimmed);
-        if (!fallbackErr) {
-          setDone(true);
-          return;
-        }
-        lastError = fallbackErr.message || lastError;
       }
 
       if (/invalid path specified/i.test(lastError)) {
