@@ -11,6 +11,15 @@ export async function middleware(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const recoveryInProgress = request.cookies.get("rm_recovery_in_progress")?.value === "1";
+
+  // 일부 환경에서 recovery 메일이 "/?code=..." 형태로 돌아오는 경우,
+  // reset-password 화면으로 강제 유도해 사용자 플로우를 보장합니다.
+  if (request.nextUrl.pathname === "/" && request.nextUrl.searchParams.has("code")) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/reset-password";
+    return NextResponse.redirect(redirectUrl);
+  }
+
   if (!url?.length || !key?.length) {
     return NextResponse.next({ request });
   }
