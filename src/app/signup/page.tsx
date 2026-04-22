@@ -159,8 +159,10 @@ export default function SignupPage() {
   const [nicknameCheckedValue, setNicknameCheckedValue] = useState("");
   const [nicknameCheckedAvailable, setNicknameCheckedAvailable] = useState(false);
   const [nicknameCheckMessage, setNicknameCheckMessage] = useState("");
-  const [isSendingVerifyEmail, setIsSendingVerifyEmail] = useState(false);
-  const [verifyEmailMessage, setVerifyEmailMessage] = useState("");
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [emailCheckedValue, setEmailCheckedValue] = useState("");
+  const [emailCheckedAvailable, setEmailCheckedAvailable] = useState(false);
+  const [emailCheckMessage, setEmailCheckMessage] = useState("");
   const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
   const [phoneCodeInput, setPhoneCodeInput] = useState("");
   const [phoneVerified, setPhoneVerified] = useState(false);
@@ -369,51 +371,48 @@ export default function SignupPage() {
     }
   };
 
-  const sendVerificationEmail = async () => {
-    setVerifyEmailMessage("");
+  const checkEmailDuplicate = async () => {
+    setEmailCheckMessage("");
     if (emailMissing) {
-      setVerifyEmailMessage("이메일은 필수 입력 사항입니다.");
+      setEmailCheckMessage("이메일은 필수 입력 사항입니다.");
+      setEmailCheckedAvailable(false);
       return;
     }
     if (emailError) {
-      setVerifyEmailMessage("올바른 이메일 형식을 먼저 입력해 주세요.");
-      return;
-    }
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) {
-      setVerifyEmailMessage(
-        "Supabase 환경변수가 없어 인증 메일을 보낼 수 없습니다.",
-      );
+      setEmailCheckMessage("올바른 이메일 형식을 먼저 입력해 주세요.");
+      setEmailCheckedAvailable(false);
       return;
     }
 
-    setIsSendingVerifyEmail(true);
+    setIsCheckingEmail(true);
     try {
-      const { error } = await supabase.auth.resend({
-        type: "signup",
-        email: normalizedEmail,
-        options: {
-          emailRedirectTo:
-            typeof window !== "undefined"
-              ? `${window.location.origin}/signup?verified=1`
-              : undefined,
-        },
+      const res = await fetch("/api/signup/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail }),
       });
-
-      if (error) {
-        setVerifyEmailMessage(
-          "인증 메일 발송에 실패했어요. 먼저 회원가입을 완료했는지 확인해 주세요.",
-        );
+      const data = (await res.json()) as {
+        ok?: boolean;
+        available?: boolean;
+        message?: string;
+      };
+      if (!res.ok || !data.ok) {
+        setEmailCheckMessage(data.message || "이메일 중복 확인에 실패했습니다.");
+        setEmailCheckedAvailable(false);
         return;
       }
-
-      setVerifyEmailMessage(
-        "인증 메일 재발송을 요청했어요. 가입된 미인증 계정인 경우 받은 편지함(스팸함 포함)으로 메일이 도착합니다.",
+      setEmailCheckedValue(normalizedEmail);
+      setEmailCheckedAvailable(Boolean(data.available));
+      setEmailCheckMessage(
+        data.available
+          ? "사용 가능한 이메일입니다."
+          : "이미 가입된 이메일입니다. 다른 이메일을 사용해 주세요.",
       );
     } catch {
-      setVerifyEmailMessage("인증 메일 발송 중 오류가 발생했어요.");
+      setEmailCheckMessage("이메일 중복 확인 중 오류가 발생했습니다.");
+      setEmailCheckedAvailable(false);
     } finally {
-      setIsSendingVerifyEmail(false);
+      setIsCheckingEmail(false);
     }
   };
 
@@ -733,16 +732,19 @@ export default function SignupPage() {
                     placeholder="이메일*"
                     type="email"
                     value={form.email}
-                    onChange={(e) => onChange("email", e.target.value)}
+                    onChange={(e) => {
+                      onChange("email", e.target.value);
+                      setEmailCheckedAvailable(false);
+                    }}
                     autoComplete="email"
                   />
                   <button
                     type="button"
-                    onClick={sendVerificationEmail}
-                    disabled={isSendingVerifyEmail}
+                    onClick={checkEmailDuplicate}
+                    disabled={isCheckingEmail}
                     className="shrink-0 rounded-xl border border-fuchsia-400/40 bg-fuchsia-500/10 px-3 py-2 text-[12px] font-bold text-fuchsia-200 transition hover:bg-fuchsia-500/20 disabled:opacity-50"
                   >
-                    {isSendingVerifyEmail ? "발송 중..." : "인증 메일 보내기"}
+                    {isCheckingEmail ? "확인 중..." : "중복확인"}
                   </button>
                 </div>
                 {emailError ? (
@@ -750,15 +752,15 @@ export default function SignupPage() {
                     {emailError}
                   </p>
                 ) : null}
-                {verifyEmailMessage ? (
+                {emailCheckMessage ? (
                   <p
                     className={`mt-1.5 text-[12px] font-semibold ${
-                      verifyEmailMessage.includes("보냈어요")
+                      emailCheckedAvailable && emailCheckedValue === normalizedEmail
                         ? "text-emerald-400"
                         : "text-rose-400"
                     }`}
                   >
-                    {verifyEmailMessage}
+                    {emailCheckMessage}
                   </p>
                 ) : null}
               </div>
