@@ -408,7 +408,7 @@ export default function SignupPage() {
       }
 
       setVerifyEmailMessage(
-        "인증 메일을 보냈어요. 받은 편지함(스팸함 포함)을 확인해 주세요.",
+        "인증 메일 재발송을 요청했어요. 가입된 미인증 계정인 경우 받은 편지함(스팸함 포함)으로 메일이 도착합니다.",
       );
     } catch {
       setVerifyEmailMessage("인증 메일 발송 중 오류가 발생했어요.");
@@ -564,6 +564,30 @@ export default function SignupPage() {
           },
         },
       });
+
+      const emailAlreadyExists =
+        !error &&
+        Boolean(signUpData.user) &&
+        Array.isArray(signUpData.user?.identities) &&
+        signUpData.user!.identities.length === 0;
+
+      if (emailAlreadyExists) {
+        await fetch("/api/signup/nickname", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nickname: form.nickname,
+            intent: "release",
+            email: normalizedEmail,
+          }),
+        }).catch(() => {
+          /* noop */
+        });
+        setMessage(
+          "이미 가입된 이메일입니다. 로그인하거나 비밀번호 찾기에서 계정을 복구해 주세요.",
+        );
+        return;
+      }
 
       if (error) {
         await fetch("/api/signup/nickname", {
