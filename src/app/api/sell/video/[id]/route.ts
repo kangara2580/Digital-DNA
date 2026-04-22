@@ -1,7 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { mkdir, writeFile } from "fs/promises";
 import { NextResponse } from "next/server";
-import path from "path";
 import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
 import { prisma } from "@/lib/prisma";
 import { normalizeSellHashtags } from "@/lib/sellHashtags";
@@ -32,19 +30,8 @@ function normalizePosterMime(poster: Blob): string {
   return raw;
 }
 
-async function savePosterToPublicDisk(
-  userId: string,
-  buf: Buffer,
-  mime: string,
-): Promise<string> {
-  const relDir = path.posix.join("uploads", "sell", userId);
-  const diskDir = path.join(process.cwd(), "public", relDir);
-  await mkdir(diskDir, { recursive: true });
-  const stamp = Date.now();
-  const ext = mime === "image/png" ? "png" : mime === "image/webp" ? "webp" : "jpg";
-  const posterName = `${stamp}_poster.${ext}`;
-  await writeFile(path.join(diskDir, posterName), buf);
-  return `/${relDir.replace(/\\/g, "/")}/${posterName}`;
+function isPersistentStorageRequired(): boolean {
+  return process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
 }
 
 function createStorageClient(
@@ -230,6 +217,7 @@ export async function PATCH(
     const canTrySupabaseStorage =
       Boolean(url && anonKey && supabaseConfigured) &&
       Boolean(serviceRoleKey || bearerToken);
+    const requirePersistentStorage = isPersistentStorageRequired();
 
     if (canTrySupabaseStorage) {
       try {
@@ -247,11 +235,15 @@ export async function PATCH(
     }
 
     if (!posterUrl) {
-      try {
-        posterUrl = await savePosterToPublicDisk(userId, buf, mime);
-      } catch {
-        return NextResponse.json({ ok: false, error: "poster_upload_failed" }, { status: 500 });
-      }
+      return NextResponse.json(
+        {
+          ok: false,
+          error: requirePersistentStorage
+            ? "썸네일 저장소 업로드에 실패했습니다. Supabase Storage(thumbnails) 설정을 확인해 주세요."
+            : "개발 환경에서도 썸네일 저장소 업로드에 실패했습니다.",
+        },
+        { status: requirePersistentStorage ? 503 : 500 },
+      );
     }
   }
 

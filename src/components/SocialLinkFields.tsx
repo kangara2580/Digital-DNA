@@ -20,6 +20,8 @@ function platformLabel(url: string): string | null {
       return "Instagram";
     case "youtube":
       return "YouTube";
+    case "twitter":
+      return "X";
     default:
       return "기타 링크";
   }

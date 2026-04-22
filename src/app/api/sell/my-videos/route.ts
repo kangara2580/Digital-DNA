@@ -2,6 +2,9 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
 import { prisma } from "@/lib/prisma";
+import { parseSellerSocialBlob } from "@/lib/sellerSocialLinks";
+import { getSupabaseServiceRoleClient } from "@/lib/supabaseServiceRole";
+import { supabaseTables } from "@/lib/supabaseTableNames";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,12 +43,27 @@ export async function GET(request: Request) {
   }
 
   try {
+    let sellerSocialLinks = [] as ReturnType<typeof parseSellerSocialBlob>;
+    const admin = getSupabaseServiceRoleClient();
+    if (admin) {
+      const { data } = await admin
+        .from(supabaseTables.dataBlobs)
+        .select("data")
+        .eq("user_id", user.id)
+        .eq("blob_key", "social_links")
+        .maybeSingle();
+      sellerSocialLinks = parseSellerSocialBlob((data as { data?: unknown } | null)?.data);
+    }
+
     const rows = await prisma.video.findMany({
       where: { sellerId: user.id },
       orderBy: { createdAt: "desc" },
       take: 200,
     });
-    const videos = rows.map(videoRowToFeedVideo);
+    const videos = rows.map((row) => ({
+      ...videoRowToFeedVideo(row),
+      sellerSocialLinks,
+    }));
     return NextResponse.json({ ok: true, videos });
   } catch {
     return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });

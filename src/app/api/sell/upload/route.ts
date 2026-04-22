@@ -1,7 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { mkdir, writeFile } from "fs/promises";
 import { NextResponse } from "next/server";
-import path from "path";
 import {
   MultipartParseError,
   parseSellUploadMultipart,
@@ -29,6 +27,10 @@ const ALLOWED_POSTER_MIME = new Set([
 function sanitizeFilename(name: string): string {
   const base = name.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 120);
   return base || "clip.mp4";
+}
+
+function isPersistentStorageRequired(): boolean {
+  return process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
 }
 
 function createStorageClient(
@@ -334,6 +336,7 @@ export async function POST(request: Request) {
   const canTrySupabaseStorage =
     Boolean(url && anonKey && supabaseConfigured) &&
     Boolean(serviceRoleKey || bearerToken);
+  const requirePersistentStorage = isPersistentStorageRequired();
 
   if (hasFile && videoPart) {
     const buffer = videoPart.buffer;
@@ -367,27 +370,24 @@ export async function POST(request: Request) {
     }
 
     if (!usedStorage) {
-      const relDir = path.posix.join("uploads", "sell", user.id);
-      const diskDir = path.join(process.cwd(), "public", relDir);
-      await mkdir(diskDir, { recursive: true });
-      const stamp = Date.now();
-      const fileName = `${stamp}_${safe}`;
-      const diskPath = path.join(diskDir, fileName);
-      await writeFile(diskPath, buffer);
-      publicSrc = `/${relDir.replace(/\\/g, "/")}/${fileName}`;
-      if (customPoster) {
-        const ext =
-          customPoster.mime === "image/png"
-            ? "png"
-            : customPoster.mime === "image/webp"
-              ? "webp"
-              : "jpg";
-        const posterName = `${stamp}_poster.${ext}`;
-        await writeFile(path.join(diskDir, posterName), customPoster.buffer);
-        posterForDb = `/${relDir.replace(/\\/g, "/")}/${posterName}`;
-      } else {
-        posterForDb = NEUTRAL_POSTER_DATA_URL;
+      if (requirePersistentStorage) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error:
+              "영상 저장소 업로드에 실패했습니다. Supabase Storage(videos/thumbnails) 설정을 확인한 뒤 다시 시도해 주세요.",
+          },
+          { status: 503 },
+        );
       }
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "개발 환경에서도 저장소 업로드에 실패했습니다. 로컬 임시 저장 폴백은 비활성화되어 있습니다.",
+        },
+        { status: 500 },
+      );
     }
   } else if (hasVideoUrl && canTrySupabaseStorage) {
     try {

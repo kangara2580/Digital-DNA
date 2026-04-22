@@ -1,4 +1,5 @@
 import { MOCK_VIDEOS } from "@/constants/videos";
+import type { SellerSocialLink } from "@/lib/sellerSocialLinks";
 
 /** 다양한 출처·장소의 샘플 영상(데모용). 실제 서비스에서는 업로드·CDN URL로 교체 */
 export type FeedVideo = {
@@ -34,6 +35,8 @@ export type FeedVideo = {
     views: number;
     salesCount: number;
   };
+  /** 판매자 SNS 링크(틱톡·인스타·유튜브·X 등) */
+  sellerSocialLinks?: SellerSocialLink[];
   /**
    * TikTok Research API 등 — MP4가 없고 숫자 video id만 올 때 임베드 플레이어용
    * (예: `https://www.tiktok.com/embed/v2/{id}`)

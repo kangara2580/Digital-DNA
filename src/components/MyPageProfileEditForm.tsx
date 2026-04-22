@@ -1,7 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { SocialLinkFields } from "@/components/SocialLinkFields";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import {
+  fetchUserDataBlob,
+  upsertUserDataBlob,
+} from "@/lib/supabaseUserSync";
+import {
+  normalizeSellerSocialLinksInput,
+  parseSellerSocialBlob,
+} from "@/lib/sellerSocialLinks";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import {
   buildInternationalPhone,
@@ -16,6 +25,8 @@ function nz(s: string): string | null {
   const t = s.trim();
   return t.length > 0 ? t : null;
 }
+
+const SOCIAL_LINKS_BLOB_KEY = "social_links";
 
 export function MyPageProfileEditForm({
   profileForForm,
@@ -32,6 +43,9 @@ export function MyPageProfileEditForm({
   const [phone, setPhone] = useState("");
   const [phoneCountryCode, setPhoneCountryCode] = useState("");
   const [country, setCountry] = useState("");
+  const [socialLinks, setSocialLinks] = useState<string[]>([""]);
+  const [socialLinksReady, setSocialLinksReady] = useState(false);
+  const [socialBusy, setSocialBusy] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -56,6 +70,42 @@ export function MyPageProfileEditForm({
     setPhone(phoneNational);
     setCountry(profileForForm.country ?? "");
   }, [profileForForm, user?.phone]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadSocialLinks = async () => {
+      if (!user || !supabaseConfigured) {
+        setSocialLinks([""]);
+        setSocialLinksReady(false);
+        return;
+      }
+      const supabase = getSupabaseBrowserClient();
+      if (!supabase) {
+        setSocialLinks([""]);
+        setSocialLinksReady(false);
+        return;
+      }
+
+      const blob = await fetchUserDataBlob(supabase, user.id, SOCIAL_LINKS_BLOB_KEY);
+      if (cancelled) return;
+      const parsedFromBlob = parseSellerSocialBlob(blob);
+      if (parsedFromBlob.length > 0) {
+        setSocialLinks(parsedFromBlob.map((x) => x.url));
+      } else {
+        const metaLinks = Array.isArray((user.user_metadata as { social_links?: unknown })?.social_links)
+          ? (user.user_metadata as { social_links: unknown[] }).social_links
+              .filter((x): x is string => typeof x === "string")
+          : [];
+        const parsedFromMeta = normalizeSellerSocialLinksInput(metaLinks);
+        setSocialLinks(parsedFromMeta.length > 0 ? parsedFromMeta.map((x) => x.url) : [""]);
+      }
+      setSocialLinksReady(true);
+    };
+    void loadSocialLinks();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, supabaseConfigured]);
 
   const save = useCallback(async () => {
     setMessage(null);
@@ -131,6 +181,36 @@ export function MyPageProfileEditForm({
     onSaved,
   ]);
 
+  useEffect(() => {
+    if (!user || !supabaseConfigured || !socialLinksReady) return;
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+
+    const timer = window.setTimeout(async () => {
+      setSocialBusy(true);
+      const normalized = normalizeSellerSocialLinksInput(socialLinks);
+      const ok = await upsertUserDataBlob(
+        supabase,
+        user.id,
+        SOCIAL_LINKS_BLOB_KEY,
+        normalized,
+      );
+      setSocialBusy(false);
+      if (!ok) {
+        setMessage("SNS 링크 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
+      // 동일 브라우저 세션에서 판매 카드 아이콘을 즉시 갱신합니다.
+      window.dispatchEvent(
+        new CustomEvent("seller-social-links-updated", {
+          detail: { sellerId: user.id, links: normalized },
+        }),
+      );
+    }, 450);
+
+    return () => window.clearTimeout(timer);
+  }, [socialLinks, socialLinksReady, supabaseConfigured, user]);
+
   if (!user) {
     return (
       <p className="text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
@@ -195,6 +275,26 @@ export function MyPageProfileEditForm({
             autoComplete="country"
           />
         </label>
+      </div>
+      <div>
+        <p className="text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
+          SNS 링크 (TikTok / Instagram / YouTube / X)
+        </p>
+        <p className="mt-1 text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          입력 후 잠시 기다리면 자동 저장되고, 판매 영상 카드 아이콘에 바로 반영됩니다.
+        </p>
+        <div className="mt-2">
+          <SocialLinkFields
+            links={socialLinks}
+            onChange={setSocialLinks}
+            placeholder="ex. tiktok.com/@yourid"
+          />
+        </div>
+        {socialBusy ? (
+          <p className="mt-2 text-[12px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+            SNS 링크 저장 중...
+          </p>
+        ) : null}
       </div>
       {message ? (
         <p className="text-[13px] font-medium text-reels-cyan [html[data-theme='light']_&]:text-teal-700" role="status">

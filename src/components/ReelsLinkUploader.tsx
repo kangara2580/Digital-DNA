@@ -169,9 +169,13 @@ export function ReelsLinkUploader() {
           <div className="rounded-xl border border-dashed border-white/15 bg-black/25 px-4 py-12 text-center text-[13px] text-zinc-500">
             링크를 입력하면 TikTok·Instagram·YouTube는 임베드로 재생됩니다.
           </div>
-        ) : parsed.platform === "unknown" ? (
+        ) : parsed.platform === "unknown" || parsed.platform === "twitter" ? (
           <div className="rounded-xl border border-amber-500/25 bg-amber-500/5 px-4 py-6 text-[13px] leading-relaxed text-zinc-300">
-            <p className="font-semibold text-amber-200/95">지원 형식을 확인하지 못했어요</p>
+            <p className="font-semibold text-amber-200/95">
+              {parsed.platform === "twitter"
+                ? "X(Twitter) 링크는 미리보기 임베드를 지원하지 않아요"
+                : "지원 형식을 확인하지 못했어요"}
+            </p>
             <p className="mt-2 text-zinc-400">
               TikTok <code className="rounded bg-black/40 px-1 text-[12px]">…/video/숫자</code>,
               Instagram{" "}

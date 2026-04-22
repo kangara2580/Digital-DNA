@@ -19,6 +19,10 @@ export type ParsedSocialReelsUrl =
       embedUrl: string;
     }
   | {
+      platform: "twitter";
+      href: string;
+    }
+  | {
       platform: "unknown";
       href: string;
     };
@@ -96,6 +100,10 @@ export function parseSocialReelsUrl(raw: string): ParsedSocialReelsUrl | null {
           embedUrl: `https://www.youtube.com/embed/${videoId}`,
         };
       }
+    }
+
+    if (u.hostname.includes("twitter.com") || u.hostname === "x.com" || u.hostname.endsWith(".x.com")) {
+      return { platform: "twitter", href: u.toString() };
     }
   } catch {
     return { platform: "unknown", href: input };
