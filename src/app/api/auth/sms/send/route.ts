@@ -135,6 +135,8 @@ export async function POST(request: Request) {
       .verifications.create({ to: phone, channel: "sms" });
     return NextResponse.json({ ok: true, phone });
   } catch (e) {
+    // 운영 로그에서 Twilio 원인 코드(21608/21408/20003/20404 등)를 즉시 식별하기 위한 최소 디버깅
+    console.error("[sms/send] twilio verify error", e);
     const message = mapTwilioErrorMessage(e);
     return NextResponse.json({ ok: false, message }, { status: 400 });
   }
