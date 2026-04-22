@@ -61,30 +61,31 @@ export default function ForgotPasswordPage() {
       );
       const currentOrigin =
         typeof window !== "undefined" ? normalizeBaseUrl(window.location.origin) : "";
-      // 1) 가장 안전한 기본 경로: redirectTo 없이 발송 (Supabase Site URL 사용)
-      const { error: defaultErr } = await supabase.auth.resetPasswordForEmail(trimmed);
-      if (!defaultErr) {
-        setDone(true);
-        return;
-      }
-      lastError = defaultErr.message || "";
+      const candidates = buildResetRedirectCandidates();
 
-      // 2) URL 매칭 오류일 때만 후보 redirectTo 재시도
-      if (/invalid path specified/i.test(lastError)) {
-        const candidates = buildResetRedirectCandidates();
-        for (const redirectTo of candidates) {
-          const { error: rpErr } = await supabase.auth.resetPasswordForEmail(trimmed, {
-            redirectTo,
-          });
-          if (!rpErr) {
-            setDone(true);
-            return;
-          }
-          lastError = rpErr.message || lastError;
-          if (!/invalid path specified/i.test(lastError)) {
-            break;
-          }
+      // 1) 우선 /reset-password로 이동하는 링크를 강제 시도 (정상 UX)
+      for (const redirectTo of candidates) {
+        const { error: rpErr } = await supabase.auth.resetPasswordForEmail(trimmed, {
+          redirectTo,
+        });
+        if (!rpErr) {
+          setDone(true);
+          return;
         }
+        lastError = rpErr.message || lastError;
+        if (!/invalid path specified/i.test(lastError)) {
+          break;
+        }
+      }
+
+      // 2) 위가 전부 실패할 때만 기본 링크 폴백 (최후 수단)
+      if (!lastError || /invalid path specified/i.test(lastError)) {
+        const { error: fallbackErr } = await supabase.auth.resetPasswordForEmail(trimmed);
+        if (!fallbackErr) {
+          setDone(true);
+          return;
+        }
+        lastError = fallbackErr.message || lastError;
       }
 
       if (/invalid path specified/i.test(lastError)) {
