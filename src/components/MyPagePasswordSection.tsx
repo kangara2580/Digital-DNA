@@ -5,6 +5,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 const INPUT =
   "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none transition focus:border-reels-cyan/45 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
+const SAME_PASSWORD_MESSAGE = "기존 비밀번호와 동일해요. 새로운 비밀번호로 변경해 주세요.";
 
 export function MyPagePasswordSection() {
   const [current, setCurrent] = useState("");
@@ -24,6 +25,10 @@ export function MyPagePasswordSection() {
     }
     if (next !== confirm) {
       setError("새 비밀번호와 확인이 일치하지 않습니다.");
+      return;
+    }
+    if (next === current) {
+      setError(SAME_PASSWORD_MESSAGE);
       return;
     }
 

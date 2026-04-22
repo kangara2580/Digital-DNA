@@ -10,6 +10,7 @@ import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
 export async function middleware(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const recoveryInProgress = request.cookies.get("rm_recovery_in_progress")?.value === "1";
   if (!url?.length || !key?.length) {
     return NextResponse.next({ request });
   }
@@ -40,12 +41,19 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   /** 마이페이지만 로그인 필요 — 메인 등은 비회원도 볼 수 있음 */
-  if (request.nextUrl.pathname.startsWith("/mypage") && !user) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/login";
-    const returnTo = request.nextUrl.pathname + request.nextUrl.search;
-    redirectUrl.searchParams.set("redirect", returnTo);
-    return NextResponse.redirect(redirectUrl);
+  if (request.nextUrl.pathname.startsWith("/mypage")) {
+    if (recoveryInProgress) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/reset-password";
+      return NextResponse.redirect(redirectUrl);
+    }
+    if (!user) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/login";
+      const returnTo = request.nextUrl.pathname + request.nextUrl.search;
+      redirectUrl.searchParams.set("redirect", returnTo);
+      return NextResponse.redirect(redirectUrl);
+    }
   }
 
   return supabaseResponse;

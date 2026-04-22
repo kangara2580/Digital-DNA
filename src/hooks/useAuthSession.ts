@@ -11,6 +11,18 @@ export type AuthSessionState = {
   supabaseConfigured: boolean;
 };
 
+const RECOVERY_COOKIE = "rm_recovery_in_progress";
+
+function shouldMaskRecoverySession(): boolean {
+  if (typeof window === "undefined") return false;
+  const inRecovery = document.cookie
+    .split(";")
+    .map((v) => v.trim())
+    .some((v) => v === `${RECOVERY_COOKIE}=1`);
+  if (!inRecovery) return false;
+  return !window.location.pathname.startsWith("/reset-password");
+}
+
 /**
  * Supabase 브라우저 세션. 환경변수가 없으면 `loading`만 false이고 user는 항상 null.
  */
@@ -54,6 +66,12 @@ export function useAuthSession(): AuthSessionState {
       } = supabase.auth.onAuthStateChange((event, s) => {
         if (cancelled) return;
 
+        if (shouldMaskRecoverySession()) {
+          setSession(null);
+          setUser(null);
+          return;
+        }
+
         if (s) {
           setSession(s);
           setUser(s.user ?? null);
@@ -78,6 +96,11 @@ export function useAuthSession(): AuthSessionState {
         if (cancelled) return;
         const s = data.session;
         resolved = true;
+        if (shouldMaskRecoverySession()) {
+          setSession(null);
+          setUser(null);
+          return;
+        }
         setSession(s);
         setUser(s?.user ?? null);
       } catch {
