@@ -167,6 +167,7 @@ export default function SignupPage() {
   const [phoneVerificationProof, setPhoneVerificationProof] = useState("");
   const [phoneVerifyMessage, setPhoneVerifyMessage] = useState("");
   const [phoneInputUnlocked, setPhoneInputUnlocked] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   useEffect(() => {
     const saved = readProfileAvatar();
@@ -485,6 +486,7 @@ export default function SignupPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitAttempted(true);
     if (!canSubmit) return;
 
     setMessage("");
@@ -680,7 +682,7 @@ export default function SignupPage() {
 
           <section className="rounded-xl border border-white/15 bg-black/25 p-4 backdrop-blur-sm">
             <h2 className="text-[14px] font-bold">기본 정보</h2>
-            {requiredIdentityMessage ? (
+            {submitAttempted && requiredIdentityMessage ? (
               <p className="mt-2 rounded-lg border border-rose-500/45 bg-rose-500/10 px-3 py-2 text-[12px] font-extrabold text-rose-300">
                 {requiredIdentityMessage}
               </p>
@@ -777,7 +779,7 @@ export default function SignupPage() {
                   onChange={(e) => onChange("password", e.target.value)}
                   autoComplete="new-password"
                 />
-                {passwordError ? (
+                {(submitAttempted || form.password.length > 0) && passwordError ? (
                   <p className="mt-1.5 text-[12px] font-semibold text-rose-400">
                     {passwordError}
                   </p>
@@ -792,7 +794,8 @@ export default function SignupPage() {
                   onChange={(e) => onChange("passwordConfirm", e.target.value)}
                   autoComplete="new-password"
                 />
-                {passwordConfirmError ? (
+                {(submitAttempted || form.passwordConfirm.length > 0) &&
+                passwordConfirmError ? (
                   <p className="mt-1.5 text-[12px] font-semibold text-rose-400">
                     {passwordConfirmError}
                   </p>
@@ -865,7 +868,7 @@ export default function SignupPage() {
                     </button>
                   </div>
                 </div>
-                {phoneError ? (
+                {(submitAttempted || form.phone.trim().length > 0) && phoneError ? (
                   <p className="mt-1.5 text-[12px] font-semibold text-rose-400">
                     {phoneError}
                   </p>
