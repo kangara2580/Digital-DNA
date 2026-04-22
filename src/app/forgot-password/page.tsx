@@ -73,6 +73,14 @@ export default function ForgotPasswordPage() {
         }
       }
       if (!sent) {
+        // 마지막 폴백: redirectTo 없이 발송 (Supabase Site URL 기본값 사용)
+        const { error: fallbackErr } = await supabase.auth.resetPasswordForEmail(trimmed);
+        if (!fallbackErr) {
+          setDone(true);
+          return;
+        }
+        lastError = fallbackErr.message || lastError;
+
         if (/invalid path specified/i.test(lastError)) {
           setError("재설정 링크 URL 설정이 맞지 않습니다. 잠시 후 다시 시도해 주세요.");
           return;
