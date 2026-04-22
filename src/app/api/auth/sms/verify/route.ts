@@ -1,0 +1,81 @@
+import { NextResponse } from "next/server";
+import twilio from "twilio";
+import { toE164 } from "@/lib/phoneE164";
+import {
+  createSmsProofToken,
+  type SmsProofContext,
+} from "@/lib/smsProof";
+
+export const runtime = "nodejs";
+
+type Body = {
+  phone?: string;
+  countryCode?: string;
+  code?: string;
+  context?: SmsProofContext;
+};
+
+export async function POST(request: Request) {
+  let body: Body;
+  try {
+    body = (await request.json()) as Body;
+  } catch {
+    return NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 });
+  }
+
+  const context = body.context;
+  if (!context || !["signup", "forgot-password", "find-email"].includes(context)) {
+    return NextResponse.json({ ok: false, error: "invalid_context" }, { status: 400 });
+  }
+  const phone = toE164(body.phone ?? "", body.countryCode);
+  if (!phone) {
+    return NextResponse.json(
+      { ok: false, message: "휴대폰 번호 형식을 확인해 주세요." },
+      { status: 400 },
+    );
+  }
+  const code = (body.code ?? "").trim();
+  if (!/^\d{4,8}$/.test(code)) {
+    return NextResponse.json(
+      { ok: false, message: "인증번호 형식을 확인해 주세요." },
+      { status: 400 },
+    );
+  }
+
+  const accountSid = process.env.TWILIO_ACCOUNT_SID?.trim();
+  const authToken = process.env.TWILIO_AUTH_TOKEN?.trim();
+  const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID?.trim();
+  if (!accountSid || !authToken || !verifyServiceSid) {
+    return NextResponse.json(
+      {
+        ok: false,
+        message: "서버 SMS 설정(Twilio Verify)이 아직 완료되지 않았습니다.",
+      },
+      { status: 503 },
+    );
+  }
+
+  try {
+    const client = twilio(accountSid, authToken);
+    const check = await client.verify.v2
+      .services(verifyServiceSid)
+      .verificationChecks.create({ to: phone, code });
+    if (check.status !== "approved") {
+      return NextResponse.json(
+        { ok: false, message: "인증번호가 올바르지 않거나 만료되었습니다." },
+        { status: 400 },
+      );
+    }
+    const proof = createSmsProofToken({ phone, context });
+    if (!proof) {
+      return NextResponse.json(
+        { ok: false, message: "SMS 인증 토큰 생성에 실패했습니다." },
+        { status: 500 },
+      );
+    }
+    return NextResponse.json({ ok: true, phone, proof });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "인증번호 확인에 실패했습니다.";
+    return NextResponse.json({ ok: false, message }, { status: 400 });
+  }
+}

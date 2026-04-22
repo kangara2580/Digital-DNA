@@ -28,9 +28,82 @@ type ApiOk =
 export default function FindIdPage() {
   const [nickname, setNickname] = useState("");
   const [phone, setPhone] = useState("");
+  const [countryCode, setCountryCode] = useState("+82");
+  const [smsCode, setSmsCode] = useState("");
+  const [sendingSms, setSendingSms] = useState(false);
+  const [verifyingSms, setVerifyingSms] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [smsProof, setSmsProof] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<ApiOk | null>(null);
+
+  const sendSmsCode = async () => {
+    setError("");
+    setPhoneVerified(false);
+    setSmsProof("");
+    const p = phone.trim();
+    if (!p) {
+      setError("휴대폰 번호를 먼저 입력해 주세요.");
+      return;
+    }
+    setSendingSms(true);
+    try {
+      const res = await fetch("/api/auth/sms/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ context: "find-email", countryCode, phone: p }),
+      });
+      const data = (await res.json()) as { ok?: boolean; message?: string };
+      if (!res.ok || !data.ok) {
+        setError(data.message || "인증번호 발송에 실패했습니다.");
+      }
+    } catch {
+      setError("인증번호 발송 중 오류가 발생했습니다.");
+    } finally {
+      setSendingSms(false);
+    }
+  };
+
+  const verifySmsCode = async () => {
+    setError("");
+    const p = phone.trim();
+    const code = smsCode.trim();
+    if (!p || !code) {
+      setError("휴대폰 번호와 인증번호를 입력해 주세요.");
+      return;
+    }
+    setVerifyingSms(true);
+    try {
+      const res = await fetch("/api/auth/sms/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          context: "find-email",
+          countryCode,
+          phone: p,
+          code,
+        }),
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        message?: string;
+        proof?: string;
+      };
+      if (!res.ok || !data.ok || !data.proof) {
+        setError(data.message || "인증번호 확인에 실패했습니다.");
+        setPhoneVerified(false);
+        setSmsProof("");
+        return;
+      }
+      setPhoneVerified(true);
+      setSmsProof(data.proof);
+    } catch {
+      setError("인증번호 확인 중 오류가 발생했습니다.");
+    } finally {
+      setVerifyingSms(false);
+    }
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +115,14 @@ export default function FindIdPage() {
       setError("닉네임 또는 휴대폰 번호 중 하나 이상 입력해 주세요.");
       return;
     }
+    if (!p) {
+      setError("보안을 위해 휴대폰 번호 입력이 필요합니다.");
+      return;
+    }
+    if (!phoneVerified || !smsProof) {
+      setError("보안을 위해 휴대폰 SMS 인증을 먼저 완료해 주세요.");
+      return;
+    }
     setBusy(true);
     try {
       const res = await fetch("/api/auth/find-email", {
@@ -49,7 +130,9 @@ export default function FindIdPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...(n ? { nickname: n } : {}),
-          ...(p ? { phone: p } : {}),
+          phone: p,
+          countryCode,
+          smsProof,
         }),
       });
       const data = (await res.json()) as ApiOk & { message?: string };
@@ -96,15 +179,61 @@ export default function FindIdPage() {
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-[12px] font-bold text-zinc-300">휴대폰 번호 (선택)</label>
-            <input
-              className={INPUT}
-              type="tel"
-              autoComplete="tel"
-              placeholder="01012345678 또는 +82…"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
+            <label className="mb-1.5 block text-[12px] font-bold text-zinc-300">휴대폰 번호 (필수, SMS 인증)</label>
+            <div className="flex gap-2">
+              <select
+                className={`${INPUT} max-w-[110px]`}
+                value={countryCode}
+                onChange={(e) => {
+                  setCountryCode(e.target.value);
+                  setPhoneVerified(false);
+                  setSmsProof("");
+                }}
+              >
+                <option value="+82">+82</option>
+                <option value="+1">+1</option>
+                <option value="+81">+81</option>
+                <option value="+44">+44</option>
+              </select>
+              <input
+                className={INPUT}
+                type="tel"
+                autoComplete="tel"
+                placeholder="01012345678"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  setPhoneVerified(false);
+                  setSmsProof("");
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => void sendSmsCode()}
+                disabled={sendingSms}
+                className="shrink-0 rounded-xl border border-fuchsia-400/40 bg-fuchsia-500/10 px-3 py-2 text-[12px] font-bold text-fuchsia-200 transition hover:bg-fuchsia-500/20 disabled:opacity-50"
+              >
+                {sendingSms ? "발송 중…" : "코드 발송"}
+              </button>
+            </div>
+            <div className="mt-2 flex gap-2">
+              <input
+                className={INPUT}
+                type="text"
+                inputMode="numeric"
+                placeholder="인증번호 입력"
+                value={smsCode}
+                onChange={(e) => setSmsCode(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => void verifySmsCode()}
+                disabled={verifyingSms}
+                className="shrink-0 rounded-xl border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-[12px] font-bold text-emerald-300 transition hover:bg-emerald-500/20 disabled:opacity-50"
+              >
+                {verifyingSms ? "확인 중…" : phoneVerified ? "인증 완료" : "인증 확인"}
+              </button>
+            </div>
           </div>
           <button
             type="submit"

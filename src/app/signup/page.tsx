@@ -162,10 +162,9 @@ export default function SignupPage() {
   const [isSendingVerifyEmail, setIsSendingVerifyEmail] = useState(false);
   const [verifyEmailMessage, setVerifyEmailMessage] = useState("");
   const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
-  const [phoneCode, setPhoneCode] = useState("");
   const [phoneCodeInput, setPhoneCodeInput] = useState("");
-  const [phoneCodeSentAt, setPhoneCodeSentAt] = useState<number | null>(null);
   const [phoneVerified, setPhoneVerified] = useState(false);
+  const [phoneVerificationProof, setPhoneVerificationProof] = useState("");
   const [phoneVerifyMessage, setPhoneVerifyMessage] = useState("");
 
   useEffect(() => {
@@ -184,7 +183,8 @@ export default function SignupPage() {
       if (parsed.form) {
         setForm((prev) => ({ ...prev, ...parsed.form }));
       }
-      setPhoneVerified(Boolean(parsed.phoneVerified));
+      // SMS 인증 토큰은 서버 발급 단기값이므로 새 세션에서는 재인증을 요구합니다.
+      setPhoneVerified(false);
     } catch {
       /* noop */
     }
@@ -274,6 +274,7 @@ export default function SignupPage() {
     if (nicknameNotVerified) return false;
     if (phoneError) return false;
     if (!phoneVerified) return false;
+    if (!phoneVerificationProof) return false;
     if (hasInvalidSocialLink) return false;
     if (!form.agreeAge || !form.agreeTerms || !form.agreePrivacy) return false;
     return true;
@@ -287,6 +288,7 @@ export default function SignupPage() {
     passwordConfirmError,
     passwordError,
     phoneError,
+    phoneVerificationProof,
     phoneVerified,
   ]);
 
@@ -409,42 +411,62 @@ export default function SignupPage() {
 
     setIsSendingPhoneCode(true);
     try {
-      // TODO: 실제 운영에서는 SMS 제공업체(예: Solapi/Twilio) API 호출로 교체하세요.
-      // 현재는 개발용 인증 흐름 점검을 위한 임시 코드 발급입니다.
-      const generated = String(Math.floor(100000 + Math.random() * 900000));
-      setPhoneCode(generated);
-      setPhoneCodeSentAt(Date.now());
+      const res = await fetch("/api/auth/sms/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          context: "signup",
+          countryCode: form.phoneCountryCode,
+          phone: normalizedPhone,
+        }),
+      });
+      const data = (await res.json()) as { ok?: boolean; message?: string };
+      if (!res.ok || !data.ok) {
+        setPhoneVerifyMessage(data.message || "인증번호 발송에 실패했습니다.");
+        return;
+      }
       setPhoneCodeInput("");
       setPhoneVerified(false);
-      setPhoneVerifyMessage(
-        `인증번호를 발송했습니다. (개발모드 테스트 코드: ${generated})`
-      );
+      setPhoneVerificationProof("");
+      setPhoneVerifyMessage("휴대폰으로 인증번호를 보냈습니다. 3분 안에 입력해 주세요.");
     } finally {
       setIsSendingPhoneCode(false);
     }
   };
 
-  const verifyPhoneCode = () => {
-    if (!phoneCode) {
+  const verifyPhoneCode = async () => {
+    if (!phoneCodeInput.trim()) {
       setPhoneVerifyMessage("먼저 인증번호 발송 버튼을 눌러 주세요.");
       return;
     }
-    const expired =
-      phoneCodeSentAt !== null && Date.now() - phoneCodeSentAt > 3 * 60 * 1000;
-    if (expired) {
+    try {
+      const res = await fetch("/api/auth/sms/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          context: "signup",
+          countryCode: form.phoneCountryCode,
+          phone: normalizedPhone,
+          code: phoneCodeInput.trim(),
+        }),
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        message?: string;
+        proof?: string;
+      };
+      if (!res.ok || !data.ok || !data.proof) {
+        setPhoneVerifyMessage(data.message || "인증번호가 일치하지 않습니다. 다시 확인해 주세요.");
+        setPhoneVerified(false);
+        return;
+      }
+      setPhoneVerificationProof(data.proof);
+      setPhoneVerified(true);
+      setPhoneVerifyMessage("휴대폰 인증이 완료되었습니다.");
+    } catch {
       setPhoneVerified(false);
-      setPhoneVerifyMessage(
-        "인증번호 유효시간(3분)이 지났습니다. 다시 발송해 주세요."
-      );
-      return;
+      setPhoneVerifyMessage("휴대폰 인증 확인 중 오류가 발생했습니다.");
     }
-    if (phoneCodeInput.trim() !== phoneCode) {
-      setPhoneVerified(false);
-      setPhoneVerifyMessage("인증번호가 일치하지 않습니다. 다시 확인해 주세요.");
-      return;
-    }
-    setPhoneVerified(true);
-    setPhoneVerifyMessage("휴대폰 인증이 완료되었습니다.");
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -755,6 +777,7 @@ export default function SignupPage() {
                     onChange={(e) => {
                       onChange("phoneCountryCode", e.target.value);
                       setPhoneVerified(false);
+                      setPhoneVerificationProof("");
                     }}
                   >
                     <option value="+82">+82 (KR)</option>
@@ -771,6 +794,7 @@ export default function SignupPage() {
                     onChange={(e) => {
                       onChange("phone", e.target.value);
                       setPhoneVerified(false);
+                      setPhoneVerificationProof("");
                     }}
                     inputMode="numeric"
                     autoComplete="tel-national"
@@ -790,25 +814,23 @@ export default function SignupPage() {
                       </span>
                     ) : null}
                   </div>
-                  {phoneCode ? (
-                    <div className="flex gap-2">
-                      <input
-                        className={INPUT_CLS}
-                        placeholder="인증번호 6자리 입력"
-                        value={phoneCodeInput}
-                        onChange={(e) => setPhoneCodeInput(e.target.value)}
-                        inputMode="numeric"
-                        maxLength={6}
-                      />
-                      <button
-                        type="button"
-                        onClick={verifyPhoneCode}
-                        className="shrink-0 rounded-xl border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-[12px] font-bold text-emerald-300 transition hover:bg-emerald-500/20"
-                      >
-                        인증 확인
-                      </button>
-                    </div>
-                  ) : null}
+                  <div className="flex gap-2">
+                    <input
+                      className={INPUT_CLS}
+                      placeholder="인증번호 6자리 입력"
+                      value={phoneCodeInput}
+                      onChange={(e) => setPhoneCodeInput(e.target.value)}
+                      inputMode="numeric"
+                      maxLength={8}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void verifyPhoneCode()}
+                      className="shrink-0 rounded-xl border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-[12px] font-bold text-emerald-300 transition hover:bg-emerald-500/20"
+                    >
+                      인증 확인
+                    </button>
+                  </div>
                 </div>
                 {phoneError ? (
                   <p className="mt-1.5 text-[12px] font-semibold text-rose-400">

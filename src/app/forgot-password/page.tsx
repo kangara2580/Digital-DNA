@@ -2,47 +2,94 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 const INPUT =
   "w-full rounded-xl border border-white/20 bg-black/30 px-3.5 py-3 text-sm text-zinc-100 outline-none backdrop-blur-sm transition placeholder:text-zinc-500 focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-500/30";
 
-function normalizeBaseUrl(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed) return "";
-  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-  try {
-    const u = new URL(withProtocol);
-    return u.origin;
-  } catch {
-    return "";
-  }
-}
-
-function buildResetRedirectCandidates(): string[] {
-  const out: string[] = [];
-  const fromEnv = normalizeBaseUrl(process.env.NEXT_PUBLIC_SITE_URL ?? "");
-  const fromWindow =
-    typeof window !== "undefined" ? normalizeBaseUrl(window.location.origin) : "";
-  const push = (base: string) => {
-    if (!base) return;
-    const redirect = `${base}/reset-password`;
-    if (!out.includes(redirect)) out.push(redirect);
-  };
-  // 배포 도메인이 자주 바뀌는 Vercel preview 환경에서는 고정 canonical 도메인을 우선 사용
-  if (fromEnv) {
-    push(fromEnv);
-  } else {
-    push(fromWindow);
-  }
-  return out;
-}
-
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [countryCode, setCountryCode] = useState("+82");
+  const [smsCode, setSmsCode] = useState("");
+  const [sendingSms, setSendingSms] = useState(false);
+  const [verifyingSms, setVerifyingSms] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [smsProof, setSmsProof] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+
+  const sendSmsCode = async () => {
+    setError("");
+    setPhoneVerified(false);
+    setSmsProof("");
+    const p = phone.trim();
+    if (!p) {
+      setError("휴대폰 번호를 먼저 입력해 주세요.");
+      return;
+    }
+    setSendingSms(true);
+    try {
+      const res = await fetch("/api/auth/sms/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          context: "forgot-password",
+          countryCode,
+          phone: p,
+        }),
+      });
+      const data = (await res.json()) as { ok?: boolean; message?: string };
+      if (!res.ok || !data.ok) {
+        setError(data.message || "인증번호 발송에 실패했습니다.");
+        return;
+      }
+    } catch {
+      setError("인증번호 발송 중 오류가 발생했습니다.");
+    } finally {
+      setSendingSms(false);
+    }
+  };
+
+  const verifySmsCode = async () => {
+    setError("");
+    const p = phone.trim();
+    const code = smsCode.trim();
+    if (!p || !code) {
+      setError("휴대폰 번호와 인증번호를 입력해 주세요.");
+      return;
+    }
+    setVerifyingSms(true);
+    try {
+      const res = await fetch("/api/auth/sms/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          context: "forgot-password",
+          countryCode,
+          phone: p,
+          code,
+        }),
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        message?: string;
+        proof?: string;
+      };
+      if (!res.ok || !data.ok || !data.proof) {
+        setError(data.message || "인증번호 확인에 실패했습니다.");
+        setPhoneVerified(false);
+        setSmsProof("");
+        return;
+      }
+      setPhoneVerified(true);
+      setSmsProof(data.proof);
+    } catch {
+      setError("인증번호 확인 중 오류가 발생했습니다.");
+    } finally {
+      setVerifyingSms(false);
+    }
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,47 +99,28 @@ export default function ForgotPasswordPage() {
       setError("올바른 이메일 형식을 입력해 주세요.");
       return;
     }
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) {
-      setError("Supabase 환경변수가 없습니다.");
+    if (!phoneVerified || !smsProof) {
+      setError("휴대폰 인증을 먼저 완료해 주세요.");
       return;
     }
     setBusy(true);
     try {
-      let lastError = "";
-      const configuredSupabaseOrigin = normalizeBaseUrl(
-        process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
-      );
-      const currentOrigin =
-        typeof window !== "undefined" ? normalizeBaseUrl(window.location.origin) : "";
-      const candidates = buildResetRedirectCandidates();
-      if (candidates.length === 0) {
-        setError("재설정 링크를 만들 수 없습니다. 잠시 후 다시 시도해 주세요.");
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: trimmed,
+          countryCode,
+          phone: phone.trim(),
+          smsProof,
+        }),
+      });
+      const data = (await res.json()) as { ok?: boolean; message?: string };
+      if (!res.ok || !data.ok) {
+        setError(data.message || "메일 발송에 실패했습니다.");
         return;
       }
-
-      // 1) 우선 /reset-password로 이동하는 링크를 강제 시도 (정상 UX)
-      for (const redirectTo of candidates) {
-        const { error: rpErr } = await supabase.auth.resetPasswordForEmail(trimmed, {
-          redirectTo,
-        });
-        if (!rpErr) {
-          setDone(true);
-          return;
-        }
-        lastError = rpErr.message || lastError;
-        if (!/invalid path specified/i.test(lastError)) {
-          break;
-        }
-      }
-
-      if (/invalid path specified/i.test(lastError)) {
-        setError(
-          `재설정 링크 URL 설정이 맞지 않습니다. Supabase Site URL/Redirect URLs 저장값을 다시 확인해 주세요. (앱 Supabase URL: ${configuredSupabaseOrigin || "비어있음"}, 현재 도메인: ${currentOrigin || "확인불가"})`,
-        );
-        return;
-      }
-      setError(lastError || "메일 발송에 실패했습니다.");
+      setDone(true);
     } catch {
       setError("요청 처리 중 오류가 발생했습니다.");
     } finally {
@@ -133,6 +161,63 @@ export default function ForgotPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[12px] font-bold text-zinc-300">휴대폰 번호 인증</label>
+              <div className="flex gap-2">
+                <select
+                  className={`${INPUT} max-w-[110px]`}
+                  value={countryCode}
+                  onChange={(e) => {
+                    setCountryCode(e.target.value);
+                    setPhoneVerified(false);
+                    setSmsProof("");
+                  }}
+                >
+                  <option value="+82">+82</option>
+                  <option value="+1">+1</option>
+                  <option value="+81">+81</option>
+                  <option value="+44">+44</option>
+                </select>
+                <input
+                  className={INPUT}
+                  type="tel"
+                  autoComplete="tel"
+                  placeholder="01012345678"
+                  value={phone}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    setPhoneVerified(false);
+                    setSmsProof("");
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => void sendSmsCode()}
+                  disabled={sendingSms}
+                  className="shrink-0 rounded-xl border border-fuchsia-400/40 bg-fuchsia-500/10 px-3 py-2 text-[12px] font-bold text-fuchsia-200 transition hover:bg-fuchsia-500/20 disabled:opacity-50"
+                >
+                  {sendingSms ? "발송 중…" : "코드 발송"}
+                </button>
+              </div>
+              <div className="mt-2 flex gap-2">
+                <input
+                  className={INPUT}
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="인증번호 입력"
+                  value={smsCode}
+                  onChange={(e) => setSmsCode(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => void verifySmsCode()}
+                  disabled={verifyingSms}
+                  className="shrink-0 rounded-xl border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-[12px] font-bold text-emerald-300 transition hover:bg-emerald-500/20 disabled:opacity-50"
+                >
+                  {verifyingSms ? "확인 중…" : phoneVerified ? "인증 완료" : "인증 확인"}
+                </button>
+              </div>
             </div>
             <button
               type="submit"

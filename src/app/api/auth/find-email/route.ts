@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getProfilesTableName } from "@/lib/supabaseTableNames";
 import { maskEmail } from "@/lib/maskEmail";
+import { toE164 } from "@/lib/phoneE164";
+import { verifySmsProofToken } from "@/lib/smsProof";
 import { getSupabaseServiceRoleClient } from "@/lib/supabaseServiceRole";
 
 export const runtime = "nodejs";
@@ -58,6 +60,8 @@ function phoneCandidates(input: string): string[] {
 type Body = {
   nickname?: string;
   phone?: string;
+  countryCode?: string;
+  smsProof?: string;
 };
 
 export async function POST(request: Request) {
@@ -78,12 +82,40 @@ export async function POST(request: Request) {
 
   const nickname = typeof body.nickname === "string" ? body.nickname.trim() : "";
   const phoneRaw = typeof body.phone === "string" ? body.phone.trim() : "";
-  const phones = phoneCandidates(phoneRaw);
+  const phoneE164 = toE164(
+    phoneRaw,
+    typeof body.countryCode === "string" ? body.countryCode : undefined,
+  );
+  const phones = phoneE164 ? [...new Set([phoneE164, ...phoneCandidates(phoneRaw)])] : phoneCandidates(phoneRaw);
+  const smsProof = typeof body.smsProof === "string" ? body.smsProof.trim() : "";
 
   if (!nickname && phones.length === 0) {
     return NextResponse.json(
       { ok: false, error: "nickname_or_phone_required" },
       { status: 400 },
+    );
+  }
+  if (!phoneE164) {
+    return NextResponse.json(
+      { ok: false, message: "보안을 위해 휴대폰 번호와 SMS 인증이 필요합니다." },
+      { status: 400 },
+    );
+  }
+  if (!smsProof) {
+    return NextResponse.json(
+      { ok: false, message: "보안을 위해 휴대폰 SMS 인증을 먼저 완료해 주세요." },
+      { status: 401 },
+    );
+  }
+  const proof = verifySmsProofToken({
+    token: smsProof,
+    context: "find-email",
+    phone: phoneE164,
+  });
+  if (!proof.ok) {
+    return NextResponse.json(
+      { ok: false, message: "SMS 인증이 만료되었거나 유효하지 않습니다. 다시 인증해 주세요." },
+      { status: 401 },
     );
   }
 
