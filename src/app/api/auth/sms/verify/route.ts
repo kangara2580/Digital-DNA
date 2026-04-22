@@ -15,6 +15,24 @@ type Body = {
   context?: SmsProofContext;
 };
 
+function validateTwilioConfig(input: {
+  accountSid?: string;
+  authToken?: string;
+  verifyServiceSid?: string;
+}): string | null {
+  const { accountSid, authToken, verifyServiceSid } = input;
+  if (!accountSid || !authToken || !verifyServiceSid) {
+    return "서버 SMS 설정(Twilio Verify)이 아직 완료되지 않았습니다.";
+  }
+  if (!/^AC[a-zA-Z0-9]{32}$/.test(accountSid)) {
+    return "TWILIO_ACCOUNT_SID 형식이 올바르지 않습니다. (예: AC...)";
+  }
+  if (!/^VA[a-zA-Z0-9]{32}$/.test(verifyServiceSid)) {
+    return "TWILIO_VERIFY_SERVICE_SID 형식이 올바르지 않습니다. Verify Service SID(예: VA...)를 입력해 주세요.";
+  }
+  return null;
+}
+
 export async function POST(request: Request) {
   let body: Body;
   try {
@@ -45,11 +63,12 @@ export async function POST(request: Request) {
   const accountSid = process.env.TWILIO_ACCOUNT_SID?.trim();
   const authToken = process.env.TWILIO_AUTH_TOKEN?.trim();
   const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID?.trim();
-  if (!accountSid || !authToken || !verifyServiceSid) {
+  const configError = validateTwilioConfig({ accountSid, authToken, verifyServiceSid });
+  if (configError) {
     return NextResponse.json(
       {
         ok: false,
-        message: "서버 SMS 설정(Twilio Verify)이 아직 완료되지 않았습니다.",
+        message: configError,
       },
       { status: 503 },
     );
