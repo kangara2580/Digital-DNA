@@ -166,6 +166,7 @@ export default function SignupPage() {
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [phoneVerificationProof, setPhoneVerificationProof] = useState("");
   const [phoneVerifyMessage, setPhoneVerifyMessage] = useState("");
+  const [phoneInputUnlocked, setPhoneInputUnlocked] = useState(false);
 
   useEffect(() => {
     const saved = readProfileAvatar();
@@ -441,7 +442,7 @@ export default function SignupPage() {
       setPhoneCodeInput("");
       setPhoneVerified(false);
       setPhoneVerificationProof("");
-      setPhoneVerifyMessage("휴대폰으로 인증번호를 보냈습니다. 3분 안에 입력해 주세요.");
+      setPhoneVerifyMessage("SMS 인증번호를 발송했습니다. 수신 문자를 확인해 주세요.");
     } finally {
       setIsSendingPhoneCode(false);
     }
@@ -649,6 +650,21 @@ export default function SignupPage() {
         </Suspense>
 
         <form className="mt-6 space-y-6" onSubmit={onSubmit}>
+          {/* 브라우저 저장 자동완성이 휴대폰 필드를 덮어쓰지 않도록 더미 필드를 둡니다. */}
+          <input
+            type="text"
+            autoComplete="username"
+            tabIndex={-1}
+            aria-hidden
+            className="hidden"
+          />
+          <input
+            type="password"
+            autoComplete="new-password"
+            tabIndex={-1}
+            aria-hidden
+            className="hidden"
+          />
           <section className="rounded-xl border border-white/15 bg-black/25 p-4 backdrop-blur-sm">
             <h2 className="text-[14px] font-bold">프로필 이미지</h2>
             <p className="mt-2 text-[12px] text-zinc-400">
@@ -809,9 +825,12 @@ export default function SignupPage() {
                       setPhoneVerified(false);
                       setPhoneVerificationProof("");
                     }}
+                    onFocus={() => setPhoneInputUnlocked(true)}
+                    onClick={() => setPhoneInputUnlocked(true)}
                     inputMode="numeric"
-                    autoComplete="off"
-                    name="signup-phone-manual"
+                    autoComplete="new-password"
+                    name="signup_phone_manual_input"
+                    readOnly={!phoneInputUnlocked}
                   />
                   <div className="flex gap-2">
                     <button
