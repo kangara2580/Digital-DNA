@@ -99,11 +99,14 @@ export async function POST(request: Request) {
       { status: 503 },
     );
   }
+  const twilioAccountSid = accountSid as string;
+  const twilioAuthToken = authToken as string;
+  const twilioVerifyServiceSid = verifyServiceSid as string;
 
   try {
-    const client = twilio(accountSid, authToken);
+    const client = twilio(twilioAccountSid, twilioAuthToken);
     await client.verify.v2
-      .services(verifyServiceSid)
+      .services(twilioVerifyServiceSid)
       .verifications.create({ to: phone, channel: "sms" });
     return NextResponse.json({ ok: true, phone });
   } catch (e) {
