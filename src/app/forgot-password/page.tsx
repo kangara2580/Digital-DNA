@@ -21,16 +21,20 @@ function normalizeBaseUrl(value: string): string {
 
 function buildResetRedirectCandidates(): string[] {
   const out: string[] = [];
+  const fromEnv = normalizeBaseUrl(process.env.NEXT_PUBLIC_SITE_URL ?? "");
   const fromWindow =
     typeof window !== "undefined" ? normalizeBaseUrl(window.location.origin) : "";
-  const fromEnv = normalizeBaseUrl(process.env.NEXT_PUBLIC_SITE_URL ?? "");
   const push = (base: string) => {
     if (!base) return;
     const redirect = `${base}/reset-password`;
     if (!out.includes(redirect)) out.push(redirect);
   };
-  push(fromWindow);
-  push(fromEnv);
+  // 배포 도메인이 자주 바뀌는 Vercel preview 환경에서는 고정 canonical 도메인을 우선 사용
+  if (fromEnv) {
+    push(fromEnv);
+  } else {
+    push(fromWindow);
+  }
   return out;
 }
 
