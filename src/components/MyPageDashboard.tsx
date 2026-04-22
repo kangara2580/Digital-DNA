@@ -34,6 +34,31 @@ const TAB_ITEMS: { id: MyPageTab; label: string; href: string; desc: string }[] 
   { id: "drafts", label: "임시 저장", href: "/mypage?tab=drafts", desc: "이어 편집 · 구매" },
 ];
 
+function LoginRequiredPanel({
+  tab,
+}: {
+  tab: { id: MyPageTab; label: string; href: string };
+}) {
+  const redirect = encodeURIComponent(tab.href);
+
+  return (
+    <div className="reels-glass-card rounded-xl p-4 sm:rounded-2xl sm:p-5 lg:p-6">
+      <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">{tab.label}</h2>
+      <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-8 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+        <p className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          로그인하면 {tab.label} 탭을 포함한 마이페이지 기능을 모두 이용할 수 있어요.
+        </p>
+        <Link
+          href={`/login?redirect=${redirect}`}
+          className="mt-4 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
+        >
+          로그인
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function normalizeTab(input: string | null): MyPageTab {
   if (
     input === "profile" ||
@@ -49,6 +74,10 @@ function normalizeTab(input: string | null): MyPageTab {
 export function MyPageDashboard() {
   const params = useSearchParams();
   const currentTab = normalizeTab(params.get("tab"));
+  const activeTab = useMemo(
+    () => TAB_ITEMS.find((item) => item.id === currentTab) ?? TAB_ITEMS[0],
+    [currentTab],
+  );
   const { user, supabaseConfigured } = useAuthSession();
   const { profile, hydrated } = useStoredFaceProfile();
   const [draftCount, setDraftCount] = useState(0);
@@ -209,7 +238,9 @@ export function MyPageDashboard() {
         </aside>
 
         <section className="min-w-0">
-          {currentTab === "basic" ? (
+          {!user ? <LoginRequiredPanel tab={activeTab} /> : null}
+
+          {currentTab === "basic" && user ? (
             <div className="reels-glass-card rounded-xl p-4 sm:rounded-2xl sm:p-5 lg:p-6">
               <MyPageAccountOverview />
               <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">기본정보</h2>
@@ -272,12 +303,12 @@ export function MyPageDashboard() {
             </div>
           ) : null}
 
-          {currentTab === "profile" ? <FaceProfileUploadSection /> : null}
-          {currentTab === "drafts" ? <MyPageSavedDraftsSection /> : null}
+          {currentTab === "profile" && user ? <FaceProfileUploadSection /> : null}
+          {currentTab === "drafts" && user ? <MyPageSavedDraftsSection /> : null}
 
-          {currentTab === "analytics" ? <MyPageSellerAnalyticsSection /> : null}
+          {currentTab === "analytics" && user ? <MyPageSellerAnalyticsSection /> : null}
 
-          {currentTab === "listings" ? (
+          {currentTab === "listings" && user ? (
             <div className="reels-glass-card rounded-xl p-4 sm:rounded-2xl sm:p-5 lg:p-6">
               <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">
                 내가 등록한 영상

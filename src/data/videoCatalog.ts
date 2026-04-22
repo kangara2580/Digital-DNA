@@ -20,6 +20,7 @@ export type VideoCatalogMeta = {
 export const CATEGORY_SLUGS = [
   "best",
   "recommend",
+  "latest",
   "oops",
   "daily",
   "shortform",
@@ -38,6 +39,7 @@ export type CategorySlug = (typeof CATEGORY_SLUGS)[number];
 export const CATEGORY_LABEL: Record<CategorySlug, string> = {
   best: "베스트",
   recommend: "추천",
+  latest: "최신",
   oops: "실패와 실수",
   daily: "일상",
   shortform: "숏폼·릴스",
@@ -277,6 +279,9 @@ export function getVideoCatalogMeta(id: string): VideoCatalogMeta {
 }
 
 export function getVideosForCategory(slug: string): FeedVideo[] {
+  if (slug === "latest") {
+    return sortVideosByNewest(ALL_MARKET_VIDEOS);
+  }
   return ALL_MARKET_VIDEOS.filter((v) =>
     getVideoCatalogMeta(v.id).categories.includes(slug),
   );
