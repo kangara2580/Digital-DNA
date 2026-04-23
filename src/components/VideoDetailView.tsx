@@ -452,6 +452,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <SellerIdentityLink
                       creator={video.creator}
+                      sellerId={video.listing?.sellerId}
                       size="compact"
                       className="w-fit"
                     />

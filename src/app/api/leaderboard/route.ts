@@ -1,28 +1,35 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { ensureVideoCategoryColumn } from "@/lib/ensureVideoCategoryColumn";
+import {
+  BEST_REVIEW_AVATAR_PRESETS,
+  buildNotionistsAvatarUrl,
+  DEFAULT_BEST_REVIEW_AVATAR_SEED,
+} from "@/data/reelsAvatarPresets";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type Metric = "sales" | "revenue";
+type Period = "today" | "7d" | "30d";
 
 type LeaderboardRow = {
+  videoId: string;
+  title: string | null;
   sellerId: string;
   nickname: string | null;
   avatarCustom: string | null;
-  topCategory: string | null;
-  totalSales: bigint | number;
+  salesCount: bigint | number;
   totalRevenue: bigint | number;
 };
 
 type LeaderboardItem = {
   rank: number;
+  videoId: string;
+  title: string;
   sellerId: string;
   nickname: string;
   avatarUrl: string | null;
-  category: string;
   totalSales: number;
   totalRevenue: number;
 };
@@ -31,12 +38,19 @@ function toMetric(value: string | null): Metric {
   return value === "revenue" ? "revenue" : "sales";
 }
 
-function toSafeCategory(value: string | null): string {
-  if (!value) return "all";
-  const trimmed = value.trim();
-  if (!trimmed) return "all";
-  if (trimmed.length > 48) return "all";
-  return trimmed.toLowerCase();
+function toPeriod(value: string | null): Period {
+  if (value === "7d") return "7d";
+  if (value === "30d") return "30d";
+  return "today";
+}
+
+function periodStart(period: Period): Date {
+  const now = new Date();
+  if (period === "today") {
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+  }
+  const days = period === "7d" ? 7 : 30;
+  return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 }
 
 function bigintToNumber(value: bigint | number): number {
@@ -44,8 +58,8 @@ function bigintToNumber(value: bigint | number): number {
   return Number.isFinite(value) ? value : 0;
 }
 
-function fallbackNickname(sellerId: string): string {
-  return `Seller ${sellerId.slice(0, 6)}`;
+function fallbackNickname(seed: string): string {
+  return `판매자 ${seed.slice(0, 6)}`;
 }
 
 function pickAvatarUrl(avatarCustom: string | null): string | null {
@@ -57,135 +71,123 @@ function pickAvatarUrl(avatarCustom: string | null): string | null {
   return null;
 }
 
-function safeLabelCategory(value: string | null | undefined): string {
-  const raw = value?.trim();
-  if (!raw) return "미분류";
-  return raw;
+function fallbackTitle(seed: string): string {
+  return `인기 릴스 #${seed.slice(0, 6)}`;
+}
+
+function hashToIndex(input: string, length: number): number {
+  if (length <= 1) return 0;
+  let hash = 0;
+  for (let i = 0; i < input.length; i += 1) {
+    hash = (hash * 31 + input.charCodeAt(i)) >>> 0;
+  }
+  return hash % length;
+}
+
+function fallbackAvatarUrl(seed: string): string {
+  const presets = BEST_REVIEW_AVATAR_PRESETS;
+  if (presets.length === 0) {
+    return buildNotionistsAvatarUrl(DEFAULT_BEST_REVIEW_AVATAR_SEED);
+  }
+  const idx = hashToIndex(seed, presets.length);
+  return buildNotionistsAvatarUrl(presets[idx]!.seed);
 }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const metric = toMetric(searchParams.get("metric"));
-  const category = toSafeCategory(searchParams.get("category"));
+  const period = toPeriod(searchParams.get("period"));
 
   try {
-    await ensureVideoCategoryColumn();
     const isSqlite = (process.env.DATABASE_URL?.trim() ?? "").startsWith("file:");
-    const whereClause =
-      category === "all" ? Prisma.sql`` : Prisma.sql`WHERE v.category = ${category}`;
+    const since = periodStart(period);
+    const periodSql =
+      period === "today"
+        ? Prisma.sql`AND v.created_at >= date_trunc('day', now())`
+        : period === "7d"
+          ? Prisma.sql`AND v.created_at >= now() - interval '7 day'`
+          : Prisma.sql`AND v.created_at >= now() - interval '30 day'`;
 
     let rows: LeaderboardRow[] = [];
 
     if (!isSqlite) {
       const orderSql =
         metric === "revenue"
-          ? Prisma.sql`ORDER BY "totalRevenue" DESC, "totalSales" DESC`
-          : Prisma.sql`ORDER BY "totalSales" DESC, "totalRevenue" DESC`;
+          ? Prisma.sql`ORDER BY "totalRevenue" DESC, "salesCount" DESC, v.created_at DESC`
+          : Prisma.sql`ORDER BY "salesCount" DESC, "totalRevenue" DESC, v.created_at DESC`;
 
       rows = await prisma.$queryRaw<LeaderboardRow[]>(Prisma.sql`
         SELECT
+          v.id AS "videoId",
+          v.title AS title,
           v.seller_id AS "sellerId",
           p.nickname AS nickname,
           p.avatar_custom AS "avatarCustom",
-          COALESCE(
-            (
-              ARRAY_REMOVE(
-                ARRAY_AGG(NULLIF(v.category, '') ORDER BY v.sales_count DESC, v.created_at DESC),
-                NULL
-              )
-            )[1],
-            '미분류'
-          ) AS "topCategory",
-          COALESCE(SUM(v.sales_count), 0)::bigint AS "totalSales",
-          COALESCE(SUM(v.sales_count * v.price), 0)::bigint AS "totalRevenue"
+          COALESCE(v.sales_count, 0)::bigint AS "salesCount",
+          COALESCE(v.sales_count * v.price, 0)::bigint AS "totalRevenue"
         FROM videos v
         LEFT JOIN profiles p ON p.user_id::text = v.seller_id
-        ${whereClause}
-        GROUP BY v.seller_id, p.nickname, p.avatar_custom
-        HAVING COALESCE(SUM(v.sales_count), 0) > 0
+        WHERE COALESCE(v.sales_count, 0) > 0
+        ${periodSql}
         ${orderSql}
         LIMIT 10
       `);
     } else {
       const videos = await prisma.video.findMany({
-        where: category === "all" ? undefined : { category },
+        where: {
+          salesCount: { gt: 0 },
+          createdAt: { gte: since },
+        },
         select: {
+          id: true,
+          title: true,
           sellerId: true,
           salesCount: true,
           price: true,
-          category: true,
           createdAt: true,
         },
+        orderBy: { createdAt: "desc" },
+        take: 500,
       });
-      const bySeller = new Map<
-        string,
-        { totalSales: number; totalRevenue: number; topCategory: string; newestMs: number }
-      >();
-      for (const v of videos) {
-        const current = bySeller.get(v.sellerId) ?? {
-          totalSales: 0,
-          totalRevenue: 0,
-          topCategory: "미분류",
-          newestMs: 0,
-        };
-        current.totalSales += v.salesCount;
-        current.totalRevenue += v.salesCount * v.price;
-        const createdMs = v.createdAt.getTime();
-        if (createdMs >= current.newestMs && v.category?.trim()) {
-          current.topCategory = v.category.trim();
-          current.newestMs = createdMs;
-        }
-        bySeller.set(v.sellerId, current);
-      }
-      rows = Array.from(bySeller.entries())
-        .filter(([, agg]) => agg.totalSales > 0)
-        .map(([sellerId, agg]) => ({
-          sellerId,
-          nickname: null,
-          avatarCustom: null,
-          topCategory: agg.topCategory,
-          totalSales: agg.totalSales,
-          totalRevenue: agg.totalRevenue,
-        }));
+      rows = videos.map((video) => ({
+        videoId: video.id,
+        title: video.title,
+        sellerId: video.sellerId,
+        nickname: null,
+        avatarCustom: null,
+        salesCount: video.salesCount,
+        totalRevenue: video.salesCount * video.price,
+      }));
       rows.sort((a, b) => {
         if (metric === "revenue") {
-          return bigintToNumber(b.totalRevenue) - bigintToNumber(a.totalRevenue);
+          const revenueDiff = bigintToNumber(b.totalRevenue) - bigintToNumber(a.totalRevenue);
+          if (revenueDiff !== 0) return revenueDiff;
+          return bigintToNumber(b.salesCount) - bigintToNumber(a.salesCount);
         }
-        return bigintToNumber(b.totalSales) - bigintToNumber(a.totalSales);
+        const salesDiff = bigintToNumber(b.salesCount) - bigintToNumber(a.salesCount);
+        if (salesDiff !== 0) return salesDiff;
+        return bigintToNumber(b.totalRevenue) - bigintToNumber(a.totalRevenue);
       });
       rows = rows.slice(0, 10);
     }
 
     const ranked: LeaderboardItem[] = rows.map((row, idx) => ({
       rank: idx + 1,
+      videoId: row.videoId,
+      title: row.title?.trim() || fallbackTitle(row.videoId),
       sellerId: row.sellerId,
       nickname: row.nickname?.trim() || fallbackNickname(row.sellerId),
-      avatarUrl: pickAvatarUrl(row.avatarCustom),
-      category: category === "all" ? safeLabelCategory(row.topCategory) : category,
-      totalSales: bigintToNumber(row.totalSales),
+      avatarUrl: pickAvatarUrl(row.avatarCustom) ?? fallbackAvatarUrl(row.sellerId),
+      totalSales: bigintToNumber(row.salesCount),
       totalRevenue: bigintToNumber(row.totalRevenue),
     }));
-
-    const categoryRows = await prisma.video.findMany({
-      where: { category: { not: null } },
-      select: { category: true },
-      orderBy: { createdAt: "desc" },
-      take: 400,
-    });
-    const categories = Array.from(
-      new Set(
-        categoryRows
-          .map((v) => v.category?.trim().toLowerCase() ?? "")
-          .filter((v) => v.length > 0),
-      ),
-    ).sort((a, b) => a.localeCompare(b));
 
     return NextResponse.json({
       ok: true,
       rankings: ranked,
-      categories,
       metric,
-      category,
+      period,
+      generatedAt: new Date().toISOString(),
     });
   } catch (error) {
     console.error("[leaderboard] GET failed", error);

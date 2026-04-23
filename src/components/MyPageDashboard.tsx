@@ -203,6 +203,11 @@ export function MyPageDashboard() {
     return profile.kind === "triple" ? "3면 직접 등록됨" : "AI 3면 생성됨";
   }, [hydrated, profile]);
 
+  const mySellerFeedHref = useMemo(
+    () => (user?.id ? `/seller/${encodeURIComponent(user.id)}` : null),
+    [user?.id],
+  );
+
   return (
     <main className="mx-auto min-h-[60vh] max-w-[1500px] px-3 py-8 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-5 sm:py-10 lg:px-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -243,7 +248,17 @@ export function MyPageDashboard() {
           {currentTab === "basic" && user ? (
             <div className="reels-glass-card rounded-xl p-4 sm:rounded-2xl sm:p-5 lg:p-6">
               <MyPageAccountOverview />
-              <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">기본정보</h2>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">기본정보</h2>
+                {mySellerFeedHref ? (
+                  <Link
+                    href={mySellerFeedHref}
+                    className="inline-flex rounded-full border border-reels-cyan/40 bg-reels-cyan/10 px-3 py-1.5 text-[12px] font-extrabold text-reels-cyan transition hover:bg-reels-cyan/20"
+                  >
+                    내 판매 피드 가기
+                  </Link>
+                ) : null}
+              </div>
 
               <MyPageProfileEditForm
                 profileForForm={profileForForm}

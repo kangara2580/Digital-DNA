@@ -9,6 +9,7 @@ import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { getCommerceMeta } from "@/data/videoCommerce";
 import type { FeedVideo } from "@/data/videos";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
+import { sellerProfileHrefFromVideo } from "@/lib/sellerProfile";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 function formatCompactWon(n: number): string {
@@ -138,6 +139,7 @@ export function ExploreReelSlide({
   const posterSrc = sanitizePosterSrc(video.poster);
   const posterFallback =
     posterSrc ?? (video.poster?.trim() || undefined);
+  const sellerHref = useMemo(() => sellerProfileHrefFromVideo(video), [video]);
 
   useEffect(() => {
     const block = blockRef.current;
@@ -241,7 +243,12 @@ export function ExploreReelSlide({
             </button>
 
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] space-y-2 p-4 pb-5">
-              <p className="text-[13px] font-semibold text-white/90">{video.creator}</p>
+              <Link
+                href={sellerHref}
+                className="pointer-events-auto inline-flex text-[13px] font-semibold text-white/90 underline-offset-2 hover:text-reels-cyan hover:underline"
+              >
+                {video.creator}
+              </Link>
               <p className="line-clamp-3 text-left text-[15px] font-bold leading-snug text-white sm:text-[16px]">
                 {video.title}
               </p>

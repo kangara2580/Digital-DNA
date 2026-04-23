@@ -1,16 +1,19 @@
 "use client";
 
 import { Crown, Medal, TrendingUp, Trophy } from "lucide-react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import Link from "next/link";
+import { useEffect, useState, type ReactNode } from "react";
 
 type Metric = "sales" | "revenue";
+type Period = "today" | "7d" | "30d";
 
 type LeaderboardItem = {
   rank: number;
+  videoId: string;
+  title: string;
   sellerId: string;
   nickname: string;
   avatarUrl: string | null;
-  category: string;
   totalSales: number;
   totalRevenue: number;
 };
@@ -18,28 +21,9 @@ type LeaderboardItem = {
 type LeaderboardResponse = {
   ok: boolean;
   rankings?: LeaderboardItem[];
-  categories?: string[];
+  period?: Period;
+  generatedAt?: string;
   error?: string;
-};
-
-const BASE_CATEGORY_OPTIONS = ["all", "healing", "sleep", "asmr"];
-
-const CATEGORY_LABEL_MAP: Record<string, string> = {
-  all: "전체",
-  healing: "힐링",
-  sleep: "수면",
-  asmr: "ASMR",
-  daily: "일상",
-  shortform: "숏폼·릴스",
-  dance: "춤",
-  music: "노래",
-  food: "푸드",
-  travel: "여행",
-  animals: "동물",
-  business: "비즈니스",
-  comedy: "코미디",
-  cartoon: "만화",
-  oops: "실패와 실수",
 };
 
 const TOP_THEME: Record<
@@ -69,11 +53,6 @@ const TOP_THEME: Record<
   },
 };
 
-function categoryLabel(value: string): string {
-  const key = value.trim().toLowerCase();
-  return CATEGORY_LABEL_MAP[key] ?? value;
-}
-
 function formatRevenue(value: number): string {
   return `${Math.max(0, value).toLocaleString("ko-KR")}원`;
 }
@@ -87,7 +66,13 @@ function metricValue(item: LeaderboardItem, metric: Metric): string {
 }
 
 function metricLabel(metric: Metric): string {
-  return metric === "revenue" ? "Top Revenue" : "Top Sales";
+  return metric === "revenue" ? "매출 순위" : "판매 순위";
+}
+
+function periodLabel(period: Period): string {
+  if (period === "7d") return "7일";
+  if (period === "30d") return "한달";
+  return "오늘";
 }
 
 function metricKoreanLabel(metric: Metric): string {
@@ -119,10 +104,9 @@ function Avatar({ item }: { item: LeaderboardItem }) {
 
 export function LeaderboardClient() {
   const [metric, setMetric] = useState<Metric>("sales");
-  const [category, setCategory] = useState("all");
+  const [period, setPeriod] = useState<Period>("today");
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<LeaderboardItem[]>([]);
-  const [dbCategories, setDbCategories] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -132,15 +116,17 @@ export function LeaderboardClient() {
     void (async () => {
       try {
         const res = await fetch(
-          `/api/leaderboard?metric=${encodeURIComponent(metric)}&category=${encodeURIComponent(category)}`,
-          { cache: "no-store", signal: controller.signal },
+          `/api/leaderboard?metric=${encodeURIComponent(metric)}&period=${encodeURIComponent(period)}`,
+          {
+          cache: "no-store",
+          signal: controller.signal,
+          },
         );
         const body = (await res.json()) as LeaderboardResponse;
         if (!res.ok || !body.ok) {
           throw new Error(body.error ?? "fetch_failed");
         }
         setItems(Array.isArray(body.rankings) ? body.rankings : []);
-        setDbCategories(Array.isArray(body.categories) ? body.categories : []);
       } catch (fetchError) {
         if (controller.signal.aborted) return;
         setItems([]);
@@ -150,30 +136,34 @@ export function LeaderboardClient() {
       }
     })();
     return () => controller.abort();
-  }, [category, metric]);
+  }, [metric, period]);
 
-  const categories = useMemo(() => {
-    const merged = new Set<string>(BASE_CATEGORY_OPTIONS);
-    dbCategories.forEach((c) => merged.add(c.trim().toLowerCase()));
-    return Array.from(merged);
-  }, [dbCategories]);
-
-  const topThree = items.slice(0, 3);
-  const others = items.slice(3);
+  const hasData = items.length > 0;
+  const rankedItems: LeaderboardItem[] = hasData
+    ? items
+    : Array.from({ length: 10 }, (_, idx) => ({
+        rank: idx + 1,
+        videoId: `empty-${idx + 1}`,
+        title: "아직 데이터가 없어요",
+        sellerId: `empty-${idx + 1}`,
+        nickname: "대기중",
+        avatarUrl: null,
+        totalSales: 0,
+        totalRevenue: 0,
+      }));
+  const topThree = rankedItems.slice(0, 3);
+  const others = rankedItems.slice(3);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
       <section className="reels-glass-card overflow-hidden rounded-2xl border border-white/10 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full border border-reels-cyan/35 bg-reels-cyan/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-reels-cyan">
-            Leaderboard
-          </span>
           <h1 className="text-xl font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-2xl">
-            명예의 전당 2.0
+            명예의 전당
           </h1>
         </div>
         <p className="mt-2 text-sm text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-          카테고리별 판매자 랭킹을 실시간으로 확인하세요.
+          판매량과 매출 기준으로 릴스 Top 10을 실시간으로 확인하세요.
         </p>
 
         <div className="mt-5 flex flex-wrap gap-2">
@@ -196,26 +186,26 @@ export function LeaderboardClient() {
             );
           })}
         </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          {categories.map((cat) => {
-            const active = category === cat;
+        <div className="mt-3 flex flex-wrap gap-2">
+          {(["today", "7d", "30d"] as const).map((tab) => {
+            const active = period === tab;
             return (
               <button
-                key={cat}
+                key={tab}
                 type="button"
-                onClick={() => setCategory(cat)}
+                onClick={() => setPeriod(tab)}
                 className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
                   active
                     ? "border-reels-crimson/55 bg-reels-crimson/20 text-reels-crimson"
                     : "border-white/15 bg-black/20 text-zinc-300 hover:border-white/30 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:text-zinc-900"
                 }`}
               >
-                {categoryLabel(cat)}
+                {periodLabel(tab)}
               </button>
             );
           })}
         </div>
+
       </section>
 
       <section className="mt-5">
@@ -227,20 +217,12 @@ export function LeaderboardClient() {
           <div className="reels-glass-card rounded-2xl border border-red-500/35 bg-red-500/8 p-6 text-sm text-red-200 [html[data-theme='light']_&]:text-red-700">
             랭킹 데이터를 불러오지 못했어요. 잠시 후 다시 시도해주세요.
           </div>
-        ) : items.length === 0 ? (
-          <div className="reels-glass-card rounded-2xl border border-reels-cyan/35 bg-reels-cyan/8 p-6 text-center">
-            <p className="text-base font-bold text-reels-cyan">
-              첫 번째 명예의 전당 주인공이 되어보세요!
-            </p>
-            <p className="mt-2 text-sm text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-              아직 판매 데이터가 없어요. 첫 판매가 등록되면 자동으로 랭킹이 시작됩니다.
-            </p>
-          </div>
         ) : (
           <div className="space-y-5">
             <div className="grid gap-3 md:grid-cols-3">
               {topThree.map((item) => {
                 const theme = TOP_THEME[item.rank] ?? TOP_THEME[3];
+                const empty = !hasData;
                 const kingWord =
                   item.rank === 1
                     ? metric === "revenue"
@@ -249,7 +231,7 @@ export function LeaderboardClient() {
                     : theme.title;
                 return (
                   <article
-                    key={item.sellerId}
+                    key={item.videoId}
                     className={`rounded-2xl border p-4 ${theme.border}`}
                   >
                     <div className="flex items-center justify-between">
@@ -261,24 +243,42 @@ export function LeaderboardClient() {
                       </span>
                     </div>
 
-                    <div className="mt-4 flex items-center gap-3">
-                      <Avatar item={item} />
-                      <div className="min-w-0">
-                        <p className="truncate text-base font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                          {item.nickname}
-                        </p>
-                        <p className="truncate text-xs text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                          카테고리: {categoryLabel(item.category)}
-                        </p>
+                    {hasData ? (
+                      <Link
+                        href={`/seller/${encodeURIComponent(item.sellerId)}`}
+                        className="mt-4 flex items-center gap-3 rounded-xl p-1 -m-1 transition-colors hover:bg-white/5 [html[data-theme='light']_&]:hover:bg-zinc-100"
+                        aria-label={`${item.nickname} 판매자 피드`}
+                      >
+                        <Avatar item={item} />
+                        <div className="min-w-0">
+                          <p className="truncate text-base font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                            {item.nickname}
+                          </p>
+                          <p className="truncate text-xs text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                            릴스: {item.title}
+                          </p>
+                        </div>
+                      </Link>
+                    ) : (
+                      <div className="mt-4 flex items-center gap-3 rounded-xl p-1 -m-1">
+                        <Avatar item={item} />
+                        <div className="min-w-0">
+                          <p className="truncate text-base font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                            {item.nickname}
+                          </p>
+                          <p className="truncate text-xs text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                            아직 순위 데이터 없음
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     <div className="mt-4 rounded-xl border border-white/15 bg-black/30 px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
                       <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                         {metricKoreanLabel(metric)}
                       </p>
                       <p className="mt-1 text-lg font-extrabold text-reels-cyan">
-                        {metricValue(item, metric)}
+                        {empty ? "-" : metricValue(item, metric)}
                       </p>
                     </div>
                   </article>
@@ -291,25 +291,45 @@ export function LeaderboardClient() {
                 <ul>
                   {others.map((item) => (
                     <li
-                      key={item.sellerId}
+                      key={item.videoId}
                       className="flex items-center justify-between gap-3 border-t border-white/10 px-4 py-3 first:border-t-0 [html[data-theme='light']_&]:border-zinc-200"
                     >
                       <div className="flex min-w-0 items-center gap-3">
                         <span className="w-8 text-center text-base font-extrabold text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
                           {item.rank}
                         </span>
-                        <Avatar item={item} />
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                            {item.nickname}
-                          </p>
-                          <p className="truncate text-xs text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                            {categoryLabel(item.category)}
-                          </p>
-                        </div>
+                        {hasData ? (
+                          <Link
+                            href={`/seller/${encodeURIComponent(item.sellerId)}`}
+                            className="flex min-w-0 items-center gap-3 rounded-xl p-1 -m-1 transition-colors hover:bg-white/5 [html[data-theme='light']_&]:hover:bg-zinc-100"
+                            aria-label={`${item.nickname} 판매자 피드`}
+                          >
+                            <Avatar item={item} />
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                                {item.nickname}
+                              </p>
+                              <p className="truncate text-xs text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                                {item.title}
+                              </p>
+                            </div>
+                          </Link>
+                        ) : (
+                          <div className="flex min-w-0 items-center gap-3 rounded-xl p-1 -m-1">
+                            <Avatar item={item} />
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                                {item.nickname}
+                              </p>
+                              <p className="truncate text-xs text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                                아직 순위 데이터 없음
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <span className="shrink-0 text-sm font-extrabold text-reels-cyan">
-                        {metricValue(item, metric)}
+                        {hasData ? metricValue(item, metric) : "-"}
                       </span>
                     </li>
                   ))}

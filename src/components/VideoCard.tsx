@@ -25,6 +25,10 @@ import { getExternalIframeForCard } from "@/lib/externalEmbed/playerUrls";
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { CartIcon } from "@/components/CartIcon";
 import type { SellerSocialLink } from "@/lib/sellerSocialLinks";
+import {
+  sellerDisplayNameFromVideo,
+  sellerProfileHrefFromVideo,
+} from "@/lib/sellerProfile";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useAuthSession } from "@/hooks/useAuthSession";
 
@@ -404,6 +408,8 @@ export function VideoCard({
       : null;
   const socialLinksToShow =
     (video.sellerSocialLinks?.length ?? 0) > 0 ? video.sellerSocialLinks! : sellerSocialLinks;
+  const sellerHref = useMemo(() => sellerProfileHrefFromVideo(video), [video]);
+  const sellerName = useMemo(() => sellerDisplayNameFromVideo(video), [video]);
 
   const quilt =
     showRelatedQuilt && !dense ? <RelatedDnaQuilt video={video} /> : null;
@@ -760,6 +766,15 @@ export function VideoCard({
         }`}
       >
         <div className="flex min-w-0 flex-col gap-1">
+          <Link
+            href={sellerHref}
+            className={`w-fit max-w-full truncate text-left font-medium text-zinc-400 underline-offset-2 hover:text-reels-cyan hover:underline [html[data-theme='light']_&]:text-zinc-600 ${
+              dense ? "text-[9px]" : "text-[10px] sm:text-[11px]"
+            }`}
+            aria-label={`${sellerName} 판매자 페이지`}
+          >
+            {sellerName}
+          </Link>
           <div className={`flex min-w-0 items-center ${dense ? "gap-1" : "gap-2"}`}>
             <h3
               className={`line-clamp-2 min-w-0 flex-1 text-left font-semibold leading-snug text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 ${
