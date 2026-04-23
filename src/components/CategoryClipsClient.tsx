@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { VideoCard } from "@/components/VideoCard";
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
@@ -31,7 +32,13 @@ type EndlessFeedItem = {
   video: FeedVideo;
 };
 
-function BestEndlessRankFeed({ videos }: { videos: FeedVideo[] }) {
+function BestEndlessRankFeed({
+  videos,
+  onEnterWatch,
+}: {
+  videos: FeedVideo[];
+  onEnterWatch: (video: FeedVideo) => void;
+}) {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [items, setItems] = useState<EndlessFeedItem[]>([]);
 
@@ -88,6 +95,7 @@ function BestEndlessRankFeed({ videos }: { videos: FeedVideo[] }) {
               reelLayout
               reelStrip
               hideCloneStrip
+              onPick={() => onEnterWatch(item.video)}
               className="h-full min-w-0"
               footerExtension={
                 <TrendingVideoStatsFooter
@@ -113,13 +121,11 @@ function BestEndlessRankFeed({ videos }: { videos: FeedVideo[] }) {
 }
 
 export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
+  const router = useRouter();
   const label = CATEGORY_LABEL[slug];
   const categoryStory = useMemo(() => {
     if (slug === "oops") {
       return "완벽하지 않아 더 끌리는, 인간적인 실수의 순간들만 모았습니다.";
-    }
-    if (slug === "best") {
-      return "지금 가장 반응이 큰 릴스들을 한눈에 보고, 바로 구매/활용할 수 있어요.";
     }
     return null;
   }, [slug]);
@@ -214,6 +220,21 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
     [sorted],
   );
 
+  const openExploreWatch = useCallback(
+    (video: FeedVideo) => {
+      try {
+        window.sessionStorage.setItem(
+          `reels:explore:target:${video.id}`,
+          JSON.stringify(video),
+        );
+      } catch {
+        /* ignore */
+      }
+      router.push(`/explore?view=watch&videoId=${encodeURIComponent(video.id)}`);
+    },
+    [router],
+  );
+
   const renderMosaicGrid = (videos: FeedVideo[]) => (
     <div className="grid grid-cols-2 gap-2 border border-white/10 p-2 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {videos.map((video) => (
@@ -226,6 +247,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
               video={video}
               flush
               instantPreview={false}
+              onPick={() => openExploreWatch(video)}
               domId={`clip-${video.id}`}
               className="h-full w-full"
             />
@@ -430,7 +452,9 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
             </div>
           </header>
 
-          {slug === "best" && sorted.length > 0 ? <BestEndlessRankFeed videos={sorted} /> : null}
+          {slug === "best" && sorted.length > 0 ? (
+            <BestEndlessRankFeed videos={sorted} onEnterWatch={openExploreWatch} />
+          ) : null}
 
           {sorted.length === 0 ? (
             <p className="px-4 py-16 text-center font-mono text-[12px] text-zinc-500 sm:px-6 [html[data-theme='light']_&]:text-zinc-600">

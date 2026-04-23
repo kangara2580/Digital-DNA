@@ -176,6 +176,20 @@ export function ExploreReelSlide({
     onMutedChange(!muted);
   }, [muted, onMutedChange]);
 
+  const togglePlayPause = useCallback(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    if (el.paused) {
+      safePlayVideo(el);
+      return;
+    }
+    try {
+      el.pause();
+    } catch {
+      /* noop */
+    }
+  }, []);
+
   useEffect(() => {
     const el = videoRef.current;
     if (el) el.muted = muted;
@@ -198,7 +212,7 @@ export function ExploreReelSlide({
             >
             <video
               ref={videoRef}
-              className="absolute inset-0 z-0 h-full w-full object-cover"
+              className="absolute inset-0 z-0 h-full w-full cursor-pointer object-cover"
               poster={posterFallback || undefined}
               src={isPexelsBlockedVideo ? undefined : previewSrc}
               muted={muted}
@@ -206,6 +220,7 @@ export function ExploreReelSlide({
               loop
               preload={isPexelsBlockedVideo ? "none" : "metadata"}
               onTimeUpdate={onTimeUpdate}
+              onClick={togglePlayPause}
             />
             <div
               className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/85 via-black/10 to-black/35"

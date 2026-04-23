@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Film, Loader2, Trash2 } from "lucide-react";
 import { MyListingEditDialog } from "@/components/MyListingEditDialog";
 import { VideoCard } from "@/components/VideoCard";
 import { useAuthSession } from "@/hooks/useAuthSession";
-import { getSellVideoCategoryLabel } from "@/lib/sellVideoCategory";
+import {
+  SELL_VIDEO_CATEGORY_OPTIONS,
+  type SellVideoCategory,
+} from "@/lib/sellVideoCategory";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import type { FeedVideo } from "@/data/videos";
 
@@ -18,7 +21,35 @@ export function MyPageMyListingsSection() {
   const [error, setError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleteBusy, setDeleteBusy] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<"all" | SellVideoCategory>(
+    "all",
+  );
   const selectAllRef = useRef<HTMLInputElement>(null);
+
+  const categoryCounts = useMemo(() => {
+    const counts = new Map<SellVideoCategory, number>();
+    SELL_VIDEO_CATEGORY_OPTIONS.forEach((item) => {
+      counts.set(item.value, 0);
+    });
+    videos.forEach((video) => {
+      const category = video.category ?? video.listing?.category;
+      if (!category) return;
+      if (!counts.has(category as SellVideoCategory)) return;
+      counts.set(
+        category as SellVideoCategory,
+        (counts.get(category as SellVideoCategory) ?? 0) + 1,
+      );
+    });
+    return counts;
+  }, [videos]);
+
+  const visibleVideos = useMemo(() => {
+    if (activeCategory === "all") return videos;
+    return videos.filter((video) => {
+      const category = video.category ?? video.listing?.category;
+      return category === activeCategory;
+    });
+  }, [videos, activeCategory]);
 
   const load = useCallback(async () => {
     if (!user || !supabaseConfigured) {
@@ -77,12 +108,13 @@ export function MyPageMyListingsSection() {
     void load();
   }, [authLoading, load]);
 
-  const allSelected =
-    videos.length > 0 && selectedIds.length > 0 && selectedIds.length === videos.length;
-  const someSelected =
-    videos.length > 0 &&
-    selectedIds.length > 0 &&
-    selectedIds.length < videos.length;
+  const visibleIds = useMemo(() => visibleVideos.map((v) => v.id), [visibleVideos]);
+  const selectedVisibleCount = useMemo(
+    () => visibleIds.filter((id) => selectedIds.includes(id)).length,
+    [visibleIds, selectedIds],
+  );
+  const allSelected = visibleVideos.length > 0 && selectedVisibleCount === visibleVideos.length;
+  const someSelected = selectedVisibleCount > 0 && selectedVisibleCount < visibleVideos.length;
 
   useEffect(() => {
     const el = selectAllRef.current;
@@ -112,11 +144,17 @@ export function MyPageMyListingsSection() {
 
   const toggleSelectAll = useCallback(() => {
     setSelectedIds((prev) => {
-      if (videos.length === 0) return [];
-      if (prev.length === videos.length) return [];
-      return videos.map((x) => x.id);
+      if (visibleVideos.length === 0) return prev;
+      const visibleSet = new Set(visibleIds);
+      const selectedVisible = prev.filter((id) => visibleSet.has(id)).length;
+      if (selectedVisible === visibleVideos.length) {
+        return prev.filter((id) => !visibleSet.has(id));
+      }
+      const next = new Set(prev);
+      visibleIds.forEach((id) => next.add(id));
+      return Array.from(next);
     });
-  }, [videos]);
+  }, [visibleIds, visibleVideos.length]);
 
   const removeFromSelection = useCallback((ids: string[]) => {
     setSelectedIds((prev) => prev.filter((x) => !ids.includes(x)));
@@ -170,21 +208,6 @@ export function MyPageMyListingsSection() {
       }
     },
     [getToken, removeFromSelection],
-  );
-
-  const confirmDeleteOne = useCallback(
-    (v: FeedVideo) => {
-      if (deleteBusy) return;
-      if (
-        !window.confirm(
-          `「${v.title}」 영상을 삭제할까요?\n삭제 후에는 복구할 수 없습니다.`,
-        )
-      ) {
-        return;
-      }
-      void deleteByIds([v.id]);
-    },
-    [deleteBusy, deleteByIds],
   );
 
   const confirmDeleteSelected = useCallback(() => {
@@ -281,9 +304,14 @@ export function MyPageMyListingsSection() {
         <p className="text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           총{" "}
           <strong className="text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
-            {videos.length}
+            {visibleVideos.length}
           </strong>
           개
+          {activeCategory !== "all" ? (
+            <span className="ml-1 text-[12px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
+              (전체 {videos.length}개)
+            </span>
+          ) : null}
         </p>
         <Link
           href="/sell"
@@ -291,6 +319,39 @@ export function MyPageMyListingsSection() {
         >
           새로 등록하기 →
         </Link>
+      </div>
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setActiveCategory("all")}
+          className={`rounded-full border px-3 py-1.5 text-[12px] font-bold transition ${
+            activeCategory === "all"
+              ? "border-reels-cyan/50 bg-reels-cyan/15 text-reels-cyan"
+              : "border-white/15 bg-black/25 text-zinc-400 hover:border-white/25 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
+          }`}
+        >
+          전체 ({videos.length})
+        </button>
+        {SELL_VIDEO_CATEGORY_OPTIONS.filter(
+          (item) => (categoryCounts.get(item.value) ?? 0) > 0,
+        ).map((item) => {
+          const count = categoryCounts.get(item.value) ?? 0;
+          return (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => setActiveCategory(item.value)}
+              className={`rounded-full border px-3 py-1.5 text-[12px] font-bold transition ${
+                activeCategory === item.value
+                  ? "border-reels-cyan/50 bg-reels-cyan/15 text-reels-cyan"
+                  : "border-white/15 bg-black/25 text-zinc-400 hover:border-white/25 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
+              }`}
+            >
+              {item.label} ({count})
+            </button>
+          );
+        })}
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80">
@@ -318,7 +379,7 @@ export function MyPageMyListingsSection() {
           ) : (
             <Trash2 className="h-3.5 w-3.5" aria-hidden />
           )}
-          선택 삭제
+          삭제
           {selectedIds.length > 0 ? ` (${selectedIds.length})` : ""}
         </button>
         {selectedIds.length > 0 ? (
@@ -333,7 +394,7 @@ export function MyPageMyListingsSection() {
       </div>
 
       <ul className="grid list-none grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
-        {videos.map((v) => {
+        {visibleVideos.map((v) => {
           const checked = selectedIds.includes(v.id);
           return (
             <li key={v.id} className="group relative min-w-0">
@@ -347,11 +408,8 @@ export function MyPageMyListingsSection() {
                   aria-label={`${v.title} 선택`}
                 />
               </label>
-              <VideoCard video={v} className="min-w-0" />
+              <VideoCard video={v} className="min-w-0" hideHoverActions />
               <div className="absolute right-1.5 top-1.5 z-[25] flex flex-col gap-1">
-                <span className="max-w-[7.5rem] truncate rounded-md border border-reels-cyan/35 bg-black/70 px-2 py-1 text-center text-[10px] font-bold text-reels-cyan shadow-md backdrop-blur-sm [html[data-theme='light']_&]:border-reels-cyan/45 [html[data-theme='light']_&]:bg-white/95">
-                  {getSellVideoCategoryLabel(v.category ?? v.listing?.category)}
-                </span>
                 <button
                   type="button"
                   onClick={() => setEditing(v)}
@@ -359,16 +417,6 @@ export function MyPageMyListingsSection() {
                   className="rounded-lg border border-white/20 bg-black/60 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-md backdrop-blur-sm transition hover:bg-black/75 sm:px-2.5 sm:py-1.5 sm:text-[11px]"
                 >
                   편집
-                </button>
-                <button
-                  type="button"
-                  onClick={() => confirmDeleteOne(v)}
-                  disabled={deleteBusy}
-                  title="이 영상 삭제"
-                  aria-label={`${v.title} 삭제`}
-                  className="inline-flex items-center justify-center rounded-lg border border-rose-500/45 bg-black/70 p-1.5 text-rose-200 shadow-md backdrop-blur-sm transition hover:bg-rose-950/50 hover:text-white disabled:opacity-40 [html[data-theme='light']_&]:text-rose-800"
-                >
-                  <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
                 </button>
               </div>
             </li>

@@ -10,6 +10,7 @@ import {
   Link2,
   MoreVertical,
   ShoppingCart,
+  Trophy,
   User,
   UserPlus2,
   Wallet,
@@ -56,6 +57,12 @@ const RAIL_ITEMS: RailItem[] = [
     label: "탐색",
     Icon: Compass,
     isActive: (p) => p === "/explore" || p.startsWith("/explore/"),
+  },
+  {
+    href: "/leaderboard",
+    label: "명예의 전당",
+    Icon: Trophy,
+    isActive: (p) => p === "/leaderboard" || p.startsWith("/leaderboard/"),
   },
   {
     href: "/likes",

@@ -75,6 +75,10 @@ type Props = {
   preloadMode?: "none" | "metadata" | "auto";
   /** 카드 폭이 작은 구간(연관 릴스 등)에서 hover 액션 아이콘만 축소 */
   compactHoverActions?: boolean;
+  /** true면 호버 액션에서 좋아요(하트) 아이콘 숨김 */
+  hideLikeAction?: boolean;
+  /** true면 호버 액션(장바구니/좋아요/찜) 전체 숨김 */
+  hideHoverActions?: boolean;
 };
 
 function formatDuration(seconds: number): string {
@@ -154,6 +158,8 @@ export function VideoCard({
   onPick,
   preloadMode = "metadata",
   compactHoverActions = false,
+  hideLikeAction = false,
+  hideHoverActions = false,
 }: Props) {
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
@@ -645,12 +651,13 @@ export function VideoCard({
             )}
           </div>
         ) : null}
-        <div
-          className={`pointer-events-none absolute inset-0 z-[7] flex items-center justify-center ${actionOverlayPadding}`}
-        >
+        {!hideHoverActions ? (
           <div
-            className={`flex items-center justify-center opacity-100 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 max-lg:translate-y-0 max-lg:opacity-100 translate-y-1 lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 ${actionGap} ${actionRowFrame}`}
+            className={`pointer-events-none absolute inset-0 z-[7] flex items-center justify-center ${actionOverlayPadding}`}
           >
+            <div
+              className={`flex items-center justify-center opacity-100 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 max-lg:translate-y-0 max-lg:opacity-100 translate-y-1 lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 ${actionGap} ${actionRowFrame}`}
+            >
             <button
               ref={cartBtnRef}
               type="button"
@@ -669,24 +676,26 @@ export function VideoCard({
                 className={`shrink-0 drop-shadow-md ${actionIconSize}`}
               />
             </button>
-            <button
-              type="button"
-              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
-              aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
-              aria-pressed={likedByMe}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                void toggleInternalLike();
-              }}
-              disabled={likeBusy}
-            >
-              <Heart
-                className={`shrink-0 drop-shadow-md transition-all duration-200 ${actionIconSize} ${likedByMe ? "fill-current text-reels-crimson" : "text-white"} ${
-                  likePulse ? "scale-110" : "scale-100"
-                }`}
-              />
-            </button>
+            {!hideLikeAction ? (
+              <button
+                type="button"
+                className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
+                aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+                aria-pressed={likedByMe}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  void toggleInternalLike();
+                }}
+                disabled={likeBusy}
+              >
+                <Heart
+                  className={`shrink-0 drop-shadow-md transition-all duration-200 ${actionIconSize} ${likedByMe ? "fill-current text-reels-crimson" : "text-white"} ${
+                    likePulse ? "scale-110" : "scale-100"
+                  }`}
+                />
+              </button>
+            ) : null}
             <button
               type="button"
               className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
@@ -734,8 +743,9 @@ export function VideoCard({
                 />
               </span>
             </button>
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
 
       <div

@@ -197,12 +197,16 @@ export function MallTopNav() {
   }, [pathname]);
   const isVideoDetailPage =
     pathname.startsWith("/video/") && !pathname.endsWith("/customize");
+  const isCategoryPage = pathname.startsWith("/category/");
   const [isExploreWatchMode, setIsExploreWatchMode] = useState(false);
-  const showCategoryNav = pathname === "/explore" && !isExploreWatchMode;
-  const showAllCategoriesInline = pathname === "/explore" && !isExploreWatchMode;
+  const showCategoryNav =
+    (pathname === "/explore" || isCategoryPage) && !isExploreWatchMode;
+  const showAllCategoriesInline =
+    (pathname === "/explore" || isCategoryPage) && !isExploreWatchMode;
   const [detailSearchOpen, setDetailSearchOpen] = useState(false);
-  /** 탐색(/explore): 메인에서 스크롤을 내린 것과 같은 컴팩트 헤더를 즉시 적용 */
-  const compactEffective = compact || pathname === "/explore" || isVideoDetailPage;
+  /** 탐색/카테고리: 메인에서 스크롤 내린 것과 같은 컴팩트 헤더를 즉시 적용 */
+  const compactEffective =
+    compact || pathname === "/explore" || isCategoryPage || isVideoDetailPage;
   const [moreOpen, setMoreOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const moreWrapRef = useRef<HTMLDivElement>(null);

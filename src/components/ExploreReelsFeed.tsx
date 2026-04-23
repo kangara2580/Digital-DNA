@@ -2,6 +2,7 @@
 
 import { ArrowLeft, ChevronDown, ChevronUp, LayoutGrid } from "lucide-react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -13,6 +14,7 @@ import {
 } from "react";
 import { ExploreReelSlide } from "@/components/ExploreReelSlide";
 import { VideoCard } from "@/components/VideoCard";
+import { buildWishlistVideoLookup } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
 
 const BATCH = 6;
@@ -290,19 +292,77 @@ function ExploreWatchReels({
 }
 
 export function ExploreReelsFeed({ pool }: { pool: FeedVideo[] }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const videoById = useMemo(() => buildWishlistVideoLookup(), []);
+  const [sessionTargetVideo, setSessionTargetVideo] = useState<FeedVideo | null>(null);
   const [mode, setMode] = useState<"browse" | "watch">("browse");
   const [watchOffset, setWatchOffset] = useState(0);
   const [visibleGridCount, setVisibleGridCount] = useState(GRID_INITIAL);
+  const requestedVideoId = searchParams.get("videoId");
+
+  useEffect(() => {
+    if (!requestedVideoId) {
+      setSessionTargetVideo(null);
+      return;
+    }
+    try {
+      const raw = window.sessionStorage.getItem(`reels:explore:target:${requestedVideoId}`);
+      if (!raw) {
+        setSessionTargetVideo(null);
+        return;
+      }
+      const parsed = JSON.parse(raw) as FeedVideo;
+      if (!parsed || parsed.id !== requestedVideoId) {
+        setSessionTargetVideo(null);
+        return;
+      }
+      setSessionTargetVideo(parsed);
+    } catch {
+      setSessionTargetVideo(null);
+    }
+  }, [requestedVideoId]);
+
+  const watchPool = useMemo(() => {
+    if (!requestedVideoId) return pool;
+    if (pool.some((v) => v.id === requestedVideoId)) return pool;
+    const target = videoById.get(requestedVideoId);
+    if (target) return [target, ...pool];
+    if (sessionTargetVideo && sessionTargetVideo.id === requestedVideoId) {
+      return [sessionTargetVideo, ...pool];
+    }
+    return pool;
+  }, [pool, requestedVideoId, videoById, sessionTargetVideo]);
+
+  useEffect(() => {
+    const view = searchParams.get("view");
+    const videoId = searchParams.get("videoId");
+    if (view !== "watch") {
+      setMode("browse");
+      return;
+    }
+    const idx = videoId ? watchPool.findIndex((v) => v.id === videoId) : -1;
+    setWatchOffset(idx >= 0 ? idx : 0);
+    setMode("watch");
+  }, [watchPool, searchParams]);
 
   const enterWatch = useCallback((_video: FeedVideo, gridIndex: number) => {
-    if (pool.length === 0) return;
-    setWatchOffset(gridIndex % pool.length);
+    if (watchPool.length === 0) return;
+    const normalized = gridIndex % watchPool.length;
+    const target = watchPool[normalized];
+    setWatchOffset(normalized);
     setMode("watch");
-  }, [pool]);
+    router.replace(
+      `${pathname}?view=watch&videoId=${encodeURIComponent(target.id)}`,
+      { scroll: false },
+    );
+  }, [pathname, router, watchPool]);
 
   const backToBrowse = useCallback(() => {
     setMode("browse");
-  }, []);
+    router.replace(pathname, { scroll: false });
+  }, [pathname, router]);
 
   useEffect(() => {
     if (mode === "browse") {
@@ -323,7 +383,7 @@ export function ExploreReelsFeed({ pool }: { pool: FeedVideo[] }) {
   if (mode === "browse") {
     return (
       <ExploreBrowseGrid
-        pool={pool}
+        pool={watchPool}
         visibleGridCount={visibleGridCount}
         setVisibleGridCount={setVisibleGridCount}
         onEnterWatch={enterWatch}
@@ -333,7 +393,7 @@ export function ExploreReelsFeed({ pool }: { pool: FeedVideo[] }) {
 
   return (
     <ExploreWatchReels
-      pool={pool}
+      pool={watchPool}
       watchOffset={watchOffset}
       onBackToBrowse={backToBrowse}
     />

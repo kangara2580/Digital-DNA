@@ -246,6 +246,7 @@ export default function WishlistPage() {
                 video={video}
                 domId={`wishlist-${entryId}`}
                 className="min-w-0"
+                compactHoverActions
               />
             </li>
           ))}

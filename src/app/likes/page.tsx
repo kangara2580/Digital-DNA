@@ -270,6 +270,7 @@ export default function LikesPage() {
                 video={video}
                 domId={`likes-${entryId}`}
                 className="min-w-0"
+                compactHoverActions
               />
             </li>
           ))}
