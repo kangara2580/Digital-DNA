@@ -196,11 +196,11 @@ export function MyPagePasswordSection() {
         return;
       }
 
-      // Supabase Auth에서 "Secure password change"가 켜져 있으면 updateUser에 currentPassword를 함께 보내야 합니다.
+      // Supabase Auth에서 "Secure password change"가 켜져 있으면 updateUser에 current_password를 함께 보내야 합니다.
       // (로그인만으로는 이 요구를 충족하지 못해 "Current password required…" 오류가 날 수 있음)
       const { error: upErr } = await supabase.auth.updateUser({
         password: next,
-        currentPassword: current,
+        current_password: current,
       });
       if (upErr) {
         setError(upErr.message ? toKoreanPasswordError(upErr.message) : "비밀번호 변경에 실패했습니다.");
