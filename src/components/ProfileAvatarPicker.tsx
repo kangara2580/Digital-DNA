@@ -155,21 +155,159 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
 
   const isComfortable = density === "comfortable";
 
+  if (isComfortable) {
+    return (
+      <div className="grid h-full grid-cols-1 gap-4 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-x-6 sm:gap-y-4">
+        <div className="relative mx-auto shrink-0 sm:mx-0">
+          <div className="relative h-32 w-32 overflow-hidden rounded-full border-2 border-reels-cyan/35 bg-black/30 shadow-lg ring-4 ring-reels-cyan/10 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:ring-reels-cyan/15 sm:h-36 sm:w-36">
+            {!previewReady ? (
+              <div
+                className="h-full w-full animate-pulse bg-zinc-600/35 [html[data-theme='light']_&]:bg-zinc-300/50"
+                aria-hidden
+              />
+            ) : value?.kind === "upload" ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={previewUrl}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <Image
+                src={previewUrl}
+                alt=""
+                fill
+                unoptimized
+                className="object-cover"
+              />
+            )}
+          </div>
+          <span className="pointer-events-none absolute -bottom-1 -right-1 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-reels-cyan/25 text-reels-cyan shadow-md backdrop-blur-sm sm:h-11 sm:w-11">
+            <Sparkles className="h-5 w-5 sm:h-[22px] sm:w-[22px]" aria-hidden />
+          </span>
+        </div>
+
+        <div className="min-w-0 w-full">
+          <p className="text-center text-[14px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-left">
+            프로필 이미지
+          </p>
+          {hint ? (
+            <p className="mt-1 text-center text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-left">
+              {hint}
+            </p>
+          ) : null}
+          <div className="mt-3 flex flex-wrap justify-center gap-2.5 sm:justify-start">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[13px] font-bold text-zinc-200 transition hover:border-reels-cyan/40 hover:bg-reels-cyan/10 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+            >
+              <ImagePlus className="h-4 w-4 text-reels-cyan" aria-hidden />
+              이미지 올리기
+            </button>
+            <input
+              ref={fileRef}
+              id={inputId}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={onFile}
+            />
+          </div>
+        </div>
+
+        <div
+          className={`mt-0 w-full rounded-xl border border-reels-cyan/20 bg-gradient-to-br from-black/40 to-black/20 p-3 sm:col-span-2 sm:p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-100/90 [html[data-theme='light']_&]:to-white ${
+            customizerDisabled ? "opacity-50" : ""
+          }`}
+        >
+          <div className="flex flex-col gap-2.5">
+            <div className="flex min-h-[36px] items-center justify-between gap-2">
+              <p className="shrink-0 text-[12px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                캐릭터 꾸미기
+              </p>
+              <button
+                type="button"
+                disabled={customizerDisabled}
+                onClick={randomize}
+                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-reels-cyan/35 bg-reels-cyan/12 px-2.5 py-1 text-[11px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Dices className="h-3.5 w-3.5" aria-hidden />
+                랜덤
+              </button>
+            </div>
+            <div className="flex justify-center sm:justify-start">
+              <GenderHeaderToggle
+                density={density}
+                disabled={customizerDisabled}
+                value={parts.gender}
+                onChange={(gender) => applyCustom({ ...parts, gender })}
+              />
+            </div>
+          </div>
+
+          {customizerDisabled ? (
+            <p className="mt-2 text-[11px] leading-snug text-zinc-500">
+              직접 올린 사진을 쓰는 중에는 캐릭터 조합이 꺼져 있어요. 프리셋이나 조합을 쓰려면 위에서 사진 선택을 해제해 주세요.
+            </p>
+          ) : (
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:gap-x-3 sm:gap-y-2">
+              <CycleRow
+                density={density}
+                label="헤어"
+                current={parts.hair}
+                list={NOTIONISTS_HAIR}
+                onChange={(hair) => applyCustom({ ...parts, hair })}
+              />
+              <CycleRow
+                density={density}
+                label="눈"
+                current={parts.eyes}
+                list={NOTIONISTS_EYES}
+                onChange={(eyes) => applyCustom({ ...parts, eyes })}
+              />
+              <CycleRow
+                density={density}
+                label="코"
+                current={parts.nose}
+                list={NOTIONISTS_NOSE}
+                onChange={(nose) => applyCustom({ ...parts, nose })}
+              />
+              <CycleRow
+                density={density}
+                label="입"
+                current={parts.lips}
+                list={NOTIONISTS_LIPS}
+                onChange={(lips) => applyCustom({ ...parts, lips })}
+              />
+              <CycleRow
+                density={density}
+                label="눈썹"
+                current={parts.brows}
+                list={NOTIONISTS_BROWS}
+                onChange={(brows) => applyCustom({ ...parts, brows })}
+              />
+              <CycleRow
+                density={density}
+                label="옷"
+                current={parts.body}
+                list={NOTIONISTS_BODY}
+                onChange={(body) => applyCustom({ ...parts, body })}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
-      className={
-        isComfortable
-          ? "flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6"
-          : "flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4"
-      }
+      className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4"
     >
       <div className="relative mx-auto shrink-0 sm:mx-0">
         <div
-          className={
-            isComfortable
-              ? "relative h-32 w-32 overflow-hidden rounded-full border-2 border-reels-cyan/35 bg-black/30 shadow-lg ring-4 ring-reels-cyan/10 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:ring-reels-cyan/15 sm:h-36 sm:w-36"
-              : "relative h-24 w-24 overflow-hidden rounded-full border-2 border-reels-cyan/35 bg-black/30 shadow-lg ring-4 ring-reels-cyan/10 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:ring-reels-cyan/15 sm:h-28 sm:w-28"
-          }
+          className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-reels-cyan/35 bg-black/30 shadow-lg ring-4 ring-reels-cyan/10 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:ring-reels-cyan/15 sm:h-28 sm:w-28"
         >
           {!previewReady ? (
             <div
@@ -194,23 +332,15 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
           )}
         </div>
         <span
-          className={
-            isComfortable
-              ? "pointer-events-none absolute -bottom-1 -right-1 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-reels-cyan/25 text-reels-cyan shadow-md backdrop-blur-sm sm:h-11 sm:w-11"
-              : "pointer-events-none absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-reels-cyan/25 text-reels-cyan shadow-md backdrop-blur-sm"
-          }
+          className="pointer-events-none absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-reels-cyan/25 text-reels-cyan shadow-md backdrop-blur-sm"
         >
-          <Sparkles className={isComfortable ? "h-5 w-5 sm:h-[22px] sm:w-[22px]" : "h-4 w-4"} aria-hidden />
+          <Sparkles className="h-4 w-4" aria-hidden />
         </span>
       </div>
 
       <div className="min-w-0 w-full flex-1">
         <p
-          className={
-            isComfortable
-              ? "text-center text-[14px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-left"
-              : "text-center text-[13px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-left"
-          }
+          className="text-center text-[13px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-left"
         >
           프로필 이미지
         </p>
@@ -220,20 +350,12 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
           </p>
         ) : null}
         <div
-          className={
-            isComfortable
-              ? "mt-3 flex flex-wrap justify-center gap-2.5 sm:justify-start"
-              : "mt-3 flex flex-wrap justify-center gap-2 sm:justify-start"
-          }
+          className="mt-3 flex flex-wrap justify-center gap-2 sm:justify-start"
         >
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className={
-              isComfortable
-                ? "inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[13px] font-bold text-zinc-200 transition hover:border-reels-cyan/40 hover:bg-reels-cyan/10 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
-                : "inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/[0.06] px-3 py-2 text-[12px] font-bold text-zinc-200 transition hover:border-reels-cyan/40 hover:bg-reels-cyan/10 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
-            }
+            className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/[0.06] px-3 py-2 text-[12px] font-bold text-zinc-200 transition hover:border-reels-cyan/40 hover:bg-reels-cyan/10 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
           >
             <ImagePlus className="h-4 w-4 text-reels-cyan" aria-hidden />
             이미지 올리기
@@ -250,58 +372,31 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
 
         <div
           className={`mt-4 w-full rounded-xl border border-reels-cyan/20 bg-gradient-to-br from-black/40 to-black/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-100/90 [html[data-theme='light']_&]:to-white ${
-            isComfortable ? "p-3 sm:p-4" : "p-2.5 sm:p-3"
+            "p-2.5 sm:p-3"
           } ${customizerDisabled ? "opacity-50" : ""}`}
         >
-          {isComfortable ? (
-            <div className="flex flex-col gap-2.5">
-              <div className="flex min-h-[36px] items-center justify-between gap-2">
-                <p className="shrink-0 text-[12px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                  캐릭터 꾸미기
-                </p>
-                <button
-                  type="button"
-                  disabled={customizerDisabled}
-                  onClick={randomize}
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full border border-reels-cyan/35 bg-reels-cyan/12 px-2.5 py-1 text-[11px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <Dices className="h-3.5 w-3.5" aria-hidden />
-                  랜덤
-                </button>
-              </div>
-              <div className="flex justify-center sm:justify-start">
-                <GenderHeaderToggle
-                  density={density}
-                  disabled={customizerDisabled}
-                  value={parts.gender}
-                  onChange={(gender) => applyCustom({ ...parts, gender })}
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="flex min-h-[30px] items-center gap-2">
-              <p className="shrink-0 text-[11px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                캐릭터 꾸미기
-              </p>
-              <div className="flex min-w-0 flex-1 justify-center px-0.5">
-                <GenderHeaderToggle
-                  density={density}
-                  disabled={customizerDisabled}
-                  value={parts.gender}
-                  onChange={(gender) => applyCustom({ ...parts, gender })}
-                />
-              </div>
-              <button
-                type="button"
+          <div className="flex min-h-[30px] items-center gap-2">
+            <p className="shrink-0 text-[11px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+              캐릭터 꾸미기
+            </p>
+            <div className="flex min-w-0 flex-1 justify-center px-0.5">
+              <GenderHeaderToggle
+                density={density}
                 disabled={customizerDisabled}
-                onClick={randomize}
-                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-reels-cyan/35 bg-reels-cyan/12 px-2 py-0.5 text-[10px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <Dices className="h-3 w-3" aria-hidden />
-                랜덤
-              </button>
+                value={parts.gender}
+                onChange={(gender) => applyCustom({ ...parts, gender })}
+              />
             </div>
-          )}
+            <button
+              type="button"
+              disabled={customizerDisabled}
+              onClick={randomize}
+              className="inline-flex shrink-0 items-center gap-1 rounded-full border border-reels-cyan/35 bg-reels-cyan/12 px-2 py-0.5 text-[10px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Dices className="h-3 w-3" aria-hidden />
+              랜덤
+            </button>
+          </div>
 
           {customizerDisabled ? (
             <p className={`mt-2 leading-snug text-zinc-500 ${isComfortable ? "text-[11px]" : "text-[10px]"}`}>
@@ -309,11 +404,7 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
             </p>
           ) : (
             <div
-              className={
-                isComfortable
-                  ? "mt-3 grid grid-cols-2 gap-2 sm:gap-x-3 sm:gap-y-2"
-                  : "mt-2 grid grid-cols-2 gap-1 sm:gap-x-2 sm:gap-y-1"
-              }
+              className="mt-2 grid grid-cols-2 gap-1 sm:gap-x-2 sm:gap-y-1"
             >
               <CycleRow
                 density={density}
@@ -384,7 +475,7 @@ function CycleRow<T extends string>({
     <div
       className={
         isComfortable
-          ? "flex min-w-0 items-center gap-1.5 rounded-lg border border-white/10 bg-black/25 px-2 py-1.5 sm:px-2.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
+          ? "grid min-w-0 grid-cols-[2.25rem_minmax(0,1fr)_2.25rem] items-center gap-1 rounded-lg border border-white/10 bg-black/25 px-1.5 py-1.5 sm:grid-cols-[2.4rem_minmax(0,1fr)_2.4rem] sm:px-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
           : "flex min-w-0 items-center gap-0.5 rounded-lg border border-white/10 bg-black/25 px-1 py-0.5 sm:gap-1 sm:px-1.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
       }
     >
@@ -393,7 +484,7 @@ function CycleRow<T extends string>({
         onClick={() => onChange(cycleInList(list, current, -1))}
         className={
           isComfortable
-            ? "flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/10 text-zinc-300 transition hover:border-reels-cyan/40 hover:text-reels-cyan sm:h-9 sm:w-9 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+            ? "flex h-8 w-full min-w-0 items-center justify-center rounded-md border border-white/10 text-zinc-300 transition hover:border-reels-cyan/40 hover:text-reels-cyan sm:h-9 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
             : "flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-white/10 text-zinc-300 transition hover:border-reels-cyan/40 hover:text-reels-cyan sm:h-7 sm:w-7 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
         }
         aria-label={`${label} 이전`}
@@ -403,7 +494,7 @@ function CycleRow<T extends string>({
         />
       </button>
       {isComfortable ? (
-        <div className="min-w-[4.75rem] flex-1 text-center">
+        <div className="min-w-0 px-1 text-center">
           <p className="truncate text-[11px] font-extrabold leading-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
             {label}
           </p>
@@ -426,7 +517,7 @@ function CycleRow<T extends string>({
         onClick={() => onChange(cycleInList(list, current, 1))}
         className={
           isComfortable
-            ? "flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/10 text-zinc-300 transition hover:border-reels-cyan/40 hover:text-reels-cyan sm:h-9 sm:w-9 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+            ? "flex h-8 w-full min-w-0 items-center justify-center rounded-md border border-white/10 text-zinc-300 transition hover:border-reels-cyan/40 hover:text-reels-cyan sm:h-9 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
             : "flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-white/10 text-zinc-300 transition hover:border-reels-cyan/40 hover:text-reels-cyan sm:h-7 sm:w-7 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
         }
         aria-label={`${label} 다음`}

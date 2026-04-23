@@ -6,6 +6,34 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 const INPUT =
   "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none transition focus:border-reels-cyan/45 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
 const SAME_PASSWORD_MESSAGE = "기존 비밀번호와 동일해요. 새로운 비밀번호로 변경해 주세요.";
+const PASSWORD_POLICY_MESSAGE =
+  "새 비밀번호는 영문 대문자 1개, 소문자 1개, 숫자 1개를 포함해 8자 이상으로 입력해 주세요.";
+
+function toKoreanPasswordError(message: string): string {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("current password required when setting new password")) {
+    return "비밀번호를 바꾸려면 저장 요청에 현재 비밀번호가 함께 전달되어야 합니다. 잠시 후 다시 시도하거나, 앱이 최신인지 확인해 주세요.";
+  }
+  if (normalized.includes("password should contain at least one character of each")) {
+    return PASSWORD_POLICY_MESSAGE;
+  }
+  if (normalized.includes("new password should be different from the old password")) {
+    return "기존 비밀번호와 다른 새 비밀번호를 입력해 주세요.";
+  }
+  if (normalized.includes("password should be at least")) {
+    return "새 비밀번호 길이가 부족합니다. 8자 이상으로 입력해 주세요.";
+  }
+  if (normalized.includes("password") && normalized.includes("weak")) {
+    return "비밀번호 강도가 낮습니다. 더 복잡한 비밀번호로 다시 시도해 주세요.";
+  }
+  if (normalized.includes("for security purposes") && normalized.includes("password")) {
+    return "보안 정책으로 인해 잠시 후 다시 시도해 주세요.";
+  }
+  if (normalized.includes("password")) {
+    return "비밀번호 변경에 실패했습니다. 입력한 현재 비밀번호와 새 비밀번호를 다시 확인해 주세요.";
+  }
+  return message;
+}
 
 function maskPhone(phone: string): string {
   if (phone.length <= 4) return phone;
@@ -168,9 +196,14 @@ export function MyPagePasswordSection() {
         return;
       }
 
-      const { error: upErr } = await supabase.auth.updateUser({ password: next });
+      // Supabase Auth에서 "Secure password change"가 켜져 있으면 updateUser에 currentPassword를 함께 보내야 합니다.
+      // (로그인만으로는 이 요구를 충족하지 못해 "Current password required…" 오류가 날 수 있음)
+      const { error: upErr } = await supabase.auth.updateUser({
+        password: next,
+        currentPassword: current,
+      });
       if (upErr) {
-        setError(upErr.message || "비밀번호 변경에 실패했습니다.");
+        setError(upErr.message ? toKoreanPasswordError(upErr.message) : "비밀번호 변경에 실패했습니다.");
         return;
       }
       setMessage("비밀번호가 변경되었습니다. 다음 로그인부터 새 비밀번호를 사용하세요.");

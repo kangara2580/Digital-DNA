@@ -257,7 +257,7 @@ export function MyPageDashboard() {
                   프로필 이미지
                 </h3>
                 <div className="mt-4 grid gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">
-                  <div>
+                  <div className="h-full">
                     <ProfileAvatarPicker
                       density="comfortable"
                       value={profileAvatar}
