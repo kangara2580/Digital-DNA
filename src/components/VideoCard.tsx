@@ -73,6 +73,8 @@ type Props = {
   onPick?: () => void;
   /** 비디오 preload 전략 제어 (기본 metadata) */
   preloadMode?: "none" | "metadata" | "auto";
+  /** 카드 폭이 작은 구간(연관 릴스 등)에서 hover 액션 아이콘만 축소 */
+  compactHoverActions?: boolean;
 };
 
 function formatDuration(seconds: number): string {
@@ -151,6 +153,7 @@ export function VideoCard({
   detailHref,
   onPick,
   preloadMode = "metadata",
+  compactHoverActions = false,
 }: Props) {
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
@@ -409,6 +412,45 @@ export function VideoCard({
       : subtleHover
         ? "origin-top hover:z-[2] hover:scale-[1.02] motion-reduce:hover:scale-100"
         : "hover:z-[2] hover:scale-[1.05] motion-reduce:hover:scale-100";
+  const compactActions = compactHoverActions && !dense;
+  const actionOverlayPadding = dense
+    ? "p-2"
+    : compactActions
+      ? "p-2 sm:p-2.5"
+      : reelStrip
+        ? "p-2 sm:p-3"
+        : reelLayout
+          ? "p-4 sm:p-6"
+          : "p-4";
+  const actionGap = dense
+    ? "gap-5"
+    : compactActions
+      ? "gap-0.5 sm:gap-1"
+      : reelStrip
+        ? "gap-4 sm:gap-6"
+        : reelLayout
+          ? "gap-8 sm:gap-12"
+          : "gap-10";
+  const actionButtonSize = dense
+    ? "h-8 w-8"
+    : compactActions
+      ? "h-9 w-9"
+    : reelStrip
+      ? "h-9 w-9 sm:h-10 sm:w-10"
+      : reelLayout
+        ? "h-11 w-11 sm:h-12 sm:w-12"
+        : "h-10 w-10";
+  const actionIconSize = dense
+    ? "h-6 w-6"
+    : compactActions
+      ? "h-6 w-6"
+    : reelStrip
+      ? "h-7 w-7 sm:h-8 sm:w-8"
+      : reelLayout
+        ? "h-9 w-9 sm:h-10 sm:w-10"
+        : "h-8 w-8";
+  const actionHoverScale = compactActions ? "hover:scale-100" : "hover:scale-110";
+  const actionRowFrame = compactActions ? "w-full max-w-[calc(100%-12px)] px-1" : "";
 
   return (
     <article
@@ -592,27 +634,15 @@ export function VideoCard({
           </div>
         ) : null}
         <div
-          className={`pointer-events-none absolute inset-0 z-[7] flex items-center justify-center ${
-            dense ? "p-2" : reelStrip ? "p-2 sm:p-3" : reelLayout ? "p-4 sm:p-6" : "p-4"
-          }`}
+          className={`pointer-events-none absolute inset-0 z-[7] flex items-center justify-center ${actionOverlayPadding}`}
         >
           <div
-            className={`flex items-center justify-center opacity-100 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 max-lg:translate-y-0 max-lg:opacity-100 translate-y-1 lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 ${
-              dense ? "gap-5" : reelStrip ? "gap-4 sm:gap-6" : reelLayout ? "gap-8 sm:gap-12" : "gap-10"
-            }`}
+            className={`flex items-center justify-center opacity-100 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 max-lg:translate-y-0 max-lg:opacity-100 translate-y-1 lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 ${actionGap} ${actionRowFrame}`}
           >
             <button
               ref={cartBtnRef}
               type="button"
-              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 ${
-                dense
-                  ? "h-8 w-8"
-                  : reelStrip
-                    ? "h-9 w-9 sm:h-10 sm:w-10"
-                    : reelLayout
-                      ? "h-11 w-11 sm:h-12 sm:w-12"
-                      : "h-10 w-10"
-              }`}
+              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
               aria-label="장바구니에 담기"
               onClick={(e) => {
                 e.preventDefault();
@@ -624,28 +654,12 @@ export function VideoCard({
               }}
             >
               <CartIcon
-                className={`shrink-0 drop-shadow-md ${
-                  dense
-                    ? "h-6 w-6"
-                    : reelStrip
-                      ? "h-7 w-7 sm:h-8 sm:w-8"
-                      : reelLayout
-                        ? "h-9 w-9 sm:h-10 sm:w-10"
-                        : "h-8 w-8"
-                }`}
+                className={`shrink-0 drop-shadow-md ${actionIconSize}`}
               />
             </button>
             <button
               type="button"
-              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 ${
-                dense
-                  ? "h-8 w-8"
-                  : reelStrip
-                    ? "h-9 w-9 sm:h-10 sm:w-10"
-                    : reelLayout
-                      ? "h-11 w-11 sm:h-12 sm:w-12"
-                      : "h-10 w-10"
-              }`}
+              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
               aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
               aria-pressed={likedByMe}
               onClick={(e) => {
@@ -656,30 +670,14 @@ export function VideoCard({
               disabled={likeBusy}
             >
               <Heart
-                className={`shrink-0 drop-shadow-md transition-all duration-200 ${
-                  dense
-                    ? "h-6 w-6"
-                    : reelStrip
-                      ? "h-7 w-7 sm:h-8 sm:w-8"
-                      : reelLayout
-                        ? "h-9 w-9 sm:h-10 sm:w-10"
-                        : "h-8 w-8"
-                } ${likedByMe ? "fill-current text-reels-crimson" : "text-white"} ${
+                className={`shrink-0 drop-shadow-md transition-all duration-200 ${actionIconSize} ${likedByMe ? "fill-current text-reels-crimson" : "text-white"} ${
                   likePulse ? "scale-110" : "scale-100"
                 }`}
               />
             </button>
             <button
               type="button"
-              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 ${
-                dense
-                  ? "h-8 w-8"
-                  : reelStrip
-                    ? "h-9 w-9 sm:h-10 sm:w-10"
-                    : reelLayout
-                      ? "h-11 w-11 sm:h-12 sm:w-12"
-                      : "h-10 w-10"
-              }`}
+              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
               aria-label={wishlisted ? "찜 해제" : "찜하기"}
               aria-pressed={wishlisted}
               onClick={(e) => {
@@ -690,13 +688,7 @@ export function VideoCard({
             >
               <span
                 className={`relative isolate block shrink-0 ${
-                  dense
-                    ? "h-6 w-6"
-                    : reelStrip
-                      ? "h-7 w-7 sm:h-8 sm:w-8"
-                      : reelLayout
-                        ? "h-9 w-9 sm:h-10 sm:w-10"
-                        : "h-8 w-8"
+                  actionIconSize
                 }`}
               >
                 {/* 찜(북마크) 클릭 시에만 아래→위 채움 */}

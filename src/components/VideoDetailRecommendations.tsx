@@ -95,7 +95,13 @@ export function VideoDetailRecommendations({ video }: Props) {
         >
           {stripItems.map((v) => (
             <div key={`strip-${video.id}-${v.id}`} className={STRIP_CARD_WRAP}>
-              <VideoCard video={v} reelLayout disableHoverScale className="min-w-0" />
+              <VideoCard
+                video={v}
+                reelLayout
+                disableHoverScale
+                compactHoverActions
+                className="min-w-0"
+              />
             </div>
           ))}
           {showStripMore ? (
