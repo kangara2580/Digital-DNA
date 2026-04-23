@@ -160,7 +160,14 @@ export function VideoCard({
   const wishlist = useWishlist();
   const reduceMotion = useReducedMotion() ?? false;
   const externalIframe = useMemo(
-    () => getExternalIframeForCard(video),
+    () => {
+      const raw = getExternalIframeForCard(video);
+      // 개발 환경에서는 TikTok iframe SDK(webmssdk) 에러가 과도해 카드에서는 비활성화합니다.
+      if (process.env.NODE_ENV !== "production" && raw?.kind === "tiktok") {
+        return null;
+      }
+      return raw;
+    },
     [video],
   );
   const commerce = getCommerceMeta(video.id);
@@ -187,7 +194,12 @@ export function VideoCard({
         : "aspect-video w-full";
   const previewSrc = video.previewSrc ?? video.src;
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(previewSrc);
-  const canLoadPreviewVideo = !isPexelsBlockedVideo;
+  const isDirectVideoLikeSource =
+    previewSrc.startsWith("/") ||
+    /\.(mp4|webm|mov|m4v)(\?|$)/i.test(previewSrc) ||
+    /^blob:/i.test(previewSrc) ||
+    /^data:video\//i.test(previewSrc);
+  const canLoadPreviewVideo = !isPexelsBlockedVideo && isDirectVideoLikeSource;
   const segmentPreview = instantPreview === true;
   const fallbackPoster = useMemo(() => {
     const hash = Array.from(video.id).reduce(
@@ -434,21 +446,21 @@ export function VideoCard({
   const actionButtonSize = dense
     ? "h-8 w-8"
     : compactActions
-      ? "h-9 w-9"
+      ? "h-10 w-10 sm:h-11 sm:w-11"
     : reelStrip
-      ? "h-9 w-9 sm:h-10 sm:w-10"
+      ? "h-10 w-10 sm:h-11 sm:w-11"
       : reelLayout
-        ? "h-11 w-11 sm:h-12 sm:w-12"
-        : "h-10 w-10";
+        ? "h-12 w-12 sm:h-14 sm:w-14"
+        : "h-11 w-11";
   const actionIconSize = dense
-    ? "h-6 w-6"
+    ? "h-7 w-7"
     : compactActions
-      ? "h-6 w-6"
-    : reelStrip
       ? "h-7 w-7 sm:h-8 sm:w-8"
+    : reelStrip
+      ? "h-8 w-8 sm:h-9 sm:w-9"
       : reelLayout
-        ? "h-9 w-9 sm:h-10 sm:w-10"
-        : "h-8 w-8";
+        ? "h-10 w-10 sm:h-11 sm:w-11"
+        : "h-9 w-9";
   const actionHoverScale = compactActions ? "hover:scale-100" : "hover:scale-110";
   const actionRowFrame = compactActions ? "w-full max-w-[calc(100%-12px)] px-1" : "";
 

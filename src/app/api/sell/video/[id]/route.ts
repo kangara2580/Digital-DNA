@@ -1,7 +1,10 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { decodeDevUserIdFromJwt } from "@/lib/devJwtFallback";
+import { ensureVideoCategoryColumn } from "@/lib/ensureVideoCategoryColumn";
 import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
 import { prisma } from "@/lib/prisma";
+import { isSellVideoCategory } from "@/lib/sellVideoCategory";
 import { normalizeSellHashtags } from "@/lib/sellHashtags";
 
 export const runtime = "nodejs";
@@ -32,6 +35,11 @@ function normalizePosterMime(poster: Blob): string {
 
 function isPersistentStorageRequired(): boolean {
   return process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
+}
+
+function hasUnknownCategoryArgError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  return error.message.includes("Unknown argument `category`");
 }
 
 function createStorageClient(
@@ -107,16 +115,28 @@ export async function GET(
       error: userErr,
     } = await supabaseAuth.auth.getUser(token);
     if (userErr || !user) {
-      return NextResponse.json({ ok: false, error: "invalid_session" }, { status: 401 });
+      const fallbackUserId = decodeDevUserIdFromJwt(token);
+      if (!fallbackUserId) {
+        return NextResponse.json({ ok: false, error: "invalid_session" }, { status: 401 });
+      }
+      userId = fallbackUserId;
+    } else {
+      userId = user.id;
     }
-    userId = user.id;
   } else {
     userId = process.env.NEXT_PUBLIC_DEMO_SELLER_ID ?? "seller-demo";
   }
 
-  const row = await prisma.video.findFirst({
-    where: { id, sellerId: userId },
-  });
+  let row;
+  try {
+    await ensureVideoCategoryColumn();
+    row = await prisma.video.findFirst({
+      where: { id, sellerId: userId },
+    });
+  } catch (e) {
+    console.error("[GET /api/sell/video/:id] db_read_failed", e);
+    return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
+  }
   if (!row) {
     return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
@@ -157,9 +177,14 @@ export async function PATCH(
       error: userErr,
     } = await supabaseAuth.auth.getUser(token);
     if (userErr || !user) {
-      return NextResponse.json({ ok: false, error: "invalid_session" }, { status: 401 });
+      const fallbackUserId = decodeDevUserIdFromJwt(token);
+      if (!fallbackUserId) {
+        return NextResponse.json({ ok: false, error: "invalid_session" }, { status: 401 });
+      }
+      userId = fallbackUserId;
+    } else {
+      userId = user.id;
     }
-    userId = user.id;
   } else {
     userId = process.env.NEXT_PUBLIC_DEMO_SELLER_ID ?? "seller-demo";
   }
@@ -174,6 +199,7 @@ export async function PATCH(
   const titleRaw = fd.get("title");
   const descriptionRaw = fd.get("description");
   const hashtagsRaw = fd.get("hashtags");
+  const categoryRaw = fd.get("category");
   const poster = fd.get("poster");
 
   const title =
@@ -187,10 +213,27 @@ export async function PATCH(
   const hashtagsNormalized = normalizeSellHashtags(
     typeof hashtagsRaw === "string" ? hashtagsRaw : String(hashtagsRaw ?? ""),
   );
+  const category =
+    typeof categoryRaw === "string"
+      ? categoryRaw.trim()
+      : String(categoryRaw ?? "").trim();
+  if (!isSellVideoCategory(category)) {
+    return NextResponse.json(
+      { ok: false, error: "카테고리를 선택해 주세요." },
+      { status: 400 },
+    );
+  }
 
-  const existing = await prisma.video.findFirst({
-    where: { id, sellerId: userId },
-  });
+  let existing;
+  try {
+    await ensureVideoCategoryColumn();
+    existing = await prisma.video.findFirst({
+      where: { id, sellerId: userId },
+    });
+  } catch (e) {
+    console.error("[PATCH /api/sell/video/:id] db_precheck_failed", e);
+    return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
+  }
   if (!existing) {
     return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
@@ -248,20 +291,51 @@ export async function PATCH(
   }
 
   try {
-    const updated = await prisma.video.update({
-      where: { id },
-      data: {
-        title,
-        description: description || null,
-        hashtags: hashtagsNormalized,
-        ...(posterUrl ? { poster: posterUrl } : {}),
-      },
-    });
+    let updated;
+    try {
+      updated = await prisma.video.update({
+        where: { id },
+        data: {
+          title,
+          description: description || null,
+          hashtags: hashtagsNormalized,
+          category,
+          ...(posterUrl ? { poster: posterUrl } : {}),
+        },
+      });
+    } catch (e) {
+      if (!hasUnknownCategoryArgError(e)) throw e;
+      // 구 Prisma Client가 category 필드를 모를 때도 저장은 계속되게 폴백합니다.
+      updated = await prisma.video.update({
+        where: { id },
+        data: {
+          title,
+          description: description || null,
+          hashtags: hashtagsNormalized,
+          ...(posterUrl ? { poster: posterUrl } : {}),
+        },
+      });
+      const dbUrl = process.env.DATABASE_URL?.trim() ?? "";
+      if (dbUrl.startsWith("file:")) {
+        await prisma.$executeRawUnsafe(
+          'UPDATE "videos" SET "category" = ? WHERE "id" = ?',
+          category,
+          id,
+        );
+      } else {
+        await prisma.$executeRawUnsafe(
+          'UPDATE "public"."videos" SET "category" = $1 WHERE "id" = $2',
+          category,
+          id,
+        );
+      }
+    }
     return NextResponse.json({
       ok: true,
       video: videoRowToFeedVideo(updated),
     });
-  } catch {
+  } catch (e) {
+    console.error("[PATCH /api/sell/video/:id] db_update_failed", e);
     return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
   }
 }
@@ -293,10 +367,14 @@ async function resolveSellerUserId(request: Request): Promise<
       error: userErr,
     } = await supabaseAuth.auth.getUser(token);
     if (userErr || !user) {
-      return {
-        ok: false,
-        response: NextResponse.json({ ok: false, error: "invalid_session" }, { status: 401 }),
-      };
+      const fallbackUserId = decodeDevUserIdFromJwt(token);
+      if (!fallbackUserId) {
+        return {
+          ok: false,
+          response: NextResponse.json({ ok: false, error: "invalid_session" }, { status: 401 }),
+        };
+      }
+      return { ok: true, userId: fallbackUserId };
     }
     return { ok: true, userId: user.id };
   }

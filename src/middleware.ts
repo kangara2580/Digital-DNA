@@ -49,7 +49,7 @@ export async function middleware(request: NextRequest) {
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const recoveryInProgress = request.cookies.get("rm_recovery_in_progress")?.value === "1";
+  const needsAuth = request.nextUrl.pathname.startsWith("/mypage");
 
   // 일부 환경에서 recovery 메일이 "/?code=..." 형태로 돌아오는 경우,
   // reset-password 화면으로 강제 유도해 사용자 플로우를 보장합니다.
@@ -60,6 +60,12 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!url?.length || !key?.length) {
+    return NextResponse.next({ request });
+  }
+
+  // 비로그인 접근이 허용된 페이지는 Supabase 사용자 조회를 건너뛰어
+  // DNS/네트워크 불안정 시 네비게이션이 멈추는 현상을 방지합니다.
+  if (!needsAuth) {
     return NextResponse.next({ request });
   }
 
@@ -84,12 +90,10 @@ export async function middleware(request: NextRequest) {
   });
 
   // createServerClient 직후 다른 로직을 끼우면 세션/로그아웃 버그가 나기 쉬움 — getUser()만 호출
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  /** 마이페이지만 로그인 필요 — 메인 등은 비회원도 볼 수 있음 */
-  if (request.nextUrl.pathname.startsWith("/mypage")) {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/login";
@@ -97,6 +101,12 @@ export async function middleware(request: NextRequest) {
       redirectUrl.searchParams.set("redirect", returnTo);
       return NextResponse.redirect(redirectUrl);
     }
+  } catch {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/login";
+    const returnTo = request.nextUrl.pathname + request.nextUrl.search;
+    redirectUrl.searchParams.set("redirect", returnTo);
+    return NextResponse.redirect(redirectUrl);
   }
 
   return supabaseResponse;

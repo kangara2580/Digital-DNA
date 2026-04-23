@@ -27,6 +27,8 @@ export type FeedVideo = {
   description?: string;
   /** 정규화된 해시태그 문자열(예: "#일상,#vlog") */
   hashtags?: string;
+  /** 판매자가 지정한 마켓 카테고리 */
+  category?: string;
   /**
    * DB 업로드(판매 등록) 영상 — 집계·판매자 식별(상세에서 수정 버튼 등)
    */
@@ -34,6 +36,9 @@ export type FeedVideo = {
     sellerId: string;
     views: number;
     salesCount: number;
+    /** DB 생성 시각(ms) — 최신 정렬 우선순위에 사용 */
+    createdAtMs?: number;
+    category?: string;
   };
   /** 판매자 SNS 링크(틱톡·인스타·유튜브·X 등) */
   sellerSocialLinks?: SellerSocialLink[];

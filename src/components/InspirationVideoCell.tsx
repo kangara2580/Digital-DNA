@@ -168,7 +168,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
             <button
               ref={cartBtnRef}
               type="button"
-              className="pointer-events-auto relative z-[8] inline-flex h-9 w-9 items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 sm:h-10 sm:w-10"
+            className="pointer-events-auto relative z-[8] inline-flex h-10 w-10 items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 sm:h-11 sm:w-11"
               aria-label="장바구니에 담기"
               onClick={(e) => {
                 e.preventDefault();
@@ -179,11 +179,11 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
                 }
               }}
             >
-              <CartIcon className="h-7 w-7 shrink-0 drop-shadow-md sm:h-8 sm:w-8" />
+              <CartIcon className="h-8 w-8 shrink-0 drop-shadow-md sm:h-9 sm:w-9" />
             </button>
             <button
               type="button"
-              className="pointer-events-auto relative z-[8] inline-flex h-9 w-9 items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 sm:h-10 sm:w-10"
+              className="pointer-events-auto relative z-[8] inline-flex h-10 w-10 items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 sm:h-11 sm:w-11"
               aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
               aria-pressed={likedByMe}
               onClick={(e) => {
@@ -194,14 +194,14 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
               disabled={likeBusy}
             >
               <Heart
-                className={`h-7 w-7 shrink-0 drop-shadow-md transition-all duration-200 sm:h-8 sm:w-8 ${
+                className={`h-8 w-8 shrink-0 drop-shadow-md transition-all duration-200 sm:h-9 sm:w-9 ${
                   likedByMe ? "fill-current text-reels-crimson" : "text-white"
                 } ${likePulse ? "scale-110" : "scale-100"}`}
               />
             </button>
             <button
               type="button"
-              className="pointer-events-auto relative z-[8] inline-flex h-9 w-9 items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 sm:h-10 sm:w-10"
+              className="pointer-events-auto relative z-[8] inline-flex h-10 w-10 items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 sm:h-11 sm:w-11"
               aria-label={wishlisted ? "찜 해제" : "찜하기"}
               aria-pressed={wishlisted}
               onClick={(e) => {
@@ -210,7 +210,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
                 wishlist.toggle(video);
               }}
             >
-              <span className="relative isolate block h-7 w-7 shrink-0 sm:h-8 sm:w-8">
+              <span className="relative isolate block h-8 w-8 shrink-0 sm:h-9 sm:w-9">
                 <motion.span
                   className="absolute inset-0 overflow-hidden"
                   initial={false}

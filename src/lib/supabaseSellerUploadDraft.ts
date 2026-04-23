@@ -7,6 +7,7 @@ export type SellerUploadDraftPayload = {
   title: string;
   description: string;
   hashtags: string;
+  category: string;
   price: string;
   isAi: boolean;
   rights: boolean;

@@ -16,6 +16,11 @@ import {
   useRef,
   useState,
 } from "react";
+import {
+  isSellVideoCategory,
+  SELL_VIDEO_CATEGORY_OPTIONS,
+  type SellVideoCategory,
+} from "@/lib/sellVideoCategory";
 
 const INPUT =
   "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none transition focus:border-reels-cyan/45 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
@@ -50,6 +55,11 @@ export function MyListingEditDialog({ video, open, onClose, onSaved }: Props) {
   const [title, setTitle] = useState(video.title);
   const [description, setDescription] = useState(video.description ?? "");
   const [hashtags, setHashtags] = useState(hashtagsForInput(video.hashtags));
+  const [category, setCategory] = useState<SellVideoCategory>(
+    typeof video.category === "string" && isSellVideoCategory(video.category)
+      ? video.category
+      : "daily",
+  );
   const [thumbTimeSec, setThumbTimeSec] = useState(0);
   const [durationSec, setDurationSec] = useState<number | null>(
     video.durationSec ?? null,
@@ -73,6 +83,11 @@ export function MyListingEditDialog({ video, open, onClose, onSaved }: Props) {
     setTitle(video.title);
     setDescription(video.description ?? "");
     setHashtags(hashtagsForInput(video.hashtags));
+    setCategory(
+      typeof video.category === "string" && isSellVideoCategory(video.category)
+        ? video.category
+        : "daily",
+    );
     setThumbTimeSec(0);
     thumbTimeSecRef.current = 0;
     setDurationSec(video.durationSec ?? null);
@@ -178,6 +193,7 @@ export function MyListingEditDialog({ video, open, onClose, onSaved }: Props) {
       fd.append("title", title.trim());
       fd.append("description", description.trim());
       fd.append("hashtags", hashtags.trim());
+      fd.append("category", category);
 
       if (posterFile) {
         fd.append("poster", posterFile);
@@ -459,6 +475,28 @@ export function MyListingEditDialog({ video, open, onClose, onSaved }: Props) {
               onChange={(e) => setHashtags(e.target.value)}
               placeholder="#일상 #브이로그"
             />
+          </div>
+
+          <div className="mt-4">
+            <label className={LABEL} htmlFor={`${hid}-category`}>
+              카테고리
+            </label>
+            <select
+              id={`${hid}-category`}
+              className={INPUT}
+              value={category}
+              onChange={(e) => {
+                const next = e.target.value;
+                if (isSellVideoCategory(next)) setCategory(next);
+              }}
+              required
+            >
+              {SELL_VIDEO_CATEGORY_OPTIONS.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

@@ -6,6 +6,7 @@ import { Film, Loader2, Trash2 } from "lucide-react";
 import { MyListingEditDialog } from "@/components/MyListingEditDialog";
 import { VideoCard } from "@/components/VideoCard";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { getSellVideoCategoryLabel } from "@/lib/sellVideoCategory";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import type { FeedVideo } from "@/data/videos";
 
@@ -348,6 +349,9 @@ export function MyPageMyListingsSection() {
               </label>
               <VideoCard video={v} className="min-w-0" />
               <div className="absolute right-1.5 top-1.5 z-[25] flex flex-col gap-1">
+                <span className="max-w-[7.5rem] truncate rounded-md border border-reels-cyan/35 bg-black/70 px-2 py-1 text-center text-[10px] font-bold text-reels-cyan shadow-md backdrop-blur-sm [html[data-theme='light']_&]:border-reels-cyan/45 [html[data-theme='light']_&]:bg-white/95">
+                  {getSellVideoCategoryLabel(v.category ?? v.listing?.category)}
+                </span>
                 <button
                   type="button"
                   onClick={() => setEditing(v)}

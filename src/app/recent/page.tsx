@@ -196,6 +196,7 @@ export default function RecentPage() {
                 video={video}
                 domId={`recent-${video.id}`}
                 className="min-w-0"
+                compactHoverActions
               />
             </li>
           ))}

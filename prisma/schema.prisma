@@ -33,6 +33,8 @@ model Video {
   hashtags       String?
   /// AI 생성 여부(직접 촬영이면 false)
   isAiGenerated  Boolean   @default(false) @map("is_ai_generated")
+  /// 판매자가 선택한 노출 카테고리(업로드/수정에서 필수 검증)
+  category       String?
 
   notifications Notification[]
 

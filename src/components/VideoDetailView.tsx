@@ -138,13 +138,27 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
     video.sellerSocialLinks ?? [],
   );
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(video.src);
+  const canLoadDirectVideo =
+    video.src.startsWith("/") ||
+    /\.(mp4|webm|mov|m4v)(\?|$)/i.test(video.src) ||
+    /^blob:/i.test(video.src) ||
+    /^data:video\//i.test(video.src);
   const posterSrc = sanitizePosterSrc(video.poster);
   const externalEmbed = useMemo(
-    () => getExternalIframeForDetail(video),
+    () => {
+      const raw = getExternalIframeForDetail(video);
+      if (process.env.NODE_ENV !== "production" && raw?.kind === "tiktok") {
+        return null;
+      }
+      return raw;
+    },
     [video],
   );
   const statsPageUrl = useMemo(
-    () => getExternalLiveStatsPageUrl(video),
+    () =>
+      process.env.NODE_ENV !== "production" && video.tiktokEmbedId
+        ? null
+        : getExternalLiveStatsPageUrl(video),
     [video],
   );
   const externalLikeCount = liveStats?.diggCount ?? rankMetrics.totalLikes;
@@ -410,7 +424,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                   ref={detailVideoRef}
                   className="video-detail-player h-full w-full cursor-pointer object-cover transition-[filter,opacity] duration-200 hover:brightness-105 active:brightness-95"
                   poster={posterSrc}
-                  src={isPexelsBlockedVideo ? undefined : video.src}
+                  src={isPexelsBlockedVideo || !canLoadDirectVideo ? undefined : video.src}
                   controls
                   controlsList="nodownload noplaybackrate noremoteplayback nofullscreen"
                   autoPlay
@@ -418,7 +432,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                   loop
                   disablePictureInPicture
                   playsInline
-                  preload={isPexelsBlockedVideo ? "none" : "auto"}
+                  preload={isPexelsBlockedVideo || !canLoadDirectVideo ? "none" : "auto"}
                   onContextMenu={(e) => e.preventDefault()}
                   onClick={toggleDetailVideoPlayback}
                 />

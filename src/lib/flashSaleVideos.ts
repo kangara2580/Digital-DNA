@@ -15,10 +15,13 @@ export function videoRowToFeedVideo(v: Video): FeedVideo {
     isAiGenerated: v.isAiGenerated,
     description: v.description ?? undefined,
     hashtags: v.hashtags ?? undefined,
+    category: v.category ?? undefined,
     listing: {
       sellerId: v.sellerId,
       views: v.views,
       salesCount: v.salesCount,
+      createdAtMs: v.createdAt.getTime(),
+      category: v.category ?? undefined,
     },
   };
 }

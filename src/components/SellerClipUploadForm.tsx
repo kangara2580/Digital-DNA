@@ -6,6 +6,11 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import {
+  isSellVideoCategory,
+  SELL_VIDEO_CATEGORY_OPTIONS,
+  type SellVideoCategory,
+} from "@/lib/sellVideoCategory";
+import {
   captureFrameFromVideo,
   capturePosterFromFile,
 } from "@/lib/captureVideoFrame";
@@ -51,6 +56,7 @@ export function SellerClipUploadForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [hashtags, setHashtags] = useState("");
+  const [category, setCategory] = useState<SellVideoCategory>("daily");
   const [price, setPrice] = useState("1000");
   const [isAi, setIsAi] = useState(false);
   const [rights, setRights] = useState(false);
@@ -94,6 +100,11 @@ export function SellerClipUploadForm() {
       setTitle(d.title);
       setDescription(d.description);
       setHashtags(d.hashtags);
+      setCategory(
+        typeof d.category === "string" && isSellVideoCategory(d.category)
+          ? d.category
+          : "daily",
+      );
       setPrice(d.price);
       setIsAi(d.isAi);
       setRights(d.rights);
@@ -131,6 +142,7 @@ export function SellerClipUploadForm() {
       title,
       description,
       hashtags,
+      category,
       price,
       isAi,
       rights,
@@ -152,6 +164,7 @@ export function SellerClipUploadForm() {
     title,
     description,
     hashtags,
+    category,
     price,
     isAi,
     rights,
@@ -221,6 +234,10 @@ export function SellerClipUploadForm() {
       });
       return;
     }
+    if (!category) {
+      setMessage({ ok: false, text: "카테고리를 선택해 주세요." });
+      return;
+    }
 
     const supabase = getSupabaseBrowserClient();
     const { data: sessionData } = (await supabase?.auth.getSession()) ?? { data: { session: null } };
@@ -238,6 +255,7 @@ export function SellerClipUploadForm() {
       fd.append("title", title.trim());
       fd.append("description", description.trim());
       fd.append("hashtags", hashtags.trim());
+      fd.append("category", category);
       fd.append("price", price.trim());
       fd.append("orientation", orientation);
       fd.append("isAiGenerated", isAi ? "true" : "false");
@@ -310,6 +328,7 @@ export function SellerClipUploadForm() {
       setTitle("");
       setDescription("");
       setHashtags("");
+      setCategory("daily");
       setPrice("1000");
       setIsAi(false);
       setRights(false);
@@ -568,6 +587,28 @@ export function SellerClipUploadForm() {
             <p className="mt-1 text-[11px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
               저장 시 #태그 형태로 정리됩니다.
             </p>
+          </div>
+
+          <div>
+            <label className={LABEL} htmlFor={`${hid}-category`}>
+              카테고리 (필수)
+            </label>
+            <select
+              id={`${hid}-category`}
+              className={INPUT}
+              value={category}
+              onChange={(e) => {
+                const next = e.target.value;
+                if (isSellVideoCategory(next)) setCategory(next);
+              }}
+              required
+            >
+              {SELL_VIDEO_CATEGORY_OPTIONS.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>

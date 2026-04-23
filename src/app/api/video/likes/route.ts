@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { decodeDevUserIdFromJwt } from "@/lib/devJwtFallback";
 import { getSupabaseServiceRoleClient } from "@/lib/supabaseServiceRole";
 import { supabaseTables } from "@/lib/supabaseTableNames";
 
@@ -30,6 +31,8 @@ function parseBearerToken(request: Request): string | null {
 }
 
 async function resolveUserIdFromToken(token: string): Promise<string | null> {
+  const devUserId = decodeDevUserIdFromJwt(token);
+  if (devUserId) return devUserId;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url?.length || !anonKey?.length) return null;
@@ -47,24 +50,32 @@ async function resolveUserIdFromToken(token: string): Promise<string | null> {
 async function fetchInternalLikeCount(videoId: string): Promise<number> {
   const admin = getSupabaseServiceRoleClient();
   if (!admin) return 0;
-  const { count } = await admin
-    .from(supabaseTables.favorites)
-    .select("id", { count: "exact", head: true })
-    .eq("video_id", videoId)
-    .eq("kind", "like");
-  return Math.max(0, count ?? 0);
+  try {
+    const { count } = await admin
+      .from(supabaseTables.favorites)
+      .select("id", { count: "exact", head: true })
+      .eq("video_id", videoId)
+      .eq("kind", "like");
+    return Math.max(0, count ?? 0);
+  } catch {
+    return 0;
+  }
 }
 
 async function fetchLikedByUser(videoId: string, userId: string): Promise<boolean> {
   const admin = getSupabaseServiceRoleClient();
   if (!admin) return false;
-  const { count } = await admin
-    .from(supabaseTables.favorites)
-    .select("id", { count: "exact", head: true })
-    .eq("video_id", videoId)
-    .eq("kind", "like")
-    .eq("user_id", userId);
-  return (count ?? 0) > 0;
+  try {
+    const { count } = await admin
+      .from(supabaseTables.favorites)
+      .select("id", { count: "exact", head: true })
+      .eq("video_id", videoId)
+      .eq("kind", "like")
+      .eq("user_id", userId);
+    return (count ?? 0) > 0;
+  } catch {
+    return false;
+  }
 }
 
 export async function GET(request: Request) {

@@ -123,7 +123,36 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
     }
     return null;
   }, [slug]);
-  const base = useMemo(() => getVideosForCategory(slug), [slug]);
+  const staticBase = useMemo(() => getVideosForCategory(slug), [slug]);
+  const [fetchedVideos, setFetchedVideos] = useState<FeedVideo[] | null>(null);
+  useEffect(() => {
+    setFetchedVideos(null);
+    const ctrl = new AbortController();
+    let alive = true;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/category/feed?slug=${encodeURIComponent(slug)}`, {
+          cache: "no-store",
+          signal: ctrl.signal,
+        });
+        if (!res.ok) return;
+        const body = (await res.json()) as { ok?: boolean; videos?: FeedVideo[] };
+        if (!alive || body.ok !== true || !Array.isArray(body.videos)) return;
+        setFetchedVideos(body.videos);
+      } catch {
+        /* staticBase 폴백 유지 */
+      }
+    })();
+    return () => {
+      alive = false;
+      ctrl.abort();
+    };
+  }, [slug]);
+
+  const base = useMemo(
+    () => fetchedVideos ?? staticBase,
+    [fetchedVideos, staticBase],
+  );
   const [orientationFilter, setOrientationFilter] =
     useState<OrientationFilter>("all");
   const [priceFilter, setPriceFilter] = useState<PriceFilter>("all");
@@ -154,6 +183,14 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
 
   const sorted = useMemo(() => {
     let next = [...filtered];
+    const newestMs = (video: FeedVideo) => {
+      const uploadedAt = video.listing?.createdAtMs;
+      if (typeof uploadedAt === "number" && Number.isFinite(uploadedAt) && uploadedAt > 0) {
+        return uploadedAt;
+      }
+      const listedAt = Date.parse(getVideoCatalogMeta(video.id).listedAt);
+      return Number.isFinite(listedAt) ? listedAt : 0;
+    };
     if (priceFilter === "high") {
       next.sort((a, b) => (b.priceWon ?? 0) - (a.priceWon ?? 0));
     } else if (priceFilter === "low") {
@@ -161,17 +198,9 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
     }
 
     if (newestFilter === "newest") {
-      next.sort((a, b) =>
-        getVideoCatalogMeta(b.id).listedAt.localeCompare(
-          getVideoCatalogMeta(a.id).listedAt,
-        ),
-      );
+      next.sort((a, b) => newestMs(b) - newestMs(a));
     } else if (newestFilter === "oldest") {
-      next.sort((a, b) =>
-        getVideoCatalogMeta(a.id).listedAt.localeCompare(
-          getVideoCatalogMeta(b.id).listedAt,
-        ),
-      );
+      next.sort((a, b) => newestMs(a) - newestMs(b));
     }
     return next;
   }, [filtered, newestFilter, priceFilter]);
@@ -234,19 +263,6 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                 <h1 className="text-xl font-extrabold tracking-tight text-zinc-100 sm:text-2xl [html[data-theme='light']_&]:text-zinc-900">
                   {label}
                 </h1>
-                <p className="mt-2 font-mono text-[11px] leading-none text-zinc-500 sm:text-[12px] [html[data-theme='light']_&]:text-zinc-600">
-                  {orientationFilter === "all" ? (
-                    <>
-                      세로 {portraitSorted.length}개 · 가로 {landscapeSorted.length}개
-                      <span className="text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-                        {" "}
-                        (총 {sorted.length}개)
-                      </span>
-                    </>
-                  ) : (
-                    <>등록된 릴스 {sorted.length}개</>
-                  )}
-                </p>
                 {categoryStory ? (
                   <p
                     className={`mt-3 max-w-3xl text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-700 sm:text-[14px] ${
@@ -431,9 +447,6 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                     >
                       세로 영상
                     </h2>
-                    <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                      릴스·숏폼 비율 · {portraitSorted.length}개
-                    </p>
                   </div>
                   {renderMosaicGrid(portraitSorted)}
                 </section>
