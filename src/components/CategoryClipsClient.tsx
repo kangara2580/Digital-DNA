@@ -452,15 +452,11 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
             </div>
           </header>
 
-          {slug === "best" && sorted.length > 0 ? (
-            <BestEndlessRankFeed videos={sorted} onEnterWatch={openExploreWatch} />
-          ) : null}
-
           {sorted.length === 0 ? (
             <p className="px-4 py-16 text-center font-mono text-[12px] text-zinc-500 sm:px-6 [html[data-theme='light']_&]:text-zinc-600">
               이 조건에 맞는 릴스가 없어요.
             </p>
-          ) : slug !== "best" && orientationFilter === "all" ? (
+          ) : orientationFilter === "all" ? (
             <div className="space-y-0">
               {portraitSorted.length > 0 ? (
                 <section aria-labelledby="category-portrait-heading">
@@ -500,7 +496,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                 </section>
               ) : null}
             </div>
-          ) : slug !== "best" ? (
+          ) : (
             <div>
               <div className="border-b border-white/10 bg-black/[0.08] px-4 py-3 sm:px-6 lg:px-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/80">
                 <p className="text-[13px] font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
@@ -511,7 +507,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
               </div>
               {renderMosaicGrid(sorted)}
             </div>
-          ) : null}
+          )}
         </main>
       </div>
     </div>

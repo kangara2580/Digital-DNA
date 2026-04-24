@@ -158,9 +158,6 @@ export function TrendingRankSection() {
             >
               인기순위 TOP 30
             </h2>
-            <p className="mt-1 text-[13px] text-zinc-400">
-              지금 가장 반응 좋은 클립만 깔끔하게 정리했어요.
-            </p>
             {errorMessage ? (
               <p className="mt-1.5 text-[12px] font-medium text-rose-300 [html[data-theme='light']_&]:text-rose-600">
                 {errorMessage}

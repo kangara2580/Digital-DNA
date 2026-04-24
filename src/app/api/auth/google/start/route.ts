@@ -20,6 +20,17 @@ function safeNextPath(raw: string | null): string {
   return raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
 }
 
+function resolveSiteOrigin(fallbackOrigin: string): string {
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim() ?? "";
+  if (!raw) return fallbackOrigin;
+  const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  try {
+    return new URL(withProtocol).origin;
+  } catch {
+    return fallbackOrigin;
+  }
+}
+
 export async function GET(request: Request) {
   const reqUrl = new URL(request.url);
   const supabaseOrigin =
@@ -34,7 +45,8 @@ export async function GET(request: Request) {
   }
 
   const nextPath = safeNextPath(reqUrl.searchParams.get("next"));
-  const redirectTo = new URL("/auth/callback", reqUrl.origin);
+  const siteOrigin = resolveSiteOrigin(reqUrl.origin);
+  const redirectTo = new URL("/auth/callback", siteOrigin);
   redirectTo.searchParams.set("next", nextPath);
 
   const authUrl = new URL("/auth/v1/authorize", supabaseOrigin);

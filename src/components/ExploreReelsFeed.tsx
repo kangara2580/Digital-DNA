@@ -1,7 +1,6 @@
 "use client";
 
-import { ArrowLeft, ChevronDown, ChevronUp, LayoutGrid } from "lucide-react";
-import Link from "next/link";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   useCallback,
@@ -104,11 +103,9 @@ function ExploreBrowseGrid({
 function ExploreWatchReels({
   pool,
   watchOffset,
-  onBackToBrowse,
 }: {
   pool: FeedVideo[];
   watchOffset: number;
-  onBackToBrowse: () => void;
 }) {
   const [count, setCount] = useState(BATCH);
   const [reelMuted, setReelMutedState] = useState(true);
@@ -223,26 +220,6 @@ function ExploreWatchReels({
 
   return (
     <>
-      <div className="pointer-events-none fixed left-3 top-[calc(var(--header-height,4.5rem)+0.5rem)] z-[45] flex flex-col gap-2 sm:left-4 md:left-[calc(var(--reels-rail-w)+0.75rem)]">
-        <Link
-          href="/"
-          className="pointer-events-auto inline-flex h-10 items-center gap-1.5 rounded-full border border-white/20 bg-black/45 px-3.5 text-[13px] font-semibold text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-reels-cyan/40 hover:bg-black/60 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-900"
-          aria-label="홈으로"
-        >
-          <ArrowLeft className="h-4 w-4" strokeWidth={2.25} aria-hidden />
-          홈
-        </Link>
-        <button
-          type="button"
-          onClick={onBackToBrowse}
-          className="pointer-events-auto inline-flex h-10 items-center gap-1.5 rounded-full border border-white/20 bg-black/45 px-3.5 text-[13px] font-semibold text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-reels-cyan/40 hover:bg-black/60 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-900"
-          aria-label="그리드 목록으로"
-        >
-          <LayoutGrid className="h-4 w-4" strokeWidth={2.25} aria-hidden />
-          목록
-        </button>
-      </div>
-
       {/* 틱톡 스타일: 위·아래로 한 영상씩 이동 */}
       <div className="pointer-events-none fixed bottom-[max(8rem,calc(env(safe-area-inset-bottom)+5.5rem))] right-3 z-[101] flex flex-col gap-2 sm:right-5 md:right-6">
         <button
@@ -359,11 +336,6 @@ export function ExploreReelsFeed({ pool }: { pool: FeedVideo[] }) {
     );
   }, [pathname, router, watchPool]);
 
-  const backToBrowse = useCallback(() => {
-    setMode("browse");
-    router.replace(pathname, { scroll: false });
-  }, [pathname, router]);
-
   useEffect(() => {
     if (mode === "browse") {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -395,7 +367,6 @@ export function ExploreReelsFeed({ pool }: { pool: FeedVideo[] }) {
     <ExploreWatchReels
       pool={watchPool}
       watchOffset={watchOffset}
-      onBackToBrowse={backToBrowse}
     />
   );
 }

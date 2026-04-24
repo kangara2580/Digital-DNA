@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronLeft, ChevronRight, Search, Wallet } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Search, ShoppingCart, Wallet } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -25,11 +25,6 @@ const categoryPillClass =
 /** 스크롤 컴팩트 시 상단에는 베스트·추천만 노출, 나머지는 「카테고리」 메뉴로 */
 const COMPACT_PRIMARY = ITEMS.slice(0, 2);
 const COMPACT_MORE = ITEMS.slice(2);
-
-/** 스크롤을 조금만 내려도 컴팩트가 깜빡이지 않게 진입/이탈 임계를 분리 */
-const SCROLL_COMPACT_ENTER = 96;
-/** 맨 위 복귀 시 펼침을 조금 일찍 걸어(스크롤이 EXIT 이하로 들어오면 바로 펼침) */
-const SCROLL_COMPACT_EXIT = 32;
 
 /** 짧은 전환 — 긴 스크롤 구간에서 레이아웃·블러 재계산 부담을 줄임 */
 const easeLayout =
@@ -162,6 +157,9 @@ function RotatingSearchField({
 const subscribeNavClass =
   "inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-reels-cyan/40 bg-reels-cyan/10 text-reels-cyan transition hover:bg-reels-cyan/15 sm:size-10 [html[data-theme='light']_&]:border-reels-cyan/35 [html[data-theme='light']_&]:bg-reels-cyan/10";
 
+const cartNavClass =
+  "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-zinc-200 transition hover:text-white [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800";
+
 /** md 미만: 좌측 레일이 없어서 우측 상단 고정 유지. md+: 레일의 구독 버튼만 사용 */
 const subscribeFixedWrap =
   "pointer-events-auto fixed right-[max(0.75rem,env(safe-area-inset-right))] top-[max(0.5rem,env(safe-area-inset-top))] z-[45] md:right-6 md:hidden";
@@ -182,7 +180,6 @@ function FixedSubscribeNavLink() {
 export function MallTopNav() {
   const [q, setQ] = useState("");
   const headerRef = useRef<HTMLElement>(null);
-  const [compact, setCompact] = useState(false);
   const pathname = usePathname();
 
   /** 검색 페이지가 아니면 입력란 유지(다른 페이지로 가도 이전 검색어가 남지 않게) */
@@ -207,16 +204,12 @@ export function MallTopNav() {
   const [detailSearchOpen, setDetailSearchOpen] = useState(false);
   /** 탐색/카테고리: 메인에서 스크롤 내린 것과 같은 컴팩트 헤더를 즉시 적용 */
   const compactEffective =
-    compact || pathname === "/explore" || isCategoryPage || isVideoDetailPage;
+    pathname === "/explore" || isCategoryPage || isVideoDetailPage;
   const [moreOpen, setMoreOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const moreWrapRef = useRef<HTMLDivElement>(null);
   const menuPortalRef = useRef<HTMLDivElement>(null);
   const hoverCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  /** 스크롤 핸들러마다 setState하지 않고, rAF 1프레임·실제 전환 시에만 갱신(트랙패드 미세 스크롤 버벅임 완화) */
-  const compactRafRef = useRef(0);
-  const scrollYRef = useRef(0);
-  const compactMirrorRef = useRef(false);
   const [menuPlace, setMenuPlace] = useState<{
     top: number;
     left: number;
@@ -284,43 +277,6 @@ export function MallTopNav() {
       window.clearTimeout(debounceT);
       cancelAnimationFrame(rafId);
       ro.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    compactMirrorRef.current = compact;
-  }, [compact]);
-
-  /** 컴팩트: rAF 1프레임에 묶고, 값이 바뀔 때만 setState — 트랙패드·관성 스크롤 시 연속 setState·레이아웃 전환 완화 */
-  useEffect(() => {
-    const applyCompactFromScroll = () => {
-      compactRafRef.current = 0;
-      const y = scrollYRef.current;
-      const prev = compactMirrorRef.current;
-      const next = prev ? y > SCROLL_COMPACT_EXIT : y > SCROLL_COMPACT_ENTER;
-      if (next !== prev) {
-        compactMirrorRef.current = next;
-        setCompact(next);
-      }
-    };
-
-    const onScroll = () => {
-      scrollYRef.current = window.scrollY;
-      if (!compactRafRef.current) {
-        compactRafRef.current = window.requestAnimationFrame(applyCompactFromScroll);
-      }
-    };
-
-    scrollYRef.current = typeof window !== "undefined" ? window.scrollY : 0;
-    applyCompactFromScroll();
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (compactRafRef.current) {
-        window.cancelAnimationFrame(compactRafRef.current);
-        compactRafRef.current = 0;
-      }
     };
   }, []);
 
@@ -466,7 +422,7 @@ export function MallTopNav() {
       }`}
     >
       <div
-        className={`mx-auto max-w-[1800px] pl-4 sm:pl-6 lg:pl-8 reels-pr-safe-fixed ${easeNav} ${
+        className={`mx-auto max-w-[1800px] pl-[max(0.35rem,env(safe-area-inset-left))] pr-[max(0.35rem,env(safe-area-inset-right))] sm:pl-[max(0.55rem,env(safe-area-inset-left))] sm:pr-[max(0.55rem,env(safe-area-inset-right))] lg:pl-[max(0.7rem,env(safe-area-inset-left))] lg:pr-[max(0.7rem,env(safe-area-inset-right))] ${easeNav} ${
           compactEffective ? "pb-1.5 pt-1.5" : "pb-1.5 pt-2"
         }`}
       >
@@ -545,8 +501,7 @@ export function MallTopNav() {
                     className="shrink-0 rounded-sm text-left outline-none transition-opacity duration-200 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-reels-cyan/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reels-abyss [html[data-theme='light']_&]:focus-visible:ring-offset-white"
                     aria-label="홈 · 메인 화면으로 이동"
                   >
-                    <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/30 px-3 py-1.5 backdrop-blur-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
-                      <ReelsLogo size={18} />
+                    <span className="inline-flex items-center rounded-full bg-black/30 px-4 py-1.5 backdrop-blur-sm [html[data-theme='light']_&]:bg-white">
                       <span className="block whitespace-nowrap text-[clamp(1rem,2.7vw,1.5rem)] font-extrabold leading-none tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
                         ARA
                       </span>
@@ -561,6 +516,9 @@ export function MallTopNav() {
                       <RotatingSearchField compact={false} q={q} setQ={setQ} />
                     </div>
                     <MainTopUserMenu compact={false} />
+                    <Link href="/cart" className={cartNavClass} aria-label="장바구니">
+                      <ShoppingCart className="h-4 w-4" strokeWidth={2} aria-hidden />
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -734,7 +692,10 @@ export function MallTopNav() {
             <div
               className={`flex shrink-0 items-center gap-1.5 sm:gap-2 sm:-mr-1 lg:-mr-0.5 ${easeLayout}`}
             >
-              {pathname === "/" ? <MainTopUserMenu compact /> : null}
+              <MainTopUserMenu compact />
+              <Link href="/cart" className={cartNavClass} aria-label="장바구니">
+                <ShoppingCart className="h-4 w-4" strokeWidth={2} aria-hidden />
+              </Link>
               <div className="md:hidden">
                 <SitePreferencesMenu />
               </div>

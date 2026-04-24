@@ -1,21 +1,18 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { CircleUserRound } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import {
-  getProfileAvatarDisplayUrl,
-  resolveProfileAvatar,
-} from "@/lib/profileAvatarStorage";
 
 type Props = {
   compact: boolean;
 };
 
 export function MainTopUserMenu({ compact }: Props) {
-  const pathname = usePathname();
   const router = useRouter();
   const { user, loading } = useAuthSession();
   const [busy, setBusy] = useState(false);
@@ -65,7 +62,7 @@ export function MainTopUserMenu({ compact }: Props) {
     window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
   }, []);
 
-  if (pathname !== "/" || loading) return null;
+  if (loading) return null;
 
   if (!user) {
     return (
@@ -79,7 +76,7 @@ export function MainTopUserMenu({ compact }: Props) {
           aria-haspopup="dialog"
           aria-expanded={authOpen}
         >
-          <span className="whitespace-nowrap font-bold">로그인</span>
+          <span className="whitespace-nowrap font-bold">시작하기</span>
         </button>
 
         {mounted && authOpen
@@ -113,11 +110,11 @@ export function MainTopUserMenu({ compact }: Props) {
                   >
                     ×
                   </button>
-                  <p className="relative text-center text-[clamp(1.85rem,6vw,2.65rem)] font-black tracking-tight text-white">
+                  <p className="relative bg-gradient-to-r from-[#C9FBFF] via-[#7FDBFF] to-[#59D9CB] bg-clip-text text-center text-[clamp(1.85rem,6vw,2.65rem)] font-black tracking-tight text-transparent">
                     ARA
                   </p>
                   <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
-                    로그인 / 회원가입
+                    Google로 시작하기
                   </p>
                   <button
                     type="button"
@@ -157,53 +154,25 @@ export function MainTopUserMenu({ compact }: Props) {
     );
   }
 
-  const meta = user.user_metadata as Record<string, unknown> | undefined;
-  const nickname = typeof meta?.nickname === "string" ? meta.nickname.trim() : "";
-  const email = user.email ?? "";
-  const localPart = email.includes("@") ? email.split("@")[0]! : email || "회원";
-  const greetName = nickname || localPart;
-
-  const avatar = resolveProfileAvatar(user);
-  const avatarSrc = getProfileAvatarDisplayUrl(
-    avatar,
-    typeof user.id === "string" ? user.id : "reels-market",
-  );
-
   return (
-    <div
-      className={`flex min-w-0 shrink-0 items-center gap-2 rounded-full border border-white/12 bg-white/[0.06] py-1 pl-1 pr-1 shadow-[0_0_20px_-8px_rgba(0,242,234,0.35)] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_4px_20px_-10px_rgba(0,0,0,0.12)] ${
-        compact ? "max-w-[min(52vw,14rem)]" : "max-w-[min(90vw,20rem)]"
-      }`}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={avatarSrc}
-        alt=""
-        className={`shrink-0 rounded-full border border-white/20 bg-black/30 object-cover [html[data-theme='light']_&]:border-zinc-200 ${
-          compact ? "h-7 w-7" : "h-9 w-9"
+    <div className="flex min-w-0 shrink-0 items-center gap-2">
+      <Link
+        href="/mypage"
+        className={`inline-flex shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.08] text-zinc-100 shadow-[0_0_20px_-8px_rgba(0,242,234,0.35)] transition hover:border-[#00F2EA]/45 hover:bg-white/[0.12] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 ${
+          compact ? "h-8 w-8" : "h-9 w-9"
         }`}
-      />
-      <div className="min-w-0 flex-1 leading-tight">
-        <p
-          className={`truncate font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 ${
-            compact ? "text-[11px]" : "text-[12px] sm:text-[13px]"
-          }`}
-        >
-          {greetName}님
-        </p>
-        <p
-          className={`truncate text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 ${
-            compact ? "hidden" : "text-[10px] sm:text-[11px]"
-          }`}
-        >
-          {email}
-        </p>
-      </div>
+        aria-label="마이페이지"
+        title="마이페이지"
+      >
+        <CircleUserRound className={compact ? "h-4 w-4" : "h-[18px] w-[18px]"} strokeWidth={2.1} />
+      </Link>
       <button
         type="button"
         onClick={() => void onLogout()}
         disabled={busy}
-        className="shrink-0 rounded-full border border-white/15 bg-white/[0.04] px-2 py-1 text-[10px] font-semibold tracking-tight text-zinc-300 transition hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-rose-100 disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-rose-300 [html[data-theme='light']_&]:hover:bg-rose-50 [html[data-theme='light']_&]:hover:text-rose-800"
+        className={`shrink-0 rounded-full border border-white/15 bg-white/[0.04] font-semibold tracking-tight text-zinc-300 transition hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-rose-100 disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-rose-300 [html[data-theme='light']_&]:hover:bg-rose-50 [html[data-theme='light']_&]:hover:text-rose-800 ${
+          compact ? "px-2 py-1 text-[10px]" : "px-2.5 py-1 text-[11px]"
+        }`}
       >
         {busy ? "…" : "로그아웃"}
       </button>

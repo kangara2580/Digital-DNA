@@ -9,7 +9,6 @@ import {
   Link2,
   MoreVertical,
   Search,
-  ShoppingCart,
   Trophy,
   User,
   Wallet,
@@ -22,14 +21,13 @@ import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from
 import { createPortal } from "react-dom";
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 import { ReelsLogo } from "@/components/ReelsLogo";
-import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { MALL_CATEGORY_NAV_ITEMS } from "@/data/mallCategoryNav";
 import { useAuthSession } from "@/hooks/useAuthSession";
 
 const stroke = 1.75;
 
 const railIconBtn =
-  "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] text-zinc-300 transition-[background-color,color,transform,border-color] duration-200 hover:border-white/20 hover:bg-white/[0.09] hover:text-zinc-100 active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
+  "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.02] text-zinc-300 transition-[background-color,color,transform] duration-200 hover:bg-white/[0.09] hover:text-zinc-100 active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
 
 const railIconActive =
   "bg-white/[0.08] text-reels-cyan shadow-[0_0_16px_-4px_rgba(0,242,234,0.35)] [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-reels-cyan";
@@ -74,12 +72,6 @@ const RAIL_ITEMS: RailItem[] = [
     isActive: (p) => p.startsWith("/wishlist"),
   },
   {
-    href: "/cart",
-    label: "장바구니",
-    Icon: ShoppingCart,
-    isActive: (p) => p.startsWith("/cart"),
-  },
-  {
     href: "/recent",
     label: "최근 본 릴스",
     Icon: History,
@@ -100,7 +92,6 @@ const DRAWER_QUICK = [
 export function ReelsLeftRail() {
   const pathname = usePathname();
   const router = useRouter();
-  const { cartAnchorRef } = useDopamineBasket();
   const { user } = useAuthSession();
   const reduceMotion = useReducedMotion() ?? false;
   const [open, setOpen] = useState(false);
@@ -235,7 +226,6 @@ export function ReelsLeftRail() {
                 <div key={href} className="group relative">
                   <Link
                     href={href}
-                    ref={href === "/cart" ? cartAnchorRef : undefined}
                     aria-label={label}
                     aria-current={on ? "page" : undefined}
                     className={`${railIconBtn} ${on ? railIconActive : ""}`}
@@ -311,7 +301,7 @@ export function ReelsLeftRail() {
                     runSearch();
                   }}
                   className="fixed z-[260] overflow-hidden rounded-full border border-white/15 bg-reels-void/95 p-1 shadow-[0_18px_30px_-18px_rgba(0,0,0,0.8)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/95"
-                  style={{ top: searchPanelPos.top - 1, left: searchPanelPos.left }}
+                  style={{ top: searchPanelPos.top + 48, left: searchPanelPos.left }}
                 >
                   <div className="relative flex items-center">
                     <input
