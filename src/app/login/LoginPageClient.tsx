@@ -17,8 +17,27 @@ export function LoginPageClient() {
 
   useEffect(() => {
     if (searchParams.get("error") === "oauth") {
+      const reasonRaw = searchParams.get("reason") ?? "";
+      const reason = decodeURIComponent(reasonRaw);
+      const lower = reason.toLowerCase();
+      let detail = "";
+      if (lower.includes("redirect") || lower.includes("mismatch")) {
+        detail =
+          "리다이렉트 URL이 정확히 등록되지 않았습니다. Supabase Redirect URLs와 현재 접속 주소의 /auth/callback 경로를 다시 확인해 주세요.";
+      } else if (lower.includes("provider") && lower.includes("enabled")) {
+        detail = "Supabase Authentication > Providers에서 Google 제공자가 켜져 있는지 확인해 주세요.";
+      } else if (lower.includes("invalid client") || lower.includes("oauth client")) {
+        detail =
+          "Google OAuth Client ID/Secret 설정이 올바르지 않습니다. Google Cloud와 Supabase 설정을 다시 저장해 주세요.";
+      } else if (lower.includes("access_denied")) {
+        detail = "Google 인증 화면에서 권한이 취소되었습니다. 다시 시도해 주세요.";
+      } else if (lower.includes("missing_code_or_config")) {
+        detail = "콜백 코드가 누락되었거나 환경변수 설정이 비어 있습니다.";
+      } else if (reason) {
+        detail = `원인: ${reason}`;
+      }
       setError(
-        "Google 로그인에 실패했습니다. Supabase 대시보드에서 Google 제공자를 켜고, 리다이렉트 URL에 이 사이트 주소를 등록했는지 확인해 주세요.",
+        `Google 로그인에 실패했습니다. ${detail || "Supabase 대시보드에서 Google 제공자를 켜고, 리다이렉트 URL에 이 사이트 주소를 등록했는지 확인해 주세요."}`,
       );
     }
   }, [searchParams]);

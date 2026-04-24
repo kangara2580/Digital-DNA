@@ -17,6 +17,15 @@ function normalizeSupabaseOrigin(raw: string | undefined): string | null {
   }
 }
 
+function oauthErrorRedirect(origin: string, reason?: string): NextResponse {
+  const url = new URL("/login?error=oauth", origin);
+  const trimmed = (reason ?? "").trim();
+  if (trimmed) {
+    url.searchParams.set("reason", trimmed.slice(0, 220));
+  }
+  return NextResponse.redirect(url);
+}
+
 /**
  * Supabase OAuth(PKCE) 콜백 — `signInWithOAuth` 후 Google 등에서 리다이렉트됩니다.
  * @see https://supabase.com/docs/guides/auth/server-side/nextjs
@@ -30,12 +39,20 @@ export async function GET(request: NextRequest) {
     FALLBACK_SUPABASE_PUBLISHABLE_KEY;
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
+  const providerError =
+    requestUrl.searchParams.get("error_description") ||
+    requestUrl.searchParams.get("error") ||
+    "";
   const nextRaw = requestUrl.searchParams.get("next");
   const next =
     nextRaw && nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/";
 
+  if (providerError) {
+    return oauthErrorRedirect(requestUrl.origin, providerError);
+  }
+
   if (!supabaseUrl || !anonKey || !code) {
-    return NextResponse.redirect(new URL("/login?error=oauth", requestUrl.origin));
+    return oauthErrorRedirect(requestUrl.origin, "missing_code_or_config");
   }
 
   const redirectTo = new URL(next, requestUrl.origin);
@@ -57,7 +74,7 @@ export async function GET(request: NextRequest) {
 
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
-    return NextResponse.redirect(new URL("/login?error=oauth", requestUrl.origin));
+    return oauthErrorRedirect(requestUrl.origin, error.message || "exchange_failed");
   }
 
   return response;
