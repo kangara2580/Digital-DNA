@@ -113,6 +113,7 @@ export function ReelsLeftRail() {
   const drawerTitleId = useId();
   const drawerId = useId();
   const searchBtnRef = useRef<HTMLButtonElement | null>(null);
+  const searchPanelRef = useRef<HTMLFormElement | null>(null);
 
   const visibleRailItems = RAIL_ITEMS.filter((item) => {
     // 비로그인 사용자는 마이페이지 대신 상단 로그인/회원가입 버튼으로 진입합니다.
@@ -174,10 +175,28 @@ export function ReelsLeftRail() {
     };
   }, [searchOpen, measureSearchPanel]);
 
+  useEffect(() => {
+    if (!searchOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const n = e.target as Node;
+      if (searchBtnRef.current?.contains(n) || searchPanelRef.current?.contains(n)) return;
+      setSearchOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSearchOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown, true);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [searchOpen]);
+
   return (
     <>
       <aside
-        className="fixed inset-y-0 left-0 z-[38] hidden w-[var(--reels-rail-w)] flex-col border-r border-white/[0.08] bg-reels-abyss/80 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[1px_0_0_rgba(0,0,0,0.04)] md:flex"
+        className="fixed inset-y-0 left-0 z-[52] hidden w-[var(--reels-rail-w)] flex-col border-r border-white/[0.08] bg-reels-abyss/80 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[1px_0_0_rgba(0,0,0,0.04)] md:flex"
         aria-label="주요 메뉴"
       >
         <div className="relative flex shrink-0 flex-col items-center pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
@@ -286,12 +305,13 @@ export function ReelsLeftRail() {
                   animate={{ opacity: 1, x: 0, width: 300 }}
                   exit={reduceMotion ? undefined : { opacity: 0, x: -8, width: 0 }}
                   transition={{ duration: 0.22, ease: "easeOut" }}
+                  ref={searchPanelRef}
                   onSubmit={(e) => {
                     e.preventDefault();
                     runSearch();
                   }}
-                  className="fixed z-[260] -translate-y-1/2 overflow-hidden rounded-full border border-white/15 bg-reels-void/95 p-1 shadow-[0_18px_30px_-18px_rgba(0,0,0,0.8)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/95"
-                  style={{ top: searchPanelPos.top, left: searchPanelPos.left }}
+                  className="fixed z-[260] overflow-hidden rounded-full border border-white/15 bg-reels-void/95 p-1 shadow-[0_18px_30px_-18px_rgba(0,0,0,0.8)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/95"
+                  style={{ top: searchPanelPos.top - 1, left: searchPanelPos.left }}
                 >
                   <div className="relative flex items-center">
                     <input
