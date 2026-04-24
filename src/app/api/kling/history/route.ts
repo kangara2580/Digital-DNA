@@ -1,67 +1,46 @@
 import { NextResponse } from "next/server";
-import {
-  getKlingBearerToken,
-  getKlingTaskStatusUrl,
-  readKlingTasksFromDisk,
-} from "@/lib/klingApi";
-
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
-
-type KlingTaskStatusPayload = {
-  data?: {
-    task_status?: string | number;
-    task_result?: {
-      videos?: Array<{ url?: string }>;
-    };
-  };
-};
-
-function normalizeTaskStatus(raw: string | number | undefined): string {
-  if (typeof raw === "number") {
-    if (raw === 99) return "succeed";
-    if (raw === 100) return "failed";
-    if (raw === 50) return "processing";
-    if (raw === 10) return "submitted";
-    return String(raw);
-  }
-  return raw ?? "unknown";
-}
+import fs from "fs";
+import path from "path";
+import jwt from "jsonwebtoken";
 
 export async function GET() {
   try {
-    const tasks = (await readKlingTasksFromDisk())
-      .filter((task) => Boolean(task.taskId))
-      .reverse()
-      .slice(0, 10);
-    if (tasks.length === 0) return NextResponse.json([]);
+    const p = path.join(process.cwd(), "kling_tasks_db.json");
+    if (!fs.existsSync(p)) return NextResponse.json([]);
+    const db = JSON.parse(fs.readFileSync(p, "utf-8"));
+    const validTasks = db.filter((t: any) => t.taskId).reverse().slice(0, 10); // Check latest 10 tasks
 
-    const auth = getKlingBearerToken();
-    if (!auth.ok) {
-      return NextResponse.json({ error: "missing_kling_keys" }, { status: 500 });
-    }
-
-    const results = await Promise.all(
-      tasks.map(async (task) => {
-        try {
-          const response = await fetch(getKlingTaskStatusUrl(task.taskId), {
-            headers: { Authorization: `Bearer ${auth.token}` },
-            cache: "no-store",
-          });
-          const payload = (await response.json()) as KlingTaskStatusPayload;
-          return {
-            ...task,
-            status: normalizeTaskStatus(payload?.data?.task_status),
-            videoUrl: payload?.data?.task_result?.videos?.[0]?.url ?? null,
-          };
-        } catch {
-          return { ...task, status: "unknown", videoUrl: null };
-        }
-      }),
+    const accessKey = process.env.KLING_ACCESS_KEY;
+    const secretKey = process.env.KLING_SECRET_KEY;
+    if (!accessKey || !secretKey) return NextResponse.json({ error: "Missing keys" }, { status: 500 });
+    
+    const now = Math.floor(Date.now() / 1000);
+    const token = jwt.sign(
+      { iss: accessKey, exp: now + 1800, nbf: now - 5 },
+      secretKey,
+      { algorithm: "HS256", header: { alg: "HS256", typ: "JWT" } }
     );
 
+    const checkPromises = validTasks.map(async (task: any) => {
+        try {
+            const res = await fetch(`https://api-singapore.klingai.com/v1/videos/motion-control/${task.taskId}`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const d = await res.json();
+            return {
+                ...task,
+                status: d?.data?.task_status,
+                videoUrl: d?.data?.task_result?.videos?.[0]?.url || null
+            };
+        } catch(e) {
+            return task;
+        }
+    });
+
+    const results = await Promise.all(checkPromises);
     return NextResponse.json(results);
-  } catch {
+  } catch(e) {
     return NextResponse.json([]);
   }
 }
+

@@ -10,6 +10,7 @@ export type FacePickerOption = {
   id: string;
   label: string;
   src: string;
+  aiAngles?: string[];
 };
 
 /**

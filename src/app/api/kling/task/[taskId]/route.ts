@@ -1,32 +1,47 @@
 import { NextResponse } from "next/server";
-import { getKlingBearerToken, getKlingTaskStatusUrl } from "@/lib/klingApi";
-
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
+import jwt from "jsonwebtoken";
 
 export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ taskId: string }> },
+  req: Request,
+  { params }: { params: { taskId: string } }
 ) {
   try {
-    const { taskId } = await params;
+    const { taskId } = params;
     if (!taskId) {
-      return NextResponse.json({ error: "missing_task_id" }, { status: 400 });
-    }
-    const auth = getKlingBearerToken();
-    if (!auth.ok) {
-      return NextResponse.json({ error: "missing_kling_keys" }, { status: 500 });
+      return NextResponse.json({ error: "Missing task_id parameters" }, { status: 400 });
     }
 
-    const response = await fetch(getKlingTaskStatusUrl(taskId), {
+    const accessKey = process.env.KLING_ACCESS_KEY;
+    const secretKey = process.env.KLING_SECRET_KEY;
+    const legacyToken = process.env.KLING_API_TOKEN;
+
+    if (!legacyToken && (!accessKey || !secretKey)) {
+      return NextResponse.json(
+        { error: "KLING_ACCESS_KEY and KLING_SECRET_KEY are not configured" },
+        { status: 500 }
+      );
+    }
+
+    let token = legacyToken;
+    if (!token && accessKey && secretKey) {
+      const now = Math.floor(Date.now() / 1000);
+      token = jwt.sign(
+        { iss: accessKey, exp: now + 1800, nbf: now - 5 },
+        secretKey,
+        { algorithm: "HS256", header: { alg: "HS256", typ: "JWT" } }
+      );
+    }
+
+    const response = await fetch(`https://api-singapore.klingai.com/v1/videos/motion-control/${taskId}`, {
       method: "GET",
-      headers: { Authorization: `Bearer ${auth.token}` },
-      cache: "no-store",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
     });
+
     const data = await response.json();
-    return NextResponse.json(data, { status: response.ok ? 200 : response.status });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "kling_task_fetch_failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(data);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
