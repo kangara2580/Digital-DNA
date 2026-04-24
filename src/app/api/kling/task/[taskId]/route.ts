@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
 export async function GET(
-  req: Request,
-  { params }: { params: { taskId: string } }
+  _req: Request,
+  { params }: { params: Promise<{ taskId: string }> }
 ) {
   try {
-    const { taskId } = params;
+    const { taskId } = await params;
     if (!taskId) {
       return NextResponse.json({ error: "Missing task_id parameters" }, { status: 400 });
     }

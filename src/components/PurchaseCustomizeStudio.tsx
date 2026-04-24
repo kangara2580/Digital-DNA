@@ -1775,7 +1775,7 @@ export function PurchaseCustomizeStudio({
               <div className="flex-1 w-full flex flex-col gap-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-[12px] text-zinc-400">
-                    원본의 배경을 지우고 어떤 시공간으로 보낼까요? (예: "밤의 네온 골목")
+                    원본의 배경을 지우고 어떤 시공간으로 보낼까요? (예: &quot;밤의 네온 골목&quot;)
                   </p>
                   <button 
                      onClick={() => {

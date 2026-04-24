@@ -15,6 +15,7 @@ import {
   Wallet,
   X,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
@@ -43,7 +44,7 @@ const railTooltip =
 type RailItem = {
   href: string;
   label: string;
-  Icon: typeof Home;
+  Icon: LucideIcon;
   isActive: (pathname: string) => boolean;
 };
 

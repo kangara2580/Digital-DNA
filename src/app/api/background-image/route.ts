@@ -12,7 +12,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let body: { prompt?: string; sourceImageUrl?: string };
+  let body: {
+    prompt?: string;
+    sourceImageUrl?: string;
+    orientation?: "portrait" | "landscape" | string;
+  };
   try {
     body = await request.json();
   } catch {
