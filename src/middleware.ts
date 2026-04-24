@@ -30,6 +30,14 @@ function isSensitiveAuthPath(pathname: string): boolean {
  * @see https://supabase.com/docs/guides/auth/server-side/nextjs
  */
 export async function middleware(request: NextRequest) {
+  // 일부 설정 오타(leading space)로 "/%20auth/callback" 으로 돌아오는 OAuth 콜백을
+  // 정상 경로로 정정합니다.
+  if (request.nextUrl.pathname === "/%20auth/callback") {
+    const fixed = request.nextUrl.clone();
+    fixed.pathname = "/auth/callback";
+    return NextResponse.redirect(fixed);
+  }
+
   const canonicalHost = canonicalHostFromEnv();
   const requestHost = request.nextUrl.host;
 
