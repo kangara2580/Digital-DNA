@@ -768,7 +768,7 @@ export function VideoCard({
         <div className="flex min-w-0 flex-col gap-1">
           <Link
             href={sellerHref}
-            className={`w-fit max-w-full truncate text-left font-medium text-zinc-400 underline-offset-2 hover:text-reels-cyan hover:underline [html[data-theme='light']_&]:text-zinc-600 ${
+            className={`w-fit max-w-full truncate text-left font-medium text-zinc-400 underline-offset-2 hover:text-[#86B4FF] hover:underline [html[data-theme='light']_&]:text-zinc-600 ${
               dense ? "text-[9px]" : "text-[10px] sm:text-[11px]"
             }`}
             aria-label={`${sellerName} 판매자 페이지`}
@@ -791,7 +791,7 @@ export function VideoCard({
             </h3>
             {priceLabel ? (
               <span
-                className={`shrink-0 rounded-md px-1.5 py-0.5 text-right font-extrabold tabular-nums text-reels-cyan transition-[transform,background-color,color,box-shadow,font-weight] duration-[400ms] ease-in-out motion-reduce:transition-none group-hover:scale-[1.07] group-hover:bg-reels-crimson group-hover:font-extrabold group-hover:text-white group-hover:shadow-reels-crimson motion-reduce:group-hover:scale-100 motion-reduce:group-hover:bg-transparent motion-reduce:group-hover:font-extrabold motion-reduce:group-hover:text-reels-cyan motion-reduce:group-hover:shadow-none [html[data-theme='light']_&]:text-[#00a8b5] ${
+                className={`shrink-0 rounded-md px-1.5 py-0.5 text-right font-extrabold tabular-nums text-[#64E3FF] transition-[transform,background-color,color,box-shadow,font-weight] duration-[300ms] ease-out motion-reduce:transition-none group-hover:scale-[1.03] group-hover:bg-[#2348A8]/35 group-hover:text-[#BFE0FF] group-hover:shadow-[0_0_14px_-4px_rgba(79,140,255,0.7)] motion-reduce:group-hover:scale-100 motion-reduce:group-hover:bg-transparent motion-reduce:group-hover:font-extrabold motion-reduce:group-hover:text-[#64E3FF] motion-reduce:group-hover:shadow-none [html[data-theme='light']_&]:text-[#2A62D8] ${
                   dense
                     ? "text-[10px]"
                     : reelStrip

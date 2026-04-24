@@ -1,11 +1,11 @@
 import { useId } from "react";
 
 /**
- * ARA — Diamond + monogram mark
+ * ARA — cobalt A + play mark
  */
 export function ReelsLogo({
   className = "",
-  size = 28,
+  size = 56,
   variant = "glass",
 }: {
   className?: string;
@@ -13,8 +13,8 @@ export function ReelsLogo({
   variant?: "glass" | "bold-orange" | "flat-minimal";
 }) {
   const uid = useId().replace(/:/g, "");
-  const strokeGradId = `ara-stroke-${uid}`;
-  const monoGradId = `ara-mono-${uid}`;
+  const aGradId = `ara-a-grad-${uid}`;
+  const playGradId = `ara-play-grad-${uid}`;
   const glowId = `ara-glow-${uid}`;
 
   return (
@@ -27,17 +27,16 @@ export function ReelsLogo({
       aria-hidden
     >
       <defs>
-        <linearGradient id={strokeGradId} x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#BFEFFF" />
-          <stop offset="55%" stopColor="#7FDBFF" />
-          <stop offset="100%" stopColor="#B99AFB" />
+        <linearGradient id={aGradId} x1="8" y1="6" x2="24" y2="26" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#3BA8FF" />
+          <stop offset="100%" stopColor="#2E5BFF" />
         </linearGradient>
-        <linearGradient id={monoGradId} x1="8" y1="7" x2="24" y2="24" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#84EAFF" />
-          <stop offset="100%" stopColor="#8FA9FF" />
+        <linearGradient id={playGradId} x1="13" y1="15" x2="19" y2="20" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#2F8EFF" />
+          <stop offset="100%" stopColor="#2C4DFA" />
         </linearGradient>
         <filter id={glowId} x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="1.25" result="blur" />
+          <feGaussianBlur stdDeviation="0.8" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
@@ -47,57 +46,36 @@ export function ReelsLogo({
 
       {variant === "glass" || variant === "bold-orange" ? (
         <>
-          {/* Diamond shell */}
           <path
-            d="M6 9 9.2 5.2h13.6L26 9l-3.6 4.2H9.6L6 9Zm3.9 4.9h12.2L16 26.3 9.9 13.9Z"
+            d="M7.2 24.7 14.2 8.5h3.6l7 16.2"
             fill="none"
-            stroke={`url(#${strokeGradId})`}
-            strokeWidth="1.7"
+            stroke={`url(#${aGradId})`}
+            strokeWidth="2.8"
+            strokeLinecap="round"
             strokeLinejoin="round"
             filter={`url(#${glowId})`}
           />
-
-          {/* Interlocked ARA monogram strokes */}
-          <path
-            d="M8.2 20.4 11.3 12h1.2l3.5 8.4m-5.1-2.4h3.9M13.7 20.4 16.2 12h1.2l2.4 8.4m-3.7-3h3M17.8 12h4.2m-2.1 0v8.4"
-            fill="none"
-            stroke={`url(#${monoGradId})`}
-            strokeWidth="1.45"
-            strokeLinecap="round"
+          <polygon
+            points="14.25,15.85 18.6,18.05 14.25,20.25"
+            fill={`url(#${playGradId})`}
+            stroke="rgba(224,238,255,0.28)"
+            strokeWidth="0.35"
             strokeLinejoin="round"
           />
-          <circle cx="23.4" cy="8.5" r="2.1" fill="#FF8B1F" opacity="0.95" />
-          <circle cx="21.9" cy="9.3" r="0.9" fill="#FFD79C" opacity="0.95" />
         </>
       ) : null}
 
       {variant === "flat-minimal" ? (
         <>
           <path
-            d="M6.4 9.3 9.3 5.8h13.4l2.9 3.5-3.3 3.8H9.7L6.4 9.3Zm3.6 4.5h12L16 25.2l-6-11.4Z"
-            fill="none"
-            stroke="#7FDBFF"
-            strokeWidth="1.7"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M10.2 19.8 13 12.6m-2.8 7.2h5.2m-.6 0 2.2-7.2m1.2 0v7.2m-3.2 0h5.8"
-            fill="none"
-            stroke="#E8F3FF"
-            strokeWidth="1.35"
+            d="M7.6 24.6 14.4 8.9h3.2l6.8 15.7"
+            stroke={`url(#${aGradId})`}
+            strokeWidth="2.4"
             strokeLinecap="round"
+            strokeLinejoin="round"
+            filter={`url(#${glowId})`}
           />
-        </>
-      ) : null}
-
-      {variant === "flat-minimal" ? (
-        <>
-          <circle cx="16" cy="16" r="11" fill="#001F3F" />
-          <path
-            d="M16 8.6 10.9 21h2.3l1-2.5h3.7l1 2.5h2.3L16 8.6Zm-1 7.1L16 13l1 2.7h-2Z"
-            fill="#7FDBFF"
-          />
-          <circle cx="9.6" cy="9.6" r="1.8" fill="#FF7A1A" />
+          <polygon points="14.45,16 18.05,17.95 14.45,19.9" fill={`url(#${playGradId})`} />
         </>
       ) : null}
     </svg>

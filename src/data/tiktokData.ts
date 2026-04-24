@@ -144,7 +144,7 @@ function rankDemoPriceWon(rankId: number): number {
 function feedVideoFromRankItem(item: TikTokManualRankItem): FeedVideo {
   const poster = `/api/embed/poster?url=${encodeURIComponent(item.url)}`;
   const priceWon = rankDemoPriceWon(item.id);
-  const title = `인기 ${item.id}위`;
+  const title = `${item.id}위`;
 
   switch (item.provider) {
     case "tiktok":

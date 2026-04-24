@@ -15,12 +15,11 @@ import { createPortal } from "react-dom";
 import { MALL_CATEGORY_NAV_ITEMS as ITEMS } from "@/data/mallCategoryNav";
 import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhrases";
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
-import { ReelsLogo } from "@/components/ReelsLogo";
 import { MainTopUserMenu } from "@/components/MainTopUserMenu";
 
 /** 카테고리 pill — 라이트 모드에서 검정 텍스트 */
 const categoryPillClass =
-  "shrink-0 rounded-full border border-transparent bg-transparent font-semibold text-zinc-400 transition-[background-color,color,padding,font-size,border-color] hover:border-white/15 hover:bg-white/8 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-200 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
+  "inline-flex shrink-0 items-center justify-center rounded-full border border-transparent bg-transparent font-semibold leading-none text-zinc-400 transition-[background-color,color,padding,font-size,border-color] hover:border-white/15 hover:bg-white/8 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-200 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
 
 /** 스크롤 컴팩트 시 상단에는 베스트·추천만 노출, 나머지는 「카테고리」 메뉴로 */
 const COMPACT_PRIMARY = ITEMS.slice(0, 2);
@@ -178,30 +177,16 @@ function FixedSubscribeNavLink() {
 }
 
 export function MallTopNav() {
-  const [q, setQ] = useState("");
   const headerRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
-
-  /** 검색 페이지가 아니면 입력란 유지(다른 페이지로 가도 이전 검색어가 남지 않게) */
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (pathname !== "/search") {
-      setQ("");
-      return;
-    }
-    const uq = new URLSearchParams(window.location.search).get("q");
-    setQ(uq ?? "");
-  }, [pathname]);
   const isVideoDetailPage =
     pathname.startsWith("/video/") && !pathname.endsWith("/customize");
   const isCategoryPage = pathname.startsWith("/category/");
-  const hideHeaderSearchOnHomeDesktop = pathname === "/";
   const [isExploreWatchMode, setIsExploreWatchMode] = useState(false);
   const showCategoryNav =
     (pathname === "/explore" || isCategoryPage) && !isExploreWatchMode;
   const showAllCategoriesInline =
     (pathname === "/explore" || isCategoryPage) && !isExploreWatchMode;
-  const [detailSearchOpen, setDetailSearchOpen] = useState(false);
   /** 탐색/카테고리: 메인에서 스크롤 내린 것과 같은 컴팩트 헤더를 즉시 적용 */
   const compactEffective =
     pathname === "/explore" || isCategoryPage || isVideoDetailPage;
@@ -325,10 +310,6 @@ export function MallTopNav() {
     };
   }, [pathname, showAllCategoriesInline, syncCategoryScrollState]);
 
-  useEffect(() => {
-    if (!isVideoDetailPage) setDetailSearchOpen(false);
-  }, [isVideoDetailPage]);
-
   const cancelHoverClose = useCallback(() => {
     if (hoverCloseTimerRef.current != null) {
       clearTimeout(hoverCloseTimerRef.current);
@@ -415,7 +396,7 @@ export function MallTopNav() {
     <Fragment>
     <header
       ref={headerRef}
-      className={`sticky top-0 z-40 isolate border-b border-white/10 bg-reels-abyss/90 backdrop-blur-sm [transform:translateZ(0)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white/95 [html[data-theme='light']_&]:shadow-[0_1px_0_rgba(0,0,0,0.06)] ${easeNav} ${
+      className={`sticky top-0 z-40 isolate bg-reels-abyss/90 backdrop-blur-sm [transform:translateZ(0)] [html[data-theme='light']_&]:bg-white/95 ${easeNav} ${
         compactEffective
           ? "overflow-visible shadow-[0_8px_24px_-16px_rgba(0,0,0,0.35)] [html[data-theme='light']_&]:shadow-[0_6px_20px_-12px_rgba(0,0,0,0.08)]"
           : "shadow-none"
@@ -436,44 +417,10 @@ export function MallTopNav() {
           {/* 컴팩트: 스크린리더용 홈 링크만 */}
           {compactEffective ? (
             isVideoDetailPage ? (
-              <div className="relative flex shrink-0 items-center gap-1.5">
-                <Link
-                  href="/"
-                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-reels-cyan/30 bg-reels-cyan/8 ${easeLayout}`}
-                  aria-label="홈으로 이동"
-                >
-                  <ReelsLogo size={18} />
+              <div className={`flex shrink-0 items-center ${easeLayout}`}>
+                <Link href="/" className={`${logoClass} sr-only`}>
+                  홈으로 이동
                 </Link>
-                <button
-                  type="button"
-                  onClick={() => setDetailSearchOpen((v) => !v)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-zinc-100 transition hover:border-reels-cyan/40 hover:bg-white/15 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800"
-                  aria-label="검색 열기"
-                  aria-expanded={detailSearchOpen}
-                >
-                  <Search className="h-4 w-4" strokeWidth={2} aria-hidden />
-                </button>
-                <span
-                  className="ml-0.5 h-6 w-px bg-white/25 [html[data-theme='light']_&]:bg-zinc-300"
-                  aria-hidden
-                />
-                <div
-                  className={`absolute right-0 top-[calc(100%+0.4rem)] z-50 w-[min(68vw,380px)] origin-top-right transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1.28,0.36,1)] ${
-                    detailSearchOpen
-                      ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
-                      : "pointer-events-none -translate-y-1 scale-[0.88] opacity-0"
-                  }`}
-                >
-                  <div className="rounded-full border border-white/12 bg-black/12 px-2 py-1 backdrop-blur-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/30">
-                    <RotatingSearchField
-                      compact
-                      q={q}
-                      setQ={setQ}
-                      showTrailingIcon={false}
-                      onAfterSearch={() => setDetailSearchOpen(false)}
-                    />
-                    </div>
-                </div>
               </div>
             ) : (
               <div className={`flex shrink-0 items-center ${easeLayout}`}>
@@ -508,13 +455,6 @@ export function MallTopNav() {
                     </span>
                   </Link>
                   <div className="flex w-full min-w-0 flex-1 items-center justify-end gap-2 sm:ml-auto sm:w-auto sm:gap-3">
-                    <div
-                      className={`min-w-0 w-full max-w-[760px] sm:min-w-[18rem] ${
-                        hideHeaderSearchOnHomeDesktop ? "md:hidden" : ""
-                      }`}
-                    >
-                      <RotatingSearchField compact={false} q={q} setQ={setQ} />
-                    </div>
                     <MainTopUserMenu compact={false} />
                     <Link href="/cart" className={cartNavClass} aria-label="장바구니">
                       <ShoppingCart className="h-4 w-4" strokeWidth={2} aria-hidden />
@@ -533,18 +473,6 @@ export function MallTopNav() {
                 : "flex flex-col"
             }`}
           >
-            {compactEffective ? (
-              isVideoDetailPage ? null : (
-                <div
-                  className={`min-w-0 ${easeNav} mx-0 mt-0 max-w-[min(20rem,100%)] shrink sm:max-w-sm ${
-                    hideHeaderSearchOnHomeDesktop ? "md:hidden" : ""
-                  }`}
-                >
-                  <RotatingSearchField compact q={q} setQ={setQ} />
-                </div>
-              )
-            ) : null}
-
             {showCategoryNav ? (
               showAllCategoriesInline ? (
                 <div className={`relative mt-0 flex min-w-0 flex-1 items-center gap-1.5 ${easeNav}`}>
@@ -566,7 +494,7 @@ export function MallTopNav() {
                       <Link
                         key={item.label}
                         href={item.href}
-                        className={`${categoryPillClass} ${easeLayout} shrink-0 whitespace-nowrap px-2.5 py-1.5 text-[11px] sm:px-3 sm:py-2 sm:text-[12px]`}
+                        className={`${categoryPillClass} ${easeLayout} shrink-0 whitespace-nowrap px-3 py-[9px] text-[13px] sm:px-3.5 sm:py-[9px] sm:text-[14px]`}
                       >
                         {item.label}
                       </Link>
@@ -597,7 +525,7 @@ export function MallTopNav() {
                         <Link
                           key={item.label}
                           href={item.href}
-                          className={`${categoryPillClass} ${easeLayout} px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]`}
+                          className={`${categoryPillClass} ${easeLayout} px-2.5 py-[7px] text-[12px] sm:px-3 sm:py-[7px] sm:text-[13px]`}
                         >
                           {item.label}
                         </Link>
@@ -618,7 +546,7 @@ export function MallTopNav() {
                           aria-haspopup="true"
                           aria-controls="mall-category-more"
                           id="mall-category-trigger"
-                          className={`inline-flex items-center gap-0.5 ${categoryPillClass} ${easeLayout} px-2 py-1 text-[10px] sm:px-2.5 sm:text-[11px]`}
+                          className={`inline-flex items-center gap-0.5 ${categoryPillClass} ${easeLayout} px-2.5 py-[7px] text-[12px] sm:px-3 sm:py-[7px] sm:text-[13px]`}
                         >
                           카테고리
                           <ChevronDown
@@ -660,7 +588,7 @@ export function MallTopNav() {
                                         cancelHoverClose();
                                         setMoreOpen(false);
                                       }}
-                                      className={`shrink-0 whitespace-nowrap rounded-full px-1.5 py-1 text-[10px] font-semibold text-zinc-300 transition-colors duration-200 first:pl-2 last:pr-2 sm:px-2 sm:text-[11px] sm:first:pl-2.5 sm:last:pr-2.5 ${easeLayout} hover:bg-white/10 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black`}
+                                      className={`inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 py-[7px] text-[12px] font-semibold leading-none text-zinc-300 transition-colors duration-200 first:pl-2.5 last:pr-2.5 sm:px-2.5 sm:py-[7px] sm:text-[13px] sm:first:pl-3 sm:last:pr-3 ${easeLayout} hover:bg-white/10 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black`}
                                     >
                                       {item.label}
                                     </Link>
@@ -677,7 +605,7 @@ export function MallTopNav() {
                       <Link
                         key={item.label}
                         href={item.href}
-                        className={`${categoryPillClass} ${easeLayout} px-2.5 py-1.5 text-[11px] sm:px-3 sm:py-2 sm:text-[12px]`}
+                        className={`${categoryPillClass} ${easeLayout} px-2.5 py-[7px] text-[12px] sm:px-3 sm:py-[7px] sm:text-[13px]`}
                       >
                         {item.label}
                       </Link>

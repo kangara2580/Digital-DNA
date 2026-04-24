@@ -71,7 +71,7 @@ function ExploreBrowseGrid({
   return (
     <div className="mx-auto max-w-[1800px] px-4 pb-20 pt-4 sm:px-6 md:pl-[calc(var(--reels-rail-w,0px)+1rem)] lg:px-8">
       <div
-        className="grid grid-cols-2 gap-3 sm:gap-3 md:grid-cols-3 xl:grid-cols-4 xl:gap-4"
+        className="grid grid-cols-2 gap-2 border border-white/10 p-2 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
         role="list"
         aria-label="탐색 그리드"
       >

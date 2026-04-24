@@ -6,12 +6,14 @@ import {
   getTikTokManualRanking,
   manualTikTokRankingToFeedVideos,
 } from "@/data/tiktokData";
-import { getTrendingMetrics } from "@/data/trendingStats";
+import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { type FeedVideo } from "@/data/videos";
 import { liveStatsKeyFromFeedVideo } from "@/lib/externalEmbed/parseUrl";
 import { SectionMoreLink } from "./SectionMoreLink";
 import { TrendingVideoStatsFooter } from "./TrendingVideoStatsFooter";
 import { VideoCard } from "./VideoCard";
+
+const TRENDING_RANK_SNAPSHOT_KEY = "ara-trending-rank-snapshot-v1";
 
 function SkeletonGrid() {
   return (
@@ -40,29 +42,49 @@ export function TrendingRankSection() {
   const [trendingClips, setTrendingClips] = useState<FeedVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [previousRanksByVideoId, setPreviousRanksByVideoId] = useState<Record<string, number>>({});
   const [liveStatsByKey, setLiveStatsByKey] = useState<
     Record<string, { playCount: number; diggCount: number }>
   >({});
 
-  // 순위는 로딩 시 한 번 확정하고, 렌더 중 재정렬하지 않습니다.
+  // 순위는 로딩 시(또는 새로고침 시) 수익 기준으로 확정하고, 렌더 중 재정렬하지 않습니다.
   const rankedRows = useMemo(
-    () =>
-      trendingClips.slice(0, 30).map((video, rankIndex) => ({
-        key: `fixed-${rankIndex}-${video.id}`,
-        video,
-        metrics: (() => {
-          const base = getTrendingMetrics(video.id, rankIndex);
-          const liveKey = liveStatsKeyFromFeedVideo(video);
-          const live = liveKey ? liveStatsByKey[liveKey] : undefined;
-          if (!live) return base;
-          return {
-            ...base,
-            totalViews: live.playCount,
-            totalLikes: live.diggCount,
-          };
-        })(),
-      })),
-    [trendingClips, liveStatsByKey],
+    () => {
+      const rows = trendingClips.map((video) => {
+        const base = getMetricsForVideoDetail(video.id);
+        const liveKey = liveStatsKeyFromFeedVideo(video);
+        const live = liveKey ? liveStatsByKey[liveKey] : undefined;
+        const metrics = live
+          ? {
+              ...base,
+              totalViews: live.playCount,
+              totalLikes: live.diggCount,
+            }
+          : base;
+        return { video, metrics };
+      });
+
+      rows.sort((a, b) => b.metrics.cumulativeRevenueWon - a.metrics.cumulativeRevenueWon);
+
+      return rows.slice(0, 30).map((row, rankIndex) => {
+        const previousRank = previousRanksByVideoId[row.video.id];
+        const trendDir =
+          previousRank == null
+            ? "same"
+            : previousRank > rankIndex + 1
+              ? "up"
+              : previousRank < rankIndex + 1
+                ? "down"
+                : "same";
+        return {
+          key: `fixed-${rankIndex}-${row.video.id}`,
+          video: row.video,
+          metrics: row.metrics,
+          trendDir,
+        };
+      });
+    },
+    [trendingClips, liveStatsByKey, previousRanksByVideoId],
   );
 
   const loadTrending = useCallback(() => {
@@ -137,6 +159,31 @@ export function TrendingRankSection() {
   }, [loadTrending]);
 
   useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(TRENDING_RANK_SNAPSHOT_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Record<string, number>;
+      if (!parsed || typeof parsed !== "object") return;
+      setPreviousRanksByVideoId(parsed);
+    } catch {
+      /* noop */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!rankedRows.length) return;
+    const snapshot: Record<string, number> = {};
+    rankedRows.forEach((entry, i) => {
+      snapshot[entry.video.id] = i + 1;
+    });
+    try {
+      window.localStorage.setItem(TRENDING_RANK_SNAPSHOT_KEY, JSON.stringify(snapshot));
+    } catch {
+      /* noop */
+    }
+  }, [rankedRows]);
+
+  useEffect(() => {
     void refreshLiveStats();
     const t = window.setInterval(() => {
       void refreshLiveStats();
@@ -205,7 +252,16 @@ export function TrendingRankSection() {
                   role="listitem"
                 >
                   <div className="pointer-events-none absolute left-2 top-2 z-[25] inline-flex items-center gap-1 rounded-full border border-[#00F2EA]/35 bg-black/65 px-2 py-1 text-[11px] font-extrabold tabular-nums text-white shadow-[0_10px_25px_-14px_rgba(0,242,234,0.9)]">
-                    #{rankIndex + 1}
+                    {rankIndex + 1}
+                    {entry.trendDir === "up" ? (
+                      <span className="text-[13px] leading-none text-[#2CFFC8] [text-shadow:0_0_10px_rgba(44,255,200,0.55)]">
+                        ▲
+                      </span>
+                    ) : entry.trendDir === "down" ? (
+                      <span className="text-[13px] leading-none text-[#FF5EAD] [text-shadow:0_0_10px_rgba(255,94,173,0.55)]">
+                        ▼
+                      </span>
+                    ) : null}
                   </div>
                   <VideoCard
                     video={entry.video}
@@ -226,7 +282,6 @@ export function TrendingRankSection() {
                     footerExtension={
                       <TrendingVideoStatsFooter
                         metrics={entry.metrics}
-                        salePriceWon={entry.video.priceWon}
                       />
                     }
                   />

@@ -193,10 +193,10 @@ export function ReelsLeftRail() {
         <div className="relative flex shrink-0 flex-col items-center pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
           <Link
             href="/"
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-zinc-200 transition-colors hover:bg-white/[0.07] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100"
+            className="flex h-12 w-12 items-center justify-center rounded-xl text-zinc-200 transition-colors hover:bg-white/[0.07] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100"
             aria-label="홈"
           >
-            <ReelsLogo size={22} />
+            <ReelsLogo size={30} />
           </Link>
         </div>
         <div className="flex min-h-0 flex-1 flex-col items-stretch pt-1">
@@ -292,7 +292,7 @@ export function ReelsLeftRail() {
                 <motion.form
                   key="rail-search-popover"
                   initial={reduceMotion ? false : { opacity: 0, x: -8, width: 0 }}
-                  animate={{ opacity: 1, x: 0, width: 300 }}
+                  animate={{ opacity: 1, x: 0, width: 340 }}
                   exit={reduceMotion ? undefined : { opacity: 0, x: -8, width: 0 }}
                   transition={{ duration: 0.22, ease: "easeOut" }}
                   ref={searchPanelRef}
@@ -300,25 +300,29 @@ export function ReelsLeftRail() {
                     e.preventDefault();
                     runSearch();
                   }}
-                  className="fixed z-[260] overflow-hidden rounded-full border border-white/15 bg-reels-void/95 p-1 shadow-[0_18px_30px_-18px_rgba(0,0,0,0.8)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/95"
-                  style={{ top: searchPanelPos.top + 48, left: searchPanelPos.left }}
+                  className="fixed z-[260] -translate-y-1/2 overflow-hidden rounded-full border border-white/15 bg-reels-void/95 p-1 shadow-[0_18px_30px_-18px_rgba(0,0,0,0.8)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/95"
+                  style={{ top: searchPanelPos.top - 12, left: searchPanelPos.left }}
                 >
                   <div className="relative flex items-center">
                     <input
-                      type="search"
+                      type="text"
                       value={searchQ}
                       onChange={(e) => setSearchQ(e.target.value)}
                       placeholder="검색어 입력"
-                      className="h-8 w-[240px] min-w-0 bg-transparent pl-3 pr-11 text-[12px] text-zinc-100 outline-none placeholder:text-zinc-500 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-500"
+                      className="h-10 w-[312px] min-w-0 bg-transparent pl-4 pr-10 text-[16px] text-zinc-100 outline-none placeholder:text-zinc-500 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-500"
                       autoFocus
+                      enterKeyHint="search"
                     />
-                    <button
-                      type="submit"
-                      className="absolute right-0.5 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-zinc-200 transition hover:border-reels-cyan/40 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700"
-                      aria-label="검색 실행"
-                    >
-                      <Search className="h-4 w-4" strokeWidth={2} aria-hidden />
-                    </button>
+                    {searchQ ? (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQ("")}
+                        className="absolute right-1.5 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/22 bg-white/[0.06] text-[#4F8DFF] transition hover:border-reels-cyan/55 hover:bg-white/[0.12] hover:text-[#7FB5FF] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-blue-600 [html[data-theme='light']_&]:hover:bg-zinc-200"
+                        aria-label="검색어 지우기"
+                      >
+                        <X className="h-5 w-5" strokeWidth={2.6} aria-hidden />
+                      </button>
+                    ) : null}
                   </div>
                 </motion.form>
               ) : null}
