@@ -51,9 +51,14 @@ export async function middleware(request: NextRequest) {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const needsAuth = request.nextUrl.pathname.startsWith("/mypage");
 
-  // 일부 환경에서 recovery 메일이 "/?code=..." 형태로 돌아오는 경우,
-  // reset-password 화면으로 강제 유도해 사용자 플로우를 보장합니다.
-  if (request.nextUrl.pathname === "/" && request.nextUrl.searchParams.has("code")) {
+  // 일부 환경에서 recovery 메일이 "/?code=..." 형태로 돌아오는 경우만
+  // reset-password 화면으로 유도합니다.
+  // OAuth 로그인(code)은 여기서 가로채지 않도록 type=recovery일 때만 처리합니다.
+  const maybeRecoveryCodeAtRoot =
+    request.nextUrl.pathname === "/" &&
+    request.nextUrl.searchParams.has("code") &&
+    request.nextUrl.searchParams.get("type") === "recovery";
+  if (maybeRecoveryCodeAtRoot) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/reset-password";
     return NextResponse.redirect(redirectUrl);
