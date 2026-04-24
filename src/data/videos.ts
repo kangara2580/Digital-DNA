@@ -1,30 +1,29 @@
 import { MOCK_VIDEOS } from "@/constants/videos";
 
-/** 다양한 출처·장소의 샘플 영상(데모용). 실제 서비스에서는 업로드·CDN URL로 교체 */
+/** ??????? ?(???. ? ??? ??DN URL? */
 export type FeedVideo = {
   id: string;
   title: string;
   creator: string;
   src: string;
   poster: string;
-  /** 세로(릴스) / 가로(와이드) 피드 구분 */
+  /** ?() / ???) ?  */
   orientation: "portrait" | "landscape";
-  /** 원 단위 가격(데모). 없으면 표시 안 함 */
+  /** ??? ??). ??? ????*/
   priceWon?: number;
-  /** 초 단위 길이 — 썸네일 위에만 재생 시간(예: 0:15)으로 표시 */
+  /** ??  ???????? ?(?? 0:15)? ? */
   durationSec?: number;
-  /** 호버 인스턴트 프리뷰 전용 URL(없으면 src로 앞 구간만 재생) */
+  /** ? ?? ??? URL(??src?????) */
   previewSrc?: string;
-  /** 호버 프리뷰 구간 길이(초). 기본 3 */
+  /** ? ?? (?.  3 */
   previewDurationSec?: number;
   /**
-   * AI 생성 영상 여부(API·업로드의 `is_ai_generated`와 동일).
-   * `true`가 아니면 직접 촬영(Real)로 간주합니다.
+   * AI ? ? ??(API?? `is_ai_generated`? ?).
+   * `true` ?? (Real)????
    */
   isAiGenerated?: boolean;
   /**
-   * TikTok Research API 등 — MP4가 없고 숫자 video id만 올 때 임베드 플레이어용
-   * (예: `https://www.tiktok.com/embed/v2/{id}`)
+   * TikTok Research API ????MP4 ? ? video id????????????   * (?? `https://www.tiktok.com/embed/v2/{id}`)
    */
   tiktokEmbedId?: string;
 };
@@ -45,13 +44,15 @@ function normalizeBlockedVideoSources(list: FeedVideo[]) {
     if (v.previewSrc && PEXELS_VIDEO_RE.test(v.previewSrc)) {
       v.previewSrc = fallback;
     }
+    // ??Pexels ??  ? ????  ? ?????    // ???? ?????? ???Start Frame)????????
+    v.poster = "";
   });
 }
 
 export const SAMPLE_VIDEOS: FeedVideo[] = [
   {
     id: "1",
-    title: "제주 해안 산책로에서",
+    title: "Untitled",
     creator: "@minji_travel",
     src: "https://videos.pexels.com/video-files/3571264/3571264-hd_1920_1080_30fps.mp4",
     poster:
@@ -62,7 +63,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "2",
-    title: "도심 야경 타임랩스",
+    title: "Untitled",
     creator: "@urban_lens",
     src: "https://videos.pexels.com/video-files/3045163/3045163-hd_1920_1080_25fps.mp4",
     poster:
@@ -73,7 +74,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "3",
-    title: "카페에서의 하루",
+    title: "Untitled",
     creator: "@coffee_daily",
     src: "https://videos.pexels.com/video-files/3045160/3045160-hd_1920_1080_25fps.mp4",
     poster:
@@ -84,7 +85,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "4",
-    title: "숲속 트레킹 기록",
+    title: "Untitled",
     creator: "@trail_k",
     src: "https://videos.pexels.com/video-files/1448735/1448735-hd_1920_1080_30fps.mp4",
     poster:
@@ -95,7 +96,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "5",
-    title: "비 오는 날 창가",
+    title: "Untitled",
     creator: "@rainy_mood",
     src: "https://videos.pexels.com/video-files/2491284/2491284-hd_1920_1080_30fps.mp4",
     poster:
@@ -106,7 +107,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "6",
-    title: "해변 일몰",
+    title: "Untitled",
     creator: "@sunset_clips",
     src: "https://videos.pexels.com/video-files/1409899/1409899-hd_1920_1080_25fps.mp4",
     poster:
@@ -117,7 +118,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "7",
-    title: "야시장 풍경",
+    title: "Untitled",
     creator: "@night_market",
     src: "https://videos.pexels.com/video-files/2495382/2495382-hd_1920_1080_30fps.mp4",
     poster:
@@ -128,7 +129,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "8",
-    title: "스튜디오 댄스 연습",
+    title: "Untitled",
     creator: "@studio_d",
     src: "https://videos.pexels.com/video-files/3209828/3209828-hd_1920_1080_25fps.mp4",
     poster:
@@ -139,7 +140,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "9",
-    title: "강변 조깅 캠",
+    title: "Untitled",
     creator: "@river_run",
     src: "https://videos.pexels.com/video-files/3044475/3044475-hd_1920_1080_25fps.mp4",
     poster:
@@ -150,7 +151,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "10",
-    title: "설원 하이킹",
+    title: "Untitled",
     creator: "@snow_peak",
     src: "https://videos.pexels.com/video-files/2889030/2889030-hd_1920_1080_30fps.mp4",
     poster:
@@ -161,7 +162,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "11",
-    title: "옥상 파티",
+    title: "Untitled",
     creator: "@rooftop_v",
     src: "https://videos.pexels.com/video-files/3044473/3044473-hd_1920_1080_25fps.mp4",
     poster:
@@ -172,7 +173,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "12",
-    title: "시골 마을 아침",
+    title: "Untitled",
     creator: "@village_am",
     src: "https://videos.pexels.com/video-files/2570934/2570934-hd_1920_1080_30fps.mp4",
     poster:
@@ -181,10 +182,10 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     priceWon: 2800,
     durationSec: 46,
   },
-  /** 홈 「추천 영상」 그리드 — 2행(최대 6열)까지 채우기 위한 추가 세로 클립 */
+  /** ???????????2??? 6??? ?? ? ? ? */
   {
     id: "13",
-    title: "새벽 러닝 트랙",
+    title: "Untitled",
     creator: "@dawn_runner",
     src: "https://videos.pexels.com/video-files/3044475/3044475-hd_1920_1080_25fps.mp4",
     poster:
@@ -195,7 +196,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "14",
-    title: "네온 골목 산책",
+    title: "Untitled",
     creator: "@neon_walk",
     src: "https://videos.pexels.com/video-files/3045163/3045163-hd_1920_1080_25fps.mp4",
     poster:
@@ -207,7 +208,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "15",
-    title: "파티 라이트 아래",
+    title: "Untitled",
     creator: "@party_glow",
     src: "https://videos.pexels.com/video-files/3209828/3209828-hd_1920_1080_25fps.mp4",
     poster:
@@ -219,7 +220,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "16",
-    title: "눈 덮인 산 능선",
+    title: "Untitled",
     creator: "@peak_white",
     src: "https://videos.pexels.com/video-files/2889030/2889030-hd_1920_1080_30fps.mp4",
     poster:
@@ -231,7 +232,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "17",
-    title: "해변 파도 소리",
+    title: "Untitled",
     creator: "@wave_listen",
     src: "https://videos.pexels.com/video-files/1409899/1409899-hd_1920_1080_25fps.mp4",
     poster:
@@ -243,7 +244,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "18",
-    title: "마을 골목 골든아워",
+    title: "Untitled",
     creator: "@golden_alley",
     src: "https://videos.pexels.com/video-files/2570934/2570934-hd_1920_1080_30fps.mp4",
     poster:
@@ -252,10 +253,10 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     priceWon: 2100,
     durationSec: 33,
   },
-  /** 100·300·500원대 — DNA 조합기·연관 무드 데모용 마이크로 조각 */
+  /** 100300500?? ??DNA   ????  */
   {
     id: "dna-100-asphalt",
-    title: "젖은 아스팔트 릴스",
+    title: "Untitled",
     creator: "@vibe_micro",
     src: "https://videos.pexels.com/video-files/3045163/3045163-hd_1920_1080_25fps.mp4",
     poster:
@@ -266,7 +267,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "dna-300-rain-asmr",
-    title: "빗소리 ASMR 릴스",
+    title: "Untitled",
     creator: "@vibe_micro",
     src: "https://videos.pexels.com/video-files/2491284/2491284-hd_1920_1080_30fps.mp4",
     poster:
@@ -277,7 +278,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "dna-500-window-rain",
-    title: "창가 빗방울 (숏)",
+    title: "Untitled",
     creator: "@vibe_micro",
     src: "https://videos.pexels.com/video-files/3045160/3045160-hd_1920_1080_25fps.mp4",
     poster:
@@ -286,10 +287,10 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
     priceWon: 500,
     durationSec: 9,
   },
-  /** Micro DNA — 300원 이하 전용 그리드용 추가 조각 */
+  /** Micro DNA ??300??? ? ? ?  */
   {
     id: "micro-100-neon-bokeh",
-    title: "네온 보케 스킵",
+    title: "Untitled",
     creator: "@vibe_micro",
     src: "https://videos.pexels.com/video-files/3045163/3045163-hd_1920_1080_25fps.mp4",
     poster:
@@ -300,7 +301,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "micro-150-river-glint",
-    title: "강빛 반짝임",
+    title: "Untitled",
     creator: "@vibe_micro",
     src: "https://videos.pexels.com/video-files/3044475/3044475-hd_1920_1080_25fps.mp4",
     poster:
@@ -311,7 +312,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "micro-200-forest-mist",
-    title: "숲 안개 한 줄",
+    title: "Untitled",
     creator: "@vibe_micro",
     src: "https://videos.pexels.com/video-files/1448735/1448735-hd_1920_1080_30fps.mp4",
     poster:
@@ -322,7 +323,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "micro-200-beach-foam",
-    title: "거품 한 박자",
+    title: "Untitled",
     creator: "@vibe_micro",
     src: "https://videos.pexels.com/video-files/1409899/1409899-hd_1920_1080_25fps.mp4",
     poster:
@@ -333,7 +334,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "micro-250-rooftop-breeze",
-    title: "옥상 바람 컷",
+    title: "Untitled",
     creator: "@vibe_micro",
     src: "https://videos.pexels.com/video-files/3044473/3044473-hd_1920_1080_25fps.mp4",
     poster:
@@ -344,7 +345,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "micro-300-night-market",
-    title: "야시장 불빛 클립",
+    title: "Untitled",
     creator: "@vibe_micro",
     src: "https://videos.pexels.com/video-files/2495382/2495382-hd_1920_1080_30fps.mp4",
     poster:
@@ -355,7 +356,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "micro-300-dance-kick",
-    title: "댄스 킥 프레임",
+    title: "Untitled",
     creator: "@vibe_micro",
     src: "https://videos.pexels.com/video-files/3209828/3209828-hd_1920_1080_25fps.mp4",
     poster:
@@ -366,7 +367,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "micro-100-snow-quiet",
-    title: "설원 정적 3초",
+    title: "Untitled",
     creator: "@vibe_micro",
     src: "https://videos.pexels.com/video-files/2889030/2889030-hd_1920_1080_30fps.mp4",
     poster:
@@ -377,7 +378,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "micro-250-village-dawn",
-    title: "마을 새벽 공기",
+    title: "Untitled",
     creator: "@vibe_micro",
     src: "https://videos.pexels.com/video-files/2570934/2570934-hd_1920_1080_30fps.mp4",
     poster:
@@ -389,12 +390,12 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
 ];
 
 /**
- * 인기순위(로컬 `public/videos`) 썸네일 규칙 — **절대 `SAMPLE_VIDEOS`와 인덱스로 섞지 않음**
- * (과거: 같은 인덱스 Pexels 썸네일이 로컬 MP4와 엇갈려 사용자가 넣은 영상과 다른 썸네일이 나옴)
+ * ??( `public/videos`) ??? ??**?? `SAMPLE_VIDEOS`? ?? ?? ?**
+ * (: ? ???Pexels ??  MP4? ?????? ?? ??? ?? ?)
  *
- * 1) `MOCK_VIDEOS[].thumbnail_url`이 있으면 그대로 사용(절대·상대 URL 모두 가능)
- * 2) 비어 있으면 `sample3.mp4` → `sample3.jpg`처럼 **같은 경로·같은 파일명의 JPG**를 시도 (`public/videos/sample3.jpg`)
- * 3) JPG도 없으면 `poster`는 빈 문자열 → `<video>`는 포스터 없이 재생(첫 프레임 노출)
+ * 1) `MOCK_VIDEOS[].thumbnail_url`???????(???? URL  ??
+ * 2)  ??`sample3.mp4` ??`sample3.jpg` **? ? ? JPG**?? (`public/videos/sample3.jpg`)
+ * 3) JPG????`poster`???????`<video>`?????? ?(?????)
  */
 function posterForLocalTrendingClip(
   videoUrl: string,
@@ -403,11 +404,11 @@ function posterForLocalTrendingClip(
   const ex = explicitThumbnail.trim();
   if (ex && /^https?:\/\//i.test(ex)) return ex;
   if (!videoUrl.startsWith("/videos/") || !/\.mp4$/i.test(videoUrl)) return "";
-  // 로컬 JPG 경로는 파일 누락 시 404가 누적되므로 기본은 빈 포스터.
+  //  JPG ??? ? ??404 ????? ????
   return "";
 }
 
-/** `public/videos` 로컬 샘플 — 인기순위 Top 10 (`@/constants/videos` MOCK_VIDEOS와 1:1) */
+/** `public/videos`  ? ???? Top 10 (`@/constants/videos` MOCK_VIDEOS? 1:1) */
 export const LOCAL_TRENDING_FEED_VIDEOS: FeedVideo[] = MOCK_VIDEOS.map(
   (m, i) => ({
     id: m.id,
@@ -418,19 +419,19 @@ export const LOCAL_TRENDING_FEED_VIDEOS: FeedVideo[] = MOCK_VIDEOS.map(
     orientation: "portrait",
     priceWon: 900 + (i % 5) * 300,
     previewSrc: m.video_url,
-    /** SAMPLE_VIDEOS와 무관 — 데모 길이만 인덱스로 분산 */
+    /** SAMPLE_VIDEOS? ? ??? ???  */
     durationSec: 10 + (i % 20),
   }),
 );
 
-/** 실시간 인기순위 데모 — 로컬 클립 10종 */
+/** ???? ? ?? ? 10?*/
 export const TRENDING_RANK_CLIPS: FeedVideo[] = [...LOCAL_TRENDING_FEED_VIDEOS];
 
-/** #실패와실수 카테고리 데모 클립(제목·해시태그만 테마에 맞춤, 미디어는 샘플 재사용) */
+/** #???  ? ?(???????, ? ? ??? */
 export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
   {
     id: "fail-1",
-    title: "요리하다 냄비가 탄 순간",
+    title: "Untitled",
     creator: "@kitchen_oops",
     src: "https://videos.pexels.com/video-files/2491284/2491284-hd_1920_1080_30fps.mp4",
     poster:
@@ -441,7 +442,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
   },
   {
     id: "fail-2",
-    title: "계단에서 발이 꼬여 넘어짐",
+    title: "Untitled",
     creator: "@stumble_cam",
     src: "https://videos.pexels.com/video-files/3209828/3209828-hd_1920_1080_30fps.mp4",
     poster:
@@ -452,7 +453,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
   },
   {
     id: "fail-3",
-    title: "커피를 옷에 쏟아버린 날",
+    title: "Untitled",
     creator: "@spill_daily",
     src: "https://videos.pexels.com/video-files/3045160/3045160-hd_1920_1080_30fps.mp4",
     poster:
@@ -463,7 +464,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
   },
   {
     id: "fail-4",
-    title: "조깅 중 미끄러진 클립",
+    title: "Untitled",
     creator: "@slip_record",
     src: "https://videos.pexels.com/video-files/3044475/3044475-hd_1920_1080_30fps.mp4",
     poster:
@@ -474,7 +475,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
   },
   {
     id: "fail-5",
-    title: "쟁반째로 음료를 떨어뜨림",
+    title: "Untitled",
     creator: "@cafe_fail",
     src: "https://videos.pexels.com/video-files/2495382/2495382-hd_1920_1080_30fps.mp4",
     poster:
@@ -485,7 +486,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
   },
   {
     id: "fail-6",
-    title: "파티에서 발 디뎌 넘어짐",
+    title: "Untitled",
     creator: "@party_oops",
     src: "https://videos.pexels.com/video-files/3044473/3044473-hd_1920_1080_30fps.mp4",
     poster:
@@ -496,7 +497,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
   },
   {
     id: "fail-7",
-    title: "해변에서 런닝하다 모래에 꽂힘",
+    title: "Untitled",
     creator: "@sand_face",
     src: "https://videos.pexels.com/video-files/1409899/1409899-hd_1920_1080_25fps.mp4",
     poster:
@@ -507,7 +508,7 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
   },
   {
     id: "fail-8",
-    title: "셀카 찍다가 파도에 휩쓸린 순간",
+    title: "Untitled",
     creator: "@wave_oops",
     src: "https://videos.pexels.com/video-files/3571264/3571264-hd_1920_1080_30fps.mp4",
     poster:
@@ -518,13 +519,13 @@ export const FAILURE_OOPS_CLIPS: FeedVideo[] = [
   },
 ];
 
-// 개발/데모 환경에서 Pexels 직링크 403을 피하기 위해 로컬 샘플 MP4로 치환.
+// /? ?? Pexels ??403?????  ? MP4?.
 normalizeBlockedVideoSources(SAMPLE_VIDEOS);
 normalizeBlockedVideoSources(FAILURE_OOPS_CLIPS);
 
 /**
- * 입력 목록에 대해 항상 동일한 순서를 반환(Fisher–Yates + 시드 PRNG).
- * `Math.random()` 셔플은 SSR/클라이언트 하이드레이션 불일치를 일으키므로 사용하지 않음.
+ * ? ??????? ?????(Fisher?ates + ? PRNG).
+ * `Math.random()` ?? SSR/??????? ? ??????? ?.
  */
 export function shuffleVideos(list: FeedVideo[]): FeedVideo[] {
   const a = [...list];
@@ -538,7 +539,7 @@ export function shuffleVideos(list: FeedVideo[]): FeedVideo[] {
   for (let i = 0; i < seedStr.length; i++) {
     state = Math.imul(state ^ seedStr.charCodeAt(i), 16777619);
   }
-  /** mulberry32 — 서버·브라우저 동일 결과 */
+  /** mulberry32 ????? ?  */
   let s = state >>> 0;
   const next = () => {
     s += 0x6d2b79f5;

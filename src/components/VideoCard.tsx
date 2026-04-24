@@ -125,32 +125,13 @@ export function VideoCard({
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(previewSrc);
   const canLoadPreviewVideo = !isPexelsBlockedVideo;
   const segmentPreview = instantPreview === true;
-  const fallbackPoster = useMemo(() => {
-    const hash = Array.from(video.id).reduce(
-      (acc, ch) => (acc * 33 + ch.charCodeAt(0)) >>> 0,
-      11,
-    );
-    const hueA = hash % 360;
-    const hueB = (hueA + 64) % 360;
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='720' height='1280' viewBox='0 0 720 1280'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='hsl(${hueA},82%,44%)'/><stop offset='100%' stop-color='hsl(${hueB},88%,55%)'/></linearGradient></defs><rect width='720' height='1280' fill='#050505'/><rect x='24' y='24' width='672' height='1232' rx='42' fill='url(#g)' opacity='0.86'/><text x='70' y='1188' fill='rgba(255,255,255,0.95)' font-family='Inter,Arial,sans-serif' font-size='46' font-weight='700'>PREVIEW</text></svg>`;
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-  }, [video.id]);
   const normalizedPoster = useMemo(() => {
     const poster = video.poster?.trim();
     if (poster) return poster;
-    // 로컬 샘플은 포스터가 없으면 비디오 첫 프레임을 그대로 사용.
-    if (isLocalPublicVideo(previewSrc)) return "";
-    return poster;
-  }, [video.poster, previewSrc]);
-  /**
-   * 원격 등 포스터가 없을 때만 SVG 그라데이션.
-   * 로컬 public MP4는 그라데이션 img를 쓰면 z-index로 실제 프레임 위를 덮어 썸네일이 색만 보임 → 비워 두고 비디오+시크만 사용.
-   */
-  const defaultThumbnail = useMemo(() => {
-    if (normalizedPoster) return normalizedPoster;
-    if (isLocalPublicVideo(previewSrc)) return "";
-    return fallbackPoster;
-  }, [normalizedPoster, previewSrc, fallbackPoster]);
+    return ""; // 항상 빈 문자열 반환 시 브라우저가 기본적으로 Start Frame 캐치
+  }, [video.poster]);
+  
+  const defaultThumbnail = normalizedPoster;
   const [thumbnailSrc, setThumbnailSrc] = useState(defaultThumbnail);
   const [isPreviewing, setIsPreviewing] = useState(false);
 
@@ -301,9 +282,7 @@ export function VideoCard({
             loading={reelStrip ? "eager" : "lazy"}
             decoding="async"
             onError={() => {
-              if (thumbnailSrc === fallbackPoster) return;
-              if (isLocalPublicVideo(previewSrc)) setThumbnailSrc("");
-              else setThumbnailSrc(fallbackPoster);
+              setThumbnailSrc(""); // 이미지 로드 실패 시에도 빈 문자열 (네이티브 첫 프레임 의존)
             }}
           />
         ) : null}
