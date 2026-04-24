@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FeedVideo } from "@/data/videos";
@@ -9,7 +10,6 @@ import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
-import { SectionMoreLink } from "@/components/SectionMoreLink";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
 
 function ChevronLeft({ className }: { className?: string }) {
@@ -348,7 +348,7 @@ export function Highlight24() {
   return (
     <section
       className="highlight24-lock-white relative mt-0 w-full overflow-hidden border-t border-slate-200 outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black/20"
-      aria-labelledby="highlight-24-heading"
+      aria-label="24시간 클립 하이라이트"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === "ArrowLeft") {
@@ -417,25 +417,23 @@ export function Highlight24() {
       />
 
       <div className="relative z-10 mx-auto max-w-[1800px] px-4 pb-4 pt-6 sm:px-6 sm:pb-5 sm:pt-7 lg:px-8">
-        <div className="relative z-20 mb-5 max-w-full sm:mb-6 md:mb-7">
-          <div className="inline-flex max-w-full flex-col gap-1 rounded-l-none rounded-r-[9999px] border-2 border-white bg-black/72 py-2.5 pl-3 pr-5 shadow-[0_12px_40px_-10px_rgba(0,0,0,0.55)] backdrop-blur-md sm:gap-1.5 sm:py-3 sm:pl-4 sm:pr-7">
-            <div className="flex items-baseline justify-between gap-4 pr-1">
-              <h2
-                id="highlight-24-heading"
-                className="text-legible-white min-w-0 text-[18px] font-bold leading-tight tracking-tight text-white sm:text-[20px]"
-              >
-                24시간 클립 하이라이트
-              </h2>
-              <SectionMoreLink
-                variant="light"
-                category="shortform"
-                className="shrink-0 !py-1.5 !pl-3 !pr-2 !text-[11px] !font-semibold sm:!py-2 sm:!text-[12px]"
+        <div className="relative z-20 mb-5 flex justify-end sm:mb-6 md:mb-7">
+          <Link
+            href="/explore"
+            className="inline-flex items-center justify-center gap-1 rounded-full border border-white/55 bg-white/12 px-4 py-2 text-[12px] font-semibold text-white shadow-[0_2px_12px_rgba(0,0,0,0.2)] backdrop-blur-sm transition hover:border-white/75 hover:bg-white/22 sm:text-[13px]"
+            aria-label="탐색 페이지로 이동"
+          >
+            더보기
+            <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden>
+              <path
+                d="M9 6l6 6-6 6"
+                stroke="currentColor"
+                strokeWidth="2.25"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
-            </div>
-            <p className="text-legible-white max-w-xl pr-2 text-[12px] leading-snug text-white sm:text-[13px] sm:leading-relaxed">
-              지금 거래되고 있는 일상 클립을 바로 넘겨 보세요
-            </p>
-          </div>
+            </svg>
+          </Link>
         </div>
 
         <div

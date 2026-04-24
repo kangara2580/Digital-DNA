@@ -13,7 +13,7 @@ export type NoticeItem = {
 export const NOTICES: NoticeItem[] = [
   {
     id: "welcome-2026",
-    title: "Digital DNA · REELS MARKET 오픈 안내",
+    title: "Digital DNA · ARA 오픈 안내",
     date: "2026-04-01",
     pinned: true,
     body:

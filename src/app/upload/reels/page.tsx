@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ReelsLinkUploader } from "@/components/ReelsLinkUploader";
 
 export const metadata = {
-  title: "릴스 링크 등록 — REELS MARKET",
+  title: "릴스 링크 등록 — ARA",
   description: "TikTok·Instagram 릴스 URL을 등록하고 미리보기합니다.",
 };
 

@@ -1,7 +1,7 @@
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 
 export const metadata = {
-  title: "이용약관 — REELS MARKET",
+  title: "이용약관 — ARA",
 };
 
 export default function TermsPage() {

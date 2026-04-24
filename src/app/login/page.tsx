@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { LoginPageClient } from "./LoginPageClient";
 
 export const metadata = {
-  title: "로그인 — REELS MARKET",
+  title: "로그인 — ARA",
 };
 
 function LoginFallback() {

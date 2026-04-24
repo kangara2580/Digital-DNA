@@ -1,7 +1,7 @@
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 
 export const metadata = {
-  title: "FAQ — REELS MARKET",
+  title: "FAQ — ARA",
 };
 
 export default function FaqPage() {

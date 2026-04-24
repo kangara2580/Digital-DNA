@@ -1,7 +1,7 @@
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 
 export const metadata = {
-  title: "1:1 문의 — REELS MARKET",
+  title: "1:1 문의 — ARA",
   description: "광고·제휴·입점 문의",
 };
 

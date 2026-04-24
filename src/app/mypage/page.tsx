@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { MyPageDashboard } from "@/components/MyPageDashboard";
 
 export const metadata = {
-  title: "마이페이지 — REELS MARKET",
+  title: "마이페이지 — ARA",
 };
 
 export default function MyPage() {

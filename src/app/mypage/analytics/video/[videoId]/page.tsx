@@ -3,7 +3,7 @@ import { SellerVideoAnalyticsDetail } from "@/components/SellerVideoAnalyticsDet
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "영상 인사이트 — REELS MARKET",
+  title: "영상 인사이트 — ARA",
   description: "개별 릴스의 조회·수익·퍼널·기기·시간대 분석",
 };
 

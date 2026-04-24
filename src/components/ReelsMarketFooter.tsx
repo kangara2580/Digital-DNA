@@ -62,7 +62,7 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
-export function ReelsMarketFooter() {
+export function ARAFooter() {
   const baseId = useId();
   const [lang, setLang] = useState("ko");
 
@@ -97,7 +97,7 @@ export function ReelsMarketFooter() {
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
           <div className="min-w-0 max-w-sm">
             <p id={`${baseId}-footer-title`} className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-reels-cyan/90">
-              REELS MARKET
+              ARA
             </p>
             <p className="mt-2 text-[15px] font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
               모션을 사고, 순간을 소유하세요.

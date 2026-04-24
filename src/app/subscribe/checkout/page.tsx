@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { SubscribeCheckoutFlow } from "@/components/subscribe/SubscribeCheckoutFlow";
 
 export const metadata = {
-  title: "결제 — REELS MARKET",
+  title: "결제 — ARA",
   description: "구독 결제 수단 등록과 결제 확인을 진행합니다.",
 };
 

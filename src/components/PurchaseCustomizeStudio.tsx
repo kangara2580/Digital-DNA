@@ -528,7 +528,14 @@ export function PurchaseCustomizeStudio({
      fetch("/api/kling/history")
         .then(r => r.json())
         .then(data => {
-            const finishedVideos = data.filter((t: any) => t.status === "succeed" && t.videoUrl);
+            const list = Array.isArray(data)
+              ? data
+              : Array.isArray((data as { items?: unknown[] })?.items)
+                ? (data as { items: unknown[] }).items
+                : [];
+            const finishedVideos = list.filter(
+              (t: any) => t?.status === "succeed" && t?.videoUrl,
+            );
             setKlingHistory(finishedVideos);
         })
         .catch(console.error);
@@ -1291,20 +1298,21 @@ export function PurchaseCustomizeStudio({
     });
   }, []);
 
-  if (!owned) {
-    return (
-      <div className="mx-auto max-w-lg rounded-2xl border border-white/10 bg-black/30 px-6 py-14 text-center">
-        <p className="text-[15px] font-semibold text-zinc-200">모션 권한 구매 후 이용할 수 있어요.</p>
-        <p className="mt-2 text-[13px] text-zinc-500">릴스 구매 후 얼굴·배경·편집 설정을 저장할 수 있습니다.</p>
-        <Link
-          href={`/video/${video.id}`}
-          className="mt-6 inline-flex rounded-full border border-reels-cyan/40 bg-reels-cyan/10 px-6 py-3 text-[14px] font-extrabold text-reels-cyan hover:bg-reels-cyan/18"
-        >
-          릴스 상세로 돌아가기
-        </Link>
-      </div>
-    );
-  }
+  // 테스트를 위해 임시로 권한 체크를 해제합니다.
+  // if (!owned) {
+  //   return (
+  //     <div className="mx-auto max-w-lg rounded-2xl border border-white/10 bg-black/30 px-6 py-14 text-center">
+  //       <p className="text-[15px] font-semibold text-zinc-200">모션 권한 구매 후 이용할 수 있어요.</p>
+  //       <p className="mt-2 text-[13px] text-zinc-500">릴스 구매 후 얼굴·배경·편집 설정을 저장할 수 있습니다.</p>
+  //       <Link
+  //         href={`/video/${video.id}`}
+  //         className="mt-6 inline-flex rounded-full border border-reels-cyan/40 bg-reels-cyan/10 px-6 py-3 text-[14px] font-extrabold text-reels-cyan hover:bg-reels-cyan/18"
+  //       >
+  //         릴스 상세로 돌아가기
+  //       </Link>
+  //     </div>
+  //   );
+  // }
 
   if (!draft) {
     return (

@@ -17,7 +17,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props) {
   const { id } = await params;
   const notice = getNoticeById(id);
-  if (!notice) return { title: "공지사항 — REELS MARKET" };
+  if (!notice) return { title: "공지사항 — ARA" };
   return {
     title: `${notice.title} — 공지사항`,
     description: notice.title,

@@ -10,7 +10,7 @@ export function generateStaticParams() {
 }
 
 export const metadata = {
-  title: "맞춤 리스킨 · 편집 — REELS MARKET",
+  title: "맞춤 리스킨 · 편집 — ARA",
   description: "구매한 릴스에 얼굴·배경·구간·텍스트를 지정합니다.",
 };
 

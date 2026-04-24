@@ -4,7 +4,7 @@ import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 import { getSortedNotices } from "@/data/notices";
 
 export const metadata = {
-  title: "공지사항 — REELS MARKET",
+  title: "공지사항 — ARA",
   description: "서비스 점검·정책 변경·이벤트 소식",
 };
 

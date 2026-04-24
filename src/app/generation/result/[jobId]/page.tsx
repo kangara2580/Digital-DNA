@@ -4,7 +4,7 @@ import { GenerationResultView } from "@/components/GenerationResultView";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "생성 결과 — REELS MARKET",
+  title: "생성 결과 — ARA",
   description: "AI 맞춤 리스킨 생성이 완료된 영상을 확인합니다.",
 };
 

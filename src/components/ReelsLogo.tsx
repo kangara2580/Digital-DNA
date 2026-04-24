@@ -1,8 +1,7 @@
 import { useId } from "react";
 
 /**
- * REELS MARKET — 미니멀 마크
- * 세로 릴(동영상) + 재생 삼각형, 브랜드 네온 핑크 → 시안 그라데이션
+ * ARA — 심플 모노그램 마크
  */
 export function ReelsLogo({
   className = "",
@@ -36,20 +35,8 @@ export function ReelsLogo({
           <stop offset="100%" stopColor="#00F2EA" />
         </linearGradient>
       </defs>
-      {/* 세로 릴(핸드폰/숏폼 비율에 가깝게) */}
-      <rect
-        x="7"
-        y="4"
-        width="18"
-        height="24"
-        rx="4.5"
-        stroke={`url(#${gradId})`}
-        strokeWidth="2"
-        fill="none"
-      />
-      {/* 재생 — 동영상 마켓 */}
       <path
-        d="M12.5 11.5v9L21 16l-8.5-4.5z"
+        d="M16 4.8 6.4 27.2h3.9l2.1-5.2h7.1l2.1 5.2h3.9L16 4.8Zm-2.2 13.9 2.2-5.5 2.2 5.5h-4.4Z"
         fill={`url(#${gradId})`}
       />
     </svg>

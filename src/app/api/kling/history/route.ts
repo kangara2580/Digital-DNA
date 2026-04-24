@@ -7,12 +7,13 @@ export async function GET() {
   try {
     const p = path.join(process.cwd(), "kling_tasks_db.json");
     if (!fs.existsSync(p)) return NextResponse.json([]);
-    const db = JSON.parse(fs.readFileSync(p, "utf-8"));
-    const validTasks = db.filter((t: any) => t.taskId).reverse().slice(0, 10); // Check latest 10 tasks
+    const dbRaw = JSON.parse(fs.readFileSync(p, "utf-8"));
+    const db = Array.isArray(dbRaw) ? dbRaw : [];
+    const validTasks = db.filter((t: any) => t?.taskId).reverse().slice(0, 10); // Check latest 10 tasks
 
     const accessKey = process.env.KLING_ACCESS_KEY;
     const secretKey = process.env.KLING_SECRET_KEY;
-    if (!accessKey || !secretKey) return NextResponse.json({ error: "Missing keys" }, { status: 500 });
+    if (!accessKey || !secretKey) return NextResponse.json([]);
     
     const now = Math.floor(Date.now() / 1000);
     const token = jwt.sign(

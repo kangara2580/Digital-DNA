@@ -14,7 +14,7 @@ import { DnaBuilderDock } from "@/components/DnaBuilderDock";
 import { FloatingHelp } from "@/components/FloatingHelp";
 import { MallTopNav } from "@/components/MallTopNav";
 import { ReelsLeftRail } from "@/components/ReelsLeftRail";
-import { ReelsMarketFooter } from "@/components/ReelsMarketFooter";
+import { ARAFooter } from "@/components/ARAFooter";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -39,7 +39,7 @@ const songMyung = Song_Myung({
 });
 
 export const metadata: Metadata = {
-  title: "REELS MARKET — Buy the Motion, Own the Moment",
+  title: "ARA — Buy the Motion, Own the Moment",
   description:
     "모션 권리를 사고 Kling 3.0으로 리스킨하세요. 베스트·플래시 세일·상황 큐레이션 릴스 마켓.",
   icons: {
@@ -96,7 +96,7 @@ export default function RootLayout({
           <div className="min-w-0 md:pl-[var(--reels-rail-w)]">
             <MallTopNav />
             {children}
-            <ReelsMarketFooter />
+            <ARAFooter />
             <DnaBuilderDock />
             <FloatingHelp />
           </div>

@@ -1,5 +1,5 @@
 /**
- * REELS MARKET — Design System (Apple minimal + Cyberpunk contrast + IG-trendy)
+ * ARA — Design System (Apple minimal + Cyberpunk contrast + IG-trendy)
  * Primary: #FF0055 Electric Crimson | #00F2EA Cyber Cyan | #050505 Deep Abyss
  * Surface/card: glass + 1px border (see .reels-glass-card)
  * Typography: Inter (layout.tsx) + Pretendard (KR). Headings: 700–800.
@@ -31,7 +31,7 @@
   --header-height: 220px;
   /** md+ 틱톡형 좌측 레일 — 본문·헤더 패딩과 동기화 */
   --reels-rail-w: 0px;
-  /** 릴스마켓 라이트 서피스 / 시안 포인트 (홈 영감 섹션 등) */
+  /** ARA 라이트 서피스 / 시안 포인트 (홈 영감 섹션 등) */
   --primary-color: #00f0ff;
   --bg-color: #ffffff;
   --surface-color: #f8f9fa;
@@ -113,6 +113,10 @@ body {
   color: var(--foreground);
   background: var(--background);
   overflow-x: clip;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+  font-synthesis: none;
   transition:
     background-color 240ms ease,
     color 240ms ease,

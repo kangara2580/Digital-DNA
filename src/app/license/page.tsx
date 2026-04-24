@@ -11,7 +11,7 @@ import {
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 
 export const metadata = {
-  title: "라이선스 규정 — REELS MARKET",
+  title: "라이선스 규정 — ARA",
   description:
     "Digital DNA — 한 번의 소유로 만드는 무한한 가치. Free to Create & Rules for Respect.",
 };

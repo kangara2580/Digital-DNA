@@ -6,19 +6,18 @@ import {
   Compass,
   Heart,
   History,
-  Home,
   Link2,
   MoreVertical,
+  Search,
   ShoppingCart,
   Trophy,
   User,
-  UserPlus2,
   Wallet,
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useId, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 import { ReelsLogo } from "@/components/ReelsLogo";
@@ -29,7 +28,7 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 const stroke = 1.75;
 
 const railIconBtn =
-  "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-zinc-500 transition-[background-color,color,transform] duration-200 hover:bg-white/[0.07] hover:text-zinc-100 active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
+  "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] text-zinc-300 transition-[background-color,color,transform,border-color] duration-200 hover:border-white/20 hover:bg-white/[0.09] hover:text-zinc-100 active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
 
 const railIconActive =
   "bg-white/[0.08] text-reels-cyan shadow-[0_0_16px_-4px_rgba(0,242,234,0.35)] [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-reels-cyan";
@@ -37,6 +36,9 @@ const railIconActive =
 /** 구독 — 시안 강조(테두리 없음, 글로우·배경만) */
 const subscribeRailBtn =
   "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-0 bg-reels-cyan/14 text-reels-cyan shadow-[0_0_24px_-8px_rgba(0,242,234,0.55)] transition-[background-color,box-shadow,transform] duration-200 hover:bg-reels-cyan/22 hover:shadow-[0_0_28px_-6px_rgba(0,242,234,0.65)] active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:bg-reels-cyan/12 [html[data-theme='light']_&]:text-[#0d9488]";
+
+const railTooltip =
+  "pointer-events-none absolute left-[calc(100%+0.55rem)] top-1/2 z-[70] -translate-y-1/2 whitespace-nowrap rounded-md border border-white/15 bg-[#070b14]/95 px-2.5 py-1 text-[11px] font-semibold text-zinc-100 opacity-0 shadow-[0_10px_22px_-14px_rgba(0,0,0,0.8)] transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900";
 
 type RailItem = {
   href: string;
@@ -46,12 +48,6 @@ type RailItem = {
 };
 
 const RAIL_ITEMS: RailItem[] = [
-  {
-    href: "/",
-    label: "홈",
-    Icon: Home,
-    isActive: (p) => p === "/",
-  },
   {
     href: "/explore",
     label: "탐색",
@@ -89,12 +85,6 @@ const RAIL_ITEMS: RailItem[] = [
     isActive: (p) => p.startsWith("/recent"),
   },
   {
-    href: "/signup",
-    label: "회원가입",
-    Icon: UserPlus2,
-    isActive: (p) => p.startsWith("/signup"),
-  },
-  {
     href: "/mypage",
     label: "마이페이지",
     Icon: User,
@@ -108,17 +98,24 @@ const DRAWER_QUICK = [
 
 export function ReelsLeftRail() {
   const pathname = usePathname();
+  const router = useRouter();
   const { cartAnchorRef } = useDopamineBasket();
   const { user } = useAuthSession();
   const reduceMotion = useReducedMotion() ?? false;
   const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQ, setSearchQ] = useState("");
+  const [searchPanelPos, setSearchPanelPos] = useState<{ top: number; left: number } | null>(
+    null,
+  );
   const [mounted, setMounted] = useState(false);
   const drawerTitleId = useId();
   const drawerId = useId();
+  const searchBtnRef = useRef<HTMLButtonElement | null>(null);
 
   const visibleRailItems = RAIL_ITEMS.filter((item) => {
-    // 로그인 사용자는 가입 버튼을 다시 볼 필요가 없으므로 숨깁니다.
-    if (item.href === "/signup" && user) return false;
+    // 비로그인 사용자는 마이페이지 대신 상단 로그인/회원가입 버튼으로 진입합니다.
+    if (item.href === "/mypage" && !user) return false;
     return true;
   });
 
@@ -145,6 +142,36 @@ export function ReelsLeftRail() {
   }, [open]);
 
   const close = useCallback(() => setOpen(false), []);
+  const runSearch = useCallback(() => {
+    const q = searchQ.trim();
+    if (!q) return;
+    router.push(`/search?q=${encodeURIComponent(q)}`);
+    setSearchOpen(false);
+  }, [router, searchQ]);
+
+  const measureSearchPanel = useCallback(() => {
+    const btn = searchBtnRef.current;
+    if (!btn) return;
+    const r = btn.getBoundingClientRect();
+    setSearchPanelPos({
+      top: r.top + r.height / 2,
+      left: r.right + 8,
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!searchOpen) {
+      setSearchPanelPos(null);
+      return;
+    }
+    measureSearchPanel();
+    window.addEventListener("resize", measureSearchPanel);
+    window.addEventListener("scroll", measureSearchPanel, true);
+    return () => {
+      window.removeEventListener("resize", measureSearchPanel);
+      window.removeEventListener("scroll", measureSearchPanel, true);
+    };
+  }, [searchOpen, measureSearchPanel]);
 
   return (
     <>
@@ -152,7 +179,7 @@ export function ReelsLeftRail() {
         className="fixed inset-y-0 left-0 z-[38] hidden w-[var(--reels-rail-w)] flex-col border-r border-white/[0.08] bg-reels-abyss/80 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[1px_0_0_rgba(0,0,0,0.04)] md:flex"
         aria-label="주요 메뉴"
       >
-        <div className="flex shrink-0 items-center justify-center pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
+        <div className="relative flex shrink-0 flex-col items-center pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
           <Link
             href="/"
             className="flex h-10 w-10 items-center justify-center rounded-xl text-zinc-200 transition-colors hover:bg-white/[0.07] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100"
@@ -163,57 +190,87 @@ export function ReelsLeftRail() {
         </div>
         <div className="flex min-h-0 flex-1 flex-col items-stretch pt-1">
           <nav
-            className="flex shrink-0 flex-col items-center gap-1 overflow-y-auto overflow-x-hidden py-2 no-scrollbar"
+            className="flex shrink-0 flex-col items-center gap-1 overflow-y-auto overflow-x-visible py-2 no-scrollbar"
             aria-label="빠른 이동"
           >
+            <div className="group relative">
+              <button
+                type="button"
+                onClick={() => setSearchOpen((v) => !v)}
+                ref={searchBtnRef}
+                className={`${railIconBtn} h-10 w-10`}
+                aria-label="검색 열기"
+                aria-expanded={searchOpen}
+                title="검색"
+              >
+                <Search className="h-[20px] w-[20px]" strokeWidth={1.9} aria-hidden />
+              </button>
+              <span className={railTooltip} role="tooltip">
+                검색
+              </span>
+            </div>
             {visibleRailItems.map(({ href, label, Icon, isActive }) => {
               const on = isActive(pathname);
               return (
-                <Link
-                  key={href}
-                  href={href}
-                  ref={href === "/cart" ? cartAnchorRef : undefined}
-                  title={label}
-                  aria-label={label}
-                  aria-current={on ? "page" : undefined}
-                  className={`${railIconBtn} ${on ? railIconActive : ""}`}
-                >
-                  <Icon className="h-[22px] w-[22px]" strokeWidth={stroke} aria-hidden />
-                </Link>
+                <div key={href} className="group relative">
+                  <Link
+                    href={href}
+                    ref={href === "/cart" ? cartAnchorRef : undefined}
+                    aria-label={label}
+                    aria-current={on ? "page" : undefined}
+                    className={`${railIconBtn} ${on ? railIconActive : ""}`}
+                    title={label}
+                  >
+                    <Icon className="h-[22px] w-[22px]" strokeWidth={stroke} aria-hidden />
+                  </Link>
+                  <span className={railTooltip} role="tooltip">
+                    {label}
+                  </span>
+                </div>
               );
             })}
           </nav>
 
           {/* 마이페이지 아래~하단 메뉴 위 남는 세로 공간 한가운데 구독 */}
           <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-0 py-2">
-            <Link
-              href="/subscribe"
-              className={`${subscribeRailBtn} ${
-                pathname.startsWith("/subscribe")
-                  ? "bg-reels-cyan/26 shadow-[0_0_30px_-6px_rgba(0,242,234,0.72)] [html[data-theme='light']_&]:bg-reels-cyan/20"
-                  : ""
-              }`}
-              title="구독·크레딧"
-              aria-label="구독·결제 페이지로 이동"
-              aria-current={pathname.startsWith("/subscribe") ? "page" : undefined}
-            >
-              <Wallet className="h-[23px] w-[23px]" strokeWidth={stroke} aria-hidden />
-            </Link>
+            <div className="group relative">
+              <Link
+                href="/subscribe"
+                className={`${subscribeRailBtn} ${
+                  pathname.startsWith("/subscribe")
+                    ? "bg-reels-cyan/26 shadow-[0_0_30px_-6px_rgba(0,242,234,0.72)] [html[data-theme='light']_&]:bg-reels-cyan/20"
+                    : ""
+                }`}
+                aria-label="구독·결제 페이지로 이동"
+                aria-current={pathname.startsWith("/subscribe") ? "page" : undefined}
+                title="구독·크레딧"
+              >
+                <Wallet className="h-[23px] w-[23px]" strokeWidth={stroke} aria-hidden />
+              </Link>
+              <span className={railTooltip} role="tooltip">
+                구독·크레딧
+              </span>
+            </div>
           </div>
 
           <div className="flex shrink-0 flex-col items-center border-t border-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 px-0 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              className={`${railIconBtn} text-zinc-400 hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-900`}
-              aria-expanded={open}
-              aria-haspopup="dialog"
-              aria-controls={drawerId}
-              aria-label="더보기 — 언어·화면 테마·메뉴"
-              title="더보기"
-            >
-              <MoreVertical className="h-[22px] w-[22px]" strokeWidth={stroke} aria-hidden />
-            </button>
+            <div className="group relative">
+              <button
+                type="button"
+                onClick={() => setOpen(true)}
+                className={`${railIconBtn} text-zinc-400 hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-900`}
+                aria-expanded={open}
+                aria-haspopup="dialog"
+                aria-controls={drawerId}
+                aria-label="더보기 — 언어·화면 테마·메뉴"
+                title="더보기"
+              >
+                <MoreVertical className="h-[22px] w-[22px]" strokeWidth={stroke} aria-hidden />
+              </button>
+              <span className={railTooltip} role="tooltip">
+                더보기
+              </span>
+            </div>
           </div>
         </div>
       </aside>
@@ -221,6 +278,39 @@ export function ReelsLeftRail() {
       {mounted
         ? createPortal(
             <AnimatePresence>
+              {searchOpen && searchPanelPos ? (
+                <motion.form
+                  key="rail-search-popover"
+                  initial={reduceMotion ? false : { opacity: 0, x: -8, width: 0 }}
+                  animate={{ opacity: 1, x: 0, width: 300 }}
+                  exit={reduceMotion ? undefined : { opacity: 0, x: -8, width: 0 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    runSearch();
+                  }}
+                  className="fixed z-[260] -translate-y-1/2 overflow-hidden rounded-full border border-white/15 bg-reels-void/95 p-1 shadow-[0_18px_30px_-18px_rgba(0,0,0,0.8)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/95"
+                  style={{ top: searchPanelPos.top, left: searchPanelPos.left }}
+                >
+                  <div className="relative flex items-center">
+                    <input
+                      type="search"
+                      value={searchQ}
+                      onChange={(e) => setSearchQ(e.target.value)}
+                      placeholder="검색어 입력"
+                      className="h-8 w-[240px] min-w-0 bg-transparent pl-3 pr-11 text-[12px] text-zinc-100 outline-none placeholder:text-zinc-500 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-500"
+                      autoFocus
+                    />
+                    <button
+                      type="submit"
+                      className="absolute right-0.5 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-zinc-200 transition hover:border-reels-cyan/40 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700"
+                      aria-label="검색 실행"
+                    >
+                      <Search className="h-4 w-4" strokeWidth={2} aria-hidden />
+                    </button>
+                  </div>
+                </motion.form>
+              ) : null}
               {open ? (
                 <motion.div
                   key="rail-drawer"

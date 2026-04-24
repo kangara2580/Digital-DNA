@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { CreateStudioPage } from "@/components/CreateStudioPage";
 
 export const metadata = {
-  title: "AI 창작 — REELS MARKET",
+  title: "AI 창작 — ARA",
   description: "구매한 릴스를 Kling 3.0으로 리스킨합니다.",
 };
 

@@ -542,7 +542,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
               <div className="mt-2 flex items-center justify-between text-[12px] font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
                 <span className="inline-flex items-center gap-1.5">
                   <Heart className="h-3.5 w-3.5" />
-                  릴스마켓 좋아요
+                  ARA 좋아요
                 </span>
                 <span className="text-[18px] font-extrabold leading-none text-reels-crimson [html[data-theme='light']_&]:text-reels-crimson">
                   {internalLikeCount.toLocaleString()}

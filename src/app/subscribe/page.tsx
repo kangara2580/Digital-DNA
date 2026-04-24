@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "구독·결제 — REELS MARKET",
+  title: "구독·결제 — ARA",
   description:
     "구독 플랜과 카드 등록 후 이용 시점 결제를 한곳에서 안내합니다.",
 };

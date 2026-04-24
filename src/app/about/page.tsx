@@ -2,7 +2,7 @@ import Image from "next/image";
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 
 export const metadata = {
-  title: "회사소개 — REELS MARKET",
+  title: "회사소개 — ARA",
   description:
     "Create Faster, Look Better. Explore · Acquire · Transform — Digital DNA 릴스 소스 플랫폼.",
 };

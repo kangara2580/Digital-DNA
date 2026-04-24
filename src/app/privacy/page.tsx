@@ -1,7 +1,7 @@
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 
 export const metadata = {
-  title: "개인정보처리방침 — REELS MARKET",
+  title: "개인정보처리방침 — ARA",
   description:
     "Digital DNA 개인정보 처리방침 — 수집·이용·보관·제3자 제공 및 보안 안내.",
 };

@@ -152,7 +152,7 @@ export default function FindIdPage() {
     <main className="relative min-h-screen overflow-hidden bg-[#07080f] px-4 py-12 text-zinc-100 sm:px-6">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(236,72,153,0.18),transparent_40%),radial-gradient(circle_at_80%_90%,rgba(59,130,246,0.16),transparent_45%),linear-gradient(180deg,#05060b_0%,#080913_100%)]" />
       <div className="relative mx-auto mt-10 w-full max-w-md rounded-2xl border border-white/15 bg-white/[0.04] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:mt-16 sm:p-8">
-        <p className="text-xs uppercase tracking-[0.35em] text-zinc-400">Reels Market</p>
+        <p className="text-xs uppercase tracking-[0.35em] text-zinc-400">ARA</p>
         <h1 className="mt-3 text-2xl font-black tracking-tight text-white">아이디(이메일) 찾기</h1>
         <p className="mt-2 text-sm text-zinc-400">
           로그인 아이디는 <strong className="text-zinc-300">이메일 주소</strong>입니다. 가입 시 등록한{" "}

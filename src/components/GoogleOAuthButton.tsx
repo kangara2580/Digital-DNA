@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 const BTN =
   "flex w-full items-center justify-center gap-2.5 rounded-full border border-white/20 bg-white/[0.06] py-3 text-[14px] font-extrabold text-zinc-100 shadow-sm transition hover:border-white/35 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-55 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-50";
@@ -22,22 +20,13 @@ export function GoogleOAuthButton({ nextPath, label }: Props) {
       disabled={busy}
       className={BTN}
       onClick={async () => {
-        const supabase = getSupabaseBrowserClient();
-        if (!supabase) {
-          window.alert(
-            "Supabase 환경변수(NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY)를 확인해 주세요.",
-          );
-          return;
-        }
-        const redirectTo = buildAuthCallbackRedirectTo(nextPath);
-        if (!redirectTo) return;
+        const next =
+          nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")
+            ? nextPath
+            : "/";
+        const authUrl = `/api/auth/google/start?next=${encodeURIComponent(next)}`;
         setBusy(true);
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: { redirectTo },
-        });
-        setBusy(false);
-        if (error) window.alert(error.message);
+        window.location.assign(authUrl);
       }}
     >
       <svg className="h-[18px] w-[18px] shrink-0" viewBox="0 0 48 48" aria-hidden>

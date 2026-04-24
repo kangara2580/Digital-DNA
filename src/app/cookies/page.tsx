@@ -1,7 +1,7 @@
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 
 export const metadata = {
-  title: "쿠키 정책 — REELS MARKET",
+  title: "쿠키 정책 — ARA",
   description:
     "Digital DNA 쿠키 정책 — Essential, Performance & Insights, Preferences.",
 };
