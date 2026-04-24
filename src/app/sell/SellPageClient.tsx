@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LogOut, Store } from "lucide-react";
 import { useCallback } from "react";
 import { SellerClipUploadForm } from "@/components/SellerClipUploadForm";
@@ -10,12 +11,15 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 const REDIRECT = "/sell";
 
 export function SellPageClient() {
+  const router = useRouter();
   const { user, loading, supabaseConfigured } = useAuthSession();
 
   const onLogout = useCallback(async () => {
     const supabase = getSupabaseBrowserClient();
-    await supabase?.auth.signOut();
-  }, []);
+    await supabase?.auth.signOut({ scope: "global" });
+    router.replace("/login?logged_out=1");
+    router.refresh();
+  }, [router]);
 
   if (loading) {
     return (

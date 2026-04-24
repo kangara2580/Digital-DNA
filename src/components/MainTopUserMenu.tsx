@@ -28,7 +28,7 @@ export function MainTopUserMenu({ compact }: Props) {
     } finally {
       setBusy(false);
     }
-    router.replace("/login");
+    router.replace("/login?logged_out=1");
     router.refresh();
   }, [router]);
 
