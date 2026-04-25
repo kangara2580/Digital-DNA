@@ -514,7 +514,6 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
             <section className="reels-glass-card overflow-hidden rounded-xl">
               <TrendingVideoStatsFooter
                 metrics={detailMetrics}
-                salePriceWon={video.priceWon}
                 salesCount={meta.salesCount}
                 stockRow={
                   meta.edition === "open"

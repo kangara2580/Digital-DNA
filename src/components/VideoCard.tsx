@@ -437,44 +437,40 @@ export function VideoCard({
         ? "origin-top hover:z-[2] hover:scale-[1.02] motion-reduce:hover:scale-100"
         : "hover:z-[2] hover:scale-[1.05] motion-reduce:hover:scale-100";
   const compactActions = compactHoverActions && !dense;
-  const actionOverlayPadding = dense
-    ? "p-2"
+  const actionOverlayPadding = "p-0";
+  const actionStackGap = dense
+    ? "gap-1"
     : compactActions
-      ? "p-2 sm:p-2.5"
+      ? "gap-1"
       : reelStrip
-        ? "p-2 sm:p-3"
+        ? "gap-1.5"
         : reelLayout
-          ? "p-4 sm:p-6"
-          : "p-4";
-  const actionGap = dense
-    ? "gap-5"
-    : compactActions
-      ? "gap-0.5 sm:gap-1"
-      : reelStrip
-        ? "gap-4 sm:gap-6"
-        : reelLayout
-          ? "gap-8 sm:gap-12"
-          : "gap-10";
+          ? "gap-2"
+          : "gap-1.5";
   const actionButtonSize = dense
-    ? "h-8 w-8"
-    : compactActions
-      ? "h-10 w-10 sm:h-11 sm:w-11"
-    : reelStrip
-      ? "h-10 w-10 sm:h-11 sm:w-11"
-      : reelLayout
-        ? "h-12 w-12 sm:h-14 sm:w-14"
-        : "h-11 w-11";
-  const actionIconSize = dense
     ? "h-7 w-7"
     : compactActions
-      ? "h-7 w-7 sm:h-8 sm:w-8"
+      ? "h-8 w-8 sm:h-9 sm:w-9"
     : reelStrip
       ? "h-8 w-8 sm:h-9 sm:w-9"
       : reelLayout
-        ? "h-10 w-10 sm:h-11 sm:w-11"
-        : "h-9 w-9";
+        ? "h-9 w-9 sm:h-10 sm:w-10"
+        : "h-8 w-8 sm:h-9 sm:w-9";
+  const actionIconSize = dense
+    ? "h-[22px] w-[22px]"
+    : compactActions
+      ? "h-[22px] w-[22px] sm:h-6 sm:w-6"
+    : reelStrip
+      ? "h-6 w-6 sm:h-[26px] sm:w-[26px]"
+      : reelLayout
+        ? "h-[26px] w-[26px] sm:h-7 sm:w-7"
+        : "h-6 w-6 sm:h-[26px] sm:w-[26px]";
   const actionHoverScale = compactActions ? "hover:scale-100" : "hover:scale-110";
-  const actionRowFrame = compactActions ? "w-full max-w-[calc(100%-12px)] px-1" : "";
+  const actionStackPos = showMicro
+    ? "left-1.5 top-9 sm:left-2 sm:top-10"
+    : !showMicro && (showAiBadge || topBadge)
+      ? "left-1.5 top-12 sm:left-2 sm:top-[3.2rem]"
+      : "left-1.5 top-[2.2rem] sm:left-2 sm:top-[2.35rem]";
 
   return (
     <article
@@ -659,15 +655,15 @@ export function VideoCard({
         ) : null}
         {!hideHoverActions ? (
           <div
-            className={`pointer-events-none absolute inset-0 z-[7] flex items-center justify-center ${actionOverlayPadding}`}
+            className={`pointer-events-none absolute z-[7] ${actionStackPos} ${actionOverlayPadding}`}
           >
             <div
-              className={`flex items-center justify-center opacity-100 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 max-lg:translate-y-0 max-lg:opacity-100 translate-y-1 lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 ${actionGap} ${actionRowFrame}`}
+              className={`flex flex-col items-center justify-center opacity-100 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 max-lg:translate-y-0 max-lg:opacity-100 translate-y-1 lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 ${actionStackGap}`}
             >
             <button
               ref={cartBtnRef}
               type="button"
-              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
+              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full border border-white/20 bg-black/35 text-white opacity-90 backdrop-blur-[1px] transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
               aria-label="장바구니에 담기"
               onClick={(e) => {
                 e.preventDefault();
@@ -685,7 +681,7 @@ export function VideoCard({
             {!hideLikeAction ? (
               <button
                 type="button"
-                className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
+                className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full border border-white/20 bg-black/35 text-white opacity-90 backdrop-blur-[1px] transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
                 aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
                 aria-pressed={likedByMe}
                 onClick={(e) => {
@@ -704,7 +700,7 @@ export function VideoCard({
             ) : null}
             <button
               type="button"
-              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
+              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full border border-white/20 bg-black/35 text-white opacity-90 backdrop-blur-[1px] transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
               aria-label={wishlisted ? "찜 해제" : "찜하기"}
               aria-pressed={wishlisted}
               onClick={(e) => {

@@ -100,7 +100,6 @@ function BestEndlessRankFeed({
               footerExtension={
                 <TrendingVideoStatsFooter
                   metrics={getMetricsForVideoDetail(item.video.id)}
-                  salePriceWon={item.video.priceWon}
                 />
               }
             />

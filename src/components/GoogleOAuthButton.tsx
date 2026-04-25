@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 const BTN =
   "flex w-full items-center justify-center gap-2.5 rounded-full border border-white/20 bg-white/[0.06] py-3 text-[14px] font-extrabold text-zinc-100 shadow-sm transition hover:border-white/35 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-55 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-50";
@@ -24,9 +26,29 @@ export function GoogleOAuthButton({ nextPath, label }: Props) {
           nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")
             ? nextPath
             : "/";
-        const authUrl = `/api/auth/google/start?next=${encodeURIComponent(next)}`;
+        const redirectTo = buildAuthCallbackRedirectTo(next);
+        const supabase = getSupabaseBrowserClient();
         setBusy(true);
-        window.location.assign(authUrl);
+        try {
+          if (supabase && redirectTo) {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+              provider: "google",
+              options: {
+                redirectTo,
+                queryParams: { prompt: "select_account" },
+              },
+            });
+            if (error) throw error;
+            if (data.url) {
+              window.location.assign(data.url);
+              return;
+            }
+          }
+          // 환경변수/클라이언트 초기화 실패 시 서버 시작 라우트로 폴백
+          window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
+        } finally {
+          setBusy(false);
+        }
       }}
     >
       <svg className="h-[18px] w-[18px] shrink-0" viewBox="0 0 48 48" aria-hidden>
