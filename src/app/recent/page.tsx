@@ -2,7 +2,7 @@
 
 import { X } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
 import { useRecentClips } from "@/context/RecentClipsContext";
 import { ALL_MARKET_VIDEOS } from "@/data/videoCatalog";
@@ -102,6 +102,7 @@ function sortRows(rows: Row[], sort: SortValue): Row[] {
 export default function RecentPage() {
   const { entries, hydrated, clear, remove } = useRecentClips();
   const [sort, setSort] = useState<SortValue>("recent");
+  const [browseCtaVisible, setBrowseCtaVisible] = useState(false);
 
   const catalogById = useMemo(
     () => new Map(ALL_MARKET_VIDEOS.map((v) => [v.id, v] as const)),
@@ -116,6 +117,19 @@ export default function RecentPage() {
     }
     return sortRows(list, sort);
   }, [entries, catalogById, sort]);
+
+  const showEmptyGate = hydrated && rows.length === 0;
+
+  useEffect(() => {
+    if (!showEmptyGate) {
+      setBrowseCtaVisible(false);
+      return;
+    }
+    const raf = window.requestAnimationFrame(() => {
+      setBrowseCtaVisible(true);
+    });
+    return () => window.cancelAnimationFrame(raf);
+  }, [showEmptyGate]);
 
   return (
     <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12 lg:px-8">
@@ -173,12 +187,20 @@ export default function RecentPage() {
           <p className="mt-2 text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             로그인 후 최근 본 릴스를 찾아볼 수 있어요.
           </p>
-          <Link
-            href="/"
-            className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
+          <div
+            className={`mt-6 transition-[opacity,transform] duration-300 ease-out ${
+              browseCtaVisible
+                ? "translate-y-0 opacity-100"
+                : "translate-y-1.5 opacity-0"
+            }`}
           >
-            릴스 둘러보기
-          </Link>
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-[linear-gradient(135deg,#0b1327_0%,#122247_50%,#1e3a8a_100%)] px-7 py-2.5 text-[14px] font-bold text-white ring-1 ring-white/10 shadow-[0_12px_28px_-14px_rgba(30,58,138,0.82)] transition-all duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:brightness-110 hover:shadow-[0_18px_38px_-16px_rgba(37,99,235,0.8)]"
+            >
+              릴스 둘러보기
+            </Link>
+          </div>
         </div>
       ) : (
         <ul className="mt-8 grid list-none grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">

@@ -6,12 +6,9 @@ function RevenueHighlight({ won }: { won: number }) {
   return (
     <p
       className="text-right font-mono text-[15px] font-extrabold leading-none tabular-nums tracking-tight text-[#B9CCFF] sm:text-[16px] [html[data-theme='light']_&]:text-[#2F4FA8]"
-      aria-label={`수익 ${formatted}원`}
+      aria-label={`수익 ${formatted}`}
     >
       {formatted}
-      <span className="ml-0.5 text-[13px] font-bold text-[#9CB8FF] sm:text-[14px] [html[data-theme='light']_&]:text-[#3D63C8]">
-        원
-      </span>
     </p>
   );
 }
@@ -55,9 +52,14 @@ export function TrendingVideoStatsFooter({
   stockRow,
 }: Props) {
   const isUp = metrics.growthPercent >= 0;
+  const hasExtendedRows = typeof salesCount === "number" || Boolean(stockRow);
 
   return (
-    <div className="border-t border-white/10 bg-[linear-gradient(180deg,rgba(8,14,30,0.88)_0%,rgba(4,9,22,0.94)_100%)] px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white sm:px-3.5 sm:py-2.5">
+    <div
+      className={`border-t border-white/10 bg-[linear-gradient(180deg,rgba(8,14,30,0.88)_0%,rgba(4,9,22,0.94)_100%)] px-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white sm:px-3.5 ${
+        hasExtendedRows ? "py-2 sm:py-2.5" : "pb-1 pt-2 sm:pb-1 sm:pt-2.5"
+      }`}
+    >
       <dl className="space-y-0 leading-snug">
         <div className={`${rowCls} items-start gap-2 sm:items-center`}>
           <dt className={`inline-flex items-center gap-1.5 ${labelCls}`}>
@@ -65,8 +67,8 @@ export function TrendingVideoStatsFooter({
             <span
               className={`text-[15px] leading-none sm:text-[16px] ${
                 isUp
-                  ? "text-[#2CFFC8] [text-shadow:0_0_10px_rgba(44,255,200,0.55)]"
-                  : "text-[#FF5EAD] [text-shadow:0_0_10px_rgba(255,94,173,0.55)]"
+                  ? "text-[#FF3B57] [text-shadow:0_0_10px_rgba(255,59,87,0.55)]"
+                  : "text-[#2FA2FF] [text-shadow:0_0_10px_rgba(47,162,255,0.55)]"
               } [html[data-theme='light']_&]:[text-shadow:none]`}
               aria-hidden
             >

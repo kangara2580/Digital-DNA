@@ -22,13 +22,13 @@ const config: Config = {
           raised: "#f8fafc",
           border: "#e2e8f0",
         },
-        /** REELS MARKET — Crimson + Cyan theme */
+        /** REELS MARKET — Cobalt + Cyan theme */
         reels: {
           abyss: "#050505",
           void: "#0a0a0a",
           lift: "#121212",
           muted: "#a1a1aa",
-          crimson: "#FF0055",
+          crimson: "#1E4ED8",
           cyan: "#00F2EA",
         },
         market: {
@@ -42,7 +42,7 @@ const config: Config = {
         },
       },
       boxShadow: {
-        "reels-crimson": "0 0 24px -4px rgba(255, 0, 85, 0.45)",
+        "reels-crimson": "0 0 24px -4px rgba(59, 130, 246, 0.52)",
         "reels-cyan": "0 0 28px -6px rgba(0, 242, 234, 0.4)",
       },
       transitionDuration: {

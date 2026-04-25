@@ -45,8 +45,8 @@ export function SectionMoreLink({
 
   const styles =
     variant === "light"
-      ? "border-white/55 bg-white/12 text-white shadow-[0_2px_12px_rgba(0,0,0,0.2)] backdrop-blur-sm hover:border-white/75 hover:bg-white/22"
-      : "border border-white/15 bg-white/[0.06] text-zinc-100 shadow-none backdrop-blur-md hover:border-reels-cyan/45 hover:bg-white/10 hover:text-white";
+      ? "border-white/55 bg-white/12 text-white shadow-[0_8px_24px_-14px_rgba(0,0,0,0.45)] backdrop-blur-sm hover:border-white/80 hover:bg-white/24"
+      : "border border-white/14 bg-[linear-gradient(120deg,rgba(255,255,255,0.1)_0%,rgba(255,255,255,0.04)_52%,rgba(0,242,234,0.13)_100%)] text-zinc-100 shadow-[0_14px_32px_-20px_rgba(0,242,234,0.4)] backdrop-blur-md hover:border-[#67EFFF]/60 hover:bg-[linear-gradient(120deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.06)_55%,rgba(0,242,234,0.2)_100%)] hover:text-white";
 
   const widthCls =
     variant === "light"
@@ -56,12 +56,14 @@ export function SectionMoreLink({
   return (
     <Link
       href={href}
-      className={`inline-flex items-center justify-center gap-1 rounded-full border px-4 py-2.5 text-[13px] font-semibold leading-none tracking-tight transition-colors sm:px-4 sm:py-2 sm:text-[13px] ${widthCls} ${styles} ${className}`}
+      className={`group inline-flex items-center justify-center gap-2 rounded-full border px-4 py-2 text-[13px] font-semibold leading-none tracking-tight transition-all duration-300 ease-out sm:px-4 sm:py-2 sm:text-[13px] ${widthCls} ${styles} ${className}`}
       aria-label={`${catName} 카테고리에서 더 많은 영상 보기`}
     >
       <span className="whitespace-nowrap">{text}</span>
       {showChevron ? (
-        <Chevron className="h-4 w-4 shrink-0 opacity-90" />
+        <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/12 text-white/95 transition-transform duration-300 group-hover:translate-x-0.5 [html[data-theme='light']_&]:bg-white/30">
+          <Chevron className="h-3.5 w-3.5 shrink-0 opacity-95" />
+        </span>
       ) : null}
     </Link>
   );

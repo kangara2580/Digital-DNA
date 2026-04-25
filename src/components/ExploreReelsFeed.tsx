@@ -179,23 +179,8 @@ function ExploreWatchReels({
   const goNextReel = useCallback(() => scrollByOneSlide(1), [scrollByOneSlide]);
   const goPrevReel = useCallback(() => scrollByOneSlide(-1), [scrollByOneSlide]);
 
-  // 휠/트랙패드/키보드 이동을 한 칸씩 부드럽게 통일
+  // 키보드 이동만 커스텀 처리(휠/트랙패드는 네이티브 스크롤로 버벅임 최소화)
   useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    let wheelLocked = false;
-    const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) < 18) return;
-      e.preventDefault();
-      if (wheelLocked) return;
-      wheelLocked = true;
-      scrollByOneSlide(e.deltaY > 0 ? 1 : -1);
-      window.setTimeout(() => {
-        wheelLocked = false;
-      }, 320);
-    };
-
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowDown" || e.key === "PageDown") {
         e.preventDefault();
@@ -210,18 +195,16 @@ function ExploreWatchReels({
       }
     };
 
-    el.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("keydown", onKeyDown);
     return () => {
-      el.removeEventListener("wheel", onWheel as EventListener);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [goNextReel, goPrevReel, scrollByOneSlide]);
+  }, [goNextReel, goPrevReel]);
 
   return (
     <>
       {/* 틱톡 스타일: 위·아래로 한 영상씩 이동 */}
-      <div className="pointer-events-none fixed bottom-[max(8rem,calc(env(safe-area-inset-bottom)+5.5rem))] right-3 z-[101] flex flex-col gap-2 sm:right-5 md:right-6">
+      <div className="pointer-events-none fixed right-3 top-1/2 z-[101] flex -translate-y-1/2 flex-col gap-2 sm:right-5 md:right-6">
         <button
           type="button"
           onClick={goPrevReel}
@@ -244,7 +227,7 @@ function ExploreWatchReels({
 
       <div
         ref={scrollRef}
-        className="fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[30] overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth snap-y snap-proximity md:left-[var(--reels-rail-w)]"
+        className="fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[30] overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth snap-y snap-mandatory md:left-[var(--reels-rail-w)]"
         style={{ WebkitOverflowScrolling: "touch" }}
         role="feed"
         aria-label="세로 탐색 릴스 피드 — 아래로 스크롤해 계속 보기"
@@ -268,13 +251,21 @@ function ExploreWatchReels({
   );
 }
 
-export function ExploreReelsFeed({ pool }: { pool: FeedVideo[] }) {
+export function ExploreReelsFeed({
+  pool,
+  initialMode = "browse",
+  browseCardTarget = "watch",
+}: {
+  pool: FeedVideo[];
+  initialMode?: "browse" | "watch";
+  browseCardTarget?: "watch" | "purchase";
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const videoById = useMemo(() => buildWishlistVideoLookup(), []);
   const [sessionTargetVideo, setSessionTargetVideo] = useState<FeedVideo | null>(null);
-  const [mode, setMode] = useState<"browse" | "watch">("browse");
+  const [mode, setMode] = useState<"browse" | "watch">(initialMode);
   const [watchOffset, setWatchOffset] = useState(0);
   const [visibleGridCount, setVisibleGridCount] = useState(GRID_INITIAL);
   const requestedVideoId = searchParams.get("videoId");
@@ -315,26 +306,39 @@ export function ExploreReelsFeed({ pool }: { pool: FeedVideo[] }) {
   useEffect(() => {
     const view = searchParams.get("view");
     const videoId = searchParams.get("videoId");
+    const idx = videoId ? watchPool.findIndex((v) => v.id === videoId) : -1;
+
+    if (initialMode === "watch") {
+      setWatchOffset(idx >= 0 ? idx : 0);
+      setMode("watch");
+      return;
+    }
+
     if (view !== "watch") {
       setMode("browse");
       return;
     }
-    const idx = videoId ? watchPool.findIndex((v) => v.id === videoId) : -1;
     setWatchOffset(idx >= 0 ? idx : 0);
     setMode("watch");
-  }, [watchPool, searchParams]);
+  }, [initialMode, watchPool, searchParams]);
 
   const enterWatch = useCallback((_video: FeedVideo, gridIndex: number) => {
     if (watchPool.length === 0) return;
     const normalized = gridIndex % watchPool.length;
     const target = watchPool[normalized];
+
+    if (browseCardTarget === "purchase") {
+      router.push(`/video/${encodeURIComponent(target.id)}`);
+      return;
+    }
+
     setWatchOffset(normalized);
     setMode("watch");
     router.replace(
       `${pathname}?view=watch&videoId=${encodeURIComponent(target.id)}`,
       { scroll: false },
     );
-  }, [pathname, router, watchPool]);
+  }, [browseCardTarget, pathname, router, watchPool]);
 
   useEffect(() => {
     if (mode === "browse") {

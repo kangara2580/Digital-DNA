@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, Sparkles, Volume2, VolumeX, Wallet } from "lucide-react";
+import { Eye, Heart, Volume2, VolumeX } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -51,12 +51,19 @@ function ReelDesktopRail({
       className={`flex w-[min(5.75rem,14vw)] shrink-0 flex-col items-center gap-5 pb-6 pt-4 [html[data-theme='light']_&]:text-zinc-800 ${className ?? ""}`}
       aria-label="판매·반응 정보"
     >
+      <Link
+        href={`/video/${video.id}`}
+        className="inline-flex items-center justify-center rounded-full border border-reels-crimson/60 bg-reels-crimson px-3.5 py-1.5 text-[12px] font-extrabold text-white shadow-reels-crimson transition hover:brightness-110"
+      >
+        구매
+      </Link>
+
       <div className="flex flex-col items-center gap-1 text-center">
         <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           가격
         </span>
         {video.priceWon != null ? (
-          <span className="text-[13px] font-extrabold tabular-nums text-reels-cyan">
+          <span className="text-[13px] font-extrabold tabular-nums text-[#9DB9FF]">
             {video.priceWon.toLocaleString("ko-KR")}
           </span>
         ) : (
@@ -65,7 +72,6 @@ function ReelDesktopRail({
       </div>
 
       <div className="flex flex-col items-center gap-1 text-center">
-        <Wallet className="h-5 w-5 text-reels-cyan/90" strokeWidth={1.75} aria-hidden />
         <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           누적 수익
         </span>
@@ -82,7 +88,11 @@ function ReelDesktopRail({
       </div>
 
       <div className="flex flex-col items-center gap-1">
-        <Sparkles className="h-5 w-5 text-amber-400/90 [html[data-theme='light']_&]:text-amber-600" strokeWidth={1.75} aria-hidden />
+        <Heart
+          className="h-5 w-5 text-white/90 [html[data-theme='light']_&]:text-zinc-800"
+          strokeWidth={1.75}
+          aria-hidden
+        />
         <span className="font-mono text-[11px] font-bold tabular-nums text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
           {formatCompactCount(metrics.totalLikes)}
         </span>
@@ -133,7 +143,11 @@ export function ExploreReelSlide({
 }: ReelSlideProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const blockRef = useRef<HTMLDivElement>(null);
+  const progressRailRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
+  const [isScrubbing, setIsScrubbing] = useState(false);
+  const [volume, setVolume] = useState(0.75);
+  const [volumeUiVisible, setVolumeUiVisible] = useState(false);
   const previewSrc = video.previewSrc ?? video.src;
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(previewSrc);
   const posterSrc = sanitizePosterSrc(video.poster);
@@ -169,14 +183,58 @@ export function ExploreReelSlide({
   }, [scrollRootRef, video.id]);
 
   const onTimeUpdate = useCallback(() => {
+    if (isScrubbing) return;
     const el = videoRef.current;
     if (!el?.duration) return;
     setProgress(el.currentTime / el.duration);
-  }, []);
+  }, [isScrubbing]);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    let rafId = 0;
+    const sync = () => {
+      if (!isScrubbing && el.duration) {
+        setProgress(el.currentTime / el.duration);
+      }
+      if (!el.paused && !el.ended) {
+        rafId = window.requestAnimationFrame(sync);
+      }
+    };
+    const onPlay = () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+      rafId = window.requestAnimationFrame(sync);
+    };
+    const onPauseLike = () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+      rafId = 0;
+    };
+    el.addEventListener("play", onPlay);
+    el.addEventListener("pause", onPauseLike);
+    el.addEventListener("ended", onPauseLike);
+    if (!el.paused && !el.ended) onPlay();
+    return () => {
+      el.removeEventListener("play", onPlay);
+      el.removeEventListener("pause", onPauseLike);
+      el.removeEventListener("ended", onPauseLike);
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
+  }, [isScrubbing]);
 
   const toggleMute = useCallback(() => {
+    setVolumeUiVisible(true);
     onMutedChange(!muted);
   }, [muted, onMutedChange]);
+
+  const onVolumeChange = useCallback(
+    (nextValue: number) => {
+      const safe = Number.isFinite(nextValue) ? Math.min(1, Math.max(0, nextValue)) : 0;
+      setVolume(safe);
+      setVolumeUiVisible(true);
+      onMutedChange(safe <= 0.001);
+    },
+    [onMutedChange],
+  );
 
   const togglePlayPause = useCallback(() => {
     const el = videoRef.current;
@@ -192,10 +250,51 @@ export function ExploreReelSlide({
     }
   }, []);
 
+  const syncProgressFromVideo = useCallback(() => {
+    const el = videoRef.current;
+    if (!el?.duration) return;
+    setProgress(el.currentTime / el.duration);
+  }, []);
+
   useEffect(() => {
     const el = videoRef.current;
-    if (el) el.muted = muted;
-  }, [muted]);
+    if (!el) return;
+    el.volume = volume;
+    el.muted = muted;
+  }, [muted, volume]);
+
+  const seekByClientX = useCallback((clientX: number) => {
+    const rail = progressRailRef.current;
+    const el = videoRef.current;
+    if (!rail || !el?.duration) return;
+    const rect = rail.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+    setProgress(ratio);
+    el.currentTime = ratio * el.duration;
+  }, []);
+
+  useEffect(() => {
+    if (!isScrubbing) return;
+    const onPointerMove = (e: PointerEvent) => seekByClientX(e.clientX);
+    const onPointerUp = () => {
+      setIsScrubbing(false);
+    };
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+    };
+  }, [isScrubbing, seekByClientX]);
+
+  useEffect(() => {
+    if (!volumeUiVisible) return;
+    const timer = window.setTimeout(() => {
+      setVolumeUiVisible(false);
+    }, 1800);
+    return () => window.clearTimeout(timer);
+  }, [volumeUiVisible, muted, volume]);
 
   return (
     <div
@@ -222,6 +321,8 @@ export function ExploreReelSlide({
               loop
               preload={isPexelsBlockedVideo ? "none" : "metadata"}
               onTimeUpdate={onTimeUpdate}
+              onLoadedMetadata={syncProgressFromVideo}
+              onCanPlay={syncProgressFromVideo}
               onClick={togglePlayPause}
             />
             <div
@@ -241,6 +342,20 @@ export function ExploreReelSlide({
                 <Volume2 className="h-4 w-4" strokeWidth={2} aria-hidden />
               )}
             </button>
+            {volumeUiVisible ? (
+              <div className="pointer-events-auto absolute right-[0.7rem] top-[3.6rem] z-[3] flex h-28 w-9 items-center justify-center rounded-full border border-white/15 bg-black/45 backdrop-blur-md">
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={muted ? 0 : volume}
+                  onChange={(e) => onVolumeChange(e.currentTarget.valueAsNumber)}
+                  className="h-6 w-20 -rotate-90 cursor-pointer appearance-none bg-transparent [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-white/30 [&::-webkit-slider-thumb]:-mt-[5px] [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#9DB9FF] [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(157,185,255,0.85)] [&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-white/30 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-[#9DB9FF]"
+                  aria-label="볼륨 조절"
+                />
+              </div>
+            ) : null}
 
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] space-y-2 p-4 pb-5">
               <Link
@@ -252,29 +367,31 @@ export function ExploreReelSlide({
               <p className="line-clamp-3 text-left text-[15px] font-bold leading-snug text-white sm:text-[16px]">
                 {video.title}
               </p>
-              <div className="pointer-events-auto flex flex-wrap items-center gap-2 pt-1">
-                {video.priceWon != null ? (
-                  <span className="rounded-full bg-black/50 px-2.5 py-1 text-[13px] font-extrabold tabular-nums text-reels-cyan backdrop-blur-sm">
-                    {video.priceWon.toLocaleString("ko-KR")}원
-                  </span>
-                ) : null}
-                <Link
-                  href={`/video/${video.id}`}
-                  className="rounded-full border border-reels-crimson/60 bg-reels-crimson px-3.5 py-1.5 text-[12px] font-extrabold text-white shadow-reels-crimson transition hover:brightness-110"
-                >
-                  구매
-                </Link>
-              </div>
             </div>
 
             {/* 진행 바 (틱톡 스타일) */}
             <div
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-0.5 bg-white/15"
-              aria-hidden
+              ref={progressRailRef}
+              className="pointer-events-auto absolute inset-x-0 bottom-0 z-[4] h-[5px] cursor-ew-resize bg-transparent"
+              onPointerDown={(e) => {
+                setIsScrubbing(true);
+                seekByClientX(e.clientX);
+              }}
+              aria-label="재생 구간 이동"
+              role="slider"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round((progress || 0) * 100)}
             >
               <div
-                className="h-full bg-reels-crimson/90 transition-[width] duration-150 ease-out"
-                style={{ width: `${Math.min(100, progress * 100)}%` }}
+                className="h-full rounded-r-full"
+                style={{
+                  width: `${progress > 0 ? Math.max(0.8, Math.min(100, progress * 100)) : 0}%`,
+                  background:
+                    "linear-gradient(90deg, #7F8FA8 0%, #F4F2E8 38%, #D6DFEE 66%, #8C9DB8 100%)",
+                  boxShadow: "0 0 10px rgba(214,223,238,0.45)",
+                  transition: isScrubbing ? "none" : "width 90ms linear",
+                }}
               />
             </div>
           </div>

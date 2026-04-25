@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
 import { useWishlist } from "@/context/WishlistContext";
 import { resolveManualTikTokVideoForStudio } from "@/data/tiktokData";
@@ -74,6 +74,7 @@ export default function WishlistPage() {
   const { entries, hydrated, clear, removeMany } = useWishlist();
   const [sort, setSort] = useState<SortValue>("recent");
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [loginCtaVisible, setLoginCtaVisible] = useState(false);
 
   const videoByStoredId = useMemo(() => buildWishlistVideoLookup(), []);
 
@@ -123,6 +124,17 @@ export default function WishlistPage() {
     hydrated &&
     !user &&
     entries.length === 0;
+
+  useEffect(() => {
+    if (!showLoginGate) {
+      setLoginCtaVisible(false);
+      return;
+    }
+    const raf = window.requestAnimationFrame(() => {
+      setLoginCtaVisible(true);
+    });
+    return () => window.cancelAnimationFrame(raf);
+  }, [showLoginGate]);
 
   return (
     <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12 lg:px-8">
@@ -206,12 +218,20 @@ export default function WishlistPage() {
           <p className="text-[15px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             로그인하면 찜한 릴스를 볼 수 있어요!
           </p>
-          <Link
-            href={`/login?redirect=${encodeURIComponent("/wishlist")}`}
-            className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
+          <div
+            className={`mt-6 transition-[opacity,transform] duration-300 ease-out ${
+              loginCtaVisible
+                ? "translate-y-0 opacity-100"
+                : "translate-y-1.5 opacity-0"
+            }`}
           >
-            로그인
-          </Link>
+            <Link
+              href={`/login?redirect=${encodeURIComponent("/wishlist")}`}
+              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-[linear-gradient(135deg,#0b1327_0%,#122247_50%,#1e3a8a_100%)] px-7 py-2.5 text-[14px] font-bold text-white ring-1 ring-white/10 shadow-[0_12px_28px_-14px_rgba(30,58,138,0.82)] transition-all duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:brightness-110 hover:shadow-[0_18px_38px_-16px_rgba(37,99,235,0.8)]"
+            >
+              로그인
+            </Link>
+          </div>
         </div>
       ) : !hydrated ? (
         <p className="mt-10 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600" aria-live="polite">

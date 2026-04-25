@@ -9,6 +9,7 @@ import {
   Link2,
   MoreVertical,
   Search,
+  ShoppingBag,
   Trophy,
   User,
   Wallet,
@@ -30,14 +31,14 @@ const railIconBtn =
   "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.02] text-zinc-300 transition-[background-color,color,transform] duration-200 hover:bg-white/[0.09] hover:text-zinc-100 active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
 
 const railIconActive =
-  "bg-white/[0.08] text-reels-cyan shadow-[0_0_16px_-4px_rgba(0,242,234,0.35)] [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-reels-cyan";
+  "border border-[#4F8DFF]/55 bg-[#1E4ED8]/30 text-[#BFD8FF] shadow-[0_0_24px_-8px_rgba(59,130,246,0.95),inset_0_1px_0_rgba(191,216,255,0.28)] [html[data-theme='light']_&]:border-[#3B82F6]/45 [html[data-theme='light']_&]:bg-[#3B82F6]/14 [html[data-theme='light']_&]:text-[#1D4ED8]";
 
 /** 구독 — 시안 강조(테두리 없음, 글로우·배경만) */
 const subscribeRailBtn =
   "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-0 bg-reels-cyan/14 text-reels-cyan shadow-[0_0_24px_-8px_rgba(0,242,234,0.55)] transition-[background-color,box-shadow,transform] duration-200 hover:bg-reels-cyan/22 hover:shadow-[0_0_28px_-6px_rgba(0,242,234,0.65)] active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:bg-reels-cyan/12 [html[data-theme='light']_&]:text-[#0d9488]";
 
 const railTooltip =
-  "pointer-events-none absolute left-[calc(100%+0.55rem)] top-1/2 z-[70] -translate-y-1/2 whitespace-nowrap rounded-md border border-white/15 bg-[#070b14]/95 px-2.5 py-1 text-[11px] font-semibold text-zinc-100 opacity-0 shadow-[0_10px_22px_-14px_rgba(0,0,0,0.8)] transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900";
+  "pointer-events-none absolute left-[calc(100%+0.6rem)] top-1/2 z-[9999] -translate-y-1/2 whitespace-nowrap rounded-full border border-white/70 bg-[#0a1222]/98 px-3.5 py-1.5 text-[13px] font-semibold text-white opacity-0 shadow-[0_14px_28px_-12px_rgba(0,0,0,0.85)] transition-none group-hover:opacity-100 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900";
 
 type RailItem = {
   href: string;
@@ -52,6 +53,12 @@ const RAIL_ITEMS: RailItem[] = [
     label: "탐색",
     Icon: Compass,
     isActive: (p) => p === "/explore" || p.startsWith("/explore/"),
+  },
+  {
+    href: "/shop",
+    label: "쇼핑몰",
+    Icon: ShoppingBag,
+    isActive: (p) => p === "/shop" || p.startsWith("/shop/"),
   },
   {
     href: "/leaderboard",
@@ -201,7 +208,7 @@ export function ReelsLeftRail() {
         </div>
         <div className="flex min-h-0 flex-1 flex-col items-stretch pt-1">
           <nav
-            className="flex shrink-0 flex-col items-center gap-1 overflow-y-auto overflow-x-visible py-2 no-scrollbar"
+            className="flex shrink-0 flex-col items-center gap-1 overflow-visible py-2"
             aria-label="빠른 이동"
           >
             <div className="group relative">
@@ -212,13 +219,9 @@ export function ReelsLeftRail() {
                 className={`${railIconBtn} h-10 w-10`}
                 aria-label="검색 열기"
                 aria-expanded={searchOpen}
-                title="검색"
               >
                 <Search className="h-[20px] w-[20px]" strokeWidth={1.9} aria-hidden />
               </button>
-              <span className={railTooltip} role="tooltip">
-                검색
-              </span>
             </div>
             {visibleRailItems.map(({ href, label, Icon, isActive }) => {
               const on = isActive(pathname);
@@ -229,9 +232,12 @@ export function ReelsLeftRail() {
                     aria-label={label}
                     aria-current={on ? "page" : undefined}
                     className={`${railIconBtn} ${on ? railIconActive : ""}`}
-                    title={label}
                   >
-                    <Icon className="h-[22px] w-[22px]" strokeWidth={stroke} aria-hidden />
+                    <Icon
+                      className={href === "/shop" ? "h-6 w-6" : "h-[22px] w-[22px]"}
+                      strokeWidth={stroke}
+                      aria-hidden
+                    />
                   </Link>
                   <span className={railTooltip} role="tooltip">
                     {label}
@@ -253,7 +259,6 @@ export function ReelsLeftRail() {
                 }`}
                 aria-label="구독·결제 페이지로 이동"
                 aria-current={pathname.startsWith("/subscribe") ? "page" : undefined}
-                title="구독·크레딧"
               >
                 <Wallet className="h-[23px] w-[23px]" strokeWidth={stroke} aria-hidden />
               </Link>
@@ -273,7 +278,6 @@ export function ReelsLeftRail() {
                 aria-haspopup="dialog"
                 aria-controls={drawerId}
                 aria-label="더보기 — 언어·화면 테마·메뉴"
-                title="더보기"
               >
                 <MoreVertical className="h-[22px] w-[22px]" strokeWidth={stroke} aria-hidden />
               </button>
@@ -320,7 +324,7 @@ export function ReelsLeftRail() {
                         className="absolute right-1.5 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/22 bg-white/[0.06] text-[#4F8DFF] transition hover:border-reels-cyan/55 hover:bg-white/[0.12] hover:text-[#7FB5FF] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-blue-600 [html[data-theme='light']_&]:hover:bg-zinc-200"
                         aria-label="검색어 지우기"
                       >
-                        <X className="h-5 w-5" strokeWidth={2.6} aria-hidden />
+                        <X className="h-[18px] w-[18px]" strokeWidth={2.6} aria-hidden />
                       </button>
                     ) : null}
                   </div>

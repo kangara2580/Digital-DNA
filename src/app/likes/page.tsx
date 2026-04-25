@@ -75,6 +75,7 @@ export default function LikesPage() {
   const [loading, setLoading] = useState(false);
   const [sort, setSort] = useState<SortValue>("recent");
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [loginCtaVisible, setLoginCtaVisible] = useState(false);
 
   const videoByStoredId = useMemo(() => buildWishlistVideoLookup(), []);
 
@@ -127,6 +128,17 @@ export default function LikesPage() {
 
   const allEntryIds = useMemo(() => rows.map((r) => r.entryId), [rows]);
   const showLoginGate = supabaseConfigured && !authLoading && hydrated && !user;
+
+  useEffect(() => {
+    if (!showLoginGate) {
+      setLoginCtaVisible(false);
+      return;
+    }
+    const raf = window.requestAnimationFrame(() => {
+      setLoginCtaVisible(true);
+    });
+    return () => window.cancelAnimationFrame(raf);
+  }, [showLoginGate]);
 
   const toggleSelect = useCallback((id: string) => {
     setSelected((s) => {
@@ -232,7 +244,11 @@ export default function LikesPage() {
           </p>
           <Link
             href={`/login?redirect=${encodeURIComponent("/likes")}`}
-            className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
+            className={`mt-6 inline-flex items-center justify-center rounded-full border border-white/20 bg-[linear-gradient(135deg,#0b1327_0%,#122247_50%,#1e3a8a_100%)] px-7 py-2.5 text-[14px] font-bold text-white ring-1 ring-white/10 shadow-[0_12px_28px_-14px_rgba(30,58,138,0.82)] transition-all duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:brightness-110 hover:shadow-[0_18px_38px_-16px_rgba(37,99,235,0.8)] ${
+              loginCtaVisible
+                ? "translate-y-0 opacity-100"
+                : "translate-y-1.5 opacity-0"
+            }`}
           >
             로그인
           </Link>

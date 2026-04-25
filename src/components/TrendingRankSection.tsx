@@ -90,29 +90,58 @@ export function TrendingRankSection() {
   const loadTrending = useCallback(() => {
     setLoading(true);
     setErrorMessage(null);
-    try {
-      const ranking = getTikTokManualRanking();
-      const next = manualTikTokRankingToFeedVideos(ranking).map((v) => ({ ...v }));
-      setTrendingClips(next);
-      if (!next.length) {
-        setErrorMessage(
-          "표시할 영상이 없습니다. TikTok·YouTube·Instagram 공유 URL을 src/data/tiktokData.ts 의 FILE_RAW_MANUAL_TIKTOK_URLS 또는 Vercel NEXT_PUBLIC_TRENDING_TIKTOK_URLS 에 넣어 주세요.",
-        );
+    void (async () => {
+      try {
+        const response = await fetch("/api/trending/rank?limit=30", {
+          cache: "no-store",
+        });
+        const payload = (await response.json()) as {
+          ok?: boolean;
+          items?: FeedVideo[];
+        };
+        if (
+          response.ok &&
+          payload.ok === true &&
+          Array.isArray(payload.items) &&
+          payload.items.length > 0
+        ) {
+          setTrendingClips(payload.items.map((video) => ({ ...video })));
+          return;
+        }
+        throw new Error("invalid_payload");
+      } catch {
+        const ranking = getTikTokManualRanking();
+        const fallback = manualTikTokRankingToFeedVideos(ranking).map((video) => ({
+          ...video,
+        }));
+        setTrendingClips(fallback);
+        if (!fallback.length) {
+          setErrorMessage(
+            "표시할 영상이 없습니다. TikTok·YouTube·Instagram 공유 URL을 src/data/tiktokData.ts 의 FILE_RAW_MANUAL_TIKTOK_URLS 또는 Vercel NEXT_PUBLIC_TRENDING_TIKTOK_URLS 에 넣어 주세요.",
+          );
+        } else {
+          setErrorMessage("실시간 랭킹 연결에 실패해 샘플 랭킹을 표시합니다.");
+        }
+      } finally {
+        setLoading(false);
       }
-    } catch {
-      setTrendingClips([]);
-      setErrorMessage("목록을 불러오지 못했어요. 다시 시도해주세요.");
-    } finally {
-      setLoading(false);
-    }
+    })();
   }, []);
 
   const refreshLiveStats = useCallback(async () => {
-    const ranking = getTikTokManualRanking();
-    if (!ranking.length) return;
+    const externalRows = trendingClips
+      .map((video) => {
+        if (!video.sourcePageUrl) return null;
+        return {
+          id: video.id,
+          url: video.sourcePageUrl,
+        };
+      })
+      .filter((row): row is { id: string; url: string } => Boolean(row));
+    if (!externalRows.length) return;
 
     const settled = await Promise.allSettled(
-      ranking.map(async (row) => {
+      externalRows.map(async (row) => {
         const res = await fetch(
           `/api/embed/live-stats?url=${encodeURIComponent(row.url)}`,
           { cache: "no-store" },
@@ -152,7 +181,7 @@ export function TrendingRankSection() {
       };
     }
     if (Object.keys(next).length) setLiveStatsByKey(next);
-  }, []);
+  }, [trendingClips]);
 
   useEffect(() => {
     void loadTrending();
@@ -193,15 +222,15 @@ export function TrendingRankSection() {
 
   return (
     <section
-      className="border-t border-white/10 bg-transparent"
+      className="trending-rank-ocean-bg border-t border-white/10"
       aria-labelledby="trending-rank-heading"
     >
-      <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-7 lg:px-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-          <div className="min-w-0 text-left">
+      <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-12 lg:px-8">
+        <div className="flex flex-col items-center gap-3 py-9 sm:py-10">
+          <div className="min-w-0 text-center">
             <h2
               id="trending-rank-heading"
-              className="flex flex-wrap items-center gap-2.5 text-[22px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:gap-3 sm:text-[26px] md:text-[28px]"
+              className="flex flex-wrap items-center justify-center gap-2.5 text-[22px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:gap-3 sm:text-[26px] md:text-[28px]"
             >
               인기순위 TOP 30
             </h2>
@@ -211,15 +240,9 @@ export function TrendingRankSection() {
               </p>
             ) : null}
           </div>
-          <div className="flex shrink-0 items-center gap-2 self-stretch sm:self-center">
-            <SectionMoreLink
-              category="best"
-              className="shrink-0 self-stretch sm:self-center"
-            />
-          </div>
         </div>
 
-        <div className="relative mt-5 sm:mt-6">
+        <div className="relative mt-0">
           {loading ? <SkeletonGrid /> : null}
 
           {!loading && rankedRows.length === 0 ? (
@@ -254,20 +277,24 @@ export function TrendingRankSection() {
                   <div className="pointer-events-none absolute left-2 top-2 z-[25] inline-flex items-center gap-1 rounded-full border border-[#00F2EA]/35 bg-black/65 px-2 py-1 text-[11px] font-extrabold tabular-nums text-white shadow-[0_10px_25px_-14px_rgba(0,242,234,0.9)]">
                     {rankIndex + 1}
                     {entry.trendDir === "up" ? (
-                      <span className="text-[13px] leading-none text-[#2CFFC8] [text-shadow:0_0_10px_rgba(44,255,200,0.55)]">
+                      <span className="text-[13px] leading-none text-[#FF3B57] [text-shadow:0_0_10px_rgba(255,59,87,0.55)]">
                         ▲
                       </span>
                     ) : entry.trendDir === "down" ? (
-                      <span className="text-[13px] leading-none text-[#FF5EAD] [text-shadow:0_0_10px_rgba(255,94,173,0.55)]">
+                      <span className="text-[13px] leading-none text-[#2FA2FF] [text-shadow:0_0_10px_rgba(47,162,255,0.55)]">
                         ▼
                       </span>
                     ) : null}
                   </div>
                   <VideoCard
-                    video={entry.video}
+                    video={{
+                      ...entry.video,
+                      title: `${rankIndex + 1}위`,
+                    }}
                     reelLayout
                     reelStrip
                     disableHoverScale
+                    hideCreatorMeta
                     preloadMode="none"
                     detailHref={
                       entry.video.tiktokEmbedId
@@ -293,12 +320,10 @@ export function TrendingRankSection() {
 
         {!loading && rankedRows.length > 0 ? (
           <div className="mt-6 flex justify-center">
-            <Link
-              href="/category/best"
-              className="inline-flex items-center rounded-full border border-white/20 bg-white/[0.04] px-5 py-2 text-sm font-bold text-zinc-100 transition hover:border-[#00F2EA]/40 hover:bg-white/[0.08]"
-            >
-              전체 랭킹 더보기
-            </Link>
+            <SectionMoreLink
+              category="best"
+              className="shrink-0 border-[#4F8DFF]/80 shadow-[0_0_20px_-10px_rgba(79,141,255,0.95)] hover:border-[#7FB5FF]/95"
+            />
           </div>
         ) : null}
       </div>

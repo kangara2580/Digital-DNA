@@ -27,6 +27,7 @@ import {
   getExternalLiveStatsPageUrl,
 } from "@/lib/externalEmbed/playerUrls";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import type { SellerSocialLink, SellerSocialPlatform } from "@/lib/sellerSocialLinks";
 
@@ -108,13 +109,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
   const [internalLikeCount, setInternalLikeCount] = useState(0);
   const [likedByMe, setLikedByMe] = useState(false);
   const [likeBusy, setLikeBusy] = useState(false);
-
-  const ctaLabel =
-    price === 100
-      ? "[커피 한 잔보다 싼 영감 수집하기]"
-      : soldOut
-        ? "품절"
-        : "바로 구매하기";
+  const [likeBurst, setLikeBurst] = useState(false);
 
   const rankMetrics = useMemo(() => {
     if (video.listing) {
@@ -162,18 +157,47 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
     [video],
   );
   const externalLikeCount = liveStats?.diggCount ?? rankMetrics.totalLikes;
+  const detectExternalPlatformFromUrl = useCallback((raw?: string | null): SellerSocialPlatform | null => {
+    if (!raw) return null;
+    const v = raw.trim().toLowerCase();
+    if (!v) return null;
+    if (
+      v.includes("tiktok.com/") ||
+      v.includes("vm.tiktok.com/") ||
+      v.includes("vt.tiktok.com/")
+    ) {
+      return "tiktok";
+    }
+    if (
+      v.includes("youtube.com/") ||
+      v.includes("youtu.be/")
+    ) {
+      return "youtube";
+    }
+    if (
+      v.includes("instagram.com/")
+    ) {
+      return "instagram";
+    }
+    return null;
+  }, []);
   const externalLikePlatform = useMemo<SellerSocialPlatform>(() => {
     if (video.tiktokEmbedId) return "tiktok";
     if (video.instagramShortcode) return "instagram";
     if (video.youtubeVideoId) return "youtube";
+    const fromSourcePage = detectExternalPlatformFromUrl(video.sourcePageUrl);
+    if (fromSourcePage) return fromSourcePage;
+    const fromSrc = detectExternalPlatformFromUrl(video.src);
+    if (fromSrc) return fromSrc;
     return "website";
-  }, [video.tiktokEmbedId, video.instagramShortcode, video.youtubeVideoId]);
-  const externalLikeLabel = useMemo(() => {
-    if (externalLikePlatform === "tiktok") return "TikTok";
-    if (externalLikePlatform === "instagram") return "Instagram";
-    if (externalLikePlatform === "youtube") return "YouTube";
-    return "외부";
-  }, [externalLikePlatform]);
+  }, [
+    video.tiktokEmbedId,
+    video.instagramShortcode,
+    video.youtubeVideoId,
+    video.sourcePageUrl,
+    video.src,
+    detectExternalPlatformFromUrl,
+  ]);
   const totalLikeCount = useMemo(
     () => Math.max(0, externalLikeCount + internalLikeCount),
     [externalLikeCount, internalLikeCount],
@@ -317,9 +341,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
   const toggleInternalLike = useCallback(async () => {
     if (likeBusy || authLoading) return;
     if (!supabaseConfigured || !user) {
-      if (typeof window !== "undefined") {
-        window.alert("좋아요 기능은 로그인 후 이용할 수 있어요.");
-      }
+      redirectToLoginStart();
       return;
     }
 
@@ -329,6 +351,10 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
     setLikedByMe(nextLiked);
     setInternalLikeCount((prev) => Math.max(0, prev + (nextLiked ? 1 : -1)));
     setLikePulse(true);
+    if (nextLiked) {
+      setLikeBurst(true);
+      window.setTimeout(() => setLikeBurst(false), 420);
+    }
     window.setTimeout(() => setLikePulse(false), 170);
     setLikeBusy(true);
 
@@ -449,7 +475,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                       {fresh.label}
                     </span>
                   ) : null}
-                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <div className="mb-4 flex flex-wrap items-center gap-2">
                     <SellerIdentityLink
                       creator={video.creator}
                       sellerId={video.listing?.sellerId}
@@ -494,11 +520,6 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                         .join(" ")}
                     </p>
                   ) : null}
-                  {showFreshMeta ? (
-                    <p className="mt-2 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                      {fresh.subline}
-                    </p>
-                  ) : null}
                 </div>
                 {isOwner ? (
                   <Link
@@ -525,44 +546,49 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                 }
               />
             </section>
-            <section className="reels-glass-card rounded-xl border border-white/10 p-3 [html[data-theme='light']_&]:border-zinc-200">
-              <div className="flex items-center justify-between text-[12px] font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-                <span className="inline-flex items-center gap-1.5">
-                  <SellerSocialPlatformIcon
-                    platform={externalLikePlatform}
-                    className="h-3.5 w-3.5"
-                  />
-                  {externalLikeLabel} 외부 좋아요
-                </span>
-                <span className="text-[18px] font-extrabold leading-none text-cyan-300 [html[data-theme='light']_&]:text-cyan-600">
-                  {externalLikeCount.toLocaleString()}
-                </span>
-              </div>
-              <div className="mt-2 flex items-center justify-between text-[12px] font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                <span className="inline-flex items-center gap-1.5">
-                  <Heart className="h-3.5 w-3.5" />
-                  ARA 좋아요
-                </span>
-                <span className="text-[18px] font-extrabold leading-none text-reels-crimson [html[data-theme='light']_&]:text-reels-crimson">
-                  {internalLikeCount.toLocaleString()}
-                </span>
-              </div>
-            </section>
-
             <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+              <section className="reels-glass-card rounded-xl border border-white/10 p-3 [html[data-theme='light']_&]:border-zinc-200 sm:w-[52%]">
+                <div className="flex items-center justify-between text-[12px] font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
+                  <span className="inline-flex items-center gap-1.5">
+                    <SellerSocialPlatformIcon
+                      platform={externalLikePlatform}
+                      className="h-3.5 w-3.5"
+                    />
+                    외부 좋아요
+                  </span>
+                  <span className="text-[18px] font-extrabold leading-none text-cyan-300 [html[data-theme='light']_&]:text-cyan-600">
+                    {externalLikeCount.toLocaleString()}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between text-[12px] font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Heart className="h-3.5 w-3.5" />
+                    ARA 좋아요
+                  </span>
+                  <span className="text-[18px] font-extrabold leading-none text-reels-crimson [html[data-theme='light']_&]:text-reels-crimson">
+                    {internalLikeCount.toLocaleString()}
+                  </span>
+                </div>
+              </section>
               <button
                 type="button"
                 disabled={soldOut}
                 onClick={() => {
                   if (soldOut) return;
+                  if (!user) {
+                    redirectToLoginStart(`/video/${encodeURIComponent(video.id)}`);
+                    return;
+                  }
                   if (!owned) markPurchased(video.id);
                   router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
                 }}
-                className="h-[48px] w-full min-w-0 flex-1 rounded-full bg-reels-crimson px-5 text-[13px] font-extrabold text-white shadow-reels-crimson transition-[transform,opacity] duration-300 ease-in-out hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40 sm:max-w-[min(22rem,calc(100%-7.5rem))]"
+                className="h-[72px] w-full min-w-0 flex-1 rounded-2xl border border-[#79adff]/70 bg-black px-5 text-[18px] font-extrabold text-white ring-1 ring-[#b7d6ff]/45 shadow-[0_0_0_1px_rgba(120,173,255,0.34),0_0_22px_rgba(66,133,244,0.22),inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#a8cbff] hover:ring-[#d7e8ff]/60 hover:bg-[#080b12] disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {ctaLabel}
+                {soldOut ? "품절" : "구매하기"}
               </button>
-              <div className="flex shrink-0 items-center justify-center gap-2 self-center sm:self-stretch">
+            </div>
+
+            <div className="flex items-center justify-end gap-2">
                 <button
                   type="button"
                   title="장바구니 담기"
@@ -570,7 +596,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                     if (soldOut) return;
                     dopamine.launchFromCartButton(e.currentTarget, video, posterSrc);
                   }}
-                  className="inline-flex h-[48px] w-[48px] items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-zinc-200 transition-colors hover:border-reels-cyan/40 hover:text-reels-cyan disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800"
+                  className="inline-flex h-[48px] w-[48px] items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-zinc-200 transition-colors hover:border-white/30 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800"
                   disabled={soldOut}
                   aria-label="장바구니 담기"
                 >
@@ -583,16 +609,23 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                     e.preventDefault();
                     void toggleInternalLike();
                   }}
-                  className={`inline-flex h-[48px] w-[48px] items-center justify-center rounded-full border border-white/15 bg-white/[0.06] transition-all duration-200 hover:border-reels-crimson/50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 ${
+                  className={`relative inline-flex h-[48px] w-[48px] items-center justify-center rounded-full border transition-all duration-200 [html[data-theme='light']_&]:bg-zinc-100 ${
                     likedByMe
-                      ? "text-reels-crimson [html[data-theme='light']_&]:text-reels-crimson"
-                      : "text-zinc-200 hover:text-reels-crimson [html[data-theme='light']_&]:text-zinc-800"
+                      ? "border-[#79adff]/85 bg-[#0e1d3f] text-[#9bc4ff] shadow-[0_0_0_1px_rgba(121,173,255,0.42),0_0_16px_rgba(86,146,255,0.35)]"
+                      : "border-white/15 bg-white/[0.06] text-zinc-200 shadow-none hover:border-white/30 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-800"
                   } ${likePulse ? "scale-110" : "scale-100"}`}
                   aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
                   aria-pressed={likedByMe}
                   disabled={likeBusy}
                 >
-                  <Heart className={`h-5 w-5 ${likedByMe ? "fill-current" : ""}`} />
+                  {likeBurst ? (
+                    <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/35 animate-ping" />
+                  ) : null}
+                  <Heart
+                    className={`relative z-[1] h-5 w-5 transition-transform duration-300 ${
+                      likedByMe ? "fill-current text-[#9bc4ff]" : ""
+                    } ${likeBurst ? "scale-125" : "scale-100"}`}
+                  />
                 </button>
                 <button
                   type="button"
@@ -603,10 +636,10 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                     window.setTimeout(() => setWishlistPulse(false), 170);
                     toggleWishlist(video);
                   }}
-                  className={`inline-flex h-[48px] w-[48px] items-center justify-center rounded-full border border-white/15 bg-white/[0.06] transition-all duration-200 hover:border-reels-cyan/50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 ${
+                  className={`inline-flex h-[48px] w-[48px] items-center justify-center rounded-full border border-white/15 bg-white/[0.06] transition-all duration-200 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 ${
                     wishlisted
                       ? "text-reels-cyan [html[data-theme='light']_&]:text-reels-cyan"
-                      : "text-zinc-200 hover:text-reels-cyan [html[data-theme='light']_&]:text-zinc-800"
+                      : "text-zinc-200 hover:border-white/30 hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-800"
                   } ${wishlistPulse ? "scale-110" : "scale-100"}`}
                   aria-label={wishlisted ? "찜 해제" : "찜하기"}
                   aria-pressed={wishlisted}
@@ -615,7 +648,6 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
                     className={`h-5 w-5 ${wishlisted ? "fill-current" : ""}`}
                   />
                 </button>
-              </div>
             </div>
 
           </div>

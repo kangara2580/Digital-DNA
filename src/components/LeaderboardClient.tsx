@@ -196,7 +196,7 @@ export function LeaderboardClient() {
                 onClick={() => setPeriod(tab)}
                 className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
                   active
-                    ? "border-reels-crimson/55 bg-reels-crimson/20 text-reels-crimson"
+                    ? "border-white/20 bg-[linear-gradient(135deg,#0b1327_0%,#122247_50%,#1e3a8a_100%)] text-white ring-1 ring-white/10 shadow-[0_12px_28px_-14px_rgba(30,58,138,0.82)] hover:-translate-y-0.5 hover:border-white/30 hover:brightness-110 hover:shadow-[0_18px_38px_-16px_rgba(37,99,235,0.8)]"
                     : "border-white/15 bg-black/20 text-zinc-300 hover:border-white/30 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:text-zinc-900"
                 }`}
               >

@@ -18,6 +18,7 @@ import {
   removeFavorite,
   type FavoriteRow,
 } from "@/lib/supabaseFavorites";
+import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { waitForSupabaseAccessToken } from "@/lib/waitSupabaseSessionReady";
 
@@ -79,8 +80,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const [wishlistSyncReady, setWishlistSyncReady] = useState(false);
 
   const alertLoginRequired = useCallback(() => {
-    if (typeof window === "undefined") return;
-    window.alert("찜 기능은 로그인 후 이용할 수 있어요.");
+    redirectToLoginStart();
   }, []);
 
   const reloadFromServer = useCallback(async () => {

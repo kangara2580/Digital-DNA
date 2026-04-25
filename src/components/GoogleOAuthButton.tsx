@@ -11,16 +11,17 @@ type Props = {
   /** 로그인/가입 후 이동할 앱 내 경로 (쿼리 `redirect` 등) */
   nextPath: string | null;
   label: string;
+  className?: string;
 };
 
-export function GoogleOAuthButton({ nextPath, label }: Props) {
+export function GoogleOAuthButton({ nextPath, label, className }: Props) {
   const [busy, setBusy] = useState(false);
 
   return (
     <button
       type="button"
       disabled={busy}
-      className={BTN}
+      className={className ?? BTN}
       onClick={async () => {
         const next =
           nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")

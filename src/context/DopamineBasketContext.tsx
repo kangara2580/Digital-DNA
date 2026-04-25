@@ -16,6 +16,7 @@ import {
 } from "@/components/CartThumbnailFly";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import {
   fetchUserCartVideos,
@@ -104,7 +105,7 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
       if (typeof window === "undefined") return;
       const isGuest = !supabaseConfigured || !userId;
       if (isGuest) {
-        window.alert("장바구니는 로그인 후 이용할 수 있어요.");
+        redirectToLoginStart();
         return;
       }
       if (!isGuest && !cartSyncReady) {

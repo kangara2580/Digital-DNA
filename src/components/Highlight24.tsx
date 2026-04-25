@@ -187,7 +187,8 @@ export function Highlight24() {
   const n = videos.length;
   const safeIndex = n > 0 ? ((index % n) + n) % n : 0;
   const active = n > 0 ? videos[safeIndex] : undefined;
-  const activePoster = sanitizePosterSrc(active?.poster);
+  const activePoster =
+    sanitizePosterSrc(active?.poster) ?? active?.poster?.trim() ?? undefined;
 
   const go = useCallback(
     (dir: -1 | 1) => {
@@ -266,6 +267,19 @@ export function Highlight24() {
   useEffect(() => {
     setAmbientVideoReady(false);
   }, [activeId]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    if (activePoster) {
+      root.style.setProperty("--hero-nav-bg-image", `url(${activePoster})`);
+    } else {
+      root.style.removeProperty("--hero-nav-bg-image");
+    }
+    return () => {
+      root.style.removeProperty("--hero-nav-bg-image");
+    };
+  }, [activePoster]);
 
   useEffect(() => {
     if (reduceMotion) return;
@@ -347,7 +361,11 @@ export function Highlight24() {
 
   return (
     <section
-      className="highlight24-lock-white relative mt-0 w-full overflow-hidden border-t border-slate-200 outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black/20"
+      className="highlight24-lock-white relative mt-0 w-full overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black/20"
+      style={{
+        marginTop: "calc(var(--header-height, 0px) * -1)",
+        paddingTop: "var(--header-height, 0px)",
+      }}
       aria-label="24시간 클립 하이라이트"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -378,11 +396,11 @@ export function Highlight24() {
           key={active.id}
           ref={ambientVideoRef}
           className={`pointer-events-none absolute left-1/2 top-1/2 z-0 min-h-[120%] min-w-[120%] -translate-x-1/2 -translate-y-1/2 scale-110 object-cover transition-opacity duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity,transform] motion-reduce:opacity-0 ${
-            ambientVideoReady ? "opacity-[0.52]" : "opacity-0"
+            ambientVideoReady ? "opacity-[0.34]" : "opacity-0"
           }`}
           style={{
-            filter: "blur(72px) saturate(1.15) brightness(1.05)",
-            WebkitFilter: "blur(72px) saturate(1.15) brightness(1.05)",
+            filter: "blur(56px) saturate(1.06) brightness(0.96)",
+            WebkitFilter: "blur(56px) saturate(1.06) brightness(0.96)",
           }}
           src={active.src}
           poster={isLocalPublicVideo(active.src) ? undefined : activePoster}
@@ -404,10 +422,6 @@ export function Highlight24() {
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_88%_58%_at_50%_38%,rgba(255,255,255,0.14),transparent_58%)]"
-        aria-hidden
-      />
-      <div
         className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_125%_92%_at_50%_118%,rgba(0,0,0,0.42),transparent_48%)]"
         aria-hidden
       />
@@ -415,24 +429,24 @@ export function Highlight24() {
         className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_72%_40%_at_50%_70%,rgba(0,0,0,0.28),transparent_72%)]"
         aria-hidden
       />
-
-      <div className="relative z-10 mx-auto max-w-[1800px] px-4 pb-4 pt-6 sm:px-6 sm:pb-5 sm:pt-7 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-[1800px] px-4 pb-4 pt-9 sm:px-6 sm:pb-5 sm:pt-10 lg:px-8">
         <div className="relative z-20 mb-5 flex justify-end sm:mb-6 md:mb-7">
           <Link
             href="/explore"
-            className="inline-flex items-center justify-center gap-1 rounded-full border border-white/55 bg-white/12 px-4 py-2 text-[12px] font-semibold text-white shadow-[0_2px_12px_rgba(0,0,0,0.2)] backdrop-blur-sm transition hover:border-white/75 hover:bg-white/22 sm:text-[13px]"
+            className="group inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/35 text-white transition-all duration-300 ease-out hover:bg-black/55"
             aria-label="탐색 페이지로 이동"
+            title="더보기"
           >
-            더보기
-            <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden>
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden>
               <path
                 d="M9 6l6 6-6 6"
                 stroke="currentColor"
-                strokeWidth="2.25"
+                strokeWidth="2.2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </svg>
+            <span className="sr-only">더보기</span>
           </Link>
         </div>
 
@@ -444,15 +458,6 @@ export function Highlight24() {
             perspectiveOrigin: "50% 38%",
           }}
         >
-          <div
-            className="pointer-events-none absolute inset-x-[6%] top-1/2 h-[86%] max-h-[480px] -translate-y-1/2 rounded-[50%] border border-white/[0.06] bg-gradient-to-b from-white/[0.06] to-transparent opacity-80"
-            aria-hidden
-          />
-          <div
-            className="pointer-events-none absolute inset-x-[18%] bottom-[8%] h-[28%] max-h-[200px] rounded-[50%] border border-white/[0.05] bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,255,255,0.08),transparent_72%)] opacity-60"
-            aria-hidden
-          />
-
           {/* 무대를 X축으로 살짝 기울여 원이 화면에 타원·깊이로 투영되게 함 */}
           <div
             className="relative w-full [transform-style:preserve-3d]"

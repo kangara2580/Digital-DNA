@@ -16,6 +16,7 @@ import { MALL_CATEGORY_NAV_ITEMS as ITEMS } from "@/data/mallCategoryNav";
 import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhrases";
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 import { MainTopUserMenu } from "@/components/MainTopUserMenu";
+import { useAuthSession } from "@/hooks/useAuthSession";
 
 /** 카테고리 pill — 라이트 모드에서 검정 텍스트 */
 const categoryPillClass =
@@ -179,17 +180,18 @@ function FixedSubscribeNavLink() {
 export function MallTopNav() {
   const headerRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
+  const { user } = useAuthSession();
+  const isHomePage = pathname === "/";
+  const isShopPage = pathname === "/shop";
   const isVideoDetailPage =
     pathname.startsWith("/video/") && !pathname.endsWith("/customize");
   const isCategoryPage = pathname.startsWith("/category/");
   const [isExploreWatchMode, setIsExploreWatchMode] = useState(false);
-  const showCategoryNav =
-    (pathname === "/explore" || isCategoryPage) && !isExploreWatchMode;
-  const showAllCategoriesInline =
-    (pathname === "/explore" || isCategoryPage) && !isExploreWatchMode;
+  const showCategoryNav = (isShopPage || isCategoryPage) && !isExploreWatchMode;
+  const showAllCategoriesInline = (isShopPage || isCategoryPage) && !isExploreWatchMode;
   /** 탐색/카테고리: 메인에서 스크롤 내린 것과 같은 컴팩트 헤더를 즉시 적용 */
   const compactEffective =
-    pathname === "/explore" || isCategoryPage || isVideoDetailPage;
+    pathname === "/explore" || isShopPage || isCategoryPage || isVideoDetailPage;
   const [moreOpen, setMoreOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const moreWrapRef = useRef<HTMLDivElement>(null);
@@ -396,7 +398,11 @@ export function MallTopNav() {
     <Fragment>
     <header
       ref={headerRef}
-      className={`sticky top-0 z-40 isolate bg-reels-abyss/90 backdrop-blur-sm [transform:translateZ(0)] [html[data-theme='light']_&]:bg-white/95 ${easeNav} ${
+      className={`sticky top-0 z-40 isolate [transform:translateZ(0)] ${
+        isHomePage && !compactEffective
+          ? "bg-black/55 backdrop-blur-0"
+          : "bg-reels-abyss/90 backdrop-blur-sm [html[data-theme='light']_&]:bg-white/95"
+      } ${easeNav} ${
         compactEffective
           ? "overflow-visible shadow-[0_8px_24px_-16px_rgba(0,0,0,0.35)] [html[data-theme='light']_&]:shadow-[0_6px_20px_-12px_rgba(0,0,0,0.08)]"
           : "shadow-none"
@@ -448,7 +454,7 @@ export function MallTopNav() {
                     className="shrink-0 rounded-sm text-left outline-none transition-opacity duration-200 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-reels-cyan/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reels-abyss [html[data-theme='light']_&]:focus-visible:ring-offset-white"
                     aria-label="홈 · 메인 화면으로 이동"
                   >
-                    <span className="inline-flex items-center rounded-full bg-black/30 px-4 py-1.5 backdrop-blur-sm [html[data-theme='light']_&]:bg-white">
+                    <span className="inline-flex items-center rounded-full bg-black/30 px-4 py-1.5 [html[data-theme='light']_&]:bg-white">
                       <span className="block whitespace-nowrap text-[clamp(1rem,2.7vw,1.5rem)] font-extrabold leading-none tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
                         ARA
                       </span>
@@ -456,9 +462,11 @@ export function MallTopNav() {
                   </Link>
                   <div className="flex w-full min-w-0 flex-1 items-center justify-end gap-2 sm:ml-auto sm:w-auto sm:gap-3">
                     <MainTopUserMenu compact={false} />
-                    <Link href="/cart" className={cartNavClass} aria-label="장바구니">
-                      <ShoppingCart className="h-4 w-4" strokeWidth={2} aria-hidden />
-                    </Link>
+                    {!isHomePage && user ? (
+                      <Link href="/cart" className={cartNavClass} aria-label="장바구니">
+                        <ShoppingCart className="h-4 w-4" strokeWidth={2} aria-hidden />
+                      </Link>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -618,12 +626,14 @@ export function MallTopNav() {
 
           {compactEffective && (
             <div
-              className={`flex shrink-0 items-center gap-1.5 sm:gap-2 sm:-mr-1 lg:-mr-0.5 ${easeLayout}`}
+              className={`mr-1 flex shrink-0 items-center gap-1.5 sm:mr-2 sm:gap-2 lg:mr-2 ${easeLayout}`}
             >
               <MainTopUserMenu compact />
-              <Link href="/cart" className={cartNavClass} aria-label="장바구니">
-                <ShoppingCart className="h-4 w-4" strokeWidth={2} aria-hidden />
-              </Link>
+              {!isHomePage && user ? (
+                <Link href="/cart" className={cartNavClass} aria-label="장바구니">
+                  <ShoppingCart className="h-4 w-4" strokeWidth={2} aria-hidden />
+                </Link>
+              ) : null}
               <div className="md:hidden">
                 <SitePreferencesMenu />
               </div>

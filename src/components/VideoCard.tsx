@@ -31,6 +31,7 @@ import {
 } from "@/lib/sellerProfile";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
 
 type Props = {
   video: FeedVideo;
@@ -83,6 +84,8 @@ type Props = {
   hideLikeAction?: boolean;
   /** true면 호버 액션(장바구니/좋아요/찜) 전체 숨김 */
   hideHoverActions?: boolean;
+  /** true면 작성자(아이디) 한 줄 숨김 */
+  hideCreatorMeta?: boolean;
 };
 
 function formatDuration(seconds: number): string {
@@ -164,6 +167,7 @@ export function VideoCard({
   compactHoverActions = false,
   hideLikeAction = false,
   hideHoverActions = false,
+  hideCreatorMeta = false,
 }: Props) {
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
@@ -316,9 +320,7 @@ export function VideoCard({
   const toggleInternalLike = useCallback(async () => {
     if (likeBusy || authLoading) return;
     if (!supabaseConfigured || !user) {
-      if (typeof window !== "undefined") {
-        window.alert("좋아요 기능은 로그인 후 이용할 수 있어요.");
-      }
+      redirectToLoginStart();
       return;
     }
     const nextLiked = !likedByMe;
@@ -755,22 +757,26 @@ export function VideoCard({
           dense
             ? "min-h-[34px] px-1.5 py-1 sm:min-h-[36px]"
             : reelStrip
-              ? "min-h-[44px] px-2 py-2 sm:min-h-[48px] sm:px-2.5 sm:py-2.5"
+              ? hideCreatorMeta
+                ? "min-h-[34px] px-2 py-1.5 sm:min-h-[36px] sm:px-2.5 sm:py-2"
+                : "min-h-[44px] px-2 py-2 sm:min-h-[48px] sm:px-2.5 sm:py-2.5"
               : reelLayout
                 ? "min-h-[48px] px-2.5 py-2 sm:min-h-[52px] sm:px-3 sm:py-2.5"
                 : "min-h-[40px] px-2 py-1.5 sm:min-h-[44px] sm:px-2.5 sm:py-2"
         }`}
       >
-        <div className="flex min-w-0 flex-col gap-1">
-          <Link
-            href={sellerHref}
-            className={`w-fit max-w-full truncate text-left font-medium text-zinc-400 underline-offset-2 hover:text-[#86B4FF] hover:underline [html[data-theme='light']_&]:text-zinc-600 ${
-              dense ? "text-[9px]" : "text-[10px] sm:text-[11px]"
-            }`}
-            aria-label={`${sellerName} 판매자 페이지`}
-          >
-            {sellerName}
-          </Link>
+        <div className={`flex min-w-0 flex-col ${hideCreatorMeta ? "gap-0.5" : "gap-1"}`}>
+          {!hideCreatorMeta ? (
+            <Link
+              href={sellerHref}
+              className={`w-fit max-w-full truncate text-left font-medium text-zinc-400 underline-offset-2 hover:text-[#86B4FF] hover:underline [html[data-theme='light']_&]:text-zinc-600 ${
+                dense ? "text-[9px]" : "text-[10px] sm:text-[11px]"
+              }`}
+              aria-label={`${sellerName} 판매자 페이지`}
+            >
+              {sellerName}
+            </Link>
+          ) : null}
           <div className={`flex min-w-0 items-center ${dense ? "gap-1" : "gap-2"}`}>
             <h3
               className={`line-clamp-2 min-w-0 flex-1 text-left font-semibold leading-snug text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 ${

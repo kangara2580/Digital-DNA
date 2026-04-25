@@ -411,6 +411,55 @@ html {
   }
 }
 
+/* Global CTA unification: crimson buttons -> cobalt blue */
+:where(button, a)[class*="bg-reels-crimson"] {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(30, 78, 216, 0.5) 0%,
+      rgba(30, 78, 216, 0.34) 52%,
+      rgba(59, 130, 246, 0.42) 100%
+    ) !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 0 26px -10px rgba(59, 130, 246, 0.82),
+    0 10px 24px -18px rgba(30, 78, 216, 0.78),
+    inset 0 1px 0 rgba(191, 216, 255, 0.34) !important;
+  backdrop-filter: blur(10px) saturate(1.12) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(1.12) !important;
+}
+
+:where(button, a)[class*="shadow-reels-crimson"] {
+  box-shadow:
+    0 0 26px -10px rgba(59, 130, 246, 0.82),
+    0 10px 24px -18px rgba(30, 78, 216, 0.78),
+    inset 0 1px 0 rgba(191, 216, 255, 0.34) !important;
+}
+
+:where(button, a)[class*="border-reels-crimson"] {
+  border-width: 1.5px !important;
+  border-color: rgba(152, 198, 255, 0.9) !important;
+  box-shadow:
+    0 0 0 1px rgba(112, 170, 255, 0.45),
+    0 0 28px -10px rgba(59, 130, 246, 0.9),
+    0 10px 24px -18px rgba(30, 78, 216, 0.78),
+    inset 0 1px 0 rgba(191, 216, 255, 0.34) !important;
+}
+
+:where(button, a)[class*="text-reels-crimson"] {
+  color: #c8dcff !important;
+}
+
+:where(button, a)[class*="from-reels-crimson"] {
+  --tw-gradient-from: rgba(30, 78, 216, 0.9) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgba(30, 78, 216, 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+:where(button, a)[class*="to-reels-crimson"] {
+  --tw-gradient-to: rgba(59, 130, 246, 0.95) var(--tw-gradient-to-position) !important;
+}
+
 /* 가로 피드 스크롤바 — 불투명 흰 썸(보라 X). 다크 배경: 밝은 트랙 */
 .feed-scroll {
   scroll-snap-type: x mandatory;
@@ -542,6 +591,25 @@ html[data-theme="dark"] .inspiration-section {
   --inspiration-card-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
   --text-main: #f4f4f5;
   --text-sub: #a1a1aa;
+}
+
+/* 인기순위 섹션 — deep blue ocean navy texture */
+.trending-rank-ocean-bg {
+  position: relative;
+  isolation: isolate;
+  background: #020b1f;
+}
+
+.trending-rank-ocean-bg::before {
+  content: none;
+}
+
+.trending-rank-ocean-bg::after {
+  content: none;
+}
+
+html[data-theme="light"] .trending-rank-ocean-bg {
+  background: #020b1f;
 }
 
 .inspiration-card {

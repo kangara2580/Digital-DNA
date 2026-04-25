@@ -9,6 +9,7 @@ import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
 import { useWishlist } from "@/context/WishlistContext";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 
@@ -95,9 +96,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
   const toggleInternalLike = useCallback(async () => {
     if (likeBusy || authLoading) return;
     if (!supabaseConfigured || !user) {
-      if (typeof window !== "undefined") {
-        window.alert("좋아요 기능은 로그인 후 이용할 수 있어요.");
-      }
+      redirectToLoginStart();
       return;
     }
     const nextLiked = !likedByMe;
@@ -168,7 +167,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
             <button
               ref={cartBtnRef}
               type="button"
-            className="pointer-events-auto relative z-[8] inline-flex h-10 w-10 items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 sm:h-11 sm:w-11"
+              className="pointer-events-auto relative z-[8] inline-flex h-10 w-10 items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 sm:h-11 sm:w-11"
               aria-label="장바구니에 담기"
               onClick={(e) => {
                 e.preventDefault();

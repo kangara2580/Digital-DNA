@@ -86,8 +86,8 @@ export function MainTopUserMenu({ compact }: Props) {
         <button
           type="button"
           onClick={() => setAuthOpen(true)}
-          className={`inline-flex min-w-0 shrink-0 items-center rounded-full border border-white/15 bg-white/[0.08] px-3 py-1.5 text-zinc-100 shadow-[0_0_20px_-8px_rgba(0,242,234,0.35)] transition hover:border-[#00F2EA]/45 hover:bg-white/[0.12] ${
-            compact ? "text-[11px]" : "text-[12px] sm:text-[13px]"
+          className={`inline-flex min-w-0 shrink-0 items-center rounded-full border border-white/20 bg-[linear-gradient(135deg,#0b1327_0%,#122247_50%,#1e3a8a_100%)] text-white ring-1 ring-white/10 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:brightness-110 ${
+            "px-6 py-2 text-[13px] sm:text-[14px]"
           }`}
           aria-haspopup="dialog"
           aria-expanded={authOpen}
@@ -126,16 +126,16 @@ export function MainTopUserMenu({ compact }: Props) {
                   >
                     ×
                   </button>
-                  <p className="relative bg-gradient-to-r from-[#C9FBFF] via-[#7FDBFF] to-[#59D9CB] bg-clip-text text-center text-[clamp(1.85rem,6vw,2.65rem)] font-black tracking-tight text-transparent">
+                  <p className="relative text-center text-[clamp(1.85rem,6vw,2.65rem)] font-black tracking-tight text-white">
                     ARA
                   </p>
                   <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
-                    Google로 시작하기
+                    로그인/회원가입
                   </p>
                   <button
                     type="button"
                     onClick={startGoogleAuth}
-                    className="relative mx-auto mt-9 flex w-full max-w-[360px] items-center justify-center gap-3 rounded-full bg-white px-4 py-3 text-[clamp(1rem,3.8vw,1.25rem)] font-extrabold text-[#1a1a1a] shadow-[0_16px_34px_-18px_rgba(255,255,255,0.95)] transition hover:brightness-95 sm:px-6 sm:py-4"
+                    className="relative mx-auto mt-9 flex w-full max-w-[360px] items-center justify-center gap-3 rounded-full bg-white px-4 py-3 text-[clamp(1.0625rem,3.9vw,1.3125rem)] font-extrabold text-[#1a1a1a] shadow-[0_16px_34px_-18px_rgba(255,255,255,0.95)] transition hover:brightness-95 sm:px-6 sm:py-4"
                   >
                     <svg
                       className="h-5 w-5 shrink-0 sm:h-6 sm:w-6"
