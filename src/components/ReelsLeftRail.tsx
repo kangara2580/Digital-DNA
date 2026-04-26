@@ -2,11 +2,7 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
-  Bookmark,
   Compass,
-  Heart,
-  History,
-  Link2,
   MoreVertical,
   Search,
   ShoppingBag,
@@ -28,17 +24,17 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 const stroke = 1.75;
 
 const railIconBtn =
-  "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.02] text-zinc-300 transition-[background-color,color,transform] duration-200 hover:bg-white/[0.09] hover:text-zinc-100 active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
+  "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.02] text-zinc-300 transition-[background-color,color,transform] duration-200 hover:bg-white/[0.09] hover:text-zinc-100 active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
 
 const railIconActive =
   "border border-[#4F8DFF]/55 bg-[#1E4ED8]/30 text-[#BFD8FF] shadow-[0_0_24px_-8px_rgba(59,130,246,0.95),inset_0_1px_0_rgba(191,216,255,0.28)] [html[data-theme='light']_&]:border-[#3B82F6]/45 [html[data-theme='light']_&]:bg-[#3B82F6]/14 [html[data-theme='light']_&]:text-[#1D4ED8]";
 
 /** 구독 — 시안 강조(테두리 없음, 글로우·배경만) */
 const subscribeRailBtn =
-  "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-0 bg-reels-cyan/14 text-reels-cyan shadow-[0_0_24px_-8px_rgba(0,242,234,0.55)] transition-[background-color,box-shadow,transform] duration-200 hover:bg-reels-cyan/22 hover:shadow-[0_0_28px_-6px_rgba(0,242,234,0.65)] active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:bg-reels-cyan/12 [html[data-theme='light']_&]:text-[#0d9488]";
+  "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-0 bg-reels-cyan/14 text-reels-cyan shadow-[0_0_24px_-8px_rgba(0,242,234,0.55)] transition-[background-color,box-shadow,transform] duration-200 hover:bg-reels-cyan/22 hover:shadow-[0_0_28px_-6px_rgba(0,242,234,0.65)] active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:bg-reels-cyan/12 [html[data-theme='light']_&]:text-[#0d9488]";
 
 const railTooltip =
-  "pointer-events-none absolute left-[calc(100%+0.6rem)] top-1/2 z-[9999] -translate-y-1/2 whitespace-nowrap rounded-full border border-white/70 bg-[#0a1222]/98 px-3.5 py-1.5 text-[13px] font-semibold text-white opacity-0 shadow-[0_14px_28px_-12px_rgba(0,0,0,0.85)] transition-none group-hover:opacity-100 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900";
+  "pointer-events-none absolute left-[calc(100%+0.6rem)] top-1/2 z-[9999] -translate-y-1/2 whitespace-nowrap rounded-full border border-zinc-600 bg-zinc-950 px-3.5 py-1.5 text-[13px] font-semibold text-white opacity-0 shadow-[0_6px_22px_rgba(0,0,0,0.55)] transition-none group-hover:opacity-100 [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_6px_22px_rgba(0,0,0,0.14)]";
 
 type RailItem = {
   href: string;
@@ -67,34 +63,12 @@ const RAIL_ITEMS: RailItem[] = [
     isActive: (p) => p === "/leaderboard" || p.startsWith("/leaderboard/"),
   },
   {
-    href: "/likes",
-    label: "좋아요한 릴스",
-    Icon: Heart,
-    isActive: (p) => p.startsWith("/likes"),
-  },
-  {
-    href: "/wishlist",
-    label: "찜한 목록",
-    Icon: Bookmark,
-    isActive: (p) => p.startsWith("/wishlist"),
-  },
-  {
-    href: "/recent",
-    label: "최근 본 릴스",
-    Icon: History,
-    isActive: (p) => p.startsWith("/recent"),
-  },
-  {
     href: "/mypage",
     label: "마이페이지",
     Icon: User,
     isActive: (p) => p.startsWith("/mypage"),
   },
 ];
-
-const DRAWER_QUICK = [
-  { href: "/upload/reels", label: "릴스 링크 등록", Icon: Link2 },
-] as const;
 
 export function ReelsLeftRail() {
   const pathname = usePathname();
@@ -112,6 +86,9 @@ export function ReelsLeftRail() {
   const drawerId = useId();
   const searchBtnRef = useRef<HTMLButtonElement | null>(null);
   const searchPanelRef = useRef<HTMLFormElement | null>(null);
+  const searchHoverCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** 데스크톱: 호버만으로 검색창 열기 (터치·저사양 포인터는 기존 클릭만) */
+  const [searchHoverMode, setSearchHoverMode] = useState(false);
 
   const visibleRailItems = RAIL_ITEMS.filter((item) => {
     // 비로그인 사용자는 마이페이지 대신 상단 로그인/회원가입 버튼으로 진입합니다.
@@ -122,6 +99,39 @@ export function ReelsLeftRail() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const sync = () => setSearchHoverMode(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  const cancelSearchHoverClose = useCallback(() => {
+    if (searchHoverCloseTimerRef.current != null) {
+      clearTimeout(searchHoverCloseTimerRef.current);
+      searchHoverCloseTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleSearchHoverClose = useCallback(() => {
+    if (!searchHoverMode) return;
+    cancelSearchHoverClose();
+    searchHoverCloseTimerRef.current = setTimeout(() => {
+      setSearchOpen(false);
+      searchHoverCloseTimerRef.current = null;
+    }, 300);
+  }, [searchHoverMode, cancelSearchHoverClose]);
+
+  useEffect(() => {
+    return () => cancelSearchHoverClose();
+  }, [cancelSearchHoverClose]);
+
+  useEffect(() => {
+    if (!searchOpen) cancelSearchHoverClose();
+  }, [searchOpen, cancelSearchHoverClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -145,9 +155,10 @@ export function ReelsLeftRail() {
   const runSearch = useCallback(() => {
     const q = searchQ.trim();
     if (!q) return;
+    cancelSearchHoverClose();
     router.push(`/search?q=${encodeURIComponent(q)}`);
     setSearchOpen(false);
-  }, [router, searchQ]);
+  }, [router, searchQ, cancelSearchHoverClose]);
 
   const measureSearchPanel = useCallback(() => {
     const btn = searchBtnRef.current;
@@ -178,10 +189,14 @@ export function ReelsLeftRail() {
     const onPointerDown = (e: PointerEvent) => {
       const n = e.target as Node;
       if (searchBtnRef.current?.contains(n) || searchPanelRef.current?.contains(n)) return;
+      cancelSearchHoverClose();
       setSearchOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSearchOpen(false);
+      if (e.key === "Escape") {
+        cancelSearchHoverClose();
+        setSearchOpen(false);
+      }
     };
     document.addEventListener("pointerdown", onPointerDown, true);
     document.addEventListener("keydown", onKey);
@@ -189,7 +204,7 @@ export function ReelsLeftRail() {
       document.removeEventListener("pointerdown", onPointerDown, true);
       document.removeEventListener("keydown", onKey);
     };
-  }, [searchOpen]);
+  }, [searchOpen, cancelSearchHoverClose]);
 
   return (
     <>
@@ -200,27 +215,45 @@ export function ReelsLeftRail() {
         <div className="relative flex shrink-0 flex-col items-center pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
           <Link
             href="/"
-            className="flex h-12 w-12 items-center justify-center rounded-xl text-zinc-200 transition-colors hover:bg-white/[0.07] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100"
+            className="flex h-[52px] w-[52px] items-center justify-center rounded-xl text-zinc-200 transition-colors hover:bg-white/[0.07] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100"
             aria-label="홈"
           >
-            <ReelsLogo size={30} />
+            <ReelsLogo size={34} />
           </Link>
         </div>
         <div className="flex min-h-0 flex-1 flex-col items-stretch pt-1">
           <nav
-            className="flex shrink-0 flex-col items-center gap-1 overflow-visible py-2"
+            className="flex shrink-0 flex-col items-center gap-1.5 overflow-visible py-2"
             aria-label="빠른 이동"
           >
-            <div className="group relative">
+            <div
+              className="group relative"
+              onMouseEnter={() => {
+                if (!searchHoverMode) return;
+                cancelSearchHoverClose();
+                setSearchOpen(true);
+              }}
+              onMouseLeave={() => {
+                if (!searchHoverMode) return;
+                scheduleSearchHoverClose();
+              }}
+            >
               <button
                 type="button"
-                onClick={() => setSearchOpen((v) => !v)}
+                onClick={() => {
+                  if (searchHoverMode) {
+                    cancelSearchHoverClose();
+                    setSearchOpen(true);
+                    return;
+                  }
+                  setSearchOpen((v) => !v);
+                }}
                 ref={searchBtnRef}
-                className={`${railIconBtn} h-10 w-10`}
+                className={railIconBtn}
                 aria-label="검색 열기"
                 aria-expanded={searchOpen}
               >
-                <Search className="h-[20px] w-[20px]" strokeWidth={1.9} aria-hidden />
+                <Search className="h-[23px] w-[23px]" strokeWidth={1.9} aria-hidden />
               </button>
             </div>
             {visibleRailItems.map(({ href, label, Icon, isActive }) => {
@@ -234,7 +267,7 @@ export function ReelsLeftRail() {
                     className={`${railIconBtn} ${on ? railIconActive : ""}`}
                   >
                     <Icon
-                      className={href === "/shop" ? "h-6 w-6" : "h-[22px] w-[22px]"}
+                      className={href === "/shop" ? "h-7 w-7" : "h-[25px] w-[25px]"}
                       strokeWidth={stroke}
                       aria-hidden
                     />
@@ -247,26 +280,28 @@ export function ReelsLeftRail() {
             })}
           </nav>
 
-          {/* 마이페이지 아래~하단 메뉴 위 남는 세로 공간 한가운데 구독 */}
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-0 py-2">
-            <div className="group relative">
-              <Link
-                href="/subscribe"
-                className={`${subscribeRailBtn} ${
-                  pathname.startsWith("/subscribe")
-                    ? "bg-reels-cyan/26 shadow-[0_0_30px_-6px_rgba(0,242,234,0.72)] [html[data-theme='light']_&]:bg-reels-cyan/20"
-                    : ""
-                }`}
-                aria-label="구독·결제 페이지로 이동"
-                aria-current={pathname.startsWith("/subscribe") ? "page" : undefined}
-              >
-                <Wallet className="h-[23px] w-[23px]" strokeWidth={stroke} aria-hidden />
-              </Link>
-              <span className={railTooltip} role="tooltip">
-                구독·크레딧
-              </span>
+          {/* 구독·크레딧(지갑): 로그인 후 마이페이지에서만 노출 — 다른 화면은 마이페이지·구독 섹션으로 진입 */}
+          {user && pathname.startsWith("/mypage") ? (
+            <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-0 py-2">
+              <div className="group relative">
+                <Link
+                  href="/subscribe"
+                  className={`${subscribeRailBtn} ${
+                    pathname.startsWith("/subscribe")
+                      ? "bg-reels-cyan/26 shadow-[0_0_30px_-6px_rgba(0,242,234,0.72)] [html[data-theme='light']_&]:bg-reels-cyan/20"
+                      : ""
+                  }`}
+                  aria-label="구독·결제 페이지로 이동"
+                  aria-current={pathname.startsWith("/subscribe") ? "page" : undefined}
+                >
+                  <Wallet className="h-[26px] w-[26px]" strokeWidth={stroke} aria-hidden />
+                </Link>
+                <span className={railTooltip} role="tooltip">
+                  구독·크레딧
+                </span>
+              </div>
             </div>
-          </div>
+          ) : null}
 
           <div className="flex shrink-0 flex-col items-center border-t border-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 px-0 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <div className="group relative">
@@ -279,7 +314,7 @@ export function ReelsLeftRail() {
                 aria-controls={drawerId}
                 aria-label="더보기 — 언어·화면 테마·메뉴"
               >
-                <MoreVertical className="h-[22px] w-[22px]" strokeWidth={stroke} aria-hidden />
+                <MoreVertical className="h-[25px] w-[25px]" strokeWidth={stroke} aria-hidden />
               </button>
               <span className={railTooltip} role="tooltip">
                 더보기
@@ -300,6 +335,14 @@ export function ReelsLeftRail() {
                   exit={reduceMotion ? undefined : { opacity: 0, x: -8, width: 0 }}
                   transition={{ duration: 0.22, ease: "easeOut" }}
                   ref={searchPanelRef}
+                  onMouseEnter={() => {
+                    if (!searchHoverMode) return;
+                    cancelSearchHoverClose();
+                  }}
+                  onMouseLeave={() => {
+                    if (!searchHoverMode) return;
+                    scheduleSearchHoverClose();
+                  }}
                   onSubmit={(e) => {
                     e.preventDefault();
                     runSearch();
@@ -380,29 +423,6 @@ export function ReelsLeftRail() {
                     <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 py-4">
                       <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
                         <SitePreferencesMenu layout="stack" />
-                      </div>
-                      <div>
-                        <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                          바로가기
-                        </p>
-                        <ul className="flex flex-col gap-0.5">
-                          {DRAWER_QUICK.map(({ href, label, Icon }) => (
-                            <li key={href}>
-                              <Link
-                                href={href}
-                                onClick={close}
-                                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium text-zinc-200 transition-colors hover:bg-white/[0.06] hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black"
-                              >
-                                <Icon
-                                  className="h-[18px] w-[18px] shrink-0 text-zinc-400 [html[data-theme='light']_&]:text-zinc-900"
-                                  strokeWidth={2}
-                                  aria-hidden
-                                />
-                                {label}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
                       </div>
 
                       <div>

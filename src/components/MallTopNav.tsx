@@ -165,6 +165,9 @@ const subscribeFixedWrap =
   "pointer-events-auto fixed right-[max(0.75rem,env(safe-area-inset-right))] top-[max(0.5rem,env(safe-area-inset-top))] z-[45] md:right-6 md:hidden";
 
 function FixedSubscribeNavLink() {
+  const pathname = usePathname();
+  const { user } = useAuthSession();
+  if (!user || !pathname.startsWith("/mypage")) return null;
   return (
     <Link
       href="/subscribe"

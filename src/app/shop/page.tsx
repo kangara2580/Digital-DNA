@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import { cache } from "react";
+import { Suspense } from "react";
 import { buildExplorePool } from "@/data/explorePool";
 
 const ExploreReelsFeed = dynamic(
@@ -15,11 +16,13 @@ export default function ShopPage() {
   const pool = getExplorePool();
   return (
     <div className="relative min-h-[calc(100dvh-var(--header-height,4.5rem))] w-full">
-      <ExploreReelsFeed
-        pool={pool}
-        initialMode="browse"
-        browseCardTarget="purchase"
-      />
+      <Suspense fallback={null}>
+        <ExploreReelsFeed
+          pool={pool}
+          initialMode="browse"
+          browseCardTarget="purchase"
+        />
+      </Suspense>
     </div>
   );
 }

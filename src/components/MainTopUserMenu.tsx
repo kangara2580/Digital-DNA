@@ -86,7 +86,7 @@ export function MainTopUserMenu({ compact }: Props) {
         <button
           type="button"
           onClick={() => setAuthOpen(true)}
-          className={`inline-flex min-w-0 shrink-0 items-center rounded-full border border-white/20 bg-[linear-gradient(135deg,#0b1327_0%,#122247_50%,#1e3a8a_100%)] text-white ring-1 ring-white/10 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:brightness-110 ${
+          className={`inline-flex min-w-0 shrink-0 items-center rounded-full border border-white/80 bg-transparent text-white ring-1 ring-white/10 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10 ${
             "px-6 py-2 text-[13px] sm:text-[14px]"
           }`}
           aria-haspopup="dialog"

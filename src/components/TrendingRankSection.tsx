@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getTikTokManualRanking,
   manualTikTokRankingToFeedVideos,
@@ -9,7 +10,6 @@ import {
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { type FeedVideo } from "@/data/videos";
 import { liveStatsKeyFromFeedVideo } from "@/lib/externalEmbed/parseUrl";
-import { SectionMoreLink } from "./SectionMoreLink";
 import { TrendingVideoStatsFooter } from "./TrendingVideoStatsFooter";
 import { VideoCard } from "./VideoCard";
 
@@ -39,6 +39,9 @@ function SkeletonGrid() {
 }
 
 export function TrendingRankSection() {
+  const router = useRouter();
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const gridAnchorRef = useRef<HTMLDivElement | null>(null);
   const [trendingClips, setTrendingClips] = useState<FeedVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -46,6 +49,11 @@ export function TrendingRankSection() {
   const [liveStatsByKey, setLiveStatsByKey] = useState<
     Record<string, { playCount: number; diggCount: number }>
   >({});
+  const [visibleRows, setVisibleRows] = useState(1);
+  const [pendingCollapseScroll, setPendingCollapseScroll] = useState(false);
+
+  const ITEMS_PER_ROW = 5;
+  const MAX_ROWS_BEFORE_NAVIGATE = 5;
 
   // 순위는 로딩 시(또는 새로고침 시) 수익 기준으로 확정하고, 렌더 중 재정렬하지 않습니다.
   const rankedRows = useMemo(
@@ -213,6 +221,10 @@ export function TrendingRankSection() {
   }, [rankedRows]);
 
   useEffect(() => {
+    setVisibleRows(1);
+  }, [rankedRows.length]);
+
+  useEffect(() => {
     void refreshLiveStats();
     const t = window.setInterval(() => {
       void refreshLiveStats();
@@ -220,8 +232,48 @@ export function TrendingRankSection() {
     return () => window.clearInterval(t);
   }, [refreshLiveStats]);
 
+  const maxRowsByData = Math.ceil(rankedRows.length / ITEMS_PER_ROW);
+  const maxVisibleRows = Math.min(MAX_ROWS_BEFORE_NAVIGATE, maxRowsByData);
+
+  const visibleCount = Math.min(
+    rankedRows.length,
+    visibleRows * ITEMS_PER_ROW,
+    MAX_ROWS_BEFORE_NAVIGATE * ITEMS_PER_ROW,
+  );
+  const visibleRowsData = rankedRows.slice(0, visibleCount);
+  const onExpandAllRows = useCallback(() => {
+    setVisibleRows(Math.max(1, maxVisibleRows));
+  }, [maxVisibleRows]);
+  const onCollapseToFirstRow = useCallback(() => {
+    setPendingCollapseScroll(true);
+    setVisibleRows(1);
+  }, []);
+
+  useEffect(() => {
+    if (!pendingCollapseScroll || visibleRows !== 1) return;
+    const raf = window.requestAnimationFrame(() => {
+      const anchor = gridAnchorRef.current ?? sectionRef.current;
+      if (!anchor) {
+        setPendingCollapseScroll(false);
+        return;
+      }
+      const anchorTop = anchor.getBoundingClientRect().top + window.scrollY;
+      // 한 줄 카드가 뷰포트 중간쯤에 오도록 여유를 둡니다.
+      const targetTop = Math.max(0, anchorTop - window.innerHeight * 0.24);
+      window.scrollTo({ top: targetTop, behavior: "smooth" });
+      setPendingCollapseScroll(false);
+    });
+    return () => window.cancelAnimationFrame(raf);
+  }, [pendingCollapseScroll, visibleRows]);
+
+  const revealStartIndex = visibleRows > 1 ? ITEMS_PER_ROW : Number.POSITIVE_INFINITY;
+  const canExpand = visibleRows < maxVisibleRows;
+  const canCollapse = visibleRows > 1;
+  const showCollapse = canCollapse;
+
   return (
     <section
+      ref={sectionRef}
       className="trending-rank-ocean-bg border-t border-white/10"
       aria-labelledby="trending-rank-heading"
     >
@@ -242,7 +294,7 @@ export function TrendingRankSection() {
           </div>
         </div>
 
-        <div className="relative mt-0">
+        <div ref={gridAnchorRef} className="relative mt-0">
           {loading ? <SkeletonGrid /> : null}
 
           {!loading && rankedRows.length === 0 ? (
@@ -262,16 +314,18 @@ export function TrendingRankSection() {
             </div>
           ) : null}
 
-          {!loading && rankedRows.length > 0 ? (
+          {!loading && visibleRowsData.length > 0 ? (
             <div
               className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5"
               role="list"
               aria-label="인기순위 영상 목록"
             >
-              {rankedRows.map((entry, rankIndex) => (
+              {visibleRowsData.map((entry, rankIndex) => (
                 <div
                   key={entry.key}
-                  className="relative"
+                  className={`relative ${
+                    visibleRows > 1 && rankIndex >= revealStartIndex ? "trending-rank-reveal-up" : ""
+                  }`}
                   role="listitem"
                 >
                   <div className="pointer-events-none absolute left-2 top-2 z-[25] inline-flex items-center gap-1 rounded-full border border-[#00F2EA]/35 bg-black/65 px-2 py-1 text-[11px] font-extrabold tabular-nums text-white shadow-[0_10px_25px_-14px_rgba(0,242,234,0.9)]">
@@ -295,7 +349,7 @@ export function TrendingRankSection() {
                     reelStrip
                     disableHoverScale
                     hideCreatorMeta
-                    preloadMode="none"
+                    preloadMode="metadata"
                     detailHref={
                       entry.video.tiktokEmbedId
                         ? `/video/tiktok-${entry.video.tiktokEmbedId}`
@@ -319,11 +373,35 @@ export function TrendingRankSection() {
         </div>
 
         {!loading && rankedRows.length > 0 ? (
-          <div className="mt-6 flex justify-center">
-            <SectionMoreLink
-              category="best"
-              className="shrink-0 border-[#4F8DFF]/80 shadow-[0_0_20px_-10px_rgba(79,141,255,0.95)] hover:border-[#7FB5FF]/95"
-            />
+          <div className="mt-6 flex justify-center sm:mt-8">
+            <button
+              type="button"
+              onClick={showCollapse ? onCollapseToFirstRow : onExpandAllRows}
+              disabled={showCollapse ? !canCollapse : !canExpand}
+              className="group inline-flex h-12 min-w-[280px] items-center justify-center bg-transparent px-0 text-white transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-40 sm:h-14 sm:min-w-[360px]"
+              aria-label={showCollapse ? "인기순위 접기" : "인기순위 펼치기"}
+              title={showCollapse ? "위로 접기" : "아래로 펼치기"}
+            >
+              <svg viewBox="0 0 220 48" fill="none" className="h-7 w-[190px] sm:h-8 sm:w-[220px]" aria-hidden>
+                {showCollapse ? (
+                  <path
+                    d="M10 34L110 10L210 34"
+                    stroke="currentColor"
+                    strokeWidth="7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                ) : (
+                  <path
+                    d="M10 14L110 38L210 14"
+                    stroke="currentColor"
+                    strokeWidth="7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                )}
+              </svg>
+            </button>
           </div>
         ) : null}
       </div>
