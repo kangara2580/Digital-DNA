@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+
 const FALLBACK_SUPABASE_ORIGIN = "https://ynlfcnezvieqzultbklf.supabase.co";
 const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_6UqQ0Aqd5OlxM8U3KCtLWQ_g_1VZ9dc";

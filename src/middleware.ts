@@ -13,14 +13,18 @@ function canonicalHostFromEnv(): string | null {
   }
 }
 
-function isSensitiveAuthPath(pathname: string): boolean {
+/**
+ * preview(.vercel.app) → 정규 도메인으로 보낼 인증 관련 표면만.
+ * `/auth/callback`은 제외 — OAuth PKCE 쿠키가 호스트에 묶이므로 콜백을 다른 도메인으로
+ * 302 하면 code exchange가 실패할 수 있음.
+ */
+function shouldRedirectVercelAuthSurfaceToCanonical(pathname: string): boolean {
   return (
     pathname === "/login" ||
     pathname.startsWith("/login/") ||
     pathname === "/signup" ||
     pathname === "/forgot-password" ||
-    pathname === "/reset-password" ||
-    pathname === "/auth/callback"
+    pathname === "/reset-password"
   );
 }
 
@@ -47,7 +51,7 @@ export async function middleware(request: NextRequest) {
     canonicalHost &&
     requestHost !== canonicalHost &&
     requestHost.endsWith(".vercel.app") &&
-    isSensitiveAuthPath(request.nextUrl.pathname)
+    shouldRedirectVercelAuthSurfaceToCanonical(request.nextUrl.pathname)
   ) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.host = canonicalHost;

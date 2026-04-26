@@ -2,6 +2,9 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
 
+/** Edge가 아닌 Node에서 Supabase Auth HTTP 호출 안정화 */
+export const runtime = "nodejs";
+
 const FALLBACK_SUPABASE_ORIGIN = "https://ynlfcnezvieqzultbklf.supabase.co";
 const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_6UqQ0Aqd5OlxM8U3KCtLWQ_g_1VZ9dc";
@@ -24,6 +27,37 @@ function oauthErrorRedirect(origin: string, reason?: string): NextResponse {
     url.searchParams.set("reason", trimmed.slice(0, 220));
   }
   return NextResponse.redirect(url);
+}
+
+function isTransientNetworkAuthError(message: string): boolean {
+  const m = message.toLowerCase();
+  return (
+    m.includes("fetch failed") ||
+    m.includes("failed to fetch") ||
+    m.includes("networkerror") ||
+    m.includes("econnreset") ||
+    m.includes("etimedout") ||
+    m.includes("socket hang up") ||
+    m.includes("enotfound")
+  );
+}
+
+async function exchangeCodeWithRetry(
+  supabase: ReturnType<typeof createServerClient>,
+  code: string,
+): Promise<{ error: { message: string } | null }> {
+  let last = "exchange_failed";
+  /** OAuth code는 성공 시 한 번만 유효 — 과도한 재시도는 invalid_grant 위험이 있어 2회만 */
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error) return { error: null };
+    last = error.message || "exchange_failed";
+    if (!isTransientNetworkAuthError(last) || attempt === 1) {
+      return { error: { message: last } };
+    }
+    await new Promise((r) => setTimeout(r, 320));
+  }
+  return { error: { message: last } };
 }
 
 /**
@@ -72,9 +106,9 @@ export async function GET(request: NextRequest) {
     },
   });
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
-  if (error) {
-    return oauthErrorRedirect(requestUrl.origin, error.message || "exchange_failed");
+  const { error: exchangeErr } = await exchangeCodeWithRetry(supabase, code);
+  if (exchangeErr) {
+    return oauthErrorRedirect(requestUrl.origin, exchangeErr.message || "exchange_failed");
   }
 
   return response;

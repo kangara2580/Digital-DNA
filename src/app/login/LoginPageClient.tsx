@@ -32,6 +32,9 @@ export function LoginPageClient() {
         detail = "Google 인증 화면에서 권한이 취소되었습니다. 다시 시도해 주세요.";
       } else if (lower.includes("missing_code_or_config")) {
         detail = "콜백 코드가 누락되었거나 환경변수 설정이 비어 있습니다.";
+      } else if (lower.includes("fetch failed") || lower.includes("failed to fetch")) {
+        detail =
+          "서버가 Supabase에 연결하지 못했습니다. Vercel(또는 호스팅) 환경변수의 NEXT_PUBLIC_SUPABASE_URL·NEXT_PUBLIC_SUPABASE_ANON_KEY가 맞는지 확인하고, 잠시 후 다시 시도해 주세요.";
       } else if (reason) {
         detail = `원인: ${reason}`;
       }
