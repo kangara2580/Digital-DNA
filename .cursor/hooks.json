@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "stop": [
+      {
+        "command": "bash .cursor/hooks/push-if-ahead.sh",
+        "timeout": 120
+      }
+    ]
+  }
+}

@@ -12,4 +12,6 @@ alwaysApply: true
 3. 변경 요약이 드러나는 **한국어 또는 영어 커밋 메시지**로 `git commit`
 4. 원격이 설정되어 있으면 `git push`로 `origin`에 푸시
 
+에이전트가 사용하는 **내장 터미널 샌드박스**에서는 `github.com` DNS가 막혀 `git push`가 실패할 수 있다. 그 경우에도 **프로젝트의 Cursor `stop` 훅**(`.cursor/hooks/push-if-ahead.sh`)이 에이전트 종료 시 **사용자 Mac에서** `origin/main`으로 푸시를 시도한다. 훅이 동작하지 않으면 Cursor 설정의 **Hooks**를 확인하거나, 사용자가 `npm run git:push`를 터미널에서 실행한다.
+
 사용자가 "푸시하지 마", "커밋만", "WIP"라고 하면 그에 따른다. 충돌·푸시 거부 시 원인을 짧게 설명하고 해결을 시도한다.
