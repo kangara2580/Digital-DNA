@@ -393,6 +393,19 @@ export function MallTopNav() {
     return () => cancelHoverClose();
   }, [cancelHoverClose]);
 
+  useEffect(() => {
+    if (!isHomePage || typeof document === "undefined") return;
+    document.documentElement.style.setProperty("--header-height", "0px");
+  }, [isHomePage]);
+
+  if (isHomePage) {
+    return (
+      <Fragment>
+        <FixedSubscribeNavLink />
+      </Fragment>
+    );
+  }
+
   const logoClass = `flex shrink-0 items-center gap-2 font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 ${easeNav} ${
     compactEffective ? "text-[12px]" : "text-sm"
   }`;
@@ -452,16 +465,8 @@ export function MallTopNav() {
             {!compactEffective ? (
               <div className="pt-0.5">
                 <div className="flex w-full min-w-0 flex-wrap items-center gap-3 sm:flex-nowrap sm:gap-5">
-                  <Link
-                    href="/"
-                    className="shrink-0 rounded-sm text-left outline-none transition-opacity duration-200 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-reels-cyan/60 focus-visible:ring-offset-2 focus-visible:ring-offset-reels-abyss [html[data-theme='light']_&]:focus-visible:ring-offset-white"
-                    aria-label="홈 · 메인 화면으로 이동"
-                  >
-                    <span className="inline-flex items-center rounded-full bg-black/30 px-4 py-1.5 [html[data-theme='light']_&]:bg-white">
-                      <span className="block whitespace-nowrap text-[clamp(1rem,2.7vw,1.5rem)] font-extrabold leading-none tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
-                        ARA
-                      </span>
-                    </span>
+                  <Link href="/" className="sr-only">
+                    홈으로 이동
                   </Link>
                   <div className="flex w-full min-w-0 flex-1 items-center justify-end gap-2 sm:ml-auto sm:w-auto sm:gap-3">
                     <MainTopUserMenu compact={false} />

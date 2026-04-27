@@ -11,22 +11,17 @@ export function BestPurchaseReviewsSection() {
       className="border-t border-white/10 bg-transparent"
       aria-labelledby="best-reviews-heading"
     >
-      <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-          <div className="min-w-0 text-left">
-            <h2
-              id="best-reviews-heading"
-              className="text-[22px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:text-[26px] md:text-[28px]"
-            >
-              구매 후기
-            </h2>
-            <p className="mt-1 text-[13px] text-zinc-400">
-              길지 않게, 핵심만 빠르게 볼 수 있게 정리했어요.
-            </p>
-          </div>
+      <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-24 sm:px-6 sm:pb-20 sm:pt-28 lg:px-8">
+        <div className="relative">
+          <h2
+            id="best-reviews-heading"
+            className="text-center text-[26px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:text-[30px] md:text-[32px]"
+          >
+            구매 후기
+          </h2>
           <SectionMoreLink
             category="best"
-            className="shrink-0 self-stretch sm:self-center"
+            className="mt-3 ml-auto w-fit shrink-0 sm:absolute sm:right-0 sm:top-1/2 sm:mt-0 sm:-translate-y-1/2"
           />
         </div>
 
@@ -60,9 +55,6 @@ export function BestPurchaseReviewsSection() {
           ))}
         </div>
 
-        <p className="mx-auto mt-4 max-w-xl text-center text-[12px] font-medium tracking-wide text-zinc-500 sm:text-[13px]">
-          커뮤니티에서 반응이 좋은 후기만 엄선해 보여드려요.
-        </p>
       </div>
     </section>
   );

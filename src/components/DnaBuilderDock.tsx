@@ -80,7 +80,7 @@ export function DnaBuilderDock() {
                         <button
                           type="button"
                           onClick={() => setExpanded(false)}
-                          className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[12px] font-medium text-zinc-200 transition-colors hover:bg-white/10"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-white/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.05)_18%,rgba(9,12,18,0.86)_58%,rgba(10,12,17,0.96)_100%)] px-3.5 py-1.5 text-[12px] font-medium text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-1px_0_rgba(255,255,255,0.1),0_8px_22px_rgba(0,0,0,0.35)] backdrop-blur-xl transition duration-300 hover:border-white/50 hover:brightness-110"
                           aria-expanded="true"
                           aria-controls="dna-builder-timeline"
                         >
@@ -164,7 +164,7 @@ export function DnaBuilderDock() {
                 <button
                   type="button"
                   onClick={() => setExpanded((e) => !e)}
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-2.5 py-1.5 text-[12px] font-medium text-zinc-200 transition-colors hover:bg-white/12"
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.05)_18%,rgba(9,12,18,0.86)_58%,rgba(10,12,17,0.96)_100%)] px-3 py-1.5 text-[12px] font-medium text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-1px_0_rgba(255,255,255,0.1),0_8px_22px_rgba(0,0,0,0.35)] backdrop-blur-xl transition duration-300 hover:border-white/50 hover:brightness-110"
                   aria-expanded={expanded}
                   aria-controls="dna-builder-timeline"
                 >

@@ -129,7 +129,10 @@ export function SellerPitchBanner() {
                 <p className="text-center text-sm font-semibold text-zinc-200 sm:text-base">Step 3</p>
               </div>
               <div className="relative mt-3 grid grid-cols-3 items-center gap-3 sm:gap-5">
-                <div className="pointer-events-none absolute left-[16.5%] right-[16.5%] top-1/2 h-1 -translate-y-1/2 bg-[#2563eb]/95" aria-hidden />
+                <div
+                  className="pointer-events-none absolute left-[16.5%] right-[16.5%] top-1/2 h-px -translate-y-1/2 bg-white/20"
+                  aria-hidden
+                />
                 <div className="relative z-10 mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-white/18 bg-[#111a28] shadow-[0_10px_25px_-14px_rgba(0,0,0,0.9)] sm:h-20 sm:w-20">
                   <Link2 className="h-5 w-5 text-white sm:h-6 sm:w-6" />
                 </div>
@@ -181,16 +184,18 @@ export function SellerPitchBanner() {
 
             <div className="flex w-full max-w-sm shrink-0 flex-col items-stretch gap-2 lg:w-auto lg:max-w-none lg:flex-none lg:items-start">
               <Link
-                href="/sell"
-                className="group inline-flex items-center justify-center gap-2 rounded-full border border-white/45 bg-white/5 px-6 py-3 text-[14px] font-bold text-white shadow-[0_10px_26px_-18px_rgba(0,0,0,0.75)] transition-colors duration-200 hover:bg-white/12 active:scale-[0.98] sm:px-7 sm:py-3 sm:text-[15px]"
+                href="/signup"
+                className="pointer-events-auto relative inline-flex min-w-[188px] items-center justify-center overflow-hidden rounded-full border border-white/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.04)_18%,rgba(9,12,18,0.86)_58%,rgba(10,12,17,0.96)_100%)] px-7 py-2.5 text-[1.9rem] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-1px_0_rgba(255,255,255,0.12),0_10px_28px_rgba(0,0,0,0.45)] backdrop-blur-xl transition duration-300 hover:border-white/55 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.45),inset_0_-1px_0_rgba(255,255,255,0.18),0_14px_34px_rgba(0,0,0,0.55)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
               >
-                판매 시작하기
                 <span
-                  className="text-[20px] leading-none transition-transform duration-200 group-hover:translate-x-0.5"
+                  className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/75 to-transparent"
                   aria-hidden
-                >
-                  &gt;
-                </span>
+                />
+                <span
+                  className="pointer-events-none absolute inset-x-10 bottom-0 h-px bg-gradient-to-r from-transparent via-white/45 to-transparent"
+                  aria-hidden
+                />
+                <span className="relative z-10">시작하기</span>
               </Link>
             </div>
           </div>

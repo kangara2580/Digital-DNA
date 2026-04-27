@@ -82,38 +82,15 @@ function circularRingPose(
 
 /** 바로 옆(±1) — 원주 각 분할 대신 고정 각으로 간격 확대 */
 function sideNeighborPose(sign: -1 | 1, radius: number): RingPose {
-  const phi = sign * 0.66;
+  const phi = sign * 0.96;
   return {
-    x: radius * Math.sin(phi) * 1.08,
-    z: radius * Math.cos(phi) * 0.9,
-    rotateY: -(phi * 180) / Math.PI,
-    depthFactor: 0.55,
-    scale: 0.8,
+    x: radius * Math.sin(phi) * 1.12,
+    z: radius * Math.cos(phi) * 0.86,
+    rotateY: (phi * 180) / Math.PI,
+    depthFactor: 0.62,
+    scale: 0.92,
     opacity: 0.78,
     zIndex: 44,
-  };
-}
-
-/** 양끝 여백 채우는 대기열(±2 ~ ±4) — 멀수록 작고 흐리게 */
-function sideFarWingPose(
-  side: "left" | "right",
-  radius: number,
-  tier: 2 | 3 | 4,
-): RingPose {
-  const sign = side === "left" ? -1 : 1;
-  const cfg = {
-    2: { x: 1.08, z: -0.62, rot: 28, sc: 0.5, op: 0.4, zi: 24 },
-    3: { x: 1.38, z: -0.72, rot: 32, sc: 0.43, op: 0.33, zi: 20 },
-    4: { x: 1.68, z: -0.8, rot: 36, sc: 0.37, op: 0.27, zi: 16 },
-  }[tier];
-  return {
-    x: sign * radius * cfg.x,
-    z: radius * cfg.z,
-    rotateY: sign * cfg.rot,
-    depthFactor: 0.22,
-    scale: cfg.sc,
-    opacity: cfg.op,
-    zIndex: cfg.zi,
   };
 }
 
@@ -312,7 +289,7 @@ export function Highlight24() {
 
   const { cardW, cardH, perspective, ringRadius } = layout;
 
-  /** 메인 + ±1(넓은 간격) + 양옆 ±2~±4 대기열 — 동일 인덱스는 앞 슬롯만 */
+  /** 메인 + 양옆 1장씩만 노출 (총 3장) */
   const { mainPose, poseByIndex } = useMemo(() => {
     const r = ringRadius;
     const baseMain = circularRingPose(0, n, r);
@@ -332,36 +309,24 @@ export function Highlight24() {
 
     const p1 = (safeIndex - 1 + n) % n;
     const n1 = (safeIndex + 1) % n;
-    const p2 = (safeIndex - 2 + n) % n;
-    const n2 = (safeIndex + 2) % n;
-    const p3 = (safeIndex - 3 + n) % n;
-    const n3 = (safeIndex + 3) % n;
-    const p4 = (safeIndex - 4 + n) % n;
-    const n4 = (safeIndex + 4) % n;
-
     assign(p1, sideNeighborPose(-1, r));
     assign(n1, sideNeighborPose(1, r));
-    if (n >= 5) {
-      assign(p2, sideFarWingPose("left", r, 2));
-      assign(n2, sideFarWingPose("right", r, 2));
-    }
-    if (n >= 7) {
-      assign(p3, sideFarWingPose("left", r, 3));
-      assign(n3, sideFarWingPose("right", r, 3));
-    }
-    if (n >= 9) {
-      assign(p4, sideFarWingPose("left", r, 4));
-      assign(n4, sideFarWingPose("right", r, 4));
-    }
 
     return { mainPose: main, poseByIndex: map };
   }, [n, safeIndex, ringRadius]);
+
+  const visibleCardIndices = useMemo(() => {
+    if (n < 3) return [];
+    const left = (safeIndex - 1 + n) % n;
+    const right = (safeIndex + 1) % n;
+    return [left, safeIndex, right];
+  }, [n, safeIndex]);
 
   if (n < 3 || !active) return null;
 
   return (
     <section
-      className="highlight24-lock-white relative mt-0 w-full overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black/20"
+      className="highlight24-lock-white relative mt-0 min-h-[calc(100svh-var(--header-height,0px))] w-full overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black/20"
       style={{
         marginTop: "calc(var(--header-height, 0px) * -1)",
         paddingTop: "var(--header-height, 0px)",
@@ -430,44 +395,30 @@ export function Highlight24() {
         aria-hidden
       />
       <div className="relative z-10 mx-auto max-w-[1800px] px-4 pb-4 pt-9 sm:px-6 sm:pb-5 sm:pt-10 lg:px-8">
-        <div className="relative z-20 mb-5 flex justify-end sm:mb-6 md:mb-7">
-          <Link
-            href="/explore"
-            className="group inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/35 text-white transition-all duration-300 ease-out hover:bg-black/55"
-            aria-label="탐색 페이지로 이동"
-            title="더보기"
-          >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden>
-              <path
-                d="M9 6l6 6-6 6"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span className="sr-only">더보기</span>
-          </Link>
+        <div className="relative z-20 mb-5 flex justify-end sm:mb-6 md:mb-7" aria-hidden>
+          <div className="h-11 w-11" />
         </div>
-
-        <div
-          ref={wrapRef}
-          className="relative z-10 mx-auto flex min-h-0 max-w-6xl items-center justify-center pt-2 pb-0 sm:max-w-7xl sm:pt-3 md:max-w-[min(100%,88rem)] md:pt-4"
-          style={{
-            perspective: `${perspective}px`,
-            perspectiveOrigin: "50% 38%",
-          }}
-        >
+        <div className="relative z-10 mx-auto flex max-w-7xl items-center justify-between gap-6 pb-7 pt-2 sm:pb-8 sm:pt-3 md:gap-8 md:pb-9 md:pt-4">
+          <div
+            ref={wrapRef}
+            className="relative min-h-0 flex-1 items-center justify-center"
+            style={{
+              perspective: `${perspective}px`,
+              perspectiveOrigin: "50% 38%",
+              transform: "translateX(-18%)",
+            }}
+          >
           {/* 무대를 X축으로 살짝 기울여 원이 화면에 타원·깊이로 투영되게 함 */}
           <div
             className="relative w-full [transform-style:preserve-3d]"
             style={{
               minHeight: Math.round(cardH * 1.2) + 32,
-              transform: "rotateX(10deg)",
+              transform: "translateY(20px) rotateX(10deg)",
               transformOrigin: "50% 52%",
             }}
           >
-            {videos.map((v, i) => {
+            {visibleCardIndices.map((i) => {
+              const v = videos[i];
               const isMain = i === safeIndex;
               const pose = isMain
                 ? mainPose
@@ -480,7 +431,7 @@ export function Highlight24() {
                   className={`group absolute left-1/2 top-1/2 overflow-hidden rounded-2xl border bg-black/40 [transform-style:preserve-3d] ${
                     isMain
                       ? "cursor-pointer border-white/35 shadow-[0_32px_100px_-24px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.14)] ring-1 ring-inset ring-white/20"
-                      : "cursor-pointer border-white/14 shadow-[0_28px_90px_-26px_rgba(0,0,0,0.88)]"
+                      : "cursor-pointer border-transparent shadow-[0_28px_90px_-26px_rgba(0,0,0,0.88)]"
                   } ${pose.opacity < 0.02 ? "pointer-events-none" : ""}`}
                   style={{
                     width: cardW,
@@ -523,9 +474,9 @@ export function Highlight24() {
                         }
                         playsInline
                         muted
-                        loop
                         preload="auto"
                         src={v.src}
+                        onEnded={() => go(1)}
                       />
                     ) : (
                       <HighlightRingSidePreview video={v} />
@@ -546,7 +497,9 @@ export function Highlight24() {
                         isMain ? "from-black/25" : "from-black/45"
                       }`}
                     />
-                    <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/12" />
+                    {isMain ? (
+                      <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/12" />
+                    ) : null}
                     {v.priceWon != null ? (
                       <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center bg-gradient-to-b from-black/50 via-black/20 to-transparent px-2 pb-6 pt-2.5 opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 motion-reduce:transition-none sm:pb-8 sm:pt-3">
                         <span className="text-legible-white rounded-md bg-black/45 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-white ring-1 ring-white/20 sm:text-[11px]">
@@ -565,7 +518,7 @@ export function Highlight24() {
               className="group absolute left-0 top-1/2 z-[60] flex h-[min(52%,340px)] w-[min(22%,120px)] max-w-[100px] -translate-y-1/2 items-center justify-start pl-1 sm:pl-2"
               aria-label="이전 클립"
             >
-              <span className="pointer-events-none flex h-12 w-12 items-center justify-center rounded-full bg-white/95 text-slate-900 opacity-0 shadow-lg ring-1 ring-black/10 transition-all duration-300 ease-out group-hover:opacity-100 sm:h-14 sm:w-14">
+              <span className="pointer-events-none flex h-12 w-12 items-center justify-center rounded-full bg-transparent text-white opacity-0 shadow-none ring-1 ring-white/35 transition-all duration-300 ease-out group-hover:opacity-100 sm:h-14 sm:w-14">
                 <ChevronLeft className="h-6 w-6 sm:h-7 sm:w-7" />
               </span>
             </button>
@@ -575,31 +528,83 @@ export function Highlight24() {
               className="group absolute right-0 top-1/2 z-[60] flex h-[min(52%,340px)] w-[min(22%,120px)] max-w-[100px] -translate-y-1/2 items-center justify-end pr-1 sm:pr-2"
               aria-label="다음 클립"
             >
-              <span className="pointer-events-none flex h-12 w-12 items-center justify-center rounded-full bg-white/95 text-slate-900 opacity-0 shadow-lg ring-1 ring-black/10 transition-all duration-300 ease-out group-hover:opacity-100 sm:h-14 sm:w-14">
+              <span className="pointer-events-none flex h-12 w-12 items-center justify-center rounded-full bg-transparent text-white opacity-0 shadow-none ring-1 ring-white/35 transition-all duration-300 ease-out group-hover:opacity-100 sm:h-14 sm:w-14">
                 <ChevronRight className="h-6 w-6 sm:h-7 sm:w-7" />
               </span>
             </button>
           </div>
+          </div>
+          <div className="pointer-events-none relative hidden min-w-[250px] -translate-x-4 flex-col items-center justify-center gap-4 md:flex">
+            <div
+              className="select-none text-[clamp(3.2rem,8vw,6.6rem)] font-semibold leading-none tracking-[0.03em] text-white/92"
+              style={{
+                fontFamily: '"Inter", "Helvetica Neue", "Arial", sans-serif',
+                textShadow:
+                  "0 0 12px rgba(255,255,255,0.18), 0 0 28px rgba(76,126,255,0.2)",
+              }}
+              aria-hidden
+            >
+              <span className="inline-flex items-end gap-[0.02em]">
+                <span
+                  className="relative inline-flex h-[1.1em] w-[0.9em] items-center justify-center align-baseline"
+                  style={{
+                    filter:
+                      "drop-shadow(0 0 10px rgba(255,255,255,0.18)) drop-shadow(0 0 20px rgba(76,126,255,0.2))",
+                  }}
+                >
+                  <svg
+                    viewBox="0 0 120 140"
+                    className="absolute inset-0 h-full w-full"
+                    fill="none"
+                    aria-hidden
+                  >
+                    <path
+                      d="M10 126 L56 14 Q60 7 66 14 L112 126"
+                      stroke="currentColor"
+                      strokeWidth="18"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="relative h-[0.46em] w-[0.46em] translate-y-[0.2em]"
+                    fill="none"
+                    aria-hidden
+                  >
+                    <path
+                      d="M6 4.8L19.2 12L6 19.2V4.8Z"
+                      fill="#FFFFFF"
+                    />
+                  </svg>
+                </span>
+                <span
+                  className="inline-block text-[1.1em] font-light tracking-[0.015em]"
+                  style={{
+                    fontFamily:
+                      '"Nunito", "Arial Rounded MT Bold", "Helvetica Rounded", "Inter", sans-serif',
+                    transform: "scaleY(1.08)",
+                    transformOrigin: "50% 88%",
+                  }}
+                >
+                  RA
+                </span>
+              </span>
+            </div>
+            <p className="max-w-[300px] text-center text-[14px] font-medium leading-relaxed tracking-[0.01em] text-white/78">
+              누구나 쉽고 빠르게 숏폼을 거래하는
+              <br />
+              글로벌 동영상 쇼핑몰
+            </p>
+            <Link
+              href="/signup"
+              className="pointer-events-auto inline-flex min-w-[188px] items-center justify-center rounded-full border border-white/45 bg-transparent px-7 py-2.5 text-[1.9rem] font-semibold text-white shadow-[0_9px_0_rgba(0,0,0,0.55)] transition duration-200 hover:-translate-y-0.5 hover:border-white/60 hover:shadow-[0_11px_0_rgba(0,0,0,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
+            >
+              시작하기
+            </Link>
+          </div>
         </div>
 
-        <div className="mx-auto flex max-w-6xl items-center justify-center gap-5 py-4 sm:gap-8 sm:py-5 md:max-w-7xl">
-          <button
-            type="button"
-            onClick={() => go(-1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/12 text-white shadow-[0_1px_3px_rgba(15,23,42,0.35)] backdrop-blur-sm transition hover:border-white/55 hover:bg-white/18 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
-            aria-label="이전"
-          >
-            <ChevronLeft className="h-5 w-5 text-white drop-shadow-[0_1px_2px_rgba(15,23,42,0.45)]" />
-          </button>
-          <button
-            type="button"
-            onClick={() => go(1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/12 text-white shadow-[0_1px_3px_rgba(15,23,42,0.35)] backdrop-blur-sm transition hover:border-white/55 hover:bg-white/18 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
-            aria-label="다음"
-          >
-            <ChevronRight className="h-5 w-5 text-white drop-shadow-[0_1px_2px_rgba(15,23,42,0.45)]" />
-          </button>
-        </div>
       </div>
     </section>
   );

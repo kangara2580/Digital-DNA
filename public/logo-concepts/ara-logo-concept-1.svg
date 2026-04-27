@@ -1,0 +1,28 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg1" x1="0" y1="0" x2="1200" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A0D14"/>
+      <stop offset="1" stop-color="#171B27"/>
+    </linearGradient>
+    <linearGradient id="cyan1" x1="420" y1="180" x2="780" y2="540" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#58A6FF"/>
+      <stop offset="1" stop-color="#00D1FF"/>
+    </linearGradient>
+    <filter id="glow1" x="280" y="120" width="640" height="520" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="18" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="900" fill="url(#bg1)"/>
+
+  <g filter="url(#glow1)">
+    <path d="M420 500L600 180L780 500" stroke="url(#cyan1)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M560 430L670 370L670 490L560 430Z" fill="url(#cyan1)"/>
+  </g>
+
+  <text x="600" y="700" fill="#F7FBFF" font-size="174" text-anchor="middle" font-family="Georgia, Times New Roman, serif" letter-spacing="18">ARA</text>
+</svg>

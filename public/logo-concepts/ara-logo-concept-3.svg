@@ -1,0 +1,26 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="1200" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#090B10"/>
+      <stop offset="1" stop-color="#1A1E2A"/>
+    </linearGradient>
+    <linearGradient id="icon3" x1="470" y1="180" x2="730" y2="530" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A7C7FF"/>
+      <stop offset="1" stop-color="#4AA8FF"/>
+    </linearGradient>
+    <filter id="soft3" x="350" y="120" width="500" height="500" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="900" fill="url(#bg3)"/>
+
+  <g opacity="0.35" filter="url(#soft3)">
+    <circle cx="600" cy="360" r="170" fill="#4AA8FF"/>
+  </g>
+
+  <path d="M600 205L730 500H680L630 390H570L520 500H470L600 205Z" fill="url(#icon3)"/>
+  <path d="M595 326L662 365L595 404V326Z" fill="#0E1522"/>
+
+  <text x="600" y="700" fill="#FFFFFF" font-size="176" text-anchor="middle" font-family="Georgia, Times New Roman, serif" letter-spacing="20">ARA</text>
+</svg>

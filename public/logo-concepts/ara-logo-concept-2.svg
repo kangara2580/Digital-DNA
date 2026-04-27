@@ -1,0 +1,20 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1200" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B0F1A"/>
+      <stop offset="1" stop-color="#1A1422"/>
+    </linearGradient>
+    <linearGradient id="stroke2" x1="440" y1="220" x2="760" y2="520" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#74B4FF"/>
+      <stop offset="1" stop-color="#7CF7FF"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="900" fill="url(#bg2)"/>
+
+  <path d="M448 520L600 220L752 520" stroke="url(#stroke2)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M536 520L600 390L664 520" stroke="url(#stroke2)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+  <path d="M600 348L682 420L600 492" stroke="url(#stroke2)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <text x="600" y="690" fill="#F2F8FF" font-size="168" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="700" letter-spacing="24">ARA</text>
+</svg>

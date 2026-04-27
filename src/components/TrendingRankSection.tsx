@@ -282,10 +282,13 @@ export function TrendingRankSection() {
           <div className="min-w-0 text-center">
             <h2
               id="trending-rank-heading"
-              className="flex flex-wrap items-center justify-center gap-2.5 text-[22px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:gap-3 sm:text-[26px] md:text-[28px]"
+              className="flex flex-wrap items-center justify-center gap-2.5 text-[26px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:gap-3 sm:text-[30px] md:text-[32px]"
             >
               인기순위 TOP 30
             </h2>
+            <p className="mt-2 text-center text-[14px] font-medium leading-relaxed tracking-[0.01em] text-white/78">
+              전 세계 크리에이터들이 가장 많이 선택한 인기 영상
+            </p>
             {errorMessage ? (
               <p className="mt-1.5 text-[12px] font-medium text-rose-300 [html[data-theme='light']_&]:text-rose-600">
                 {errorMessage}
@@ -373,7 +376,7 @@ export function TrendingRankSection() {
         </div>
 
         {!loading && rankedRows.length > 0 ? (
-          <div className="mt-6 flex justify-center sm:mt-8">
+          <div className="mt-6 flex flex-col items-center justify-center gap-6 sm:mt-8">
             <button
               type="button"
               onClick={showCollapse ? onCollapseToFirstRow : onExpandAllRows}
@@ -402,6 +405,14 @@ export function TrendingRankSection() {
                 )}
               </svg>
             </button>
+            {showCollapse ? (
+              <Link
+                href="/category/best"
+                className="inline-flex min-w-[140px] items-center justify-center rounded-full border border-white/30 bg-white/[0.05] px-7 py-3 text-[16px] font-semibold text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_8px_22px_-14px_rgba(0,0,0,0.6)] backdrop-blur-md transition hover:border-white/50 hover:bg-white/[0.1]"
+              >
+                더보기
+              </Link>
+            ) : null}
           </div>
         ) : null}
       </div>
