@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Home } from "lucide-react";
 import type { ReactNode } from "react";
 
 type Props = {
@@ -48,7 +49,11 @@ export function FooterLegalPageShell({
           <div className="mt-10">{children}</div>
         ) : null}
         <p className="mt-8 text-center text-[12px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-          <Link href="/" className="font-semibold text-reels-cyan hover:underline">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 font-semibold text-white transition hover:opacity-90 [html[data-theme='light']_&]:text-zinc-900"
+          >
+            <Home className="h-3.5 w-3.5" aria-hidden />
             홈으로 돌아가기
           </Link>
         </p>

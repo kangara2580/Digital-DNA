@@ -2,10 +2,14 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { FeedVideo } from "@/data/videos";
 import { LOCAL_TRENDING_FEED_VIDEOS } from "@/data/videos";
+import { useAuthSession } from "@/hooks/useAuthSession";
+import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
@@ -141,9 +145,13 @@ function hiddenOffstagePose(radius: number): RingPose {
 
 export function Highlight24() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user, loading: authLoading } = useAuthSession();
   /** 메인 히어로 링 — 인기순위와 동일한 로컬 10종(썸네일·영상 일치) */
   const videos = useMemo(() => [...LOCAL_TRENDING_FEED_VIDEOS], []);
   const [index, setIndex] = useState(0);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const ambientVideoRef = useRef<HTMLVideoElement>(null);
   const touchStartX = useRef<number | null>(null);
@@ -176,6 +184,68 @@ export function Highlight24() {
   );
 
   const activeId = active?.id;
+
+  const startGoogleAuth = useCallback(async () => {
+    const next =
+      typeof window !== "undefined"
+        ? `${window.location.pathname}${window.location.search}${window.location.hash}`
+        : "/";
+    const redirectTo = buildAuthCallbackRedirectTo(next);
+    const supabase = getSupabaseBrowserClient();
+    if (supabase && redirectTo) {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          queryParams: { prompt: "select_account" },
+        },
+      });
+      if (!error && data.url) {
+        window.location.assign(data.url);
+        return;
+      }
+    }
+    window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
+  }, []);
+
+  const onTopUserClick = useCallback(() => {
+    if (authLoading) return;
+    if (user) {
+      router.push("/mypage");
+      return;
+    }
+    setAuthOpen(true);
+  }, [authLoading, user, router]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!authOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [authOpen]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (user) return;
+    if (searchParams.get("auth") === "1") {
+      setAuthOpen(true);
+    }
+  }, [authLoading, user, searchParams]);
+
+  useEffect(() => {
+    if (!authOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setAuthOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [authOpen]);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -214,7 +284,6 @@ export function Highlight24() {
         Math.max(170, Math.round(Math.min(w * 0.48, cardW * 1.1))),
       );
       const perspective = Math.min(2050, Math.max(820, Math.round(w * 2.12)));
-
       setLayout({
         cardW,
         cardH,
@@ -383,6 +452,14 @@ export function Highlight24() {
         aria-hidden
       />
       <div
+        className="pointer-events-none absolute inset-0 z-[2] bg-black/68"
+        style={{
+          clipPath: "polygon(74% 0%, 100% 0%, 80% 100%, 54% 100%)",
+          WebkitClipPath: "polygon(74% 0%, 100% 0%, 80% 100%, 54% 100%)",
+        }}
+        aria-hidden
+      />
+      <div
         className="absolute inset-0 z-[1] bg-gradient-to-b from-black/18 via-black/28 to-black/48 transition-opacity duration-[900ms]"
         aria-hidden
       />
@@ -395,6 +472,47 @@ export function Highlight24() {
         aria-hidden
       />
       <div className="relative z-10 mx-auto max-w-[1800px] px-4 pb-4 pt-9 sm:px-6 sm:pb-5 sm:pt-10 lg:px-8">
+        <button
+          type="button"
+          onClick={onTopUserClick}
+          className="fixed right-4 top-4 z-[120] inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/65 text-white/92 transition hover:bg-black/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/75 sm:right-6 sm:top-5"
+          aria-label={user ? "마이페이지로 이동" : "로그인 또는 회원가입"}
+          disabled={authLoading}
+        >
+          <span className="relative inline-flex h-6 w-6 items-center justify-center">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              aria-hidden
+            >
+              <circle cx="12" cy="8" r="4" strokeWidth="2.2" />
+              <path
+                d="M4 20C4 15.8 7.6 12.4 12 12.4C16.4 12.4 20 15.8 20 20H4Z"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {!user ? (
+              <svg
+                viewBox="0 0 24 24"
+                className="absolute -right-[0.28rem] -top-[0.28rem] h-3 w-3"
+                fill="none"
+                stroke="currentColor"
+                aria-hidden
+              >
+                <path
+                  d="M12 4V20M4 12H20"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            ) : null}
+          </span>
+        </button>
         <div className="relative z-20 mb-5 flex justify-end sm:mb-6 md:mb-7" aria-hidden>
           <div className="h-11 w-11" />
         </div>
@@ -405,7 +523,7 @@ export function Highlight24() {
             style={{
               perspective: `${perspective}px`,
               perspectiveOrigin: "50% 38%",
-              transform: "translateX(-18%)",
+              transform: "translateX(-14%)",
             }}
           >
           {/* 무대를 X축으로 살짝 기울여 원이 화면에 타원·깊이로 투영되게 함 */}
@@ -517,95 +635,165 @@ export function Highlight24() {
               onClick={() => go(-1)}
               className="group absolute left-0 top-1/2 z-[60] flex h-[min(52%,340px)] w-[min(22%,120px)] max-w-[100px] -translate-y-1/2 items-center justify-start pl-1 sm:pl-2"
               aria-label="이전 클립"
-            >
-              <span className="pointer-events-none flex h-12 w-12 items-center justify-center rounded-full bg-transparent text-white opacity-0 shadow-none ring-1 ring-white/35 transition-all duration-300 ease-out group-hover:opacity-100 sm:h-14 sm:w-14">
-                <ChevronLeft className="h-6 w-6 sm:h-7 sm:w-7" />
-              </span>
-            </button>
+            />
             <button
               type="button"
               onClick={() => go(1)}
-              className="group absolute right-0 top-1/2 z-[60] flex h-[min(52%,340px)] w-[min(22%,120px)] max-w-[100px] -translate-y-1/2 items-center justify-end pr-1 sm:pr-2"
+              className="group absolute right-0 top-1/2 z-[60] flex h-[min(52%,340px)] w-[min(22%,120px)] max-w-[100px] -translate-y-1/2 items-center justify-end pr-1 sm:pr-2 md:-right-14 md:w-[min(30%,180px)] md:max-w-[180px]"
               aria-label="다음 클립"
-            >
-              <span className="pointer-events-none flex h-12 w-12 items-center justify-center rounded-full bg-transparent text-white opacity-0 shadow-none ring-1 ring-white/35 transition-all duration-300 ease-out group-hover:opacity-100 sm:h-14 sm:w-14">
-                <ChevronRight className="h-6 w-6 sm:h-7 sm:w-7" />
-              </span>
-            </button>
+            />
           </div>
           </div>
-          <div className="pointer-events-none relative hidden min-w-[250px] -translate-x-4 flex-col items-center justify-center gap-4 md:flex">
-            <div
-              className="select-none text-[clamp(3.2rem,8vw,6.6rem)] font-semibold leading-none tracking-[0.03em] text-white/92"
-              style={{
-                fontFamily: '"Inter", "Helvetica Neue", "Arial", sans-serif',
-                textShadow:
-                  "0 0 12px rgba(255,255,255,0.18), 0 0 28px rgba(76,126,255,0.2)",
-              }}
-              aria-hidden
-            >
-              <span className="inline-flex items-end gap-[0.02em]">
-                <span
-                  className="relative inline-flex h-[1.1em] w-[0.9em] items-center justify-center align-baseline"
-                  style={{
-                    filter:
-                      "drop-shadow(0 0 10px rgba(255,255,255,0.18)) drop-shadow(0 0 20px rgba(76,126,255,0.2))",
-                  }}
-                >
-                  <svg
-                    viewBox="0 0 120 140"
-                    className="absolute inset-0 h-full w-full"
-                    fill="none"
-                    aria-hidden
+          <button
+            type="button"
+            onClick={() => go(1)}
+            className="absolute right-[20%] top-1/2 z-[65] hidden h-[min(58%,380px)] w-[140px] -translate-y-1/2 md:block"
+            aria-label="다음 클립 확장 영역"
+          />
+          <div className="pointer-events-none relative hidden w-[clamp(206px,24vw,332px)] -translate-x-16 md:flex md:justify-center">
+            <div className="flex w-full flex-col items-center pl-[clamp(20px,2.25vw,34px)] pr-[clamp(14px,1.55vw,24px)]">
+              <div
+                className="select-none text-[clamp(2.4rem,6.2vw,6.1rem)] font-semibold leading-none tracking-[0.03em] text-white/92"
+                style={{
+                  fontFamily: '"Inter", "Helvetica Neue", "Arial", sans-serif',
+                  textShadow:
+                    "0 0 12px rgba(255,255,255,0.18), 0 0 28px rgba(76,126,255,0.2)",
+                }}
+                aria-hidden
+              >
+                <span className="inline-flex items-end gap-[0.02em] pl-[0.04em]">
+                  <span
+                    className="relative inline-flex h-[1.1em] w-[0.9em] items-center justify-center align-baseline"
+                    style={{
+                      filter:
+                        "drop-shadow(0 0 10px rgba(255,255,255,0.18)) drop-shadow(0 0 20px rgba(76,126,255,0.2))",
+                    }}
                   >
-                    <path
-                      d="M10 126 L56 14 Q60 7 66 14 L112 126"
-                      stroke="currentColor"
-                      strokeWidth="18"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="relative h-[0.46em] w-[0.46em] translate-y-[0.2em]"
-                    fill="none"
-                    aria-hidden
+                    <svg
+                      viewBox="0 0 120 140"
+                      className="absolute inset-0 h-full w-full"
+                      fill="none"
+                      aria-hidden
+                    >
+                      <path
+                        d="M10 126 L56 14 Q60 7 66 14 L112 126"
+                        stroke="currentColor"
+                        strokeWidth="18"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="relative h-[0.46em] w-[0.46em] translate-y-[0.2em]"
+                      fill="none"
+                      aria-hidden
+                    >
+                      <path
+                        d="M6 4.8L19.2 12L6 19.2V4.8Z"
+                        fill="#FFFFFF"
+                      />
+                    </svg>
+                  </span>
+                  <span
+                    className="inline-block text-[1.1em] font-light tracking-[0.015em]"
+                    style={{
+                      fontFamily:
+                        '"Nunito", "Arial Rounded MT Bold", "Helvetica Rounded", "Inter", sans-serif',
+                      transform: "scaleY(1.08)",
+                      transformOrigin: "50% 88%",
+                    }}
                   >
-                    <path
-                      d="M6 4.8L19.2 12L6 19.2V4.8Z"
-                      fill="#FFFFFF"
-                    />
-                  </svg>
+                    RA
+                  </span>
                 </span>
-                <span
-                  className="inline-block text-[1.1em] font-light tracking-[0.015em]"
-                  style={{
-                    fontFamily:
-                      '"Nunito", "Arial Rounded MT Bold", "Helvetica Rounded", "Inter", sans-serif',
-                    transform: "scaleY(1.08)",
-                    transformOrigin: "50% 88%",
-                  }}
-                >
-                  RA
-                </span>
-              </span>
+              </div>
+              <p className="mt-[clamp(0.38rem,0.92vw,1rem)] w-full text-left text-[clamp(12px,1.15vw,16px)] font-medium leading-relaxed tracking-[0.01em] text-white/78">
+                누구나 쉽고 빠르게 숏폼을 거래하는
+                <br />
+                글로벌 동영상 쇼핑몰
+              </p>
+              <Link
+                href="/?auth=1"
+                className="-translate-x-[40px] mt-[clamp(0.5rem,1.2vw,1.5rem)] pointer-events-auto inline-flex w-[clamp(138px,74%,188px)] items-center justify-center rounded-full border border-white/45 bg-transparent px-[clamp(1rem,1.9vw,1.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold text-white shadow-[0_9px_0_rgba(0,0,0,0.55)] transition duration-200 hover:-translate-y-0.5 hover:border-white/60 hover:shadow-[0_11px_0_rgba(0,0,0,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
+              >
+                시작하기
+              </Link>
             </div>
-            <p className="max-w-[300px] text-center text-[14px] font-medium leading-relaxed tracking-[0.01em] text-white/78">
-              누구나 쉽고 빠르게 숏폼을 거래하는
-              <br />
-              글로벌 동영상 쇼핑몰
-            </p>
-            <Link
-              href="/signup"
-              className="pointer-events-auto inline-flex min-w-[188px] items-center justify-center rounded-full border border-white/45 bg-transparent px-7 py-2.5 text-[1.9rem] font-semibold text-white shadow-[0_9px_0_rgba(0,0,0,0.55)] transition duration-200 hover:-translate-y-0.5 hover:border-white/60 hover:shadow-[0_11px_0_rgba(0,0,0,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
-            >
-              시작하기
-            </Link>
           </div>
         </div>
-
       </div>
+      {mounted && authOpen
+        ? createPortal(
+            <div className="fixed inset-0 z-[220] flex items-center justify-center bg-[#020611]/62 px-4 backdrop-blur-[6px]">
+              <button
+                type="button"
+                className="absolute inset-0"
+                aria-label="로그인 모달 닫기"
+                onClick={() => setAuthOpen(false)}
+              />
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label="로그인 또는 회원가입"
+                className="relative z-10 w-full max-w-[560px] max-h-[min(92vh,760px)] overflow-y-auto rounded-[24px] border border-white/20 bg-[radial-gradient(120%_120%_at_0%_0%,rgba(0,51,255,0.34)_0%,rgba(8,14,30,0.94)_52%,rgba(2,6,16,0.98)_100%)] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10"
+              >
+                <div
+                  className="pointer-events-none absolute -left-16 -top-20 h-52 w-52 rounded-full bg-[#0033FF]/30 blur-3xl"
+                  aria-hidden
+                />
+                <div
+                  className="pointer-events-none absolute -bottom-20 -right-16 h-56 w-56 rounded-full bg-[#00F2EA]/25 blur-3xl"
+                  aria-hidden
+                />
+                <button
+                  type="button"
+                  onClick={() => setAuthOpen(false)}
+                  className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/10 text-zinc-200 transition hover:bg-white/20"
+                  aria-label="닫기"
+                >
+                  ×
+                </button>
+                <p className="relative text-center text-[clamp(1.85rem,6vw,2.65rem)] font-black tracking-tight text-white">
+                  ARA
+                </p>
+                <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
+                  로그인/회원가입
+                </p>
+                <button
+                  type="button"
+                  onClick={startGoogleAuth}
+                  className="relative mx-auto mt-9 flex w-full max-w-[360px] items-center justify-center gap-3 rounded-full bg-white px-4 py-3 text-[clamp(1.0625rem,3.9vw,1.3125rem)] font-extrabold text-[#1a1a1a] shadow-[0_16px_34px_-18px_rgba(255,255,255,0.95)] transition hover:brightness-95 sm:px-6 sm:py-4"
+                >
+                  <svg
+                    className="h-5 w-5 shrink-0 sm:h-6 sm:w-6"
+                    viewBox="0 0 24 24"
+                    aria-hidden
+                  >
+                    <path
+                      fill="#EA4335"
+                      d="M12 10.2v3.9h5.4c-.2 1.2-.9 2.3-1.9 3l3 2.3c1.7-1.6 2.7-3.9 2.7-6.7 0-.6-.1-1.2-.2-1.8H12z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 22c2.4 0 4.4-.8 5.9-2.2l-3-2.3c-.8.6-1.8 1-2.9 1-2.2 0-4.1-1.5-4.7-3.5l-3.1 2.4C5.6 20.3 8.6 22 12 22z"
+                    />
+                    <path
+                      fill="#4A90E2"
+                      d="M7.3 15c-.2-.6-.4-1.3-.4-2s.1-1.4.4-2L4.2 8.6C3.4 10.1 3 11.5 3 13s.4 2.9 1.2 4.4L7.3 15z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M12 7.5c1.3 0 2.5.4 3.4 1.3l2.6-2.6C16.4 4.7 14.4 4 12 4 8.6 4 5.6 5.7 4.2 8.6L7.3 11c.6-2 2.5-3.5 4.7-3.5z"
+                    />
+                  </svg>
+                  Google로 바로 시작
+                </button>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </section>
   );
 }

@@ -1,18 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useId, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useId } from "react";
 
-const linkClass =
-  "block w-fit text-[13px] font-medium leading-relaxed text-zinc-400 transition-colors hover:text-reels-cyan [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-[#00a8b5]";
-
-const headingClass =
-  "mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500";
-
-const selectShell =
-  "w-full rounded-lg border border-white/12 bg-black/30 px-2.5 py-2 text-[12px] font-semibold text-zinc-200 outline-none transition focus:border-reels-cyan/40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900";
-
-const LS_LANG = "reels-footer-lang";
 
 function XIcon({ className }: { className?: string }) {
   return (
@@ -64,27 +55,15 @@ function TikTokIcon({ className }: { className?: string }) {
 
 export function ARAFooter() {
   const baseId = useId();
-  const [lang, setLang] = useState("ko");
-
-  useEffect(() => {
-    try {
-      const l = window.localStorage.getItem(LS_LANG);
-      if (l === "ko" || l === "en") setLang(l);
-    } catch {
-      /* noop */
-    }
-  }, []);
-
-  const persistLang = useCallback((v: string) => {
-    setLang(v);
-    try {
-      window.localStorage.setItem(LS_LANG, v);
-    } catch {
-      /* noop */
-    }
-  }, []);
-
   const year = new Date().getFullYear();
+  const pathname = usePathname();
+  const isActive = (href: string) => pathname === href;
+  const footerLinkClass = (href: string) =>
+    `text-[13px] transition ${
+      isActive(href)
+        ? "font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
+        : "font-medium text-zinc-400 hover:text-white [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900"
+    }`;
 
   return (
     <footer
@@ -93,167 +72,62 @@ export function ARAFooter() {
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-reels-cyan/25 to-transparent" aria-hidden />
 
-      <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
-        <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
-          <div className="min-w-0 max-w-sm">
-            <p id={`${baseId}-footer-title`} className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-reels-cyan/90">
-              ARA
-            </p>
-            <p className="mt-2 text-[15px] font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-              모션을 사고, 순간을 소유하세요.
-            </p>
-            <p className="mt-2 text-[13px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-              크리에이터와 브랜드가 신뢰로 연결되는 릴스 클립 마켓.
-            </p>
+      <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
+        <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
+          <div className="mt-7 grid grid-cols-4 gap-4 sm:gap-6">
+            <a
+              href="https://www.instagram.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-black/30 text-zinc-100 transition hover:border-white/60 hover:text-white [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-800"
+              aria-label="Instagram"
+            >
+              <InstagramIcon className="h-[18px] w-[18px]" />
+            </a>
+            <a
+              href="https://twitter.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-black/30 text-zinc-100 transition hover:border-white/60 hover:text-white [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-800"
+              aria-label="X"
+            >
+              <XIcon className="h-[17px] w-[17px]" />
+            </a>
+            <a
+              href="https://www.youtube.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-black/30 text-zinc-100 transition hover:border-white/60 hover:text-white [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-800"
+              aria-label="YouTube"
+            >
+              <YoutubeIcon className="h-[18px] w-[18px]" />
+            </a>
+            <a
+              href="https://www.tiktok.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-black/30 text-zinc-100 transition hover:border-white/60 hover:text-white [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-800"
+              aria-label="TikTok"
+            >
+              <TikTokIcon className="h-[17px] w-[17px]" />
+            </a>
           </div>
 
-          <nav
-            className="grid flex-1 grid-cols-2 gap-8 sm:grid-cols-2 md:grid-cols-4 md:gap-10"
-            aria-label="푸터 링크"
-          >
-            <div>
-              <h2 className={headingClass}>Platform</h2>
-              <ul className="flex flex-col gap-2">
-                <li>
-                  <Link href="/about" className={linkClass}>
-                    회사소개 (Digital DNA)
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/license"
-                    className={`${linkClass} font-semibold text-reels-cyan/95 hover:text-reels-cyan`}
-                  >
-                    라이선스 규정
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/notice" className={linkClass}>
-                    공지사항
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h2 className={headingClass}>Support</h2>
-              <ul className="flex flex-col gap-2">
-                <li>
-                  <Link href="/faq" className={linkClass}>
-                    FAQ
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className={linkClass}>
-                    1:1 문의
-                  </Link>
-                </li>
-                <li>
-                  <p className="text-[11px] leading-snug text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-                    광고·제휴·입점 문의는 1:1 문의에 남겨 주세요.
-                  </p>
-                </li>
-                <li>
-                  <Link href="/terms" className={linkClass}>
-                    이용약관
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h2 className={headingClass}>Legal</h2>
-              <ul className="flex flex-col gap-2">
-                <li>
-                  <Link href="/privacy" className={linkClass}>
-                    개인정보처리방침
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/cookies" className={linkClass}>
-                    쿠키 정책
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div className="col-span-2 md:col-span-1">
-              <h2 className={headingClass}>Global</h2>
-              <div className="flex flex-col gap-3">
-                <label className="flex flex-col gap-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-                    언어
-                  </span>
-                  <select
-                    name="language"
-                    className={selectShell}
-                    value={lang}
-                    onChange={(e) => persistLang(e.target.value)}
-                    aria-label="표시 언어"
-                  >
-                    <option value="ko">한국어</option>
-                    <option value="en">English</option>
-                  </select>
-                </label>
-                <div>
-                  <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-                    SNS
-                  </p>
-                  <div className="grid w-full grid-cols-2 gap-2 min-[380px]:grid-cols-4 min-[380px]:gap-x-2 min-[380px]:gap-y-0 place-items-center">
-                    <a
-                      href="https://www.instagram.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-zinc-300 transition hover:border-reels-cyan/35 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-800"
-                      aria-label="Instagram"
-                    >
-                      <InstagramIcon className="h-[18px] w-[18px]" />
-                    </a>
-                    <a
-                      href="https://twitter.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-zinc-300 transition hover:border-reels-cyan/35 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-800"
-                      aria-label="X"
-                    >
-                      <XIcon className="h-[17px] w-[17px]" />
-                    </a>
-                    <a
-                      href="https://www.youtube.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-zinc-300 transition hover:border-reels-cyan/35 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-800"
-                      aria-label="YouTube"
-                    >
-                      <YoutubeIcon className="h-[18px] w-[18px]" />
-                    </a>
-                    <a
-                      href="https://www.tiktok.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-zinc-300 transition hover:border-reels-cyan/35 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-800"
-                      aria-label="TikTok"
-                    >
-                      <TikTokIcon className="h-[17px] w-[17px]" />
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <nav className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2" aria-label="푸터 링크">
+            <Link href="/about" className={footerLinkClass("/about")}>소개</Link>
+            <Link href="/license" className={footerLinkClass("/license")}>라이선스 규정</Link>
+            <Link href="/notice" className={footerLinkClass("/notice")}>공지</Link>
+            <Link href="/contact" className={footerLinkClass("/contact")}>문의</Link>
+            <Link href="/terms" className={footerLinkClass("/terms")}>이용약관</Link>
+            <Link href="/privacy" className={footerLinkClass("/privacy")}>개인정보처리방침</Link>
+            <Link href="/cookies" className={footerLinkClass("/cookies")}>쿠키 정책</Link>
           </nav>
-        </div>
 
-        <div className="mt-10 flex flex-col gap-3 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[12px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-            © {year}{" "}
-            <span className="font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-              Digital DNA
-            </span>
-            . All rights reserved.
-          </p>
-          <p className="text-[11px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-            사업자·정산·분쟁 조항은 이용약관 및 라이선스 규정을 따릅니다.
-          </p>
+          <div className="mt-8 w-full border-t border-white/10 pt-5 [html[data-theme='light']_&]:border-zinc-200">
+            <p className="text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              © {year} <span className="font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">ARA</span>. All rights reserved.
+            </p>
+          </div>
         </div>
       </div>
     </footer>

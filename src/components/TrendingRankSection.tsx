@@ -277,7 +277,7 @@ export function TrendingRankSection() {
       className="trending-rank-ocean-bg border-t border-white/10"
       aria-labelledby="trending-rank-heading"
     >
-      <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-12 lg:px-8">
+      <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-24 lg:px-8">
         <div className="flex flex-col items-center gap-3 py-9 sm:py-10">
           <div className="min-w-0 text-center">
             <h2
@@ -286,7 +286,7 @@ export function TrendingRankSection() {
             >
               인기순위 TOP 30
             </h2>
-            <p className="mt-2 text-center text-[14px] font-medium leading-relaxed tracking-[0.01em] text-white/78">
+            <p className="mt-2 text-center text-[16px] font-medium leading-relaxed tracking-[0.01em] text-white/78">
               전 세계 크리에이터들이 가장 많이 선택한 인기 영상
             </p>
             {errorMessage ? (

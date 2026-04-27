@@ -427,6 +427,40 @@ html {
   will-change: transform, opacity;
 }
 
+@keyframes review-marquee-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.review-marquee {
+  overflow: hidden;
+  position: relative;
+}
+
+.review-marquee::before,
+.review-marquee::after {
+  content: none;
+}
+
+.review-marquee-track {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  width: max-content;
+  animation: review-marquee-left 30s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-marquee-track {
+    animation: none;
+  }
+}
+
 /* Global CTA unification: crimson buttons -> cobalt blue */
 :where(button, a)[class*="bg-reels-crimson"] {
   background:
