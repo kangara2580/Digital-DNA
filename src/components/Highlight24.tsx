@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { FeedVideo } from "@/data/videos";
@@ -145,7 +145,6 @@ function hiddenOffstagePose(radius: number): RingPose {
 
 export function Highlight24() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuthSession();
   /** 메인 히어로 링 — 인기순위와 동일한 로컬 10종(썸네일·영상 일치) */
   const videos = useMemo(() => [...LOCAL_TRENDING_FEED_VIDEOS], []);
@@ -231,14 +230,6 @@ export function Highlight24() {
       document.body.style.overflow = prev;
     };
   }, [authOpen]);
-
-  useEffect(() => {
-    if (authLoading) return;
-    if (user) return;
-    if (searchParams.get("auth") === "1") {
-      setAuthOpen(true);
-    }
-  }, [authLoading, user, searchParams]);
 
   useEffect(() => {
     if (!authOpen) return;
@@ -666,7 +657,7 @@ export function Highlight24() {
           <div className="pointer-events-none relative hidden w-[clamp(206px,24vw,332px)] -translate-x-16 md:flex md:justify-center">
             <div className="flex w-full flex-col items-center pl-[clamp(20px,2.25vw,34px)] pr-[clamp(14px,1.55vw,24px)]">
               <div
-                className="select-none text-[clamp(2.4rem,6.2vw,6.1rem)] font-semibold leading-none tracking-[0.03em] text-white/92"
+                className="-translate-y-12 select-none text-[clamp(2.4rem,6.2vw,6.1rem)] font-semibold leading-none tracking-[0.03em] text-white/92"
                 style={{
                   fontFamily: '"Inter", "Helvetica Neue", "Arial", sans-serif',
                   textShadow:
@@ -674,64 +665,77 @@ export function Highlight24() {
                 }}
                 aria-hidden
               >
-                <span className="inline-flex items-end gap-[0.02em] pl-[0.04em]">
-                  <span
-                    className="relative inline-flex h-[1.1em] w-[0.9em] items-center justify-center align-baseline"
-                    style={{
-                      filter:
-                        "drop-shadow(0 0 10px rgba(255,255,255,0.18)) drop-shadow(0 0 20px rgba(76,126,255,0.2))",
-                    }}
+                <span
+                  className="relative inline-flex h-[1.1em] w-[3.08em] items-center justify-center align-baseline"
+                  style={{
+                    filter:
+                      "drop-shadow(0 0 10px rgba(255,255,255,0.18)) drop-shadow(0 0 20px rgba(76,126,255,0.2))",
+                  }}
+                >
+                  <svg
+                    viewBox="-12 0 404 140"
+                    className="absolute inset-0 h-full w-full"
+                    fill="none"
+                    aria-hidden
                   >
-                    <svg
-                      viewBox="0 0 120 140"
-                      className="absolute inset-0 h-full w-full"
-                      fill="none"
-                      aria-hidden
-                    >
-                      <path
-                        d="M10 126 L56 14 Q60 7 66 14 L112 126"
-                        stroke="currentColor"
-                        strokeWidth="18"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="relative h-[0.46em] w-[0.46em] translate-y-[0.2em]"
-                      fill="none"
-                      aria-hidden
-                    >
-                      <path
-                        d="M6 4.8L19.2 12L6 19.2V4.8Z"
-                        fill="#FFFFFF"
-                      />
-                    </svg>
-                  </span>
-                  <span
-                    className="inline-block text-[1.1em] font-light tracking-[0.015em]"
-                    style={{
-                      fontFamily:
-                        '"Nunito", "Arial Rounded MT Bold", "Helvetica Rounded", "Inter", sans-serif',
-                      transform: "scaleY(1.08)",
-                      transformOrigin: "50% 88%",
-                    }}
-                  >
-                    RA
-                  </span>
+                    <path
+                      d="M2 126 L46 14 Q50 8 54 14 L98 126"
+                      stroke="currentColor"
+                      strokeWidth="18"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M152 126V14H194Q224 14 224 44Q224 74 194 74H152"
+                      stroke="currentColor"
+                      strokeWidth="18"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M194 74L230 126"
+                      stroke="currentColor"
+                      strokeWidth="18"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M284 126 L328 14 Q332 8 336 14 L380 126"
+                      stroke="currentColor"
+                      strokeWidth="18"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M303 84H361"
+                      stroke="currentColor"
+                      strokeWidth="18"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path d="M38 78 L62 91 L38 104 Z" fill="#FFFFFF" />
+                  </svg>
                 </span>
               </div>
-              <p className="mt-[clamp(0.38rem,0.92vw,1rem)] w-full text-left text-[clamp(12px,1.15vw,16px)] font-medium leading-relaxed tracking-[0.01em] text-white/78">
+              <p className="-translate-y-12 mt-[clamp(0.2rem,0.7vw,0.8rem)] w-full text-left text-[clamp(12px,1.15vw,16px)] font-medium leading-relaxed tracking-[0.01em] text-white/78">
                 누구나 쉽고 빠르게 숏폼을 거래하는
                 <br />
-                글로벌 동영상 쇼핑몰
+                글로벌 동영상 쇼핑몰입니다.
               </p>
-              <Link
-                href="/?auth=1"
+              <button
+                type="button"
+                onClick={() => {
+                  if (authLoading) return;
+                  if (user) {
+                    router.push("/mypage");
+                    return;
+                  }
+                  setAuthOpen(true);
+                }}
                 className="-translate-x-[40px] mt-[clamp(0.5rem,1.2vw,1.5rem)] pointer-events-auto inline-flex w-[clamp(138px,74%,188px)] items-center justify-center rounded-full border border-white/45 bg-transparent px-[clamp(1rem,1.9vw,1.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold text-white shadow-[0_9px_0_rgba(0,0,0,0.55)] transition duration-200 hover:-translate-y-0.5 hover:border-white/60 hover:shadow-[0_11px_0_rgba(0,0,0,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
               >
                 시작하기
-              </Link>
+              </button>
             </div>
           </div>
         </div>

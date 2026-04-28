@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Link2, ShoppingCart, WandSparkles } from "lucide-react";
+import { Download, Link2, PencilRuler, PlayCircle, Tag, WandSparkles } from "lucide-react";
 
 export function SellerPitchBanner() {
   return (
@@ -7,8 +7,8 @@ export function SellerPitchBanner() {
       className="relative bg-reels-void/50"
       aria-labelledby="seller-pitch-heading"
     >
-      <div className="relative mx-auto max-w-[1800px] px-4 pb-[33px] pt-[44px] sm:px-6 sm:pb-[49px] sm:pt-[60px] lg:px-8 lg:pb-[57px] lg:pt-[76px]">
-        <div className="relative mx-auto w-full max-w-[1600px] overflow-visible rounded-2xl bg-transparent px-5 py-10 sm:px-8 sm:py-12 lg:px-12 lg:py-14">
+      <div className="relative mx-auto max-w-[1800px] px-4 pb-[14px] pt-[44px] sm:px-6 sm:pb-[20px] sm:pt-[60px] lg:px-8 lg:pb-[24px] lg:pt-[76px]">
+        <div className="relative mx-auto w-full max-w-[1600px] overflow-visible rounded-2xl bg-transparent px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
           <div
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_55%_at_50%_50%,rgba(58,143,255,0.12)_0%,rgba(3,10,25,0)_72%)]"
             aria-hidden
@@ -55,8 +55,8 @@ export function SellerPitchBanner() {
                     className="pointer-events-none absolute -left-2 top-1/2 hidden h-3 w-3 -translate-y-1/2 rotate-45 border-b border-l border-white/30 bg-[#070f1f] lg:block"
                     aria-hidden
                   />
-                  <p className="flex items-center justify-center gap-1.5 font-semibold text-white lg:justify-end"><ShoppingCart className="h-4 w-4" />2. 거래</p>
-                  <p>필요한 영상을 구매하시거나 내 영상을 판매하실 수 있어요.</p>
+                  <p className="flex items-center justify-center gap-1.5 font-semibold text-white lg:justify-end"><WandSparkles className="h-4 w-4" />2. 재창작</p>
+                  <p>ARA AI로 배경, 얼굴, 몸을 자연스럽게 편집해 2차 창작까지 완성해 보세요.</p>
                 </div>
               </li>
               <li className="grid items-center gap-4 lg:grid-cols-[1fr_auto_1fr]">
@@ -119,50 +119,94 @@ export function SellerPitchBanner() {
           </div>
 
           <div className="relative mt-4 sm:mt-6">
-            <p className="-translate-y-5 text-center text-[clamp(1.6rem,3.4vw,2.4rem)] font-semibold tracking-tight text-zinc-100">
-              이렇게 이용해 보세요
-            </p>
             <div className="mx-auto mt-7 w-full max-w-[1120px] sm:mt-8">
-              <div className="grid grid-cols-3 items-center gap-3 sm:gap-5">
-                <p className="text-center text-sm font-semibold text-zinc-200 sm:text-base">Step 1</p>
-                <p className="text-center text-sm font-semibold text-zinc-200 sm:text-base">Step 2</p>
-                <p className="text-center text-sm font-semibold text-zinc-200 sm:text-base">Step 3</p>
-              </div>
-              <div className="relative mt-3 grid grid-cols-3 items-center gap-3 sm:gap-5">
-                <div
-                  className="pointer-events-none absolute left-[16.5%] right-[16.5%] top-1/2 h-px -translate-y-1/2 bg-white/20"
-                  aria-hidden
-                />
-                <div className="relative z-10 mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-white/18 bg-[#111a28] shadow-[0_10px_25px_-14px_rgba(0,0,0,0.9)] sm:h-20 sm:w-20">
-                  <Link2 className="h-5 w-5 text-white sm:h-6 sm:w-6" />
-                </div>
-                <div className="relative z-10 mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-white/18 bg-[#111a28] shadow-[0_10px_25px_-14px_rgba(0,0,0,0.9)] sm:h-20 sm:w-20">
-                  <ShoppingCart className="h-5 w-5 text-white sm:h-6 sm:w-6" />
-                </div>
-                <div className="relative z-10 mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-white/18 bg-[#111a28] shadow-[0_10px_25px_-14px_rgba(0,0,0,0.9)] sm:h-20 sm:w-20">
-                  <WandSparkles className="h-5 w-5 text-white sm:h-6 sm:w-6" />
-                </div>
-              </div>
-              <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-10 sm:grid-cols-3 sm:gap-5">
-                <div className="rounded-xl border border-white/28 bg-white/[0.03] px-4 py-5 text-center shadow-[0_10px_24px_-16px_rgba(0,0,0,0.35)] sm:min-h-[170px]">
-                  <p className="text-base font-bold text-white sm:text-xl">1. 등록</p>
-                  <p className="mt-3 text-[14px] leading-relaxed text-zinc-300 sm:text-[16px]">
-                    플랫폼 URL을 불러오시거나
-                    <br />
-                    직접 영상을 올려 주세요.
-                  </p>
-                </div>
-                <div className="rounded-xl border border-white/28 bg-white/[0.03] px-4 py-5 text-center shadow-[0_10px_24px_-16px_rgba(0,0,0,0.35)] sm:min-h-[170px]">
-                  <p className="text-base font-bold text-white sm:text-xl">2. 거래</p>
-                  <p className="mt-3 text-[14px] leading-relaxed text-zinc-300 sm:text-[16px]">
-                    필요한 영상을 구매하시거나
-                    <br />
-                    내 영상을 판매하실 수 있어요.
-                  </p>
-                </div>
-                <div className="rounded-xl border border-white/28 bg-white/[0.03] px-4 py-5 text-center shadow-[0_10px_24px_-16px_rgba(0,0,0,0.35)] sm:min-h-[170px]">
-                  <p className="text-base font-bold text-white sm:text-xl">3. 재창작</p>
-                  <p className="mt-3 text-[14px] leading-relaxed text-zinc-300 sm:text-[16px]">ARA AI로 배경, 얼굴, 몸을 자연스럽게 편집해 2차 창작까지 완성해 보세요.</p>
+              <div className="space-y-5 sm:space-y-6">
+                <p className="mb-4 text-center text-[clamp(1.9rem,4vw,2.9rem)] font-semibold tracking-tight text-zinc-100 sm:mb-6">
+                  단 3단계로
+                </p>
+                <div className="relative overflow-hidden rounded-[22px] border border-white/28 bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
+                  <div className="pointer-events-none absolute inset-y-8 left-1/2 hidden w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-[#62beff]/80 to-transparent lg:block" aria-hidden />
+                  <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
+                    <section className="space-y-5">
+                      <p className="pt-1 text-left text-[clamp(1.2rem,2.5vw,1.45rem)] font-medium tracking-tight text-zinc-300">
+                        원하는 영상 AI로 재창작해서 사용하기
+                      </p>
+                      <p className="pb-1 text-left text-[18px] font-extrabold tracking-tight text-white sm:text-[20px]">사용자</p>
+                      <ol className="relative space-y-4">
+                        <div
+                          className="pointer-events-none absolute bottom-5 left-5 top-5 w-px bg-gradient-to-b from-transparent via-white/40 to-transparent"
+                          aria-hidden
+                        />
+                        <li className="flex items-start gap-3">
+                          <span className="relative z-10 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
+                            <PlayCircle className="h-5 w-5" />
+                          </span>
+                          <div>
+                            <p className="text-[16px] font-bold text-white">1. 영상 선택</p>
+                            <p className="mt-1 text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">마켓에서 원하는 영상을 찾아보세요.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <span className="relative z-10 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
+                            <PencilRuler className="h-5 w-5" />
+                          </span>
+                          <div>
+                            <p className="text-[16px] font-bold text-white">2. AI로 커스터마이징</p>
+                            <p className="mt-1 text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">배경, 얼굴, 스타일을 자유롭게 변경하세요.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <span className="relative z-10 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
+                            <Download className="h-5 w-5" />
+                          </span>
+                          <div>
+                            <p className="text-[16px] font-bold text-white">3. 다운로드 &amp; 활용</p>
+                            <p className="mt-1 text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">완성된 영상을 다운로드해 바로 활용하세요.</p>
+                          </div>
+                        </li>
+                      </ol>
+                    </section>
+
+                    <section className="space-y-5">
+                      <p className="pt-1 text-right text-[clamp(1.2rem,2.5vw,1.45rem)] font-medium tracking-tight text-zinc-300">
+                        원하는 영상 판매해서 수익 만들기
+                      </p>
+                      <p className="pb-1 text-right text-[18px] font-extrabold tracking-tight text-white sm:text-[20px]">크리에이터</p>
+                      <ol className="relative space-y-4">
+                        <div
+                          className="pointer-events-none absolute bottom-5 right-5 top-5 w-px bg-gradient-to-b from-transparent via-white/40 to-transparent"
+                          aria-hidden
+                        />
+                        <li className="flex items-start justify-end gap-3 text-right">
+                          <span className="relative z-10 order-2 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
+                            <Link2 className="h-5 w-5" />
+                          </span>
+                          <div className="max-w-[520px]">
+                            <p className="text-[16px] font-bold text-white">1. 영상 등록</p>
+                            <p className="mt-1 text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">직접 업로드 또는 URL을 붙여넣어 영상을 등록하세요.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start justify-end gap-3 text-right">
+                          <span className="relative z-10 order-2 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
+                            <Tag className="h-5 w-5" />
+                          </span>
+                          <div className="max-w-[520px]">
+                            <p className="text-[16px] font-bold text-white">2. 가격 설정</p>
+                            <p className="mt-1 text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">원하는 가격을 설정하세요.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start justify-end gap-3 text-right">
+                          <span className="relative z-10 order-2 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
+                            <WandSparkles className="h-5 w-5" />
+                          </span>
+                          <div className="max-w-[520px]">
+                            <p className="text-[16px] font-bold text-white">3. 판매 시작</p>
+                            <p className="mt-1 text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">플랫폼에 공개하면 누구나 구매할 수 있습니다.</p>
+                          </div>
+                        </li>
+                      </ol>
+                    </section>
+                  </div>
                 </div>
               </div>
             </div>
@@ -172,24 +216,9 @@ export function SellerPitchBanner() {
             <div className="min-w-0 lg:w-auto lg:flex-none">
               <div className="flex items-center justify-center gap-4">
                 <div className="min-w-0">
-                  <h2
-                    id="seller-pitch-heading"
-                    className="text-[clamp(1.45rem,3vw,2.15rem)] font-semibold leading-tight tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
-                  >
-                    <span className="block text-white">당신의 비디오에 합당한 가치를 더하세요</span>
-                  </h2>
-                  <div className="mx-auto mt-2 h-px w-52 bg-white/30 sm:w-64 lg:w-[26rem]" />
-
-                  <p className="mx-auto mt-3 max-w-lg text-[14px] leading-relaxed text-zinc-300 sm:mt-3.5 sm:text-[15px]">
-                    <span className="mt-1 block sm:mt-1.5">
-                      <span className="font-bold text-white">지금 바로 100원</span>
-                      부터 올릴 수 있어요.
-                    </span>
-                  </p>
-
-                  <div className="mt-[55px] flex justify-center">
+                  <div className="mt-[20px] flex justify-center">
                     <Link
-                      href="/?auth=1"
+                      href="/"
                       className="pointer-events-auto relative inline-flex min-w-[188px] items-center justify-center overflow-hidden rounded-full border border-white/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.04)_18%,rgba(9,12,18,0.86)_58%,rgba(10,12,17,0.96)_100%)] px-7 py-2.5 text-[1.65rem] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-1px_0_rgba(255,255,255,0.12),0_10px_28px_rgba(0,0,0,0.45)] backdrop-blur-xl transition duration-300 hover:border-white/55 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.45),inset_0_-1px_0_rgba(255,255,255,0.18),0_14px_34px_rgba(0,0,0,0.55)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
                     >
                       <span

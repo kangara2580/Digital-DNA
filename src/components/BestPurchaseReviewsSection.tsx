@@ -50,25 +50,48 @@ function pickReviewVideoById(reviewId: string) {
 
 function ReviewStars({ rating }: { rating: number }) {
   return (
-    <div className="flex items-center gap-1" aria-label={`별점 ${rating}점`}>
+    <div className="flex items-center gap-1 leading-none py-[2px]" aria-label={`별점 ${rating}점`}>
       {Array.from({ length: 5 }).map((_, i) => {
-        const filled = i < rating;
+        const fillRatio = Math.max(0, Math.min(1, rating - i));
         return (
-          <svg
+          <span
             key={`star-${i}`}
-            viewBox="0 0 24 24"
-            className="h-4 w-4"
-            fill={filled ? "rgba(255,255,255,0.1)" : "transparent"}
-            stroke="rgba(255,255,255,0.62)"
-            strokeWidth="1.65"
-            aria-hidden
+            className="relative inline-flex h-[17px] w-[17px] shrink-0 overflow-visible"
           >
-            <path
-              d="M12 3.8l2.52 5.11 5.64.82-4.08 3.98.96 5.62L12 16.7 6.96 19.33l.96-5.62-4.08-3.98 5.64-.82L12 3.8z"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+            <svg
+              viewBox="-2 -2 28 28"
+              className="h-full w-full overflow-visible"
+              fill="transparent"
+              stroke="rgba(255,255,255,0.72)"
+              strokeWidth="1.75"
+              aria-hidden
+            >
+              <path
+                d="M12 3.8l2.52 5.11 5.64.82-4.08 3.98.96 5.62L12 16.7 6.96 19.33l.96-5.62-4.08-3.98 5.64-.82L12 3.8z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span
+              className="absolute inset-y-0 left-0 overflow-hidden"
+              style={{ width: `${fillRatio * 100}%` }}
+            >
+              <svg
+                viewBox="-2 -2 28 28"
+                className="h-full w-[17px] overflow-visible"
+                fill="#FFFFFF"
+                stroke="#FFFFFF"
+                strokeWidth="1.75"
+                aria-hidden
+              >
+                <path
+                  d="M12 3.8l2.52 5.11 5.64.82-4.08 3.98.96 5.62L12 16.7 6.96 19.33l.96-5.62-4.08-3.98 5.64-.82L12 3.8z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+          </span>
         );
       })}
     </div>
@@ -112,11 +135,11 @@ export function BestPurchaseReviewsSection() {
                 <Link
                   key={`${card.id}-${idx}`}
                   href={detailHref}
-                  className="relative block h-[360px] w-[min(68vw,216px)] shrink-0 lg:w-[216px]"
+                  className="relative block h-[410px] w-[min(68vw,216px)] shrink-0 lg:w-[216px]"
                   aria-label={`${card.author} 후기 상세 영상 보기`}
                 >
-                  <article className="review-motion-card group absolute left-0 top-1/2 flex h-[170px] w-full -translate-y-1/2 flex-col justify-center rounded-2xl border border-white/12 bg-white/[0.04] p-4 backdrop-blur-sm transition-[height,border-color,background-color,box-shadow] duration-500 ease-out hover:h-[340px] hover:justify-start hover:border-white/28 hover:bg-white/[0.06] hover:shadow-[0_18px_42px_-24px_rgba(0,0,0,0.6)]">
-                    <div className="review-hidden-meta mb-0 max-h-0 overflow-hidden opacity-0 transition-all duration-500 ease-out group-hover:mb-2 group-hover:max-h-[210px] group-hover:opacity-100">
+                  <article className="review-motion-card group absolute left-0 top-1/2 flex h-[180px] w-full -translate-y-1/2 flex-col justify-center rounded-2xl border border-white/12 bg-white/[0.04] p-4 backdrop-blur-sm transition-[height,border-color,background-color,box-shadow] duration-500 ease-out hover:h-[385px] hover:justify-start hover:border-white/28 hover:bg-white/[0.06] hover:shadow-[0_18px_42px_-24px_rgba(0,0,0,0.6)]">
+                    <div className="review-hidden-meta mb-0 max-h-0 overflow-hidden opacity-0 transition-all duration-500 ease-out group-hover:mb-3 group-hover:max-h-[270px] group-hover:opacity-100">
                       <div className="relative mx-auto mb-2.5 aspect-[9/16] w-[54%] overflow-hidden rounded-lg border border-white/20 bg-black/35">
                         {detail.poster ? (
                           <Image
@@ -148,7 +171,14 @@ export function BestPurchaseReviewsSection() {
                         사용 영상: {detail.videoTitle}
                       </p>
                     </div>
-                    <p className="line-clamp-3 text-[15px] leading-[1.55] text-zinc-100">
+                    <p
+                      className="overflow-hidden text-[15px] leading-[1.55] text-zinc-100"
+                      style={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: "vertical",
+                      }}
+                    >
                       {card.quote}
                     </p>
                     <div className="mt-2.5 flex items-center gap-2">

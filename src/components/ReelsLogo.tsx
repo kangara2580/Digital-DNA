@@ -10,18 +10,20 @@ export function ReelsLogo({
 }: {
   className?: string;
   size?: number;
-  variant?: "glass" | "bold-orange" | "flat-minimal";
+  variant?: "glass" | "bold-orange" | "flat-minimal" | "rail-main";
 }) {
   const uid = useId().replace(/:/g, "");
   const aGradId = `ara-a-grad-${uid}`;
   const playGradId = `ara-play-grad-${uid}`;
   const glowId = `ara-glow-${uid}`;
 
+  const viewBox = variant === "rail-main" ? "0 0 124 140" : "0 0 32 32";
+
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 32 32"
+      viewBox={viewBox}
       fill="none"
       className={className}
       aria-hidden
@@ -76,6 +78,20 @@ export function ReelsLogo({
             filter={`url(#${glowId})`}
           />
           <polygon points="14.45,16 18.05,17.95 14.45,19.9" fill={`url(#${playGradId})`} />
+        </>
+      ) : null}
+
+      {variant === "rail-main" ? (
+        <>
+          <path
+            d="M2 126 L46 14 Q50 8 54 14 L98 126"
+            fill="none"
+            stroke="#FFFFFF"
+            strokeWidth="18"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path d="M38 78 L62 91 L38 104 Z" fill="#2F8EFF" />
         </>
       ) : null}
     </svg>

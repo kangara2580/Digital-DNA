@@ -5,13 +5,11 @@ import {
   Compass,
   MoreVertical,
   Search,
-  ShoppingBag,
   Trophy,
   User,
   Wallet,
   X,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
@@ -39,9 +37,51 @@ const railTooltip =
 type RailItem = {
   href: string;
   label: string;
-  Icon: LucideIcon;
+  Icon: React.ComponentType<{
+    className?: string;
+    strokeWidth?: number;
+    "aria-hidden"?: boolean;
+  }>;
   isActive: (pathname: string) => boolean;
 };
+
+function ShopBagOutline({
+  className,
+  strokeWidth = 1.75,
+  ...props
+}: React.ComponentProps<"svg"> & { strokeWidth?: number }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden
+      {...props}
+    >
+      <path
+        d="M5.3 8.8H18.7L17.5 20H6.5L5.3 8.8Z"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8.8 8.8V6.9C8.8 5.1 10.2 3.7 12 3.7C13.8 3.7 15.2 5.1 15.2 6.9V8.8"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9.3 15.8H14.7"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 const RAIL_ITEMS: RailItem[] = [
   {
@@ -53,7 +93,7 @@ const RAIL_ITEMS: RailItem[] = [
   {
     href: "/shop",
     label: "쇼핑몰",
-    Icon: ShoppingBag,
+    Icon: ShopBagOutline,
     isActive: (p) => p === "/shop" || p.startsWith("/shop/"),
   },
   {
@@ -218,7 +258,7 @@ export function ReelsLeftRail() {
             className="flex h-[52px] w-[52px] items-center justify-center rounded-xl text-zinc-200 transition-colors hover:bg-white/[0.07] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100"
             aria-label="홈"
           >
-            <ReelsLogo size={34} />
+            <ReelsLogo size={31} variant="rail-main" className="translate-x-[1.5px]" />
           </Link>
         </div>
         <div className="flex min-h-0 flex-1 flex-col items-stretch pt-1">
@@ -267,7 +307,7 @@ export function ReelsLeftRail() {
                     className={`${railIconBtn} ${on ? railIconActive : ""}`}
                   >
                     <Icon
-                      className={href === "/shop" ? "h-7 w-7" : "h-[25px] w-[25px]"}
+                      className={href === "/shop" ? "h-[31px] w-[31px]" : "h-[25px] w-[25px]"}
                       strokeWidth={stroke}
                       aria-hidden
                     />
