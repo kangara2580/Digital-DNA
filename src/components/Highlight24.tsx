@@ -154,6 +154,8 @@ export function Highlight24() {
   const [mounted, setMounted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const ambientVideoRef = useRef<HTMLVideoElement>(null);
+  /** t=0 첫 키프레임이 검게 잡히는 경우 onLoadedData만으로는 실루엣이 먹지 않음 — 재생 오프셋을 본 뒤에만 공개 */
+  const ambientRevealRef = useRef(false);
   const touchStartX = useRef<number | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -312,6 +314,7 @@ export function Highlight24() {
 
   useEffect(() => {
     setAmbientVideoReady(false);
+    ambientRevealRef.current = false;
   }, [activeId]);
 
   useEffect(() => {
@@ -334,6 +337,16 @@ export function Highlight24() {
     el.muted = true;
     safePlayVideo(el);
   }, [activeId, reduceMotion, ambientVideoReady]);
+
+  const onAmbientTimeUpdate = useCallback(
+    (e: React.SyntheticEvent<HTMLVideoElement>) => {
+      if (ambientRevealRef.current) return;
+      if (e.currentTarget.currentTime < 0.05) return;
+      ambientRevealRef.current = true;
+      setAmbientVideoReady(true);
+    },
+    [],
+  );
 
   const onTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -442,9 +455,9 @@ export function Highlight24() {
           playsInline
           loop
           autoPlay
-          preload="metadata"
+          preload="auto"
           aria-hidden
-          onLoadedData={() => setAmbientVideoReady(true)}
+          onTimeUpdate={onAmbientTimeUpdate}
         />
       ) : null}
       <div
