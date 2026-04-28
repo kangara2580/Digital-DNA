@@ -27,7 +27,7 @@ export default function LicensePage() {
           <div className="mt-3 space-y-3 text-[15px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600">
             <p>ARA는 AI 기반 영상 생성 및 편집, 콘텐츠 거래 기능을 제공하는 플랫폼입니다.</p>
             <p>
-              본 약관은 ARA(이하 "당사", "저희" 또는 "우리")가 제공하는 서비스의 이용과 관련하여 회사와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
+              본 약관은 ARA(이하 &quot;당사&quot;, &quot;저희&quot; 또는 &quot;우리&quot;)가 제공하는 서비스의 이용과 관련하여 회사와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
             </p>
             <p>서비스를 이용하시면 본 이용약관에 동의하신 것으로 간주됩니다.</p>
             <p>약관 내용을 확인하신 후 서비스를 이용해 주세요.</p>

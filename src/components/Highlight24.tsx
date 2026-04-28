@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import type { FeedVideo } from "@/data/videos";
 import { LOCAL_TRENDING_FEED_VIDEOS } from "@/data/videos";
@@ -217,6 +218,19 @@ export function Highlight24() {
     }
     setAuthOpen(true);
   }, [authLoading, user, router]);
+
+  const onStartClick = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (user) {
+        router.push("/mypage");
+        return;
+      }
+      setAuthOpen(true);
+    },
+    [user, router],
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -654,7 +668,7 @@ export function Highlight24() {
             className="absolute right-[20%] top-1/2 z-[65] hidden h-[min(58%,380px)] w-[140px] -translate-y-1/2 md:block"
             aria-label="다음 클립 확장 영역"
           />
-          <div className="pointer-events-none relative hidden w-[clamp(206px,24vw,332px)] -translate-x-16 md:flex md:justify-center">
+          <div className="pointer-events-none relative z-[80] hidden w-[clamp(206px,24vw,332px)] -translate-x-16 md:flex md:justify-center">
             <div className="flex w-full flex-col items-center pl-[clamp(20px,2.25vw,34px)] pr-[clamp(14px,1.55vw,24px)]">
               <div
                 className="-translate-y-12 select-none text-[clamp(2.4rem,6.2vw,6.1rem)] font-semibold leading-none tracking-[0.03em] text-white/92"
@@ -724,15 +738,9 @@ export function Highlight24() {
               </p>
               <button
                 type="button"
-                onClick={() => {
-                  if (authLoading) return;
-                  if (user) {
-                    router.push("/mypage");
-                    return;
-                  }
-                  setAuthOpen(true);
-                }}
-                className="-translate-x-[40px] mt-[clamp(0.5rem,1.2vw,1.5rem)] pointer-events-auto inline-flex w-[clamp(138px,74%,188px)] items-center justify-center rounded-full border border-white/45 bg-transparent px-[clamp(1rem,1.9vw,1.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold text-white shadow-[0_9px_0_rgba(0,0,0,0.55)] transition duration-200 hover:-translate-y-0.5 hover:border-white/60 hover:shadow-[0_11px_0_rgba(0,0,0,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
+                onClick={onStartClick}
+                onPointerDown={(event) => event.stopPropagation()}
+                className="-translate-x-[40px] z-[85] mt-[clamp(0.5rem,1.2vw,1.5rem)] pointer-events-auto inline-flex w-[clamp(138px,74%,188px)] items-center justify-center rounded-full border border-white/45 bg-transparent px-[clamp(1rem,1.9vw,1.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold text-white shadow-[0_9px_0_rgba(0,0,0,0.55)] transition duration-200 hover:-translate-y-0.5 hover:border-white/60 hover:shadow-[0_11px_0_rgba(0,0,0,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
               >
                 시작하기
               </button>
