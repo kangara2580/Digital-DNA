@@ -182,6 +182,7 @@ function FixedSubscribeNavLink() {
 
 export function MallTopNav() {
   const headerRef = useRef<HTMLElement>(null);
+  const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuthSession();
   const isHomePage = pathname === "/";
@@ -189,12 +190,13 @@ export function MallTopNav() {
   const isVideoDetailPage =
     pathname.startsWith("/video/") && !pathname.endsWith("/customize");
   const isCategoryPage = pathname.startsWith("/category/");
-  const [isExploreWatchMode, setIsExploreWatchMode] = useState(false);
-  const showCategoryNav = (isShopPage || isCategoryPage) && !isExploreWatchMode;
-  const showAllCategoriesInline = (isShopPage || isCategoryPage) && !isExploreWatchMode;
   /** 탐색/카테고리: 메인에서 스크롤 내린 것과 같은 컴팩트 헤더를 즉시 적용 */
   const compactEffective =
     pathname === "/explore" || isShopPage || isCategoryPage || isVideoDetailPage;
+  const [isExploreWatchMode, setIsExploreWatchMode] = useState(false);
+  const showCategoryNav = (isShopPage || isCategoryPage) && !isExploreWatchMode;
+  const showAllCategoriesInline =
+    (isShopPage || isCategoryPage) && !isExploreWatchMode;
   const [moreOpen, setMoreOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const moreWrapRef = useRef<HTMLDivElement>(null);
@@ -277,9 +279,11 @@ export function MallTopNav() {
   useEffect(() => {
     const syncExploreMode = () => {
       if (typeof document === "undefined") return;
-      setIsExploreWatchMode(
-        document.documentElement.dataset.exploreMode === "watch",
-      );
+      const isWatch = document.documentElement.dataset.exploreMode === "watch";
+      setIsExploreWatchMode(isWatch);
+      if (isWatch) {
+        document.documentElement.style.setProperty("--header-height", "0px");
+      }
     };
     syncExploreMode();
     window.addEventListener("reels:explore-mode", syncExploreMode);
@@ -291,6 +295,16 @@ export function MallTopNav() {
   useEffect(() => {
     if (!compactEffective) setMoreOpen(false);
   }, [compactEffective]);
+
+  useEffect(() => {
+    if (!showCategoryNav) return;
+    const timer = window.setTimeout(() => {
+      for (const item of ITEMS) {
+        router.prefetch(item.href);
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [router, showCategoryNav]);
 
   useEffect(() => {
     if (!showAllCategoriesInline) {
@@ -406,6 +420,16 @@ export function MallTopNav() {
     );
   }
 
+  if (isExploreWatchMode) {
+    return (
+      <div className="pointer-events-none fixed right-4 top-4 z-[120] sm:right-6 sm:top-5">
+        <div className="pointer-events-auto">
+          <MainTopUserMenu compact />
+        </div>
+      </div>
+    );
+  }
+
   const logoClass = `flex shrink-0 items-center gap-2 font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 ${easeNav} ${
     compactEffective ? "text-[12px]" : "text-sm"
   }`;
@@ -491,7 +515,7 @@ export function MallTopNav() {
           >
             {showCategoryNav ? (
               showAllCategoriesInline ? (
-                <div className={`relative mt-0 flex min-w-0 flex-1 items-center gap-1.5 ${easeNav}`}>
+                <div className={`relative z-20 mt-0 flex min-w-0 flex-1 items-center gap-1.5 pr-1 ${easeNav}`}>
                   <button
                     type="button"
                     onClick={() => scrollCategoryRow(-1)}
@@ -634,7 +658,7 @@ export function MallTopNav() {
 
           {compactEffective && (
             <div
-              className={`mr-1 flex shrink-0 items-center gap-1.5 sm:mr-2 sm:gap-2 lg:mr-2 ${easeLayout}`}
+              className={`relative z-10 mr-1 flex shrink-0 items-center gap-1.5 sm:mr-2 sm:gap-2 lg:mr-2 ${easeLayout}`}
             >
               <MainTopUserMenu compact />
               {!isHomePage && user ? (
