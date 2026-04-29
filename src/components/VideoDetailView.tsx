@@ -572,7 +572,7 @@ export function VideoDetailView({
                       </div>
                     ) : null}
                   </div>
-                  <h1 className="min-w-0 text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">
+                  <h1 className="min-w-0 text-center text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">
                     {video.title}
                   </h1>
                   {video.description ? (
