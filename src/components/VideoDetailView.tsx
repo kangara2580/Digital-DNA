@@ -468,7 +468,7 @@ export function VideoDetailView({
             aria-label="이전 영상"
             onClick={() => prevVideo && goToVideo(prevVideo)}
             className="group fixed top-1/2 z-[70] -translate-y-1/2"
-            style={{ left: "calc(var(--reels-rail-w, 0px) + 0.5rem)" }}
+            style={{ left: "calc(var(--reels-rail-w, 0px) + 3rem)" }}
           >
             <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/50 text-zinc-300 shadow-lg backdrop-blur-sm transition-all duration-200 group-hover:border-white/25 group-hover:bg-black/75 group-hover:text-white group-hover:scale-105 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/80 [html[data-theme='light']_&]:text-zinc-700">
               <ChevronLeft className="h-5 w-5" />
@@ -478,7 +478,7 @@ export function VideoDetailView({
             type="button"
             aria-label="다음 영상"
             onClick={() => nextVideo && goToVideo(nextVideo)}
-            className="group fixed right-2 top-1/2 z-[70] -translate-y-1/2 sm:right-3"
+            className="group fixed right-12 top-1/2 z-[70] -translate-y-1/2 sm:right-14"
           >
             <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/50 text-zinc-300 shadow-lg backdrop-blur-sm transition-all duration-200 group-hover:border-white/25 group-hover:bg-black/75 group-hover:text-white group-hover:scale-105 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/80 [html[data-theme='light']_&]:text-zinc-700">
               <ChevronRight className="h-5 w-5" />
