@@ -41,10 +41,10 @@ const rowCls =
   "flex items-center gap-3 border-b border-white/10 py-1.5 last:border-b-0 last:pb-0 [html[data-theme='light']_&]:border-zinc-200/80";
 
 const labelCls =
-  "w-[6.5rem] shrink-0 text-[12px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
+  "w-[6.5rem] shrink-0 text-[14px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
 
 const valueCls =
-  "min-w-0 text-[13px] font-extrabold leading-snug tabular-nums tracking-tight text-[#EAF1FF] [html[data-theme='light']_&]:text-zinc-900";
+  "min-w-0 text-[15px] font-extrabold leading-snug tabular-nums tracking-tight text-[#EAF1FF] [html[data-theme='light']_&]:text-zinc-900";
 
 export function TrendingVideoStatsFooter({
   metrics,
@@ -71,7 +71,7 @@ export function TrendingVideoStatsFooter({
               {isUp ? "▲" : "▼"}
             </span>
           </dt>
-          <dd className="text-[13px] font-extrabold tabular-nums text-[#B9CCFF] [html[data-theme='light']_&]:text-[#2F4FA8]">
+          <dd className="text-[15px] font-extrabold tabular-nums text-[#B9CCFF] [html[data-theme='light']_&]:text-[#2F4FA8]">
             {Math.max(0, Math.floor(metrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}
           </dd>
         </div>
