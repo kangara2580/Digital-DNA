@@ -301,15 +301,15 @@ export function ExploreReelSlide({
       ref={blockRef}
       className="flex h-[calc(100dvh-var(--header-height,4.5rem))] w-full shrink-0 snap-start snap-always flex-col bg-black [html[data-theme='light']_&]:bg-zinc-100"
     >
-      <div className="flex min-h-0 w-full flex-1 items-stretch justify-center px-0 pt-0 md:px-4 md:pt-0">
+      <div className="flex min-h-0 w-full flex-1 items-stretch justify-center px-2 pt-0 md:px-4 md:pt-0">
         {/*
           영상 열에 명시적 max-width를 두어 aspect-[9/16] + w-full 이 0으로 무너지지 않게 함.
           레일은 같은 flex 줄에서 영상 바로 옆에만 붙음(가운데 단독 정렬 방지).
         */}
-        <div className="flex w-full max-w-none flex-row items-stretch justify-center gap-0 md:max-w-[min(56rem,calc(100vw-var(--reels-rail-w,0px)-1.5rem))] md:gap-3 lg:gap-4">
-          <div className="relative h-full w-full shrink-0 md:w-[min(100%,min(420px,calc(100vw-var(--reels-rail-w,0px)-8.5rem)))]">
+        <div className="flex w-full max-w-[min(56rem,calc(100vw-var(--reels-rail-w,0px)-1.5rem))] flex-row items-stretch justify-center gap-2 md:gap-3 lg:gap-4">
+          <div className="relative h-full w-[min(100%,min(420px,calc(100vw-var(--reels-rail-w,0px)-8.5rem)))] shrink-0">
             <div
-              className="relative h-full w-full overflow-hidden bg-black md:rounded-2xl md:border md:border-white/12 md:shadow-[0_24px_80px_-30px_rgba(0,0,0,0.85)] [html[data-theme='light']_&]:md:border-zinc-200"
+              className="relative h-full w-full overflow-hidden rounded-2xl border border-white/12 bg-black shadow-[0_24px_80px_-30px_rgba(0,0,0,0.85)] [html[data-theme='light']_&]:border-zinc-200"
             >
             <video
               ref={videoRef}
