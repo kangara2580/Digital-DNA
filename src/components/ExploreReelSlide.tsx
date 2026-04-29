@@ -100,7 +100,7 @@ function ReelDesktopRail({
 
       <div className="flex flex-col items-center gap-0.5 text-center">
         <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          복제
+          구매
         </span>
         <span className="text-[11px] font-bold tabular-nums text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
           {commerce.salesCount.toLocaleString("ko-KR")}
@@ -121,7 +121,7 @@ function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
     <div className="flex shrink-0 items-center justify-between gap-2 border-t border-white/10 bg-black/50 px-3 py-2.5 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/90">
       <div className="min-w-0 flex-1">
         <p className="truncate text-[11px] font-bold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-          수익 {formatCompactWon(metrics.cumulativeRevenueWon)} · 복제{" "}
+          수익 {formatCompactWon(metrics.cumulativeRevenueWon)} · 구매{" "}
           {commerce.salesCount.toLocaleString("ko-KR")}
         </p>
         <p className="truncate font-mono text-[10px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
