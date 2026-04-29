@@ -461,40 +461,39 @@ export function VideoDetailView({
     <div className="relative min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
 
       <div className="mx-auto max-w-[1600px] px-2 pb-8 pt-8 sm:px-4 sm:pt-10 lg:px-6">
-        {/* ── 카테고리 이전/다음 화살표 ── */}
-        {hasCategoryNav && (
-          <div className="pointer-events-none absolute inset-x-0 top-[calc(50%-2rem)] flex items-center justify-between px-2 sm:px-3" style={{ paddingLeft: "calc(var(--reels-rail-w, 0px) + 0.5rem)" }}>
-            <button
-              type="button"
-              aria-label="이전 영상"
-              onClick={() => prevVideo && goToVideo(prevVideo)}
-              className="pointer-events-auto group z-[70]"
-            >
-              <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-black/60 text-zinc-200 shadow-xl backdrop-blur-sm transition-all duration-200 group-hover:border-white/35 group-hover:bg-black/80 group-hover:text-white group-hover:scale-110 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-700">
-                <ChevronLeft className="h-7 w-7" />
-              </span>
-            </button>
-            <button
-              type="button"
-              aria-label="다음 영상"
-              onClick={() => nextVideo && goToVideo(nextVideo)}
-              className="pointer-events-auto group z-[70]"
-            >
-              <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-black/60 text-zinc-200 shadow-xl backdrop-blur-sm transition-all duration-200 group-hover:border-white/35 group-hover:bg-black/80 group-hover:text-white group-hover:scale-110 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-700">
-                <ChevronRight className="h-7 w-7" />
-              </span>
-            </button>
-          </div>
-        )}
-
         <div className="flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-center lg:gap-10">
+          {/* 영상 + 좌우 화살표 묶음 */}
           <div
-            className={`min-w-0 lg:-mt-2 ${
+            className={`relative min-w-0 lg:-mt-2 ${
               video.orientation === "portrait"
                 ? "w-full lg:w-[23rem] lg:flex-none"
                 : "w-full lg:flex-1"
             }`}
           >
+            {hasCategoryNav && (
+              <>
+                <button
+                  type="button"
+                  aria-label="이전 영상"
+                  onClick={() => prevVideo && goToVideo(prevVideo)}
+                  className="group absolute left-0 top-1/2 z-[70] -translate-x-[calc(100%+0.5rem)] -translate-y-1/2"
+                >
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-black/60 text-zinc-200 shadow-xl backdrop-blur-sm transition-all duration-200 group-hover:border-white/35 group-hover:bg-black/80 group-hover:text-white group-hover:scale-110 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-700">
+                    <ChevronLeft className="h-7 w-7" />
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  aria-label="다음 영상"
+                  onClick={() => nextVideo && goToVideo(nextVideo)}
+                  className="group absolute right-0 top-1/2 z-[70] translate-x-[calc(100%+0.5rem)] -translate-y-1/2"
+                >
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-black/60 text-zinc-200 shadow-xl backdrop-blur-sm transition-all duration-200 group-hover:border-white/35 group-hover:bg-black/80 group-hover:text-white group-hover:scale-110 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-700">
+                    <ChevronRight className="h-7 w-7" />
+                  </span>
+                </button>
+              </>
+            )}
             <div
               className={`reels-glass-card relative overflow-hidden rounded-xl ${
                 video.orientation === "portrait"
