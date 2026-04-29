@@ -627,7 +627,7 @@ export function VideoDetailView({
                 if (!owned) markPurchased(video.id);
                 router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
               }}
-              className="w-full h-[64px] rounded-2xl border border-[#4f8cff]/35 bg-[#0b1830] text-[18px] font-extrabold tracking-wide text-white shadow-[0_0_28px_rgba(66,133,244,0.14),inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-250 hover:brightness-110 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:bg-[#1a3a7a] [html[data-theme='light']_&]:border-[#4f8cff]/60"
+              className="w-full h-[64px] rounded-full border border-[#4f8cff]/35 bg-[#0b1830] text-[18px] font-extrabold tracking-wide text-white shadow-[0_0_28px_rgba(66,133,244,0.14),inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-250 hover:brightness-110 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:bg-[#1a3a7a] [html[data-theme='light']_&]:border-[#4f8cff]/60"
             >
               {soldOut ? "품절" : "구매하기"}
             </button>
