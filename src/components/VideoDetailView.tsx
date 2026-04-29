@@ -484,13 +484,6 @@ export function VideoDetailView({
             </span>
           </button>
 
-          {/* 카테고리 이름 + 위치 표시 */}
-          <div className="fixed bottom-6 left-1/2 z-[70] -translate-x-1/2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/55 px-3.5 py-1.5 text-[11px] font-semibold text-zinc-400 backdrop-blur-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80 [html[data-theme='light']_&]:text-zinc-600">
-              <span className="text-white/60">←→</span>
-              {currentIndex + 1} / {categoryVideos.length}
-            </span>
-          </div>
         </>
       )}
 
