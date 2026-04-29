@@ -191,7 +191,7 @@ export function VideoCard({
   const remaining = clonesRemaining(commerce);
   // 정책 변경: MICRO DNA 배지는 모든 화면에서 노출하지 않음.
   const showMicro = false;
-  const showAiBadge = video.isAiGenerated === true;
+  const showAiBadge = false;
   const cartBtnRef = useRef<HTMLButtonElement>(null);
   const wishlisted = wishlist.isSaved(video.id);
   const [likedByMe, setLikedByMe] = useState(false);

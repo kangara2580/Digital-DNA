@@ -653,23 +653,6 @@ export function SellerClipUploadForm() {
             </div>
           </div>
 
-          <div className="sm:col-span-2 rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-            <label className="flex cursor-pointer items-start gap-3">
-              <input
-                type="checkbox"
-                className="mt-1 h-4 w-4 rounded border-white/25 bg-black/40 text-reels-cyan focus:ring-reels-cyan/40"
-                checked={isAi}
-                onChange={(e) => setIsAi(e.target.checked)}
-              />
-              <span className="text-[13px] font-semibold leading-snug text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
-                이 영상은 AI로 생성·합성된 콘텐츠입니다
-                <span className="mt-1 block text-[11px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                  직접 촬영·편집한 실사면 체크하지 마세요. 마켓 필터(AI/Real)에
-                  반영됩니다.
-                </span>
-              </span>
-            </label>
-          </div>
 
           <div className="sm:col-span-2 space-y-3 rounded-xl border border-amber-500/25 bg-amber-500/[0.07] p-4 [html[data-theme='light']_&]:border-amber-400/35 [html[data-theme='light']_&]:bg-amber-50">
             <label className="flex cursor-pointer items-start gap-3">
