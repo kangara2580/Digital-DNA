@@ -461,7 +461,7 @@ export function VideoDetailView({
     <div className="relative min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
 
       <div className="mx-auto max-w-[1600px] px-2 pb-8 pt-8 sm:px-4 sm:pt-10 lg:px-6">
-        <div className="flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-center lg:gap-20">
+        <div className="flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-center lg:gap-36">
           {/* 영상 + 좌우 화살표 묶음 */}
           <div
             className={`relative min-w-0 lg:-mt-2 ${
