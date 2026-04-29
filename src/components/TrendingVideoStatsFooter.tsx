@@ -85,7 +85,7 @@ export function TrendingVideoStatsFooter({
         </div>
         {typeof salesCount === "number" ? (
           <div className={rowCls}>
-            <dt className={labelCls}>구매 인원</dt>
+            <dt className={labelCls}>구매</dt>
             <dd className={valueCls}>{salesCount.toLocaleString("ko-KR")}명</dd>
           </div>
         ) : null}
