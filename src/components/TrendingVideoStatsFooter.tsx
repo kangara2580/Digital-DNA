@@ -1,3 +1,4 @@
+import { Eye, Heart, ShoppingBag, TrendingUp } from "lucide-react";
 import type { TrendingRankMetrics } from "@/data/trendingStats";
 
 /** 누적수익 — 한눈에 읽히도록 큰 자릿수·콤마 표기(전광판 박스 대신) */
@@ -58,14 +59,11 @@ export function TrendingVideoStatsFooter({
     <div className="w-fit px-3 py-2 [html[data-theme='light']_&]:bg-white sm:px-4">
       <dl className="leading-snug">
         <div className={rowCls}>
-          <dt className={`inline-flex shrink-0 w-[4.5rem] items-center gap-1 text-[14px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500`}>
+          <dt className={`inline-flex shrink-0 w-[4.5rem] items-center gap-1.5 text-[14px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500`}>
+            <TrendingUp className="h-3.5 w-3.5 shrink-0" aria-hidden />
             수익
             <span
-              className={`text-[11px] leading-none ${
-                isUp
-                  ? "text-[#FF3B57]"
-                  : "text-[#2FA2FF]"
-              }`}
+              className={`text-[11px] leading-none ${isUp ? "text-[#FF3B57]" : "text-[#2FA2FF]"}`}
               aria-hidden
             >
               {isUp ? "▲" : "▼"}
@@ -76,16 +74,25 @@ export function TrendingVideoStatsFooter({
           </dd>
         </div>
         <div className={rowCls}>
-          <dt className={labelCls}>조회수</dt>
+          <dt className={`${labelCls} inline-flex items-center gap-1.5`}>
+            <Eye className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            조회수
+          </dt>
           <dd className={valueCls}>{formatCountCompact(metrics.totalViews)}</dd>
         </div>
         <div className={rowCls}>
-          <dt className={labelCls}>좋아요</dt>
+          <dt className={`${labelCls} inline-flex items-center gap-1.5`}>
+            <Heart className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            좋아요
+          </dt>
           <dd className={valueCls}>{formatCountCompact(metrics.totalLikes)}</dd>
         </div>
         {typeof salesCount === "number" ? (
           <div className={rowCls}>
-            <dt className={labelCls}>구매</dt>
+            <dt className={`${labelCls} inline-flex items-center gap-1.5`}>
+              <ShoppingBag className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              구매
+            </dt>
             <dd className={valueCls}>{salesCount.toLocaleString("ko-KR")}명</dd>
           </div>
         ) : null}
