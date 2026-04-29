@@ -10,9 +10,9 @@ import { shuffleVideos } from "@/data/videos";
  * SSR·클라이언트가 동일 순서를 보장해 하이드레이션 불일치를 막을 수 있음.
  */
 export function buildExplorePool(): FeedVideo[] {
-  const rec = getVideosForCategory("recommend");
-  const portrait = rec.filter((v) => v.orientation === "portrait");
-  const base = portrait.length ? portrait : rec;
+  const best = getVideosForCategory("best");
+  const portrait = best.filter((v) => v.orientation === "portrait");
+  const base = portrait.length ? portrait : best;
   const fb =
     base.length > 0
       ? base

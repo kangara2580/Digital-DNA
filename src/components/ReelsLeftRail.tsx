@@ -91,10 +91,11 @@ const RAIL_ITEMS: RailItem[] = [
     isActive: (p) => p === "/explore" || p.startsWith("/explore/"),
   },
   {
-    href: "/shop",
+    href: "/category/best",
     label: "쇼핑몰",
     Icon: ShopBagOutline,
-    isActive: (p) => p === "/shop" || p.startsWith("/shop/"),
+    isActive: (p) =>
+      p === "/shop" || p.startsWith("/shop/") || p.startsWith("/category/"),
   },
   {
     href: "/leaderboard",
@@ -206,7 +207,7 @@ export function ReelsLeftRail() {
     const r = btn.getBoundingClientRect();
     setSearchPanelPos({
       top: r.top + r.height / 2,
-      left: r.right + 8,
+      left: r.right + 20,
     });
   }, []);
 
@@ -388,7 +389,7 @@ export function ReelsLeftRail() {
                     runSearch();
                   }}
                   className="fixed z-[260] -translate-y-1/2 overflow-hidden rounded-full border border-white/15 bg-reels-void/95 p-1 shadow-[0_18px_30px_-18px_rgba(0,0,0,0.8)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/95"
-                  style={{ top: searchPanelPos.top - 12, left: searchPanelPos.left }}
+                  style={{ top: searchPanelPos.top - 20, left: searchPanelPos.left }}
                 >
                   <div className="relative flex items-center">
                     <input

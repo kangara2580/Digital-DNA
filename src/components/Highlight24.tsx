@@ -493,7 +493,7 @@ export function Highlight24() {
         <button
           type="button"
           onClick={onTopUserClick}
-          className="fixed right-4 top-4 z-[120] inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/65 text-white/92 transition hover:bg-black/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/75 sm:right-6 sm:top-5"
+          className="fixed right-4 top-4 z-[120] inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-black/38 text-white/95 backdrop-blur-md transition hover:bg-black/52 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/85 sm:right-6 sm:top-5"
           aria-label={user ? "마이페이지로 이동" : "로그인 또는 회원가입"}
           disabled={authLoading}
         >

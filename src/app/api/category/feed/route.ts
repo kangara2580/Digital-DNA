@@ -13,6 +13,7 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+const DB_TIMEOUT_MS = 1200;
 
 function newestTimestampMs(video: FeedVideo): number {
   const uploadedAt = video.listing?.createdAtMs;
@@ -39,6 +40,15 @@ function mergeWithDedupe(dbVideos: FeedVideo[], staticVideos: FeedVideo[]): Feed
   return merged;
 }
 
+async function withTimeout<T>(work: Promise<T>, timeoutMs: number): Promise<T> {
+  return await Promise.race([
+    work,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(new Error("db_timeout")), timeoutMs);
+    }),
+  ]);
+}
+
 export async function GET(request: NextRequest) {
   const slug = request.nextUrl.searchParams.get("slug")?.trim() as CategorySlug | undefined;
   if (!slug || !CATEGORY_SLUGS.includes(slug)) {
@@ -49,17 +59,20 @@ export async function GET(request: NextRequest) {
     slug === "latest" ? [...ALL_MARKET_VIDEOS] : getVideosForCategory(slug);
 
   try {
-    await ensureVideoCategoryColumn();
-    const rows = await prisma.video.findMany({
-      where:
-        slug === "latest"
-          ? undefined
-          : {
-              category: slug,
-            },
-      orderBy: { createdAt: "desc" },
-      take: 240,
-    });
+    await withTimeout(ensureVideoCategoryColumn(), DB_TIMEOUT_MS);
+    const rows = await withTimeout(
+      prisma.video.findMany({
+        where:
+          slug === "latest"
+            ? undefined
+            : {
+                category: slug,
+              },
+        orderBy: { createdAt: "desc" },
+        take: 240,
+      }),
+      DB_TIMEOUT_MS,
+    );
     const dbVideos = rows.map(videoRowToFeedVideo);
     const videos = mergeWithDedupe(dbVideos, staticVideos).sort(
       (a, b) => newestTimestampMs(b) - newestTimestampMs(a),

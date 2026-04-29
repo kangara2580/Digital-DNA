@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+const DB_TIMEOUT_MS = 1200;
 
 function newestTimestampMs(video: FeedVideo): number {
   const uploadedAt = video.listing?.createdAtMs;
@@ -36,14 +37,26 @@ function mergeLatestVideos(dbVideos: FeedVideo[]): FeedVideo[] {
   return merged.sort((a, b) => newestTimestampMs(b) - newestTimestampMs(a));
 }
 
+async function withTimeout<T>(work: Promise<T>, timeoutMs: number): Promise<T> {
+  return await Promise.race([
+    work,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(new Error("db_timeout")), timeoutMs);
+    }),
+  ]);
+}
+
 export async function GET() {
   const staticSorted = sortVideosByNewest(ALL_MARKET_VIDEOS);
   try {
-    await ensureVideoCategoryColumn();
-    const rows = await prisma.video.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 240,
-    });
+    await withTimeout(ensureVideoCategoryColumn(), DB_TIMEOUT_MS);
+    const rows = await withTimeout(
+      prisma.video.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 240,
+      }),
+      DB_TIMEOUT_MS,
+    );
     const dbVideos = rows.map(videoRowToFeedVideo);
     return NextResponse.json(
       { ok: true, videos: mergeLatestVideos(dbVideos) },

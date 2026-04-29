@@ -1,6 +1,5 @@
 "use client";
 
-import { CircleUserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -86,13 +85,42 @@ export function MainTopUserMenu({ compact }: Props) {
         <button
           type="button"
           onClick={() => setAuthOpen(true)}
-          className={`inline-flex min-w-0 shrink-0 items-center rounded-full border border-white/80 bg-transparent text-white ring-1 ring-white/10 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10 ${
-            "px-6 py-2 text-[13px] sm:text-[14px]"
-          }`}
+          className="relative inline-flex h-11 w-11 min-w-0 shrink-0 items-center justify-center rounded-full border border-white/40 bg-black/38 text-white/95 backdrop-blur-md transition-all duration-300 hover:bg-black/52"
           aria-haspopup="dialog"
           aria-expanded={authOpen}
+          aria-label="로그인/회원가입 시작하기"
         >
-          <span className="whitespace-nowrap font-bold">시작하기</span>
+          <span className="relative inline-flex h-6 w-6 items-center justify-center">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              aria-hidden
+            >
+              <circle cx="12" cy="8" r="4" strokeWidth="2.2" />
+              <path
+                d="M4 20C4 15.8 7.6 12.4 12 12.4C16.4 12.4 20 15.8 20 20H4Z"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 24 24"
+              className="absolute -right-[0.28rem] -top-[0.28rem] h-3 w-3"
+              fill="none"
+              stroke="currentColor"
+              aria-hidden
+            >
+              <path
+                d="M12 4V20M4 12H20"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
         </button>
 
         {mounted && authOpen
@@ -108,10 +136,10 @@ export function MainTopUserMenu({ compact }: Props) {
                   role="dialog"
                   aria-modal="true"
                   aria-label="로그인 또는 회원가입"
-                  className="relative z-10 w-full max-w-[560px] max-h-[min(92vh,760px)] overflow-y-auto rounded-[24px] border border-white/20 bg-[radial-gradient(120%_120%_at_0%_0%,rgba(255,0,85,0.26)_0%,rgba(8,14,30,0.94)_52%,rgba(2,6,16,0.98)_100%)] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10"
+                  className="relative z-10 w-full max-w-[560px] max-h-[min(92vh,760px)] overflow-y-auto rounded-[24px] border border-white/20 bg-[radial-gradient(120%_120%_at_0%_0%,rgba(0,51,255,0.34)_0%,rgba(8,14,30,0.94)_52%,rgba(2,6,16,0.98)_100%)] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10"
                 >
                   <div
-                    className="pointer-events-none absolute -left-16 -top-20 h-52 w-52 rounded-full bg-[#FF0055]/30 blur-3xl"
+                    className="pointer-events-none absolute -left-16 -top-20 h-52 w-52 rounded-full bg-[#0033FF]/30 blur-3xl"
                     aria-hidden
                   />
                   <div
@@ -180,7 +208,21 @@ export function MainTopUserMenu({ compact }: Props) {
         aria-label="마이페이지"
         title="마이페이지"
       >
-        <CircleUserRound className={compact ? "h-4 w-4" : "h-[18px] w-[18px]"} strokeWidth={2.1} />
+        <svg
+          viewBox="0 0 24 24"
+          className={compact ? "h-4 w-4" : "h-[18px] w-[18px]"}
+          fill="none"
+          stroke="currentColor"
+          aria-hidden
+        >
+          <circle cx="12" cy="8" r="4" strokeWidth="2.2" />
+          <path
+            d="M4 20C4 15.8 7.6 12.4 12 12.4C16.4 12.4 20 15.8 20 20H4Z"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </Link>
       <button
         type="button"

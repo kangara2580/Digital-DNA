@@ -115,7 +115,7 @@ export function BestPurchaseReviewsSection() {
           >
             구매 후기
           </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-center text-[15px] font-medium leading-relaxed tracking-[0.01em] text-white/78">
+          <p className="mx-auto mt-2 max-w-2xl text-center text-[16px] font-medium leading-relaxed tracking-[0.01em] text-white/78">
             좋다고 떠들지 않겠습니다. 직접 써본 분들의 안목을 믿어보세요.
           </p>
         </div>
