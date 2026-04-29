@@ -38,13 +38,13 @@ type Props = {
 };
 
 const rowCls =
-  "flex items-center justify-between gap-3 border-b border-white/10 py-2.5 last:border-b-0 last:pb-0 [html[data-theme='light']_&]:border-zinc-200/80";
+  "flex items-center gap-3 border-b border-white/10 py-1.5 last:border-b-0 last:pb-0 [html[data-theme='light']_&]:border-zinc-200/80";
 
 const labelCls =
-  "shrink-0 text-[13px] font-semibold leading-snug tracking-tight text-zinc-200 [html[data-theme='light']_&]:text-zinc-700 sm:text-[14px]";
+  "w-[6.5rem] shrink-0 text-[12px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
 
 const valueCls =
-  "min-w-0 text-right text-[14px] font-extrabold leading-snug tabular-nums tracking-tight text-[#EAF1FF] [html[data-theme='light']_&]:text-zinc-900 sm:text-[15px]";
+  "min-w-0 text-[13px] font-extrabold leading-snug tabular-nums tracking-tight text-[#EAF1FF] [html[data-theme='light']_&]:text-zinc-900";
 
 export function TrendingVideoStatsFooter({
   metrics,
@@ -55,28 +55,24 @@ export function TrendingVideoStatsFooter({
   const hasExtendedRows = typeof salesCount === "number" || Boolean(stockRow);
 
   return (
-    <div
-      className={`border-t border-white/10 bg-[linear-gradient(180deg,rgba(8,14,30,0.88)_0%,rgba(4,9,22,0.94)_100%)] px-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white sm:px-3.5 ${
-        hasExtendedRows ? "py-2 sm:py-2.5" : "pb-1 pt-2 sm:pb-1 sm:pt-2.5"
-      }`}
-    >
-      <dl className="space-y-0 leading-snug">
-        <div className={`${rowCls} items-start gap-2 sm:items-center`}>
-          <dt className={`inline-flex items-center gap-1.5 ${labelCls}`}>
-            <span>수익</span>
+    <div className="px-3 py-2 [html[data-theme='light']_&]:bg-white sm:px-4">
+      <dl className="leading-snug">
+        <div className={rowCls}>
+          <dt className={`inline-flex items-center gap-1 ${labelCls}`}>
+            수익
             <span
-              className={`text-[15px] leading-none sm:text-[16px] ${
+              className={`text-[11px] leading-none ${
                 isUp
-                  ? "text-[#FF3B57] [text-shadow:0_0_10px_rgba(255,59,87,0.55)]"
-                  : "text-[#2FA2FF] [text-shadow:0_0_10px_rgba(47,162,255,0.55)]"
-              } [html[data-theme='light']_&]:[text-shadow:none]`}
+                  ? "text-[#FF3B57]"
+                  : "text-[#2FA2FF]"
+              }`}
               aria-hidden
             >
               {isUp ? "▲" : "▼"}
             </span>
           </dt>
-          <dd className="min-w-0 flex-1">
-            <RevenueHighlight won={metrics.cumulativeRevenueWon} />
+          <dd className="text-[13px] font-extrabold tabular-nums text-[#B9CCFF] [html[data-theme='light']_&]:text-[#2F4FA8]">
+            {Math.max(0, Math.floor(metrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}
           </dd>
         </div>
         <div className={rowCls}>
@@ -90,9 +86,7 @@ export function TrendingVideoStatsFooter({
         {typeof salesCount === "number" ? (
           <div className={rowCls}>
             <dt className={labelCls}>누적 구매 인원</dt>
-            <dd className={valueCls}>
-              {salesCount.toLocaleString("ko-KR")}명
-            </dd>
+            <dd className={valueCls}>{salesCount.toLocaleString("ko-KR")}명</dd>
           </div>
         ) : null}
         {stockRow ? (
@@ -103,9 +97,7 @@ export function TrendingVideoStatsFooter({
                 <span className="text-reels-crimson">0개 — 품절</span>
               ) : (
                 <span className="text-reels-cyan">
-                  {stockRow.remaining != null
-                    ? `${stockRow.remaining.toLocaleString("ko-KR")}개`
-                    : "—"}
+                  {stockRow.remaining != null ? `${stockRow.remaining.toLocaleString("ko-KR")}개` : "—"}
                 </span>
               )}
             </dd>
