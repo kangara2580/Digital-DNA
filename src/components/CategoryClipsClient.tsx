@@ -1,6 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+const INITIAL_VISIBLE = 20;
+const BATCH_SIZE = 20;
 import { SlidersHorizontal, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
@@ -246,11 +249,51 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
     [router],
   );
 
-  const renderMosaicGrid = (videos: FeedVideo[]) => (
+  /* ── 무한 스크롤 ── */
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  // 필터/슬러그 바뀌면 카운트 리셋
+  useEffect(() => {
+    setVisibleCount(INITIAL_VISIBLE);
+  }, [slug, orientationFilter, priceFilter, newestFilter]);
+
+  // sorted가 바뀌어도 카운트 유지 (단 0이면 초기화)
+  useEffect(() => {
+    if (sorted.length === 0) setVisibleCount(INITIAL_VISIBLE);
+  }, [sorted.length]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || sorted.length === 0) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setVisibleCount((n) => n + BATCH_SIZE);
+        }
+      },
+      { rootMargin: "0px 0px 60% 0px", threshold: 0 },
+    );
+    io.observe(sentinel);
+    return () => io.disconnect();
+  }, [sorted.length]);
+
+  // 순환 아이템 목록 — pool을 필요한 만큼 반복해 채움
+  const visibleItems = useMemo(() => {
+    if (sorted.length === 0) return [];
+    const items: Array<{ video: FeedVideo; key: string }> = [];
+    for (let i = 0; i < visibleCount; i++) {
+      const video = sorted[i % sorted.length];
+      items.push({ video, key: `${video.id}-${Math.floor(i / sorted.length)}-${i}` });
+    }
+    return items;
+  }, [sorted, visibleCount]);
+
+  const renderMosaicGrid = (items: Array<{ video: FeedVideo; key: string }>) => (
     <div className="grid grid-cols-2 gap-2 border border-white/10 p-2 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-      {videos.map((video) => (
+      {items.map(({ video, key }) => (
         <div
-          key={video.id}
+          key={key}
           className="overflow-hidden rounded-lg border border-white/10 bg-black/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
         >
           <div className={video.orientation === "landscape" ? "aspect-video" : "aspect-[9/16]"}>
@@ -258,7 +301,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
               video={video}
               flush
               onPick={() => openExploreWatch(video)}
-              domId={`clip-${video.id}`}
+              domId={`clip-${key}`}
               className="h-full w-full"
             />
           </div>
@@ -462,26 +505,18 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
             <p className="px-4 py-16 text-center font-mono text-[12px] text-zinc-500 sm:px-6 [html[data-theme='light']_&]:text-zinc-600">
               이 조건에 맞는 릴스가 없어요.
             </p>
-          ) : orientationFilter === "all" ? (
-            <div className="space-y-0">
-              {portraitSorted.length > 0 ? (
-                <section aria-label="세로 영상">
-                  {renderMosaicGrid(portraitSorted)}
-                </section>
-              ) : null}
-              {landscapeSorted.length > 0 ? (
-                <section
-                  className={portraitSorted.length > 0 ? "border-t border-white/10 [html[data-theme='light']_&]:border-zinc-200" : ""}
-                  aria-label="가로 영상"
-                >
-                  {renderMosaicGrid(landscapeSorted)}
-                </section>
-              ) : null}
-            </div>
           ) : (
-            <div>
-              {renderMosaicGrid(sorted)}
-            </div>
+            <>
+              {renderMosaicGrid(visibleItems)}
+              {/* 무한 스크롤 sentinel */}
+              <div
+                ref={sentinelRef}
+                className="flex items-center justify-center py-8"
+                aria-hidden
+              >
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white/20 [html[data-theme='light']_&]:bg-zinc-300" />
+              </div>
+            </>
           )}
         </main>
       </div>
