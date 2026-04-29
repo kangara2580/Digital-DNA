@@ -637,7 +637,7 @@ export function VideoDetailView({
                 if (!owned) markPurchased(video.id);
                 router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
               }}
-              className="relative w-full h-[60px] rounded-full border border-white/30 bg-transparent text-[17px] font-extrabold tracking-widest text-white backdrop-blur-sm shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-300 hover:border-white/50 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] hover:-translate-y-0.5 active:scale-[0.99] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/40 [html[data-theme='light']_&]:text-zinc-900"
+              className="relative w-full mx-8 h-[60px] rounded-full border border-white/30 bg-transparent text-[17px] font-extrabold tracking-widest text-white backdrop-blur-sm shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-300 hover:border-white/50 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] hover:-translate-y-0.5 active:scale-[0.99] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/40 [html[data-theme='light']_&]:text-zinc-900"
             >
               {soldOut ? "품절" : "구매하기"}
             </button>
