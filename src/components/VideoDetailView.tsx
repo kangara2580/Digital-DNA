@@ -416,7 +416,7 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
 
   return (
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-      <div className="mx-auto max-w-[1800px] px-4 pb-8 pt-14 sm:px-6 sm:pt-16 lg:px-8">
+      <div className="mx-auto max-w-[1800px] px-4 pb-8 pt-8 sm:px-6 sm:pt-10 lg:px-8">
         <div className="flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-center lg:gap-12">
           <div
             className={`min-w-0 lg:-mt-2 ${
