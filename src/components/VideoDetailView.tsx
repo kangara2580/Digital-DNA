@@ -602,7 +602,7 @@ export function VideoDetailView({
             </div>
 
             {/* 스탯 — 미니멀 카드 */}
-            <section className="w-fit">
+            <section className="w-fit mx-auto">
               <TrendingVideoStatsFooter
                 metrics={detailMetrics}
                 salesCount={meta.salesCount}
