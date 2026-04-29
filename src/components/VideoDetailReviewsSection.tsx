@@ -214,10 +214,10 @@ export function VideoDetailReviewsSection({ videoId }: { videoId: string }) {
       aria-labelledby="video-reviews-heading"
     >
       {/* 헤더 */}
-      <div className="flex items-center justify-between gap-4 mb-6">
+      <div className="flex items-center justify-center gap-4 mb-6">
         <h2
           id="video-reviews-heading"
-          className="text-lg font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
+          className="text-center text-lg font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
         >
           구매 후기
         </h2>
