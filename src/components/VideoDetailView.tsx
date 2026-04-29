@@ -532,122 +532,115 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
               </div>
             </div>
 
-            <section className="reels-glass-card overflow-hidden rounded-xl">
+            {/* 스탯 — 미니멀 카드 */}
+            <section className="overflow-hidden rounded-2xl border border-white/[0.07] [html[data-theme='light']_&]:border-zinc-200">
               <TrendingVideoStatsFooter
                 metrics={detailMetrics}
                 salesCount={meta.salesCount}
                 stockRow={
                   meta.edition === "open"
                     ? null
-                    : {
-                        remaining,
-                        soldOut,
-                      }
+                    : { remaining, soldOut }
                 }
               />
             </section>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
-              <section className="reels-glass-card rounded-xl border border-white/10 p-3 [html[data-theme='light']_&]:border-zinc-200 sm:w-[52%]">
-                <div className="flex items-center justify-between text-[12px] font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-                  <span className="inline-flex items-center gap-1.5">
-                    <SellerSocialPlatformIcon
-                      platform={externalLikePlatform}
-                      className="h-3.5 w-3.5"
-                    />
-                    외부 좋아요
-                  </span>
-                  <span className="text-[18px] font-extrabold leading-none text-cyan-300 [html[data-theme='light']_&]:text-cyan-600">
-                    {externalLikeCount.toLocaleString()}
-                  </span>
-                </div>
-                <div className="mt-2 flex items-center justify-between text-[12px] font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Heart className="h-3.5 w-3.5" />
-                    ARA 좋아요
-                  </span>
-                  <span className="text-[18px] font-extrabold leading-none text-reels-crimson [html[data-theme='light']_&]:text-reels-crimson">
-                    {internalLikeCount.toLocaleString()}
-                  </span>
-                </div>
-              </section>
-              <button
-                type="button"
-                disabled={soldOut}
-                onClick={() => {
-                  if (soldOut) return;
-                  if (!user) {
-                    redirectToLoginStart(`/video/${encodeURIComponent(video.id)}`);
-                    return;
-                  }
-                  if (!owned) markPurchased(video.id);
-                  router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
-                }}
-                className="h-[72px] w-full min-w-0 flex-1 rounded-2xl border border-[#79adff]/70 bg-black px-5 text-[18px] font-extrabold text-white ring-1 ring-[#b7d6ff]/45 shadow-[0_0_0_1px_rgba(120,173,255,0.34),0_0_22px_rgba(66,133,244,0.22),inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#a8cbff] hover:ring-[#d7e8ff]/60 hover:bg-[#080b12] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {soldOut ? "품절" : "구매하기"}
-              </button>
+
+            {/* 좋아요 수치 — 한 줄 */}
+            <div className="flex items-center gap-5 px-0.5 text-[12px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+              <span className="flex items-center gap-1.5">
+                <SellerSocialPlatformIcon platform={externalLikePlatform} className="h-3.5 w-3.5 opacity-60" />
+                외부 좋아요
+                <span className="ml-1 font-extrabold tabular-nums text-[14px] text-cyan-300 [html[data-theme='light']_&]:text-cyan-600">
+                  {externalLikeCount.toLocaleString()}
+                </span>
+              </span>
+              <span className="h-3.5 w-px bg-white/15" aria-hidden />
+              <span className="flex items-center gap-1.5">
+                <Heart className="h-3.5 w-3.5 opacity-60" />
+                ARA 좋아요
+                <span className="ml-1 font-extrabold tabular-nums text-[14px] text-reels-crimson">
+                  {internalLikeCount.toLocaleString()}
+                </span>
+              </span>
             </div>
 
-            <div className="flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  title="장바구니 담기"
-                  onClick={(e) => {
-                    if (soldOut) return;
-                    dopamine.launchFromCartButton(e.currentTarget, video, posterSrc);
-                  }}
-                  className="inline-flex h-[48px] w-[48px] items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-zinc-200 transition-colors hover:border-white/30 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800"
-                  disabled={soldOut}
-                  aria-label="장바구니 담기"
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  title={likedByMe ? "좋아요 취소" : "좋아요"}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    void toggleInternalLike();
-                  }}
-                  className={`relative inline-flex h-[48px] w-[48px] items-center justify-center rounded-full border transition-all duration-200 [html[data-theme='light']_&]:bg-zinc-100 ${
-                    likedByMe
-                      ? "border-[#79adff]/85 bg-[#0e1d3f] text-[#9bc4ff] shadow-[0_0_0_1px_rgba(121,173,255,0.42),0_0_16px_rgba(86,146,255,0.35)]"
-                      : "border-white/15 bg-white/[0.06] text-zinc-200 shadow-none hover:border-white/30 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-800"
-                  } ${likePulse ? "scale-110" : "scale-100"}`}
-                  aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
-                  aria-pressed={likedByMe}
-                  disabled={likeBusy}
-                >
-                  {likeBurst ? (
-                    <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/35 animate-ping" />
-                  ) : null}
-                  <Heart
-                    className={`relative z-[1] h-5 w-5 transition-transform duration-300 ${
-                      likedByMe ? "fill-current text-[#9bc4ff]" : ""
-                    } ${likeBurst ? "scale-125" : "scale-100"}`}
-                  />
-                </button>
-                <button
-                  type="button"
-                  title={wishlisted ? "찜 해제" : "찜하기"}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setWishlistPulse(true);
-                    window.setTimeout(() => setWishlistPulse(false), 170);
-                    toggleWishlist(video);
-                  }}
-                  className={`inline-flex h-[48px] w-[48px] items-center justify-center rounded-full border border-white/15 bg-white/[0.06] transition-all duration-200 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 ${
-                    wishlisted
-                      ? "text-reels-cyan [html[data-theme='light']_&]:text-reels-cyan"
-                      : "text-zinc-200 hover:border-white/30 hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-800"
-                  } ${wishlistPulse ? "scale-110" : "scale-100"}`}
-                  aria-label={wishlisted ? "찜 해제" : "찜하기"}
-                  aria-pressed={wishlisted}
-                >
-                  <Bookmark
-                    className={`h-5 w-5 ${wishlisted ? "fill-current" : ""}`}
-                  />
-                </button>
+            {/* 구매 버튼 */}
+            <button
+              type="button"
+              disabled={soldOut}
+              onClick={() => {
+                if (soldOut) return;
+                if (!user) {
+                  redirectToLoginStart(`/video/${encodeURIComponent(video.id)}`);
+                  return;
+                }
+                if (!owned) markPurchased(video.id);
+                router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
+              }}
+              className="w-full h-[64px] rounded-2xl border border-[#4f8cff]/35 bg-[#0b1830] text-[18px] font-extrabold tracking-wide text-white shadow-[0_0_28px_rgba(66,133,244,0.14),inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-250 hover:brightness-110 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:bg-[#1a3a7a] [html[data-theme='light']_&]:border-[#4f8cff]/60"
+            >
+              {soldOut ? "품절" : "구매하기"}
+            </button>
+
+            {/* 액션 아이콘 */}
+            <div className="flex items-center justify-center gap-4">
+              <button
+                type="button"
+                title="장바구니 담기"
+                onClick={(e) => {
+                  if (soldOut) return;
+                  dopamine.launchFromCartButton(e.currentTarget, video, posterSrc);
+                }}
+                className="inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-zinc-400 transition-colors hover:border-white/25 hover:text-zinc-100 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-600"
+                disabled={soldOut}
+                aria-label="장바구니 담기"
+              >
+                <ShoppingCart className="h-[18px] w-[18px]" />
+              </button>
+              <button
+                type="button"
+                title={likedByMe ? "좋아요 취소" : "좋아요"}
+                onClick={(e) => {
+                  e.preventDefault();
+                  void toggleInternalLike();
+                }}
+                className={`relative inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border transition-all duration-200 [html[data-theme='light']_&]:bg-zinc-100 ${
+                  likedByMe
+                    ? "border-[#79adff]/70 bg-[#0e1d3f] text-[#9bc4ff]"
+                    : "border-white/10 bg-white/[0.04] text-zinc-400 hover:border-white/25 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600"
+                } ${likePulse ? "scale-110" : "scale-100"}`}
+                aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+                aria-pressed={likedByMe}
+                disabled={likeBusy}
+              >
+                {likeBurst ? (
+                  <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/30 animate-ping" />
+                ) : null}
+                <Heart
+                  className={`relative z-[1] h-[18px] w-[18px] transition-transform duration-300 ${
+                    likedByMe ? "fill-current text-[#9bc4ff]" : ""
+                  } ${likeBurst ? "scale-125" : "scale-100"}`}
+                />
+              </button>
+              <button
+                type="button"
+                title={wishlisted ? "찜 해제" : "찜하기"}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setWishlistPulse(true);
+                  window.setTimeout(() => setWishlistPulse(false), 170);
+                  toggleWishlist(video);
+                }}
+                className={`inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border transition-all duration-200 [html[data-theme='light']_&]:bg-zinc-100 ${
+                  wishlisted
+                    ? "border-reels-cyan/50 bg-reels-cyan/10 text-reels-cyan"
+                    : "border-white/10 bg-white/[0.04] text-zinc-400 hover:border-white/25 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600"
+                } ${wishlistPulse ? "scale-110" : "scale-100"}`}
+                aria-label={wishlisted ? "찜 해제" : "찜하기"}
+                aria-pressed={wishlisted}
+              >
+                <Bookmark className={`h-[18px] w-[18px] ${wishlisted ? "fill-current" : ""}`} />
+              </button>
             </div>
 
           </div>
