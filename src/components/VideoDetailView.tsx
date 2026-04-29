@@ -614,25 +614,6 @@ export function VideoDetailView({
               />
             </section>
 
-            {/* 좋아요 수치 — 한 줄 */}
-            <div className="flex items-center gap-5 px-0.5 text-[12px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-              <span className="flex items-center gap-1.5">
-                <SellerSocialPlatformIcon platform={externalLikePlatform} className="h-3.5 w-3.5 opacity-60" />
-                외부 좋아요
-                <span className="ml-1 font-extrabold tabular-nums text-[14px] text-cyan-300 [html[data-theme='light']_&]:text-cyan-600">
-                  {externalLikeCount.toLocaleString()}
-                </span>
-              </span>
-              <span className="h-3.5 w-px bg-white/15" aria-hidden />
-              <span className="flex items-center gap-1.5">
-                <Heart className="h-3.5 w-3.5 opacity-60" />
-                ARA 좋아요
-                <span className="ml-1 font-extrabold tabular-nums text-[14px] text-reels-crimson">
-                  {internalLikeCount.toLocaleString()}
-                </span>
-              </span>
-            </div>
-
             {/* 구매 버튼 */}
             <button
               type="button"
