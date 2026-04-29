@@ -299,109 +299,106 @@ export function ExploreReelSlide({
   return (
     <div
       ref={blockRef}
-      className="flex h-[calc(100dvh-var(--header-height,4.5rem))] w-full shrink-0 snap-start snap-always flex-col bg-black [html[data-theme='light']_&]:bg-zinc-100"
+      className="relative h-[calc(100dvh-var(--header-height,4.5rem))] w-full shrink-0 snap-start snap-always overflow-hidden bg-black [html[data-theme='light']_&]:bg-zinc-100"
     >
-      <div className="flex min-h-0 w-full flex-1 items-stretch justify-center px-0 pt-0 md:px-4 md:pt-0">
-        {/*
-          영상 열에 명시적 max-width를 두어 aspect-[9/16] + w-full 이 0으로 무너지지 않게 함.
-          레일은 같은 flex 줄에서 영상 바로 옆에만 붙음(가운데 단독 정렬 방지).
-        */}
-        <div className="flex w-full max-w-none flex-row items-stretch justify-center gap-0 md:max-w-[min(56rem,calc(100vw-var(--reels-rail-w,0px)-1.5rem))] md:gap-3 lg:gap-4">
-          <div className="relative h-full w-full shrink-0 md:w-[min(100%,min(420px,calc(100vw-var(--reels-rail-w,0px)-8.5rem)))]">
-            <div
-              className="relative h-full w-full overflow-hidden bg-black md:rounded-2xl md:border md:border-white/12 md:shadow-[0_24px_80px_-30px_rgba(0,0,0,0.85)] [html[data-theme='light']_&]:md:border-zinc-200"
-            >
-            <video
-              ref={videoRef}
-              className="absolute inset-0 z-0 h-full w-full cursor-pointer object-cover"
-              poster={posterFallback || undefined}
-              src={isPexelsBlockedVideo ? undefined : previewSrc}
-              muted={muted}
-              playsInline
-              loop
-              preload={isPexelsBlockedVideo ? "none" : "metadata"}
-              onTimeUpdate={onTimeUpdate}
-              onLoadedMetadata={syncProgressFromVideo}
-              onCanPlay={syncProgressFromVideo}
-              onClick={togglePlayPause}
-            />
-            <div
-              className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/85 via-black/10 to-black/35"
-              aria-hidden
-            />
+      {/* 영상이 슬라이드 전체를 꽉 채움 — 검은 여백 없음 */}
+      <video
+        ref={videoRef}
+        className="absolute inset-0 z-0 h-full w-full cursor-pointer object-cover"
+        poster={posterFallback || undefined}
+        src={isPexelsBlockedVideo ? undefined : previewSrc}
+        muted={muted}
+        playsInline
+        loop
+        preload={isPexelsBlockedVideo ? "none" : "metadata"}
+        onTimeUpdate={onTimeUpdate}
+        onLoadedMetadata={syncProgressFromVideo}
+        onCanPlay={syncProgressFromVideo}
+        onClick={togglePlayPause}
+      />
 
-            <button
-              type="button"
-              onClick={toggleMute}
-              className="pointer-events-auto absolute right-3 top-3 z-[3] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition hover:bg-black/60"
-              aria-label={muted ? "소리 켜기" : "음소거"}
-            >
-              {muted ? (
-                <VolumeX className="h-4 w-4" strokeWidth={2} aria-hidden />
-              ) : (
-                <Volume2 className="h-4 w-4" strokeWidth={2} aria-hidden />
-              )}
-            </button>
-            {volumeUiVisible ? (
-              <div className="pointer-events-auto absolute right-[0.7rem] top-[3.6rem] z-[3] flex h-28 w-9 items-center justify-center rounded-full border border-white/15 bg-black/45 backdrop-blur-md">
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={muted ? 0 : volume}
-                  onChange={(e) => onVolumeChange(e.currentTarget.valueAsNumber)}
-                  className="h-6 w-20 -rotate-90 cursor-pointer appearance-none bg-transparent [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-white/30 [&::-webkit-slider-thumb]:-mt-[5px] [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#9DB9FF] [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(157,185,255,0.85)] [&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-white/30 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-[#9DB9FF]"
-                  aria-label="볼륨 조절"
-                />
-              </div>
-            ) : null}
+      {/* 그라디언트 오버레이 */}
+      <div
+        className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/85 via-black/10 to-black/30"
+        aria-hidden
+      />
 
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] space-y-2 p-4 pb-5">
-              <Link
-                href={sellerHref}
-                className="pointer-events-auto inline-flex text-[13px] font-semibold text-white/90 underline-offset-2 hover:text-reels-cyan hover:underline"
-              >
-                {video.creator}
-              </Link>
-              <p className="line-clamp-3 text-left text-[15px] font-bold leading-snug text-white sm:text-[16px]">
-                {video.title}
-              </p>
-            </div>
+      {/* 음소거 버튼 — 데스크톱은 사이드바 공간 피해서 오른쪽에서 약간 안쪽 */}
+      <button
+        type="button"
+        onClick={toggleMute}
+        className="pointer-events-auto absolute right-3 top-3 z-[3] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition hover:bg-black/60 md:right-[calc(var(--desktop-rail-w,6rem)+1rem)]"
+        aria-label={muted ? "소리 켜기" : "음소거"}
+      >
+        {muted ? (
+          <VolumeX className="h-4 w-4" strokeWidth={2} aria-hidden />
+        ) : (
+          <Volume2 className="h-4 w-4" strokeWidth={2} aria-hidden />
+        )}
+      </button>
 
-            {/* 진행 바 (틱톡 스타일) */}
-            <div
-              ref={progressRailRef}
-              className="pointer-events-auto absolute inset-x-0 bottom-0 z-[4] h-[5px] cursor-ew-resize bg-transparent"
-              onPointerDown={(e) => {
-                setIsScrubbing(true);
-                seekByClientX(e.clientX);
-              }}
-              aria-label="재생 구간 이동"
-              role="slider"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round((progress || 0) * 100)}
-            >
-              <div
-                className="h-full rounded-r-full"
-                style={{
-                  width: `${progress > 0 ? Math.max(0.8, Math.min(100, progress * 100)) : 0}%`,
-                  background:
-                    "linear-gradient(90deg, #7F8FA8 0%, #F4F2E8 38%, #D6DFEE 66%, #8C9DB8 100%)",
-                  boxShadow: "0 0 10px rgba(214,223,238,0.45)",
-                  transition: isScrubbing ? "none" : "width 90ms linear",
-                }}
-              />
-            </div>
-          </div>
-          </div>
-
-          <ReelDesktopRail video={video} className="hidden shrink-0 md:flex" />
+      {volumeUiVisible ? (
+        <div className="pointer-events-auto absolute right-[0.7rem] top-[3.6rem] z-[3] flex h-28 w-9 items-center justify-center rounded-full border border-white/15 bg-black/45 backdrop-blur-md md:right-[calc(var(--desktop-rail-w,6rem)+0.4rem)]">
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.01}
+            value={muted ? 0 : volume}
+            onChange={(e) => onVolumeChange(e.currentTarget.valueAsNumber)}
+            className="h-6 w-20 -rotate-90 cursor-pointer appearance-none bg-transparent [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-white/30 [&::-webkit-slider-thumb]:-mt-[5px] [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#9DB9FF] [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(157,185,255,0.85)] [&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-white/30 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-[#9DB9FF]"
+            aria-label="볼륨 조절"
+          />
         </div>
+      ) : null}
+
+      {/* 하단 크리에이터·제목 */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] space-y-2 p-4 pb-5 md:pr-[calc(var(--desktop-rail-w,6rem)+1.5rem)]">
+        <Link
+          href={sellerHref}
+          className="pointer-events-auto inline-flex text-[13px] font-semibold text-white/90 underline-offset-2 hover:text-reels-cyan hover:underline"
+        >
+          {video.creator}
+        </Link>
+        <p className="line-clamp-3 text-left text-[15px] font-bold leading-snug text-white sm:text-[16px]">
+          {video.title}
+        </p>
       </div>
 
-      <div className="md:hidden">
+      {/* 진행 바 (틱톡 스타일) */}
+      <div
+        ref={progressRailRef}
+        className="pointer-events-auto absolute inset-x-0 bottom-0 z-[4] h-[5px] cursor-ew-resize bg-transparent"
+        onPointerDown={(e) => {
+          setIsScrubbing(true);
+          seekByClientX(e.clientX);
+        }}
+        aria-label="재생 구간 이동"
+        role="slider"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round((progress || 0) * 100)}
+      >
+        <div
+          className="h-full rounded-r-full"
+          style={{
+            width: `${progress > 0 ? Math.max(0.8, Math.min(100, progress * 100)) : 0}%`,
+            background:
+              "linear-gradient(90deg, #7F8FA8 0%, #F4F2E8 38%, #D6DFEE 66%, #8C9DB8 100%)",
+            boxShadow: "0 0 10px rgba(214,223,238,0.45)",
+            transition: isScrubbing ? "none" : "width 90ms linear",
+          }}
+        />
+      </div>
+
+      {/* 데스크톱 사이드바 — 원래 위치(오른쪽, 세로 중앙) */}
+      <ReelDesktopRail
+        video={video}
+        className="absolute right-0 top-1/2 hidden -translate-y-1/2 md:flex"
+      />
+
+      {/* 모바일 하단 구매 바 */}
+      <div className="absolute inset-x-0 bottom-0 z-[5] md:hidden">
         <ReelMobileCommerceBar video={video} />
       </div>
     </div>
