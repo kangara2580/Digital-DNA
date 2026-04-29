@@ -4,7 +4,6 @@ export const MALL_CATEGORY_NAV_ITEMS = [
   { href: "/category/recommend", label: "추천" },
   { href: "/category/latest", label: "최신" },
   { href: "/category/daily", label: "일상" },
-  { href: "/category/shortform", label: "숏폼·릴스" },
   { href: "/category/dance", label: "춤" },
   { href: "/category/music", label: "노래" },
   { href: "/category/food", label: "푸드" },

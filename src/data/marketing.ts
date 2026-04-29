@@ -200,7 +200,7 @@ export const EDITOR_CURATIONS: EditorCuration[] = [
     id: "cur-monday",
     emoji: "🚇",
     title: "월요일 아침 출근길의 지옥철 풍경",
-    categorySlug: "shortform",
+    categorySlug: "daily",
   },
   {
     id: "cur-puppy",
