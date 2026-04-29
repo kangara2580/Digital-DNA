@@ -602,7 +602,7 @@ export function VideoDetailView({
             </div>
 
             {/* 스탯 — 미니멀 카드 */}
-            <section className="w-fit overflow-hidden rounded-2xl border border-white/[0.07] [html[data-theme='light']_&]:border-zinc-200">
+            <section className="w-fit">
               <TrendingVideoStatsFooter
                 metrics={detailMetrics}
                 salesCount={meta.salesCount}

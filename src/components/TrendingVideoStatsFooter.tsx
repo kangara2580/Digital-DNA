@@ -38,7 +38,7 @@ type Props = {
 };
 
 const rowCls =
-  "flex items-center gap-8 border-b border-white/10 py-1.5 last:border-b-0 last:pb-0 [html[data-theme='light']_&]:border-zinc-200/80";
+  "flex items-center gap-8 py-1.5";
 
 const labelCls =
   "shrink-0 text-[14px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
