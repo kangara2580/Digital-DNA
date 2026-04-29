@@ -41,7 +41,7 @@ const rowCls =
   "flex items-center gap-8 py-1.5";
 
 const labelCls =
-  "shrink-0 text-[14px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
+  "w-[4.5rem] shrink-0 text-[14px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
 
 const valueCls =
   "text-[15px] font-extrabold leading-snug tabular-nums tracking-tight text-[#EAF1FF] [html[data-theme='light']_&]:text-zinc-900";
@@ -58,7 +58,7 @@ export function TrendingVideoStatsFooter({
     <div className="w-fit px-3 py-2 [html[data-theme='light']_&]:bg-white sm:px-4">
       <dl className="leading-snug">
         <div className={rowCls}>
-          <dt className={`inline-flex items-center gap-1 ${labelCls}`}>
+          <dt className={`inline-flex shrink-0 w-[4.5rem] items-center gap-1 text-[14px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500`}>
             수익
             <span
               className={`text-[11px] leading-none ${
@@ -71,7 +71,7 @@ export function TrendingVideoStatsFooter({
               {isUp ? "▲" : "▼"}
             </span>
           </dt>
-          <dd className="text-[15px] font-extrabold tabular-nums text-[#B9CCFF] [html[data-theme='light']_&]:text-[#2F4FA8]">
+          <dd className="text-[15px] font-extrabold tabular-nums text-[#B9CCFF] [html[data-theme='light']_&]:text-[#2F4FA8]" style={{minWidth:0}}>
             {Math.max(0, Math.floor(metrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}
           </dd>
         </div>
