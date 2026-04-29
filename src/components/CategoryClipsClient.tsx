@@ -300,6 +300,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
             <VideoCard
               video={video}
               flush
+              hideInfoBar
               onPick={() => openExploreWatch(video)}
               domId={`clip-${key}`}
               className="h-full w-full"

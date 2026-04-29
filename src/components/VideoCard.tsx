@@ -86,6 +86,8 @@ type Props = {
   hideHoverActions?: boolean;
   /** true면 작성자(아이디) 한 줄 숨김 */
   hideCreatorMeta?: boolean;
+  /** true면 하단 정보 바(아이디·제목·가격) 전체 숨김 */
+  hideInfoBar?: boolean;
 };
 
 function formatDuration(seconds: number): string {
@@ -168,6 +170,7 @@ export function VideoCard({
   hideLikeAction = false,
   hideHoverActions = false,
   hideCreatorMeta = false,
+  hideInfoBar = false,
 }: Props) {
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
@@ -289,6 +292,7 @@ export function VideoCard({
   useEffect(() => {
     let cancelled = false;
     setLikedByMe(false);
+    if (authLoading || !user || !supabaseConfigured) return;
     void (async () => {
       try {
         const supabase = getSupabaseBrowserClient();
@@ -315,7 +319,7 @@ export function VideoCard({
     return () => {
       cancelled = true;
     };
-  }, [video.id, user?.id]);
+  }, [video.id, user?.id, authLoading, supabaseConfigured, user]);
 
   const toggleInternalLike = useCallback(async () => {
     if (likeBusy || authLoading) return;
@@ -752,7 +756,7 @@ export function VideoCard({
         ) : null}
       </div>
 
-      <div
+      {hideInfoBar ? null : <div
         className={`border-t border-white/10 bg-black/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 ${
           dense
             ? "min-h-[34px] px-1.5 py-1 sm:min-h-[36px]"
@@ -829,8 +833,8 @@ export function VideoCard({
             </div>
           ) : null}
         </div>
-      </div>
-      {footerExtension}
+      </div>}
+      {!hideInfoBar && footerExtension}
       {quilt}
     </article>
   );
