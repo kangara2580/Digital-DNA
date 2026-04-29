@@ -17,6 +17,7 @@ import {
 type OrientationFilter = "all" | "portrait" | "landscape";
 type PriceFilter = "all" | "high" | "low";
 type NewestFilter = "all" | "newest" | "oldest";
+const CATEGORY_FEED_CACHE_TTL_MS = 120_000;
 
 /** 사이드 필터 버튼 — 다크 / 라이트 */
 const filterBtnActive =
@@ -122,16 +123,27 @@ function BestEndlessRankFeed({
 export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   const router = useRouter();
   const label = CATEGORY_LABEL[slug];
-  const categoryStory = useMemo(() => {
-    if (slug === "oops") {
-      return "완벽하지 않아 더 끌리는, 인간적인 실수의 순간들만 모았습니다.";
-    }
-    return null;
-  }, [slug]);
+  const categoryStory = null;
   const staticBase = useMemo(() => getVideosForCategory(slug), [slug]);
   const [fetchedVideos, setFetchedVideos] = useState<FeedVideo[] | null>(null);
   useEffect(() => {
     setFetchedVideos(null);
+    const cacheKey = `reels:category:feed:${slug}`;
+    try {
+      const raw = window.sessionStorage.getItem(cacheKey);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { savedAt?: number; videos?: FeedVideo[] };
+        const savedAt = typeof parsed.savedAt === "number" ? parsed.savedAt : 0;
+        if (
+          Array.isArray(parsed.videos) &&
+          Date.now() - savedAt < CATEGORY_FEED_CACHE_TTL_MS
+        ) {
+          setFetchedVideos(parsed.videos);
+        }
+      }
+    } catch {
+      /* ignore cache parse errors */
+    }
     const ctrl = new AbortController();
     let alive = true;
     void (async () => {
@@ -144,6 +156,14 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
         const body = (await res.json()) as { ok?: boolean; videos?: FeedVideo[] };
         if (!alive || body.ok !== true || !Array.isArray(body.videos)) return;
         setFetchedVideos(body.videos);
+        try {
+          window.sessionStorage.setItem(
+            cacheKey,
+            JSON.stringify({ savedAt: Date.now(), videos: body.videos }),
+          );
+        } catch {
+          /* ignore */
+        }
       } catch {
         /* staticBase 폴백 유지 */
       }
@@ -221,15 +241,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
 
   const openExploreWatch = useCallback(
     (video: FeedVideo) => {
-      try {
-        window.sessionStorage.setItem(
-          `reels:explore:target:${video.id}`,
-          JSON.stringify(video),
-        );
-      } catch {
-        /* ignore */
-      }
-      router.push(`/explore?view=watch&videoId=${encodeURIComponent(video.id)}`);
+      router.push(`/video/${encodeURIComponent(video.id)}`);
     },
     [router],
   );
@@ -245,7 +257,6 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
             <VideoCard
               video={video}
               flush
-              instantPreview={false}
               onPick={() => openExploreWatch(video)}
               domId={`clip-${video.id}`}
               className="h-full w-full"
@@ -285,11 +296,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                   {label}
                 </h1>
                 {categoryStory ? (
-                  <p
-                    className={`mt-3 max-w-3xl text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-700 sm:text-[14px] ${
-                      slug === "oops" ? "font-extrabold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900" : ""
-                    }`}
-                  >
+                  <p className="mt-3 max-w-3xl text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-700 sm:text-[14px]">
                     {categoryStory}
                   </p>
                 ) : null}
