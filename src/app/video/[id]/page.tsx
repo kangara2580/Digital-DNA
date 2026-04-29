@@ -9,6 +9,7 @@ import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
+const DB_TIMEOUT_MS = 1200;
 
 type TikTokOEmbed = {
   title?: string;
@@ -16,12 +17,24 @@ type TikTokOEmbed = {
   thumbnail_url?: string;
 };
 
+async function withTimeout<T>(work: Promise<T>, timeoutMs: number): Promise<T> {
+  return await Promise.race([
+    work,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(new Error("db_timeout")), timeoutMs);
+    }),
+  ]);
+}
+
 export default async function VideoDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const { id } = await params;
+  const { from: fromCategory } = await searchParams;
 
   if (id.startsWith("tiktok-")) {
     const embedId = id.slice("tiktok-".length).trim();
@@ -63,6 +76,7 @@ export default async function VideoDetailPage({
           sourcePageUrl: pageUrl,
           priceWon,
         }}
+        fromCategory={fromCategory}
       />
     );
   }
@@ -104,6 +118,7 @@ export default async function VideoDetailPage({
           sourcePageUrl: pageUrl,
           priceWon: priceWon ?? undefined,
         }}
+        fromCategory={fromCategory}
       />
     );
   }
@@ -129,19 +144,23 @@ export default async function VideoDetailPage({
           sourcePageUrl: pageUrl,
           priceWon: priceWon ?? undefined,
         }}
+        fromCategory={fromCategory}
       />
     );
   }
 
   const catalogVideo = getMarketVideoById(id);
   if (catalogVideo) {
-    return <VideoDetailView video={catalogVideo} />;
+    return <VideoDetailView video={catalogVideo} fromCategory={fromCategory} />;
   }
 
   try {
-    const row = await prisma.video.findUnique({ where: { id } });
+    const row = await withTimeout(
+      prisma.video.findUnique({ where: { id } }),
+      DB_TIMEOUT_MS,
+    );
     if (row) {
-      return <VideoDetailView video={videoRowToFeedVideo(row)} />;
+      return <VideoDetailView video={videoRowToFeedVideo(row)} fromCategory={fromCategory} />;
     }
   } catch {
     /* DB 미연결 등 */

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Bookmark, Heart, ShoppingCart } from "lucide-react";
+import { Bookmark, ChevronLeft, ChevronRight, Heart, ShoppingCart } from "lucide-react";
 import { SellerSocialPlatformIcon } from "@/components/SellerSocialPlatformIcon";
 import { SellerIdentityLink } from "@/components/SellerIdentityLink";
 import { VideoDetailRecommendations } from "@/components/VideoDetailRecommendations";
@@ -22,6 +22,7 @@ import {
   getFreshnessForVideoId,
   isLimitedFamily,
 } from "@/data/videoCommerce";
+import { getVideosForCategory } from "@/data/videoCatalog";
 import {
   getExternalIframeForDetail,
   getExternalLiveStatsPageUrl,
@@ -65,7 +66,13 @@ async function loadSellerSocialLinks(sellerId: string): Promise<SellerSocialLink
   return req;
 }
 
-export function VideoDetailView({ video }: { video: FeedVideo }) {
+export function VideoDetailView({
+  video,
+  fromCategory,
+}: {
+  video: FeedVideo;
+  fromCategory?: string;
+}) {
   const router = useRouter();
   const detailVideoRef = useRef<HTMLVideoElement | null>(null);
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
@@ -81,6 +88,42 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
   useEffect(() => {
     recordView(video.id);
   }, [video.id, recordView]);
+
+  /* ── 카테고리 순환 네비게이션 ── */
+  const categoryVideos = useMemo(
+    () => (fromCategory ? getVideosForCategory(fromCategory) : []),
+    [fromCategory],
+  );
+  const currentIndex = useMemo(
+    () => categoryVideos.findIndex((v) => v.id === video.id),
+    [categoryVideos, video.id],
+  );
+  const hasCategoryNav = categoryVideos.length > 1 && currentIndex >= 0;
+  const prevVideo = hasCategoryNav
+    ? categoryVideos[(currentIndex - 1 + categoryVideos.length) % categoryVideos.length]
+    : null;
+  const nextVideo = hasCategoryNav
+    ? categoryVideos[(currentIndex + 1) % categoryVideos.length]
+    : null;
+
+  const goToVideo = useCallback(
+    (target: FeedVideo) => {
+      router.push(
+        `/video/${encodeURIComponent(target.id)}${fromCategory ? `?from=${encodeURIComponent(fromCategory)}` : ""}`,
+      );
+    },
+    [router, fromCategory],
+  );
+
+  useEffect(() => {
+    if (!hasCategoryNav) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft" && prevVideo) goToVideo(prevVideo);
+      if (e.key === "ArrowRight" && nextVideo) goToVideo(nextVideo);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [hasCategoryNav, prevVideo, nextVideo, goToVideo]);
 
   const meta = useMemo(
     () =>
@@ -416,8 +459,43 @@ export function VideoDetailView({ video }: { video: FeedVideo }) {
 
   return (
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-      <div className="mx-auto max-w-[1800px] px-4 pb-8 pt-8 sm:px-6 sm:pt-10 lg:px-8">
-        <div className="flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-center lg:gap-12">
+
+      {/* ── 카테고리 이전/다음 화살표 ── */}
+      {hasCategoryNav && (
+        <>
+          <button
+            type="button"
+            aria-label="이전 영상"
+            onClick={() => prevVideo && goToVideo(prevVideo)}
+            className="group fixed left-2 top-1/2 z-[70] -translate-y-1/2 sm:left-3"
+          >
+            <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/50 text-zinc-300 shadow-lg backdrop-blur-sm transition-all duration-200 group-hover:border-white/25 group-hover:bg-black/75 group-hover:text-white group-hover:scale-105 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/80 [html[data-theme='light']_&]:text-zinc-700">
+              <ChevronLeft className="h-5 w-5" />
+            </span>
+          </button>
+          <button
+            type="button"
+            aria-label="다음 영상"
+            onClick={() => nextVideo && goToVideo(nextVideo)}
+            className="group fixed right-2 top-1/2 z-[70] -translate-y-1/2 sm:right-3"
+          >
+            <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/50 text-zinc-300 shadow-lg backdrop-blur-sm transition-all duration-200 group-hover:border-white/25 group-hover:bg-black/75 group-hover:text-white group-hover:scale-105 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/80 [html[data-theme='light']_&]:text-zinc-700">
+              <ChevronRight className="h-5 w-5" />
+            </span>
+          </button>
+
+          {/* 카테고리 이름 + 위치 표시 */}
+          <div className="fixed bottom-6 left-1/2 z-[70] -translate-x-1/2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/55 px-3.5 py-1.5 text-[11px] font-semibold text-zinc-400 backdrop-blur-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80 [html[data-theme='light']_&]:text-zinc-600">
+              <span className="text-white/60">←→</span>
+              {currentIndex + 1} / {categoryVideos.length}
+            </span>
+          </div>
+        </>
+      )}
+
+      <div className="mx-auto max-w-[1600px] px-2 pb-8 pt-8 sm:px-4 sm:pt-10 lg:px-6">
+        <div className="flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-center lg:gap-10">
           <div
             className={`min-w-0 lg:-mt-2 ${
               video.orientation === "portrait"

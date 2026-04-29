@@ -244,9 +244,9 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
 
   const openExploreWatch = useCallback(
     (video: FeedVideo) => {
-      router.push(`/video/${encodeURIComponent(video.id)}`);
+      router.push(`/video/${encodeURIComponent(video.id)}?from=${encodeURIComponent(slug)}`);
     },
-    [router],
+    [router, slug],
   );
 
   /* ── 무한 스크롤 ── */
