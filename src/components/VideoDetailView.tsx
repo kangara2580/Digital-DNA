@@ -616,10 +616,10 @@ export function VideoDetailView({
 
             {/* 가격 표시 */}
             {price > 0 && (
-              <div className="px-1">
-                <span className="text-[32px] font-black tabular-nums tracking-tight text-[#4f8cff] [html[data-theme='light']_&]:text-[#2A62D8]">
+              <div className="text-center">
+                <span className="text-[48px] font-black tabular-nums tracking-tight text-[#4f8cff] [html[data-theme='light']_&]:text-[#2A62D8]">
                   {price.toLocaleString("ko-KR")}
-                  <span className="ml-1 text-[20px] font-extrabold">원</span>
+                  <span className="ml-1.5 text-[28px] font-extrabold">원</span>
                 </span>
               </div>
             )}
