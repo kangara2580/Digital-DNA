@@ -617,7 +617,7 @@ export function VideoDetailView({
             {/* 가격 표시 */}
             {price > 0 && (
               <div className="text-center">
-                <span className="text-[36px] font-black tabular-nums tracking-tight text-[#4f8cff] [html[data-theme='light']_&]:text-[#2A62D8]">
+                <span className="text-[36px] font-black tabular-nums tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
                   {price.toLocaleString("ko-KR")}
                   <span className="ml-1.5 text-[22px] font-extrabold">원</span>
                 </span>
@@ -637,7 +637,7 @@ export function VideoDetailView({
                 if (!owned) markPurchased(video.id);
                 router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
               }}
-              className="w-full h-[64px] rounded-full border border-[#4f8cff]/35 bg-[#0b1830] text-[18px] font-extrabold tracking-wide text-white shadow-[0_0_28px_rgba(66,133,244,0.14),inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-250 hover:brightness-110 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:bg-[#1a3a7a] [html[data-theme='light']_&]:border-[#4f8cff]/60"
+              className="w-full h-[64px] rounded-full border border-white/20 bg-white text-[18px] font-extrabold tracking-wide text-zinc-900 shadow-[0_0_28px_rgba(255,255,255,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-250 hover:brightness-95 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:bg-zinc-900 [html[data-theme='light']_&]:text-white"
             >
               {soldOut ? "품절" : "구매하기"}
             </button>
