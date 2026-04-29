@@ -292,6 +292,14 @@ export function MallTopNav() {
     };
   }, []);
 
+  // 영상 상세 페이지에서도 헤더 높이를 0으로 설정
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (isVideoDetailPage) {
+      document.documentElement.style.setProperty("--header-height", "0px");
+    }
+  }, [isVideoDetailPage]);
+
   useEffect(() => {
     if (!compactEffective) setMoreOpen(false);
   }, [compactEffective]);
@@ -420,7 +428,7 @@ export function MallTopNav() {
     );
   }
 
-  if (isExploreWatchMode) {
+  if (isExploreWatchMode || isVideoDetailPage) {
     return (
       <div className="pointer-events-none fixed right-4 top-4 z-[120] sm:right-6 sm:top-5">
         <div className="pointer-events-auto">
