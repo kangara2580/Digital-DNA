@@ -38,13 +38,13 @@ type Props = {
 };
 
 const rowCls =
-  "flex items-center justify-between gap-3 border-b border-white/10 py-1.5 last:border-b-0 last:pb-0 [html[data-theme='light']_&]:border-zinc-200/80";
+  "flex items-center gap-8 border-b border-white/10 py-1.5 last:border-b-0 last:pb-0 [html[data-theme='light']_&]:border-zinc-200/80";
 
 const labelCls =
   "shrink-0 text-[14px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
 
 const valueCls =
-  "text-right text-[15px] font-extrabold leading-snug tabular-nums tracking-tight text-[#EAF1FF] [html[data-theme='light']_&]:text-zinc-900";
+  "text-[15px] font-extrabold leading-snug tabular-nums tracking-tight text-[#EAF1FF] [html[data-theme='light']_&]:text-zinc-900";
 
 export function TrendingVideoStatsFooter({
   metrics,
@@ -55,7 +55,7 @@ export function TrendingVideoStatsFooter({
   const hasExtendedRows = typeof salesCount === "number" || Boolean(stockRow);
 
   return (
-    <div className="px-3 py-2 [html[data-theme='light']_&]:bg-white sm:px-4">
+    <div className="w-fit px-3 py-2 [html[data-theme='light']_&]:bg-white sm:px-4">
       <dl className="leading-snug">
         <div className={rowCls}>
           <dt className={`inline-flex items-center gap-1 ${labelCls}`}>
@@ -71,7 +71,7 @@ export function TrendingVideoStatsFooter({
               {isUp ? "▲" : "▼"}
             </span>
           </dt>
-          <dd className="text-right text-[15px] font-extrabold tabular-nums text-[#B9CCFF] [html[data-theme='light']_&]:text-[#2F4FA8]">
+          <dd className="text-[15px] font-extrabold tabular-nums text-[#B9CCFF] [html[data-theme='light']_&]:text-[#2F4FA8]">
             {Math.max(0, Math.floor(metrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}
           </dd>
         </div>
