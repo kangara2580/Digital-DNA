@@ -6,11 +6,21 @@ import { supabaseTables } from "@/lib/supabaseTableNames";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+const SUPABASE_TIMEOUT_MS = 450;
 
 function parseVideoIdFromUrl(request: Request): string | null {
   const { searchParams } = new URL(request.url);
   const videoId = searchParams.get("videoId")?.trim() ?? "";
   return videoId.length > 0 ? videoId : null;
+}
+
+async function withTimeout<T>(work: Promise<T> | PromiseLike<T>, timeoutMs: number): Promise<T> {
+  return await Promise.race([
+    Promise.resolve(work),
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(new Error("supabase_timeout")), timeoutMs);
+    }),
+  ]);
 }
 
 async function parseVideoIdFromBody(request: Request): Promise<string | null> {
@@ -42,7 +52,7 @@ async function resolveUserIdFromToken(token: string): Promise<string | null> {
   const {
     data: { user },
     error,
-  } = await supabaseAuth.auth.getUser(token);
+  } = await withTimeout(supabaseAuth.auth.getUser(token), SUPABASE_TIMEOUT_MS);
   if (error || !user) return null;
   return user.id;
 }
@@ -51,11 +61,14 @@ async function fetchInternalLikeCount(videoId: string): Promise<number> {
   const admin = getSupabaseServiceRoleClient();
   if (!admin) return 0;
   try {
-    const { count } = await admin
-      .from(supabaseTables.favorites)
-      .select("id", { count: "exact", head: true })
-      .eq("video_id", videoId)
-      .eq("kind", "like");
+    const { count } = await withTimeout(
+      admin
+        .from(supabaseTables.favorites)
+        .select("id", { count: "exact", head: true })
+        .eq("video_id", videoId)
+        .eq("kind", "like"),
+      SUPABASE_TIMEOUT_MS,
+    );
     return Math.max(0, count ?? 0);
   } catch {
     return 0;
@@ -66,12 +79,15 @@ async function fetchLikedByUser(videoId: string, userId: string): Promise<boolea
   const admin = getSupabaseServiceRoleClient();
   if (!admin) return false;
   try {
-    const { count } = await admin
-      .from(supabaseTables.favorites)
-      .select("id", { count: "exact", head: true })
-      .eq("video_id", videoId)
-      .eq("kind", "like")
-      .eq("user_id", userId);
+    const { count } = await withTimeout(
+      admin
+        .from(supabaseTables.favorites)
+        .select("id", { count: "exact", head: true })
+        .eq("video_id", videoId)
+        .eq("kind", "like")
+        .eq("user_id", userId),
+      SUPABASE_TIMEOUT_MS,
+    );
     return (count ?? 0) > 0;
   } catch {
     return false;

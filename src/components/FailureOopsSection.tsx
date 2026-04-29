@@ -98,7 +98,7 @@ export function FailureOopsSection() {
             </p>
           </div>
           <SectionMoreLink
-            category="oops"
+            category="comedy"
             className="shrink-0 self-stretch sm:self-center"
           />
         </div>
@@ -149,7 +149,7 @@ export function FailureOopsSection() {
             ))}
             <div className={MORE_CELL} role="listitem">
               <Link
-                href="/category/oops"
+                href="/category/comedy"
                 className={`reels-trending-more-label flex h-full min-h-[280px] w-full flex-col items-center justify-center gap-1 rounded-xl border border-white/15 bg-white/[0.04] px-3 py-4 text-center backdrop-blur-sm transition-colors hover:border-reels-cyan/35 hover:bg-white/[0.07] ${
                   atEnd ? "reels-trending-more-sparkle" : ""
                 }`}
