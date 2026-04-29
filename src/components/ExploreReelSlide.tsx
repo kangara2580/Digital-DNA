@@ -52,7 +52,7 @@ function ReelDesktopRail({
       aria-label="판매·반응 정보"
     >
       <Link
-        href={`/video/${video.id}`}
+        href={`/video/${video.id}?from=explore`}
         className="inline-flex items-center justify-center rounded-full border border-reels-crimson/60 bg-reels-crimson px-3.5 py-1.5 text-[12px] font-extrabold text-white shadow-reels-crimson transition hover:brightness-110"
       >
         구매

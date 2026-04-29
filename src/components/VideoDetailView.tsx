@@ -90,14 +90,20 @@ export function VideoDetailView({
   }, [video.id, recordView]);
 
   /* ── 카테고리 순환 네비게이션 ── */
-  const categoryVideos = useMemo(
-    () => (fromCategory ? getVideosForCategory(fromCategory) : []),
-    [fromCategory],
-  );
-  const currentIndex = useMemo(
-    () => categoryVideos.findIndex((v) => v.id === video.id),
-    [categoryVideos, video.id],
-  );
+  const categoryVideos = useMemo(() => {
+    if (!fromCategory) return [];
+    // 탐색에서 진입 시 best 풀로 순환
+    const slug = fromCategory === "explore" ? "best" : fromCategory;
+    const pool = getVideosForCategory(slug);
+    if (pool.length > 0) return pool;
+    // 풀이 비어있으면 best 폴백
+    return getVideosForCategory("best");
+  }, [fromCategory]);
+  const currentIndex = useMemo(() => {
+    const idx = categoryVideos.findIndex((v) => v.id === video.id);
+    // 탐색에서 진입 시 현재 영상이 풀에 없을 수 있음 → 0번부터 시작
+    return idx >= 0 ? idx : (fromCategory ? 0 : -1);
+  }, [categoryVideos, video.id, fromCategory]);
   const hasCategoryNav = categoryVideos.length > 1 && currentIndex >= 0;
   const prevVideo = hasCategoryNav
     ? categoryVideos[(currentIndex - 1 + categoryVideos.length) % categoryVideos.length]
