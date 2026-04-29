@@ -65,6 +65,21 @@ model Notification {
   @@map("notifications")
 }
 
+/// 영상 구매평 — 구매한 사용자만 작성 가능
+model VideoReview {
+  id         String   @id @default(cuid())
+  videoId    String   @map("video_id")
+  userId     String   @map("user_id")
+  nickname   String
+  rating     Int      /// 1–5
+  body       String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@unique([videoId, userId])
+  @@index([videoId, createdAt])
+  @@map("video_reviews")
+}
+
 /// 닉네임 중복 방지용 예약 레코드 (대소문자 구분 없이 unique)
 model NicknameReservation {
   id              String   @id @default(cuid())
