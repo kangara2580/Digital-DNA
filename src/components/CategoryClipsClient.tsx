@@ -465,52 +465,21 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
           ) : orientationFilter === "all" ? (
             <div className="space-y-0">
               {portraitSorted.length > 0 ? (
-                <section aria-labelledby="category-portrait-heading">
-                  <div className="border-b border-white/10 bg-black/[0.12] px-4 py-4 sm:px-6 lg:px-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-                    <h2
-                      id="category-portrait-heading"
-                      className="text-[15px] font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
-                    >
-                      세로 영상
-                    </h2>
-                  </div>
+                <section aria-label="세로 영상">
                   {renderMosaicGrid(portraitSorted)}
                 </section>
               ) : null}
-
               {landscapeSorted.length > 0 ? (
                 <section
-                  className={
-                    portraitSorted.length > 0
-                      ? "border-t border-white/10 [html[data-theme='light']_&]:border-zinc-200"
-                      : ""
-                  }
-                  aria-labelledby="category-landscape-heading"
+                  className={portraitSorted.length > 0 ? "border-t border-white/10 [html[data-theme='light']_&]:border-zinc-200" : ""}
+                  aria-label="가로 영상"
                 >
-                  <div className="border-b border-white/10 bg-black/[0.12] px-4 py-4 sm:px-6 lg:px-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-                    <h2
-                      id="category-landscape-heading"
-                      className="text-[15px] font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
-                    >
-                      가로 영상
-                    </h2>
-                    <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                      와이드 비율 · {landscapeSorted.length}개
-                    </p>
-                  </div>
                   {renderMosaicGrid(landscapeSorted)}
                 </section>
               ) : null}
             </div>
           ) : (
             <div>
-              <div className="border-b border-white/10 bg-black/[0.08] px-4 py-3 sm:px-6 lg:px-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/80">
-                <p className="text-[13px] font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
-                  {orientationFilter === "portrait"
-                    ? "세로 영상만 보기"
-                    : "가로 영상만 보기"}
-                </p>
-              </div>
               {renderMosaicGrid(sorted)}
             </div>
           )}
