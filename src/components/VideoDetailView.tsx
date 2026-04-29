@@ -535,7 +535,7 @@ export function VideoDetailView({
             </div>
           </div>
 
-          <div className="flex w-full min-w-0 flex-col gap-6 lg:max-w-md pl-16 lg:pl-0 lg:pt-16">
+          <div className="flex w-full min-w-0 flex-col gap-6 lg:max-w-md pl-16 lg:pl-3 lg:pt-16">
             <div>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
