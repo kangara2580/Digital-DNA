@@ -1,15 +1,18 @@
 export const SELL_VIDEO_CATEGORY_OPTIONS = [
+  { value: "best", label: "베스트" },
+  { value: "recommend", label: "추천" },
+  { value: "latest", label: "최신" },
   { value: "daily", label: "일상" },
-  { value: "shortform", label: "숏폼·릴스" },
   { value: "dance", label: "춤" },
   { value: "music", label: "노래" },
   { value: "food", label: "푸드" },
   { value: "travel", label: "여행" },
   { value: "animals", label: "동물" },
+  { value: "sports", label: "스포츠" },
+  { value: "nature", label: "자연" },
   { value: "business", label: "비즈니스" },
   { value: "comedy", label: "코미디" },
   { value: "cartoon", label: "만화" },
-  { value: "oops", label: "실패와 실수" },
 ] as const;
 
 export type SellVideoCategory = (typeof SELL_VIDEO_CATEGORY_OPTIONS)[number]["value"];
