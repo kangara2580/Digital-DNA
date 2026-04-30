@@ -729,10 +729,6 @@ export function Highlight24() {
               >
                 <span
                   className="relative inline-flex h-[1.1em] w-[3.08em] items-center justify-center align-baseline"
-                  style={{
-                    filter:
-                      "drop-shadow(0 0 10px rgba(255,255,255,0.18)) drop-shadow(0 0 20px rgba(76,126,255,0.2))",
-                  }}
                 >
                   <svg
                     viewBox="-12 0 404 140"
@@ -756,12 +752,12 @@ export function Highlight24() {
                       <radialGradient
                         id={`hero-a-depth-${heroMarkUid}`}
                         cx="52"
-                        cy="88"
-                        r="39"
+                        cy="112"
+                        r="44"
                         gradientUnits="userSpaceOnUse"
                       >
-                        <stop offset="0%" stopColor="rgba(8, 22, 48, 0.58)" />
-                        <stop offset="45%" stopColor="rgba(34, 120, 180, 0.18)" />
+                        <stop offset="0%" stopColor="rgba(18, 40, 72, 0.32)" />
+                        <stop offset="50%" stopColor="rgba(34, 120, 180, 0.14)" />
                         <stop offset="100%" stopColor="rgba(255, 255, 255, 0)" />
                       </radialGradient>
                       <radialGradient
@@ -815,9 +811,6 @@ export function Highlight24() {
                     <path
                       d="M 39.75 79.5 L 64.95 94.2 L 39.75 108.9 Z"
                       fill="#FFFFFF"
-                      stroke="rgba(255,255,255,0.55)"
-                      strokeWidth="0.55"
-                      strokeLinejoin="round"
                     />
                     </g>
                     <path
