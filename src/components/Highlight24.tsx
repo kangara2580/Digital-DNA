@@ -79,18 +79,22 @@ function roundedConvexPolygonPath(points: readonly [number, number][], radius: n
   return `${segs.join(" ")} Z`;
 }
 
-/**
- * 상단 꼭짓점 + 밑변 두 꼭짓점으로 둥근 통통 삼각형.
- * 밑변은 미세하게 위로 들려 A 다리 사이 느낌(오목)을 준다.
- */
-function roundedTriangleConcaveBasePath(
+type RoundedTriangleCornerNum = {
+  px: [number, number];
+  vtx: [number, number];
+  ex: [number, number];
+};
+
+function fmtSvgPt([x, y]: [number, number]): string {
+  return `${x.toFixed(2)} ${y.toFixed(2)}`;
+}
+
+function computeRoundedTriangleCorners(
   apex: readonly [number, number],
   bottomRight: readonly [number, number],
   bottomLeft: readonly [number, number],
   cornerRadius: number,
-  /** SVG y축 아래향 — 양수일수록 밑변 중앙이 위로(안쪽으로) 들어감 */
-  baseConcaveLift: number,
-): string {
+): RoundedTriangleCornerNum[] | null {
   const points: [number, number][] = [
     [apex[0], apex[1]],
     [bottomRight[0], bottomRight[1]],
@@ -103,8 +107,7 @@ function roundedTriangleConcaveBasePath(
     return [x / len, y / len];
   };
   const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-  type Corner = { px: string; q: string; ex: string };
-  const corners: Corner[] = [];
+  const corners: RoundedTriangleCornerNum[] = [];
   for (let i = 0; i < n; i++) {
     const prev = points[(i + n - 1) % n]!;
     const cur = points[i]!;
@@ -113,30 +116,63 @@ function roundedTriangleConcaveBasePath(
     const vOut = nm(next[0] - cur[0], next[1] - cur[1]);
     const dot = clamp(vIn[0] * vOut[0] + vIn[1] * vOut[1], -1, 1);
     const theta = Math.acos(dot);
-    if (theta < 1e-4) continue;
+    if (theta < 1e-4) return null;
     const distIn = Math.hypot(cur[0] - prev[0], cur[1] - prev[1]);
     const distOut = Math.hypot(next[0] - cur[0], next[1] - cur[1]);
     let inset = cornerRadius / Math.tan(theta / 2);
     const maxInset = Math.min(distIn, distOut) * 0.48;
     inset = Math.min(inset, maxInset);
-    const pxf = cur[0] - vIn[0] * inset;
-    const pyf = cur[1] - vIn[1] * inset;
-    const qxf = cur[0];
-    const qyf = cur[1];
-    const exf = cur[0] + vOut[0] * inset;
-    const eyf = cur[1] + vOut[1] * inset;
     corners.push({
-      px: `${pxf.toFixed(2)} ${pyf.toFixed(2)}`,
-      q: `${qxf.toFixed(2)} ${qyf.toFixed(2)}`,
-      ex: `${exf.toFixed(2)} ${eyf.toFixed(2)}`,
+      px: [cur[0] - vIn[0] * inset, cur[1] - vIn[1] * inset],
+      vtx: [cur[0], cur[1]],
+      ex: [cur[0] + vOut[0] * inset, cur[1] + vOut[1] * inset],
     });
   }
-  if (corners.length !== 3) return roundedConvexPolygonPath(points, cornerRadius);
-  const [c0, c1, c2] = corners as [Corner, Corner, Corner];
-  const midX = (bottomLeft[0] + bottomRight[0]) / 2;
-  const baseY = (bottomLeft[1] + bottomRight[1]) / 2;
-  const cxb = `${midX.toFixed(2)} ${(baseY - baseConcaveLift).toFixed(2)}`;
-  return `M ${c0.px} Q ${c0.q} ${c0.ex} L ${c1.px} Q ${c1.q} ${c1.ex} Q ${cxb} ${c2.px} Q ${c2.q} ${c2.ex} Z`;
+  return corners.length === 3 ? corners : null;
+}
+
+/**
+ * 상단 꼭짓점 + 밑변 두 꼭짓점으로 둥근 통통 삼각형.
+ * 밑변은 살짝 위로 들려 A 실루엣을 주며, 양 끝은 부드럽고 가운데가 더 오목하게 이어진다(ease형 cubic).
+ */
+function roundedTriangleConcaveBasePath(
+  apex: readonly [number, number],
+  bottomRight: readonly [number, number],
+  bottomLeft: readonly [number, number],
+  cornerRadius: number,
+  /** 밑변 중앙 높이 들림 — 더 클수록 안쪽으로 더 오목 */
+  baseConcaveLift: number,
+): string {
+  const pointsFallback: readonly [number, number][] = [
+    [apex[0], apex[1]],
+    [bottomRight[0], bottomRight[1]],
+    [bottomLeft[0], bottomLeft[1]],
+  ];
+  const computed = computeRoundedTriangleCorners(apex, bottomRight, bottomLeft, cornerRadius);
+  if (!computed) return roundedConvexPolygonPath(pointsFallback, cornerRadius);
+
+  const [c0, c1, c2] = computed;
+  /** BR 밑변 쪽 단부 → BL 밑변 쪽 단부 (오른쪽에서 왼쪽) */
+  const pStart = c1.ex;
+  const pEnd = c2.px;
+  const chord = Math.max(Math.hypot(pEnd[0] - pStart[0], pEnd[1] - pStart[1]), 1e-6);
+  /** 커브 극값이 거의 가운데에 오도록 끝은 완만·중앙 좁히기 */
+  const gamma = Math.min(Math.max(chord * 0.26, 5), chord * 0.38);
+  const liftEff = Math.min(Math.max(baseConcaveLift, 0), chord * 0.55);
+
+  /** 밑변은 수평(동일 baseY); cubic으로 끝은 둥글게 이어져 가운데만 더 패인다 */
+  const c1Ctl: [number, number] = [pStart[0] - gamma, pStart[1] - liftEff];
+  const c2Ctl: [number, number] = [pEnd[0] + gamma, pEnd[1] - liftEff];
+
+  return [
+    `M ${fmtSvgPt(c0.px)}`,
+    `Q ${fmtSvgPt(c0.vtx)} ${fmtSvgPt(c0.ex)}`,
+    `L ${fmtSvgPt(c1.px)}`,
+    `Q ${fmtSvgPt(c1.vtx)} ${fmtSvgPt(pStart)}`,
+    `C ${fmtSvgPt(c1Ctl)} ${fmtSvgPt(c2Ctl)} ${fmtSvgPt(pEnd)}`,
+    `Q ${fmtSvgPt(c2.vtx)} ${fmtSvgPt(c2.ex)}`,
+    "Z",
+  ].join(" ");
 }
 
 type RingPose = {
@@ -273,7 +309,7 @@ export function Highlight24() {
         [96, 124.5],
         [6, 124.5],
         40,
-        4.2,
+        6,
       ),
     [],
   );
