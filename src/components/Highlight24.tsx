@@ -94,6 +94,8 @@ function computeRoundedTriangleCorners(
   bottomRight: readonly [number, number],
   bottomLeft: readonly [number, number],
   cornerRadius: number,
+  /** BR·BL만 더 크게 — 발이 더 둥글게 이어지도록 */
+  bottomCornerInsetMult = 0.56,
 ): RoundedTriangleCornerNum[] | null {
   const points: [number, number][] = [
     [apex[0], apex[1]],
@@ -120,7 +122,8 @@ function computeRoundedTriangleCorners(
     const distIn = Math.hypot(cur[0] - prev[0], cur[1] - prev[1]);
     const distOut = Math.hypot(next[0] - cur[0], next[1] - cur[1]);
     let inset = cornerRadius / Math.tan(theta / 2);
-    const maxInset = Math.min(distIn, distOut) * 0.48;
+    const insetMult = i === 1 || i === 2 ? bottomCornerInsetMult : 0.48;
+    const maxInset = Math.min(distIn, distOut) * insetMult;
     inset = Math.min(inset, maxInset);
     corners.push({
       px: [cur[0] - vIn[0] * inset, cur[1] - vIn[1] * inset],
@@ -156,13 +159,14 @@ function roundedTriangleConcaveBasePath(
   const pStart = c1.ex;
   const pEnd = c2.px;
   const chord = Math.max(Math.hypot(pEnd[0] - pStart[0], pEnd[1] - pStart[1]), 1e-6);
-  /** 커브 극값이 거의 가운데에 오도록 끝은 완만·중앙 좁히기 */
-  const gamma = Math.min(Math.max(chord * 0.26, 5), chord * 0.38);
+  /** 끝은 완만히, 가운데로 갈수록 더 깊게 — 제어점을 밑변 쪽으로 당겨 발–밑변 이음이 덜 꺾이게 */
+  const gamma = Math.min(Math.max(chord * 0.31, 5.8), chord * 0.4);
   const liftEff = Math.min(Math.max(baseConcaveLift, 0), chord * 0.55);
+  /** 발에서는 덜 패이고 축에서는 더 깎이도록 — 세로 깊기는 깊게, 단 gamma로 끝은 완만 */
+  const joinLift = liftEff * 0.48;
 
-  /** 밑변은 수평(동일 baseY); cubic으로 끝은 둥글게 이어져 가운데만 더 패인다 */
-  const c1Ctl: [number, number] = [pStart[0] - gamma, pStart[1] - liftEff];
-  const c2Ctl: [number, number] = [pEnd[0] + gamma, pEnd[1] - liftEff];
+  const c1Ctl: [number, number] = [pStart[0] - gamma, pStart[1] - joinLift];
+  const c2Ctl: [number, number] = [pEnd[0] + gamma, pEnd[1] - joinLift];
 
   return [
     `M ${fmtSvgPt(c0.px)}`,
@@ -309,7 +313,7 @@ export function Highlight24() {
         [96, 124.5],
         [6, 124.5],
         40,
-        6,
+        8.6,
       ),
     [],
   );
@@ -832,6 +836,9 @@ export function Highlight24() {
                     aria-hidden
                   >
                     <defs>
+                      <clipPath id={`hero-a-glass-clip-${heroMarkUid}`} clipPathUnits="userSpaceOnUse">
+                        <path d={heroABlobD} fill="#000" />
+                      </clipPath>
                       <linearGradient
                         id={`hero-a-skin-${heroMarkUid}`}
                         x1="9"
@@ -840,9 +847,9 @@ export function Highlight24() {
                         y2="20"
                         gradientUnits="userSpaceOnUse"
                       >
-                        <stop offset="0%" stopColor="#5FF5D9" />
-                        <stop offset="38%" stopColor="#82E8FF" />
-                        <stop offset="100%" stopColor="#63A7FF" />
+                        <stop offset="0%" stopColor="#5FF5D9" stopOpacity="0.42" />
+                        <stop offset="38%" stopColor="#82E8FF" stopOpacity="0.38" />
+                        <stop offset="100%" stopColor="#63A7FF" stopOpacity="0.34" />
                       </linearGradient>
                       <radialGradient
                         id={`hero-a-depth-${heroMarkUid}`}
@@ -851,8 +858,8 @@ export function Highlight24() {
                         r="44"
                         gradientUnits="userSpaceOnUse"
                       >
-                        <stop offset="0%" stopColor="rgba(18, 40, 72, 0.32)" />
-                        <stop offset="50%" stopColor="rgba(34, 120, 180, 0.14)" />
+                        <stop offset="0%" stopColor="rgba(18, 40, 72, 0.2)" />
+                        <stop offset="50%" stopColor="rgba(34, 120, 180, 0.09)" />
                         <stop offset="100%" stopColor="rgba(255, 255, 255, 0)" />
                       </radialGradient>
                       <radialGradient
@@ -862,8 +869,8 @@ export function Highlight24() {
                         r="69"
                         gradientUnits="userSpaceOnUse"
                       >
-                        <stop offset="0%" stopColor="rgba(255,255,255,0.45)" />
-                        <stop offset="35%" stopColor="rgba(255,255,255,0.08)" />
+                        <stop offset="0%" stopColor="rgba(255,255,255,0.36)" />
+                        <stop offset="35%" stopColor="rgba(255,255,255,0.07)" />
                         <stop offset="100%" stopColor="rgba(255,255,255,0)" />
                       </radialGradient>
                       <filter
@@ -891,17 +898,42 @@ export function Highlight24() {
                       filter={`url(#hero-a-bloom-${heroMarkUid})`}
                       style={{ isolation: "isolate" }}
                     >
-                      <path fill={`url(#hero-a-skin-${heroMarkUid})`} d={heroABlobD} />
-                      <path
-                        fill={`url(#hero-a-depth-${heroMarkUid})`}
-                        d={heroABlobD}
-                        style={{ mixBlendMode: "multiply" }}
-                      />
-                      <path
-                        fill={`url(#hero-a-rim-${heroMarkUid})`}
-                        d={heroABlobD}
-                        style={{ mixBlendMode: "soft-light", opacity: 0.92 }}
-                      />
+                      <g clipPath={`url(#hero-a-glass-clip-${heroMarkUid})`}>
+                        <foreignObject x="-8" y="34" width="118" height="98">
+                          <div
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              borderRadius: 0,
+                              backdropFilter: "blur(14px)",
+                              WebkitBackdropFilter: "blur(14px)",
+                              background:
+                                "linear-gradient(156deg, rgba(255,255,255,0.28) 0%, rgba(130,232,255,0.14) 42%, rgba(95,245,217,0.1) 100%)",
+                              pointerEvents: "none",
+                            }}
+                          />
+                        </foreignObject>
+                        <path fill={`url(#hero-a-skin-${heroMarkUid})`} d={heroABlobD} />
+                        <path
+                          fill={`url(#hero-a-depth-${heroMarkUid})`}
+                          d={heroABlobD}
+                          style={{ mixBlendMode: "multiply", opacity: 0.82 }}
+                        />
+                        <path
+                          fill={`url(#hero-a-rim-${heroMarkUid})`}
+                          d={heroABlobD}
+                          style={{ mixBlendMode: "soft-light", opacity: 0.88 }}
+                        />
+                        <path
+                          fill="none"
+                          stroke="rgba(255,255,255,0.42)"
+                          strokeWidth={1}
+                          strokeLinejoin="round"
+                          strokeLinecap="round"
+                          vectorEffect="nonScalingStroke"
+                          d={heroABlobD}
+                        />
+                      </g>
                     </g>
                     <path
                       d="M 39.75 79.5 L 64.95 94.2 L 39.75 108.9 Z"
