@@ -705,7 +705,7 @@ export function VideoCard({
           />
         ) : null}
         <div
-          className="pointer-events-none absolute inset-0 z-[1] bg-black/0 transition-colors duration-300 ease-out group-hover:bg-black/30 motion-reduce:group-hover:bg-black/25"
+          className="pointer-events-none absolute inset-0 z-[1] bg-black/0 transition-colors duration-300 ease-out group-hover:bg-black/50 motion-reduce:group-hover:bg-black/40"
           aria-hidden
         />
         {onPick ? (
