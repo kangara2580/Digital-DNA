@@ -736,19 +736,19 @@ export function Highlight24() {
                 <br />
                 글로벌 동영상 쇼핑몰입니다.
               </p>
-              <div className="pointer-events-auto -translate-x-[40px] z-[85] mt-[clamp(0.5rem,1.2vw,1.5rem)] flex flex-col gap-[clamp(8px,0.8vw,12px)]">
-                {/* 시작하기 버튼 — 원래 크기 유지 */}
+              {/* 시작하기 + 섹션 네비 — 한 줄 가로 배치 */}
+              <div className="pointer-events-auto -translate-x-[40px] z-[85] mt-[clamp(0.5rem,1.2vw,1.5rem)] flex items-center gap-6">
                 <button
                   type="button"
                   onClick={onStartClick}
                   onPointerDown={(event) => event.stopPropagation()}
-                  className="inline-flex w-[clamp(138px,74%,188px)] items-center justify-center rounded-full border border-white/45 bg-transparent px-[clamp(1rem,1.9vw,1.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold text-white shadow-[0_9px_0_rgba(0,0,0,0.55)] transition duration-200 hover:-translate-y-0.5 hover:border-white/60 hover:shadow-[0_11px_0_rgba(0,0,0,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
+                  className="shrink-0 inline-flex w-[clamp(138px,74%,188px)] items-center justify-center rounded-full border border-white/45 bg-transparent px-[clamp(1rem,1.9vw,1.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold text-white shadow-[0_9px_0_rgba(0,0,0,0.55)] transition duration-200 hover:-translate-y-0.5 hover:border-white/60 hover:shadow-[0_11px_0_rgba(0,0,0,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
                 >
                   시작하기
                 </button>
 
                 {/* 섹션 이동 네비게이션 */}
-                <div className="flex items-center gap-[clamp(12px,1.6vw,22px)] pl-1">
+                <div className="flex shrink-0 items-center gap-5">
                   {(
                     [
                       { label: "인기순위", target: "trending-rank" },
@@ -764,18 +764,17 @@ export function Highlight24() {
                         const el = document.getElementById(target);
                         if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
                       }}
-                      className="group relative flex items-center gap-[5px] focus-visible:outline-none"
+                      className="group relative flex flex-col items-center gap-[4px] focus-visible:outline-none"
                     >
-                      {i > 0 && (
-                        <span className="absolute -left-[clamp(8px,1vw,13px)] top-1/2 h-3 w-px -translate-y-1/2 bg-white/20" aria-hidden />
-                      )}
-                      <span className="relative flex h-[12px] w-[12px] shrink-0 items-center justify-center rounded-full border border-white/30 transition-all duration-300 group-hover:border-[#62beff]/90">
-                        <span className="h-[4px] w-[4px] rounded-full bg-white/25 transition-all duration-300 group-hover:scale-125 group-hover:bg-[#62beff]" />
-                      </span>
-                      <span className="relative text-[clamp(11px,1vw,14px)] font-medium text-white/60 transition-colors duration-300 group-hover:text-white">
-                        {label}
-                        <span className="absolute -bottom-[3px] left-0 h-[1.5px] w-0 rounded-full bg-[#62beff]/80 transition-all duration-300 group-hover:w-full" />
-                      </span>
+                      <div className="flex items-center gap-[6px]">
+                        <span className="relative flex h-[13px] w-[13px] shrink-0 items-center justify-center rounded-full border border-white/30 transition-all duration-300 group-hover:border-[#62beff]/90">
+                          <span className="h-[4px] w-[4px] rounded-full bg-white/25 transition-all duration-300 group-hover:scale-125 group-hover:bg-[#62beff]" />
+                        </span>
+                        <span className="whitespace-nowrap text-[13px] font-medium text-white/60 transition-colors duration-300 group-hover:text-white">
+                          {label}
+                        </span>
+                      </div>
+                      <span className="h-[1.5px] w-full origin-left scale-x-0 rounded-full bg-[#62beff]/80 transition-transform duration-300 group-hover:scale-x-100" />
                     </button>
                   ))}
                 </div>
