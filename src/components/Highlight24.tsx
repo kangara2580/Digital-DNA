@@ -671,7 +671,7 @@ export function Highlight24() {
           <div className="pointer-events-none relative z-[80] hidden w-[clamp(206px,24vw,332px)] -translate-x-16 md:flex md:justify-center">
             <div className="flex w-full flex-col items-center pl-[clamp(20px,2.25vw,34px)] pr-[clamp(14px,1.55vw,24px)]">
               <div
-                className="-translate-y-12 select-none text-[clamp(2.4rem,6.2vw,6.1rem)] font-semibold leading-none tracking-[0.03em] text-white/92"
+                className="-translate-y-12 select-none text-[clamp(2.4rem,6.2vw,6.1rem)] font-semibold leading-none tracking-[0.03em] text-white"
                 style={{
                   fontFamily: '"Inter", "Helvetica Neue", "Arial", sans-serif',
                   textShadow:
@@ -692,12 +692,11 @@ export function Highlight24() {
                     fill="none"
                     aria-hidden
                   >
+                    {/* 첫 글자 A: 둥근 삼각 실루엣 · 순백 · 가운데 재생(음영 네거티브) */}
                     <path
-                      d="M2 126 L46 14 Q50 8 54 14 L98 126"
-                      stroke="currentColor"
-                      strokeWidth="18"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                      fill="currentColor"
+                      fillRule="evenodd"
+                      d="M 4 118 L 46 24 Q 50 8 54 24 L 96 118 Q 50 110 4 118 Z M 39 76 L 61 94 L 39 112 Z"
                     />
                     <path
                       d="M152 126V14H194Q224 14 224 44Q224 74 194 74H152"
@@ -727,7 +726,6 @@ export function Highlight24() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
-                    <path d="M38 78 L62 91 L38 104 Z" fill="#FFFFFF" />
                   </svg>
                 </span>
               </div>
