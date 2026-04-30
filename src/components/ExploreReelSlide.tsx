@@ -58,9 +58,13 @@ type ReelSlideProps = {
 const railBuyButtonClass =
   "relative flex w-full min-h-[54px] items-center justify-center rounded-full border-[3px] border-white/40 bg-transparent px-2 py-2.5 text-[14px] font-extrabold tracking-widest text-white backdrop-blur-sm shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-300 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] hover:-translate-y-0.5 active:scale-[0.99] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900";
 
-/** 탐색 우측 레일 액션 — 굵은 테두리·통통한 원형 버튼 */
-const railActionBase =
+/** 탐색 우측 레일 — 좋아요만 두꺼운 원형 테두리 */
+const railLikeCircleBase =
   "inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border-[3.5px] border-white/40 bg-white/[0.09] shadow-[inset_0_2px_6px_rgba(255,255,255,0.12),inset_0_-3px_10px_rgba(0,0,0,0.18),0_6px_18px_-6px_rgba(0,0,0,0.55)] transition-all duration-200 hover:border-white/60 hover:bg-white/[0.14] hover:shadow-[inset_0_2px_8px_rgba(255,255,255,0.16),0_10px_24px_-8px_rgba(0,0,0,0.6)] active:scale-[0.94] [html[data-theme='light']_&]:border-zinc-400/55 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:shadow-[inset_0_2px_0_rgba(255,255,255,0.9),0_6px_16px_-6px_rgba(0,0,0,0.12)] [html[data-theme='light']_&]:hover:border-zinc-500/70";
+
+/** 장바구니·저장 — 원형 링 없음, 통통 아이콘만 */
+const railActionPlainBtn =
+  "inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border-0 bg-transparent p-0 text-white/90 transition-all duration-200 hover:scale-110 hover:text-white active:scale-[0.92] [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900";
 
 const railActionIcon =
   "h-[23px] w-[23px] shrink-0 pointer-events-none [html[data-theme='light']_&]:stroke-zinc-600";
@@ -295,7 +299,7 @@ function ReelDesktopRail({
               e.preventDefault();
               void toggleInternalLike();
             }}
-            className={`relative ${railActionBase} ${
+            className={`relative ${railLikeCircleBase} ${
               likedByMe
                 ? "!border-[#8eb8ff]/85 !bg-[#152a52] !text-[#b8d4ff] !shadow-[inset_0_2px_10px_rgba(142,184,255,0.22),0_8px_22px_-6px_rgba(30,70,140,0.55)] hover:!border-[#a9cfff]"
                 : "!text-white/92 [html[data-theme='light']_&]:!text-zinc-600"
@@ -327,7 +331,7 @@ function ReelDesktopRail({
             if (!requireAuth()) return;
             dopamine.launchFromCartButton(e.currentTarget, video, posterSrc ?? undefined);
           }}
-          className={`${railActionBase} !text-white/88 disabled:cursor-not-allowed disabled:opacity-45 [html[data-theme='light']_&]:!text-zinc-600`}
+          className={`${railActionPlainBtn} disabled:cursor-not-allowed disabled:opacity-45`}
           disabled={soldOut}
           aria-label="장바구니 담기"
         >
@@ -343,10 +347,10 @@ function ReelDesktopRail({
             window.setTimeout(() => setWishlistPulse(false), 170);
             toggleWishlist(video);
           }}
-          className={`${railActionBase} ${
+          className={`${railActionPlainBtn} ${
             wishlisted
-              ? "!border-reels-cyan/75 !bg-reels-cyan/16 !text-reels-cyan !shadow-[inset_0_2px_8px_rgba(34,211,238,0.18),0_8px_22px_-6px_rgba(8,145,178,0.38)] hover:!border-reels-cyan/95"
-              : "!text-white/88 [html[data-theme='light']_&]:!text-zinc-600"
+              ? "!text-reels-cyan hover:!text-reels-cyan [html[data-theme='light']_&]:!text-reels-cyan"
+              : ""
           } ${wishlistPulse ? "scale-110" : "scale-100"}`}
           aria-label={wishlisted ? "찜 해제" : "찜하기"}
           aria-pressed={wishlisted}
