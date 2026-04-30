@@ -56,9 +56,9 @@ export function LoginPageClient() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#07080f] px-4 py-6 text-zinc-100 sm:px-6 sm:py-8">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(236,72,153,0.18),transparent_40%),radial-gradient(circle_at_80%_90%,rgba(59,130,246,0.16),transparent_45%),linear-gradient(180deg,#05060b_0%,#080913_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(0,51,255,0.22),transparent_42%),radial-gradient(circle_at_78%_86%,rgba(0,242,234,0.16),transparent_42%),linear-gradient(180deg,#05060b_0%,#080913_100%)]" />
       <div className="relative flex min-h-[calc(100vh-3rem)] items-center justify-center sm:min-h-[calc(100vh-4rem)]">
-        <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-black/58 backdrop-blur-[6px]" />
         <div className="relative w-full max-w-[560px] rounded-[24px] border border-white/20 bg-[radial-gradient(120%_120%_at_0%_0%,rgba(0,51,255,0.34)_0%,rgba(8,14,30,0.94)_52%,rgba(2,6,16,0.98)_100%)] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10">
           <button
             type="button"
@@ -72,7 +72,7 @@ export function LoginPageClient() {
             ARA
           </p>
           <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
-            Google로 시작하기
+            로그인/회원가입
           </p>
           {error ? (
             <p
