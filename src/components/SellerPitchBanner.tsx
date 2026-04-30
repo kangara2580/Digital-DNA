@@ -191,9 +191,9 @@ export function SellerPitchBanner() {
                 <p className="-mt-3 mb-4 text-center text-[clamp(1.9rem,4vw,2.9rem)] font-semibold tracking-tight text-zinc-100 sm:-mt-4 sm:mb-6">
                   단 3단계로
                 </p>
-                <div className="relative overflow-hidden rounded-[22px] border border-white/28 bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
-                  <div className="pointer-events-none absolute inset-y-8 left-1/2 hidden w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-[#62beff]/80 to-transparent lg:block" aria-hidden />
-                  <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
+                <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
+                  {/* 사용자 카드 */}
+                  <div className="relative overflow-hidden rounded-[22px] border border-white/28 bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
                     <section className="space-y-5">
                       <p className="pt-1 text-left text-[clamp(1.2rem,2.5vw,1.45rem)] font-medium tracking-tight text-zinc-300">
                         원하는 영상 AI로 재창작해서 사용하기
@@ -233,7 +233,10 @@ export function SellerPitchBanner() {
                         </li>
                       </ol>
                     </section>
+                  </div>
 
+                  {/* 크리에이터 카드 */}
+                  <div className="relative overflow-hidden rounded-[22px] border border-white/28 bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
                     <section className="space-y-5">
                       <p className="pt-1 text-right text-[clamp(1.2rem,2.5vw,1.45rem)] font-medium tracking-tight text-zinc-300">
                         원하는 영상 판매해서 수익 만들기
