@@ -209,12 +209,13 @@ export function Highlight24() {
   const heroABlobD = useMemo(
     () =>
       roundedConvexPolygonPath(
+        /** R·A 스트로크와 동일 뷰박스 상하(14→126), 가로폭 유지 통통 블랍 */
         [
-          [51, 42],
-          [95, 118.8],
-          [7, 118.8],
+          [51, 14],
+          [93, 126],
+          [9, 126],
         ],
-        32,
+        16,
       ),
     [],
   );
@@ -746,7 +747,7 @@ export function Highlight24() {
                         x1="9"
                         y1="126"
                         x2="95"
-                        y2="20"
+                        y2="14"
                         gradientUnits="userSpaceOnUse"
                       >
                         <stop offset="0%" stopColor="#5FF5D9" />
@@ -756,8 +757,8 @@ export function Highlight24() {
                       <radialGradient
                         id={`hero-a-depth-${heroMarkUid}`}
                         cx="52"
-                        cy="88"
-                        r="39"
+                        cy="72"
+                        r="48"
                         gradientUnits="userSpaceOnUse"
                       >
                         <stop offset="0%" stopColor="rgba(8, 22, 48, 0.58)" />
@@ -767,8 +768,8 @@ export function Highlight24() {
                       <radialGradient
                         id={`hero-a-rim-${heroMarkUid}`}
                         cx="52"
-                        cy="38"
-                        r="69"
+                        cy="32"
+                        r="74"
                         gradientUnits="userSpaceOnUse"
                       >
                         <stop offset="0%" stopColor="rgba(255,255,255,0.45)" />
@@ -810,8 +811,8 @@ export function Highlight24() {
                       </filter>
                     </defs>
                     {/* 앞 A만 확대 — R·뒤 A 스트로크 크기는 부모 em 그대로 */}
-                    {/* 기준점을 살짝 아래로: 위로 더 길게, 아래 확장은 최소 */}
-                    <g transform="translate(51, 105.5) scale(1.5, 1.6) translate(-51, -105.5)">
+                    {/* 높이는 R·뒤 A와 동일(스케일Y=1), 가로만 넓힘 */}
+                    <g transform="translate(51, 70) scale(1.52, 1) translate(-51, -70)">
                     <g
                       filter={`url(#hero-a-bloom-${heroMarkUid})`}
                       style={{ isolation: "isolate" }}
@@ -829,7 +830,7 @@ export function Highlight24() {
                       />
                     </g>
                     <path
-                      d="M 39.75 77.65 L 64.95 92.35 L 39.75 107.05 Z"
+                      d="M 40 71 L 64 91 L 40 111 Z"
                       fill="#FFFFFF"
                       stroke="rgba(255,255,255,0.55)"
                       strokeWidth="0.55"
