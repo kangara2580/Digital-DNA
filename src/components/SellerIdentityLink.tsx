@@ -38,7 +38,7 @@ export function SellerIdentityLink({
         height={compact ? 28 : 40}
         alt=""
         unoptimized
-        className={`shrink-0 rounded-full object-cover ring-2 ring-white/10 [html[data-theme='light']_&]:ring-zinc-200 ${
+        className={`shrink-0 rounded-full object-cover ${
           compact ? "h-7 w-7" : "h-10 w-10"
         }`}
       />
