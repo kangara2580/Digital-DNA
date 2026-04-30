@@ -195,8 +195,8 @@ export function SellerPitchBanner() {
                   {/* 사용자 카드 */}
                   <div className="relative overflow-hidden rounded-[22px] border border-white/28 bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
                     <section className="flex flex-col items-center space-y-5 text-center">
-                      <p className="pt-1 text-[18px] font-extrabold tracking-tight text-white sm:text-[20px]">사용자</p>
-                      <p className="pb-1 text-[clamp(1.2rem,2.5vw,1.45rem)] font-medium tracking-tight text-zinc-300">
+                      <p className="pt-1 text-[22px] font-extrabold tracking-tight text-white sm:text-[24px]">사용자</p>
+                      <p className="pb-1 text-[clamp(0.9rem,2vw,1.1rem)] font-medium tracking-tight text-zinc-300">
                         원하는 영상 AI로 재창작해서 사용하기
                       </p>
                       <ol className="w-full space-y-12">
@@ -234,8 +234,8 @@ export function SellerPitchBanner() {
                   {/* 크리에이터 카드 */}
                   <div className="relative overflow-hidden rounded-[22px] border border-white/28 bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
                     <section className="flex flex-col items-center space-y-5 text-center">
-                      <p className="pt-1 text-[18px] font-extrabold tracking-tight text-white sm:text-[20px]">크리에이터</p>
-                      <p className="pb-1 text-[clamp(1.2rem,2.5vw,1.45rem)] font-medium tracking-tight text-zinc-300">
+                      <p className="pt-1 text-[22px] font-extrabold tracking-tight text-white sm:text-[24px]">크리에이터</p>
+                      <p className="pb-1 text-[clamp(0.9rem,2vw,1.1rem)] font-medium tracking-tight text-zinc-300">
                         원하는 영상 판매해서 수익 만들기
                       </p>
                       <ol className="w-full space-y-12">
