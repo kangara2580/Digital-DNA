@@ -58,6 +58,13 @@ type ReelSlideProps = {
 const railBuyButtonClass =
   "relative flex w-full min-h-[54px] items-center justify-center rounded-full border-[3px] border-white/40 bg-transparent px-2 py-2.5 text-[14px] font-extrabold tracking-widest text-white backdrop-blur-sm shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-300 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] hover:-translate-y-0.5 active:scale-[0.99] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900";
 
+/** 탐색 우측 레일 액션 — 굵은 테두리·통통한 원형 버튼 */
+const railActionBase =
+  "inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border-[3.5px] border-white/40 bg-white/[0.09] shadow-[inset_0_2px_6px_rgba(255,255,255,0.12),inset_0_-3px_10px_rgba(0,0,0,0.18),0_6px_18px_-6px_rgba(0,0,0,0.55)] transition-all duration-200 hover:border-white/60 hover:bg-white/[0.14] hover:shadow-[inset_0_2px_8px_rgba(255,255,255,0.16),0_10px_24px_-8px_rgba(0,0,0,0.6)] active:scale-[0.94] [html[data-theme='light']_&]:border-zinc-400/55 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:shadow-[inset_0_2px_0_rgba(255,255,255,0.9),0_6px_16px_-6px_rgba(0,0,0,0.12)] [html[data-theme='light']_&]:hover:border-zinc-500/70";
+
+const railActionIcon =
+  "h-[23px] w-[23px] shrink-0 pointer-events-none [html[data-theme='light']_&]:stroke-zinc-600";
+
 /** 데스크톱: 틱톡 웹 우측 컬럼 — 마켓 수치 + 바로 장바구니·좋아요·찜 */
 function ReelDesktopRail({
   video,
@@ -279,7 +286,39 @@ function ReelDesktopRail({
         </Link>
       )}
 
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-1.5">
+          <button
+            type="button"
+            title={likedByMe ? "좋아요 취소" : "좋아요"}
+            onClick={(e) => {
+              e.preventDefault();
+              void toggleInternalLike();
+            }}
+            className={`relative ${railActionBase} ${
+              likedByMe
+                ? "!border-[#8eb8ff]/85 !bg-[#152a52] !text-[#b8d4ff] !shadow-[inset_0_2px_10px_rgba(142,184,255,0.22),0_8px_22px_-6px_rgba(30,70,140,0.55)] hover:!border-[#a9cfff]"
+                : "!text-white/92 [html[data-theme='light']_&]:!text-zinc-600"
+            } ${likePulse ? "scale-110" : "scale-100"}`}
+            aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+            aria-pressed={likedByMe}
+          >
+            {likeBurst ? (
+              <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/35 animate-ping" />
+            ) : null}
+            <Heart
+              strokeWidth={2.85}
+              className={`relative z-[1] ${railActionIcon} transition-transform duration-300 ${
+                likedByMe
+                  ? "fill-current stroke-[#b8d4ff] text-[#b8d4ff] [html[data-theme='light']_&]:stroke-sky-500 [html[data-theme='light']_&]:fill-sky-500 [html[data-theme='light']_&]:text-sky-600"
+                  : "stroke-current"
+              } ${likeBurst ? "scale-125" : "scale-100"}`}
+            />
+          </button>
+          <span className="font-mono text-[14px] font-bold tabular-nums text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
+            {formatLikeCountShortK(displayedLikeTotal)}
+          </span>
+        </div>
         <button
           type="button"
           title="장바구니 담기"
@@ -288,41 +327,12 @@ function ReelDesktopRail({
             if (!requireAuth()) return;
             dopamine.launchFromCartButton(e.currentTarget, video, posterSrc ?? undefined);
           }}
-          className="inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-zinc-400 transition-colors hover:border-white/25 hover:text-zinc-100 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-600"
+          className={`${railActionBase} !text-white/88 disabled:cursor-not-allowed disabled:opacity-45 [html[data-theme='light']_&]:!text-zinc-600`}
           disabled={soldOut}
           aria-label="장바구니 담기"
         >
-          <ShoppingCart className="h-[18px] w-[18px]" />
+          <ShoppingCart strokeWidth={2.85} className={`${railActionIcon} stroke-current`} />
         </button>
-        <div className="flex flex-col items-center gap-1">
-          <button
-            type="button"
-            title={likedByMe ? "좋아요 취소" : "좋아요"}
-            onClick={(e) => {
-              e.preventDefault();
-              void toggleInternalLike();
-            }}
-            className={`relative inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border transition-all duration-200 [html[data-theme='light']_&]:bg-zinc-100 ${
-              likedByMe
-                ? "border-[#79adff]/70 bg-[#0e1d3f] text-[#9bc4ff]"
-                : "border-white/10 bg-white/[0.04] text-zinc-400 hover:border-white/25 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600"
-            } ${likePulse ? "scale-110" : "scale-100"}`}
-            aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
-            aria-pressed={likedByMe}
-          >
-            {likeBurst ? (
-              <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/30 animate-ping" />
-            ) : null}
-            <Heart
-              className={`relative z-[1] h-[18px] w-[18px] transition-transform duration-300 ${
-                likedByMe ? "fill-current text-[#9bc4ff]" : ""
-              } ${likeBurst ? "scale-125" : "scale-100"}`}
-            />
-          </button>
-          <span className="font-mono text-[14px] font-bold tabular-nums text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
-            {formatLikeCountShortK(displayedLikeTotal)}
-          </span>
-        </div>
         <button
           type="button"
           title={wishlisted ? "찜 해제" : "찜하기"}
@@ -333,15 +343,18 @@ function ReelDesktopRail({
             window.setTimeout(() => setWishlistPulse(false), 170);
             toggleWishlist(video);
           }}
-          className={`inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border transition-all duration-200 [html[data-theme='light']_&]:bg-zinc-100 ${
+          className={`${railActionBase} ${
             wishlisted
-              ? "border-reels-cyan/50 bg-reels-cyan/10 text-reels-cyan"
-              : "border-white/10 bg-white/[0.04] text-zinc-400 hover:border-white/25 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600"
+              ? "!border-reels-cyan/75 !bg-reels-cyan/16 !text-reels-cyan !shadow-[inset_0_2px_8px_rgba(34,211,238,0.18),0_8px_22px_-6px_rgba(8,145,178,0.38)] hover:!border-reels-cyan/95"
+              : "!text-white/88 [html[data-theme='light']_&]:!text-zinc-600"
           } ${wishlistPulse ? "scale-110" : "scale-100"}`}
           aria-label={wishlisted ? "찜 해제" : "찜하기"}
           aria-pressed={wishlisted}
         >
-          <Bookmark className={`h-[18px] w-[18px] ${wishlisted ? "fill-current" : ""}`} />
+          <Bookmark
+            strokeWidth={2.85}
+            className={`${railActionIcon} stroke-current ${wishlisted ? "fill-current" : ""}`}
+          />
         </button>
       </div>
 
