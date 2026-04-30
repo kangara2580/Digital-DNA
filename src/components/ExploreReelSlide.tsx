@@ -59,7 +59,7 @@ type ReelSlideProps = {
 };
 
 const railBuyButtonClass =
-  "relative inline-flex shrink-0 min-h-[40px] items-center justify-center rounded-full border-2 border-white/38 bg-transparent px-3 py-1.5 text-[13px] font-extrabold tracking-normal text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-white/65 hover:bg-white/[0.06] hover:shadow-[0_0_20px_rgba(255,255,255,0.08)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/55 [html[data-theme='light']_&]:text-zinc-900";
+  "relative inline-flex shrink-0 min-h-[40px] items-center justify-center rounded-full border-2 border-white/38 bg-transparent px-3.5 py-1.5 text-[13px] font-extrabold tracking-normal text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-white/65 hover:bg-white/[0.06] hover:shadow-[0_0_20px_rgba(255,255,255,0.08)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/55 [html[data-theme='light']_&]:text-zinc-900";
 
 /** 좋아요 전용 원 — 카트·찜과 시각 무게 맞춤 */
 const railLikeCircleBase =
