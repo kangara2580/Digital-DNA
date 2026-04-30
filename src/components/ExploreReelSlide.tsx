@@ -56,11 +56,15 @@ type ReelSlideProps = {
 };
 
 const railBuyButtonClass =
-  "relative flex w-full min-h-[54px] items-center justify-center rounded-full border-[3px] border-white/40 bg-transparent px-2 py-2.5 text-[14px] font-extrabold tracking-widest text-white backdrop-blur-sm shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-300 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] hover:-translate-y-0.5 active:scale-[0.99] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900";
+  "relative inline-flex shrink-0 self-center min-h-[48px] items-center justify-center rounded-full border-[2.5px] border-white/40 bg-transparent px-4 py-2 text-[14px] font-extrabold tracking-wide text-white backdrop-blur-sm shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-300 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] hover:-translate-y-0.5 active:scale-[0.99] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900";
 
-/** 탐색 우측 레일 — 좋아요만 두꺼운 원형 테두리 */
+/** 탐색 우측 레일 — 좋아요만 얇은 원형 테두리 */
 const railLikeCircleBase =
-  "inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border-[3.5px] border-white/40 bg-white/[0.09] shadow-[inset_0_2px_6px_rgba(255,255,255,0.12),inset_0_-3px_10px_rgba(0,0,0,0.18),0_6px_18px_-6px_rgba(0,0,0,0.55)] transition-all duration-200 hover:border-white/60 hover:bg-white/[0.14] hover:shadow-[inset_0_2px_8px_rgba(255,255,255,0.16),0_10px_24px_-8px_rgba(0,0,0,0.6)] active:scale-[0.94] [html[data-theme='light']_&]:border-zinc-400/55 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:shadow-[inset_0_2px_0_rgba(255,255,255,0.9),0_6px_16px_-6px_rgba(0,0,0,0.12)] [html[data-theme='light']_&]:hover:border-zinc-500/70";
+  "inline-flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-full border-2 border-white/45 bg-white/[0.08] shadow-[inset_0_1px_4px_rgba(255,255,255,0.1),0_4px_14px_-4px_rgba(0,0,0,0.45)] transition-all duration-200 hover:border-white/65 hover:bg-white/[0.12] hover:shadow-[inset_0_2px_6px_rgba(255,255,255,0.14),0_8px_20px_-6px_rgba(0,0,0,0.5)] active:scale-[0.94] [html[data-theme='light']_&]:border-zinc-400/65 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_4px_12px_-4px_rgba(0,0,0,0.1)] [html[data-theme='light']_&]:hover:border-zinc-500/80";
+
+/** 좋아요 하트만 약간 큼 */
+const railLikeIcon =
+  "h-[26px] w-[26px] shrink-0 pointer-events-none [html[data-theme='light']_&]:stroke-zinc-600";
 
 /** 장바구니·저장 — 원형 링 없음, 통통 아이콘만 */
 const railActionPlainBtn =
@@ -301,7 +305,7 @@ function ReelDesktopRail({
             }}
             className={`relative ${railLikeCircleBase} ${
               likedByMe
-                ? "!border-[#8eb8ff]/85 !bg-[#152a52] !text-[#b8d4ff] !shadow-[inset_0_2px_10px_rgba(142,184,255,0.22),0_8px_22px_-6px_rgba(30,70,140,0.55)] hover:!border-[#a9cfff]"
+                ? "!border-[#8eb8ff]/80 !bg-[#152a52] !text-[#b8d4ff] !shadow-[inset_0_1px_6px_rgba(142,184,255,0.2),0_6px_18px_-5px_rgba(30,70,140,0.5)] hover:!border-[#a9cfff]"
                 : "!text-white/92 [html[data-theme='light']_&]:!text-zinc-600"
             } ${likePulse ? "scale-110" : "scale-100"}`}
             aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
@@ -311,8 +315,8 @@ function ReelDesktopRail({
               <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/35 animate-ping" />
             ) : null}
             <Heart
-              strokeWidth={2.85}
-              className={`relative z-[1] ${railActionIcon} transition-transform duration-300 ${
+              strokeWidth={2.6}
+              className={`relative z-[1] ${railLikeIcon} transition-transform duration-300 ${
                 likedByMe
                   ? "fill-current stroke-[#b8d4ff] text-[#b8d4ff] [html[data-theme='light']_&]:stroke-sky-500 [html[data-theme='light']_&]:fill-sky-500 [html[data-theme='light']_&]:text-sky-600"
                   : "stroke-current"
