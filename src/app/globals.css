@@ -11,8 +11,8 @@
 
 :root {
   --reels-abyss: #02040a;
-  /** 메인 인기순위·설명(셀러 피치)·구매후기 등 연속 블록 배경 (스와치 #0E121A) */
-  --home-ranked-strip-bg: #0e121a;
+  /** 메인 인기순위·설명(셀러 피치)·구매후기 등 연속 블록 배경 (더 짙은 남색 스트립) */
+  --home-ranked-strip-bg: #05080f;
   --reels-void: #040916;
   --reels-lift: #070f1f;
   --reels-crimson: #ff0055;
@@ -645,7 +645,7 @@ html[data-theme="dark"] .inspiration-section {
   --text-sub: #a1a1aa;
 }
 
-/* 인기순위 등 메인 랭킹 스트립 배경 (홈 스와치 #0E121A 통일) */
+/* 인기순위 등 메인 랭킹 스트립 배경 (짙은 남네이비 통일) */
 .trending-rank-ocean-bg {
   position: relative;
   isolation: isolate;
