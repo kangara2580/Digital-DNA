@@ -270,6 +270,7 @@ export function VideoCard({
   const [likePulse, setLikePulse] = useState(false);
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const authPromptScrollYRef = useRef(0);
   const reelAspectPortrait =
     reelLayout && reelStrip ? "aspect-[3/4] w-full" : "aspect-[9/16] w-full";
   const reelAspectLandscape =
@@ -328,6 +329,7 @@ export function VideoCard({
   const requireAuth = useCallback(() => {
     if (authLoading) return false;
     if (!supabaseConfigured || !user) {
+      authPromptScrollYRef.current = window.scrollY;
       setAuthPromptOpen(true);
       return false;
     }
@@ -363,14 +365,25 @@ export function VideoCard({
 
   useEffect(() => {
     if (!authPromptOpen) return;
-    const prev = document.body.style.overflow;
+    const scrollY = authPromptScrollYRef.current;
+    const prevOverflow = document.body.style.overflow;
+    const prevPosition = document.body.style.position;
+    const prevTop = document.body.style.top;
+    const prevWidth = document.body.style.width;
     document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") setAuthPromptOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => {
-      document.body.style.overflow = prev;
+      document.body.style.overflow = prevOverflow;
+      document.body.style.position = prevPosition;
+      document.body.style.top = prevTop;
+      document.body.style.width = prevWidth;
+      window.scrollTo(0, scrollY);
       window.removeEventListener("keydown", onKey);
     };
   }, [authPromptOpen]);
