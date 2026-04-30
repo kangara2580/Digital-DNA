@@ -86,6 +86,15 @@ const railLabelMuted =
 const railStatNum =
   "text-[13px] font-bold tabular-nums tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900";
 
+function RailStatRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex min-w-0 flex-col items-center gap-0.5 text-center">
+      <span className={railLabelMuted}>{label}</span>
+      <span className={`${railStatNum} leading-snug`}>{value}</span>
+    </div>
+  );
+}
+
 type ExploreReelSidebarMetrics = {
   rankMetrics: {
     cumulativeRevenueWon: number;
@@ -181,44 +190,7 @@ function useExploreReelSidebarMetrics(video: FeedVideo): ExploreReelSidebarMetri
   return { rankMetrics, meta, displayedViews, externalLikeCount };
 }
 
-/** 영상 우측 상단 — 수익·조회·구매 한 줄 통계 느낌 */
-function ReelDesktopTopStatsRibbon({
-  rankMetrics,
-  meta,
-  displayedViews,
-}: Pick<ExploreReelSidebarMetrics, "rankMetrics" | "meta" | "displayedViews">) {
-  return (
-    <div
-      className="pointer-events-none w-[min(11.25rem,28vw)] min-w-[9.5rem] border-b border-white/20 pb-2 pt-1 [html[data-theme='light']_&]:border-zinc-400/45"
-      aria-label="집계 수치"
-    >
-      <div className="grid grid-cols-3 gap-x-2 gap-y-0">
-        <div className="min-w-0 text-left">
-          <span className={`${railLabelMuted} block truncate text-[9px]`}>수익</span>
-          <span
-            className={`${railStatNum} mt-0.5 block truncate text-[11px] leading-snug sm:text-[12px]`}
-          >
-            {formatCompactWon(rankMetrics.cumulativeRevenueWon)}
-          </span>
-        </div>
-        <div className="min-w-0 text-left">
-          <span className={`${railLabelMuted} block truncate text-[9px]`}>조회수</span>
-          <span className={`${railStatNum} mt-0.5 block truncate text-[11px] leading-snug sm:text-[12px]`}>
-            {formatCompactCount(displayedViews)}
-          </span>
-        </div>
-        <div className="min-w-0 text-left">
-          <span className={`${railLabelMuted} block truncate text-[9px]`}>구매</span>
-          <span className={`${railStatNum} mt-0.5 block truncate text-[11px] leading-snug sm:text-[12px]`}>
-            {meta.salesCount.toLocaleString("ko-KR")}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** 데스크톱: 틱톡 웹 우측 컬럼 — 가격·구매·장바구니·좋아요·찜 (집계는 영상 우측 상단 리본) */
+/** 데스크톱: 틱톡 웹 우측 컬럼 — 집계·가격·구매·액션 */
 function ReelDesktopRail({
   video,
   sidebarMetrics,
@@ -235,7 +207,7 @@ function ReelDesktopRail({
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const owned = hasPurchased(video.id);
 
-  const { meta, externalLikeCount } = sidebarMetrics;
+  const { rankMetrics, meta, displayedViews, externalLikeCount } = sidebarMetrics;
 
   const remaining = clonesRemaining(meta);
   const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
@@ -422,6 +394,12 @@ function ReelDesktopRail({
       className={`${railDeckClass} flex w-[min(7rem,16.5vw)] shrink-0 flex-col items-center gap-4 [html[data-theme='light']_&]:text-zinc-900 ${className ?? ""}`}
       aria-label="판매·반응 정보"
     >
+      <div className="flex w-full flex-col items-center gap-2.5" aria-label="집계 수치">
+        <RailStatRow label="수익" value={formatCompactWon(rankMetrics.cumulativeRevenueWon)} />
+        <RailStatRow label="조회수" value={formatCompactCount(displayedViews)} />
+        <RailStatRow label="구매" value={meta.salesCount.toLocaleString("ko-KR")} />
+      </div>
+
       <div className="flex flex-col items-center gap-1 text-center">
         <span className={railLabelMuted}>가격</span>
         {video.priceWon != null ? (
@@ -724,8 +702,8 @@ export function ExploreReelSlide({
           영상 열에 명시적 max-width를 두어 aspect-[9/16] + w-full 이 0으로 무너지지 않게 함.
           레일은 같은 flex 줄에서 영상 바로 옆에만 붙음(가운데 단독 정렬 방지).
         */}
-        <div className="flex w-full max-w-[min(56rem,calc(100vw-var(--reels-rail-w,0px)-1.5rem))] flex-row items-center justify-center gap-1 md:grid md:grid-cols-[auto_auto] md:grid-rows-[auto_auto] md:items-start md:justify-center md:gap-x-2.5 md:gap-y-3">
-          <div className="relative w-[min(100%,min(420px,calc(100vw-var(--reels-rail-w,0px)-16rem)))] shrink-0 md:col-start-1 md:row-span-2 md:row-start-1">
+        <div className="flex w-full max-w-[min(56rem,calc(100vw-var(--reels-rail-w,0px)-1.5rem))] flex-row items-center justify-center gap-1 md:gap-1.5 lg:gap-2">
+          <div className="relative w-[min(100%,min(420px,calc(100vw-var(--reels-rail-w,0px)-16rem)))] shrink-0">
             <div
               className="relative aspect-[9/16] w-full max-h-[min(78dvh,calc(100dvh-var(--header-height)-7rem))] overflow-hidden rounded-2xl border border-white/12 bg-black shadow-[0_24px_80px_-30px_rgba(0,0,0,0.85)] md:max-h-[min(92dvh,calc(100dvh-var(--header-height)-2rem))] [html[data-theme='light']_&]:border-zinc-200"
             >
@@ -815,18 +793,10 @@ export function ExploreReelSlide({
           </div>
           </div>
 
-          <div className="hidden min-w-0 self-start pt-1 md:col-start-2 md:row-start-1 md:block">
-            <ReelDesktopTopStatsRibbon
-              rankMetrics={sidebarMetrics.rankMetrics}
-              meta={sidebarMetrics.meta}
-              displayedViews={sidebarMetrics.displayedViews}
-            />
-          </div>
-
           <ReelDesktopRail
             video={video}
             sidebarMetrics={sidebarMetrics}
-            className="hidden shrink-0 self-start pt-1 md:col-start-2 md:row-start-2 md:flex"
+            className="hidden shrink-0 md:flex"
           />
         </div>
       </div>
