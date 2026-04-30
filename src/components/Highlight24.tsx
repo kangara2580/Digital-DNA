@@ -46,34 +46,55 @@ function ChevronRight({ className }: { className?: string }) {
 }
 
 /**
- * 히어로 글래스 A 실루엣 — 둥근 꼭대기, 오목한 밑변, 아래로 길게 뻗은 바늘형 양다리(레퍼런스 근사).
- * 가운데 음영 영역은 재생 삼각으로 채움.
+ * 레퍼런스형 소문자 a — 두꺼운 볼 링 + 우측 스템, evenodd 원형 홀.
+ * 재생 삼각은 홀 중심에 맞춤.
  */
-function heroReferenceGlassAPath(): string {
-  const Lx = 7.0;
-  const Ly = 148.5;
-  const Rx = 95.5;
-  const Ry = 148.5;
-  const LSx = 37.0;
-  const LSy = 51.5;
-  const RSx = 65.0;
-  const RSy = 51.5;
-  const apexCx = 51.0;
-  const apexCy = 27.0;
-  /** 밑아치 오목 — 레퍼런스처럼 중앙이 들어 감 */
-  const C1x = 77.0;
-  const C1y = 106.0;
-  const C2x = 25.0;
-  const C2y = 106.0;
-  const f = (n: number) => n.toFixed(2);
-  return [
-    `M ${f(Lx)} ${f(Ly)}`,
-    `L ${f(LSx)} ${f(LSy)}`,
-    `Q ${f(apexCx)} ${f(apexCy)} ${f(RSx)} ${f(RSy)}`,
-    `L ${f(Rx)} ${f(Ry)}`,
-    `C ${f(C1x)} ${f(C1y)} ${f(C2x)} ${f(C2y)} ${f(Lx)} ${f(Ly)}`,
+function buildHeroLowercaseAMark(): { blobD: string; playD: string } {
+  const cx = 47.92;
+  const cy = 96.08;
+  const Ro = 31.92;
+  const Ri = 17.92;
+  const stemW = 13.92;
+  const p = (x: number, y: number) => `${x.toFixed(3)} ${y.toFixed(3)}`;
+
+  const xr = cx + Ro + stemW;
+  /** 동=0°, 아래=+90° (y↓) */
+  const tTop = (-34 * Math.PI) / 180;
+  const tBot = (76 * Math.PI) / 180;
+  const pTopX = cx + Ro * Math.cos(tTop);
+  const pTopY = cy + Ro * Math.sin(tTop);
+  const pBotX = cx + Ro * Math.cos(tBot);
+  const pBotY = cy + Ro * Math.sin(tBot);
+  const stemIx = cx + Ri + 5.6;
+  const yBot = cy + Ro;
+
+  const outer = [
+    `M ${p(xr, yBot)}`,
+    `L ${p(xr, pTopY)}`,
+    `L ${p(pTopX, pTopY)}`,
+    `A ${Ro} ${Ro} 0 1 1 ${p(pBotX, pBotY)}`,
+    `L ${p(stemIx, yBot)}`,
+    `L ${p(xr, yBot)}`,
     "Z",
   ].join(" ");
+
+  const inner = [
+    `M ${p(cx + Ri, cy)}`,
+    `a ${Ri} ${Ri} 0 1 0 ${p(-2 * Ri, 0)}`,
+    `a ${Ri} ${Ri} 0 1 0 ${p(2 * Ri, 0)}`,
+    "Z",
+  ].join(" ");
+
+  const triR = Ri * 0.78;
+  const left = cx - triR * 0.52;
+  const play = [
+    `M ${p(left, cy - triR * 0.52)}`,
+    `L ${p(left + triR * 1.56, cy)}`,
+    `L ${p(left, cy + triR * 0.52)}`,
+    "Z",
+  ].join(" ");
+
+  return { blobD: `${outer} ${inner}`, playD: play };
 }
 
 type RingPose = {
@@ -203,7 +224,10 @@ export function Highlight24() {
   const reduceMotion = useReducedMotion() ?? false;
   const heroMarkUid = useId().replace(/:/g, "");
 
-  const heroABlobD = useMemo(() => heroReferenceGlassAPath(), []);
+  const { blobD: heroABlobD, playD: heroAPlayD } = useMemo(
+    () => buildHeroLowercaseAMark(),
+    [],
+  );
 
   const n = videos.length;
   const safeIndex = n > 0 ? ((index % n) + n) % n : 0;
@@ -725,39 +749,19 @@ export function Highlight24() {
                         <path d={heroABlobD} fill="#000" />
                       </clipPath>
                       <linearGradient
-                        id={`hero-a-skin-${heroMarkUid}`}
-                        x1="9"
-                        y1="126"
-                        x2="95"
-                        y2="20"
+                        id={`hero-a-metal-${heroMarkUid}`}
+                        x1="8"
+                        y1="64"
+                        x2="108"
+                        y2="144"
                         gradientUnits="userSpaceOnUse"
                       >
-                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.34" />
-                        <stop offset="42%" stopColor="#ffffff" stopOpacity="0.14" />
-                        <stop offset="100%" stopColor="#ffffff" stopOpacity="0.32" />
+                        <stop offset="0%" stopColor="#ffffff" />
+                        <stop offset="28%" stopColor="#f4f7fb" />
+                        <stop offset="52%" stopColor="#d9e0ea" />
+                        <stop offset="78%" stopColor="#a9b4c7" />
+                        <stop offset="100%" stopColor="#7f8a9c" />
                       </linearGradient>
-                      <radialGradient
-                        id={`hero-a-depth-${heroMarkUid}`}
-                        cx="52"
-                        cy="118"
-                        r="44"
-                        gradientUnits="userSpaceOnUse"
-                      >
-                        <stop offset="0%" stopColor="rgba(255, 255, 255, 0.22)" />
-                        <stop offset="55%" stopColor="rgba(255, 255, 255, 0.06)" />
-                        <stop offset="100%" stopColor="rgba(255, 255, 255, 0)" />
-                      </radialGradient>
-                      <radialGradient
-                        id={`hero-a-rim-${heroMarkUid}`}
-                        cx="52"
-                        cy="38"
-                        r="69"
-                        gradientUnits="userSpaceOnUse"
-                      >
-                        <stop offset="0%" stopColor="rgba(255,255,255,0.52)" />
-                        <stop offset="32%" stopColor="rgba(255,255,255,0.14)" />
-                        <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-                      </radialGradient>
                       <filter
                         id={`hero-a-bloom-${heroMarkUid}`}
                         x="-50%"
@@ -766,8 +770,8 @@ export function Highlight24() {
                         height="200%"
                         filterUnits="objectBoundingBox"
                       >
-                        <feGaussianBlur in="SourceAlpha" stdDeviation="3.2" result="ablur" />
-                        <feFlood floodColor="#ffffff" floodOpacity="0.22" result="fl" />
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="2.2" result="ablur" />
+                        <feFlood floodColor="#ffffff" floodOpacity="0.16" result="fl" />
                         <feComposite in="fl" in2="ablur" operator="in" result="agog" />
                         <feGaussianBlur stdDeviation="1.1" in="agog" result="ag2" />
                         <feMerge>
@@ -776,42 +780,22 @@ export function Highlight24() {
                         </feMerge>
                       </filter>
                     </defs>
-                    {/* Ara — 앞 글래스 A, 이어 Fredoka 소문자 ra */}
+                    {/* Ara — 앞쪽 메탈릭 소문자 a(+재생), 이어 Fredoka ra */}
                     <g transform="translate(51, 105.5) scale(1.5, 1.78) translate(-51, -105.5)">
                     <g
                       filter={`url(#hero-a-bloom-${heroMarkUid})`}
                       style={{ isolation: "isolate" }}
                     >
                       <g clipPath={`url(#hero-a-glass-clip-${heroMarkUid})`}>
-                        <foreignObject x="-4" y="20" width="112" height="134">
-                          <div
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              borderRadius: 0,
-                              backdropFilter: "blur(16px)",
-                              WebkitBackdropFilter: "blur(16px)",
-                              background:
-                                "linear-gradient(168deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.18) 48%, rgba(255,255,255,0.28) 100%)",
-                              pointerEvents: "none",
-                            }}
-                          />
-                        </foreignObject>
-                        <path fill={`url(#hero-a-skin-${heroMarkUid})`} d={heroABlobD} />
                         <path
-                          fill={`url(#hero-a-depth-${heroMarkUid})`}
+                          fill={`url(#hero-a-metal-${heroMarkUid})`}
+                          fillRule="evenodd"
                           d={heroABlobD}
-                          style={{ mixBlendMode: "soft-light", opacity: 0.85 }}
-                        />
-                        <path
-                          fill={`url(#hero-a-rim-${heroMarkUid})`}
-                          d={heroABlobD}
-                          style={{ mixBlendMode: "soft-light", opacity: 0.82 }}
                         />
                         <path
                           fill="none"
-                          stroke="rgba(255,255,255,0.55)"
-                          strokeWidth={1}
+                          stroke="rgba(255,255,255,0.58)"
+                          strokeWidth={1.05}
                           strokeLinejoin="round"
                           strokeLinecap="round"
                           vectorEffect="nonScalingStroke"
@@ -819,14 +803,11 @@ export function Highlight24() {
                         />
                       </g>
                     </g>
-                    <path
-                      d="M 40.5 86.5 L 65.5 97.5 L 40.5 108.5 Z"
-                      fill="#FFFFFF"
-                    />
+                    <path d={heroAPlayD} fill="#FFFFFF" />
                     </g>
                     <text
                       fill="currentColor"
-                      x={134}
+                      x={122}
                       y={128}
                       fontSize={120}
                       fontWeight={600}
