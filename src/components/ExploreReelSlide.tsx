@@ -78,23 +78,23 @@ const railActionIcon =
 /** 레일 바깥 패딩만 (테두리 없음) */
 const railDeckClass = "shrink-0 pb-6 pt-4";
 
-/** 행: 아이콘 블록(32px 아이콘 + 고정폭 보조열) 다음에 수치 → 수익의 ▼ 포함해도 정렬 통일 */
+/** 행 여백: 아이콘 ↔ 수치 (숫자는 고정폭 열 안에서 왼쪽 정렬) */
 const railExploreRow =
-  "flex w-max max-w-full items-center gap-1 py-2 [html[data-theme='light']_&]:text-zinc-900";
+  "flex w-max max-w-full items-center gap-2 py-2 [html[data-theme='light']_&]:text-zinc-900";
 
-/** 수치: 아이콘 열 직후부터 왼쪽 정렬 */
+/** 수치: 고정폭 유지 + 왼쪽 정렬 */
 const railExploreStatValueCol =
-  "min-h-[1.35em] min-w-0 shrink-0 text-left tabular-nums leading-none";
+  "inline-flex min-h-[1.35em] w-[10.5rem] shrink-0 items-center justify-start tabular-nums text-left sm:w-[11.75rem]";
 
 /** 탐색 레일 구매 버튼 (가격 블록과 분리) */
 const railExploreBuyButtonClass =
-  "relative inline-flex min-h-[40px] w-full shrink-0 items-center justify-center rounded-full border-2 border-white/38 bg-transparent px-4 py-2 text-[13px] font-extrabold tracking-normal text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-white/65 hover:bg-white/[0.06] hover:shadow-[0_0_20px_rgba(255,255,255,0.08)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/55 [html[data-theme='light']_&]:text-zinc-900";
+  "relative inline-flex min-h-[40px] w-full max-w-[15rem] shrink-0 items-center justify-center rounded-full border-2 border-white/38 bg-transparent px-4 py-2 text-[13px] font-extrabold tracking-normal text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-white/65 hover:bg-white/[0.06] hover:shadow-[0_0_20px_rgba(255,255,255,0.08)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/55 [html[data-theme='light']_&]:text-zinc-900";
 
 const railStatValueWhite =
-  "text-[13px] font-semibold text-white [html[data-theme='light']_&]:text-zinc-900";
+  "text-[13px] font-semibold tabular-nums text-white [html[data-theme='light']_&]:text-zinc-900";
 
 const railStatValueBlue =
-  "text-[13px] font-semibold text-[#9DB9FF] [html[data-theme='light']_&]:text-sky-600";
+  "text-[13px] font-semibold tabular-nums text-[#9DB9FF] [html[data-theme='light']_&]:text-sky-600";
 
 function ReelExploreStatLine({
   icon,
@@ -117,16 +117,11 @@ function ReelExploreStatLine({
 }) {
   const Body = (
     <>
-      <span className="flex shrink-0 items-center gap-1">
+      <span className="flex min-w-0 shrink-0 items-center gap-1">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center text-white/[0.78] [&_svg]:h-[18px] [&_svg]:w-[18px] [html[data-theme='light']_&]:text-zinc-600">
           {icon}
         </span>
-        <span
-          className="flex h-8 w-3 shrink-0 items-center justify-center"
-          aria-hidden={iconAdornment ? undefined : true}
-        >
-          {iconAdornment ?? <span className="block w-3" />}
-        </span>
+        {iconAdornment ?? null}
       </span>
       <span className={`${railExploreStatValueCol} ${valueClassName}`}>{value}</span>
     </>
