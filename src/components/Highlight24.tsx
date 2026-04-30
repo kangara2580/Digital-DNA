@@ -211,8 +211,8 @@ export function Highlight24() {
       roundedConvexPolygonPath(
         [
           [51, 42],
-          [95, 118.8],
-          [7, 118.8],
+          [95, 123.8],
+          [7, 123.8],
         ],
         32,
       ),
@@ -829,7 +829,7 @@ export function Highlight24() {
                       />
                     </g>
                     <path
-                      d="M 39.75 77.65 L 64.95 92.35 L 39.75 107.05 Z"
+                      d="M 39.75 79.5 L 64.95 94.2 L 39.75 108.9 Z"
                       fill="#FFFFFF"
                       stroke="rgba(255,255,255,0.55)"
                       strokeWidth="0.55"
