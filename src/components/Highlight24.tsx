@@ -671,7 +671,7 @@ export function Highlight24() {
           <div className="pointer-events-none relative z-[80] hidden w-[clamp(206px,24vw,332px)] -translate-x-16 md:flex md:justify-center">
             <div className="flex w-full flex-col items-center pl-[clamp(20px,2.25vw,34px)] pr-[clamp(14px,1.55vw,24px)]">
               <div
-                className="-translate-y-12 flex select-none flex-nowrap items-baseline justify-center gap-[0.034em] text-[clamp(3.15rem,8.25vw,7.45rem)] font-semibold leading-none text-white"
+                className="-translate-y-12 flex select-none flex-nowrap items-baseline justify-center gap-[0.034em] text-[clamp(3.85rem,10.25vw,9.35rem)] font-semibold leading-none text-white"
                 style={{
                   fontFamily: "var(--font-fredoka), ui-rounded, system-ui, sans-serif",
                   letterSpacing: "0.015em",
