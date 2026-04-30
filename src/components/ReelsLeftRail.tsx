@@ -18,8 +18,6 @@ import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 import { MALL_CATEGORY_NAV_ITEMS } from "@/data/mallCategoryNav";
 import { useAuthSession } from "@/hooks/useAuthSession";
 
-const ARA_LOGO_MARK_BORDER = "#e12b6b";
-
 const stroke = 1.75;
 
 const railIconBtn =
@@ -257,8 +255,7 @@ export function ReelsLeftRail() {
         <div className="relative flex shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
           <Link
             href="/"
-            className="flex max-w-[calc(100%-6px)] items-center justify-center rounded-[10px] border bg-[#0a0c10] px-2 py-[6px] transition-colors hover:bg-[#12151c] [html[data-theme='light']_&]:bg-[#0a0c10] [html[data-theme='light']_&]:hover:bg-[#12151c]"
-            style={{ borderColor: ARA_LOGO_MARK_BORDER }}
+            className="my-1.5 flex size-[52px] shrink-0 items-center justify-center rounded-lg border border-white/90 bg-[#0a0c10] transition-colors hover:bg-[#12151c] [html[data-theme='light']_&]:border-white/95 [html[data-theme='light']_&]:bg-[#0a0c10] [html[data-theme='light']_&]:hover:bg-[#12151c]"
           >
             <span
               className="select-none whitespace-nowrap text-[11px] font-semibold leading-none tracking-[-0.04em] text-white"
