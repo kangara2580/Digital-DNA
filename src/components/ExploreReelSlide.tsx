@@ -82,9 +82,9 @@ const railDeckClass = "shrink-0 pb-6 pt-4";
 const railExploreRow =
   "flex w-max max-w-full items-center gap-1 py-2 [html[data-theme='light']_&]:text-zinc-900";
 
-/** 수익(최장 케이스) 기준 우측 정렬 — 열 폭은 조금 줄여 숫자를 아이콘에 가깝게 */
+/** 수치: 아이콘 열 직후부터 왼쪽 정렬 */
 const railExploreStatValueCol =
-  "inline-flex min-h-[1.35em] w-[8.75rem] shrink-0 items-center justify-end tabular-nums text-right sm:w-[10rem]";
+  "min-h-[1.35em] min-w-0 shrink-0 text-left tabular-nums leading-none";
 
 /** 탐색 레일 구매 버튼 (가격 블록과 분리) */
 const railExploreBuyButtonClass =
