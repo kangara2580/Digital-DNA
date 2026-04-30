@@ -22,6 +22,10 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 const categoryPillClass =
   "inline-flex shrink-0 items-center justify-center rounded-full border border-transparent bg-transparent font-semibold leading-none text-zinc-400 transition-[background-color,color,padding,font-size,border-color] hover:border-white/15 hover:bg-white/8 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-200 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
 
+/** 현재 카테고리(선택됨): 다크에서는 흰 글자·더 굵게, 라이트에서는 거의 검정·굵게 */
+const categoryPillActiveClass =
+  "cursor-default border-white/22 bg-white/10 text-white font-extrabold hover:border-white/25 hover:bg-white/14 hover:text-white [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-950 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-950";
+
 /** 스크롤 컴팩트 시 상단에는 베스트·추천만 노출, 나머지는 「카테고리」 메뉴로 */
 const COMPACT_PRIMARY = ITEMS.slice(0, 2);
 const COMPACT_MORE = ITEMS.slice(2);
@@ -538,15 +542,19 @@ export function MallTopNav() {
                     className="no-scrollbar flex min-w-0 flex-1 items-center justify-start gap-1 overflow-x-auto px-0.5 py-0 sm:gap-1.5"
                     aria-label="카테고리"
                   >
-                    {ITEMS.map((item) => (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        className={`${categoryPillClass} ${easeLayout} shrink-0 whitespace-nowrap px-3 py-[9px] text-[13px] sm:px-3.5 sm:py-[9px] sm:text-[14px]`}
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
+                    {ITEMS.map((item) => {
+                      const active = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          aria-current={active ? "page" : undefined}
+                          className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} shrink-0 whitespace-nowrap px-3 py-[9px] text-[13px] sm:px-3.5 sm:py-[9px] sm:text-[14px]`}
+                        >
+                          {item.label}
+                        </Link>
+                      );
+                    })}
                   </nav>
                   <button
                     type="button"
@@ -569,15 +577,19 @@ export function MallTopNav() {
                 >
                   {compactEffective ? (
                     <>
-                      {COMPACT_PRIMARY.map((item) => (
-                        <Link
-                          key={item.label}
-                          href={item.href}
-                          className={`${categoryPillClass} ${easeLayout} px-2.5 py-[7px] text-[12px] sm:px-3 sm:py-[7px] sm:text-[13px]`}
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
+                      {COMPACT_PRIMARY.map((item) => {
+                        const active = pathname === item.href;
+                        return (
+                          <Link
+                            key={item.label}
+                            href={item.href}
+                            aria-current={active ? "page" : undefined}
+                            className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} px-2.5 py-[7px] text-[12px] sm:px-3 sm:py-[7px] sm:text-[13px]`}
+                          >
+                            {item.label}
+                          </Link>
+                        );
+                      })}
                       <div
                         ref={moreWrapRef}
                         className="relative shrink-0"
@@ -628,19 +640,27 @@ export function MallTopNav() {
                                   className="inline-flex min-w-0 flex-nowrap items-center justify-center gap-1 sm:gap-1.5"
                                   aria-label="추가 카테고리"
                                 >
-                                  {COMPACT_MORE.map((item) => (
-                                    <Link
-                                      key={item.label}
-                                      href={item.href}
-                                      onClick={() => {
-                                        cancelHoverClose();
-                                        setMoreOpen(false);
-                                      }}
-                                      className={`inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 py-[7px] text-[12px] font-semibold leading-none text-zinc-300 transition-colors duration-200 first:pl-2.5 last:pr-2.5 sm:px-2.5 sm:py-[7px] sm:text-[13px] sm:first:pl-3 sm:last:pr-3 ${easeLayout} hover:bg-white/10 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black`}
-                                    >
-                                      {item.label}
-                                    </Link>
-                                  ))}
+                                  {COMPACT_MORE.map((item) => {
+                                    const active = pathname === item.href;
+                                    return (
+                                      <Link
+                                        key={item.label}
+                                        href={item.href}
+                                        aria-current={active ? "page" : undefined}
+                                        onClick={() => {
+                                          cancelHoverClose();
+                                          setMoreOpen(false);
+                                        }}
+                                        className={`inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 py-[7px] text-[12px] font-semibold leading-none text-zinc-300 transition-colors duration-200 first:pl-2.5 last:pr-2.5 sm:px-2.5 sm:py-[7px] sm:text-[13px] sm:first:pl-3 sm:last:pr-3 ${easeLayout} hover:bg-white/10 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black ${
+                                          active
+                                            ? "border border-white/22 bg-white/10 font-extrabold text-white [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:font-extrabold [html[data-theme='light']_&]:text-zinc-950"
+                                            : "border border-transparent"
+                                        }`}
+                                      >
+                                        {item.label}
+                                      </Link>
+                                    );
+                                  })}
                                 </nav>
                               </div>
                             </div>,
@@ -649,15 +669,19 @@ export function MallTopNav() {
                       </div>
                     </>
                   ) : (
-                    ITEMS.map((item) => (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        className={`${categoryPillClass} ${easeLayout} px-2.5 py-[7px] text-[12px] sm:px-3 sm:py-[7px] sm:text-[13px]`}
-                      >
-                        {item.label}
-                      </Link>
-                    ))
+                    ITEMS.map((item) => {
+                      const active = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          aria-current={active ? "page" : undefined}
+                          className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} px-2.5 py-[7px] text-[12px] sm:px-3 sm:py-[7px] sm:text-[13px]`}
+                        >
+                          {item.label}
+                        </Link>
+                      );
+                    })
                   )}
                 </nav>
               )
