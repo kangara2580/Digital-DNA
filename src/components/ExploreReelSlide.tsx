@@ -78,7 +78,7 @@ const railActionIcon =
 /** 레일 바깥 패딩만 (테두리 없음) */
 const railDeckClass = "shrink-0 pb-6 pt-4";
 
-/** 행 여백: 아이콘 ↔ 수치 (숫자는 고정폭 열 안에서 왼쪽 정렬) */
+/** 행: 모든 줄에서 메인 아이콘은 동일 32px 박스, 수익 줄 ▼는 옆 고정 칸(조회 등과 세로 정렬) */
 const railExploreRow =
   "flex w-max max-w-full items-center gap-2 py-2 [html[data-theme='light']_&]:text-zinc-900";
 
@@ -117,11 +117,16 @@ function ReelExploreStatLine({
 }) {
   const Body = (
     <>
-      <span className="flex min-w-0 shrink-0 items-center gap-1">
+      <span className="flex shrink-0 items-center gap-1">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center text-white/[0.78] [&_svg]:h-[18px] [&_svg]:w-[18px] [html[data-theme='light']_&]:text-zinc-600">
           {icon}
         </span>
-        {iconAdornment ?? null}
+        <span
+          className="flex h-8 w-3 shrink-0 items-center justify-center"
+          aria-hidden={iconAdornment ? undefined : true}
+        >
+          {iconAdornment ?? <span className="block w-3" />}
+        </span>
       </span>
       <span className={`${railExploreStatValueCol} ${valueClassName}`}>{value}</span>
     </>
