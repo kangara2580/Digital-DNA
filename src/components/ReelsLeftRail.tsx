@@ -255,10 +255,10 @@ export function ReelsLeftRail() {
         <div className="relative flex shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
           <Link
             href="/"
-            className="my-1.5 flex size-[52px] shrink-0 items-center justify-center rounded-lg border border-white/90 bg-[#0a0c10] transition-colors hover:bg-[#12151c] [html[data-theme='light']_&]:border-white/95 [html[data-theme='light']_&]:bg-[#0a0c10] [html[data-theme='light']_&]:hover:bg-[#12151c]"
+            className="my-1.5 flex size-[58px] shrink-0 items-center justify-center rounded-3xl border border-white/35 bg-[#0a0c10] transition-colors hover:border-white/45 hover:bg-[#12151c] [html[data-theme='light']_&]:border-zinc-500/40 [html[data-theme='light']_&]:bg-[#0a0c10] [html[data-theme='light']_&]:hover:border-zinc-500/50 [html[data-theme='light']_&]:hover:bg-[#12151c]"
           >
             <span
-              className="select-none whitespace-nowrap text-[11px] font-semibold leading-none tracking-[-0.04em] text-white"
+              className="select-none whitespace-nowrap text-[15px] font-bold leading-none tracking-[-0.04em] text-white"
               style={{ fontFamily: "var(--font-fredoka), ui-rounded, system-ui, sans-serif" }}
             >
               ARA
