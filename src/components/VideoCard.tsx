@@ -89,6 +89,8 @@ type Props = {
   hideCreatorMeta?: boolean;
   /** true면 하단 정보 바(아이디·제목·가격) 전체 숨김 */
   hideInfoBar?: boolean;
+  /** 인기순위 TOP3 제목(1금·2은·3동 그라데이션) */
+  rankTitleMedal?: 1 | 2 | 3;
 };
 
 function formatDuration(seconds: number): string {
@@ -256,6 +258,7 @@ export function VideoCard({
   hideHoverActions = false,
   hideCreatorMeta = false,
   hideInfoBar = false,
+  rankTitleMedal,
 }: Props) {
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
@@ -285,6 +288,15 @@ export function VideoCard({
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const authPromptScrollYRef = useRef(0);
+  const medalTitleCls =
+    rankTitleMedal === 1
+      ? "bg-gradient-to-b from-[#fffbeb] via-[#fbbf24] to-[#92400e] bg-clip-text font-extrabold text-transparent [text-shadow:none] [-webkit-background-clip:text]"
+      : rankTitleMedal === 2
+      ? "bg-gradient-to-b from-[#f8fafc] via-[#94a3b8] to-[#475569] bg-clip-text font-extrabold text-transparent [-webkit-background-clip:text]"
+      : rankTitleMedal === 3
+      ? "bg-gradient-to-b from-[#fcd9a8] via-[#b87333] to-[#5c3317] bg-clip-text font-extrabold text-transparent [-webkit-background-clip:text]"
+      : "";
+
   const reelAspectPortrait =
     reelLayout && reelStrip ? "aspect-[3/4] w-full" : "aspect-[9/16] w-full";
   const reelAspectLandscape =
@@ -924,7 +936,10 @@ export function VideoCard({
           ) : null}
           <div className={`flex min-w-0 items-center ${dense ? "gap-1" : "gap-2"}`}>
             <h3
-              className={`line-clamp-2 min-w-0 flex-1 text-left font-semibold leading-snug text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 ${
+              className={`line-clamp-2 min-w-0 flex-1 text-left leading-snug ${
+                medalTitleCls ||
+                `font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900`
+              } ${
                 dense
                   ? "text-[10px] sm:text-[10px]"
                   : reelStrip

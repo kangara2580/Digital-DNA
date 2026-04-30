@@ -13,8 +13,6 @@ import { liveStatsKeyFromFeedVideo } from "@/lib/externalEmbed/parseUrl";
 import { TrendingVideoStatsFooter } from "./TrendingVideoStatsFooter";
 import { VideoCard } from "./VideoCard";
 
-const TRENDING_RANK_SNAPSHOT_KEY = "ara-trending-rank-snapshot-v1";
-
 function SkeletonGrid() {
   return (
     <div
@@ -45,7 +43,6 @@ export function TrendingRankSection() {
   const [trendingClips, setTrendingClips] = useState<FeedVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [previousRanksByVideoId, setPreviousRanksByVideoId] = useState<Record<string, number>>({});
   const [liveStatsByKey, setLiveStatsByKey] = useState<
     Record<string, { playCount: number; diggCount: number }>
   >({});
@@ -74,25 +71,13 @@ export function TrendingRankSection() {
 
       rows.sort((a, b) => b.metrics.cumulativeRevenueWon - a.metrics.cumulativeRevenueWon);
 
-      return rows.slice(0, 30).map((row, rankIndex) => {
-        const previousRank = previousRanksByVideoId[row.video.id];
-        const trendDir =
-          previousRank == null
-            ? "same"
-            : previousRank > rankIndex + 1
-              ? "up"
-              : previousRank < rankIndex + 1
-                ? "down"
-                : "same";
-        return {
-          key: `fixed-${rankIndex}-${row.video.id}`,
-          video: row.video,
-          metrics: row.metrics,
-          trendDir,
-        };
-      });
+      return rows.slice(0, 30).map((row, rankIndex) => ({
+        key: `fixed-${rankIndex}-${row.video.id}`,
+        video: row.video,
+        metrics: row.metrics,
+      }));
     },
-    [trendingClips, liveStatsByKey, previousRanksByVideoId],
+    [trendingClips, liveStatsByKey],
   );
 
   const loadTrending = useCallback(() => {
@@ -194,31 +179,6 @@ export function TrendingRankSection() {
   useEffect(() => {
     void loadTrending();
   }, [loadTrending]);
-
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(TRENDING_RANK_SNAPSHOT_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as Record<string, number>;
-      if (!parsed || typeof parsed !== "object") return;
-      setPreviousRanksByVideoId(parsed);
-    } catch {
-      /* noop */
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!rankedRows.length) return;
-    const snapshot: Record<string, number> = {};
-    rankedRows.forEach((entry, i) => {
-      snapshot[entry.video.id] = i + 1;
-    });
-    try {
-      window.localStorage.setItem(TRENDING_RANK_SNAPSHOT_KEY, JSON.stringify(snapshot));
-    } catch {
-      /* noop */
-    }
-  }, [rankedRows]);
 
   useEffect(() => {
     setVisibleRows(1);
@@ -332,18 +292,6 @@ export function TrendingRankSection() {
                   }`}
                   role="listitem"
                 >
-                  <div className="pointer-events-none absolute left-2 top-2 z-[25] inline-flex items-center gap-1 rounded-full border border-[#00F2EA]/35 bg-black/65 px-2 py-1 text-[11px] font-extrabold tabular-nums text-white shadow-[0_10px_25px_-14px_rgba(0,242,234,0.9)]">
-                    {rankIndex + 1}
-                    {entry.trendDir === "up" ? (
-                      <span className="text-[13px] leading-none text-[#FF3B57] [text-shadow:0_0_10px_rgba(255,59,87,0.55)]">
-                        ▲
-                      </span>
-                    ) : entry.trendDir === "down" ? (
-                      <span className="text-[13px] leading-none text-[#2FA2FF] [text-shadow:0_0_10px_rgba(47,162,255,0.55)]">
-                        ▼
-                      </span>
-                    ) : null}
-                  </div>
                   <VideoCard
                     video={{
                       ...entry.video,
@@ -354,6 +302,9 @@ export function TrendingRankSection() {
                     disableHoverScale
                     hideCreatorMeta
                     preloadMode="metadata"
+                    rankTitleMedal={
+                      rankIndex === 0 ? 1 : rankIndex === 1 ? 2 : rankIndex === 2 ? 3 : undefined
+                    }
                     detailHref={
                       entry.video.tiktokEmbedId
                         ? `/video/tiktok-${entry.video.tiktokEmbedId}`
