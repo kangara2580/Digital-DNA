@@ -79,22 +79,36 @@ function AuthRequiredModal({
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/70 px-4 backdrop-blur-[6px]">
+    <div
+      className="fixed inset-0 z-[220] flex items-center justify-center bg-black/70 px-4 backdrop-blur-[6px]"
+      onClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
       <button
         type="button"
         className="absolute inset-0"
         aria-label="로그인 모달 닫기"
-        onClick={onClose}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClose();
+        }}
       />
       <div
         role="dialog"
         aria-modal="true"
         aria-label="로그인 또는 회원가입"
         className="relative z-10 w-full max-w-[560px] rounded-[24px] border border-white/20 bg-[radial-gradient(120%_120%_at_0%_0%,rgba(0,51,255,0.34)_0%,rgba(8,14,30,0.94)_52%,rgba(2,6,16,0.98)_100%)] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10"
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
       >
         <button
           type="button"
-          onClick={onClose}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onClose();
+          }}
           className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/10 text-zinc-200 transition hover:bg-white/20"
           aria-label="닫기"
         >
@@ -200,23 +214,14 @@ export function VideoDetailView({
     if (!authPromptOpen) return;
     const scrollY = authPromptScrollYRef.current;
     const prevOverflow = document.body.style.overflow;
-    const prevPosition = document.body.style.position;
-    const prevTop = document.body.style.top;
-    const prevWidth = document.body.style.width;
     document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") setAuthPromptOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = prevOverflow;
-      document.body.style.position = prevPosition;
-      document.body.style.top = prevTop;
-      document.body.style.width = prevWidth;
-      window.scrollTo(0, scrollY);
+      requestAnimationFrame(() => window.scrollTo(0, scrollY));
       window.removeEventListener("keydown", onKey);
     };
   }, [authPromptOpen]);
