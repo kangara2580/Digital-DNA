@@ -22,9 +22,9 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 const categoryPillClass =
   "inline-flex shrink-0 items-center justify-center rounded-full border border-transparent bg-transparent font-semibold leading-none text-zinc-400 transition-[background-color,color,padding,font-size,border-color] hover:border-white/15 hover:bg-white/8 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-200 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
 
-/** 현재 카테고리(선택됨): 다크에서는 흰 글자·더 굵게, 라이트에서는 거의 검정·굵게 */
+/** 현재 카테고리(선택됨): 다크에서는 순백·더 굵게(! 로 베이스 zinc-400 무시), 라이트에서는 거의 검정·굵게 */
 const categoryPillActiveClass =
-  "cursor-default border-white/22 bg-white/10 text-white font-extrabold hover:border-white/25 hover:bg-white/14 hover:text-white [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-950 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-950";
+  "cursor-default border-white/22 bg-white/10 font-extrabold !text-[#ffffff] hover:border-white/25 hover:bg-white/14 hover:!text-[#ffffff] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:!text-zinc-950 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:!text-zinc-950";
 
 /** 스크롤 컴팩트 시 상단에는 베스트·추천만 노출, 나머지는 「카테고리」 메뉴로 */
 const COMPACT_PRIMARY = ITEMS.slice(0, 2);
@@ -653,7 +653,7 @@ export function MallTopNav() {
                                         }}
                                         className={`inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 py-[7px] text-[12px] font-semibold leading-none text-zinc-300 transition-colors duration-200 first:pl-2.5 last:pr-2.5 sm:px-2.5 sm:py-[7px] sm:text-[13px] sm:first:pl-3 sm:last:pr-3 ${easeLayout} hover:bg-white/10 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black ${
                                           active
-                                            ? "border border-white/22 bg-white/10 font-extrabold text-white [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:font-extrabold [html[data-theme='light']_&]:text-zinc-950"
+                                            ? "border border-white/22 bg-white/10 font-extrabold !text-[#ffffff] hover:!text-[#ffffff] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:font-extrabold [html[data-theme='light']_&]:!text-zinc-950 [html[data-theme='light']_&]:hover:!text-zinc-950"
                                             : "border border-transparent"
                                         }`}
                                       >
