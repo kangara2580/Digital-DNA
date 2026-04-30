@@ -275,7 +275,7 @@ export function TrendingRankSection() {
     <section
       id="trending-rank"
       ref={sectionRef}
-      className="trending-rank-ocean-bg border-t border-white/10"
+      className="trending-rank-ocean-bg home-ranked-strip border-t border-white/10"
       aria-labelledby="trending-rank-heading"
     >
       <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-24 lg:px-8">

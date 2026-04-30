@@ -11,6 +11,8 @@
 
 :root {
   --reels-abyss: #02040a;
+  /** 메인 인기순위·설명(셀러 피치)·구매후기 등 연속 블록 배경 */
+  --home-ranked-strip-bg: #192731;
   --reels-void: #040916;
   --reels-lift: #070f1f;
   --reels-crimson: #ff0055;
@@ -643,11 +645,11 @@ html[data-theme="dark"] .inspiration-section {
   --text-sub: #a1a1aa;
 }
 
-/* 인기순위 섹션 — deep blue ocean navy texture */
+/* 인기순위 등 메인 랭킹 스트립 배경 (#192731 톤 통일) */
 .trending-rank-ocean-bg {
   position: relative;
   isolation: isolate;
-  background: var(--reels-abyss);
+  background: var(--home-ranked-strip-bg);
 }
 
 .trending-rank-ocean-bg::before {
@@ -659,7 +661,34 @@ html[data-theme="dark"] .inspiration-section {
 }
 
 html[data-theme="light"] .trending-rank-ocean-bg {
-  background: var(--reels-abyss);
+  background: var(--home-ranked-strip-bg);
+}
+
+/* 라이트 테마여도 스트립은 진한 네이비 유지 → 본문 톤 재정의(home-ranked-strip 안) */
+:root[data-theme="light"] body .home-ranked-strip .text-zinc-100,
+:root[data-theme="light"] body .home-ranked-strip .text-zinc-200 {
+  color: #f4f4f5 !important;
+}
+
+:root[data-theme="light"] body .home-ranked-strip .text-zinc-300 {
+  color: #e4e4e7 !important;
+}
+
+:root[data-theme="light"] body .home-ranked-strip .text-zinc-400,
+:root[data-theme="light"] body .home-ranked-strip .text-zinc-500 {
+  color: #d4d4d8 !important;
+}
+
+:root[data-theme="light"] body .home-ranked-strip .text-zinc-600 {
+  color: #a1a1aa !important;
+}
+
+:root[data-theme="light"] body .home-ranked-strip .text-white\/78 {
+  color: rgba(244, 244, 245, 0.78) !important;
+}
+
+:root[data-theme="light"] body .home-ranked-strip .text-white {
+  color: #fafafa !important;
 }
 
 .inspiration-card {

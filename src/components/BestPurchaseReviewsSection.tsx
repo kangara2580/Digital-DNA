@@ -105,7 +105,7 @@ export function BestPurchaseReviewsSection() {
   return (
     <section
       id="best-reviews"
-      className="border-t border-white/10 bg-transparent"
+      className="home-ranked-strip bg-[color:var(--home-ranked-strip-bg)]"
       aria-labelledby="best-reviews-heading"
     >
       <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-28 sm:px-6 sm:pb-20 sm:pt-32 lg:px-8">
