@@ -296,16 +296,15 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
           key={key}
           className="overflow-hidden rounded-lg border border-white/10 bg-black/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
         >
-          <div className={video.orientation === "landscape" ? "aspect-video" : "aspect-[9/16]"}>
-            <VideoCard
-              video={video}
-              flush
-              hideInfoBar
-              onPick={() => openExploreWatch(video)}
-              domId={`clip-${key}`}
-              className="h-full w-full"
-            />
-          </div>
+          <VideoCard
+            video={video}
+            flush
+            reelLayout={video.orientation === "portrait"}
+            hideInfoBar
+            onPick={() => openExploreWatch(video)}
+            domId={`clip-${key}`}
+            className="min-h-0 w-full"
+          />
         </div>
       ))}
     </div>
