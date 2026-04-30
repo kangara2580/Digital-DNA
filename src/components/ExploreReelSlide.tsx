@@ -75,9 +75,8 @@ const railActionPlainBtn =
 const railActionIcon =
   "h-[21px] w-[21px] shrink-0 pointer-events-none stroke-[2.5] [html[data-theme='light']_&]:stroke-zinc-700";
 
-/** 데스크톱 레일 전체 카드 래퍼 */
-const railDeckClass =
-  "shrink-0 rounded-2xl border border-white/[0.06] bg-black/32 px-2 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-md md:rounded-[1.25rem] md:px-2.5 md:py-3.5 [html[data-theme='light']_&]:border-zinc-300/65 [html[data-theme='light']_&]:bg-white/88 [html[data-theme='light']_&]:shadow-sm";
+/** 레일 바깥 패딩만 (테두리 없음) */
+const railDeckClass = "shrink-0 pb-6 pt-4";
 
 /** 라벨 (가격 블록·집계 공통 음영) */
 const railLabelMuted =
@@ -89,9 +88,9 @@ const railStatNum =
 
 function RailStatRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex min-w-0 flex-col gap-0.5 border-b border-white/[0.06] pb-3 last:border-0 last:pb-0 [html[data-theme='light']_&]:border-zinc-300/55">
-      <span className={`${railLabelMuted} block text-left`}>{label}</span>
-      <span className={`${railStatNum} block text-left leading-snug`}>{value}</span>
+    <div className="flex min-w-0 flex-col items-center gap-0.5 text-center">
+      <span className={railLabelMuted}>{label}</span>
+      <span className={`${railStatNum} leading-snug`}>{value}</span>
     </div>
   );
 }
@@ -369,122 +368,108 @@ function ReelDesktopRail({
 
   return (
     <aside
-      className={`${railDeckClass} flex flex-row items-stretch gap-3 [html[data-theme='light']_&]:text-zinc-900 ${className ?? ""}`}
+      className={`${railDeckClass} flex w-[min(7rem,16.5vw)] shrink-0 flex-col items-center gap-4 [html[data-theme='light']_&]:text-zinc-900 ${className ?? ""}`}
       aria-label="판매·반응 정보"
     >
-      <div className="flex w-[min(5.5rem,13.5vw)] shrink-0 flex-col items-center gap-3">
-        <div className="flex flex-col items-center gap-1 text-center">
-          <span className={railLabelMuted}>가격</span>
-          {video.priceWon != null ? (
-            <span className="text-[15px] font-extrabold tabular-nums tracking-tight text-[#9DB9FF]">
-              {video.priceWon.toLocaleString("ko-KR")}
-            </span>
-          ) : (
-            <span className={`${railStatNum} text-zinc-500`}>—</span>
-          )}
-        </div>
-
-        {soldOut ? (
-          <span
-            className={`inline-flex cursor-not-allowed opacity-45 ${railBuyButtonClass}`}
-            aria-disabled
-          >
-            품절
-          </span>
-        ) : (
-          <button type="button" onClick={onBuyClick} className={railBuyButtonClass}>
-            구매
-          </button>
-        )}
-
-        <div
-          role="group"
-          aria-label="작업"
-          className="flex w-full flex-col items-center gap-2.5 border-t border-white/[0.07] pt-3.5 [html[data-theme='light']_&]:border-zinc-300/65"
-        >
-          <div className="flex flex-col items-center gap-1">
-            <button
-              type="button"
-              title={likedByMe ? "좋아요 취소" : "좋아요"}
-              onClick={(e) => {
-                e.preventDefault();
-                void toggleInternalLike();
-              }}
-              className={`relative ${railLikeCircleBase} ${
-                likedByMe
-                  ? "!border-[#7aa6f0]/85 !bg-[#121c33] !shadow-[inset_0_1px_6px_rgba(122,166,240,0.15)] hover:!border-[#9bbaf5]"
-                  : ""
-              } ${likePulse ? "scale-105" : "scale-100"}`}
-              aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
-              aria-pressed={likedByMe}
-            >
-              {likeBurst ? (
-                <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/30 animate-ping" />
-              ) : null}
-              <Heart
-                strokeWidth={2.5}
-                className={`relative z-[1] ${railLikeIcon} transition-transform duration-300 ${
-                  likedByMe
-                    ? "fill-current stroke-[#a8c9ff] text-[#a8c9ff]"
-                    : "stroke-white/95"
-                } ${likeBurst ? "scale-110" : "scale-100"} [html[data-theme='light']_&]:stroke-zinc-700 ${likedByMe ? "[html[data-theme='light']_&]:stroke-sky-500 [html[data-theme='light']_&]:fill-sky-400/90" : ""}`}
-              />
-            </button>
-            <span className="font-mono text-[12px] font-bold tabular-nums text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
-              {formatLikeCountShortK(displayedLikeTotal)}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            title="장바구니 담기"
-            onClick={(e) => {
-              if (soldOut) return;
-              if (!requireAuth()) return;
-              dopamine.launchFromCartButton(e.currentTarget, video, posterSrc ?? undefined);
-            }}
-            className={`${railActionPlainBtn} disabled:cursor-not-allowed disabled:opacity-40`}
-            disabled={soldOut}
-            aria-label="장바구니 담기"
-          >
-            <ShoppingCart strokeWidth={2.5} className={`${railActionIcon} stroke-current`} />
-          </button>
-          <button
-            type="button"
-            title={wishlisted ? "찜 해제" : "찜하기"}
-            onClick={(e) => {
-              e.preventDefault();
-              if (!requireAuth()) return;
-              setWishlistPulse(true);
-              window.setTimeout(() => setWishlistPulse(false), 170);
-              toggleWishlist(video);
-            }}
-            className={`${railActionPlainBtn} ${
-              wishlisted ? "!text-reels-cyan hover:!text-reels-cyan" : ""
-            } ${wishlistPulse ? "scale-[1.05]" : "scale-100"}`}
-            aria-label={wishlisted ? "찜 해제" : "찜하기"}
-            aria-pressed={wishlisted}
-          >
-            <Bookmark
-              strokeWidth={2.5}
-              className={`${railActionIcon} stroke-current ${wishlisted ? "fill-current" : ""}`}
-            />
-          </button>
-        </div>
-      </div>
-
-      <div
-        className="w-px shrink-0 bg-gradient-to-b from-transparent via-white/12 to-transparent [html[data-theme='light']_&]:via-zinc-300/80"
-        aria-hidden
-      />
-
-      <div
-        className="flex min-w-0 flex-1 flex-col gap-1 py-0.5"
-        aria-label="집계 수치"
-      >
+      <div className="flex w-full flex-col items-center gap-2.5" aria-label="집계 수치">
         <RailStatRow label="수익" value={formatCompactWon(rankMetrics.cumulativeRevenueWon)} />
         <RailStatRow label="조회수" value={formatCompactCount(displayedViews)} />
         <RailStatRow label="구매" value={meta.salesCount.toLocaleString("ko-KR")} />
+      </div>
+
+      <div className="flex flex-col items-center gap-1 text-center">
+        <span className={railLabelMuted}>가격</span>
+        {video.priceWon != null ? (
+          <span className="text-[15px] font-extrabold tabular-nums tracking-tight text-[#9DB9FF]">
+            {video.priceWon.toLocaleString("ko-KR")}
+          </span>
+        ) : (
+          <span className={`${railStatNum} text-zinc-500`}>—</span>
+        )}
+      </div>
+
+      {soldOut ? (
+        <span
+          className={`inline-flex cursor-not-allowed opacity-45 ${railBuyButtonClass}`}
+          aria-disabled
+        >
+          품절
+        </span>
+      ) : (
+        <button type="button" onClick={onBuyClick} className={railBuyButtonClass}>
+          구매
+        </button>
+      )}
+
+      <div role="group" aria-label="작업" className="flex w-full flex-col items-center gap-2.5">
+        <div className="flex flex-col items-center gap-1">
+          <button
+            type="button"
+            title={likedByMe ? "좋아요 취소" : "좋아요"}
+            onClick={(e) => {
+              e.preventDefault();
+              void toggleInternalLike();
+            }}
+            className={`relative ${railLikeCircleBase} ${
+              likedByMe
+                ? "!border-[#7aa6f0]/85 !bg-[#121c33] !shadow-[inset_0_1px_6px_rgba(122,166,240,0.15)] hover:!border-[#9bbaf5]"
+                : ""
+            } ${likePulse ? "scale-105" : "scale-100"}`}
+            aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+            aria-pressed={likedByMe}
+          >
+            {likeBurst ? (
+              <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/30 animate-ping" />
+            ) : null}
+            <Heart
+              strokeWidth={2.5}
+              className={`relative z-[1] ${railLikeIcon} transition-transform duration-300 ${
+                likedByMe
+                  ? "fill-current stroke-[#a8c9ff] text-[#a8c9ff]"
+                  : "stroke-white/95"
+              } ${likeBurst ? "scale-110" : "scale-100"} [html[data-theme='light']_&]:stroke-zinc-700 ${likedByMe ? "[html[data-theme='light']_&]:stroke-sky-500 [html[data-theme='light']_&]:fill-sky-400/90" : ""}`}
+            />
+          </button>
+          <span className="font-mono text-[12px] font-bold tabular-nums text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
+            {formatLikeCountShortK(displayedLikeTotal)}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          title="장바구니 담기"
+          onClick={(e) => {
+            if (soldOut) return;
+            if (!requireAuth()) return;
+            dopamine.launchFromCartButton(e.currentTarget, video, posterSrc ?? undefined);
+          }}
+          className={`${railActionPlainBtn} disabled:cursor-not-allowed disabled:opacity-40`}
+          disabled={soldOut}
+          aria-label="장바구니 담기"
+        >
+          <ShoppingCart strokeWidth={2.5} className={`${railActionIcon} stroke-current`} />
+        </button>
+        <button
+          type="button"
+          title={wishlisted ? "찜 해제" : "찜하기"}
+          onClick={(e) => {
+            e.preventDefault();
+            if (!requireAuth()) return;
+            setWishlistPulse(true);
+            window.setTimeout(() => setWishlistPulse(false), 170);
+            toggleWishlist(video);
+          }}
+          className={`${railActionPlainBtn} ${
+            wishlisted ? "!text-reels-cyan hover:!text-reels-cyan" : ""
+          } ${wishlistPulse ? "scale-[1.05]" : "scale-100"}`}
+          aria-label={wishlisted ? "찜 해제" : "찜하기"}
+          aria-pressed={wishlisted}
+        >
+          <Bookmark
+            strokeWidth={2.5}
+            className={`${railActionIcon} stroke-current ${wishlisted ? "fill-current" : ""}`}
+          />
+        </button>
       </div>
 
       {mounted ? (
