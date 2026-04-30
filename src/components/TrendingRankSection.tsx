@@ -273,6 +273,7 @@ export function TrendingRankSection() {
 
   return (
     <section
+      id="trending-rank"
       ref={sectionRef}
       className="trending-rank-ocean-bg border-t border-white/10"
       aria-labelledby="trending-rank-heading"

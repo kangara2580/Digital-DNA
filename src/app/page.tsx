@@ -11,8 +11,8 @@ export default async function Home() {
         <Highlight24 />
         <TrendingRankSection />
         <DiscountDnaSection />
-        <BestPurchaseReviewsSection />
         <SellerPitchBanner />
+        <BestPurchaseReviewsSection />
       </main>
     </div>
   );

@@ -104,6 +104,7 @@ export function BestPurchaseReviewsSection() {
 
   return (
     <section
+      id="best-reviews"
       className="border-t border-white/10 bg-transparent"
       aria-labelledby="best-reviews-heading"
     >

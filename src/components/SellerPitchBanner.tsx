@@ -71,6 +71,7 @@ export function SellerPitchBanner() {
   return (
     <>
       <section
+        id="seller-pitch"
         className="relative bg-reels-void/50"
         aria-labelledby="seller-pitch-heading"
       >
