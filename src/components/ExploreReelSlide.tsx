@@ -78,18 +78,23 @@ const railActionIcon =
 /** 레일 바깥 패딩만 (테두리 없음) */
 const railDeckClass = "shrink-0 pb-6 pt-4";
 
+/** 행 여백: 아이콘 ↔ 수치를 붙이고 수치열 폭 통일 (수익 자릿수 증가에도 정렬 유지) */
 const railExploreRow =
-  "flex w-full max-w-[15rem] items-center justify-between gap-3 px-0.5 py-2 [html[data-theme='light']_&]:text-zinc-900";
+  "flex w-max max-w-full items-center gap-2 py-2 [html[data-theme='light']_&]:text-zinc-900";
+
+/** 수익(최장 케이스까지) 기준 우측 정렬 — 같은 폭이라 아래 줄과 열 정렬 유지 */
+const railExploreStatValueCol =
+  "inline-flex min-h-[1.35em] w-[10.5rem] shrink-0 items-center justify-end tabular-nums text-right sm:w-[11.75rem]";
 
 /** 탐색 레일 구매 버튼 (가격 블록과 분리) */
 const railExploreBuyButtonClass =
-  "relative inline-flex min-h-[40px] w-full max-w-[15rem] shrink-0 items-center justify-center rounded-full border-2 border-white/38 bg-transparent px-4 py-2 text-[13px] font-extrabold tracking-normal text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-white/65 hover:bg-white/[0.06] hover:shadow-[0_0_20px_rgba(255,255,255,0.08)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/55 [html[data-theme='light']_&]:text-zinc-900";
+  "relative inline-flex min-h-[40px] w-full shrink-0 items-center justify-center rounded-full border-2 border-white/38 bg-transparent px-4 py-2 text-[13px] font-extrabold tracking-normal text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-white/65 hover:bg-white/[0.06] hover:shadow-[0_0_20px_rgba(255,255,255,0.08)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/55 [html[data-theme='light']_&]:text-zinc-900";
 
 const railStatValueWhite =
-  "text-[13px] font-semibold tabular-nums text-white [html[data-theme='light']_&]:text-zinc-900";
+  "text-[13px] font-semibold text-white [html[data-theme='light']_&]:text-zinc-900";
 
 const railStatValueBlue =
-  "text-[13px] font-semibold tabular-nums text-[#9DB9FF] [html[data-theme='light']_&]:text-sky-600";
+  "text-[13px] font-semibold text-[#9DB9FF] [html[data-theme='light']_&]:text-sky-600";
 
 function ReelExploreStatLine({
   icon,
@@ -118,7 +123,7 @@ function ReelExploreStatLine({
         </span>
         {iconAdornment ?? null}
       </span>
-      <span className={`shrink-0 text-right ${valueClassName}`}>{value}</span>
+      <span className={`${railExploreStatValueCol} ${valueClassName}`}>{value}</span>
     </>
   );
   if (as === "button" && onClick) {
@@ -437,10 +442,10 @@ function ReelDesktopRail({
 
   return (
     <aside
-      className={`${railDeckClass} flex w-[min(15rem,38vw)] shrink-0 flex-col items-center gap-5 px-2 [html[data-theme='light']_&]:text-zinc-900 ${className ?? ""}`}
+      className={`${railDeckClass} flex w-max max-w-[min(15rem,38vw)] shrink-0 flex-col items-center gap-5 px-2 [html[data-theme='light']_&]:text-zinc-900 ${className ?? ""}`}
       aria-label="판매·반응 정보"
     >
-      <div className="flex w-full flex-col items-stretch" aria-label="집계 수치">
+      <div className="flex flex-col items-center" aria-label="집계 수치">
         <ReelExploreStatLine
           icon={<TrendingUp strokeWidth={2.25} className="shrink-0" />}
           iconAdornment={
@@ -496,7 +501,7 @@ function ReelDesktopRail({
             <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">품절</span>
           </div>
         ) : (
-          <div className="flex w-full max-w-[15rem] flex-col items-stretch gap-3 px-2">
+          <div className="flex w-full flex-col items-stretch gap-3 px-2">
             <div className="text-center">
               <span className="text-[clamp(1.55rem,4vw,2.85rem)] font-black tabular-nums tracking-tighter text-white [html[data-theme='light']_&]:text-zinc-900">
                 {video.priceWon.toLocaleString("ko-KR")}
