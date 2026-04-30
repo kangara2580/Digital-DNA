@@ -45,136 +45,33 @@ function ChevronRight({ className }: { className?: string }) {
   );
 }
 
-/** 볼록 다각형 꼭짓점 라운딩 — 통통한 둥근 삼각 실루엣용 */
-function roundedConvexPolygonPath(points: readonly [number, number][], radius: number): string {
-  const n = points.length;
-  const segs: string[] = [];
-  const nm = (x: number, y: number): [number, number] => {
-    const len = Math.hypot(x, y);
-    if (len <= 1e-9) return [0, 0];
-    return [x / len, y / len];
-  };
-  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-  for (let i = 0; i < n; i++) {
-    const prev = points[(i + n - 1) % n]!;
-    const cur = points[i]!;
-    const next = points[(i + 1) % n]!;
-    const vIn = nm(cur[0] - prev[0], cur[1] - prev[1]);
-    const vOut = nm(next[0] - cur[0], next[1] - cur[1]);
-    const dot = clamp(vIn[0] * vOut[0] + vIn[1] * vOut[1], -1, 1);
-    const theta = Math.acos(dot);
-    if (theta < 1e-4) continue;
-    const distIn = Math.hypot(cur[0] - prev[0], cur[1] - prev[1]);
-    const distOut = Math.hypot(next[0] - cur[0], next[1] - cur[1]);
-    let inset = radius / Math.tan(theta / 2);
-    const maxInset = Math.min(distIn, distOut) * 0.48;
-    inset = Math.min(inset, maxInset);
-    const px = `${(cur[0] - vIn[0] * inset).toFixed(2)} ${(cur[1] - vIn[1] * inset).toFixed(2)}`;
-    const qx = `${cur[0].toFixed(2)} ${cur[1].toFixed(2)}`;
-    const ex = `${(cur[0] + vOut[0] * inset).toFixed(2)} ${(cur[1] + vOut[1] * inset).toFixed(2)}`;
-    if (i === 0) segs.push(`M ${px}`);
-    else segs.push(`L ${px}`);
-    segs.push(`Q ${qx} ${ex}`);
-  }
-  return `${segs.join(" ")} Z`;
-}
-
-type RoundedTriangleCornerNum = {
-  px: [number, number];
-  vtx: [number, number];
-  ex: [number, number];
-};
-
-function fmtSvgPt([x, y]: [number, number]): string {
-  return `${x.toFixed(2)} ${y.toFixed(2)}`;
-}
-
-function computeRoundedTriangleCorners(
-  apex: readonly [number, number],
-  bottomRight: readonly [number, number],
-  bottomLeft: readonly [number, number],
-  cornerRadius: number,
-  /** BR·BL만 더 크게 — 발이 더 둥글게 이어지도록 */
-  bottomCornerInsetMult = 0.56,
-): RoundedTriangleCornerNum[] | null {
-  const points: [number, number][] = [
-    [apex[0], apex[1]],
-    [bottomRight[0], bottomRight[1]],
-    [bottomLeft[0], bottomLeft[1]],
-  ];
-  const n = points.length;
-  const nm = (x: number, y: number): [number, number] => {
-    const len = Math.hypot(x, y);
-    if (len <= 1e-9) return [0, 0];
-    return [x / len, y / len];
-  };
-  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-  const corners: RoundedTriangleCornerNum[] = [];
-  for (let i = 0; i < n; i++) {
-    const prev = points[(i + n - 1) % n]!;
-    const cur = points[i]!;
-    const next = points[(i + 1) % n]!;
-    const vIn = nm(cur[0] - prev[0], cur[1] - prev[1]);
-    const vOut = nm(next[0] - cur[0], next[1] - cur[1]);
-    const dot = clamp(vIn[0] * vOut[0] + vIn[1] * vOut[1], -1, 1);
-    const theta = Math.acos(dot);
-    if (theta < 1e-4) return null;
-    const distIn = Math.hypot(cur[0] - prev[0], cur[1] - prev[1]);
-    const distOut = Math.hypot(next[0] - cur[0], next[1] - cur[1]);
-    let inset = cornerRadius / Math.tan(theta / 2);
-    const insetMult = i === 1 || i === 2 ? bottomCornerInsetMult : 0.48;
-    const maxInset = Math.min(distIn, distOut) * insetMult;
-    inset = Math.min(inset, maxInset);
-    corners.push({
-      px: [cur[0] - vIn[0] * inset, cur[1] - vIn[1] * inset],
-      vtx: [cur[0], cur[1]],
-      ex: [cur[0] + vOut[0] * inset, cur[1] + vOut[1] * inset],
-    });
-  }
-  return corners.length === 3 ? corners : null;
-}
-
 /**
- * 상단 꼭짓점 + 밑변 두 꼭짓점으로 둥근 통통 삼각형.
- * 밑변은 살짝 위로 들려 A 실루엣을 주며, 양 끝은 부드럽고 가운데가 더 오목하게 이어진다(ease형 cubic).
+ * 히어로 글래스 A 실루엣 — 둥근 꼭대기, 오목한 밑변, 아래로 길게 뻗은 바늘형 양다리(레퍼런스 근사).
+ * 가운데 음영 영역은 재생 삼각으로 채움.
  */
-function roundedTriangleConcaveBasePath(
-  apex: readonly [number, number],
-  bottomRight: readonly [number, number],
-  bottomLeft: readonly [number, number],
-  cornerRadius: number,
-  /** 밑변 중앙 높이 들림 — 더 클수록 안쪽으로 더 오목 */
-  baseConcaveLift: number,
-): string {
-  const pointsFallback: readonly [number, number][] = [
-    [apex[0], apex[1]],
-    [bottomRight[0], bottomRight[1]],
-    [bottomLeft[0], bottomLeft[1]],
-  ];
-  const computed = computeRoundedTriangleCorners(apex, bottomRight, bottomLeft, cornerRadius);
-  if (!computed) return roundedConvexPolygonPath(pointsFallback, cornerRadius);
-
-  const [c0, c1, c2] = computed;
-  /** BR 밑변 쪽 단부 → BL 밑변 쪽 단부 (오른쪽에서 왼쪽) */
-  const pStart = c1.ex;
-  const pEnd = c2.px;
-  const chord = Math.max(Math.hypot(pEnd[0] - pStart[0], pEnd[1] - pStart[1]), 1e-6);
-  /** 끝은 완만히, 가운데로 갈수록 더 깊게 — 제어점을 밑변 쪽으로 당겨 발–밑변 이음이 덜 꺾이게 */
-  const gamma = Math.min(Math.max(chord * 0.31, 5.8), chord * 0.4);
-  const liftEff = Math.min(Math.max(baseConcaveLift, 0), chord * 0.55);
-  /** 발에서는 덜 패이고 축에서는 더 깎이도록 — 세로 깊기는 깊게, 단 gamma로 끝은 완만 */
-  const joinLift = liftEff * 0.48;
-
-  const c1Ctl: [number, number] = [pStart[0] - gamma, pStart[1] - joinLift];
-  const c2Ctl: [number, number] = [pEnd[0] + gamma, pEnd[1] - joinLift];
-
+function heroReferenceGlassAPath(): string {
+  const Lx = 7.0;
+  const Ly = 148.5;
+  const Rx = 95.5;
+  const Ry = 148.5;
+  const LSx = 37.0;
+  const LSy = 51.5;
+  const RSx = 65.0;
+  const RSy = 51.5;
+  const apexCx = 51.0;
+  const apexCy = 27.0;
+  /** 밑아치 오목 — 레퍼런스처럼 중앙이 들어 감 */
+  const C1x = 77.0;
+  const C1y = 106.0;
+  const C2x = 25.0;
+  const C2y = 106.0;
+  const f = (n: number) => n.toFixed(2);
   return [
-    `M ${fmtSvgPt(c0.px)}`,
-    `Q ${fmtSvgPt(c0.vtx)} ${fmtSvgPt(c0.ex)}`,
-    `L ${fmtSvgPt(c1.px)}`,
-    `Q ${fmtSvgPt(c1.vtx)} ${fmtSvgPt(pStart)}`,
-    `C ${fmtSvgPt(c1Ctl)} ${fmtSvgPt(c2Ctl)} ${fmtSvgPt(pEnd)}`,
-    `Q ${fmtSvgPt(c2.vtx)} ${fmtSvgPt(c2.ex)}`,
+    `M ${f(Lx)} ${f(Ly)}`,
+    `L ${f(LSx)} ${f(LSy)}`,
+    `Q ${f(apexCx)} ${f(apexCy)} ${f(RSx)} ${f(RSy)}`,
+    `L ${f(Rx)} ${f(Ry)}`,
+    `C ${f(C1x)} ${f(C1y)} ${f(C2x)} ${f(C2y)} ${f(Lx)} ${f(Ly)}`,
     "Z",
   ].join(" ");
 }
@@ -306,17 +203,7 @@ export function Highlight24() {
   const reduceMotion = useReducedMotion() ?? false;
   const heroMarkUid = useId().replace(/:/g, "");
 
-  const heroABlobD = useMemo(
-    () =>
-      roundedTriangleConcaveBasePath(
-        [51, 45],
-        [96, 124.5],
-        [6, 124.5],
-        40,
-        8.6,
-      ),
-    [],
-  );
+  const heroABlobD = useMemo(() => heroReferenceGlassAPath(), []);
 
   const n = videos.length;
   const safeIndex = n > 0 ? ((index % n) + n) % n : 0;
@@ -852,7 +739,7 @@ export function Highlight24() {
                       <radialGradient
                         id={`hero-a-depth-${heroMarkUid}`}
                         cx="52"
-                        cy="112"
+                        cy="118"
                         r="44"
                         gradientUnits="userSpaceOnUse"
                       >
@@ -896,7 +783,7 @@ export function Highlight24() {
                       style={{ isolation: "isolate" }}
                     >
                       <g clipPath={`url(#hero-a-glass-clip-${heroMarkUid})`}>
-                        <foreignObject x="-8" y="34" width="118" height="98">
+                        <foreignObject x="-4" y="20" width="112" height="134">
                           <div
                             style={{
                               width: "100%",
@@ -933,7 +820,7 @@ export function Highlight24() {
                       </g>
                     </g>
                     <path
-                      d="M 39.75 79.5 L 64.95 94.2 L 39.75 108.9 Z"
+                      d="M 40.5 86.5 L 65.5 97.5 L 40.5 108.5 Z"
                       fill="#FFFFFF"
                     />
                     </g>
