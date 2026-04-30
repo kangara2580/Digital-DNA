@@ -202,21 +202,21 @@ export function SellerPitchBanner() {
                       <ol className="w-full space-y-5">
                         <li className="flex flex-col items-center gap-2">
                           <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
-                            <img src="/steps/user-step1-browse.png" alt="마켓 영상 탐색 화면" className="h-[140px] w-full object-cover object-top" />
+                            <img src="/steps/user-step1-browse.png" alt="마켓 영상 탐색 화면" className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <p className="text-[16px] font-bold text-white">1. 영상 선택</p>
                           <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">마켓에서 원하는 영상을 찾아보세요.</p>
                         </li>
                         <li className="flex flex-col items-center gap-2">
                           <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
-                            <img src="/steps/user-step2-customize.png" alt="영상 구매 및 커스터마이징 화면" className="h-[140px] w-full object-cover object-top" />
+                            <img src="/steps/user-step2-customize.png" alt="영상 구매 및 커스터마이징 화면" className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <p className="text-[16px] font-bold text-white">2. AI로 커스터마이징</p>
                           <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">배경, 얼굴, 스타일을 자유롭게 변경하세요.</p>
                         </li>
                         <li className="flex flex-col items-center gap-2">
                           <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
-                            <img src="/steps/user-step3-download.png" alt="인기 영상 다운로드 화면" className="h-[140px] w-full object-cover object-top" />
+                            <img src="/steps/user-step3-download.png" alt="인기 영상 다운로드 화면" className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <p className="text-[16px] font-bold text-white">3. 다운로드 &amp; 활용</p>
                           <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">완성된 영상을 다운로드해 바로 활용하세요.</p>
@@ -235,21 +235,21 @@ export function SellerPitchBanner() {
                       <ol className="w-full space-y-5">
                         <li className="flex flex-col items-center gap-2">
                           <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
-                            <img src="/steps/creator-step1-upload.png" alt="영상 URL 등록 화면" className="h-[140px] w-full object-cover object-top" />
+                            <img src="/steps/creator-step1-upload.png" alt="영상 URL 등록 화면" className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <p className="text-[16px] font-bold text-white">1. 영상 등록</p>
                           <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">직접 업로드 또는 URL을 붙여넣어 영상을 등록하세요.</p>
                         </li>
                         <li className="flex flex-col items-center gap-2">
                           <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
-                            <img src="/steps/creator-step2-price.png" alt="가격 설정 화면" className="h-[140px] w-full object-cover object-top" />
+                            <img src="/steps/creator-step2-price.png" alt="가격 설정 화면" className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <p className="text-[16px] font-bold text-white">2. 가격 설정</p>
                           <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">원하는 가격을 설정하세요.</p>
                         </li>
                         <li className="flex flex-col items-center gap-2">
                           <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
-                            <img src="/steps/creator-step3-sell.png" alt="마켓에 공개된 판매 영상 화면" className="h-[140px] w-full object-cover object-top" />
+                            <img src="/steps/creator-step3-sell.png" alt="마켓에 공개된 판매 영상 화면" className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <p className="text-[16px] font-bold text-white">3. 판매 시작</p>
                           <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">플랫폼에 공개하면 누구나 구매할 수 있습니다.</p>
