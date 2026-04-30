@@ -695,7 +695,7 @@ export function Highlight24() {
                   type="button"
                   onClick={onStartClick}
                   onPointerDown={(event) => event.stopPropagation()}
-                  className="shrink-0 inline-flex w-[clamp(138px,74%,188px)] items-center justify-center rounded-full border border-white/45 bg-transparent px-[clamp(1rem,1.9vw,1.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold text-white shadow-[0_9px_0_rgba(0,0,0,0.55)] transition duration-200 hover:-translate-y-0.5 hover:border-white/60 hover:shadow-[0_11px_0_rgba(0,0,0,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
+                  className="shrink-0 inline-flex w-[clamp(138px,74%,188px)] items-center justify-center rounded-full border border-white/45 bg-transparent px-[clamp(1rem,1.9vw,1.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold text-white shadow-[0_9px_0_rgba(0,0,0,0.55)] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#fca5cf]/95 hover:bg-gradient-to-br hover:from-[#f43f82] hover:via-[#e91e63] hover:to-[#db2777] hover:text-white hover:shadow-[0_0_36px_-2px_rgba(233,30,99,0.65),0_12px_0_rgba(0,0,0,0.42)] hover:brightness-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e91e63]/85"
                 >
                   시작하기
                 </button>
