@@ -450,7 +450,7 @@ function ReelDesktopRail({
       className={`${railDeckClass} flex w-max max-w-[min(15rem,38vw)] shrink-0 flex-col items-center gap-5 px-2 [html[data-theme='light']_&]:text-zinc-900 ${className ?? ""}`}
       aria-label="판매·반응 정보"
     >
-      <div className="flex flex-col items-center pl-5 sm:pl-6" aria-label="집계 수치">
+      <div className="flex flex-col items-center pl-7 sm:pl-8" aria-label="집계 수치">
         <ReelExploreStatLine
           icon={<TrendingUp strokeWidth={2.25} className="shrink-0" />}
           iconAdornment={
