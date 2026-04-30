@@ -792,22 +792,6 @@ export function Highlight24() {
                           <feMergeNode in="SourceGraphic" />
                         </feMerge>
                       </filter>
-                      <filter
-                        id={`hero-a-play-shadow-${heroMarkUid}`}
-                        x="-60%"
-                        y="-60%"
-                        width="220%"
-                        height="220%"
-                        filterUnits="objectBoundingBox"
-                      >
-                        <feDropShadow
-                          dx="0"
-                          dy="1"
-                          stdDeviation="1.35"
-                          floodColor="rgba(4,24,54,0.55)"
-                          floodOpacity="1"
-                        />
-                      </filter>
                     </defs>
                     {/* 앞 A만 확대 — R·뒤 A 스트로크 크기는 부모 em 그대로 */}
                     {/* 기준점을 살짝 아래로: 위로 더 길게, 아래 확장은 최소 */}
@@ -834,7 +818,6 @@ export function Highlight24() {
                       stroke="rgba(255,255,255,0.55)"
                       strokeWidth="0.55"
                       strokeLinejoin="round"
-                      filter={`url(#hero-a-play-shadow-${heroMarkUid})`}
                     />
                     </g>
                     <path
