@@ -810,7 +810,8 @@ export function Highlight24() {
                       </filter>
                     </defs>
                     {/* 앞 A만 확대 — R·뒤 A 스트로크 크기는 부모 em 그대로 */}
-                    <g transform="translate(51, 93) scale(1.5, 1.66) translate(-51, -93)">
+                    {/* 기준점을 살짝 아래로: 위로 더 길게, 아래 확장은 최소 */}
+                    <g transform="translate(51, 105.5) scale(1.5, 1.6) translate(-51, -105.5)">
                     <g
                       filter={`url(#hero-a-bloom-${heroMarkUid})`}
                       style={{ isolation: "isolate" }}
