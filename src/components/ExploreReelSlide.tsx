@@ -78,13 +78,13 @@ const railActionIcon =
 /** 레일 바깥 패딩만 (테두리 없음) */
 const railDeckClass = "shrink-0 pb-6 pt-4";
 
-/** 행 여백: 아이콘 ↔ 수치를 붙이고 수치열 폭 통일 (수익 자릿수 증가에도 정렬 유지) */
+/** 행: 아이콘 블록(32px 아이콘 + 고정폭 보조열) 다음에 수치 → 수익의 ▼ 포함해도 정렬 통일 */
 const railExploreRow =
-  "flex w-max max-w-full items-center gap-2 py-2 [html[data-theme='light']_&]:text-zinc-900";
+  "flex w-max max-w-full items-center gap-1 py-2 [html[data-theme='light']_&]:text-zinc-900";
 
-/** 수익(최장 케이스까지) 기준 우측 정렬 — 같은 폭이라 아래 줄과 열 정렬 유지 */
+/** 수익(최장 케이스) 기준 우측 정렬 — 열 폭은 조금 줄여 숫자를 아이콘에 가깝게 */
 const railExploreStatValueCol =
-  "inline-flex min-h-[1.35em] w-[10.5rem] shrink-0 items-center justify-end tabular-nums text-right sm:w-[11.75rem]";
+  "inline-flex min-h-[1.35em] w-[8.75rem] shrink-0 items-center justify-end tabular-nums text-right sm:w-[10rem]";
 
 /** 탐색 레일 구매 버튼 (가격 블록과 분리) */
 const railExploreBuyButtonClass =
@@ -117,11 +117,16 @@ function ReelExploreStatLine({
 }) {
   const Body = (
     <>
-      <span className="flex min-w-0 items-center gap-1">
+      <span className="flex shrink-0 items-center gap-1">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center text-white/[0.78] [&_svg]:h-[18px] [&_svg]:w-[18px] [html[data-theme='light']_&]:text-zinc-600">
           {icon}
         </span>
-        {iconAdornment ?? null}
+        <span
+          className="flex h-8 w-3 shrink-0 items-center justify-center"
+          aria-hidden={iconAdornment ? undefined : true}
+        >
+          {iconAdornment ?? <span className="block w-3" />}
+        </span>
       </span>
       <span className={`${railExploreStatValueCol} ${valueClassName}`}>{value}</span>
     </>
