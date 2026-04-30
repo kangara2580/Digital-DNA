@@ -45,6 +45,40 @@ function ChevronRight({ className }: { className?: string }) {
   );
 }
 
+/** 볼록 다각형 꼭짓점 라운딩 — 통통한 둥근 삼각 실루엣용 */
+function roundedConvexPolygonPath(points: readonly [number, number][], radius: number): string {
+  const n = points.length;
+  const segs: string[] = [];
+  const nm = (x: number, y: number): [number, number] => {
+    const len = Math.hypot(x, y);
+    if (len <= 1e-9) return [0, 0];
+    return [x / len, y / len];
+  };
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+  for (let i = 0; i < n; i++) {
+    const prev = points[(i + n - 1) % n]!;
+    const cur = points[i]!;
+    const next = points[(i + 1) % n]!;
+    const vIn = nm(cur[0] - prev[0], cur[1] - prev[1]);
+    const vOut = nm(next[0] - cur[0], next[1] - cur[1]);
+    const dot = clamp(vIn[0] * vOut[0] + vIn[1] * vOut[1], -1, 1);
+    const theta = Math.acos(dot);
+    if (theta < 1e-4) continue;
+    const distIn = Math.hypot(cur[0] - prev[0], cur[1] - prev[1]);
+    const distOut = Math.hypot(next[0] - cur[0], next[1] - cur[1]);
+    let inset = radius / Math.tan(theta / 2);
+    const maxInset = Math.min(distIn, distOut) * 0.48;
+    inset = Math.min(inset, maxInset);
+    const px = `${(cur[0] - vIn[0] * inset).toFixed(2)} ${(cur[1] - vIn[1] * inset).toFixed(2)}`;
+    const qx = `${cur[0].toFixed(2)} ${cur[1].toFixed(2)}`;
+    const ex = `${(cur[0] + vOut[0] * inset).toFixed(2)} ${(cur[1] + vOut[1] * inset).toFixed(2)}`;
+    if (i === 0) segs.push(`M ${px}`);
+    else segs.push(`L ${px}`);
+    segs.push(`Q ${qx} ${ex}`);
+  }
+  return `${segs.join(" ")} Z`;
+}
+
 type RingPose = {
   x: number;
   z: number;
@@ -172,10 +206,16 @@ export function Highlight24() {
   const reduceMotion = useReducedMotion() ?? false;
   const heroMarkUid = useId().replace(/:/g, "");
 
-  /** 글라스 A 외곽 — 밑중앙이 살짝 위로 들린 둥근 실루엣(다리 강조) */
-  const heroAGlassOuterD = useMemo(
+  const heroABlobD = useMemo(
     () =>
-      "M 51 42 C 37 51 21 71 17 103 Q 51 86 85 103 C 91 71 73 52 51 42 Z",
+      roundedConvexPolygonPath(
+        [
+          [51, 42],
+          [95, 118.8],
+          [7, 118.8],
+        ],
+        32,
+      ),
     [],
   );
 
@@ -702,22 +742,39 @@ export function Highlight24() {
                   >
                     <defs>
                       <linearGradient
-                        id={`hero-a-glass-${heroMarkUid}`}
-                        x1="16"
-                        y1="108"
-                        x2="90"
-                        y2="44"
+                        id={`hero-a-skin-${heroMarkUid}`}
+                        x1="9"
+                        y1="126"
+                        x2="95"
+                        y2="20"
                         gradientUnits="userSpaceOnUse"
                       >
-                        <stop offset="0%" stopColor="rgba(255,255,255,0.78)" />
-                        <stop offset="22%" stopColor="rgba(174,250,232,0.55)" />
-                        <stop offset="55%" stopColor="rgba(148,204,255,0.38)" />
-                        <stop offset="100%" stopColor="rgba(255,255,255,0.62)" />
+                        <stop offset="0%" stopColor="#5FF5D9" />
+                        <stop offset="38%" stopColor="#82E8FF" />
+                        <stop offset="100%" stopColor="#63A7FF" />
                       </linearGradient>
-                      <mask id={`hero-a-hole-${heroMarkUid}`} maskUnits="userSpaceOnUse" x="-12" y="0" width="440" height="150">
-                        <rect x="-12" y="0" width="440" height="150" fill="white" />
-                        <ellipse cx="52" cy="91.5" rx="25" ry="34" fill="black" />
-                      </mask>
+                      <radialGradient
+                        id={`hero-a-depth-${heroMarkUid}`}
+                        cx="52"
+                        cy="88"
+                        r="39"
+                        gradientUnits="userSpaceOnUse"
+                      >
+                        <stop offset="0%" stopColor="rgba(8, 22, 48, 0.58)" />
+                        <stop offset="45%" stopColor="rgba(34, 120, 180, 0.18)" />
+                        <stop offset="100%" stopColor="rgba(255, 255, 255, 0)" />
+                      </radialGradient>
+                      <radialGradient
+                        id={`hero-a-rim-${heroMarkUid}`}
+                        cx="52"
+                        cy="38"
+                        r="69"
+                        gradientUnits="userSpaceOnUse"
+                      >
+                        <stop offset="0%" stopColor="rgba(255,255,255,0.45)" />
+                        <stop offset="35%" stopColor="rgba(255,255,255,0.08)" />
+                        <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+                      </radialGradient>
                       <filter
                         id={`hero-a-bloom-${heroMarkUid}`}
                         x="-50%"
@@ -727,7 +784,7 @@ export function Highlight24() {
                         filterUnits="objectBoundingBox"
                       >
                         <feGaussianBlur in="SourceAlpha" stdDeviation="3.2" result="ablur" />
-                        <feFlood floodColor="#B8FFF0" floodOpacity="0.32" result="fl" />
+                        <feFlood floodColor="#5EEAD4" floodOpacity="0.42" result="fl" />
                         <feComposite in="fl" in2="ablur" operator="in" result="agog" />
                         <feGaussianBlur stdDeviation="1.1" in="agog" result="ag2" />
                         <feMerge>
@@ -736,18 +793,19 @@ export function Highlight24() {
                         </feMerge>
                       </filter>
                       <filter
-                        id={`hero-a-sparkle-glow-${heroMarkUid}`}
-                        x="-120%"
-                        y="-120%"
-                        width="340%"
-                        height="340%"
+                        id={`hero-a-play-shadow-${heroMarkUid}`}
+                        x="-60%"
+                        y="-60%"
+                        width="220%"
+                        height="220%"
+                        filterUnits="objectBoundingBox"
                       >
                         <feDropShadow
                           dx="0"
-                          dy="0"
+                          dy="1"
                           stdDeviation="1.35"
-                          floodColor="rgba(255,255,255,0.9)"
-                          floodOpacity="0.75"
+                          floodColor="rgba(4,24,54,0.55)"
+                          floodOpacity="1"
                         />
                       </filter>
                     </defs>
@@ -758,31 +816,25 @@ export function Highlight24() {
                       filter={`url(#hero-a-bloom-${heroMarkUid})`}
                       style={{ isolation: "isolate" }}
                     >
+                      <path fill={`url(#hero-a-skin-${heroMarkUid})`} d={heroABlobD} />
                       <path
-                        d={heroAGlassOuterD}
-                        fill={`url(#hero-a-glass-${heroMarkUid})`}
-                        stroke="rgba(255,255,255,0.62)"
-                        strokeWidth="1.05"
-                        strokeLinejoin="round"
-                        mask={`url(#hero-a-hole-${heroMarkUid})`}
-                        opacity={0.93}
+                        fill={`url(#hero-a-depth-${heroMarkUid})`}
+                        d={heroABlobD}
+                        style={{ mixBlendMode: "multiply" }}
                       />
-                      <ellipse
-                        cx="52"
-                        cy="91.5"
-                        rx="25"
-                        ry="34"
-                        fill="none"
-                        stroke="rgba(255,255,255,0.42)"
-                        strokeWidth="0.75"
+                      <path
+                        fill={`url(#hero-a-rim-${heroMarkUid})`}
+                        d={heroABlobD}
+                        style={{ mixBlendMode: "soft-light", opacity: 0.92 }}
                       />
                     </g>
                     <path
-                      transform="translate(52, 91.5)"
-                      d="M0,-6.2L1.95,-1.65L6.5,-0.85L1.85,1.95L0.15,7.2L-1.95,1.9L-6.5,-0.75L-2.1,-2.05Z"
+                      d="M 39.75 77.65 L 64.95 92.35 L 39.75 107.05 Z"
                       fill="#FFFFFF"
-                      opacity={0.98}
-                      filter={`url(#hero-a-sparkle-glow-${heroMarkUid})`}
+                      stroke="rgba(255,255,255,0.55)"
+                      strokeWidth="0.55"
+                      strokeLinejoin="round"
+                      filter={`url(#hero-a-play-shadow-${heroMarkUid})`}
                     />
                     </g>
                     <path
