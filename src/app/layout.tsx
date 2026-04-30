@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import {
   Black_Han_Sans,
+  Fredoka,
   Inter,
   Montserrat,
   Nanum_Gothic,
@@ -18,6 +19,12 @@ import { ARAFooter } from "@/components/ARAFooter";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+/** 히어로 등 브랜드 워드마크용 — 동글동글 레터링 */
+const fredoka = Fredoka({
+  subsets: ["latin"],
+  weight: ["600"],
+  variable: "--font-fredoka",
+});
 const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["500", "700", "800"],
@@ -76,7 +83,7 @@ export default function RootLayout({
       lang="ko"
       data-theme="dark"
       suppressHydrationWarning
-      className={`${inter.variable} ${montserrat.variable} ${blackHanSans.variable} ${nanumGothic.variable} ${songMyung.variable}`}
+      className={`${inter.variable} ${fredoka.variable} ${montserrat.variable} ${blackHanSans.variable} ${nanumGothic.variable} ${songMyung.variable}`}
     >
       <head>
         <link

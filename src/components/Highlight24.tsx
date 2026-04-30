@@ -45,22 +45,6 @@ function ChevronRight({ className }: { className?: string }) {
   );
 }
 
-/** 히어로 ARA — 두 A가 동일한 벡터 스트로크 (맨 뒤 A 좌표 기준). */
-function HeroStrokeLetterA() {
-  const strokeProps = {
-    stroke: "currentColor" as const,
-    strokeWidth: 18,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-  };
-  return (
-    <>
-      <path d="M284 126 L328 14 Q332 8 336 14 L380 126" {...strokeProps} />
-      <path d="M303 84H361" {...strokeProps} />
-    </>
-  );
-}
-
 type RingPose = {
   x: number;
   z: number;
@@ -687,42 +671,18 @@ export function Highlight24() {
           <div className="pointer-events-none relative z-[80] hidden w-[clamp(206px,24vw,332px)] -translate-x-16 md:flex md:justify-center">
             <div className="flex w-full flex-col items-center pl-[clamp(20px,2.25vw,34px)] pr-[clamp(14px,1.55vw,24px)]">
               <div
-                className="-translate-y-12 select-none text-[clamp(2.4rem,6.2vw,6.1rem)] font-semibold leading-none tracking-[0.03em] text-white"
+                className="-translate-y-12 flex select-none flex-nowrap items-baseline justify-center gap-[0.034em] text-[clamp(2.5rem,6.35vw,6.2rem)] font-semibold leading-none text-white"
                 style={{
-                  fontFamily: '"Inter", "Helvetica Neue", "Arial", sans-serif',
+                  fontFamily: "var(--font-fredoka), ui-rounded, system-ui, sans-serif",
+                  letterSpacing: "0.015em",
                   textShadow:
-                    "0 0 12px rgba(255,255,255,0.18), 0 0 28px rgba(76,126,255,0.2)",
+                    "0 0 14px rgba(255,255,255,0.22), 0 0 32px rgba(126,166,255,0.26)",
                 }}
                 aria-hidden
               >
-                <span className="relative inline-flex h-[1.1em] w-[3.08em] items-center justify-center align-baseline">
-                  <svg
-                    viewBox="-12 0 404 140"
-                    className="absolute inset-0 h-full w-full"
-                    fill="none"
-                    aria-hidden
-                  >
-                    {/* 세 번째 A와 동일 패스를 왼쪽으로 옮김 — R(152)·스트로크 두께와 간격 유지 */}
-                    <g transform="translate(-248, 0)">
-                      <HeroStrokeLetterA />
-                    </g>
-                    <path
-                      d="M152 126V14H194Q224 14 224 44Q224 74 194 74H152"
-                      stroke="currentColor"
-                      strokeWidth="18"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M194 74L230 126"
-                      stroke="currentColor"
-                      strokeWidth="18"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <HeroStrokeLetterA />
-                  </svg>
-                </span>
+                <span className="inline-block shrink-0">A</span>
+                <span className="inline-block shrink-0">R</span>
+                <span className="inline-block shrink-0">A</span>
               </div>
               <p className="-translate-y-12 mt-[clamp(0.2rem,0.7vw,0.8rem)] w-full text-left text-[clamp(12px,1.15vw,16px)] font-medium leading-relaxed tracking-[0.01em] text-white/78">
                 누구나 쉽고 빠르게 숏폼을 거래하는
@@ -802,7 +762,12 @@ export function Highlight24() {
                 >
                   ×
                 </button>
-                <p className="relative text-center text-[clamp(1.85rem,6vw,2.65rem)] font-black tracking-tight text-white">
+                <p
+                  className="relative text-center text-[clamp(1.85rem,6vw,2.65rem)] font-semibold tracking-[0.02em] text-white"
+                  style={{
+                    fontFamily: "var(--font-fredoka), ui-rounded, system-ui, sans-serif",
+                  }}
+                >
                   ARA
                 </p>
                 <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
