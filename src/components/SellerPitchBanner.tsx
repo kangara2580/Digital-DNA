@@ -1,6 +1,6 @@
 "use client";
 
-import { WandSparkles } from "lucide-react";
+import { Download, Link2, PencilRuler, PlayCircle, Tag, WandSparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
