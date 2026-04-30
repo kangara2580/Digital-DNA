@@ -1,15 +1,23 @@
 "use client";
 
-import { Eye, Heart, Volume2, VolumeX } from "lucide-react";
+import { Bookmark, Eye, Heart, ShoppingCart, Volume2, VolumeX } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
+import { AuthPromptModal } from "@/components/AuthPromptModal";
+import { useDopamineBasket } from "@/context/DopamineBasketContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
-import { getCommerceMeta } from "@/data/videoCommerce";
+import {
+  clonesRemaining,
+  getCommerceMeta,
+  isLimitedFamily,
+} from "@/data/videoCommerce";
 import type { FeedVideo } from "@/data/videos";
+import { useAuthSession } from "@/hooks/useAuthSession";
+import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sellerProfileHrefFromVideo } from "@/lib/sellerProfile";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 function formatCompactWon(n: number): string {
@@ -33,7 +41,10 @@ type ReelSlideProps = {
   onMutedChange: (muted: boolean) => void;
 };
 
-/** 데스크톱: 틱톡 웹 우측 컬럼 — 마켓 수치 + 상세 이동 */
+const railBuyButtonClass =
+  "relative flex w-full min-h-[54px] items-center justify-center rounded-full border-[3px] border-white/40 bg-transparent px-2 py-2.5 text-[14px] font-extrabold tracking-[0.28em] text-white backdrop-blur-sm shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-300 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] hover:-translate-y-0.5 active:scale-[0.99] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900";
+
+/** 데스크톱: 틱톡 웹 우측 컬럼 — 마켓 수치 + 바로 장바구니·좋아요·찜 */
 function ReelDesktopRail({
   video,
   className,
@@ -41,79 +52,334 @@ function ReelDesktopRail({
   video: FeedVideo;
   className?: string;
 }) {
-  const router = useRouter();
-  const { hasPurchased, markPurchased } = usePurchasedVideos();
+  const dopamine = useDopamineBasket();
+  const { isSaved, toggle: toggleWishlist } = useWishlist();
+  const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const metrics = useMemo(() => getMetricsForVideoDetail(video.id), [video.id]);
-  const commerce = useMemo(() => getCommerceMeta(video.id), [video.id]);
+  const meta = useMemo(
+    () =>
+      video.listing
+        ? { salesCount: video.listing.salesCount, edition: "open" as const }
+        : getCommerceMeta(video.id),
+    [video],
+  );
+  const remaining = clonesRemaining(meta);
+  const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
+  const wishlisted = isSaved(video.id);
+  const posterSrc = sanitizePosterSrc(video.poster);
+
+  const authPromptScrollYRef = useRef(0);
+  const [authPromptOpen, setAuthPromptOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [internalLikeCount, setInternalLikeCount] = useState(0);
+  const [likedByMe, setLikedByMe] = useState(false);
+  const [likeBusy, setLikeBusy] = useState(false);
+  const [likePulse, setLikePulse] = useState(false);
+  const [likeBurst, setLikeBurst] = useState(false);
+  const [wishlistPulse, setWishlistPulse] = useState(false);
+
+  const displayedLikeTotal = Math.max(
+    0,
+    metrics.totalLikes + internalLikeCount,
+  );
+
+  const requireAuth = useCallback(() => {
+    if (authLoading) return false;
+    if (!supabaseConfigured || !user) {
+      authPromptScrollYRef.current =
+        typeof window !== "undefined" ? window.scrollY : 0;
+      setAuthPromptOpen(true);
+      return false;
+    }
+    return true;
+  }, [authLoading, supabaseConfigured, user]);
+
+  const startGoogleAuth = useCallback(async () => {
+    const next =
+      typeof window !== "undefined"
+        ? `${window.location.pathname}${window.location.search}${window.location.hash}`
+        : "/";
+    const redirectTo = buildAuthCallbackRedirectTo(next);
+    const supabase = getSupabaseBrowserClient();
+    if (supabase && redirectTo) {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          queryParams: { prompt: "select_account" },
+        },
+      });
+      if (!error && data.url) {
+        window.location.assign(data.url);
+        return;
+      }
+    }
+    window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!authPromptOpen) return;
+    const scrollY = authPromptScrollYRef.current;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setAuthPromptOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      requestAnimationFrame(() => window.scrollTo(0, scrollY));
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [authPromptOpen]);
+
+  const loadInternalLikes = useCallback(async () => {
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const session = supabase ? await supabase.auth.getSession() : null;
+      const token = session?.data.session?.access_token;
+      const headers = token
+        ? { Authorization: `Bearer ${token}` }
+        : undefined;
+      const res = await fetch(
+        `/api/video/likes?videoId=${encodeURIComponent(video.id)}`,
+        { cache: "no-store", headers },
+      );
+      if (!res.ok) return;
+      const body = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        internalLikes?: number;
+        likedByMe?: boolean;
+      };
+      if (!body.ok) return;
+      setInternalLikeCount(
+        typeof body.internalLikes === "number" ? Math.max(0, body.internalLikes) : 0,
+      );
+      setLikedByMe(Boolean(body.likedByMe));
+    } catch {
+      /* ignore */
+    }
+  }, [video.id]);
+
+  useEffect(() => {
+    setInternalLikeCount(0);
+    setLikedByMe(false);
+    void loadInternalLikes();
+  }, [video.id, loadInternalLikes]);
+
+  const toggleInternalLike = useCallback(async () => {
+    if (likeBusy || authLoading) return;
+    if (!requireAuth()) return;
+
+    const nextLiked = !likedByMe;
+    const prevLiked = likedByMe;
+    const prevCount = internalLikeCount;
+    setLikedByMe(nextLiked);
+    setInternalLikeCount((prev) => Math.max(0, prev + (nextLiked ? 1 : -1)));
+    setLikePulse(true);
+    if (nextLiked) {
+      setLikeBurst(true);
+      window.setTimeout(() => setLikeBurst(false), 420);
+    }
+    window.setTimeout(() => setLikePulse(false), 170);
+    setLikeBusy(true);
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const session = supabase ? await supabase.auth.getSession() : null;
+      const token = session?.data.session?.access_token;
+      if (!token) throw new Error("no_token");
+      const res = await fetch("/api/video/likes", {
+        method: nextLiked ? "POST" : "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ videoId: video.id }),
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        internalLikes?: number;
+        likedByMe?: boolean;
+      };
+      if (!res.ok || !body.ok) throw new Error("like_toggle_failed");
+      if (typeof body.internalLikes === "number") {
+        setInternalLikeCount(Math.max(0, body.internalLikes));
+      }
+      setLikedByMe(Boolean(body.likedByMe));
+    } catch {
+      setLikedByMe(prevLiked);
+      setInternalLikeCount(prevCount);
+      void loadInternalLikes();
+      if (typeof window !== "undefined") {
+        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
+      }
+    } finally {
+      setLikeBusy(false);
+    }
+  }, [
+    likeBusy,
+    authLoading,
+    requireAuth,
+    likedByMe,
+    internalLikeCount,
+    video.id,
+    loadInternalLikes,
+  ]);
 
   return (
     <aside
-      className={`flex w-[min(5.75rem,14vw)] shrink-0 flex-col items-center gap-5 pb-6 pt-4 [html[data-theme='light']_&]:text-zinc-800 ${className ?? ""}`}
+      className={`flex w-[min(6.875rem,18vw)] shrink-0 flex-col items-center gap-5 pb-6 pt-4 [html[data-theme='light']_&]:text-zinc-800 ${className ?? ""}`}
       aria-label="판매·반응 정보"
     >
-      <Link
-        href={`/video/${video.id}?from=explore`}
-        className="inline-flex items-center justify-center rounded-full border border-reels-crimson/60 bg-reels-crimson px-3.5 py-1.5 text-[12px] font-extrabold text-white shadow-reels-crimson transition hover:brightness-110"
-      >
-        구매
-      </Link>
+      {soldOut ? (
+        <span
+          className={`inline-flex cursor-not-allowed opacity-45 ${railBuyButtonClass}`}
+          aria-disabled
+        >
+          품절
+        </span>
+      ) : (
+        <Link
+          href={`/video/${video.id}?from=explore`}
+          className={`text-center leading-tight ${railBuyButtonClass}`}
+        >
+          구매하기
+        </Link>
+      )}
 
-      <div className="flex flex-col items-center gap-1 text-center">
-        <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+      <div className="flex flex-col items-center gap-3">
+        <button
+          type="button"
+          title="장바구니 담기"
+          onClick={(e) => {
+            if (soldOut) return;
+            if (!requireAuth()) return;
+            dopamine.launchFromCartButton(e.currentTarget, video, posterSrc ?? undefined);
+          }}
+          className="inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-zinc-400 transition-colors hover:border-white/25 hover:text-zinc-100 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-600"
+          disabled={soldOut}
+          aria-label="장바구니 담기"
+        >
+          <ShoppingCart className="h-[18px] w-[18px]" />
+        </button>
+        <button
+          type="button"
+          title={likedByMe ? "좋아요 취소" : "좋아요"}
+          onClick={(e) => {
+            e.preventDefault();
+            void toggleInternalLike();
+          }}
+          className={`relative inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border transition-all duration-200 [html[data-theme='light']_&]:bg-zinc-100 ${
+            likedByMe
+              ? "border-[#79adff]/70 bg-[#0e1d3f] text-[#9bc4ff]"
+              : "border-white/10 bg-white/[0.04] text-zinc-400 hover:border-white/25 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600"
+          } ${likePulse ? "scale-110" : "scale-100"}`}
+          aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+          aria-pressed={likedByMe}
+          disabled={likeBusy}
+        >
+          {likeBurst ? (
+            <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/30 animate-ping" />
+          ) : null}
+          <Heart
+            className={`relative z-[1] h-[18px] w-[18px] transition-transform duration-300 ${
+              likedByMe ? "fill-current text-[#9bc4ff]" : ""
+            } ${likeBurst ? "scale-125" : "scale-100"}`}
+          />
+        </button>
+        <button
+          type="button"
+          title={wishlisted ? "찜 해제" : "찜하기"}
+          onClick={(e) => {
+            e.preventDefault();
+            if (!requireAuth()) return;
+            setWishlistPulse(true);
+            window.setTimeout(() => setWishlistPulse(false), 170);
+            toggleWishlist(video);
+          }}
+          className={`inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border transition-all duration-200 [html[data-theme='light']_&]:bg-zinc-100 ${
+            wishlisted
+              ? "border-reels-cyan/50 bg-reels-cyan/10 text-reels-cyan"
+              : "border-white/10 bg-white/[0.04] text-zinc-400 hover:border-white/25 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600"
+          } ${wishlistPulse ? "scale-110" : "scale-100"}`}
+          aria-label={wishlisted ? "찜 해제" : "찜하기"}
+          aria-pressed={wishlisted}
+        >
+          <Bookmark className={`h-[18px] w-[18px] ${wishlisted ? "fill-current" : ""}`} />
+        </button>
+      </div>
+
+      <div className="flex flex-col items-center gap-1.5 text-center">
+        <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           가격
         </span>
         {video.priceWon != null ? (
-          <span className="text-[13px] font-extrabold tabular-nums text-[#9DB9FF]">
+          <span className="text-[16px] font-extrabold tabular-nums text-[#9DB9FF]">
             {video.priceWon.toLocaleString("ko-KR")}
           </span>
         ) : (
-          <span className="text-[11px] text-zinc-500">—</span>
+          <span className="text-[14px] text-zinc-500">—</span>
         )}
       </div>
 
-      <div className="flex flex-col items-center gap-1 text-center">
-        <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+      <div className="flex flex-col items-center gap-1.5 text-center">
+        <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           누적 수익
         </span>
-        <span className="max-w-[5rem] text-[11px] font-bold leading-tight text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
+        <span className="max-w-[7rem] text-[14px] font-bold leading-tight text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
           {formatCompactWon(metrics.cumulativeRevenueWon)}
         </span>
       </div>
 
-      <div className="flex flex-col items-center gap-1">
-        <Eye className="h-5 w-5 text-zinc-400 [html[data-theme='light']_&]:text-zinc-600" strokeWidth={1.75} aria-hidden />
-        <span className="font-mono text-[11px] font-bold tabular-nums text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
+      <div className="flex flex-col items-center gap-1.5">
+        <Eye
+          className="h-6 w-6 text-zinc-400 [html[data-theme='light']_&]:text-zinc-600"
+          strokeWidth={1.75}
+          aria-hidden
+        />
+        <span className="font-mono text-[14px] font-bold tabular-nums text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
           {formatCompactCount(metrics.totalViews)}
         </span>
       </div>
 
-      <div className="flex flex-col items-center gap-1">
+      <div className="flex flex-col items-center gap-1.5">
         <Heart
-          className="h-5 w-5 text-white/90 [html[data-theme='light']_&]:text-zinc-800"
+          className="h-6 w-6 text-white/85 [html[data-theme='light']_&]:text-zinc-800"
           strokeWidth={1.75}
           aria-hidden
         />
-        <span className="font-mono text-[11px] font-bold tabular-nums text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
-          {formatCompactCount(metrics.totalLikes)}
+        <span className="font-mono text-[14px] font-bold tabular-nums text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
+          {formatCompactCount(displayedLikeTotal)}
         </span>
       </div>
 
-      <div className="flex flex-col items-center gap-0.5 text-center">
-        <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+      <div className="flex flex-col items-center gap-1.5 text-center">
+        <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           구매
         </span>
-        <span className="text-[11px] font-bold tabular-nums text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
-          {commerce.salesCount.toLocaleString("ko-KR")}
+        <span className="text-[14px] font-bold tabular-nums text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
+          {meta.salesCount.toLocaleString("ko-KR")}
         </span>
       </div>
+
+      {mounted ? (
+        <AuthPromptModal
+          open={authPromptOpen}
+          onClose={() => setAuthPromptOpen(false)}
+          onGoogleStart={startGoogleAuth}
+        />
+      ) : null}
     </aside>
   );
 }
 
 /** 모바일: 하단 한 줄 요약 (쇼츠·릴스 하단 메타와 유사) */
 function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
-  const router = useRouter();
-  const { hasPurchased, markPurchased } = usePurchasedVideos();
   const metrics = useMemo(() => getMetricsForVideoDetail(video.id), [video.id]);
   const commerce = useMemo(() => getCommerceMeta(video.id), [video.id]);
 
@@ -307,7 +573,7 @@ export function ExploreReelSlide({
           레일은 같은 flex 줄에서 영상 바로 옆에만 붙음(가운데 단독 정렬 방지).
         */}
         <div className="flex w-full max-w-[min(56rem,calc(100vw-var(--reels-rail-w,0px)-1.5rem))] flex-row items-center justify-center gap-2 md:gap-3 lg:gap-4">
-          <div className="relative w-[min(100%,min(420px,calc(100vw-var(--reels-rail-w,0px)-8.5rem)))] shrink-0">
+          <div className="relative w-[min(100%,min(420px,calc(100vw-var(--reels-rail-w,0px)-10.5rem)))] shrink-0">
             <div
               className="relative aspect-[9/16] w-full max-h-[min(78dvh,calc(100dvh-var(--header-height)-7rem))] overflow-hidden rounded-2xl border border-white/12 bg-black shadow-[0_24px_80px_-30px_rgba(0,0,0,0.85)] md:max-h-[min(92dvh,calc(100dvh-var(--header-height)-2rem))] [html[data-theme='light']_&]:border-zinc-200"
             >
