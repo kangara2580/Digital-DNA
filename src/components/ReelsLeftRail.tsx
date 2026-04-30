@@ -19,6 +19,8 @@ import { ReelsLogo } from "@/components/ReelsLogo";
 import { MALL_CATEGORY_NAV_ITEMS } from "@/data/mallCategoryNav";
 import { useAuthSession } from "@/hooks/useAuthSession";
 
+const ARA_LOGO_MARK_BORDER = "#e12b6b";
+
 const stroke = 1.75;
 
 const railIconBtn =
@@ -253,13 +255,21 @@ export function ReelsLeftRail() {
         className="fixed inset-y-0 left-0 z-[52] hidden w-[var(--reels-rail-w)] flex-col border-r border-white/[0.08] bg-reels-abyss/80 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[1px_0_0_rgba(0,0,0,0.04)] md:flex"
         aria-label="주요 메뉴"
       >
-        <div className="relative flex shrink-0 flex-col items-center pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
+        <div className="relative flex shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
           <Link
             href="/"
-            className="flex h-[52px] w-[52px] items-center justify-center rounded-xl text-zinc-200 transition-colors hover:bg-white/[0.07] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100"
-            aria-label="홈"
+            className="flex max-w-[calc(100%-6px)] flex-row items-center justify-center gap-0 rounded-[10px] border-2 bg-[#0a0c10] px-0.5 py-[5px] transition-colors hover:bg-[#12151c] [html[data-theme='light']_&]:bg-[#0a0c10] [html[data-theme='light']_&]:hover:bg-[#12151c]"
+            style={{ borderColor: ARA_LOGO_MARK_BORDER }}
+            aria-label="ARA 홈"
           >
-            <ReelsLogo size={31} variant="rail-main" className="translate-x-[1.5px]" />
+            <ReelsLogo size={22} variant="rail-main" className="shrink-0" aria-hidden />
+            <span
+              aria-hidden
+              className="-mb-px select-none whitespace-nowrap pl-[1px] text-[10px] font-semibold leading-none tracking-[-0.06em] text-white"
+              style={{ fontFamily: "var(--font-fredoka), ui-rounded, system-ui, sans-serif" }}
+            >
+              ARA
+            </span>
           </Link>
         </div>
         <div className="flex min-h-0 flex-1 flex-col items-stretch pt-1">
