@@ -79,6 +79,66 @@ function roundedConvexPolygonPath(points: readonly [number, number][], radius: n
   return `${segs.join(" ")} Z`;
 }
 
+/**
+ * 상단 꼭짓점 + 밑변 두 꼭짓점으로 둥근 통통 삼각형.
+ * 밑변은 미세하게 위로 들려 A 다리 사이 느낌(오목)을 준다.
+ */
+function roundedTriangleConcaveBasePath(
+  apex: readonly [number, number],
+  bottomRight: readonly [number, number],
+  bottomLeft: readonly [number, number],
+  cornerRadius: number,
+  /** SVG y축 아래향 — 양수일수록 밑변 중앙이 위로(안쪽으로) 들어감 */
+  baseConcaveLift: number,
+): string {
+  const points: [number, number][] = [
+    [apex[0], apex[1]],
+    [bottomRight[0], bottomRight[1]],
+    [bottomLeft[0], bottomLeft[1]],
+  ];
+  const n = points.length;
+  const nm = (x: number, y: number): [number, number] => {
+    const len = Math.hypot(x, y);
+    if (len <= 1e-9) return [0, 0];
+    return [x / len, y / len];
+  };
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+  type Corner = { px: string; q: string; ex: string };
+  const corners: Corner[] = [];
+  for (let i = 0; i < n; i++) {
+    const prev = points[(i + n - 1) % n]!;
+    const cur = points[i]!;
+    const next = points[(i + 1) % n]!;
+    const vIn = nm(cur[0] - prev[0], cur[1] - prev[1]);
+    const vOut = nm(next[0] - cur[0], next[1] - cur[1]);
+    const dot = clamp(vIn[0] * vOut[0] + vIn[1] * vOut[1], -1, 1);
+    const theta = Math.acos(dot);
+    if (theta < 1e-4) continue;
+    const distIn = Math.hypot(cur[0] - prev[0], cur[1] - prev[1]);
+    const distOut = Math.hypot(next[0] - cur[0], next[1] - cur[1]);
+    let inset = cornerRadius / Math.tan(theta / 2);
+    const maxInset = Math.min(distIn, distOut) * 0.48;
+    inset = Math.min(inset, maxInset);
+    const pxf = cur[0] - vIn[0] * inset;
+    const pyf = cur[1] - vIn[1] * inset;
+    const qxf = cur[0];
+    const qyf = cur[1];
+    const exf = cur[0] + vOut[0] * inset;
+    const eyf = cur[1] + vOut[1] * inset;
+    corners.push({
+      px: `${pxf.toFixed(2)} ${pyf.toFixed(2)}`,
+      q: `${qxf.toFixed(2)} ${qyf.toFixed(2)}`,
+      ex: `${exf.toFixed(2)} ${eyf.toFixed(2)}`,
+    });
+  }
+  if (corners.length !== 3) return roundedConvexPolygonPath(points, cornerRadius);
+  const [c0, c1, c2] = corners as [Corner, Corner, Corner];
+  const midX = (bottomLeft[0] + bottomRight[0]) / 2;
+  const baseY = (bottomLeft[1] + bottomRight[1]) / 2;
+  const cxb = `${midX.toFixed(2)} ${(baseY - baseConcaveLift).toFixed(2)}`;
+  return `M ${c0.px} Q ${c0.q} ${c0.ex} L ${c1.px} Q ${c1.q} ${c1.ex} Q ${cxb} ${c2.px} Q ${c2.q} ${c2.ex} Z`;
+}
+
 type RingPose = {
   x: number;
   z: number;
@@ -208,13 +268,12 @@ export function Highlight24() {
 
   const heroABlobD = useMemo(
     () =>
-      roundedConvexPolygonPath(
-        [
-          [51, 42],
-          [95, 123.8],
-          [7, 123.8],
-        ],
-        32,
+      roundedTriangleConcaveBasePath(
+        [51, 45],
+        [96, 124.5],
+        [6, 124.5],
+        40,
+        3.2,
       ),
     [],
   );
