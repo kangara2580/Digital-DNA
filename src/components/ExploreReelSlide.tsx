@@ -59,22 +59,42 @@ type ReelSlideProps = {
 };
 
 const railBuyButtonClass =
-  "relative inline-flex shrink-0 self-center min-h-[48px] items-center justify-center rounded-full border-[2.5px] border-white/40 bg-transparent px-4 py-2 text-[14px] font-extrabold tracking-wide text-white backdrop-blur-sm shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-300 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] hover:-translate-y-0.5 active:scale-[0.99] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900";
+  "relative inline-flex shrink-0 min-h-[42px] min-w-[6.75rem] items-center justify-center rounded-full border-2 border-white/38 bg-transparent px-4 py-2 text-[13px] font-extrabold tracking-normal text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-white/65 hover:bg-white/[0.06] hover:shadow-[0_0_20px_rgba(255,255,255,0.08)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/55 [html[data-theme='light']_&]:text-zinc-900";
 
-/** 탐색 우측 레일 — 좋아요만 얇은 원형 테두리 */
+/** 좋아요 전용 원 — 카트·찜과 시각 무게 맞춤 */
 const railLikeCircleBase =
-  "inline-flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-full border-2 border-white/45 bg-white/[0.08] shadow-[inset_0_1px_4px_rgba(255,255,255,0.1),0_4px_14px_-4px_rgba(0,0,0,0.45)] transition-all duration-200 hover:border-white/65 hover:bg-white/[0.12] hover:shadow-[inset_0_2px_6px_rgba(255,255,255,0.14),0_8px_20px_-6px_rgba(0,0,0,0.5)] active:scale-[0.94] [html[data-theme='light']_&]:border-zinc-400/65 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_4px_12px_-4px_rgba(0,0,0,0.1)] [html[data-theme='light']_&]:hover:border-zinc-500/80";
+  "inline-flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full border-2 border-white/42 bg-white/[0.06] shadow-[inset_0_1px_3px_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-white/60 hover:bg-white/[0.1] active:scale-[0.94] [html[data-theme='light']_&]:border-zinc-400/60 [html[data-theme='light']_&]:bg-zinc-100";
 
-/** 좋아요 하트만 약간 큼 */
 const railLikeIcon =
-  "h-[26px] w-[26px] shrink-0 pointer-events-none [html[data-theme='light']_&]:stroke-zinc-600";
+  "h-[22px] w-[22px] shrink-0 pointer-events-none [html[data-theme='light']_&]:stroke-zinc-700";
 
-/** 장바구니·저장 — 원형 링 없음, 통통 아이콘만 */
+/** 액션 hit 영역 통일 (카트·찜) */
 const railActionPlainBtn =
-  "inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border-0 bg-transparent p-0 text-white/90 transition-all duration-200 hover:scale-110 hover:text-white active:scale-[0.92] [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900";
+  "inline-flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full border-0 bg-transparent p-0 text-white/92 transition-colors duration-200 hover:text-white active:scale-[0.92] [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900";
 
 const railActionIcon =
-  "h-[23px] w-[23px] shrink-0 pointer-events-none [html[data-theme='light']_&]:stroke-zinc-600";
+  "h-[21px] w-[21px] shrink-0 pointer-events-none stroke-[2.5] [html[data-theme='light']_&]:stroke-zinc-700";
+
+/** 데스크톱 레일 전체 카드 래퍼 */
+const railDeckClass =
+  "shrink-0 rounded-2xl border border-white/[0.06] bg-black/32 px-2 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-md md:rounded-[1.25rem] md:px-2.5 md:py-3.5 [html[data-theme='light']_&]:border-zinc-300/65 [html[data-theme='light']_&]:bg-white/88 [html[data-theme='light']_&]:shadow-sm";
+
+/** 라벨 (가격 블록·집계 공통 음영) */
+const railLabelMuted =
+  "font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600";
+
+/** 집계 숫자 */
+const railStatNum =
+  "text-[13px] font-bold tabular-nums tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900";
+
+function RailStatRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-0.5 border-b border-white/[0.06] pb-3 last:border-0 last:pb-0 [html[data-theme='light']_&]:border-zinc-300/55">
+      <span className={`${railLabelMuted} block text-left`}>{label}</span>
+      <span className={`${railStatNum} block text-left leading-snug`}>{value}</span>
+    </div>
+  );
+}
 
 /** 데스크톱: 틱톡 웹 우측 컬럼 — 마켓 수치 + 바로 장바구니·좋아요·찜 */
 function ReelDesktopRail({
@@ -349,137 +369,122 @@ function ReelDesktopRail({
 
   return (
     <aside
-      className={`flex shrink-0 flex-row items-start gap-2 md:gap-2.5 pb-6 pt-4 [html[data-theme='light']_&]:text-zinc-800 ${className ?? ""}`}
+      className={`${railDeckClass} flex flex-row items-stretch gap-3 [html[data-theme='light']_&]:text-zinc-900 ${className ?? ""}`}
       aria-label="판매·반응 정보"
     >
-      <div className="flex w-[min(6.25rem,15vw)] shrink-0 flex-col items-center gap-5">
-      <div className="flex flex-col items-center gap-1.5 text-center">
-        <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          가격
-        </span>
-        {video.priceWon != null ? (
-          <span className="text-[16px] font-extrabold tabular-nums text-[#9DB9FF]">
-            {video.priceWon.toLocaleString("ko-KR")}
+      <div className="flex w-[min(5.5rem,13.5vw)] shrink-0 flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-1 text-center">
+          <span className={railLabelMuted}>가격</span>
+          {video.priceWon != null ? (
+            <span className="text-[15px] font-extrabold tabular-nums tracking-tight text-[#9DB9FF]">
+              {video.priceWon.toLocaleString("ko-KR")}
+            </span>
+          ) : (
+            <span className={`${railStatNum} text-zinc-500`}>—</span>
+          )}
+        </div>
+
+        {soldOut ? (
+          <span
+            className={`inline-flex cursor-not-allowed opacity-45 ${railBuyButtonClass}`}
+            aria-disabled
+          >
+            품절
           </span>
         ) : (
-          <span className="text-[14px] text-zinc-500">—</span>
+          <button type="button" onClick={onBuyClick} className={railBuyButtonClass}>
+            구매
+          </button>
         )}
-      </div>
 
-      {soldOut ? (
-        <span
-          className={`inline-flex cursor-not-allowed opacity-45 ${railBuyButtonClass}`}
-          aria-disabled
+        <div
+          role="group"
+          aria-label="작업"
+          className="flex w-full flex-col items-center gap-2.5 border-t border-white/[0.07] pt-3.5 [html[data-theme='light']_&]:border-zinc-300/65"
         >
-          품절
-        </span>
-      ) : (
-        <button type="button" onClick={onBuyClick} className={railBuyButtonClass}>
-          구매
-        </button>
-      )}
+          <div className="flex flex-col items-center gap-1">
+            <button
+              type="button"
+              title={likedByMe ? "좋아요 취소" : "좋아요"}
+              onClick={(e) => {
+                e.preventDefault();
+                void toggleInternalLike();
+              }}
+              className={`relative ${railLikeCircleBase} ${
+                likedByMe
+                  ? "!border-[#7aa6f0]/85 !bg-[#121c33] !shadow-[inset_0_1px_6px_rgba(122,166,240,0.15)] hover:!border-[#9bbaf5]"
+                  : ""
+              } ${likePulse ? "scale-105" : "scale-100"}`}
+              aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+              aria-pressed={likedByMe}
+            >
+              {likeBurst ? (
+                <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/30 animate-ping" />
+              ) : null}
+              <Heart
+                strokeWidth={2.5}
+                className={`relative z-[1] ${railLikeIcon} transition-transform duration-300 ${
+                  likedByMe
+                    ? "fill-current stroke-[#a8c9ff] text-[#a8c9ff]"
+                    : "stroke-white/95"
+                } ${likeBurst ? "scale-110" : "scale-100"} [html[data-theme='light']_&]:stroke-zinc-700 ${likedByMe ? "[html[data-theme='light']_&]:stroke-sky-500 [html[data-theme='light']_&]:fill-sky-400/90" : ""}`}
+              />
+            </button>
+            <span className="font-mono text-[12px] font-bold tabular-nums text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
+              {formatLikeCountShortK(displayedLikeTotal)}
+            </span>
+          </div>
 
-      <div className="flex flex-col items-center gap-4">
-        <div className="flex flex-col items-center gap-1.5">
           <button
             type="button"
-            title={likedByMe ? "좋아요 취소" : "좋아요"}
+            title="장바구니 담기"
+            onClick={(e) => {
+              if (soldOut) return;
+              if (!requireAuth()) return;
+              dopamine.launchFromCartButton(e.currentTarget, video, posterSrc ?? undefined);
+            }}
+            className={`${railActionPlainBtn} disabled:cursor-not-allowed disabled:opacity-40`}
+            disabled={soldOut}
+            aria-label="장바구니 담기"
+          >
+            <ShoppingCart strokeWidth={2.5} className={`${railActionIcon} stroke-current`} />
+          </button>
+          <button
+            type="button"
+            title={wishlisted ? "찜 해제" : "찜하기"}
             onClick={(e) => {
               e.preventDefault();
-              void toggleInternalLike();
+              if (!requireAuth()) return;
+              setWishlistPulse(true);
+              window.setTimeout(() => setWishlistPulse(false), 170);
+              toggleWishlist(video);
             }}
-            className={`relative ${railLikeCircleBase} ${
-              likedByMe
-                ? "!border-[#8eb8ff]/80 !bg-[#152a52] !text-[#b8d4ff] !shadow-[inset_0_1px_6px_rgba(142,184,255,0.2),0_6px_18px_-5px_rgba(30,70,140,0.5)] hover:!border-[#a9cfff]"
-                : "!text-white/92 [html[data-theme='light']_&]:!text-zinc-600"
-            } ${likePulse ? "scale-110" : "scale-100"}`}
-            aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
-            aria-pressed={likedByMe}
+            className={`${railActionPlainBtn} ${
+              wishlisted ? "!text-reels-cyan hover:!text-reels-cyan" : ""
+            } ${wishlistPulse ? "scale-[1.05]" : "scale-100"}`}
+            aria-label={wishlisted ? "찜 해제" : "찜하기"}
+            aria-pressed={wishlisted}
           >
-            {likeBurst ? (
-              <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/35 animate-ping" />
-            ) : null}
-            <Heart
-              strokeWidth={2.6}
-              className={`relative z-[1] ${railLikeIcon} transition-transform duration-300 ${
-                likedByMe
-                  ? "fill-current stroke-[#b8d4ff] text-[#b8d4ff] [html[data-theme='light']_&]:stroke-sky-500 [html[data-theme='light']_&]:fill-sky-500 [html[data-theme='light']_&]:text-sky-600"
-                  : "stroke-current"
-              } ${likeBurst ? "scale-125" : "scale-100"}`}
+            <Bookmark
+              strokeWidth={2.5}
+              className={`${railActionIcon} stroke-current ${wishlisted ? "fill-current" : ""}`}
             />
           </button>
-          <span className="font-mono text-[14px] font-bold tabular-nums text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
-            {formatLikeCountShortK(displayedLikeTotal)}
-          </span>
         </div>
-        <button
-          type="button"
-          title="장바구니 담기"
-          onClick={(e) => {
-            if (soldOut) return;
-            if (!requireAuth()) return;
-            dopamine.launchFromCartButton(e.currentTarget, video, posterSrc ?? undefined);
-          }}
-          className={`${railActionPlainBtn} disabled:cursor-not-allowed disabled:opacity-45`}
-          disabled={soldOut}
-          aria-label="장바구니 담기"
-        >
-          <ShoppingCart strokeWidth={2.85} className={`${railActionIcon} stroke-current`} />
-        </button>
-        <button
-          type="button"
-          title={wishlisted ? "찜 해제" : "찜하기"}
-          onClick={(e) => {
-            e.preventDefault();
-            if (!requireAuth()) return;
-            setWishlistPulse(true);
-            window.setTimeout(() => setWishlistPulse(false), 170);
-            toggleWishlist(video);
-          }}
-          className={`${railActionPlainBtn} ${
-            wishlisted
-              ? "!text-reels-cyan hover:!text-reels-cyan [html[data-theme='light']_&]:!text-reels-cyan"
-              : ""
-          } ${wishlistPulse ? "scale-110" : "scale-100"}`}
-          aria-label={wishlisted ? "찜 해제" : "찜하기"}
-          aria-pressed={wishlisted}
-        >
-          <Bookmark
-            strokeWidth={2.85}
-            className={`${railActionIcon} stroke-current ${wishlisted ? "fill-current" : ""}`}
-          />
-        </button>
-      </div>
       </div>
 
       <div
-        className="flex min-h-0 max-w-[min(6rem,17vw)] flex-col gap-3 border-l border-white/15 py-0.5 pl-2.5 [html[data-theme='light']_&]:border-zinc-300"
+        className="w-px shrink-0 bg-gradient-to-b from-transparent via-white/12 to-transparent [html[data-theme='light']_&]:via-zinc-300/80"
+        aria-hidden
+      />
+
+      <div
+        className="flex min-w-0 flex-1 flex-col gap-1 py-0.5"
         aria-label="집계 수치"
       >
-        <div>
-          <p className="font-mono text-[9px] font-bold uppercase tracking-wide text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            수익
-          </p>
-          <p className="mt-0.5 max-w-[5.75rem] text-left text-[12px] font-bold tabular-nums leading-snug text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-            {formatCompactWon(rankMetrics.cumulativeRevenueWon)}
-          </p>
-        </div>
-        <div>
-          <p className="font-mono text-[9px] font-bold uppercase tracking-wide text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            조회수
-          </p>
-          <p className="mt-0.5 text-left text-[12px] font-bold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-            {formatCompactCount(displayedViews)}
-          </p>
-        </div>
-        <div>
-          <p className="font-mono text-[9px] font-bold uppercase tracking-wide text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            구매
-          </p>
-          <p className="mt-0.5 text-left text-[12px] font-bold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-            {meta.salesCount.toLocaleString("ko-KR")}
-          </p>
-        </div>
+        <RailStatRow label="수익" value={formatCompactWon(rankMetrics.cumulativeRevenueWon)} />
+        <RailStatRow label="조회수" value={formatCompactCount(displayedViews)} />
+        <RailStatRow label="구매" value={meta.salesCount.toLocaleString("ko-KR")} />
       </div>
 
       {mounted ? (
