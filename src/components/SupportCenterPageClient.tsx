@@ -35,7 +35,7 @@ const FAQS: FAQItem[] = [
   {
     id: "commercial-use",
     question: "생성된 영상은 상업적으로 사용 가능한가요?",
-    answer: "상업적 이용 범위는 현재 이용약관 및 정책에 따르며, 플랜/정책 변경 시 공지됩니다.",
+    answer: "상업적 이용 범위는 현재 약관 및 정책에 따르며, 플랜/정책 변경 시 공지됩니다.",
     popular: true,
     category: "핵심",
   },
@@ -67,7 +67,7 @@ const FAQS: FAQItem[] = [
   {
     id: "copyright-owner",
     question: "생성된 영상의 권리는 누구에게 있나요?",
-    answer: "권리 및 사용 범위는 이용약관과 정책을 따르며, 정책 개정 시 공지사항으로 안내됩니다.",
+    answer: "권리 및 사용 범위는 약관 및 정책을 따르며, 정책 개정 시 공지사항으로 안내됩니다.",
     category: "저작권",
   },
   {

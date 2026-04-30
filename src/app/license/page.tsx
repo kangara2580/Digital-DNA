@@ -1,14 +1,14 @@
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 
 export const metadata = {
-  title: "이용약관 — ARA",
-  description: "ARA 이용약관 (Terms of Service)",
+  title: "약관 및 정책 — ARA",
+  description: "ARA 서비스 이용약관 및 관련 정책 안내",
 };
 
 export default function LicensePage() {
   return (
     <FooterLegalPageShell
-      title="이용약관"
+      title="약관 및 정책"
       withCard={false}
       mainMaxClass="max-w-3xl"
       showTitle={false}
@@ -18,7 +18,7 @@ export default function LicensePage() {
       <section className="space-y-8 px-2 pb-10 sm:px-0">
         <header className="px-1 py-2">
           <h1 className="text-[clamp(1.52rem,3.6vw,2.2rem)] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
-            이용약관
+            약관 및 정책
           </h1>
         </header>
 
