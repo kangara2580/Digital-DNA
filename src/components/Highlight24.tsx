@@ -766,14 +766,9 @@ export function Highlight24() {
                       }}
                       className="group relative flex flex-col items-center gap-[4px] focus-visible:outline-none"
                     >
-                      <div className="flex items-center gap-[6px]">
-                        <span className="relative flex h-[13px] w-[13px] shrink-0 items-center justify-center rounded-full border border-white/30 transition-all duration-300 group-hover:border-[#62beff]/90">
-                          <span className="h-[4px] w-[4px] rounded-full bg-white/25 transition-all duration-300 group-hover:scale-125 group-hover:bg-[#62beff]" />
-                        </span>
-                        <span className="whitespace-nowrap text-[13px] font-medium text-white/60 transition-colors duration-300 group-hover:text-white">
-                          {label}
-                        </span>
-                      </div>
+                      <span className="whitespace-nowrap text-[15px] font-medium text-white/60 transition-colors duration-300 group-hover:text-white">
+                        {label}
+                      </span>
                       <span className="h-[1.5px] w-full origin-left scale-x-0 rounded-full bg-[#62beff]/80 transition-transform duration-300 group-hover:scale-x-100" />
                     </button>
                   ))}
