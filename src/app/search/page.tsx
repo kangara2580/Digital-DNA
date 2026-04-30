@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { VideoCard } from "@/components/VideoCard";
 import { searchMarketVideos } from "@/lib/searchMarketVideos";
 
@@ -35,12 +34,6 @@ export default async function SearchPage({
             </p>
           ) : null}
         </div>
-        <Link
-          href="/explore"
-          className="text-[13px] font-semibold text-reels-cyan hover:underline"
-        >
-          탐색으로 →
-        </Link>
       </div>
 
       {!query ? null : videos.length === 0 ? (
