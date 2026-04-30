@@ -470,21 +470,13 @@ function ReelDesktopRail({
           icon={
             <Heart
               strokeWidth={2.25}
-              className={`shrink-0 transition-transform duration-150 ${
-                likedByMe
-                  ? "fill-[#a8c9ff]/90 stroke-[#a8c9ff] [html[data-theme='light']_&]:fill-sky-400/90 [html[data-theme='light']_&]:stroke-sky-600"
-                  : "stroke-white/[0.9] [html[data-theme='light']_&]:stroke-zinc-700"
-              } ${likePulse || likeBurst ? "scale-110" : "scale-100"}`}
+              className="shrink-0 stroke-white/[0.9] [html[data-theme='light']_&]:stroke-zinc-700"
+              aria-hidden
             />
           }
           value={formatLikeKoApprox(displayedLikeTotal)}
           valueClassName={railStatValueWhite}
-          as="button"
-          onClick={() => {
-            void toggleInternalLike();
-          }}
-          aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
-          aria-pressed={likedByMe}
+          aria-label={`좋아요 ${formatLikeKoApprox(displayedLikeTotal)}`}
         />
         <ReelExploreStatLine
           icon={<ShoppingBag strokeWidth={2.25} className="shrink-0" />}
@@ -548,6 +540,31 @@ function ReelDesktopRail({
           aria-label="장바구니 담기"
         >
           <ShoppingCart strokeWidth={2.25} className={`${railActionIcon} stroke-current`} />
+        </button>
+        <button
+          type="button"
+          title={likedByMe ? "좋아요 취소" : "좋아요"}
+          onClick={(e) => {
+            e.preventDefault();
+            void toggleInternalLike();
+          }}
+          className={`relative ${railActionPlainBtn} ${
+            likedByMe ? "text-[#a8c9ff] hover:text-[#c4d7ff] [html[data-theme='light']_&]:text-sky-600" : ""
+          }`}
+          aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+          aria-pressed={likedByMe}
+        >
+          {likeBurst ? (
+            <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/28 animate-ping" />
+          ) : null}
+          <Heart
+            strokeWidth={2.25}
+            className={`relative z-[1] ${railActionIcon} stroke-current transition-transform duration-150 ${
+              likedByMe
+                ? "fill-current"
+                : ""
+            } ${likePulse || likeBurst ? "scale-110" : "scale-100"}`}
+          />
         </button>
         <button
           type="button"
