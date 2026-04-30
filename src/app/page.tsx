@@ -1,7 +1,7 @@
 import { BestPurchaseReviewsSection } from "@/components/BestPurchaseReviewsSection";
 import { Highlight24 } from "@/components/Highlight24";
 import { TrendingRankSection } from "@/components/TrendingRankSection";
-import { SellerPitchBanner } from "@/components/SellerPitchBanner";
+import { SellerPitchBanner, SellerPitchBottomStartButton } from "@/components/SellerPitchBanner";
 import { DiscountDnaSection } from "@/components/DiscountDnaSection";
 
 export default async function Home() {
@@ -11,8 +11,9 @@ export default async function Home() {
         <Highlight24 />
         <TrendingRankSection />
         <DiscountDnaSection />
-        <SellerPitchBanner />
+        <SellerPitchBanner showStartButton={false} />
         <BestPurchaseReviewsSection />
+        <SellerPitchBottomStartButton />
       </main>
     </div>
   );
