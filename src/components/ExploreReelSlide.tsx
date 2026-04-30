@@ -1,6 +1,16 @@
 "use client";
 
-import { Bookmark, Heart, ShoppingCart, Volume2, VolumeX } from "lucide-react";
+import {
+  Bookmark,
+  ChevronDown,
+  Eye,
+  Heart,
+  ShoppingBag,
+  ShoppingCart,
+  TrendingUp,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -36,18 +46,18 @@ function formatCompactCount(n: number): string {
   return `${n}`;
 }
 
-/** 탐색 레일 좋아요 수 — 1k 이상은 k/M 축약 */
-function formatLikeCountShortK(n: number): string {
+/** 조회 레일 표기 — 1만 이상만 '만'(소수점 1자리), 미만은 콤마 */
+function formatViewCountRail(n: number): string {
   const v = Math.max(0, Math.floor(n));
-  if (v < 1000) return `${v}`;
-  if (v < 1_000_000) {
-    const k = v / 1000;
-    const s = k >= 10 ? k.toFixed(0) : k.toFixed(1);
-    return `${s.replace(/\.0$/, "")}k`;
-  }
-  const m = v / 1_000_000;
-  const s = m >= 10 ? m.toFixed(0) : m.toFixed(1);
-  return `${s.replace(/\.0$/, "")}M`;
+  if (v >= 10_000) return `${(v / 10_000).toFixed(1).replace(/\.0$/, "")}만`;
+  return v.toLocaleString("ko-KR");
+}
+
+function formatLikeKoApprox(n: number): string {
+  const v = Math.max(0, Math.floor(n));
+  if (v >= 10_000) return `${(v / 10_000).toFixed(1).replace(/\.0$/, "")}만`;
+  if (v >= 1000) return `${(v / 1000).toFixed(1).replace(/\.0$/, "")}천`;
+  return v.toLocaleString("ko-KR");
 }
 
 type ReelSlideProps = {
@@ -58,41 +68,74 @@ type ReelSlideProps = {
   onMutedChange: (muted: boolean) => void;
 };
 
-const railBuyButtonClass =
-  "relative inline-flex shrink-0 min-h-[40px] items-center justify-center rounded-full border-2 border-white/38 bg-transparent px-3.5 py-1.5 text-[13px] font-extrabold tracking-normal text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-white/65 hover:bg-white/[0.06] hover:shadow-[0_0_20px_rgba(255,255,255,0.08)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/55 [html[data-theme='light']_&]:text-zinc-900";
-
-/** 좋아요 전용 원 — 카트·찜과 시각 무게 맞춤 */
-const railLikeCircleBase =
-  "inline-flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full border-2 border-white/42 bg-white/[0.06] shadow-[inset_0_1px_3px_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-white/60 hover:bg-white/[0.1] active:scale-[0.94] [html[data-theme='light']_&]:border-zinc-400/60 [html[data-theme='light']_&]:bg-zinc-100";
-
-const railLikeIcon =
-  "h-[22px] w-[22px] shrink-0 pointer-events-none [html[data-theme='light']_&]:stroke-zinc-700";
-
 /** 액션 hit 영역 통일 (카트·찜) */
 const railActionPlainBtn =
-  "inline-flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full border-0 bg-transparent p-0 text-white/92 transition-colors duration-200 hover:text-white active:scale-[0.92] [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900";
+  "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-0 bg-transparent p-0 text-white/90 transition-colors duration-200 hover:text-white active:scale-[0.92] [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900";
 
 const railActionIcon =
-  "h-[21px] w-[21px] shrink-0 pointer-events-none stroke-[2.5] [html[data-theme='light']_&]:stroke-zinc-700";
+  "h-[21px] w-[21px] shrink-0 pointer-events-none stroke-[2.25] [html[data-theme='light']_&]:stroke-zinc-700";
 
 /** 레일 바깥 패딩만 (테두리 없음) */
 const railDeckClass = "shrink-0 pb-6 pt-4";
 
-/** 라벨 (가격 블록·집계 공통 음영) */
-const railLabelMuted =
-  "font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600";
+const railExploreRow =
+  "flex w-full max-w-[15rem] items-center justify-between gap-3 px-0.5 py-2 [html[data-theme='light']_&]:text-zinc-900";
 
-/** 집계 숫자 */
-const railStatNum =
-  "text-[13px] font-bold tabular-nums tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900";
+const railStatValueWhite =
+  "text-[13px] font-semibold tabular-nums text-white [html[data-theme='light']_&]:text-zinc-900";
 
-function RailStatRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex min-w-0 flex-col items-center gap-0.5 text-center">
-      <span className={railLabelMuted}>{label}</span>
-      <span className={`${railStatNum} leading-snug`}>{value}</span>
-    </div>
+const railStatValueBlue =
+  "text-[13px] font-semibold tabular-nums text-[#9DB9FF] [html[data-theme='light']_&]:text-sky-600";
+
+function ReelExploreStatLine({
+  icon,
+  label,
+  labelExtra,
+  value,
+  valueClassName,
+  as = "div",
+  onClick,
+  "aria-label": ariaLabel,
+  "aria-pressed": ariaPressed,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  labelExtra?: React.ReactNode;
+  value: string;
+  valueClassName: string;
+  as?: "div" | "button";
+  onClick?: () => void;
+  "aria-label"?: string;
+  "aria-pressed"?: boolean | "mixed";
+}) {
+  const Body = (
+    <>
+      <span className="flex min-w-0 items-center gap-2">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center text-white/[0.78] [&_svg]:h-[18px] [&_svg]:w-[18px] [html[data-theme='light']_&]:text-zinc-600">
+          {icon}
+        </span>
+        <span className="flex items-center gap-1 text-[13px] font-medium text-zinc-300 [html[data-theme='light']_&]:text-zinc-600">
+          {label}
+          {labelExtra}
+        </span>
+      </span>
+      <span className={`shrink-0 text-right ${valueClassName}`}>{value}</span>
+    </>
   );
+  if (as === "button" && onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={ariaLabel}
+        aria-pressed={ariaPressed}
+        className={`${railExploreRow} rounded-lg text-left transition hover:bg-white/[0.06] active:scale-[0.99] [html[data-theme='light']_&]:hover:bg-zinc-200/60`}
+      >
+        {Body}
+      </button>
+    );
+  }
+  return <div className={railExploreRow}>{Body}</div>;
 }
 
 type ExploreReelSidebarMetrics = {
@@ -391,73 +434,91 @@ function ReelDesktopRail({
 
   return (
     <aside
-      className={`${railDeckClass} flex w-[min(7rem,16.5vw)] shrink-0 flex-col items-center gap-4 [html[data-theme='light']_&]:text-zinc-900 ${className ?? ""}`}
+      className={`${railDeckClass} flex w-[min(15rem,38vw)] shrink-0 flex-col items-center gap-5 px-2 [html[data-theme='light']_&]:text-zinc-900 ${className ?? ""}`}
       aria-label="판매·반응 정보"
     >
-      <div className="flex w-full flex-col items-center gap-2.5" aria-label="집계 수치">
-        <RailStatRow label="수익" value={formatCompactWon(rankMetrics.cumulativeRevenueWon)} />
-        <RailStatRow label="조회수" value={formatCompactCount(displayedViews)} />
-        <RailStatRow label="구매" value={meta.salesCount.toLocaleString("ko-KR")} />
+      <div className="flex w-full flex-col items-stretch" aria-label="집계 수치">
+        <ReelExploreStatLine
+          icon={<TrendingUp strokeWidth={2.25} className="shrink-0" />}
+          label="수익"
+          labelExtra={
+            <ChevronDown strokeWidth={2.75} className="h-[11px] w-[11px] shrink-0 text-[#9DB9FF]" aria-hidden />
+          }
+          value={Math.round(Math.max(0, rankMetrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}
+          valueClassName={railStatValueBlue}
+        />
+        <ReelExploreStatLine
+          icon={<Eye strokeWidth={2.25} className="shrink-0" />}
+          label="조회수"
+          value={formatViewCountRail(displayedViews)}
+          valueClassName={railStatValueWhite}
+        />
+        <ReelExploreStatLine
+          icon={
+            <Heart
+              strokeWidth={2.25}
+              className={`shrink-0 transition-transform duration-150 ${
+                likedByMe
+                  ? "fill-[#a8c9ff]/90 stroke-[#a8c9ff] [html[data-theme='light']_&]:fill-sky-400/90 [html[data-theme='light']_&]:stroke-sky-600"
+                  : "stroke-white/[0.9] [html[data-theme='light']_&]:stroke-zinc-700"
+              } ${likePulse || likeBurst ? "scale-110" : "scale-100"}`}
+            />
+          }
+          label="좋아요"
+          value={formatLikeKoApprox(displayedLikeTotal)}
+          valueClassName={railStatValueWhite}
+          as="button"
+          onClick={() => {
+            void toggleInternalLike();
+          }}
+          aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+          aria-pressed={likedByMe}
+        />
+        <ReelExploreStatLine
+          icon={<ShoppingBag strokeWidth={2.25} className="shrink-0" />}
+          label="구매"
+          value={`${meta.salesCount.toLocaleString("ko-KR")}명`}
+          valueClassName={railStatValueWhite}
+        />
       </div>
 
-      <div className="flex flex-col items-center gap-1 text-center">
-        <span className={railLabelMuted}>가격</span>
-        {video.priceWon != null ? (
-          <span className="text-[15px] font-extrabold tabular-nums tracking-tight text-[#9DB9FF]">
-            {video.priceWon.toLocaleString("ko-KR")}
-          </span>
+      {video.priceWon != null ? (
+        soldOut ? (
+          <div className="flex w-full flex-col items-center px-2 text-center opacity-45">
+            <span className="text-[clamp(1.5rem,3.8vw,2.35rem)] font-black tabular-nums tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
+              {video.priceWon.toLocaleString("ko-KR")}
+              <span className="text-[1.05em] font-bold"> 원</span>
+            </span>
+            <span className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+              품절
+            </span>
+          </div>
         ) : (
-          <span className={`${railStatNum} text-zinc-500`}>—</span>
-        )}
-      </div>
-
-      {soldOut ? (
-        <span
-          className={`inline-flex cursor-not-allowed opacity-45 ${railBuyButtonClass}`}
-          aria-disabled
-        >
-          품절
-        </span>
-      ) : (
-        <button type="button" onClick={onBuyClick} className={railBuyButtonClass}>
-          구매
-        </button>
-      )}
-
-      <div role="group" aria-label="작업" className="flex w-full flex-col items-center gap-2.5">
-        <div className="flex flex-col items-center gap-1">
           <button
             type="button"
-            title={likedByMe ? "좋아요 취소" : "좋아요"}
-            onClick={(e) => {
-              e.preventDefault();
-              void toggleInternalLike();
-            }}
-            className={`relative ${railLikeCircleBase} ${
-              likedByMe
-                ? "!border-[#7aa6f0]/85 !bg-[#121c33] !shadow-[inset_0_1px_6px_rgba(122,166,240,0.15)] hover:!border-[#9bbaf5]"
-                : ""
-            } ${likePulse ? "scale-105" : "scale-100"}`}
-            aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
-            aria-pressed={likedByMe}
+            onClick={onBuyClick}
+            className="group flex w-full flex-col items-center rounded-xl px-2 py-1 text-center transition hover:bg-white/[0.05] active:scale-[0.99] [html[data-theme='light']_&]:hover:bg-zinc-200/50"
+            aria-label="구매 진행하기"
           >
-            {likeBurst ? (
-              <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/30 animate-ping" />
-            ) : null}
-            <Heart
-              strokeWidth={2.5}
-              className={`relative z-[1] ${railLikeIcon} transition-transform duration-300 ${
-                likedByMe
-                  ? "fill-current stroke-[#a8c9ff] text-[#a8c9ff]"
-                  : "stroke-white/95"
-              } ${likeBurst ? "scale-110" : "scale-100"} [html[data-theme='light']_&]:stroke-zinc-700 ${likedByMe ? "[html[data-theme='light']_&]:stroke-sky-500 [html[data-theme='light']_&]:fill-sky-400/90" : ""}`}
-            />
+            <span className="text-[clamp(1.55rem,4vw,2.85rem)] font-black tabular-nums tracking-tighter text-white transition group-hover:text-white [html[data-theme='light']_&]:text-zinc-900">
+              {video.priceWon.toLocaleString("ko-KR")}
+              <span className="text-[0.92em] font-bold tracking-normal text-white/[0.95] sm:text-[1.05em] [html[data-theme='light']_&]:text-zinc-900">
+                {" "}
+                원
+              </span>
+            </span>
+            <span className="sr-only">구매</span>
           </button>
-          <span className="font-mono text-[12px] font-bold tabular-nums text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
-            {formatLikeCountShortK(displayedLikeTotal)}
-          </span>
-        </div>
+        )
+      ) : (
+        <span className="font-mono text-sm font-semibold tabular-nums text-zinc-500">가격 미정</span>
+      )}
 
+      <div
+        role="group"
+        aria-label="작업"
+        className="flex w-full flex-row flex-wrap items-center justify-center gap-3 px-2"
+      >
         <button
           type="button"
           title="장바구니 담기"
@@ -470,7 +531,7 @@ function ReelDesktopRail({
           disabled={soldOut}
           aria-label="장바구니 담기"
         >
-          <ShoppingCart strokeWidth={2.5} className={`${railActionIcon} stroke-current`} />
+          <ShoppingCart strokeWidth={2.25} className={`${railActionIcon} stroke-current`} />
         </button>
         <button
           type="button"
@@ -489,7 +550,7 @@ function ReelDesktopRail({
           aria-pressed={wishlisted}
         >
           <Bookmark
-            strokeWidth={2.5}
+            strokeWidth={2.25}
             className={`${railActionIcon} stroke-current ${wishlisted ? "fill-current" : ""}`}
           />
         </button>
