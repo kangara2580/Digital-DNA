@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import type { FeedVideo } from "@/data/videos";
@@ -45,138 +45,20 @@ function ChevronRight({ className }: { className?: string }) {
   );
 }
 
-/** 볼록 다각형 꼭짓점 라운딩 — 통통한 둥근 삼각 실루엣용 */
-function roundedConvexPolygonPath(points: readonly [number, number][], radius: number): string {
-  const n = points.length;
-  const segs: string[] = [];
-  const nm = (x: number, y: number): [number, number] => {
-    const len = Math.hypot(x, y);
-    if (len <= 1e-9) return [0, 0];
-    return [x / len, y / len];
+/** 히어로 ARA — 두 A가 동일한 벡터 스트로크 (맨 뒤 A 좌표 기준). */
+function HeroStrokeLetterA() {
+  const strokeProps = {
+    stroke: "currentColor" as const,
+    strokeWidth: 18,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
   };
-  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-  for (let i = 0; i < n; i++) {
-    const prev = points[(i + n - 1) % n]!;
-    const cur = points[i]!;
-    const next = points[(i + 1) % n]!;
-    const vIn = nm(cur[0] - prev[0], cur[1] - prev[1]);
-    const vOut = nm(next[0] - cur[0], next[1] - cur[1]);
-    const dot = clamp(vIn[0] * vOut[0] + vIn[1] * vOut[1], -1, 1);
-    const theta = Math.acos(dot);
-    if (theta < 1e-4) continue;
-    const distIn = Math.hypot(cur[0] - prev[0], cur[1] - prev[1]);
-    const distOut = Math.hypot(next[0] - cur[0], next[1] - cur[1]);
-    let inset = radius / Math.tan(theta / 2);
-    const maxInset = Math.min(distIn, distOut) * 0.48;
-    inset = Math.min(inset, maxInset);
-    const px = `${(cur[0] - vIn[0] * inset).toFixed(2)} ${(cur[1] - vIn[1] * inset).toFixed(2)}`;
-    const qx = `${cur[0].toFixed(2)} ${cur[1].toFixed(2)}`;
-    const ex = `${(cur[0] + vOut[0] * inset).toFixed(2)} ${(cur[1] + vOut[1] * inset).toFixed(2)}`;
-    if (i === 0) segs.push(`M ${px}`);
-    else segs.push(`L ${px}`);
-    segs.push(`Q ${qx} ${ex}`);
-  }
-  return `${segs.join(" ")} Z`;
-}
-
-type RoundedTriangleCornerNum = {
-  px: [number, number];
-  vtx: [number, number];
-  ex: [number, number];
-};
-
-function fmtSvgPt([x, y]: [number, number]): string {
-  return `${x.toFixed(2)} ${y.toFixed(2)}`;
-}
-
-function computeRoundedTriangleCorners(
-  apex: readonly [number, number],
-  bottomRight: readonly [number, number],
-  bottomLeft: readonly [number, number],
-  cornerRadius: number,
-  /** BR·BL만 더 크게 — 발이 더 둥글게 이어지도록 */
-  bottomCornerInsetMult = 0.56,
-): RoundedTriangleCornerNum[] | null {
-  const points: [number, number][] = [
-    [apex[0], apex[1]],
-    [bottomRight[0], bottomRight[1]],
-    [bottomLeft[0], bottomLeft[1]],
-  ];
-  const n = points.length;
-  const nm = (x: number, y: number): [number, number] => {
-    const len = Math.hypot(x, y);
-    if (len <= 1e-9) return [0, 0];
-    return [x / len, y / len];
-  };
-  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-  const corners: RoundedTriangleCornerNum[] = [];
-  for (let i = 0; i < n; i++) {
-    const prev = points[(i + n - 1) % n]!;
-    const cur = points[i]!;
-    const next = points[(i + 1) % n]!;
-    const vIn = nm(cur[0] - prev[0], cur[1] - prev[1]);
-    const vOut = nm(next[0] - cur[0], next[1] - cur[1]);
-    const dot = clamp(vIn[0] * vOut[0] + vIn[1] * vOut[1], -1, 1);
-    const theta = Math.acos(dot);
-    if (theta < 1e-4) return null;
-    const distIn = Math.hypot(cur[0] - prev[0], cur[1] - prev[1]);
-    const distOut = Math.hypot(next[0] - cur[0], next[1] - cur[1]);
-    let inset = cornerRadius / Math.tan(theta / 2);
-    const insetMult = i === 1 || i === 2 ? bottomCornerInsetMult : 0.48;
-    const maxInset = Math.min(distIn, distOut) * insetMult;
-    inset = Math.min(inset, maxInset);
-    corners.push({
-      px: [cur[0] - vIn[0] * inset, cur[1] - vIn[1] * inset],
-      vtx: [cur[0], cur[1]],
-      ex: [cur[0] + vOut[0] * inset, cur[1] + vOut[1] * inset],
-    });
-  }
-  return corners.length === 3 ? corners : null;
-}
-
-/**
- * 상단 꼭짓점 + 밑변 두 꼭짓점으로 둥근 통통 삼각형.
- * 밑변은 살짝 위로 들려 A 실루엣을 주며, 양 끝은 부드럽고 가운데가 더 오목하게 이어진다(ease형 cubic).
- */
-function roundedTriangleConcaveBasePath(
-  apex: readonly [number, number],
-  bottomRight: readonly [number, number],
-  bottomLeft: readonly [number, number],
-  cornerRadius: number,
-  /** 밑변 중앙 높이 들림 — 더 클수록 안쪽으로 더 오목 */
-  baseConcaveLift: number,
-): string {
-  const pointsFallback: readonly [number, number][] = [
-    [apex[0], apex[1]],
-    [bottomRight[0], bottomRight[1]],
-    [bottomLeft[0], bottomLeft[1]],
-  ];
-  const computed = computeRoundedTriangleCorners(apex, bottomRight, bottomLeft, cornerRadius);
-  if (!computed) return roundedConvexPolygonPath(pointsFallback, cornerRadius);
-
-  const [c0, c1, c2] = computed;
-  /** BR 밑변 쪽 단부 → BL 밑변 쪽 단부 (오른쪽에서 왼쪽) */
-  const pStart = c1.ex;
-  const pEnd = c2.px;
-  const chord = Math.max(Math.hypot(pEnd[0] - pStart[0], pEnd[1] - pStart[1]), 1e-6);
-  /** 끝은 완만히, 가운데로 갈수록 더 깊게 — 제어점을 밑변 쪽으로 당겨 발–밑변 이음이 덜 꺾이게 */
-  const gamma = Math.min(Math.max(chord * 0.31, 5.8), chord * 0.4);
-  const liftEff = Math.min(Math.max(baseConcaveLift, 0), chord * 0.55);
-  /** 발에서는 덜 패이고 축에서는 더 깎이도록 — 세로 깊기는 깊게, 단 gamma로 끝은 완만 */
-  const joinLift = liftEff * 0.48;
-
-  const c1Ctl: [number, number] = [pStart[0] - gamma, pStart[1] - joinLift];
-  const c2Ctl: [number, number] = [pEnd[0] + gamma, pEnd[1] - joinLift];
-
-  return [
-    `M ${fmtSvgPt(c0.px)}`,
-    `Q ${fmtSvgPt(c0.vtx)} ${fmtSvgPt(c0.ex)}`,
-    `L ${fmtSvgPt(c1.px)}`,
-    `Q ${fmtSvgPt(c1.vtx)} ${fmtSvgPt(pStart)}`,
-    `C ${fmtSvgPt(c1Ctl)} ${fmtSvgPt(c2Ctl)} ${fmtSvgPt(pEnd)}`,
-    `Q ${fmtSvgPt(c2.vtx)} ${fmtSvgPt(c2.ex)}`,
-    "Z",
-  ].join(" ");
+  return (
+    <>
+      <path d="M284 126 L328 14 Q332 8 336 14 L380 126" {...strokeProps} />
+      <path d="M303 84H361" {...strokeProps} />
+    </>
+  );
 }
 
 type RingPose = {
@@ -304,19 +186,6 @@ export function Highlight24() {
   const [ambientVideoReady, setAmbientVideoReady] = useState(false);
 
   const reduceMotion = useReducedMotion() ?? false;
-  const heroMarkUid = useId().replace(/:/g, "");
-
-  const heroABlobD = useMemo(
-    () =>
-      roundedTriangleConcaveBasePath(
-        [51, 45],
-        [96, 124.5],
-        [6, 124.5],
-        40,
-        8.6,
-      ),
-    [],
-  );
 
   const n = videos.length;
   const safeIndex = n > 0 ? ((index % n) + n) % n : 0;
@@ -833,108 +702,9 @@ export function Highlight24() {
                     fill="none"
                     aria-hidden
                   >
-                    <defs>
-                      <clipPath id={`hero-a-glass-clip-${heroMarkUid}`} clipPathUnits="userSpaceOnUse">
-                        <path d={heroABlobD} fill="#000" />
-                      </clipPath>
-                      <linearGradient
-                        id={`hero-a-skin-${heroMarkUid}`}
-                        x1="9"
-                        y1="126"
-                        x2="95"
-                        y2="20"
-                        gradientUnits="userSpaceOnUse"
-                      >
-                        <stop offset="0%" stopColor="#5FF5D9" stopOpacity="0.42" />
-                        <stop offset="38%" stopColor="#82E8FF" stopOpacity="0.38" />
-                        <stop offset="100%" stopColor="#63A7FF" stopOpacity="0.34" />
-                      </linearGradient>
-                      <radialGradient
-                        id={`hero-a-depth-${heroMarkUid}`}
-                        cx="52"
-                        cy="112"
-                        r="44"
-                        gradientUnits="userSpaceOnUse"
-                      >
-                        <stop offset="0%" stopColor="rgba(18, 40, 72, 0.2)" />
-                        <stop offset="50%" stopColor="rgba(34, 120, 180, 0.09)" />
-                        <stop offset="100%" stopColor="rgba(255, 255, 255, 0)" />
-                      </radialGradient>
-                      <radialGradient
-                        id={`hero-a-rim-${heroMarkUid}`}
-                        cx="52"
-                        cy="38"
-                        r="69"
-                        gradientUnits="userSpaceOnUse"
-                      >
-                        <stop offset="0%" stopColor="rgba(255,255,255,0.36)" />
-                        <stop offset="35%" stopColor="rgba(255,255,255,0.07)" />
-                        <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-                      </radialGradient>
-                      <filter
-                        id={`hero-a-bloom-${heroMarkUid}`}
-                        x="-50%"
-                        y="-50%"
-                        width="200%"
-                        height="200%"
-                        filterUnits="objectBoundingBox"
-                      >
-                        <feGaussianBlur in="SourceAlpha" stdDeviation="3.2" result="ablur" />
-                        <feFlood floodColor="#5EEAD4" floodOpacity="0.42" result="fl" />
-                        <feComposite in="fl" in2="ablur" operator="in" result="agog" />
-                        <feGaussianBlur stdDeviation="1.1" in="agog" result="ag2" />
-                        <feMerge>
-                          <feMergeNode in="ag2" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
-                    </defs>
-                    <g transform="translate(51, 105.5) scale(1.5, 1.6) translate(-51, -105.5)">
-                      <g
-                        filter={`url(#hero-a-bloom-${heroMarkUid})`}
-                        style={{ isolation: "isolate" }}
-                      >
-                        <g clipPath={`url(#hero-a-glass-clip-${heroMarkUid})`}>
-                          <foreignObject x="-8" y="34" width="118" height="98">
-                            <div
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                borderRadius: 0,
-                                backdropFilter: "blur(14px)",
-                                WebkitBackdropFilter: "blur(14px)",
-                                background:
-                                  "linear-gradient(156deg, rgba(255,255,255,0.28) 0%, rgba(130,232,255,0.14) 42%, rgba(95,245,217,0.1) 100%)",
-                                pointerEvents: "none",
-                              }}
-                            />
-                          </foreignObject>
-                          <path fill={`url(#hero-a-skin-${heroMarkUid})`} d={heroABlobD} />
-                          <path
-                            fill={`url(#hero-a-depth-${heroMarkUid})`}
-                            d={heroABlobD}
-                            style={{ mixBlendMode: "multiply", opacity: 0.82 }}
-                          />
-                          <path
-                            fill={`url(#hero-a-rim-${heroMarkUid})`}
-                            d={heroABlobD}
-                            style={{ mixBlendMode: "soft-light", opacity: 0.88 }}
-                          />
-                          <path
-                            fill="none"
-                            stroke="rgba(255,255,255,0.42)"
-                            strokeWidth={1}
-                            strokeLinejoin="round"
-                            strokeLinecap="round"
-                            vectorEffect="nonScalingStroke"
-                            d={heroABlobD}
-                          />
-                        </g>
-                      </g>
-                      <path
-                        d="M 39.75 79.5 L 64.95 94.2 L 39.75 108.9 Z"
-                        fill="#FFFFFF"
-                      />
+                    {/* 세 번째 A와 동일 패스를 왼쪽으로 옮김 — R(152)·스트로크 두께와 간격 유지 */}
+                    <g transform="translate(-248, 0)">
+                      <HeroStrokeLetterA />
                     </g>
                     <path
                       d="M152 126V14H194Q224 14 224 44Q224 74 194 74H152"
@@ -950,20 +720,7 @@ export function Highlight24() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
-                    <path
-                      d="M284 126 L328 14 Q332 8 336 14 L380 126"
-                      stroke="currentColor"
-                      strokeWidth="18"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M303 84H361"
-                      stroke="currentColor"
-                      strokeWidth="18"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
+                    <HeroStrokeLetterA />
                   </svg>
                 </span>
               </div>
