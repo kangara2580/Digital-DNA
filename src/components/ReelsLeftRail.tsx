@@ -15,7 +15,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
-import { ReelsLogo } from "@/components/ReelsLogo";
 import { MALL_CATEGORY_NAV_ITEMS } from "@/data/mallCategoryNav";
 import { useAuthSession } from "@/hooks/useAuthSession";
 
@@ -258,14 +257,11 @@ export function ReelsLeftRail() {
         <div className="relative flex shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
           <Link
             href="/"
-            className="flex max-w-[calc(100%-6px)] flex-row items-center justify-center gap-0 rounded-[10px] border-2 bg-[#0a0c10] px-0.5 py-[5px] transition-colors hover:bg-[#12151c] [html[data-theme='light']_&]:bg-[#0a0c10] [html[data-theme='light']_&]:hover:bg-[#12151c]"
+            className="flex max-w-[calc(100%-6px)] items-center justify-center rounded-[10px] border bg-[#0a0c10] px-2 py-[6px] transition-colors hover:bg-[#12151c] [html[data-theme='light']_&]:bg-[#0a0c10] [html[data-theme='light']_&]:hover:bg-[#12151c]"
             style={{ borderColor: ARA_LOGO_MARK_BORDER }}
-            aria-label="ARA 홈"
           >
-            <ReelsLogo size={22} variant="rail-main" className="shrink-0" aria-hidden />
             <span
-              aria-hidden
-              className="-mb-px select-none whitespace-nowrap pl-[1px] text-[10px] font-semibold leading-none tracking-[-0.06em] text-white"
+              className="select-none whitespace-nowrap text-[11px] font-semibold leading-none tracking-[-0.04em] text-white"
               style={{ fontFamily: "var(--font-fredoka), ui-rounded, system-ui, sans-serif" }}
             >
               ARA
