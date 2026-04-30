@@ -716,10 +716,10 @@ export function Highlight24() {
             className="absolute right-[20%] top-1/2 z-[65] hidden h-[min(58%,380px)] w-[140px] -translate-y-1/2 md:block"
             aria-label="다음 클립 확장 영역"
           />
-          <div className="pointer-events-none relative z-[80] hidden w-[clamp(248px,28vw,400px)] -translate-x-16 md:flex md:justify-center">
+          <div className="pointer-events-none relative z-[80] hidden w-[clamp(206px,24vw,332px)] -translate-x-16 md:flex md:justify-center">
             <div className="flex w-full flex-col items-center pl-[clamp(20px,2.25vw,34px)] pr-[clamp(14px,1.55vw,24px)]">
               <div
-                className="-translate-y-12 select-none text-[clamp(2.9rem,7.25vw,7.4rem)] font-semibold leading-none tracking-[0.03em] text-white"
+                className="-translate-y-12 select-none text-[clamp(2.4rem,6.2vw,6.1rem)] font-semibold leading-none tracking-[0.03em] text-white"
                 style={{
                   fontFamily: '"Inter", "Helvetica Neue", "Arial", sans-serif',
                   textShadow:
@@ -809,6 +809,8 @@ export function Highlight24() {
                         />
                       </filter>
                     </defs>
+                    {/* 앞 A만 확대 — R·뒤 A 스트로크 크기는 부모 em 그대로 */}
+                    <g transform="translate(51, 93) scale(1.32) translate(-51, -93)">
                     <g
                       filter={`url(#hero-a-bloom-${heroMarkUid})`}
                       style={{ isolation: "isolate" }}
@@ -833,6 +835,7 @@ export function Highlight24() {
                       strokeLinejoin="round"
                       filter={`url(#hero-a-play-shadow-${heroMarkUid})`}
                     />
+                    </g>
                     <path
                       d="M152 126V14H194Q224 14 224 44Q224 74 194 74H152"
                       stroke="currentColor"
