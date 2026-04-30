@@ -81,6 +81,10 @@ const railDeckClass = "shrink-0 pb-6 pt-4";
 const railExploreRow =
   "flex w-full max-w-[15rem] items-center justify-between gap-3 px-0.5 py-2 [html[data-theme='light']_&]:text-zinc-900";
 
+/** 탐색 레일 구매 버튼 (가격 블록과 분리) */
+const railExploreBuyButtonClass =
+  "relative inline-flex min-h-[40px] w-full max-w-[15rem] shrink-0 items-center justify-center rounded-full border-2 border-white/38 bg-transparent px-4 py-2 text-[13px] font-extrabold tracking-normal text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-white/65 hover:bg-white/[0.06] hover:shadow-[0_0_20px_rgba(255,255,255,0.08)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/55 [html[data-theme='light']_&]:text-zinc-900";
+
 const railStatValueWhite =
   "text-[13px] font-semibold tabular-nums text-white [html[data-theme='light']_&]:text-zinc-900";
 
@@ -89,8 +93,7 @@ const railStatValueBlue =
 
 function ReelExploreStatLine({
   icon,
-  label,
-  labelExtra,
+  iconAdornment,
   value,
   valueClassName,
   as = "div",
@@ -99,8 +102,7 @@ function ReelExploreStatLine({
   "aria-pressed": ariaPressed,
 }: {
   icon: React.ReactNode;
-  label: string;
-  labelExtra?: React.ReactNode;
+  iconAdornment?: React.ReactNode;
   value: string;
   valueClassName: string;
   as?: "div" | "button";
@@ -110,14 +112,11 @@ function ReelExploreStatLine({
 }) {
   const Body = (
     <>
-      <span className="flex min-w-0 items-center gap-2">
+      <span className="flex min-w-0 items-center gap-1">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center text-white/[0.78] [&_svg]:h-[18px] [&_svg]:w-[18px] [html[data-theme='light']_&]:text-zinc-600">
           {icon}
         </span>
-        <span className="flex items-center gap-1 text-[13px] font-medium text-zinc-300 [html[data-theme='light']_&]:text-zinc-600">
-          {label}
-          {labelExtra}
-        </span>
+        {iconAdornment ?? null}
       </span>
       <span className={`shrink-0 text-right ${valueClassName}`}>{value}</span>
     </>
@@ -135,7 +134,11 @@ function ReelExploreStatLine({
       </button>
     );
   }
-  return <div className={railExploreRow}>{Body}</div>;
+  return (
+    <div className={railExploreRow} {...(ariaLabel ? { "aria-label": ariaLabel } : {})}>
+      {Body}
+    </div>
+  );
 }
 
 type ExploreReelSidebarMetrics = {
@@ -440,18 +443,18 @@ function ReelDesktopRail({
       <div className="flex w-full flex-col items-stretch" aria-label="집계 수치">
         <ReelExploreStatLine
           icon={<TrendingUp strokeWidth={2.25} className="shrink-0" />}
-          label="수익"
-          labelExtra={
+          iconAdornment={
             <ChevronDown strokeWidth={2.75} className="h-[11px] w-[11px] shrink-0 text-[#9DB9FF]" aria-hidden />
           }
           value={Math.round(Math.max(0, rankMetrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}
           valueClassName={railStatValueBlue}
+          aria-label={`수익 ${Math.round(Math.max(0, rankMetrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}원`}
         />
         <ReelExploreStatLine
           icon={<Eye strokeWidth={2.25} className="shrink-0" />}
-          label="조회수"
           value={formatViewCountRail(displayedViews)}
           valueClassName={railStatValueWhite}
+          aria-label={`조회수 ${formatViewCountRail(displayedViews)}`}
         />
         <ReelExploreStatLine
           icon={
@@ -464,7 +467,6 @@ function ReelDesktopRail({
               } ${likePulse || likeBurst ? "scale-110" : "scale-100"}`}
             />
           }
-          label="좋아요"
           value={formatLikeKoApprox(displayedLikeTotal)}
           valueClassName={railStatValueWhite}
           as="button"
@@ -476,39 +478,43 @@ function ReelDesktopRail({
         />
         <ReelExploreStatLine
           icon={<ShoppingBag strokeWidth={2.25} className="shrink-0" />}
-          label="구매"
           value={`${meta.salesCount.toLocaleString("ko-KR")}명`}
           valueClassName={railStatValueWhite}
+          aria-label={`구매 ${meta.salesCount.toLocaleString("ko-KR")}명`}
         />
       </div>
 
       {video.priceWon != null ? (
         soldOut ? (
-          <div className="flex w-full flex-col items-center px-2 text-center opacity-45">
-            <span className="text-[clamp(1.5rem,3.8vw,2.35rem)] font-black tabular-nums tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
-              {video.priceWon.toLocaleString("ko-KR")}
-              <span className="text-[1.05em] font-bold"> 원</span>
-            </span>
-            <span className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
-              품절
-            </span>
+          <div className="flex w-full flex-col items-center gap-3 px-2 text-center">
+            <div className="opacity-45">
+              <span className="text-[clamp(1.5rem,3.8vw,2.35rem)] font-black tabular-nums tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
+                {video.priceWon.toLocaleString("ko-KR")}
+                <span className="text-[1.05em] font-bold"> 원</span>
+              </span>
+            </div>
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">품절</span>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={onBuyClick}
-            className="group flex w-full flex-col items-center rounded-xl px-2 py-1 text-center transition hover:bg-white/[0.05] active:scale-[0.99] [html[data-theme='light']_&]:hover:bg-zinc-200/50"
-            aria-label="구매 진행하기"
-          >
-            <span className="text-[clamp(1.55rem,4vw,2.85rem)] font-black tabular-nums tracking-tighter text-white transition group-hover:text-white [html[data-theme='light']_&]:text-zinc-900">
-              {video.priceWon.toLocaleString("ko-KR")}
-              <span className="text-[0.92em] font-bold tracking-normal text-white/[0.95] sm:text-[1.05em] [html[data-theme='light']_&]:text-zinc-900">
-                {" "}
-                원
+          <div className="flex w-full max-w-[15rem] flex-col items-stretch gap-3 px-2">
+            <div className="text-center">
+              <span className="text-[clamp(1.55rem,4vw,2.85rem)] font-black tabular-nums tracking-tighter text-white [html[data-theme='light']_&]:text-zinc-900">
+                {video.priceWon.toLocaleString("ko-KR")}
+                <span className="text-[0.92em] font-bold tracking-normal text-white/[0.95] sm:text-[1.05em] [html[data-theme='light']_&]:text-zinc-900">
+                  {" "}
+                  원
+                </span>
               </span>
-            </span>
-            <span className="sr-only">구매</span>
-          </button>
+            </div>
+            <button
+              type="button"
+              onClick={onBuyClick}
+              className={railExploreBuyButtonClass}
+              aria-label="구매 진행하기"
+            >
+              구매
+            </button>
+          </div>
         )
       ) : (
         <span className="font-mono text-sm font-semibold tabular-nums text-zinc-500">가격 미정</span>
