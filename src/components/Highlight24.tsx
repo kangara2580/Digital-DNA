@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import type { FeedVideo } from "@/data/videos";
@@ -43,6 +43,40 @@ function ChevronRight({ className }: { className?: string }) {
       />
     </svg>
   );
+}
+
+/** 볼록 다각형 꼭짓점 라운딩 — 통통한 둥근 삼각 실루엣용 */
+function roundedConvexPolygonPath(points: readonly [number, number][], radius: number): string {
+  const n = points.length;
+  const segs: string[] = [];
+  const nm = (x: number, y: number): [number, number] => {
+    const len = Math.hypot(x, y);
+    if (len <= 1e-9) return [0, 0];
+    return [x / len, y / len];
+  };
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+  for (let i = 0; i < n; i++) {
+    const prev = points[(i + n - 1) % n]!;
+    const cur = points[i]!;
+    const next = points[(i + 1) % n]!;
+    const vIn = nm(cur[0] - prev[0], cur[1] - prev[1]);
+    const vOut = nm(next[0] - cur[0], next[1] - cur[1]);
+    const dot = clamp(vIn[0] * vOut[0] + vIn[1] * vOut[1], -1, 1);
+    const theta = Math.acos(dot);
+    if (theta < 1e-4) continue;
+    const distIn = Math.hypot(cur[0] - prev[0], cur[1] - prev[1]);
+    const distOut = Math.hypot(next[0] - cur[0], next[1] - cur[1]);
+    let inset = radius / Math.tan(theta / 2);
+    const maxInset = Math.min(distIn, distOut) * 0.48;
+    inset = Math.min(inset, maxInset);
+    const px = `${(cur[0] - vIn[0] * inset).toFixed(2)} ${(cur[1] - vIn[1] * inset).toFixed(2)}`;
+    const qx = `${cur[0].toFixed(2)} ${cur[1].toFixed(2)}`;
+    const ex = `${(cur[0] + vOut[0] * inset).toFixed(2)} ${(cur[1] + vOut[1] * inset).toFixed(2)}`;
+    if (i === 0) segs.push(`M ${px}`);
+    else segs.push(`L ${px}`);
+    segs.push(`Q ${qx} ${ex}`);
+  }
+  return `${segs.join(" ")} Z`;
 }
 
 type RingPose = {
@@ -170,6 +204,20 @@ export function Highlight24() {
   const [ambientVideoReady, setAmbientVideoReady] = useState(false);
 
   const reduceMotion = useReducedMotion() ?? false;
+  const heroMarkUid = useId().replace(/:/g, "");
+
+  const heroABlobD = useMemo(
+    () =>
+      roundedConvexPolygonPath(
+        [
+          [51, 42],
+          [95, 118.8],
+          [7, 118.8],
+        ],
+        32,
+      ),
+    [],
+  );
 
   const n = videos.length;
   const safeIndex = n > 0 ? ((index % n) + n) % n : 0;
@@ -692,11 +740,98 @@ export function Highlight24() {
                     fill="none"
                     aria-hidden
                   >
-                    {/* 첫 글자 A: 둥근 삼각 실루엣 · 순백 · 가운데 재생(음영 네거티브) */}
+                    <defs>
+                      <linearGradient
+                        id={`hero-a-skin-${heroMarkUid}`}
+                        x1="9"
+                        y1="126"
+                        x2="95"
+                        y2="20"
+                        gradientUnits="userSpaceOnUse"
+                      >
+                        <stop offset="0%" stopColor="#5FF5D9" />
+                        <stop offset="38%" stopColor="#82E8FF" />
+                        <stop offset="100%" stopColor="#63A7FF" />
+                      </linearGradient>
+                      <radialGradient
+                        id={`hero-a-depth-${heroMarkUid}`}
+                        cx="52"
+                        cy="88"
+                        r="39"
+                        gradientUnits="userSpaceOnUse"
+                      >
+                        <stop offset="0%" stopColor="rgba(8, 22, 48, 0.58)" />
+                        <stop offset="45%" stopColor="rgba(34, 120, 180, 0.18)" />
+                        <stop offset="100%" stopColor="rgba(255, 255, 255, 0)" />
+                      </radialGradient>
+                      <radialGradient
+                        id={`hero-a-rim-${heroMarkUid}`}
+                        cx="52"
+                        cy="38"
+                        r="69"
+                        gradientUnits="userSpaceOnUse"
+                      >
+                        <stop offset="0%" stopColor="rgba(255,255,255,0.45)" />
+                        <stop offset="35%" stopColor="rgba(255,255,255,0.08)" />
+                        <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+                      </radialGradient>
+                      <filter
+                        id={`hero-a-bloom-${heroMarkUid}`}
+                        x="-50%"
+                        y="-50%"
+                        width="200%"
+                        height="200%"
+                        filterUnits="objectBoundingBox"
+                      >
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="3.2" result="ablur" />
+                        <feFlood floodColor="#5EEAD4" floodOpacity="0.42" result="fl" />
+                        <feComposite in="fl" in2="ablur" operator="in" result="agog" />
+                        <feGaussianBlur stdDeviation="1.1" in="agog" result="ag2" />
+                        <feMerge>
+                          <feMergeNode in="ag2" />
+                          <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                      </filter>
+                      <filter
+                        id={`hero-a-play-shadow-${heroMarkUid}`}
+                        x="-60%"
+                        y="-60%"
+                        width="220%"
+                        height="220%"
+                        filterUnits="objectBoundingBox"
+                      >
+                        <feDropShadow
+                          dx="0"
+                          dy="1"
+                          stdDeviation="1.35"
+                          floodColor="rgba(4,24,54,0.55)"
+                          floodOpacity="1"
+                        />
+                      </filter>
+                    </defs>
+                    <g
+                      filter={`url(#hero-a-bloom-${heroMarkUid})`}
+                      style={{ isolation: "isolate" }}
+                    >
+                      <path fill={`url(#hero-a-skin-${heroMarkUid})`} d={heroABlobD} />
+                      <path
+                        fill={`url(#hero-a-depth-${heroMarkUid})`}
+                        d={heroABlobD}
+                        style={{ mixBlendMode: "multiply" }}
+                      />
+                      <path
+                        fill={`url(#hero-a-rim-${heroMarkUid})`}
+                        d={heroABlobD}
+                        style={{ mixBlendMode: "soft-light", opacity: 0.92 }}
+                      />
+                    </g>
                     <path
-                      fill="currentColor"
-                      fillRule="evenodd"
-                      d="M 4 118 L 46 24 Q 50 8 54 24 L 96 118 Q 50 110 4 118 Z M 39 76 L 61 94 L 39 112 Z"
+                      d="M 39.75 77.65 L 64.95 92.35 L 39.75 107.05 Z"
+                      fill="#FFFFFF"
+                      stroke="rgba(255,255,255,0.55)"
+                      strokeWidth="0.55"
+                      strokeLinejoin="round"
+                      filter={`url(#hero-a-play-shadow-${heroMarkUid})`}
                     />
                     <path
                       d="M152 126V14H194Q224 14 224 44Q224 74 194 74H152"
