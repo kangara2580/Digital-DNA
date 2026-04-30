@@ -2,9 +2,11 @@
 
 import { Bookmark, Heart, ShoppingCart, Volume2, VolumeX } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AuthPromptModal } from "@/components/AuthPromptModal";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
+import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import {
@@ -18,6 +20,7 @@ import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sellerProfileHrefFromVideo } from "@/lib/sellerProfile";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { getExternalLiveStatsPageUrl } from "@/lib/externalEmbed/playerUrls";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 function formatCompactWon(n: number): string {
@@ -81,10 +84,28 @@ function ReelDesktopRail({
   video: FeedVideo;
   className?: string;
 }) {
+  const router = useRouter();
   const dopamine = useDopamineBasket();
   const { isSaved, toggle: toggleWishlist } = useWishlist();
+  const { hasPurchased, markPurchased } = usePurchasedVideos();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
-  const metrics = useMemo(() => getMetricsForVideoDetail(video.id), [video.id]);
+  const owned = hasPurchased(video.id);
+
+  const rankMetrics = useMemo(() => {
+    if (video.listing) {
+      const views = video.listing.views;
+      const sales = video.listing.salesCount;
+      const p = video.priceWon ?? 0;
+      return {
+        cumulativeRevenueWon: p * sales,
+        totalViews: Math.max(0, views),
+        totalLikes: Math.max(0, Math.floor(views * 0.028)),
+        growthPercent: 0,
+      };
+    }
+    return getMetricsForVideoDetail(video.id);
+  }, [video]);
+
   const meta = useMemo(
     () =>
       video.listing
@@ -92,6 +113,60 @@ function ReelDesktopRail({
         : getCommerceMeta(video.id),
     [video],
   );
+  const statsPageUrl = useMemo(
+    () =>
+      process.env.NODE_ENV !== "production" && video.tiktokEmbedId
+        ? null
+        : getExternalLiveStatsPageUrl(video),
+    [video],
+  );
+
+  const [liveStats, setLiveStats] = useState<{ playCount: number; diggCount: number } | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (!statsPageUrl) {
+      setLiveStats(null);
+      return;
+    }
+    let cancelled = false;
+    const fetchLiveStats = async () => {
+      try {
+        const res = await fetch(
+          `/api/embed/live-stats?url=${encodeURIComponent(statsPageUrl)}`,
+          { cache: "no-store" },
+        );
+        if (!res.ok) return;
+        const j = (await res.json().catch(() => ({}))) as {
+          playCount?: number;
+          diggCount?: number;
+        };
+        if (
+          cancelled ||
+          typeof j.playCount !== "number" ||
+          typeof j.diggCount !== "number"
+        ) {
+          return;
+        }
+        setLiveStats({ playCount: j.playCount, diggCount: j.diggCount });
+      } catch {
+        /* ignore */
+      }
+    };
+    void fetchLiveStats();
+    const t = window.setInterval(() => {
+      void fetchLiveStats();
+    }, 45_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(t);
+    };
+  }, [statsPageUrl]);
+
+  const displayedViews = liveStats?.playCount ?? rankMetrics.totalViews;
+  const externalLikeCount = liveStats?.diggCount ?? rankMetrics.totalLikes;
+
   const remaining = clonesRemaining(meta);
   const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
   const wishlisted = isSaved(video.id);
@@ -107,10 +182,7 @@ function ReelDesktopRail({
   const [likeBurst, setLikeBurst] = useState(false);
   const [wishlistPulse, setWishlistPulse] = useState(false);
 
-  const displayedLikeTotal = Math.max(
-    0,
-    metrics.totalLikes + internalLikeCount,
-  );
+  const displayedLikeTotal = Math.max(0, externalLikeCount + internalLikeCount);
 
   const requireAuth = useCallback(() => {
     if (authLoading) return false;
@@ -122,6 +194,21 @@ function ReelDesktopRail({
     }
     return true;
   }, [authLoading, supabaseConfigured, user]);
+
+  const onBuyClick = useCallback(() => {
+    if (soldOut || authLoading) return;
+    if (!requireAuth()) return;
+    if (!owned) markPurchased(video.id);
+    router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
+  }, [
+    authLoading,
+    owned,
+    markPurchased,
+    requireAuth,
+    router,
+    soldOut,
+    video.id,
+  ]);
 
   const startGoogleAuth = useCallback(async () => {
     const next =
@@ -262,9 +349,10 @@ function ReelDesktopRail({
 
   return (
     <aside
-      className={`flex w-[min(6.875rem,18vw)] shrink-0 flex-col items-center gap-5 pb-6 pt-4 [html[data-theme='light']_&]:text-zinc-800 ${className ?? ""}`}
+      className={`flex shrink-0 flex-row items-start gap-2 md:gap-2.5 pb-6 pt-4 [html[data-theme='light']_&]:text-zinc-800 ${className ?? ""}`}
       aria-label="판매·반응 정보"
     >
+      <div className="flex w-[min(6.25rem,15vw)] shrink-0 flex-col items-center gap-5">
       <div className="flex flex-col items-center gap-1.5 text-center">
         <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           가격
@@ -286,12 +374,9 @@ function ReelDesktopRail({
           품절
         </span>
       ) : (
-        <Link
-          href={`/video/${video.id}?from=explore`}
-          className={`text-center leading-tight ${railBuyButtonClass}`}
-        >
+        <button type="button" onClick={onBuyClick} className={railBuyButtonClass}>
           구매
-        </Link>
+        </button>
       )}
 
       <div className="flex flex-col items-center gap-4">
@@ -364,6 +449,37 @@ function ReelDesktopRail({
             className={`${railActionIcon} stroke-current ${wishlisted ? "fill-current" : ""}`}
           />
         </button>
+      </div>
+      </div>
+
+      <div
+        className="flex min-h-0 max-w-[min(6rem,17vw)] flex-col gap-3 border-l border-white/15 py-0.5 pl-2.5 [html[data-theme='light']_&]:border-zinc-300"
+        aria-label="집계 수치"
+      >
+        <div>
+          <p className="font-mono text-[9px] font-bold uppercase tracking-wide text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            수익
+          </p>
+          <p className="mt-0.5 max-w-[5.75rem] text-left text-[12px] font-bold tabular-nums leading-snug text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+            {formatCompactWon(rankMetrics.cumulativeRevenueWon)}
+          </p>
+        </div>
+        <div>
+          <p className="font-mono text-[9px] font-bold uppercase tracking-wide text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            조회수
+          </p>
+          <p className="mt-0.5 text-left text-[12px] font-bold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+            {formatCompactCount(displayedViews)}
+          </p>
+        </div>
+        <div>
+          <p className="font-mono text-[9px] font-bold uppercase tracking-wide text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            구매
+          </p>
+          <p className="mt-0.5 text-left text-[12px] font-bold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+            {meta.salesCount.toLocaleString("ko-KR")}
+          </p>
+        </div>
       </div>
 
       {mounted ? (
@@ -571,8 +687,8 @@ export function ExploreReelSlide({
           영상 열에 명시적 max-width를 두어 aspect-[9/16] + w-full 이 0으로 무너지지 않게 함.
           레일은 같은 flex 줄에서 영상 바로 옆에만 붙음(가운데 단독 정렬 방지).
         */}
-        <div className="flex w-full max-w-[min(56rem,calc(100vw-var(--reels-rail-w,0px)-1.5rem))] flex-row items-center justify-center gap-2 md:gap-3 lg:gap-4">
-          <div className="relative w-[min(100%,min(420px,calc(100vw-var(--reels-rail-w,0px)-10.5rem)))] shrink-0">
+        <div className="flex w-full max-w-[min(56rem,calc(100vw-var(--reels-rail-w,0px)-1.5rem))] flex-row items-center justify-center gap-1 md:gap-1.5 lg:gap-2">
+          <div className="relative w-[min(100%,min(420px,calc(100vw-var(--reels-rail-w,0px)-16rem)))] shrink-0">
             <div
               className="relative aspect-[9/16] w-full max-h-[min(78dvh,calc(100dvh-var(--header-height)-7rem))] overflow-hidden rounded-2xl border border-white/12 bg-black shadow-[0_24px_80px_-30px_rgba(0,0,0,0.85)] md:max-h-[min(92dvh,calc(100dvh-var(--header-height)-2rem))] [html[data-theme='light']_&]:border-zinc-200"
             >
