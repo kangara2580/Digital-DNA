@@ -818,19 +818,17 @@ export function Highlight24() {
           <div className="pointer-events-none relative z-[80] hidden w-[clamp(206px,24vw,332px)] -translate-x-16 md:flex md:justify-center">
             <div className="flex w-full flex-col items-center pl-[clamp(20px,2.25vw,34px)] pr-[clamp(14px,1.55vw,24px)]">
               <div
-                className="-translate-y-12 select-none text-[clamp(2.4rem,6.2vw,6.1rem)] font-semibold leading-none tracking-[0.03em] text-white"
+                className="-translate-y-12 select-none text-[clamp(2.4rem,6.2vw,6.1rem)] font-semibold leading-none tracking-[0.02em] text-white lowercase"
                 style={{
-                  fontFamily: '"Inter", "Helvetica Neue", "Arial", sans-serif',
+                  fontFamily: "var(--font-fredoka), system-ui, sans-serif",
                   textShadow:
-                    "0 0 12px rgba(255,255,255,0.18), 0 0 28px rgba(76,126,255,0.2)",
+                    "0 0 12px rgba(255,255,255,0.2), 0 0 26px rgba(255,255,255,0.12)",
                 }}
                 aria-hidden
               >
-                <span
-                  className="relative inline-flex h-[1.1em] w-[3.08em] items-center justify-center align-baseline"
-                >
+                <span className="relative inline-flex h-[1.1em] w-[clamp(2.35em,54%,2.68em)] items-end justify-center gap-0 align-baseline">
                   <svg
-                    viewBox="-12 0 404 140"
+                    viewBox="-8 0 226 140"
                     className="absolute inset-0 h-full w-full"
                     fill="none"
                     aria-hidden
@@ -891,8 +889,19 @@ export function Highlight24() {
                         </feMerge>
                       </filter>
                     </defs>
-                    {/* 앞 A만 확대 — R·뒤 A 스트로크 크기는 부모 em 그대로 */}
-                    {/* 기준점을 살짝 아래로: 위로 더 길게, 아래 확장은 최소 */}
+                    {/* 소문자 ra — r는 Fredoka, a는 글래스 블롭 */}
+                    <text
+                      fill="currentColor"
+                      x={24}
+                      y={128}
+                      fontSize={120}
+                      fontWeight={600}
+                      style={{ fontFamily: "var(--font-fredoka), system-ui, sans-serif" }}
+                    >
+                      r
+                    </text>
+                    <g transform="translate(100, 0)">
+                    {/* 앞 글자(a)만 확대 — 기준점 살짝 아래 */}
                     <g transform="translate(51, 105.5) scale(1.5, 1.78) translate(-51, -105.5)">
                     <g
                       filter={`url(#hero-a-bloom-${heroMarkUid})`}
@@ -940,34 +949,7 @@ export function Highlight24() {
                       fill="#FFFFFF"
                     />
                     </g>
-                    <path
-                      d="M152 126V14H194Q224 14 224 44Q224 74 194 74H152"
-                      stroke="currentColor"
-                      strokeWidth="18"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M194 74L230 126"
-                      stroke="currentColor"
-                      strokeWidth="18"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M284 126 L328 14 Q332 8 336 14 L380 126"
-                      stroke="currentColor"
-                      strokeWidth="18"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M303 84H361"
-                      stroke="currentColor"
-                      strokeWidth="18"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
+                    </g>
                   </svg>
                 </span>
               </div>
