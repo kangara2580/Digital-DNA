@@ -847,9 +847,9 @@ export function Highlight24() {
                         y2="20"
                         gradientUnits="userSpaceOnUse"
                       >
-                        <stop offset="0%" stopColor="#5FF5D9" stopOpacity="0.42" />
-                        <stop offset="38%" stopColor="#82E8FF" stopOpacity="0.38" />
-                        <stop offset="100%" stopColor="#63A7FF" stopOpacity="0.34" />
+                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.34" />
+                        <stop offset="42%" stopColor="#ffffff" stopOpacity="0.14" />
+                        <stop offset="100%" stopColor="#ffffff" stopOpacity="0.32" />
                       </linearGradient>
                       <radialGradient
                         id={`hero-a-depth-${heroMarkUid}`}
@@ -858,8 +858,8 @@ export function Highlight24() {
                         r="44"
                         gradientUnits="userSpaceOnUse"
                       >
-                        <stop offset="0%" stopColor="rgba(18, 40, 72, 0.2)" />
-                        <stop offset="50%" stopColor="rgba(34, 120, 180, 0.09)" />
+                        <stop offset="0%" stopColor="rgba(255, 255, 255, 0.22)" />
+                        <stop offset="55%" stopColor="rgba(255, 255, 255, 0.06)" />
                         <stop offset="100%" stopColor="rgba(255, 255, 255, 0)" />
                       </radialGradient>
                       <radialGradient
@@ -869,8 +869,8 @@ export function Highlight24() {
                         r="69"
                         gradientUnits="userSpaceOnUse"
                       >
-                        <stop offset="0%" stopColor="rgba(255,255,255,0.36)" />
-                        <stop offset="35%" stopColor="rgba(255,255,255,0.07)" />
+                        <stop offset="0%" stopColor="rgba(255,255,255,0.52)" />
+                        <stop offset="32%" stopColor="rgba(255,255,255,0.14)" />
                         <stop offset="100%" stopColor="rgba(255,255,255,0)" />
                       </radialGradient>
                       <filter
@@ -882,7 +882,7 @@ export function Highlight24() {
                         filterUnits="objectBoundingBox"
                       >
                         <feGaussianBlur in="SourceAlpha" stdDeviation="3.2" result="ablur" />
-                        <feFlood floodColor="#5EEAD4" floodOpacity="0.42" result="fl" />
+                        <feFlood floodColor="#ffffff" floodOpacity="0.22" result="fl" />
                         <feComposite in="fl" in2="ablur" operator="in" result="agog" />
                         <feGaussianBlur stdDeviation="1.1" in="agog" result="ag2" />
                         <feMerge>
@@ -905,10 +905,10 @@ export function Highlight24() {
                               width: "100%",
                               height: "100%",
                               borderRadius: 0,
-                              backdropFilter: "blur(14px)",
-                              WebkitBackdropFilter: "blur(14px)",
+                              backdropFilter: "blur(16px)",
+                              WebkitBackdropFilter: "blur(16px)",
                               background:
-                                "linear-gradient(156deg, rgba(255,255,255,0.28) 0%, rgba(130,232,255,0.14) 42%, rgba(95,245,217,0.1) 100%)",
+                                "linear-gradient(168deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.18) 48%, rgba(255,255,255,0.28) 100%)",
                               pointerEvents: "none",
                             }}
                           />
@@ -917,16 +917,16 @@ export function Highlight24() {
                         <path
                           fill={`url(#hero-a-depth-${heroMarkUid})`}
                           d={heroABlobD}
-                          style={{ mixBlendMode: "multiply", opacity: 0.82 }}
+                          style={{ mixBlendMode: "soft-light", opacity: 0.85 }}
                         />
                         <path
                           fill={`url(#hero-a-rim-${heroMarkUid})`}
                           d={heroABlobD}
-                          style={{ mixBlendMode: "soft-light", opacity: 0.88 }}
+                          style={{ mixBlendMode: "soft-light", opacity: 0.82 }}
                         />
                         <path
                           fill="none"
-                          stroke="rgba(255,255,255,0.42)"
+                          stroke="rgba(255,255,255,0.55)"
                           strokeWidth={1}
                           strokeLinejoin="round"
                           strokeLinecap="round"
