@@ -194,18 +194,14 @@ export function SellerPitchBanner() {
                 <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
                   {/* 사용자 카드 */}
                   <div className="relative overflow-hidden rounded-[22px] border border-white/28 bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
-                    <section className="space-y-5">
-                      <p className="pt-1 text-left text-[clamp(1.2rem,2.5vw,1.45rem)] font-medium tracking-tight text-zinc-300">
+                    <section className="flex flex-col items-center space-y-5 text-center">
+                      <p className="pt-1 text-[clamp(1.2rem,2.5vw,1.45rem)] font-medium tracking-tight text-zinc-300">
                         원하는 영상 AI로 재창작해서 사용하기
                       </p>
-                      <p className="pb-1 text-left text-[18px] font-extrabold tracking-tight text-white sm:text-[20px]">사용자</p>
-                      <ol className="relative space-y-4">
-                        <div
-                          className="pointer-events-none absolute bottom-5 left-5 top-5 w-px bg-gradient-to-b from-transparent via-white/40 to-transparent"
-                          aria-hidden
-                        />
-                        <li className="flex items-start gap-3">
-                          <span className="relative z-10 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
+                      <p className="pb-1 text-[18px] font-extrabold tracking-tight text-white sm:text-[20px]">사용자</p>
+                      <ol className="w-full space-y-4">
+                        <li className="flex flex-col items-center gap-2">
+                          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
                             <PlayCircle className="h-5 w-5" />
                           </span>
                           <div>
@@ -213,8 +209,8 @@ export function SellerPitchBanner() {
                             <p className="mt-1 text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">마켓에서 원하는 영상을 찾아보세요.</p>
                           </div>
                         </li>
-                        <li className="flex items-start gap-3">
-                          <span className="relative z-10 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
+                        <li className="flex flex-col items-center gap-2">
+                          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
                             <PencilRuler className="h-5 w-5" />
                           </span>
                           <div>
@@ -222,8 +218,8 @@ export function SellerPitchBanner() {
                             <p className="mt-1 text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">배경, 얼굴, 스타일을 자유롭게 변경하세요.</p>
                           </div>
                         </li>
-                        <li className="flex items-start gap-3">
-                          <span className="relative z-10 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
+                        <li className="flex flex-col items-center gap-2">
+                          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
                             <Download className="h-5 w-5" />
                           </span>
                           <div>
@@ -237,39 +233,35 @@ export function SellerPitchBanner() {
 
                   {/* 크리에이터 카드 */}
                   <div className="relative overflow-hidden rounded-[22px] border border-white/28 bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
-                    <section className="space-y-5">
-                      <p className="pt-1 text-right text-[clamp(1.2rem,2.5vw,1.45rem)] font-medium tracking-tight text-zinc-300">
+                    <section className="flex flex-col items-center space-y-5 text-center">
+                      <p className="pt-1 text-[clamp(1.2rem,2.5vw,1.45rem)] font-medium tracking-tight text-zinc-300">
                         원하는 영상 판매해서 수익 만들기
                       </p>
-                      <p className="pb-1 text-right text-[18px] font-extrabold tracking-tight text-white sm:text-[20px]">크리에이터</p>
-                      <ol className="relative space-y-4">
-                        <div
-                          className="pointer-events-none absolute bottom-5 right-5 top-5 w-px bg-gradient-to-b from-transparent via-white/40 to-transparent"
-                          aria-hidden
-                        />
-                        <li className="flex items-start justify-end gap-3 text-right">
-                          <span className="relative z-10 order-2 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
+                      <p className="pb-1 text-[18px] font-extrabold tracking-tight text-white sm:text-[20px]">크리에이터</p>
+                      <ol className="w-full space-y-4">
+                        <li className="flex flex-col items-center gap-2">
+                          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
                             <Link2 className="h-5 w-5" />
                           </span>
-                          <div className="max-w-[520px]">
+                          <div>
                             <p className="text-[16px] font-bold text-white">1. 영상 등록</p>
                             <p className="mt-1 text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">직접 업로드 또는 URL을 붙여넣어 영상을 등록하세요.</p>
                           </div>
                         </li>
-                        <li className="flex items-start justify-end gap-3 text-right">
-                          <span className="relative z-10 order-2 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
+                        <li className="flex flex-col items-center gap-2">
+                          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
                             <Tag className="h-5 w-5" />
                           </span>
-                          <div className="max-w-[520px]">
+                          <div>
                             <p className="text-[16px] font-bold text-white">2. 가격 설정</p>
                             <p className="mt-1 text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">원하는 가격을 설정하세요.</p>
                           </div>
                         </li>
-                        <li className="flex items-start justify-end gap-3 text-right">
-                          <span className="relative z-10 order-2 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
+                        <li className="flex flex-col items-center gap-2">
+                          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/22 bg-[#0b1324] text-white">
                             <WandSparkles className="h-5 w-5" />
                           </span>
-                          <div className="max-w-[520px]">
+                          <div>
                             <p className="text-[16px] font-bold text-white">3. 판매 시작</p>
                             <p className="mt-1 text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">플랫폼에 공개하면 누구나 구매할 수 있습니다.</p>
                           </div>
