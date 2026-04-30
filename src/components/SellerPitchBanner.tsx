@@ -199,7 +199,7 @@ export function SellerPitchBanner() {
                         원하는 영상 AI로 재창작해서 사용하기
                       </p>
                       <p className="pb-1 text-[18px] font-extrabold tracking-tight text-white sm:text-[20px]">사용자</p>
-                      <ol className="w-full space-y-5">
+                      <ol className="w-full space-y-8">
                         <li className="flex flex-col items-center gap-2">
                           <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
                             <img src="/steps/user-step1-browse.png" alt="마켓 영상 탐색 화면" className="h-[220px] w-full object-cover object-top" />
@@ -232,7 +232,7 @@ export function SellerPitchBanner() {
                         원하는 영상 판매해서 수익 만들기
                       </p>
                       <p className="pb-1 text-[18px] font-extrabold tracking-tight text-white sm:text-[20px]">크리에이터</p>
-                      <ol className="w-full space-y-5">
+                      <ol className="w-full space-y-8">
                         <li className="flex flex-col items-center gap-2">
                           <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
                             <img src="/steps/creator-step1-upload.png" alt="영상 URL 등록 화면" className="h-[220px] w-full object-cover object-top" />
