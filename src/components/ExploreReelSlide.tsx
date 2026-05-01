@@ -462,7 +462,7 @@ function ReelDesktopRail({
             <span
               className={`flex h-[11px] min-w-[0.875rem] items-center justify-center text-[11px] font-semibold leading-none ${
                 revenueUp
-                  ? "text-[#F87171] [html[data-theme='light']_&]:text-red-500"
+                  ? "text-[#FF0000] [html[data-theme='light']_&]:text-red-600"
                   : "text-[#2FA2FF] [html[data-theme='light']_&]:text-sky-600"
               }`}
               aria-hidden

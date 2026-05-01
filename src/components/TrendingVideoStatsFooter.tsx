@@ -50,7 +50,7 @@ export function TrendingVideoStatsFooter({
             <TrendingUp className="h-3.5 w-3.5 shrink-0" aria-hidden />
             수익
             <span
-              className={`text-[11px] leading-none ${isUp ? "text-[#F87171]" : "text-[#2FA2FF]"}`}
+              className={`text-[11px] leading-none ${isUp ? "text-[#FF0000] [html[data-theme='light']_&]:text-red-600" : "text-[#2FA2FF] [html[data-theme='light']_&]:text-sky-600"}`}
               aria-hidden
             >
               {isUp ? "▲" : "▼"}
