@@ -78,7 +78,7 @@ export function MyPageDashboard() {
     () => TAB_ITEMS.find((item) => item.id === currentTab) ?? TAB_ITEMS[0],
     [currentTab],
   );
-  const { user, supabaseConfigured } = useAuthSession();
+  const { user, supabaseConfigured, loading: authLoading } = useAuthSession();
   const { profile, hydrated } = useStoredFaceProfile();
   const [draftCount, setDraftCount] = useState(0);
   const [profileRecord, setProfileRecord] = useState<AppProfile | null>(null);
@@ -243,7 +243,14 @@ export function MyPageDashboard() {
         </aside>
 
         <section className="min-w-0">
-          {!user ? <LoginRequiredPanel tab={activeTab} /> : null}
+          {authLoading && !user ? (
+            <div className="reels-glass-card rounded-xl p-10 text-center sm:rounded-2xl">
+              <p className="text-[14px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                불러오는 중…
+              </p>
+            </div>
+          ) : null}
+          {!authLoading && !user ? <LoginRequiredPanel tab={activeTab} /> : null}
 
           {currentTab === "basic" && user ? (
             <div className="reels-glass-card rounded-xl p-4 sm:rounded-2xl sm:p-5 lg:p-6">
