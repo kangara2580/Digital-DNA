@@ -318,7 +318,7 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
               <div className="space-y-5 sm:space-y-6">
                 <p className="mb-6 text-center text-[clamp(1.9rem,4vw,2.9rem)] tracking-tight text-zinc-100 sm:mb-8">
                   <span className="font-light">단 </span>
-                  <span className="font-extrabold">3</span>
+                  <span className="font-bold">3</span>
                   <span className="font-light">단계</span>
                 </p>
                 <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
