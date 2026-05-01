@@ -195,6 +195,10 @@ export function MallTopNav() {
   const isVideoDetailPage =
     pathname.startsWith("/video/") && !pathname.endsWith("/customize");
   const isCategoryPage = pathname.startsWith("/category/");
+  /** 명예의 전당 · 마이페이지 트리: 상단 검은 헤더바 숨김, 계정·장바구니만 우측 상단 플로팅 */
+  const isLeaderboardPath =
+    pathname === "/leaderboard" || pathname.startsWith("/leaderboard/");
+  const isMypagePath = pathname === "/mypage" || pathname.startsWith("/mypage/");
   /** 탐색/카테고리: 메인에서 스크롤 내린 것과 같은 컴팩트 헤더를 즉시 적용 */
   const compactEffective =
     pathname === "/explore" || isShopPage || isCategoryPage || isVideoDetailPage;
@@ -203,6 +207,8 @@ export function MallTopNav() {
   const showAllCategoriesInline =
     (isShopPage || isCategoryPage) && !isExploreWatchMode;
   const [moreOpen, setMoreOpen] = useState(false);
+  const showFloatingChromeOnlyNav =
+    isExploreWatchMode || isVideoDetailPage || isLeaderboardPath || isMypagePath;
   const [mounted, setMounted] = useState(false);
   const moreWrapRef = useRef<HTMLDivElement>(null);
   const menuPortalRef = useRef<HTMLDivElement>(null);
@@ -297,13 +303,12 @@ export function MallTopNav() {
     };
   }, []);
 
-  // 영상 상세 페이지에서도 헤더 높이를 0으로 설정
   useEffect(() => {
     if (typeof document === "undefined") return;
-    if (isVideoDetailPage) {
+    if (showFloatingChromeOnlyNav) {
       document.documentElement.style.setProperty("--header-height", "0px");
     }
-  }, [isVideoDetailPage]);
+  }, [showFloatingChromeOnlyNav]);
 
   useEffect(() => {
     if (!compactEffective) setMoreOpen(false);
@@ -433,26 +438,29 @@ export function MallTopNav() {
     );
   }
 
-  if (isExploreWatchMode || isVideoDetailPage) {
+  if (showFloatingChromeOnlyNav) {
     return (
-      <div className="pointer-events-none fixed right-4 top-4 z-[120] sm:right-6 sm:top-5">
-        <div className="pointer-events-auto flex flex-row items-center gap-2 sm:gap-2">
-          <MainTopUserMenu compact />
-          {user ? (
-            <Link
-              href="/cart"
-              className={topNavIconRingFullClass("compact")}
-              aria-label="장바구니"
-            >
-              <ShoppingCart
-                className={topNavShoppingCartGlyphClass("compact")}
-                strokeWidth={2}
-                aria-hidden
-              />
-            </Link>
-          ) : null}
+      <Fragment>
+        <div className="pointer-events-none fixed right-4 top-4 z-[120] sm:right-6 sm:top-5">
+          <div className="pointer-events-auto flex flex-row items-center gap-2 sm:gap-2">
+            <MainTopUserMenu compact />
+            {user ? (
+              <Link
+                href="/cart"
+                className={topNavIconRingFullClass("compact")}
+                aria-label="장바구니"
+              >
+                <ShoppingCart
+                  className={topNavShoppingCartGlyphClass("compact")}
+                  strokeWidth={2}
+                  aria-hidden
+                />
+              </Link>
+            ) : null}
+          </div>
         </div>
-      </div>
+        <FixedSubscribeNavLink />
+      </Fragment>
     );
   }
 
