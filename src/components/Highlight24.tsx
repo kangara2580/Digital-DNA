@@ -26,10 +26,10 @@ import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
-
-/** MallTopNav `cartNavClass` 과 동일 — 메인 히어로 우측 장바구니 */
-const heroCartNavClass =
-  "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-zinc-200 transition hover:text-white [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800";
+import {
+  topNavIconRingFullClass,
+  topNavShoppingCartGlyphClass,
+} from "@/lib/topNavIconRing";
 
 function ChevronLeft({ className }: { className?: string }) {
   return (
@@ -507,7 +507,7 @@ export function Highlight24() {
             }`}
           >
             <LoggedInAccountHoverMenu
-              triggerClassName="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-black/38 text-white/95 shadow-[0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition-[border-color,background-color,color] hover:border-white/55 hover:bg-black/52 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/85 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.06)] [html[data-theme='light']_&]:hover:border-zinc-400"
+              triggerClassName={topNavIconRingFullClass("hero")}
               aria-label="계정 메뉴"
             >
               <span className="relative inline-flex h-6 w-6 items-center justify-center">
@@ -528,8 +528,12 @@ export function Highlight24() {
                 </svg>
               </span>
             </LoggedInAccountHoverMenu>
-            <Link href="/cart" className={heroCartNavClass} aria-label="장바구니">
-              <ShoppingCart className="h-4 w-4" strokeWidth={2} aria-hidden />
+            <Link href="/cart" className={topNavIconRingFullClass("hero")} aria-label="장바구니">
+              <ShoppingCart
+                className={topNavShoppingCartGlyphClass("hero")}
+                strokeWidth={2}
+                aria-hidden
+              />
             </Link>
           </div>
         ) : (
@@ -579,7 +583,7 @@ export function Highlight24() {
           {user ? (
             <div className="pointer-events-none flex shrink-0 items-center gap-2 sm:gap-2">
               <div className="h-11 w-11 shrink-0" aria-hidden />
-              <div className="h-9 w-9 shrink-0" aria-hidden />
+              <div className="h-11 w-11 shrink-0" aria-hidden />
             </div>
           ) : (
             <div className="h-11 w-11 shrink-0" aria-hidden />

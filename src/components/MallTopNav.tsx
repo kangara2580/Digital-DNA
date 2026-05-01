@@ -17,6 +17,10 @@ import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhr
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 import { MainTopUserMenu } from "@/components/MainTopUserMenu";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import {
+  topNavIconRingFullClass,
+  topNavShoppingCartGlyphClass,
+} from "@/lib/topNavIconRing";
 
 /** 카테고리 pill — 라이트 모드에서 검정 텍스트 */
 const categoryPillClass =
@@ -160,9 +164,6 @@ function RotatingSearchField({
 
 const subscribeNavClass =
   "inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-reels-cyan/40 bg-reels-cyan/10 text-reels-cyan transition hover:bg-reels-cyan/15 sm:size-10 [html[data-theme='light']_&]:border-reels-cyan/35 [html[data-theme='light']_&]:bg-reels-cyan/10";
-
-const cartNavClass =
-  "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-zinc-200 transition hover:text-white [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800";
 
 /** md 미만: 좌측 레일이 없어서 우측 상단 고정 유지. md+: 레일의 구독 버튼만 사용 */
 const subscribeFixedWrap =
@@ -435,8 +436,21 @@ export function MallTopNav() {
   if (isExploreWatchMode || isVideoDetailPage) {
     return (
       <div className="pointer-events-none fixed right-4 top-4 z-[120] sm:right-6 sm:top-5">
-        <div className="pointer-events-auto">
+        <div className="pointer-events-auto flex flex-row items-center gap-2 sm:gap-2">
           <MainTopUserMenu compact />
+          {user ? (
+            <Link
+              href="/cart"
+              className={topNavIconRingFullClass("compact")}
+              aria-label="장바구니"
+            >
+              <ShoppingCart
+                className={topNavShoppingCartGlyphClass("compact")}
+                strokeWidth={2}
+                aria-hidden
+              />
+            </Link>
+          ) : null}
         </div>
       </div>
     );
@@ -507,8 +521,16 @@ export function MallTopNav() {
                   <div className="flex w-full min-w-0 flex-1 items-center justify-end gap-2 sm:ml-auto sm:w-auto sm:gap-3">
                     <MainTopUserMenu compact={false} />
                     {!isHomePage && user ? (
-                      <Link href="/cart" className={cartNavClass} aria-label="장바구니">
-                        <ShoppingCart className="h-4 w-4" strokeWidth={2} aria-hidden />
+                      <Link
+                        href="/cart"
+                        className={topNavIconRingFullClass("default")}
+                        aria-label="장바구니"
+                      >
+                        <ShoppingCart
+                          className={topNavShoppingCartGlyphClass("default")}
+                          strokeWidth={2}
+                          aria-hidden
+                        />
                       </Link>
                     ) : null}
                   </div>
@@ -694,8 +716,16 @@ export function MallTopNav() {
             >
               <MainTopUserMenu compact />
               {!isHomePage && user ? (
-                <Link href="/cart" className={cartNavClass} aria-label="장바구니">
-                  <ShoppingCart className="h-4 w-4" strokeWidth={2} aria-hidden />
+                <Link
+                  href="/cart"
+                  className={topNavIconRingFullClass("compact")}
+                  aria-label="장바구니"
+                >
+                  <ShoppingCart
+                    className={topNavShoppingCartGlyphClass("compact")}
+                    strokeWidth={2}
+                    aria-hidden
+                  />
                 </Link>
               ) : null}
               <div className="md:hidden">
