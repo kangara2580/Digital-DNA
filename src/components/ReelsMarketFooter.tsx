@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useId } from "react";
+import { MainTopUserMenu } from "@/components/MainTopUserMenu";
 
 export function ARAFooter() {
   const baseId = useId();
@@ -35,6 +36,15 @@ export function ARAFooter() {
             <Link href="/contact" className={footerLinkClass("/contact")}>고객센터</Link>
             <Link href="/privacy" className={footerLinkClass("/privacy")}>개인정보처리방침</Link>
           </nav>
+
+          {pathname !== "/" ? (
+          <div
+            className="relative z-[30] mt-6 flex justify-center overflow-visible"
+            aria-label="푸터 계정"
+          >
+            <MainTopUserMenu compact />
+          </div>
+          ) : null}
 
           <div className="mt-8 w-full border-t border-white/10 pt-5 [html[data-theme='light']_&]:border-zinc-200">
             <p className="text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">

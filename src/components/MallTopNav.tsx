@@ -503,9 +503,9 @@ export function MallTopNav() {
             )
           ) : null}
 
-          {/* 펼침: 로고 좌 | 검색 우 / 컴팩트 시 접힘 */}
+          {/* 펼침: 로고 좌 | 검색 우 / 컴팩트 시 접힘 — 펼침 시 overflow-visible (계정 호버 메뉴 잘림 방지) */}
           <div
-            className={`w-full overflow-hidden ${easeTitleCollapse} ${
+            className={`w-full ${compactEffective ? "overflow-hidden" : "overflow-visible"} ${easeTitleCollapse} ${
               compactEffective
                 ? "pointer-events-none absolute left-0 top-0 z-0 max-h-0 w-full opacity-0"
                 : "relative max-h-[min(280px,50vh)] opacity-100"
