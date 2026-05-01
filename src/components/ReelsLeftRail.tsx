@@ -6,7 +6,6 @@ import {
   MoreVertical,
   Search,
   Trophy,
-  User,
   Wallet,
   X,
 } from "lucide-react";
@@ -102,12 +101,6 @@ const RAIL_ITEMS: RailItem[] = [
     Icon: Trophy,
     isActive: (p) => p === "/leaderboard" || p.startsWith("/leaderboard/"),
   },
-  {
-    href: "/mypage",
-    label: "마이페이지",
-    Icon: User,
-    isActive: (p) => p.startsWith("/mypage"),
-  },
 ];
 
 export function ReelsLeftRail() {
@@ -129,12 +122,6 @@ export function ReelsLeftRail() {
   const searchHoverCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** 데스크톱: 호버만으로 검색창 열기 (터치·저사양 포인터는 기존 클릭만) */
   const [searchHoverMode, setSearchHoverMode] = useState(false);
-
-  const visibleRailItems = RAIL_ITEMS.filter((item) => {
-    // 비로그인 사용자는 마이페이지 대신 상단 로그인/회원가입 버튼으로 진입합니다.
-    if (item.href === "/mypage" && !user) return false;
-    return true;
-  });
 
   useEffect(() => {
     setMounted(true);
@@ -303,7 +290,7 @@ export function ReelsLeftRail() {
                 <Search className="h-[23px] w-[23px]" strokeWidth={1.9} aria-hidden />
               </button>
             </div>
-            {visibleRailItems.map(({ href, label, Icon, isActive }) => {
+            {RAIL_ITEMS.map(({ href, label, Icon, isActive }) => {
               const on = isActive(pathname);
               return (
                 <div key={href} className="group relative">
