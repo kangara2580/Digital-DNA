@@ -364,7 +364,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                 {filterOpen ? (
                   <section
                     id="category-filter-popover"
-                    className="absolute right-0 top-[calc(100%+0.6rem)] z-30 w-[min(21rem,calc(100vw-2rem))] rounded-2xl border border-white/10 bg-[#030816]/95 p-4 shadow-[0_18px_48px_-20px_rgba(0,0,0,0.55)] backdrop-blur-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white"
+                    className="absolute right-0 top-[calc(100%+0.6rem)] z-30 w-[min(16rem,calc(100vw-1rem))] rounded-2xl border border-white/10 bg-[#030816]/95 px-3 py-4 shadow-[0_18px_48px_-20px_rgba(0,0,0,0.55)] backdrop-blur-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white"
                     aria-label="카테고리 필터"
                   >
                     <div className="mb-2 flex items-center justify-between">
@@ -416,11 +416,6 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                         가로
                       </button>
                     </div>
-                    {orientationCounts.landscape === 0 ? (
-                      <p className="mt-2 text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                        현재 이 카테고리에는 가로 영상이 없습니다.
-                      </p>
-                    ) : null}
 
                     <p className={`mt-5 ${filterSectionLabel}`}>가격</p>
                     <div className="space-y-1">
@@ -491,7 +486,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                         setPriceFilter("all");
                         setNewestFilter("all");
                       }}
-                      className="mt-5 w-full rounded-full border border-reels-cyan/35 bg-reels-cyan/12 py-2 text-[12px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20"
+                      className="mt-5 w-full rounded-full border border-white/40 bg-transparent py-2 text-[12px] font-bold text-white transition hover:border-white/70 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-800 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-950 [html[data-theme='light']_&]:hover:bg-zinc-100"
                     >
                       필터 초기화
                     </button>
