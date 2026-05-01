@@ -676,7 +676,7 @@ export function Highlight24() {
                   fontFamily: "var(--font-fredoka), ui-rounded, system-ui, sans-serif",
                   letterSpacing: "0.015em",
                   textShadow:
-                    "0 0 14px rgba(255,255,255,0.22), 0 0 32px rgba(126,166,255,0.26)",
+                    "0 0 14px rgba(233,30,99,0.22), 0 0 32px rgba(233,30,99,0.26)",
                 }}
                 aria-hidden
               >
