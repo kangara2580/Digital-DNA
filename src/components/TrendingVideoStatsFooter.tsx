@@ -36,6 +36,10 @@ const labelCls =
 const valueCls =
   "text-[15px] font-extrabold leading-snug tabular-nums tracking-tight text-[#EAF1FF] [html[data-theme='light']_&]:text-zinc-900";
 
+/** 메인 인기순위(라벨 숨김) — 수익·조회·좋아요 숫자만 소형 */
+const valueClsRankingCompact =
+  "text-[12px] font-extrabold leading-snug tabular-nums tracking-tight text-[#EAF1FF] [html[data-theme='light']_&]:text-zinc-900 sm:text-[13px]";
+
 export function TrendingVideoStatsFooter({
   metrics,
   salesCount,
@@ -52,6 +56,8 @@ export function TrendingVideoStatsFooter({
   const labelTone =
     "text-[14px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
   const valueDdExtras = hideMetricLabels ? "flex-1 text-right" : "";
+  const metricValueSize = hideMetricLabels ? "text-[12px] sm:text-[13px]" : "text-[15px]";
+  const neutralMetricValueCls = hideMetricLabels ? valueClsRankingCompact : valueCls;
 
   return (
     <div
@@ -74,7 +80,7 @@ export function TrendingVideoStatsFooter({
             </span>
           </dt>
           <dd
-            className={`min-w-0 text-[15px] font-extrabold tabular-nums ${valueDdExtras} ${
+            className={`min-w-0 font-extrabold tabular-nums ${metricValueSize} ${valueDdExtras} ${
               isUp
                 ? "text-[#F87171] [html[data-theme='light']_&]:text-red-500"
                 : "text-[#B9CCFF] [html[data-theme='light']_&]:text-[#2F4FA8]"
@@ -92,7 +98,7 @@ export function TrendingVideoStatsFooter({
               "조회수"
             )}
           </dt>
-          <dd className={`${valueCls} min-w-0 ${valueDdExtras}`}>
+          <dd className={`${neutralMetricValueCls} min-w-0 ${valueDdExtras}`}>
             {formatCountCompact(metrics.totalViews)}
           </dd>
         </div>
@@ -105,7 +111,7 @@ export function TrendingVideoStatsFooter({
               "좋아요"
             )}
           </dt>
-          <dd className={`${valueCls} min-w-0 ${valueDdExtras}`}>{formatCountCompact(metrics.totalLikes)}</dd>
+          <dd className={`${neutralMetricValueCls} min-w-0 ${valueDdExtras}`}>{formatCountCompact(metrics.totalLikes)}</dd>
         </div>
         {typeof salesCount === "number" ? (
           <div className={rowCls}>

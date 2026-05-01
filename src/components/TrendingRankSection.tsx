@@ -315,6 +315,7 @@ export function TrendingRankSection() {
                             : `/video/${entry.video.id}`
                     }
                     className="h-full min-w-0"
+                    trendingRankCardPrice
                     footerExtension={
                       <TrendingVideoStatsFooter
                         hideMetricLabels

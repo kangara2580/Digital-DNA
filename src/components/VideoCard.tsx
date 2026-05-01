@@ -98,6 +98,8 @@ type Props = {
   hideInfoBar?: boolean;
   /** 인기순위 TOP3 제목(1금·2은·3동 그라데이션) */
   rankTitleMedal?: 1 | 2 | 3;
+  /** 홈 인기순위 그리드만 — 가격 글자 흰색·한 단계 크게 */
+  trendingRankCardPrice?: boolean;
 };
 
 function formatDuration(seconds: number): string {
@@ -230,6 +232,7 @@ export function VideoCard({
   hideCreatorMeta = false,
   hideInfoBar = false,
   rankTitleMedal,
+  trendingRankCardPrice = false,
 }: Props) {
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
@@ -924,15 +927,19 @@ export function VideoCard({
             </h3>
             {priceLabel ? (
               <span
-                className={`shrink-0 rounded-md px-1.5 py-0.5 text-right font-extrabold tabular-nums text-[#64E3FF] transition-[transform,background-color,color,box-shadow,font-weight] duration-[300ms] ease-out motion-reduce:transition-none group-hover:scale-[1.03] group-hover:bg-[#2348A8]/35 group-hover:text-[#BFE0FF] group-hover:shadow-[0_0_14px_-4px_rgba(79,140,255,0.7)] motion-reduce:group-hover:scale-100 motion-reduce:group-hover:bg-transparent motion-reduce:group-hover:font-extrabold motion-reduce:group-hover:text-[#64E3FF] motion-reduce:group-hover:shadow-none [html[data-theme='light']_&]:text-[#2A62D8] ${
-                  dense
-                    ? "text-[10px]"
-                    : reelStrip
-                      ? "text-[12px] sm:text-[13px]"
-                      : reelLayout
-                        ? "text-[12px] sm:text-[13px]"
-                        : "text-[11px] sm:text-[12px]"
-                }`}
+                className={
+                  trendingRankCardPrice
+                    ? "shrink-0 rounded-md px-2 py-0.5 text-right text-[13px] font-extrabold tabular-nums text-zinc-50 transition-colors duration-200 motion-reduce:transition-none [html[data-theme='light']_&]:text-zinc-950 sm:text-[15px] group-hover:bg-white/[0.08] group-hover:text-white motion-reduce:group-hover:bg-transparent"
+                    : `shrink-0 rounded-md px-1.5 py-0.5 text-right font-extrabold tabular-nums text-[#64E3FF] transition-[transform,background-color,color,box-shadow,font-weight] duration-[300ms] ease-out motion-reduce:transition-none group-hover:scale-[1.03] group-hover:bg-[#2348A8]/35 group-hover:text-[#BFE0FF] group-hover:shadow-[0_0_14px_-4px_rgba(79,140,255,0.7)] motion-reduce:group-hover:scale-100 motion-reduce:group-hover:bg-transparent motion-reduce:group-hover:font-extrabold motion-reduce:group-hover:text-[#64E3FF] motion-reduce:group-hover:shadow-none [html[data-theme='light']_&]:text-[#2A62D8] ${
+                        dense
+                          ? "text-[10px]"
+                          : reelStrip
+                            ? "text-[12px] sm:text-[13px]"
+                            : reelLayout
+                              ? "text-[12px] sm:text-[13px]"
+                              : "text-[11px] sm:text-[12px]"
+                      }`
+                }
               >
                 {priceLabel}
               </span>
