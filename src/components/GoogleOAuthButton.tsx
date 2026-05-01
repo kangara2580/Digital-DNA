@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronRight } from "lucide-react";
-import { authModalGoogleChevronClass } from "@/lib/authModalTheme";
+import { AUTH_MODAL_BRAND_PINK_HEX, authModalGoogleChevronClass } from "@/lib/authModalTheme";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
@@ -83,6 +83,8 @@ export function GoogleOAuthButton({
       {showBrandChevron && !busy ? (
         <ChevronRight
           className={authModalGoogleChevronClass}
+          color={AUTH_MODAL_BRAND_PINK_HEX}
+          stroke={AUTH_MODAL_BRAND_PINK_HEX}
           strokeWidth={3.85}
           strokeLinecap="round"
           strokeLinejoin="round"
