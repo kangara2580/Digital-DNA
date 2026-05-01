@@ -564,10 +564,10 @@ export function Highlight24() {
                 <motion.div
                   key={v.id}
                   role="presentation"
-                  className={`group absolute left-1/2 top-1/2 overflow-hidden rounded-2xl border bg-black/40 [transform-style:preserve-3d] ${
+                  className={`group absolute left-1/2 top-1/2 overflow-hidden rounded-2xl bg-black/40 [transform-style:preserve-3d] ${
                     isMain
-                      ? "cursor-pointer border-white/35 shadow-[0_32px_100px_-24px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.14)] ring-1 ring-inset ring-white/20"
-                      : "cursor-pointer border-transparent shadow-[0_28px_90px_-26px_rgba(0,0,0,0.88)]"
+                      ? "cursor-pointer border-[0.5px] border-solid border-[rgba(233,30,99,0.55)] shadow-[0_32px_100px_-24px_rgba(0,0,0,0.55)]"
+                      : "cursor-pointer border border-transparent shadow-[0_28px_90px_-26px_rgba(0,0,0,0.88)]"
                   } ${pose.opacity < 0.02 ? "pointer-events-none" : ""}`}
                   style={{
                     width: cardW,
@@ -633,9 +633,6 @@ export function Highlight24() {
                         isMain ? "from-black/25" : "from-black/45"
                       }`}
                     />
-                    {isMain ? (
-                      <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/12" />
-                    ) : null}
                     {v.priceWon != null ? (
                       <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center bg-gradient-to-b from-black/50 via-black/20 to-transparent px-2 pb-6 pt-2.5 opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 motion-reduce:transition-none sm:pb-8 sm:pt-3">
                         <span className="text-legible-white rounded-md bg-black/45 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-white ring-1 ring-white/20 sm:text-[11px]">
