@@ -1,6 +1,23 @@
-/** 상단 헤더 프로필(MainTopUserMenu)·`/cart` 링크 등 공통 원형 링 (테두리·블러 배경 동일). */
+/** 상단 헤더 프로필(MainTopUserMenu)·`/cart` 등 — 레거시 단일 원형 링 (필요 시). */
 export const TOP_NAV_ICON_RING_BASE =
-  "inline-flex shrink-0 items-center justify-center rounded-full border border-white/40 bg-black/35 text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition-[border-color,background-color,color] duration-200 ease-out hover:border-white/55 hover:bg-black/48 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.06)] [html[data-theme='light']_&]:hover:border-zinc-400";
+  "inline-flex shrink-0 items-center justify-center rounded-full border border-white/40 bg-black/24 text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-md transition-[border-color,background-color,color] duration-200 ease-out hover:border-white/52 hover:bg-black/36 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/[0.68] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.05)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-white/80";
+
+/** 메인 h-11 기준 — 계정(+선택 시 장바구니) 공용 캡슐: 한 겹 테두리, 내부 배경은 링보다 더 옅게. */
+export const TOP_NAV_ACCOUNT_CART_PILL_OUTER =
+  "inline-flex h-11 min-h-[2.75rem] shrink-0 items-stretch overflow-hidden rounded-full border border-white/40 bg-black/20 text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-md transition-[border-color,background-color] duration-200 ease-out hover:border-white/52 hover:bg-black/28 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/[0.6] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.05)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-white/[0.72]";
+
+/** 캡슐 내부 셀 — 개별 원형 링 없음. */
+export const TOP_NAV_ACCOUNT_CART_PILL_CELL =
+  "flex h-full min-h-[2.75rem] w-full min-w-0 flex-[1_1_0] items-center justify-center border-0 bg-transparent px-2 text-inherit shadow-none transition-colors hover:bg-white/[0.065] focus-visible:z-[1] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white/45 [html[data-theme='light']_&]:hover:bg-zinc-200/55 [html[data-theme='light']_&]:focus-visible:outline-zinc-500/65";
+
+/** 캡슐 세로 구분선 */
+export const TOP_NAV_ACCOUNT_CART_PILL_DIVIDER =
+  "pointer-events-none my-2 w-px shrink-0 self-stretch bg-white/[0.14] [html[data-theme='light']_&]:bg-zinc-300/42";
+
+/** 프로필·장바구니 글립 — 메인과 동일 18×18 */
+export function topNavHeroGlyphIconClass(): string {
+  return "h-[18px] w-[18px]";
+}
 
 export type TopNavIconRingSize = "compact" | "default" | "hero";
 

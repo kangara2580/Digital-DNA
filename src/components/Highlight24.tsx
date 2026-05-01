@@ -1,8 +1,6 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { ShoppingCart } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent } from "react";
@@ -13,7 +11,7 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
 import { AuthModalPortal } from "@/components/AuthModalPortal";
-import { LoggedInAccountHoverMenu } from "@/components/LoggedInAccountHoverMenu";
+import { MainTopUserMenu } from "@/components/MainTopUserMenu";
 import {
   authModalDialogSurface,
   authModalDismissButtonCls,
@@ -26,11 +24,6 @@ import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
-import {
-  topNavIconRingFullClass,
-  topNavShoppingCartGlyphClass,
-} from "@/lib/topNavIconRing";
-
 function ChevronLeft({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
@@ -223,11 +216,6 @@ export function Highlight24() {
     }
     window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
   }, []);
-
-  const onTopUserClick = useCallback(() => {
-    if (authLoading) return;
-    setAuthOpen(true);
-  }, [authLoading]);
 
   const onStartClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
@@ -500,93 +488,20 @@ export function Highlight24() {
         aria-hidden
       />
       <div className="relative z-10 mx-auto max-w-[1800px] px-4 pb-4 pt-9 sm:px-6 sm:pb-5 sm:pt-10 lg:px-8">
-        {user ? (
-          <div
-            className={`fixed right-4 top-4 z-[120] flex flex-row items-center gap-2 sm:right-6 sm:top-5 sm:gap-2 ${
-              authLoading ? "pointer-events-none opacity-50" : ""
-            }`}
-          >
-            <LoggedInAccountHoverMenu
-              triggerClassName={topNavIconRingFullClass("hero")}
-              aria-label="계정 메뉴"
-            >
-              <span className="relative inline-flex h-6 w-6 items-center justify-center">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-6 w-6"
-                  fill="none"
-                  stroke="currentColor"
-                  aria-hidden
-                >
-                  <circle cx="12" cy="8" r="4" strokeWidth="2.2" />
-                  <path
-                    d="M4 20C4 15.8 7.6 12.4 12 12.4C16.4 12.4 20 15.8 20 20H4Z"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-            </LoggedInAccountHoverMenu>
-            <Link href="/cart" className={topNavIconRingFullClass("hero")} aria-label="장바구니">
-              <ShoppingCart
-                className={topNavShoppingCartGlyphClass("hero")}
-                strokeWidth={2}
-                aria-hidden
-              />
-            </Link>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={onTopUserClick}
-            className="fixed right-4 top-4 z-[120] inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-black/38 text-white/95 backdrop-blur-md transition hover:bg-black/52 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/85 sm:right-6 sm:top-5"
-            aria-label="로그인 또는 회원가입"
-            disabled={authLoading}
-          >
-            <span className="relative inline-flex h-6 w-6 items-center justify-center">
-              <svg
-                viewBox="0 0 24 24"
-                className="h-6 w-6"
-                fill="none"
-                stroke="currentColor"
-                aria-hidden
-              >
-                <circle cx="12" cy="8" r="4" strokeWidth="2.2" />
-                <path
-                  d="M4 20C4 15.8 7.6 12.4 12 12.4C16.4 12.4 20 15.8 20 20H4Z"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              {!user ? (
-                <svg
-                  viewBox="0 0 24 24"
-                  className="absolute -right-[0.28rem] -top-[0.28rem] h-3 w-3"
-                  fill="none"
-                  stroke="currentColor"
-                  aria-hidden
-                >
-                  <path
-                    d="M12 4V20M4 12H20"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              ) : null}
-            </span>
-          </button>
-        )}
+        <div
+          className={`fixed right-4 top-4 z-[120] flex flex-row items-center sm:right-6 sm:top-5 ${
+            authLoading ? "pointer-events-none opacity-50" : ""
+          }`}
+        >
+          <MainTopUserMenu />
+        </div>
         <div className="relative z-20 mb-5 flex justify-end sm:mb-6 md:mb-7" aria-hidden>
           {user ? (
             <div className="pointer-events-none flex shrink-0 items-center gap-2 sm:gap-2">
-              <div className="h-11 w-11 shrink-0" aria-hidden />
-              <div className="h-11 w-11 shrink-0" aria-hidden />
+              <div className="h-11 min-w-[5.5rem] shrink-0 rounded-full" aria-hidden />
             </div>
           ) : (
-            <div className="h-11 w-11 shrink-0" aria-hidden />
+            <div className="h-11 min-w-[2.75rem] shrink-0 rounded-full" aria-hidden />
           )}
         </div>
         <div className="relative z-10 mx-auto flex max-w-7xl items-center justify-between gap-6 pb-7 pt-2 sm:pb-8 sm:pt-3 md:gap-8 md:pb-9 md:pt-4">

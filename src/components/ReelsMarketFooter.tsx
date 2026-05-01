@@ -42,7 +42,7 @@ export function ARAFooter() {
             className="relative z-[30] mt-6 flex justify-center overflow-visible"
             aria-label="푸터 계정"
           >
-            <MainTopUserMenu compact />
+            <MainTopUserMenu withCart={false} />
           </div>
           ) : null}
 

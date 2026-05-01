@@ -9,6 +9,8 @@ type Props = {
   triggerClassName: string;
   children: ReactNode;
   "aria-label"?: string;
+  /** 캡슐 첫 칸 등 루트 정렬 재정의 (기본: 우측 정렬 헤더 아이콘) */
+  rootClassName?: string;
 };
 
 const menuPanelInner =
@@ -25,6 +27,7 @@ export function LoggedInAccountHoverMenu({
   triggerClassName,
   children,
   "aria-label": ariaLabel = "계정 메뉴",
+  rootClassName,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -50,6 +53,7 @@ export function LoggedInAccountHoverMenu({
     "pointer-events-none invisible absolute right-0 top-full z-[220] min-w-[10.5rem] pt-2 opacity-0 transition-[opacity,visibility] duration-150 ease-out motion-reduce:transition-none group-hover/acctmenu:pointer-events-auto group-hover/acctmenu:visible group-hover/acctmenu:opacity-100 group-focus-within/acctmenu:pointer-events-auto group-focus-within/acctmenu:visible group-focus-within/acctmenu:opacity-100";
 
   const rootAlign =
+    rootClassName ??
     "group/acctmenu relative inline-flex shrink-0 flex-col items-end";
 
   return (

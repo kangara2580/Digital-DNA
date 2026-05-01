@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronLeft, ChevronRight, Search, ShoppingCart, Wallet } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Search, Wallet } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -17,10 +17,6 @@ import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhr
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 import { MainTopUserMenu } from "@/components/MainTopUserMenu";
 import { useAuthSession } from "@/hooks/useAuthSession";
-import {
-  topNavIconRingFullClass,
-  topNavShoppingCartGlyphClass,
-} from "@/lib/topNavIconRing";
 
 /** 카테고리 pill — 라이트 모드에서 검정 텍스트 */
 const categoryPillClass =
@@ -189,7 +185,6 @@ export function MallTopNav() {
   const headerRef = useRef<HTMLElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useAuthSession();
   const isHomePage = pathname === "/";
   const isShopPage = pathname === "/shop";
   const isVideoDetailPage =
@@ -443,20 +438,7 @@ export function MallTopNav() {
       <Fragment>
         <div className="pointer-events-none fixed right-4 top-4 z-[120] sm:right-6 sm:top-5">
           <div className="pointer-events-auto flex flex-row items-center gap-2 sm:gap-2">
-            <MainTopUserMenu compact />
-            {user ? (
-              <Link
-                href="/cart"
-                className={topNavIconRingFullClass("compact")}
-                aria-label="장바구니"
-              >
-                <ShoppingCart
-                  className={topNavShoppingCartGlyphClass("compact")}
-                  strokeWidth={2}
-                  aria-hidden
-                />
-              </Link>
-            ) : null}
+            <MainTopUserMenu />
           </div>
         </div>
         <FixedSubscribeNavLink />
@@ -527,20 +509,7 @@ export function MallTopNav() {
                     홈으로 이동
                   </Link>
                   <div className="flex w-full min-w-0 flex-1 items-center justify-end gap-2 sm:ml-auto sm:w-auto sm:gap-3">
-                    <MainTopUserMenu compact={false} />
-                    {!isHomePage && user ? (
-                      <Link
-                        href="/cart"
-                        className={topNavIconRingFullClass("default")}
-                        aria-label="장바구니"
-                      >
-                        <ShoppingCart
-                          className={topNavShoppingCartGlyphClass("default")}
-                          strokeWidth={2}
-                          aria-hidden
-                        />
-                      </Link>
-                    ) : null}
+                    <MainTopUserMenu />
                   </div>
                 </div>
               </div>
@@ -722,20 +691,7 @@ export function MallTopNav() {
             <div
               className={`relative z-10 mr-1 flex shrink-0 items-center gap-1.5 sm:mr-2 sm:gap-2 lg:mr-2 ${easeLayout}`}
             >
-              <MainTopUserMenu compact />
-              {!isHomePage && user ? (
-                <Link
-                  href="/cart"
-                  className={topNavIconRingFullClass("compact")}
-                  aria-label="장바구니"
-                >
-                  <ShoppingCart
-                    className={topNavShoppingCartGlyphClass("compact")}
-                    strokeWidth={2}
-                    aria-hidden
-                  />
-                </Link>
-              ) : null}
+              <MainTopUserMenu />
               <div className="md:hidden">
                 <SitePreferencesMenu />
               </div>
