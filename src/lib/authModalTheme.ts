@@ -1,14 +1,21 @@
 /**
  * 로그인·회원가입 모달/페이지 공통 색 (레퍼런스: #192731, #2a3843, #4f6172, #ff096c).
+ * 오버레이는 높은 불투명도 + 블러, 카드 패널은 불투명 그라데이션으로 배경 분리를 유지합니다.
  */
-export const authModalBackdropBlurStrong =
-  "bg-[#192731]/68 px-4 backdrop-blur-[6px]";
-export const authModalBackdropBlurSoft =
-  "bg-[#192731]/68 px-4 backdrop-blur-[4px]";
 
-/** 거의 불투명 베이스 + 위쪽만 살짝 핑크/그레이 틴트(뒷배경 비침 줄임) */
+/** 어디서 열려도 동일 강도 — 딤·블러 */
+export const authModalBackdropBlurStrong =
+  "bg-[#070a10]/93 px-4 backdrop-blur-xl";
+/** 상단 헤더 등 소프트 variant — 가능한 한 같은 가독성 목표 */
+export const authModalBackdropBlurSoft =
+  "bg-[#070a10]/90 px-4 backdrop-blur-lg";
+
+/** /login 등 풀스크린 딤 레이어(패딩 없음) */
+export const authLoginPageScrim = "bg-[#070a10]/92 backdrop-blur-xl";
+
+/** 완전 불투명 베이스 그라데이션 + 브랜드 포인트는 내부 글로 레이어링 */
 export const authModalDialogSurface =
-  "border border-white/16 bg-[radial-gradient(120%_120%_at_0%_0%,rgba(255,9,108,0.2)_0%,rgba(74,93,109,0.22)_42%,transparent_62%),linear-gradient(180deg,rgb(26,39,49)_0%,rgb(22,34,43)_52%,rgb(20,31,39)_100%)]";
+  "border border-white/[0.26] bg-[linear-gradient(168deg,#2f4558_0%,#263b4d_38%,#1e3040_71%,#1a2934_100%)]";
 
 export const authModalGlowTop =
   "pointer-events-none absolute -left-16 -top-20 h-52 w-52 rounded-full bg-[#ff096c]/14 blur-3xl";

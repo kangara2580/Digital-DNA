@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { GoogleOAuthButton } from "@/components/GoogleOAuthButton";
 import {
+  authLoginPageScrim,
   authModalDialogSurface,
   authModalGlowBottom,
   authModalGlowTop,
@@ -66,7 +67,7 @@ export function LoginPageClient() {
     <main className="relative min-h-screen overflow-hidden bg-[#192731] px-4 py-6 text-zinc-100 sm:px-6 sm:py-8">
       <div className={`pointer-events-none absolute inset-0 ${loginPageAmbientBg}`} />
       <div className="relative flex min-h-[calc(100vh-3rem)] items-center justify-center sm:min-h-[calc(100vh-4rem)]">
-        <div className="absolute inset-0 bg-black/58 backdrop-blur-[6px]" />
+        <div className={`absolute inset-0 ${authLoginPageScrim}`} />
         <div className={`relative w-full max-w-[560px] rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}>
           <div className={authModalGlowTop} aria-hidden />
           <div className={authModalGlowBottom} aria-hidden />
