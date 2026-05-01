@@ -24,7 +24,7 @@ const railIconBtn =
   "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.02] text-zinc-300 transition-[background-color,color,transform] duration-200 hover:bg-white/[0.09] hover:text-zinc-100 active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
 
 const railIconActive =
-  "border border-[#ff096c]/55 bg-[#ff096c]/22 text-[#ffd4e4] shadow-[0_0_24px_-8px_rgba(255,9,108,0.88),inset_0_1px_0_rgba(255,200,220,0.32)] [html[data-theme='light']_&]:border-[#ff096c]/48 [html[data-theme='light']_&]:bg-[#ff096c]/12 [html[data-theme='light']_&]:text-[#b80045]";
+  "border-0 shadow-none bg-white/[0.02] text-[#ff096c] hover:bg-white/[0.08] hover:text-[#ff096c] [html[data-theme='light']_&]:border-0 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#ff096c] [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-[#ff096c]";
 
 /** 구독 — 시안 강조(테두리 없음, 글로우·배경만) */
 const subscribeRailBtn =
