@@ -307,8 +307,10 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
           <div className="relative mt-0 sm:mt-1">
             <div className="mx-auto mt-3 w-full max-w-[1120px] sm:mt-4">
               <div className="space-y-5 sm:space-y-6">
-                <p className="mb-6 text-center text-[clamp(1.9rem,4vw,2.9rem)] font-semibold tracking-tight text-zinc-100 sm:mb-8">
-                  단 3단계
+                <p className="mb-6 text-center text-[clamp(1.9rem,4vw,2.9rem)] tracking-tight text-zinc-100 sm:mb-8">
+                  <span className="font-light">단 </span>
+                  <span className="font-extrabold">3</span>
+                  <span className="font-light">단계</span>
                 </p>
                 <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
                   {/* 사용자 카드 */}
