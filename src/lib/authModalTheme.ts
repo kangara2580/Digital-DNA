@@ -28,6 +28,10 @@ export const authLoginPageScrim =
 export const authModalDialogSurface =
   "border border-white/[0.22] bg-[linear-gradient(180deg,rgba(255,255,255,0.055)_0%,transparent_48%),linear-gradient(167deg,rgba(18,20,26,0.92)_0%,rgba(10,11,15,0.96)_46%,rgba(6,8,11,1)_100%)] backdrop-blur-md saturate-[1.06]";
 
+/** 카드 우측 상단 닫기(X) — 진한 회색 테두리·글자 + 밝은 배경 블룸 위에서 대비 확보 */
+export const authModalDismissButtonCls =
+  "absolute right-4 top-4 z-[1] inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-zinc-600 bg-zinc-50 text-[1.15rem] font-semibold leading-none text-zinc-700 shadow-[0_1px_4px_rgba(0,0,0,0.18)] transition hover:border-zinc-700 hover:bg-white hover:text-zinc-900 [html[data-theme='light']_&]:border-zinc-500 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-600";
+
 /** 브랜드 포인트 — Google CTA 화살표 등 (globals --reels-point 와 동일) */
 export const AUTH_MODAL_BRAND_PINK_HEX = "#ff096c";
 

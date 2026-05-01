@@ -10,6 +10,7 @@ import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartBut
 import { AuthModalPortal } from "@/components/AuthModalPortal";
 import {
   authModalDialogSurface,
+  authModalDismissButtonCls,
   authModalGlowBottom,
   authModalGlowTop,
 } from "@/lib/authModalTheme";
@@ -144,7 +145,7 @@ export function MainTopUserMenu({ compact }: Props) {
                   <button
                     type="button"
                     onClick={() => setAuthOpen(false)}
-                    className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/10 text-zinc-200 transition hover:bg-white/20"
+                    className={authModalDismissButtonCls}
                     aria-label="닫기"
                   >
                     ×
