@@ -574,7 +574,7 @@ export function Highlight24() {
                   role="presentation"
                   className={`group absolute left-1/2 top-1/2 overflow-hidden rounded-2xl bg-black/40 [transform-style:preserve-3d] ${
                     isMain
-                      ? "cursor-pointer border-[0.5px] border-solid border-[rgba(233,30,99,0.55)] shadow-[0_32px_100px_-24px_rgba(0,0,0,0.55)]"
+                      ? "cursor-pointer border border-transparent shadow-[0_32px_100px_-24px_rgba(0,0,0,0.55)]"
                       : "cursor-pointer border border-transparent shadow-[0_28px_90px_-26px_rgba(0,0,0,0.88)]"
                   } ${pose.opacity < 0.02 ? "pointer-events-none" : ""}`}
                   style={{
