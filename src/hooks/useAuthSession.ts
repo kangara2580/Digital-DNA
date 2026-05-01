@@ -2,6 +2,11 @@
 
 import type { Session, User } from "@supabase/supabase-js";
 import { useEffect, useMemo, useState } from "react";
+import {
+  buildSimulatedAuthUser,
+  buildSimulatedSession,
+  isAuthSimulateLoginEnabled,
+} from "@/lib/authSimulate";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 export type AuthSessionState = {
@@ -25,22 +30,35 @@ function shouldMaskRecoverySession(): boolean {
 
 /**
  * Supabase 브라우저 세션. 환경변수가 없으면 `loading`만 false이고 user는 항상 null.
+ * 로컬에서만: `.env.local`에 `NEXT_PUBLIC_DEV_AUTH_SIMULATE_LOGIN=1` → `authSimulate.ts`.
  */
 export function useAuthSession(): AuthSessionState {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const simEnabled = useMemo(() => isAuthSimulateLoginEnabled(), []);
+  const simUserRef = useMemo(() => buildSimulatedAuthUser(), []);
+  const simSessionRef = useMemo(() => buildSimulatedSession(simUserRef), [simUserRef]);
+
+  const [user, setUser] = useState<User | null>(() => (simEnabled ? simUserRef : null));
+  const [session, setSession] = useState<Session | null>(() => (simEnabled ? simSessionRef : null));
+  const [loading, setLoading] = useState(() => !simEnabled);
 
   const supabaseConfigured = useMemo(
     () =>
+      simEnabled ||
       Boolean(
         process.env.NEXT_PUBLIC_SUPABASE_URL?.length &&
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length,
       ),
-    [],
+    [simEnabled],
   );
 
   useEffect(() => {
+    if (simEnabled) {
+      setUser(simUserRef);
+      setSession(simSessionRef);
+      setLoading(false);
+      return;
+    }
+
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
       setUser(null);
@@ -119,7 +137,7 @@ export function useAuthSession(): AuthSessionState {
       cancelled = true;
       subscription?.unsubscribe();
     };
-  }, []);
+  }, [simEnabled, simSessionRef, simUserRef]);
 
   return {
     user,
