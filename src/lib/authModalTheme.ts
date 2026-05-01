@@ -22,16 +22,19 @@ export const authModalBackdropBlurSoft =
 export const authLoginPageScrim =
   "bg-black/100 backdrop-blur-2xl backdrop-saturate-[1.12]";
 
-/** 카드 패널 — 검정 오버레이를 두껍게·블러 제거해 뒤가 비치지 않게 */
+/**
+ * 카드 패널(테두리 안) — 검정 베이스 + 살얇은 블러·알파로 깊이(투명감).
+ * 글자(ARA·로그인/회원가입) 대비 위해 상단에는 아주 얕은 하이라이트만 올림.
+ */
 export const authModalDialogSurface =
-  "border border-white/[0.26] bg-[linear-gradient(180deg,rgba(0,0,0,0.78)_0%,rgba(0,0,0,0.88)_100%),linear-gradient(168deg,#2f4558_0%,#263b4d_38%,#1e3040_71%,#1a2934_100%)]";
+  "border border-white/[0.22] bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,transparent_48%),linear-gradient(167deg,rgba(18,20,26,0.86)_0%,rgba(10,11,15,0.9)_46%,rgba(6,8,11,0.92)_100%)] backdrop-blur-md saturate-[1.06]";
 
 /** 브랜드 포인트 — Google CTA 화살표 등 (globals --reels-point 와 동일) */
 export const AUTH_MODAL_BRAND_PINK_HEX = "#ff096c";
 
 /** Google CTA 우측 화살표 — 크기만 (색은 Chevron stroke 로 고정; 버튼 text 색 물림 방지) */
 export const authModalGoogleChevronClass =
-  "h-9 w-9 shrink-0 text-[#ff096c] sm:h-10 sm:w-10";
+  "h-8 w-8 shrink-0 text-[#ff096c] sm:h-[2.125rem] sm:w-[2.125rem]";
 
 export const authModalGlowTop =
   "pointer-events-none absolute -left-16 -top-20 h-52 w-52 rounded-full bg-[#ff096c]/14 blur-3xl";
@@ -41,13 +44,13 @@ export const authModalGlowBottom =
 export const authModalGoogleButtonShadow =
   "shadow-[0_18px_38px_-20px_rgba(255,9,108,0.4),0_14px_32px_-18px_rgba(255,255,255,0.52)]";
 
-/** 모달·오버레이 내 Google 라벨 */
+/** 모달 내 Google 라벨 전용 («Google로 바로 시작» span — 버튼 박스 키우지 않고 글씨만) */
 export const authModalGoogleButtonText =
-  "text-[clamp(1.72rem,5.35vw,2.06rem)]";
+  "text-[clamp(1.62rem,5.05vw,1.95rem)]";
 
-/** /login 전용(버튼 카드) */
+/** /login 동일 라벨 */
 export const loginPageGoogleButtonText =
-  "text-[clamp(1.58rem,4.95vw,1.92rem)]";
+  "text-[clamp(1.52rem,4.85vw,1.82rem)]";
 
 export const loginPageAmbientBg =
   "bg-[radial-gradient(circle_at_18%_12%,rgba(255,9,108,0.18),transparent_44%),radial-gradient(circle_at_82%_88%,rgba(79,97,114,0.28),transparent_46%),linear-gradient(180deg,#192731_0%,#161f28_52%,#0f1419_100%)]";

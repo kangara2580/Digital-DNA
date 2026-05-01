@@ -101,12 +101,13 @@ export function LoginPageClient() {
               {notice}
             </p>
           ) : null}
-          <div className="mx-auto mt-9 w-full max-w-[400px]">
+          <div className="mx-auto mt-9 w-full max-w-[360px]">
             <GoogleOAuthButton
               nextPath={redirectPath}
               label="Google로 바로 시작"
+              googleLabelTypographyClass={loginPageGoogleButtonText}
               showBrandChevron
-              className={`flex w-full items-center justify-center gap-3 rounded-full bg-white px-5 py-[0.95rem] font-extrabold text-[#1a1a1a] transition hover:brightness-95 sm:gap-3.5 sm:px-7 sm:py-[1.15rem] ${loginPageGoogleButtonText} ${authModalGoogleButtonShadow}`}
+              className={`flex w-full items-center justify-center gap-2.5 rounded-full bg-white px-4 py-3 font-extrabold text-[#1a1a1a] transition hover:brightness-95 sm:gap-3 sm:px-6 sm:py-4 ${authModalGoogleButtonShadow}`}
             />
           </div>
         </div>

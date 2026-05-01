@@ -13,7 +13,7 @@ type Props = {
 };
 
 const googleGlyph = (
-  <svg className="h-6 w-6 shrink-0 sm:h-[1.85rem] sm:w-[1.85rem]" viewBox="0 0 24 24" aria-hidden>
+  <svg className="h-5 w-5 shrink-0 sm:h-6 sm:w-6" viewBox="0 0 24 24" aria-hidden>
     <path
       fill="#EA4335"
       d="M12 10.2v3.9h5.4c-.2 1.2-.9 2.3-1.9 3l3 2.3c1.7-1.6 2.7-3.9 2.7-6.7 0-.6-.1-1.2-.2-1.8H12z"
@@ -39,10 +39,10 @@ export function AuthModalGoogleStartButton({ onClick }: Props) {
     <button
       type="button"
       onClick={onClick}
-      className={`relative mx-auto mt-9 flex w-full max-w-[400px] items-center justify-center gap-3 rounded-full bg-white px-5 py-[0.95rem] font-extrabold text-[#1a1a1a] transition hover:brightness-95 sm:gap-3.5 sm:px-7 sm:py-[1.15rem] ${authModalGoogleButtonText} ${authModalGoogleButtonShadow}`}
+      className={`relative mx-auto mt-9 flex w-full max-w-[360px] items-center justify-center gap-2.5 rounded-full bg-white px-4 py-3 font-extrabold text-[#1a1a1a] transition hover:brightness-95 sm:gap-3 sm:px-6 sm:py-4 ${authModalGoogleButtonShadow}`}
     >
       {googleGlyph}
-      <span className="shrink-0">Google로 바로 시작</span>
+      <span className={`shrink-0 ${authModalGoogleButtonText}`}>Google로 바로 시작</span>
       <ChevronRight
         className={authModalGoogleChevronClass}
         color={AUTH_MODAL_BRAND_PINK_HEX}
