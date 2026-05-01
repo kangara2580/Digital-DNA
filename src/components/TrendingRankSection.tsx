@@ -243,9 +243,9 @@ export function TrendingRankSection() {
           <div className="min-w-0 text-center">
             <h2
               id="trending-rank-heading"
-              className="flex flex-wrap items-center justify-center gap-2.5 text-[26px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:gap-3 sm:text-[30px] md:text-[32px]"
+              className="text-center text-[26px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:text-[30px] md:text-[32px]"
             >
-              인기순위 TOP 30
+              인기순위 <span className="font-bold">TOP</span> 30
             </h2>
             <p className="mt-2 text-center text-[16px] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
               전 세계 크리에이터들이 가장 많이 선택한 인기 영상
