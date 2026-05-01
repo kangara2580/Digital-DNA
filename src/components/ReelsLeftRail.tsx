@@ -24,7 +24,7 @@ const railIconBtn =
   "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.02] text-zinc-300 transition-[background-color,color,transform] duration-200 hover:bg-white/[0.09] hover:text-zinc-100 active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
 
 const railIconActive =
-  "border-0 shadow-none bg-white/[0.02] text-[#ff096c] hover:bg-white/[0.08] hover:text-[#ff096c] [html[data-theme='light']_&]:border-0 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#ff096c] [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-[#ff096c]";
+  "border-0 shadow-none bg-white/[0.02] !text-[color:var(--reels-point)] [&_svg]:!text-[color:var(--reels-point)] hover:bg-white/[0.08] hover:!text-[color:var(--reels-point)] hover:[&_svg]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:border-0 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:[&_svg]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:hover:[&_svg]:!text-[color:var(--reels-point)]";
 
 /** 구독 — 시안 강조(테두리 없음, 글로우·배경만) */
 const subscribeRailBtn =
@@ -93,8 +93,12 @@ const RAIL_ITEMS: RailItem[] = [
     href: "/category/best",
     label: "쇼핑몰",
     Icon: ShopBagOutline,
+    /** 홈(`/`) 메인 피드도 베스트·숏폼 거래 컨텍스트 → 쇼핑 레일 활성과 동일하게 표시 */
     isActive: (p) =>
-      p === "/shop" || p.startsWith("/shop/") || p.startsWith("/category/"),
+      p === "/" ||
+      p === "/shop" ||
+      p.startsWith("/shop/") ||
+      p.startsWith("/category/"),
   },
   {
     href: "/leaderboard",
@@ -155,6 +159,8 @@ export function ReelsLeftRail() {
       searchHoverCloseTimerRef.current = null;
     }
   }, []);
+
+  const searchPathActive = pathname === "/search" || pathname.startsWith("/search/");
 
   const scheduleSearchHoverClose = useCallback(() => {
     if (!searchHoverMode) return;
@@ -293,9 +299,10 @@ export function ReelsLeftRail() {
                   setSearchOpen((v) => !v);
                 }}
                 ref={searchBtnRef}
-                className={railIconBtn}
+                className={`${railIconBtn} ${searchPathActive ? railIconActive : ""}`}
                 aria-label="검색 열기"
                 aria-expanded={searchOpen}
+                aria-current={searchPathActive ? "page" : undefined}
               >
                 <Search className="h-[23px] w-[23px]" strokeWidth={1.9} aria-hidden />
               </button>
@@ -311,7 +318,11 @@ export function ReelsLeftRail() {
                     className={`${railIconBtn} ${on ? railIconActive : ""}`}
                   >
                     <Icon
-                      className={href === "/shop" ? "h-[31px] w-[31px]" : "h-[25px] w-[25px]"}
+                      className={
+                        href === "/category/best" || href === "/shop"
+                          ? "h-[31px] w-[31px]"
+                          : "h-[25px] w-[25px]"
+                      }
                       strokeWidth={stroke}
                       aria-hidden
                     />
