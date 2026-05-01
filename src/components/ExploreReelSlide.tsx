@@ -2,7 +2,6 @@
 
 import {
   Bookmark,
-  ChevronDown,
   Eye,
   Heart,
   ShoppingBag,
@@ -95,6 +94,10 @@ const railStatValueWhite =
 
 const railStatValueBlue =
   "text-[13px] font-semibold tabular-nums text-[#9DB9FF] [html[data-theme='light']_&]:text-sky-600";
+
+/** 수익 상승(▲) — TrendingVideoStatsFooter와 동일 연한 빨강 */
+const railStatValueRevenueUp =
+  "text-[13px] font-semibold tabular-nums text-[#F87171] [html[data-theme='light']_&]:text-red-500";
 
 function ReelExploreStatLine({
   icon,
@@ -445,6 +448,8 @@ function ReelDesktopRail({
     loadInternalLikes,
   ]);
 
+  const revenueUp = rankMetrics.growthPercent >= 0;
+
   return (
     <aside
       className={`${railDeckClass} flex w-max max-w-[min(15rem,38vw)] shrink-0 flex-col items-center gap-5 px-2 [html[data-theme='light']_&]:text-zinc-900 ${className ?? ""}`}
@@ -454,10 +459,19 @@ function ReelDesktopRail({
         <ReelExploreStatLine
           icon={<TrendingUp strokeWidth={2.25} className="shrink-0" />}
           iconAdornment={
-            <ChevronDown strokeWidth={2.75} className="h-[11px] w-[11px] shrink-0 text-[#9DB9FF]" aria-hidden />
+            <span
+              className={`flex h-[11px] min-w-[0.875rem] items-center justify-center text-[11px] font-semibold leading-none ${
+                revenueUp
+                  ? "text-[#F87171] [html[data-theme='light']_&]:text-red-500"
+                  : "text-[#2FA2FF] [html[data-theme='light']_&]:text-sky-600"
+              }`}
+              aria-hidden
+            >
+              {revenueUp ? "▲" : "▼"}
+            </span>
           }
           value={Math.round(Math.max(0, rankMetrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}
-          valueClassName={railStatValueBlue}
+          valueClassName={revenueUp ? railStatValueRevenueUp : railStatValueBlue}
           aria-label={`수익 ${Math.round(Math.max(0, rankMetrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}원`}
         />
         <ReelExploreStatLine
@@ -604,12 +618,24 @@ function ReelDesktopRail({
 function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
   const metrics = useMemo(() => getMetricsForVideoDetail(video.id), [video.id]);
   const commerce = useMemo(() => getCommerceMeta(video.id), [video.id]);
+  const revenueUp = metrics.growthPercent >= 0;
 
   return (
     <div className="flex shrink-0 items-center justify-between gap-2 border-t border-white/10 bg-black/50 px-3 py-2.5 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/90">
       <div className="min-w-0 flex-1">
         <p className="truncate text-[11px] font-bold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-          수익 {formatCompactWon(metrics.cumulativeRevenueWon)} · 구매{" "}
+          수익{" "}
+          <span
+            className={`tabular-nums ${
+              revenueUp
+                ? "text-[#F87171] [html[data-theme='light']_&]:text-red-500"
+                : "text-[#9DB9FF] [html[data-theme='light']_&]:text-sky-600"
+            }`}
+          >
+            {formatCompactWon(metrics.cumulativeRevenueWon)}
+          </span>
+          {" "}
+          · 구매{" "}
           {commerce.salesCount.toLocaleString("ko-KR")}
         </p>
         <p className="truncate font-mono text-[10px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
