@@ -6,7 +6,6 @@ import {
   MoreVertical,
   Search,
   Trophy,
-  Wallet,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -15,7 +14,6 @@ import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from
 import { createPortal } from "react-dom";
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 import { MALL_CATEGORY_NAV_ITEMS } from "@/data/mallCategoryNav";
-import { useAuthSession } from "@/hooks/useAuthSession";
 
 const stroke = 1.75;
 
@@ -24,10 +22,6 @@ const railIconBtn =
 
 const railIconActive =
   "border-0 shadow-none bg-white/[0.02] !text-[color:var(--reels-point)] [&_svg]:!text-[color:var(--reels-point)] hover:bg-white/[0.08] hover:!text-[color:var(--reels-point)] hover:[&_svg]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:border-0 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:[&_svg]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:hover:[&_svg]:!text-[color:var(--reels-point)]";
-
-/** 구독 — 시안 강조(테두리 없음, 글로우·배경만) */
-const subscribeRailBtn =
-  "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-0 bg-reels-cyan/14 text-reels-cyan shadow-[0_0_24px_-8px_rgba(0,242,234,0.55)] transition-[background-color,box-shadow,transform] duration-200 hover:bg-reels-cyan/22 hover:shadow-[0_0_28px_-6px_rgba(0,242,234,0.65)] active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:bg-reels-cyan/12 [html[data-theme='light']_&]:text-[#0d9488]";
 
 const railTooltip =
   "pointer-events-none absolute left-[calc(100%+0.6rem)] top-1/2 z-[9999] -translate-y-1/2 whitespace-nowrap rounded-full border border-zinc-600 bg-zinc-950 px-3.5 py-1.5 text-[13px] font-semibold text-white opacity-0 shadow-[0_6px_22px_rgba(0,0,0,0.55)] transition-none group-hover:opacity-100 [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_6px_22px_rgba(0,0,0,0.14)]";
@@ -106,7 +100,6 @@ const RAIL_ITEMS: RailItem[] = [
 export function ReelsLeftRail() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user } = useAuthSession();
   const reduceMotion = useReducedMotion() ?? false;
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -317,29 +310,6 @@ export function ReelsLeftRail() {
               );
             })}
           </nav>
-
-          {/* 구독·크레딧(지갑): 로그인 후 마이페이지에서만 노출 — 다른 화면은 마이페이지·구독 섹션으로 진입 */}
-          {user && pathname.startsWith("/mypage") ? (
-            <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-0 py-2">
-              <div className="group relative">
-                <Link
-                  href="/subscribe"
-                  className={`${subscribeRailBtn} ${
-                    pathname.startsWith("/subscribe")
-                      ? "bg-reels-cyan/26 shadow-[0_0_30px_-6px_rgba(0,242,234,0.72)] [html[data-theme='light']_&]:bg-reels-cyan/20"
-                      : ""
-                  }`}
-                  aria-label="구독·결제 페이지로 이동"
-                  aria-current={pathname.startsWith("/subscribe") ? "page" : undefined}
-                >
-                  <Wallet className="h-[26px] w-[26px]" strokeWidth={stroke} aria-hidden />
-                </Link>
-                <span className={railTooltip} role="tooltip">
-                  구독·크레딧
-                </span>
-              </div>
-            </div>
-          ) : null}
 
           <div className="flex shrink-0 flex-col items-center border-t border-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 px-0 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <div className="group relative">
