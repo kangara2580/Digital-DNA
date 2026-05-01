@@ -61,7 +61,7 @@ export function GoogleOAuthButton({
         }
       }}
     >
-      <svg className="h-[18px] w-[18px] shrink-0" viewBox="0 0 48 48" aria-hidden>
+      <svg className="h-[22px] w-[22px] shrink-0 sm:h-6 sm:w-6" viewBox="0 0 48 48" aria-hidden>
         <path
           fill="#FFC107"
           d="M43.611 20.083H42V20H24v8h11.303C33.42 32.583 29.214 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"

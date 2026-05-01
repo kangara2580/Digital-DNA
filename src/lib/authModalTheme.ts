@@ -22,16 +22,16 @@ export const authModalBackdropBlurSoft =
 export const authLoginPageScrim =
   "bg-black/100 backdrop-blur-2xl backdrop-saturate-[1.12]";
 
-/** 완전 불투명 베이스 그라데이션 + 카드 안쪽 검게 덮어 유리 대비 진하게 */
+/** 카드 패널 — 검정 오버레이를 두껍게·블러 제거해 뒤가 비치지 않게 */
 export const authModalDialogSurface =
-  "border border-white/[0.26] bg-[linear-gradient(180deg,rgba(0,0,0,0.58)_0%,rgba(0,0,0,0.68)_100%),linear-gradient(168deg,#2f4558_0%,#263b4d_38%,#1e3040_71%,#1a2934_100%)] backdrop-blur-sm";
+  "border border-white/[0.26] bg-[linear-gradient(180deg,rgba(0,0,0,0.78)_0%,rgba(0,0,0,0.88)_100%),linear-gradient(168deg,#2f4558_0%,#263b4d_38%,#1e3040_71%,#1a2934_100%)]";
 
 /** 브랜드 포인트 — Google CTA 화살표 등 (globals --reels-point 와 동일) */
 export const AUTH_MODAL_BRAND_PINK_HEX = "#ff096c";
 
 /** Google CTA 우측 화살표 — 크기만 (색은 Chevron stroke 로 고정; 버튼 text 색 물림 방지) */
 export const authModalGoogleChevronClass =
-  "h-8 w-8 shrink-0 text-[#ff096c] sm:h-[2.125rem] sm:w-[2.125rem]";
+  "h-9 w-9 shrink-0 text-[#ff096c] sm:h-10 sm:w-10";
 
 export const authModalGlowTop =
   "pointer-events-none absolute -left-16 -top-20 h-52 w-52 rounded-full bg-[#ff096c]/14 blur-3xl";
@@ -43,11 +43,11 @@ export const authModalGoogleButtonShadow =
 
 /** 모달·오버레이 내 Google 라벨 */
 export const authModalGoogleButtonText =
-  "text-[clamp(1.52rem,4.85vw,1.78rem)]";
+  "text-[clamp(1.72rem,5.35vw,2.06rem)]";
 
 /** /login 전용(버튼 카드) */
 export const loginPageGoogleButtonText =
-  "text-[clamp(1.4rem,4.45vw,1.65rem)]";
+  "text-[clamp(1.58rem,4.95vw,1.92rem)]";
 
 export const loginPageAmbientBg =
   "bg-[radial-gradient(circle_at_18%_12%,rgba(255,9,108,0.18),transparent_44%),radial-gradient(circle_at_82%_88%,rgba(79,97,114,0.28),transparent_46%),linear-gradient(180deg,#192731_0%,#161f28_52%,#0f1419_100%)]";
