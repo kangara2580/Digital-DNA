@@ -165,8 +165,17 @@ export function SellerPitchBottomStartButton() {
       <section className="home-ranked-strip relative bg-[color:var(--home-ranked-strip-bg)]">
         <div className="relative mx-auto max-w-[1800px] px-4 pb-20 pt-10 sm:px-6 sm:pb-24 lg:px-8">
           <div className="flex flex-col items-center gap-8 sm:gap-9">
-            <p className="max-w-[min(92vw,40rem)] text-center text-[clamp(1.35rem,4.6vw,2.25rem)] font-semibold leading-snug tracking-tight text-zinc-100 sm:text-[clamp(1.45rem,3.8vw,2.4rem)] [html[data-theme='light']_&]:text-zinc-900">
-              지금 ARA와 함께, 당신이 원하던 영상을 완성해 보세요.
+            <p className="max-w-[min(92vw,40rem)] text-center text-[clamp(1.35rem,4.6vw,2.25rem)] leading-snug tracking-tight text-zinc-100 sm:text-[clamp(1.45rem,3.8vw,2.4rem)] [html[data-theme='light']_&]:text-zinc-900">
+              <span className="block">
+                <span className="font-light">지금 </span>
+                <span className="font-semibold">ARA와 함께,</span>
+              </span>
+              <span className="block">
+                <span className="font-semibold">원하던 영상</span>
+                <span className="font-light">을 </span>
+                <span className="font-semibold">완성</span>
+                <span className="font-light">해 보세요.</span>
+              </span>
             </p>
             <SellerPitchStartButton authLoading={authLoading} onStartClick={onStartClick} />
           </div>
