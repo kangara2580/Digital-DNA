@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -25,6 +26,10 @@ import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
+
+/** MallTopNav `cartNavClass` 과 동일 — 메인 히어로 우측 장바구니 */
+const heroCartNavClass =
+  "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-zinc-200 transition hover:text-white [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800";
 
 function ChevronLeft({ className }: { className?: string }) {
   return (
@@ -497,7 +502,7 @@ export function Highlight24() {
       <div className="relative z-10 mx-auto max-w-[1800px] px-4 pb-4 pt-9 sm:px-6 sm:pb-5 sm:pt-10 lg:px-8">
         {user ? (
           <div
-            className={`fixed right-4 top-4 z-[120] sm:right-6 sm:top-5 ${
+            className={`fixed right-4 top-4 z-[120] flex flex-row items-center gap-2 sm:right-6 sm:top-5 sm:gap-2 ${
               authLoading ? "pointer-events-none opacity-50" : ""
             }`}
           >
@@ -523,6 +528,9 @@ export function Highlight24() {
                 </svg>
               </span>
             </LoggedInAccountHoverMenu>
+            <Link href="/cart" className={heroCartNavClass} aria-label="장바구니">
+              <ShoppingCart className="h-4 w-4" strokeWidth={2} aria-hidden />
+            </Link>
           </div>
         ) : (
           <button
@@ -568,7 +576,14 @@ export function Highlight24() {
           </button>
         )}
         <div className="relative z-20 mb-5 flex justify-end sm:mb-6 md:mb-7" aria-hidden>
-          <div className="h-11 w-11" />
+          {user ? (
+            <div className="pointer-events-none flex shrink-0 items-center gap-2 sm:gap-2">
+              <div className="h-11 w-11 shrink-0" aria-hidden />
+              <div className="h-9 w-9 shrink-0" aria-hidden />
+            </div>
+          ) : (
+            <div className="h-11 w-11 shrink-0" aria-hidden />
+          )}
         </div>
         <div className="relative z-10 mx-auto flex max-w-7xl items-center justify-between gap-6 pb-7 pt-2 sm:pb-8 sm:pt-3 md:gap-8 md:pb-9 md:pt-4">
           <div
