@@ -247,7 +247,7 @@ export function TrendingRankSection() {
             >
               인기순위 TOP 30
             </h2>
-            <p className="mt-2 text-center text-[16px] font-medium leading-relaxed tracking-[0.01em] text-white/78">
+            <p className="mt-2 text-center text-[16px] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
               전 세계 크리에이터들이 가장 많이 선택한 인기 영상
             </p>
             {errorMessage ? (
