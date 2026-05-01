@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
+import { LoggedInAccountHoverMenu } from "@/components/LoggedInAccountHoverMenu";
 import { AuthModalPortal } from "@/components/AuthModalPortal";
 import {
   authModalDialogSurface,
@@ -21,25 +21,9 @@ type Props = {
 };
 
 export function MainTopUserMenu({ compact }: Props) {
-  const router = useRouter();
   const { user, loading } = useAuthSession();
-  const [busy, setBusy] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-
-  const onLogout = useCallback(async () => {
-    setBusy(true);
-    try {
-      const supabase = getSupabaseBrowserClient();
-      if (supabase) {
-        await supabase.auth.signOut({ scope: "global" });
-      }
-    } finally {
-      setBusy(false);
-    }
-    router.replace("/login?logged_out=1");
-    router.refresh();
-  }, [router]);
 
   useEffect(() => {
     setMounted(true);
@@ -168,56 +152,27 @@ export function MainTopUserMenu({ compact }: Props) {
   }
 
   return (
-    <div className="group/profilemenu relative inline-flex shrink-0 flex-col items-end">
-      <button
-        type="button"
-        className={`inline-flex shrink-0 items-center justify-center rounded-full border border-white/40 bg-black/35 text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition-[border-color,background-color,color] duration-200 ease-out hover:border-white/55 hover:bg-black/48 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.06)] [html[data-theme='light']_&]:hover:border-zinc-400 ${
-          compact ? "h-8 w-8" : "h-9 w-9"
-        }`}
-        aria-label="계정 메뉴"
-        aria-haspopup="menu"
+    <LoggedInAccountHoverMenu
+      menuPlacement="header"
+      triggerClassName={`inline-flex shrink-0 items-center justify-center rounded-full border border-white/40 bg-black/35 text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition-[border-color,background-color,color] duration-200 ease-out hover:border-white/55 hover:bg-black/48 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.06)] [html[data-theme='light']_&]:hover:border-zinc-400 ${
+        compact ? "h-8 w-8" : "h-9 w-9"
+      }`}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className={compact ? "h-4 w-4" : "h-[18px] w-[18px]"}
+        fill="none"
+        stroke="currentColor"
+        aria-hidden
       >
-        <svg
-          viewBox="0 0 24 24"
-          className={compact ? "h-4 w-4" : "h-[18px] w-[18px]"}
-          fill="none"
-          stroke="currentColor"
-          aria-hidden
-        >
-          <circle cx="12" cy="8" r="4" strokeWidth="2.2" />
-          <path
-            d="M4 20C4 15.8 7.6 12.4 12 12.4C16.4 12.4 20 15.8 20 20H4Z"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
-
-      <div
-        role="menu"
-        aria-label="계정"
-        className="pointer-events-none invisible absolute right-0 top-full z-[140] min-w-[10.5rem] pt-2 opacity-0 transition-[opacity,visibility] duration-150 ease-out motion-reduce:transition-none group-hover/profilemenu:pointer-events-auto group-hover/profilemenu:visible group-hover/profilemenu:opacity-100 group-focus-within/profilemenu:pointer-events-auto group-focus-within/profilemenu:visible group-focus-within/profilemenu:opacity-100"
-      >
-        <div className="overflow-hidden rounded-xl border border-white/[0.16] bg-[rgba(5,8,14,0.96)] py-1 shadow-[0_14px_42px_-12px_rgba(0,0,0,0.75)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.12)]">
-          <Link
-            href="/mypage"
-            role="menuitem"
-            className="block px-3.5 py-2.5 text-left text-[13px] font-semibold text-zinc-100 transition-colors hover:bg-white/[0.08] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100"
-          >
-            마이페이지
-          </Link>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => void onLogout()}
-            disabled={busy}
-            className="flex w-full px-3.5 py-2.5 text-left text-[13px] font-semibold text-rose-200/95 transition-colors hover:bg-rose-500/12 disabled:opacity-50 [html[data-theme='light']_&]:text-rose-700 [html[data-theme='light']_&]:hover:bg-rose-50"
-          >
-            {busy ? "처리 중…" : "로그아웃"}
-          </button>
-        </div>
-      </div>
-    </div>
+        <circle cx="12" cy="8" r="4" strokeWidth="2.2" />
+        <path
+          d="M4 20C4 15.8 7.6 12.4 12 12.4C16.4 12.4 20 15.8 20 20H4Z"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </LoggedInAccountHoverMenu>
   );
 }
