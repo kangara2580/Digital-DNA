@@ -34,12 +34,11 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
+import { AuthModalPortal } from "@/components/AuthModalPortal";
 import {
-  authModalBackdropBlurStrong,
   authModalDialogSurface,
   authModalGlowBottom,
   authModalGlowTop,
-  authModalOverlayLayout,
 } from "@/lib/authModalTheme";
 
 type Props = {
@@ -169,26 +168,12 @@ function AuthRequiredModal({
   if (!open) return null;
 
   return createPortal(
-    <div
-      className={`${authModalOverlayLayout} ${authModalBackdropBlurStrong}`}
-      onClick={(e) => e.stopPropagation()}
-      onPointerDown={(e) => e.stopPropagation()}
-    >
-      <button
-        type="button"
-        className="absolute inset-0"
-        aria-label="로그인 모달 닫기"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onClose();
-        }}
-      />
+    <AuthModalPortal onDismiss={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-label="로그인 또는 회원가입"
-        className={`relative z-10 w-full max-w-[560px] rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
+        className={`relative w-full rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >
@@ -214,7 +199,7 @@ function AuthRequiredModal({
         </p>
         <AuthModalGoogleStartButton onClick={onGoogleStart} />
       </div>
-    </div>,
+    </AuthModalPortal>,
     document.body,
   );
 }

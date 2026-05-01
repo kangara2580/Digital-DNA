@@ -3,11 +3,15 @@
  * 오버레이는 높은 불투명도 + 블러, 카드 패널은 불투명 그라데이션으로 배경 분리를 유지합니다.
  */
 
+/** 전체 화면 딤(+블러) — 다이얼로그와 형제 레이어로 두어야 버튼 히트테스트 안정(backdrop-blur 부모 특성 이슈) */
+export const authModalScrimPaint =
+  "bg-black/84 backdrop-blur-2xl backdrop-saturate-[1.12]";
+
 /** 로그인 모달 포털 — 레일·헤더·탐색 레이어(z≤120) 위 */
 export const authModalOverlayLayout =
   "fixed inset-0 z-[500] flex items-center justify-center";
 
-/** 어디서 열려도 동일 강도 — 딤·블러 */
+/** 레거시 단일 레이아웃(backdrop-blur+자식 버튼) — 일부 환경에서 클릭이 막히므로 {@link AuthModalPortal} 패턴 우선 */
 export const authModalBackdropBlurStrong =
   "bg-black/84 px-4 backdrop-blur-2xl backdrop-saturate-[1.12]";
 /** 상단 헤더 등 — Strong과 동일 톤 유지 */

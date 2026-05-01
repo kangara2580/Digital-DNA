@@ -8,12 +8,11 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
+import { AuthModalPortal } from "@/components/AuthModalPortal";
 import {
-  authModalBackdropBlurStrong,
   authModalDialogSurface,
   authModalGlowBottom,
   authModalGlowTop,
-  authModalOverlayLayout,
 } from "@/lib/authModalTheme";
 
 type AuthModalProps = {
@@ -94,18 +93,12 @@ function SellerPitchAuthModal({
 }: AuthModalProps) {
   return mounted && authOpen
     ? createPortal(
-        <div className={`${authModalOverlayLayout} ${authModalBackdropBlurStrong}`}>
-          <button
-            type="button"
-            className="absolute inset-0"
-            aria-label="로그인 모달 닫기"
-            onClick={() => setAuthOpen(false)}
-          />
+        <AuthModalPortal onDismiss={() => setAuthOpen(false)}>
           <div
             role="dialog"
             aria-modal="true"
             aria-label="로그인 또는 회원가입"
-            className={`relative z-10 w-full max-w-[560px] max-h-[min(92vh,760px)] overflow-y-auto rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
+            className={`relative w-full max-h-[min(92vh,760px)] overflow-y-auto rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
           >
             <div className={authModalGlowTop} aria-hidden />
             <div className={authModalGlowBottom} aria-hidden />
@@ -125,7 +118,7 @@ function SellerPitchAuthModal({
             </p>
             <AuthModalGoogleStartButton onClick={() => void startGoogleAuth()} />
           </div>
-        </div>,
+        </AuthModalPortal>,
         document.body,
       )
     : null;
