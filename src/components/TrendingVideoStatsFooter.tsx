@@ -44,22 +44,22 @@ export function TrendingVideoStatsFooter({
 }: Props) {
   const isUp = metrics.growthPercent >= 0;
   const metricRowCls = hideMetricLabels
-    ? "flex items-center gap-4 py-1.5 sm:gap-5"
+    ? "flex w-full min-w-0 items-center gap-2 py-1.5"
     : rowCls;
   const labelColCls = hideMetricLabels
-    ? "inline-flex w-8 shrink-0 items-center gap-1"
+    ? "inline-flex w-[3.5rem] shrink-0 items-center justify-start gap-1"
     : "inline-flex w-[4.5rem] shrink-0 items-center gap-1.5";
-  const revenueLabelColCls = hideMetricLabels
-    ? "inline-flex min-w-[2.85rem] shrink-0 items-center gap-1"
-    : labelColCls;
   const labelTone =
     "text-[14px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
+  const valueDdExtras = hideMetricLabels ? "flex-1 text-right" : "";
 
   return (
-    <div className="w-fit px-3 py-2 [html[data-theme='light']_&]:bg-white sm:px-4">
-      <dl className="leading-snug">
+    <div
+      className={`${hideMetricLabels ? "w-full min-w-0" : "w-fit"} px-3 py-2 [html[data-theme='light']_&]:bg-white sm:px-4`}
+    >
+      <dl className={hideMetricLabels ? "w-full min-w-0 leading-snug" : "leading-snug"}>
         <div className={metricRowCls}>
-          <dt className={`${revenueLabelColCls} ${labelTone}`}>
+          <dt className={`${labelColCls} ${labelTone}`}>
             <TrendingUp className="h-3.5 w-3.5 shrink-0" aria-hidden />
             {hideMetricLabels ? (
               <span className="sr-only">수익</span>
@@ -74,7 +74,7 @@ export function TrendingVideoStatsFooter({
             </span>
           </dt>
           <dd
-            className={`min-w-0 text-[15px] font-extrabold tabular-nums ${
+            className={`min-w-0 text-[15px] font-extrabold tabular-nums ${valueDdExtras} ${
               isUp
                 ? "text-[#F87171] [html[data-theme='light']_&]:text-red-500"
                 : "text-[#B9CCFF] [html[data-theme='light']_&]:text-[#2F4FA8]"
@@ -92,7 +92,9 @@ export function TrendingVideoStatsFooter({
               "조회수"
             )}
           </dt>
-          <dd className={valueCls}>{formatCountCompact(metrics.totalViews)}</dd>
+          <dd className={`${valueCls} min-w-0 ${valueDdExtras}`}>
+            {formatCountCompact(metrics.totalViews)}
+          </dd>
         </div>
         <div className={metricRowCls}>
           <dt className={`${labelColCls} ${labelTone}`}>
@@ -103,7 +105,7 @@ export function TrendingVideoStatsFooter({
               "좋아요"
             )}
           </dt>
-          <dd className={valueCls}>{formatCountCompact(metrics.totalLikes)}</dd>
+          <dd className={`${valueCls} min-w-0 ${valueDdExtras}`}>{formatCountCompact(metrics.totalLikes)}</dd>
         </div>
         {typeof salesCount === "number" ? (
           <div className={rowCls}>
