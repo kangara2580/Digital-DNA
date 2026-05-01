@@ -23,11 +23,10 @@ export const authLoginPageScrim =
   "bg-black/100 backdrop-blur-2xl backdrop-saturate-[1.12]";
 
 /**
- * 카드 패널(테두리 안) — 검정 베이스 + 살얇은 블러·알파로 깊이(투명감).
- * 글자(ARA·로그인/회원가입) 대비 위해 상단에는 아주 얕은 하이라이트만 올림.
+ * 카드 패널(테두리 안) — 검정 베이스 알파 상한 1.0까지 두껍게 덮음 + 얕은 하이라이트·블러로 깊이.
  */
 export const authModalDialogSurface =
-  "border border-white/[0.22] bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,transparent_48%),linear-gradient(167deg,rgba(18,20,26,0.86)_0%,rgba(10,11,15,0.9)_46%,rgba(6,8,11,0.92)_100%)] backdrop-blur-md saturate-[1.06]";
+  "border border-white/[0.22] bg-[linear-gradient(180deg,rgba(255,255,255,0.055)_0%,transparent_48%),linear-gradient(167deg,rgba(18,20,26,0.92)_0%,rgba(10,11,15,0.96)_46%,rgba(6,8,11,1)_100%)] backdrop-blur-md saturate-[1.06]";
 
 /** 브랜드 포인트 — Google CTA 화살표 등 (globals --reels-point 와 동일) */
 export const AUTH_MODAL_BRAND_PINK_HEX = "#ff096c";
@@ -46,11 +45,11 @@ export const authModalGoogleButtonShadow =
 
 /** 모달 내 Google 라벨 전용 («Google로 바로 시작» span — 버튼 박스 키우지 않고 글씨만) */
 export const authModalGoogleButtonText =
-  "text-[clamp(1.62rem,5.05vw,1.95rem)]";
+  "text-[clamp(1.75rem,5.35vw,2.1rem)]";
 
 /** /login 동일 라벨 */
 export const loginPageGoogleButtonText =
-  "text-[clamp(1.52rem,4.85vw,1.82rem)]";
+  "text-[clamp(1.65rem,5.05vw,1.95rem)]";
 
 export const loginPageAmbientBg =
   "bg-[radial-gradient(circle_at_18%_12%,rgba(255,9,108,0.18),transparent_44%),radial-gradient(circle_at_82%_88%,rgba(79,97,114,0.28),transparent_46%),linear-gradient(180deg,#192731_0%,#161f28_52%,#0f1419_100%)]";
