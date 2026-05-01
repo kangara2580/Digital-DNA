@@ -136,22 +136,15 @@ function SellerPitchStartButton({
   authLoading: boolean;
   onStartClick: () => void;
 }) {
+  /** 홈 히어로「시작하기」와 동일 — 테두리 굵기 고정(호버 시 레이아웃 점프·푸터 밀림 방지) */
   return (
     <button
       type="button"
       onClick={onStartClick}
       disabled={authLoading}
-      className="pointer-events-auto relative inline-flex min-w-[188px] items-center justify-center overflow-hidden rounded-full border border-white/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.04)_18%,rgba(9,12,18,0.86)_58%,rgba(10,12,17,0.96)_100%)] px-7 py-2.5 text-[1.65rem] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-1px_0_rgba(255,255,255,0.12),0_10px_28px_rgba(0,0,0,0.45)] backdrop-blur-xl transition-[border-color,border-width,box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 hover:border-2 hover:border-[#e91e63] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-1px_0_rgba(255,255,255,0.12),0_14px_34px_rgba(0,0,0,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e91e63]/80 disabled:hover:translate-y-0"
+      className="shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full border-[1.5px] border-solid border-white/45 bg-transparent px-[clamp(1.1rem,2vw,1.85rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold text-white transition-[border-color,opacity] duration-200 ease-out hover:border-[color:var(--reels-point)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/75 disabled:cursor-not-allowed disabled:border-white/45 disabled:text-white disabled:opacity-55 disabled:hover:border-white/45 disabled:hover:text-white"
     >
-      <span
-        className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/75 to-transparent"
-        aria-hidden
-      />
-      <span
-        className="pointer-events-none absolute inset-x-10 bottom-0 h-px bg-gradient-to-r from-transparent via-white/45 to-transparent"
-        aria-hidden
-      />
-      <span className="relative z-10 drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">시작하기</span>
+      시작하기
     </button>
   );
 }
