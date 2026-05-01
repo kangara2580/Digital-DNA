@@ -153,7 +153,6 @@ export function MainTopUserMenu({ compact }: Props) {
 
   return (
     <LoggedInAccountHoverMenu
-      menuPlacement="header"
       triggerClassName={`inline-flex shrink-0 items-center justify-center rounded-full border border-white/40 bg-black/35 text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition-[border-color,background-color,color] duration-200 ease-out hover:border-white/55 hover:bg-black/48 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.06)] [html[data-theme='light']_&]:hover:border-zinc-400 ${
         compact ? "h-8 w-8" : "h-9 w-9"
       }`}

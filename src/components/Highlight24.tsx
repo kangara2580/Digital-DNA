@@ -12,6 +12,7 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
 import { AuthModalPortal } from "@/components/AuthModalPortal";
+import { LoggedInAccountHoverMenu } from "@/components/LoggedInAccountHoverMenu";
 import {
   authModalDialogSurface,
   authModalDismissButtonCls,
@@ -220,12 +221,8 @@ export function Highlight24() {
 
   const onTopUserClick = useCallback(() => {
     if (authLoading) return;
-    if (user) {
-      router.push("/mypage");
-      return;
-    }
     setAuthOpen(true);
-  }, [authLoading, user, router]);
+  }, [authLoading]);
 
   const onStartClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
@@ -498,47 +495,78 @@ export function Highlight24() {
         aria-hidden
       />
       <div className="relative z-10 mx-auto max-w-[1800px] px-4 pb-4 pt-9 sm:px-6 sm:pb-5 sm:pt-10 lg:px-8">
-        <button
-          type="button"
-          onClick={onTopUserClick}
-          className="fixed right-4 top-4 z-[120] inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-black/38 text-white/95 backdrop-blur-md transition hover:bg-black/52 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/85 sm:right-6 sm:top-5"
-          aria-label={user ? "마이페이지로 이동" : "로그인 또는 회원가입"}
-          disabled={authLoading}
-        >
-          <span className="relative inline-flex h-6 w-6 items-center justify-center">
-            <svg
-              viewBox="0 0 24 24"
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              aria-hidden
+        {user ? (
+          <div
+            className={`fixed right-4 top-4 z-[120] sm:right-6 sm:top-5 ${
+              authLoading ? "pointer-events-none opacity-50" : ""
+            }`}
+          >
+            <LoggedInAccountHoverMenu
+              triggerClassName="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-black/38 text-white/95 shadow-[0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition-[border-color,background-color,color] hover:border-white/55 hover:bg-black/52 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/85 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.06)] [html[data-theme='light']_&]:hover:border-zinc-400"
+              aria-label="계정 메뉴"
             >
-              <circle cx="12" cy="8" r="4" strokeWidth="2.2" />
-              <path
-                d="M4 20C4 15.8 7.6 12.4 12 12.4C16.4 12.4 20 15.8 20 20H4Z"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            {!user ? (
+              <span className="relative inline-flex h-6 w-6 items-center justify-center">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  aria-hidden
+                >
+                  <circle cx="12" cy="8" r="4" strokeWidth="2.2" />
+                  <path
+                    d="M4 20C4 15.8 7.6 12.4 12 12.4C16.4 12.4 20 15.8 20 20H4Z"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+            </LoggedInAccountHoverMenu>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onTopUserClick}
+            className="fixed right-4 top-4 z-[120] inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-black/38 text-white/95 backdrop-blur-md transition hover:bg-black/52 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/85 sm:right-6 sm:top-5"
+            aria-label="로그인 또는 회원가입"
+            disabled={authLoading}
+          >
+            <span className="relative inline-flex h-6 w-6 items-center justify-center">
               <svg
                 viewBox="0 0 24 24"
-                className="absolute -right-[0.28rem] -top-[0.28rem] h-3 w-3"
+                className="h-6 w-6"
                 fill="none"
                 stroke="currentColor"
                 aria-hidden
               >
+                <circle cx="12" cy="8" r="4" strokeWidth="2.2" />
                 <path
-                  d="M12 4V20M4 12H20"
-                  strokeWidth="2.4"
+                  d="M4 20C4 15.8 7.6 12.4 12 12.4C16.4 12.4 20 15.8 20 20H4Z"
+                  strokeWidth="2.2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
-            ) : null}
-          </span>
-        </button>
+              {!user ? (
+                <svg
+                  viewBox="0 0 24 24"
+                  className="absolute -right-[0.28rem] -top-[0.28rem] h-3 w-3"
+                  fill="none"
+                  stroke="currentColor"
+                  aria-hidden
+                >
+                  <path
+                    d="M12 4V20M4 12H20"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              ) : null}
+            </span>
+          </button>
+        )}
         <div className="relative z-20 mb-5 flex justify-end sm:mb-6 md:mb-7" aria-hidden>
           <div className="h-11 w-11" />
         </div>

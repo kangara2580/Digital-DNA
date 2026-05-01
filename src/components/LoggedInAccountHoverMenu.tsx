@@ -5,10 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useState, type ReactNode } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
-export type AccountHoverMenuPlacement = "header" | "rail";
-
 type Props = {
-  menuPlacement: AccountHoverMenuPlacement;
   triggerClassName: string;
   children: ReactNode;
   "aria-label"?: string;
@@ -23,9 +20,8 @@ const menuItemMyPage =
 const menuItemLogout =
   "flex w-full px-3.5 py-2.5 text-left text-[13px] font-semibold text-rose-200/95 transition-colors hover:bg-rose-500/12 disabled:opacity-50 [html[data-theme='light']_&]:text-rose-700 [html[data-theme='light']_&]:hover:bg-rose-50";
 
-/** 로그인 전용 — 프로필 트리거 호버 시 마이페이지·로그아웃 (헤더·좌측 레일 공통) */
+/** 로그인 전용 — 상단 헤더 프로필 호버 시 마이페이지·로그아웃 */
 export function LoggedInAccountHoverMenu({
-  menuPlacement,
   triggerClassName,
   children,
   "aria-label": ariaLabel = "계정 메뉴",
@@ -51,14 +47,10 @@ export function LoggedInAccountHoverMenu({
   }, [router]);
 
   const menuPositionClass =
-    menuPlacement === "rail"
-      ? "pointer-events-none invisible absolute left-full top-1/2 z-[220] ml-2 min-w-[10.5rem] -translate-y-1/2 pl-2 opacity-0 transition-[opacity,visibility] duration-150 ease-out motion-reduce:transition-none group-hover/acctmenu:pointer-events-auto group-hover/acctmenu:visible group-hover/acctmenu:opacity-100 group-focus-within/acctmenu:pointer-events-auto group-focus-within/acctmenu:visible group-focus-within/acctmenu:opacity-100"
-      : "pointer-events-none invisible absolute right-0 top-full z-[220] min-w-[10.5rem] pt-2 opacity-0 transition-[opacity,visibility] duration-150 ease-out motion-reduce:transition-none group-hover/acctmenu:pointer-events-auto group-hover/acctmenu:visible group-hover/acctmenu:opacity-100 group-focus-within/acctmenu:pointer-events-auto group-focus-within/acctmenu:visible group-focus-within/acctmenu:opacity-100";
+    "pointer-events-none invisible absolute right-0 top-full z-[220] min-w-[10.5rem] pt-2 opacity-0 transition-[opacity,visibility] duration-150 ease-out motion-reduce:transition-none group-hover/acctmenu:pointer-events-auto group-hover/acctmenu:visible group-hover/acctmenu:opacity-100 group-focus-within/acctmenu:pointer-events-auto group-focus-within/acctmenu:visible group-focus-within/acctmenu:opacity-100";
 
   const rootAlign =
-    menuPlacement === "rail"
-      ? "group/acctmenu relative inline-flex shrink-0 items-center justify-center"
-      : "group/acctmenu relative inline-flex shrink-0 flex-col items-end";
+    "group/acctmenu relative inline-flex shrink-0 flex-col items-end";
 
   return (
     <div className={rootAlign}>

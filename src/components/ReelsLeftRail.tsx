@@ -14,7 +14,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { LoggedInAccountHoverMenu } from "@/components/LoggedInAccountHoverMenu";
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 import { MALL_CATEGORY_NAV_ITEMS } from "@/data/mallCategoryNav";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -306,26 +305,6 @@ export function ReelsLeftRail() {
             </div>
             {visibleRailItems.map(({ href, label, Icon, isActive }) => {
               const on = isActive(pathname);
-              if (href === "/mypage") {
-                return (
-                  <div key={href} className="group relative">
-                    <LoggedInAccountHoverMenu
-                      menuPlacement="rail"
-                      aria-label={label}
-                      triggerClassName={`${railIconBtn} ${on ? railIconActive : ""}`}
-                    >
-                      <Icon
-                        className="h-[25px] w-[25px]"
-                        strokeWidth={stroke}
-                        aria-hidden
-                      />
-                    </LoggedInAccountHoverMenu>
-                    <span className={railTooltip} role="tooltip">
-                      {label}
-                    </span>
-                  </div>
-                );
-              }
               return (
                 <div key={href} className="group relative">
                   <Link
