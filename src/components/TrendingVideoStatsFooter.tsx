@@ -1,19 +1,6 @@
 import { Eye, Heart, ShoppingBag, TrendingUp } from "lucide-react";
 import type { TrendingRankMetrics } from "@/data/trendingStats";
 
-/** 누적수익 — 한눈에 읽히도록 큰 자릿수·콤마 표기(전광판 박스 대신) */
-function RevenueHighlight({ won }: { won: number }) {
-  const formatted = Math.max(0, Math.floor(won)).toLocaleString("ko-KR");
-  return (
-    <p
-      className="text-right font-mono text-[15px] font-extrabold leading-none tabular-nums tracking-tight text-[#B9CCFF] sm:text-[16px] [html[data-theme='light']_&]:text-[#2F4FA8]"
-      aria-label={`수익 ${formatted}`}
-    >
-      {formatted}
-    </p>
-  );
-}
-
 function formatCountCompact(n: number): string {
   if (n >= 100_000_000) {
     const v = n / 100_000_000;
@@ -63,13 +50,19 @@ export function TrendingVideoStatsFooter({
             <TrendingUp className="h-3.5 w-3.5 shrink-0" aria-hidden />
             수익
             <span
-              className={`text-[11px] leading-none ${isUp ? "text-[#FF3B57]" : "text-[#2FA2FF]"}`}
+              className={`text-[11px] leading-none ${isUp ? "text-[#F87171]" : "text-[#2FA2FF]"}`}
               aria-hidden
             >
               {isUp ? "▲" : "▼"}
             </span>
           </dt>
-          <dd className="text-[15px] font-extrabold tabular-nums text-[#B9CCFF] [html[data-theme='light']_&]:text-[#2F4FA8]" style={{minWidth:0}}>
+          <dd
+            className={`min-w-0 text-[15px] font-extrabold tabular-nums ${
+              isUp
+                ? "text-[#F87171] [html[data-theme='light']_&]:text-red-500"
+                : "text-[#B9CCFF] [html[data-theme='light']_&]:text-[#2F4FA8]"
+            }`}
+          >
             {Math.max(0, Math.floor(metrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}
           </dd>
         </div>
