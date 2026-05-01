@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronRight } from "lucide-react";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
@@ -12,9 +13,16 @@ type Props = {
   nextPath: string | null;
   label: string;
   className?: string;
+  /** 모달 외 로그인 페이지 등 — 브랜드 핑크 우측 화살표 */
+  showBrandChevron?: boolean;
 };
 
-export function GoogleOAuthButton({ nextPath, label, className }: Props) {
+export function GoogleOAuthButton({
+  nextPath,
+  label,
+  className,
+  showBrandChevron = false,
+}: Props) {
   const [busy, setBusy] = useState(false);
 
   return (
@@ -71,6 +79,13 @@ export function GoogleOAuthButton({ nextPath, label, className }: Props) {
         />
       </svg>
       {busy ? "Google로 이동 중…" : label}
+      {showBrandChevron && !busy ? (
+        <ChevronRight
+          className="h-[1.05em] w-[1.05em] shrink-0 text-[color:var(--reels-point)]"
+          strokeWidth={2.75}
+          aria-hidden
+        />
+      ) : null}
     </button>
   );
 }

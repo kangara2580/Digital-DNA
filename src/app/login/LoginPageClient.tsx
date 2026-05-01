@@ -105,6 +105,7 @@ export function LoginPageClient() {
             <GoogleOAuthButton
               nextPath={redirectPath}
               label="Google로 바로 시작"
+              showBrandChevron
               className={`flex w-full items-center justify-center gap-3 rounded-full bg-white px-4 py-3 font-extrabold text-[#1a1a1a] transition hover:brightness-95 sm:px-6 sm:py-4 ${loginPageGoogleButtonText} ${authModalGoogleButtonShadow}`}
             />
           </div>
