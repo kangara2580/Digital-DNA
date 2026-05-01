@@ -700,9 +700,11 @@ export function Highlight24() {
                   type="button"
                   onClick={onStartClick}
                   onPointerDown={(event) => event.stopPropagation()}
-                  className="shrink-0 inline-flex w-[clamp(138px,74%,188px)] items-center justify-center rounded-full border border-white/45 bg-transparent px-[clamp(1rem,1.9vw,1.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold text-white shadow-[0_9px_0_rgba(0,0,0,0.55)] transition-[border-color,border-width,box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 hover:border-2 hover:border-[#e91e63] hover:shadow-[0_11px_0_rgba(0,0,0,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e91e63]/85"
+                  className="group/start shrink-0 inline-flex w-[clamp(138px,74%,188px)] items-center justify-center rounded-full border-[1.5px] border-solid border-white/45 bg-transparent px-[clamp(1rem,1.9vw,1.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold text-white shadow-[0_9px_0_rgba(0,0,0,0.55)] transition-[border-color,box-shadow] duration-300 ease-out hover:border-white/82 hover:shadow-[0_11px_0_rgba(0,0,0,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/75"
                 >
-                  시작하기
+                  <span className="inline-flex transition-transform duration-300 ease-out group-hover/start:-translate-y-0.5">
+                    시작하기
+                  </span>
                 </button>
 
                 {/* 섹션 이동 네비게이션 */}
