@@ -9,10 +9,14 @@ export async function waitForSupabaseAccessToken(
   maxAttempts = 8,
 ): Promise<boolean> {
   for (let i = 0; i < maxAttempts; i++) {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (session?.access_token) return true;
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session?.access_token) return true;
+    } catch {
+      /* 오프라인·CORS·차단 등으로 getSession이 reject → 미처리 Promise 거부·콘솔 Failed to fetch 방지 */
+    }
     await new Promise((r) => setTimeout(r, 80 * (i + 1)));
   }
   return false;
