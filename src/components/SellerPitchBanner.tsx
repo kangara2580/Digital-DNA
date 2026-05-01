@@ -312,7 +312,7 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                 </p>
                 <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
                   {/* 사용자 카드 */}
-                  <div className="relative overflow-hidden rounded-[22px] border border-white/28 bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
+                  <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
                     <section className="flex flex-col items-center space-y-5 text-center">
                       <p className="pt-1 text-[22px] font-extrabold tracking-tight text-white sm:text-[24px]">사용자</p>
                       <p className="pb-1 text-[clamp(0.9rem,2vw,1.1rem)] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
@@ -351,7 +351,7 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                   </div>
 
                   {/* 크리에이터 카드 */}
-                  <div className="relative overflow-hidden rounded-[22px] border border-white/28 bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
+                  <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
                     <section className="flex flex-col items-center space-y-5 text-center">
                       <p className="pt-1 text-[22px] font-extrabold tracking-tight text-white sm:text-[24px]">크리에이터</p>
                       <p className="pb-1 text-[clamp(0.9rem,2vw,1.1rem)] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
