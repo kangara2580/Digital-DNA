@@ -12,6 +12,7 @@ import {
   authModalGlowBottom,
   authModalGlowTop,
   authModalGoogleButtonShadow,
+  authModalGoogleButtonText,
 } from "@/lib/authModalTheme";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
@@ -164,7 +165,7 @@ export function MainTopUserMenu({ compact }: Props) {
                   <button
                     type="button"
                     onClick={startGoogleAuth}
-                    className={`relative mx-auto mt-9 flex w-full max-w-[360px] items-center justify-center gap-3 rounded-full bg-white px-4 py-3 text-[clamp(1.0625rem,3.9vw,1.3125rem)] font-extrabold text-[#1a1a1a] transition hover:brightness-95 sm:px-6 sm:py-4 ${authModalGoogleButtonShadow}`}
+                    className={`relative mx-auto mt-9 flex w-full max-w-[360px] items-center justify-center gap-3 rounded-full bg-white px-4 py-3 font-extrabold text-[#1a1a1a] transition hover:brightness-95 sm:px-6 sm:py-4 ${authModalGoogleButtonText} ${authModalGoogleButtonShadow}`}
                   >
                     <svg
                       className="h-5 w-5 shrink-0 sm:h-6 sm:w-6"
