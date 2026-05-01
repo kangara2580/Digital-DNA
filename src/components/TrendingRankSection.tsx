@@ -317,6 +317,7 @@ export function TrendingRankSection() {
                     className="h-full min-w-0"
                     footerExtension={
                       <TrendingVideoStatsFooter
+                        hideMetricLabels
                         metrics={entry.metrics}
                       />
                     }
