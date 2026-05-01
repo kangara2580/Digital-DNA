@@ -1,6 +1,7 @@
 /**
  * ARA — Design System (Apple minimal + Cyberpunk contrast + IG-trendy)
  * Primary: #FF0055 Electric Crimson | #00F2EA Cyber Cyan | #050505 Deep Abyss
+ * Point (명시된 UI만): #ff096c — `var(--reels-point)`
  * Surface/card: glass + 1px border (see .reels-glass-card)
  * Typography: Inter (layout.tsx) + Pretendard (KR). Headings: 700–800.
  * Motion: page enter template.tsx — 0.4s ease-in-out + blur; AI CTAs: .reels-ai-glow
@@ -17,6 +18,8 @@
   --reels-lift: #070f1f;
   --reels-crimson: #ff0055;
   --reels-cyan: #00f2ea;
+  /** 브랜드 포인트 핑크 — 코드·명시 안내 외 다른 곳에는 임의로 쓰지 않음 */
+  --reels-point: #ff096c;
   --reels-surface-card: rgba(255, 255, 255, 0.08);
   --reels-glass: rgba(255, 255, 255, 0.09);
   --reels-glass-strong: rgba(255, 255, 255, 0.15);
