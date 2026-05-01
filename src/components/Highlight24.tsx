@@ -694,24 +694,14 @@ export function Highlight24() {
               </p>
               {/* 시작하기 + 섹션 네비 — 한 줄 가로 배치 */}
               <div className="pointer-events-auto -translate-x-[40px] z-[85] mt-[clamp(0.5rem,1.2vw,1.5rem)] flex items-center gap-6">
-                <span className="group/start relative inline-flex shrink-0">
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute -inset-[2px] z-0 overflow-hidden rounded-full opacity-0 transition-opacity duration-500 ease-in-out motion-reduce:hidden group-hover/start:opacity-100"
-                  >
-                    <span className="absolute left-1/2 top-1/2 h-[215%] w-[215%] min-h-[100%] min-w-[100%] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,var(--reels-point)_0deg,rgba(255,9,108,0.16)_118deg,rgba(255,9,108,0.04)_242deg,var(--reels-point)_360deg)] motion-safe:animate-[spin_16s_linear_infinite] motion-reduce:animate-none" />
-                  </span>
-                  <button
-                    type="button"
-                    onClick={onStartClick}
-                    onPointerDown={(event) => event.stopPropagation()}
-                    className="relative z-[1] inline-flex w-[clamp(138px,74%,188px)] shrink-0 items-center justify-center rounded-full border-[1.5px] border-solid border-white/45 bg-transparent px-[clamp(1rem,1.9vw,1.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold shadow-[0_9px_0_rgba(0,0,0,0.55)] transition-[border-color,box-shadow,transform,background-color] duration-300 ease-out group-hover/start:border-transparent group-hover/start:bg-[rgba(6,9,14,0.82)] group-hover/start:shadow-[0_11px_0_rgba(0,0,0,0.5)] motion-reduce:group-hover/start:border-white/72 motion-reduce:group-hover/start:bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/75"
-                  >
-                    <span className="inline-flex text-white transition-transform duration-300 ease-out group-hover/start:-translate-y-0.5 motion-reduce:transition-none motion-reduce:group-hover/start:translate-y-0">
-                      시작하기
-                    </span>
-                  </button>
-                </span>
+                <button
+                  type="button"
+                  onClick={onStartClick}
+                  onPointerDown={(event) => event.stopPropagation()}
+                  className="shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full border-[1.5px] border-solid border-white/45 bg-transparent px-[clamp(1.1rem,2vw,1.85rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold text-white transition-[border-color] duration-200 ease-out hover:border-[color:var(--reels-point)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/75"
+                >
+                  시작하기
+                </button>
 
                 {/* 섹션 이동 네비게이션 */}
                 <div className="flex shrink-0 items-center gap-5">
