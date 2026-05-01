@@ -302,9 +302,6 @@ export function TrendingRankSection() {
                     disableHoverScale
                     hideCreatorMeta
                     preloadMode="metadata"
-                    rankTitleMedal={
-                      rankIndex === 0 ? 1 : rankIndex === 1 ? 2 : rankIndex === 2 ? 3 : undefined
-                    }
                     detailHref={
                       entry.video.tiktokEmbedId
                         ? `/video/tiktok-${entry.video.tiktokEmbedId}`
