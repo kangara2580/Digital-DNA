@@ -20,7 +20,7 @@ export const authModalBackdropBlurSoft =
 
 /** /login 등 풀스크린 딤 레이어(패딩 없음) */
 export const authLoginPageScrim =
-  "bg-black/98 backdrop-blur-2xl backdrop-saturate-[1.12]";
+  "bg-black/100 backdrop-blur-2xl backdrop-saturate-[1.12]";
 
 /** 완전 불투명 베이스 그라데이션 + 브랜드 포인트는 내부 글로 레이어링 */
 export const authModalDialogSurface =
