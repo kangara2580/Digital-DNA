@@ -694,16 +694,22 @@ export function Highlight24() {
               </p>
               {/* 시작하기 + 섹션 네비 — 한 줄 가로 배치 */}
               <div className="pointer-events-auto -translate-x-[40px] z-[85] mt-[clamp(0.5rem,1.2vw,1.5rem)] flex items-center gap-6">
-                <button
-                  type="button"
-                  onClick={onStartClick}
-                  onPointerDown={(event) => event.stopPropagation()}
-                  className="group/start shrink-0 inline-flex w-[clamp(138px,74%,188px)] items-center justify-center rounded-full border-[1.5px] border-solid border-white/45 bg-transparent px-[clamp(1rem,1.9vw,1.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold shadow-[0_9px_0_rgba(0,0,0,0.55)] transition-[border-color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-[#ff096c] hover:shadow-[0_12px_0_rgba(0,0,0,0.45),0_0_38px_-2px_rgba(255,9,108,0.52)] motion-reduce:transition-colors motion-reduce:hover:translate-y-0 motion-reduce:hover:shadow-[0_9px_0_rgba(0,0,0,0.55)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff096c]/80"
-                >
-                  <span className="inline-flex text-[#ff096c] transition-[color,filter,text-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/start:text-white group-hover/start:[text-shadow:0_0_18px_rgba(255,255,255,0.45)] motion-reduce:transition-none">
-                    시작하기
+                <span className="group/pill relative inline-flex shrink-0 rounded-full p-[2px] transition-[box-shadow,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-shadow group-hover/pill:shadow-[0_0_42px_-6px_rgba(255,9,108,0.58)]">
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 overflow-hidden rounded-full opacity-0 transition-opacity duration-300 ease-out group-hover/pill:opacity-100 motion-reduce:group-hover/pill:opacity-0"
+                  >
+                    <span className="absolute left-1/2 top-1/2 h-[220%] min-h-[100%] w-[220%] min-w-[100%] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,var(--reels-point),rgba(255,9,108,0.12),#ffc8de,rgba(255,9,108,0.38),var(--reels-point))] motion-safe:animate-[spin_2.8s_linear_infinite] motion-reduce:animate-none" />
                   </span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={onStartClick}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    className="relative z-[1] inline-flex w-[clamp(138px,74%,188px)] items-center justify-center rounded-full border-[1.5px] border-solid border-white/45 bg-[rgba(5,8,15,0.88)] px-[clamp(1rem,1.9vw,1.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold text-white shadow-[0_9px_0_rgba(0,0,0,0.55)] transition-[border-color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/pill:-translate-y-1 group-hover/pill:border-[color:var(--reels-point)] group-hover/pill:shadow-[0_12px_0_rgba(0,0,0,0.45),0_0_28px_-4px_rgba(255,9,108,0.45)] motion-reduce:transition-colors motion-reduce:group-hover/pill:translate-y-0 motion-reduce:group-hover/pill:shadow-[0_9px_0_rgba(0,0,0,0.55)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--reels-point)]/80"
+                  >
+                    시작하기
+                  </button>
+                </span>
 
                 {/* 섹션 이동 네비게이션 */}
                 <div className="flex shrink-0 items-center gap-5">
