@@ -6,6 +6,13 @@ import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
+import {
+  authModalBackdropBlurSoft,
+  authModalDialogSurface,
+  authModalGlowBottom,
+  authModalGlowTop,
+  authModalGoogleButtonShadow,
+} from "@/lib/authModalTheme";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 type Props = {
@@ -125,7 +132,7 @@ export function MainTopUserMenu({ compact }: Props) {
 
         {mounted && authOpen
           ? createPortal(
-              <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/70 px-4 backdrop-blur-[4px]">
+              <div className={`fixed inset-0 z-[220] flex items-center justify-center ${authModalBackdropBlurSoft}`}>
                 <button
                   type="button"
                   className="absolute inset-0"
@@ -136,16 +143,10 @@ export function MainTopUserMenu({ compact }: Props) {
                   role="dialog"
                   aria-modal="true"
                   aria-label="로그인 또는 회원가입"
-                  className="relative z-10 w-full max-w-[560px] max-h-[min(92vh,760px)] overflow-y-auto rounded-[24px] border border-white/20 bg-[radial-gradient(120%_120%_at_0%_0%,rgba(0,51,255,0.34)_0%,rgba(8,14,30,0.94)_52%,rgba(2,6,16,0.98)_100%)] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10"
+                  className={`relative z-10 w-full max-w-[560px] max-h-[min(92vh,760px)] overflow-y-auto rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
                 >
-                  <div
-                    className="pointer-events-none absolute -left-16 -top-20 h-52 w-52 rounded-full bg-[#0033FF]/30 blur-3xl"
-                    aria-hidden
-                  />
-                  <div
-                    className="pointer-events-none absolute -bottom-20 -right-16 h-56 w-56 rounded-full bg-[#00F2EA]/25 blur-3xl"
-                    aria-hidden
-                  />
+                  <div className={authModalGlowTop} aria-hidden />
+                  <div className={authModalGlowBottom} aria-hidden />
                   <button
                     type="button"
                     onClick={() => setAuthOpen(false)}
@@ -163,7 +164,7 @@ export function MainTopUserMenu({ compact }: Props) {
                   <button
                     type="button"
                     onClick={startGoogleAuth}
-                    className="relative mx-auto mt-9 flex w-full max-w-[360px] items-center justify-center gap-3 rounded-full bg-white px-4 py-3 text-[clamp(1.0625rem,3.9vw,1.3125rem)] font-extrabold text-[#1a1a1a] shadow-[0_16px_34px_-18px_rgba(255,255,255,0.95)] transition hover:brightness-95 sm:px-6 sm:py-4"
+                    className={`relative mx-auto mt-9 flex w-full max-w-[360px] items-center justify-center gap-3 rounded-full bg-white px-4 py-3 text-[clamp(1.0625rem,3.9vw,1.3125rem)] font-extrabold text-[#1a1a1a] transition hover:brightness-95 sm:px-6 sm:py-4 ${authModalGoogleButtonShadow}`}
                   >
                     <svg
                       className="h-5 w-5 shrink-0 sm:h-6 sm:w-6"

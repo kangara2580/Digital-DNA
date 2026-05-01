@@ -33,6 +33,13 @@ import {
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
+import {
+  authModalBackdropBlurStrong,
+  authModalDialogSurface,
+  authModalGlowBottom,
+  authModalGlowTop,
+  authModalGoogleButtonShadow,
+} from "@/lib/authModalTheme";
 
 type Props = {
   video: FeedVideo;
@@ -162,7 +169,7 @@ function AuthRequiredModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[220] flex items-center justify-center bg-black/70 px-4 backdrop-blur-[6px]"
+      className={`fixed inset-0 z-[220] flex items-center justify-center ${authModalBackdropBlurStrong}`}
       onClick={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
     >
@@ -180,10 +187,12 @@ function AuthRequiredModal({
         role="dialog"
         aria-modal="true"
         aria-label="로그인 또는 회원가입"
-        className="relative z-10 w-full max-w-[560px] rounded-[24px] border border-white/20 bg-[radial-gradient(120%_120%_at_0%_0%,rgba(0,51,255,0.34)_0%,rgba(8,14,30,0.94)_52%,rgba(2,6,16,0.98)_100%)] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10"
+        className={`relative z-10 w-full max-w-[560px] rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >
+        <div className={authModalGlowTop} aria-hidden />
+        <div className={authModalGlowBottom} aria-hidden />
         <button
           type="button"
           onClick={(e) => {
@@ -205,7 +214,7 @@ function AuthRequiredModal({
         <button
           type="button"
           onClick={onGoogleStart}
-          className="relative mx-auto mt-9 flex w-full max-w-[360px] items-center justify-center gap-3 rounded-full bg-white px-4 py-3 text-[clamp(1.0625rem,3.9vw,1.3125rem)] font-extrabold text-[#1a1a1a] shadow-[0_16px_34px_-18px_rgba(255,255,255,0.95)] transition hover:brightness-95 sm:px-6 sm:py-4"
+          className={`relative mx-auto mt-9 flex w-full max-w-[360px] items-center justify-center gap-3 rounded-full bg-white px-4 py-3 text-[clamp(1.0625rem,3.9vw,1.3125rem)] font-extrabold text-[#1a1a1a] transition hover:brightness-95 sm:px-6 sm:py-4 ${authModalGoogleButtonShadow}`}
         >
           <svg className="h-5 w-5 shrink-0 sm:h-6 sm:w-6" viewBox="0 0 24 24" aria-hidden>
             <path

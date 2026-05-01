@@ -3,6 +3,13 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { GoogleOAuthButton } from "@/components/GoogleOAuthButton";
+import {
+  authModalDialogSurface,
+  authModalGlowBottom,
+  authModalGlowTop,
+  authModalGoogleButtonShadow,
+  loginPageAmbientBg,
+} from "@/lib/authModalTheme";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { postLoginRedirectPath } from "@/lib/postLoginRedirect";
 
@@ -55,11 +62,13 @@ export function LoginPageClient() {
   const redirectPath = useMemo(() => searchParams.get("redirect"), [searchParams]);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#07080f] px-4 py-6 text-zinc-100 sm:px-6 sm:py-8">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(0,51,255,0.22),transparent_42%),radial-gradient(circle_at_78%_86%,rgba(0,242,234,0.16),transparent_42%),linear-gradient(180deg,#05060b_0%,#080913_100%)]" />
+    <main className="relative min-h-screen overflow-hidden bg-[#192731] px-4 py-6 text-zinc-100 sm:px-6 sm:py-8">
+      <div className={`pointer-events-none absolute inset-0 ${loginPageAmbientBg}`} />
       <div className="relative flex min-h-[calc(100vh-3rem)] items-center justify-center sm:min-h-[calc(100vh-4rem)]">
         <div className="absolute inset-0 bg-black/58 backdrop-blur-[6px]" />
-        <div className="relative w-full max-w-[560px] rounded-[24px] border border-white/20 bg-[radial-gradient(120%_120%_at_0%_0%,rgba(0,51,255,0.34)_0%,rgba(8,14,30,0.94)_52%,rgba(2,6,16,0.98)_100%)] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10">
+        <div className={`relative w-full max-w-[560px] rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}>
+          <div className={authModalGlowTop} aria-hidden />
+          <div className={authModalGlowBottom} aria-hidden />
           <button
             type="button"
             onClick={() => router.back()}
@@ -94,7 +103,7 @@ export function LoginPageClient() {
             <GoogleOAuthButton
               nextPath={redirectPath}
               label="Google로 바로 시작"
-              className="flex w-full items-center justify-center gap-3 rounded-full bg-white px-4 py-3 text-[clamp(1rem,3.8vw,1.25rem)] font-extrabold text-[#1a1a1a] shadow-[0_16px_34px_-18px_rgba(255,255,255,0.95)] transition hover:brightness-95 sm:px-6 sm:py-4"
+              className={`flex w-full items-center justify-center gap-3 rounded-full bg-white px-4 py-3 text-[clamp(1rem,3.8vw,1.25rem)] font-extrabold text-[#1a1a1a] transition hover:brightness-95 sm:px-6 sm:py-4 ${authModalGoogleButtonShadow}`}
             />
           </div>
         </div>
