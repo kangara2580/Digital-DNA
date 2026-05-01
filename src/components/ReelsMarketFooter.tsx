@@ -18,10 +18,13 @@ export function ARAFooter() {
 
   return (
     <footer
-      className="relative z-0 mt-auto border-t border-white/10 bg-[#03060f]/92 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white/95"
+      className="relative z-0 mt-auto border-t border-white/[0.22] bg-[color:var(--home-ranked-strip-bg)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white/95 [html[data-theme='light']_&]:backdrop-blur-md"
       aria-labelledby={`${baseId}-footer-title`}
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-reels-cyan/25 to-transparent" aria-hidden />
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.28] to-transparent [html[data-theme='light']_&]:via-zinc-300/60"
+        aria-hidden
+      />
 
       <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
         <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
