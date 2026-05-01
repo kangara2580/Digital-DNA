@@ -45,11 +45,11 @@ export const authModalGoogleButtonShadow =
 
 /** 모달 내 Google 라벨 전용 («Google로 바로 시작» span — 버튼 박스 키우지 않고 글씨만) */
 export const authModalGoogleButtonText =
-  "text-[clamp(1.75rem,5.35vw,2.1rem)]";
+  "text-[clamp(1.92rem,5.85vw,2.35rem)]";
 
 /** /login 동일 라벨 */
 export const loginPageGoogleButtonText =
-  "text-[clamp(1.65rem,5.05vw,1.95rem)]";
+  "text-[clamp(1.82rem,5.5vw,2.12rem)]";
 
 export const loginPageAmbientBg =
   "bg-[radial-gradient(circle_at_18%_12%,rgba(255,9,108,0.18),transparent_44%),radial-gradient(circle_at_82%_88%,rgba(79,97,114,0.28),transparent_46%),linear-gradient(180deg,#192731_0%,#161f28_52%,#0f1419_100%)]";
