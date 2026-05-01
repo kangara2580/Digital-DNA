@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronRight } from "lucide-react";
+import { authModalGoogleChevronClass } from "@/lib/authModalTheme";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
@@ -81,8 +82,10 @@ export function GoogleOAuthButton({
       {busy ? "Google로 이동 중…" : label}
       {showBrandChevron && !busy ? (
         <ChevronRight
-          className="h-[1.05em] w-[1.05em] shrink-0 text-[color:var(--reels-point)]"
-          strokeWidth={2.75}
+          className={authModalGoogleChevronClass}
+          strokeWidth={3.85}
+          strokeLinecap="round"
+          strokeLinejoin="round"
           aria-hidden
         />
       ) : null}

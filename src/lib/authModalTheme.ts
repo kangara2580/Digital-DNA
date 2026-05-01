@@ -5,7 +5,7 @@
 
 /** 전체 화면 딤(+블러) — 다이얼로그와 형제 레이어로 두어야 버튼 히트테스트 안정(backdrop-blur 부모 특성 이슈) */
 export const authModalScrimPaint =
-  "bg-black/84 backdrop-blur-2xl backdrop-saturate-[1.12]";
+  "bg-black/92 backdrop-blur-2xl backdrop-saturate-[1.12]";
 
 /** 로그인 모달 포털 — 레일·헤더·탐색 레이어(z≤120) 위 */
 export const authModalOverlayLayout =
@@ -13,14 +13,14 @@ export const authModalOverlayLayout =
 
 /** 레거시 단일 레이아웃(backdrop-blur+자식 버튼) — 일부 환경에서 클릭이 막히므로 {@link AuthModalPortal} 패턴 우선 */
 export const authModalBackdropBlurStrong =
-  "bg-black/84 px-4 backdrop-blur-2xl backdrop-saturate-[1.12]";
+  "bg-black/92 px-4 backdrop-blur-2xl backdrop-saturate-[1.12]";
 /** 상단 헤더 등 — Strong과 동일 톤 유지 */
 export const authModalBackdropBlurSoft =
-  "bg-black/82 px-4 backdrop-blur-2xl backdrop-saturate-[1.1]";
+  "bg-black/88 px-4 backdrop-blur-2xl backdrop-saturate-[1.1]";
 
 /** /login 등 풀스크린 딤 레이어(패딩 없음) */
 export const authLoginPageScrim =
-  "bg-black/86 backdrop-blur-2xl backdrop-saturate-[1.12]";
+  "bg-black/93 backdrop-blur-2xl backdrop-saturate-[1.12]";
 
 /** 완전 불투명 베이스 그라데이션 + 브랜드 포인트는 내부 글로 레이어링 */
 export const authModalDialogSurface =
@@ -34,13 +34,17 @@ export const authModalGlowBottom =
 export const authModalGoogleButtonShadow =
   "shadow-[0_18px_38px_-20px_rgba(255,9,108,0.4),0_14px_32px_-18px_rgba(255,255,255,0.52)]";
 
-/** 모달·오버레이 내 Google 라벨 — 조금 더 크게 */
+/** 모달·오버레이 내 Google 라벨 */
 export const authModalGoogleButtonText =
-  "text-[clamp(1.375rem,4.55vw,1.625rem)]";
+  "text-[clamp(1.52rem,4.85vw,1.78rem)]";
 
 /** /login 전용(버튼 카드) */
 export const loginPageGoogleButtonText =
-  "text-[clamp(1.25rem,4.2vw,1.5rem)]";
+  "text-[clamp(1.4rem,4.45vw,1.65rem)]";
+
+/** Google CTA 우측 브랜드 핑크 화살표 — 크고 둥근 스트로크 */
+export const authModalGoogleChevronClass =
+  "h-8 w-8 shrink-0 text-[color:var(--reels-point)] sm:h-[2.125rem] sm:w-[2.125rem]";
 
 export const loginPageAmbientBg =
   "bg-[radial-gradient(circle_at_18%_12%,rgba(255,9,108,0.18),transparent_44%),radial-gradient(circle_at_82%_88%,rgba(79,97,114,0.28),transparent_46%),linear-gradient(180deg,#192731_0%,#161f28_52%,#0f1419_100%)]";

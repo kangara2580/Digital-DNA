@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import {
   authModalGoogleButtonShadow,
   authModalGoogleButtonText,
+  authModalGoogleChevronClass,
 } from "@/lib/authModalTheme";
 
 type Props = {
@@ -42,8 +43,10 @@ export function AuthModalGoogleStartButton({ onClick }: Props) {
       {googleGlyph}
       <span className="shrink-0">Google로 바로 시작</span>
       <ChevronRight
-        className="h-[1.12em] w-[1.12em] shrink-0 text-[color:var(--reels-point)] sm:h-[1.18em] sm:w-[1.18em]"
-        strokeWidth={2.75}
+        className={authModalGoogleChevronClass}
+        strokeWidth={3.85}
+        strokeLinecap="round"
+        strokeLinejoin="round"
         aria-hidden
       />
     </button>
