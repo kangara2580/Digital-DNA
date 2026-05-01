@@ -698,9 +698,9 @@ export function Highlight24() {
                   type="button"
                   onClick={onStartClick}
                   onPointerDown={(event) => event.stopPropagation()}
-                  className="group/start shrink-0 inline-flex w-[clamp(138px,74%,188px)] items-center justify-center rounded-full border-[1.5px] border-solid border-white/45 bg-transparent px-[clamp(1rem,1.9vw,1.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold shadow-[0_9px_0_rgba(0,0,0,0.55)] transition-[border-color,box-shadow] duration-300 ease-out hover:border-white/82 hover:shadow-[0_11px_0_rgba(0,0,0,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/75"
+                  className="group/start shrink-0 inline-flex w-[clamp(138px,74%,188px)] items-center justify-center rounded-full border-[1.5px] border-solid border-white/45 bg-transparent px-[clamp(1rem,1.9vw,1.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(1.2rem,2.1vw,1.9rem)] font-semibold shadow-[0_9px_0_rgba(0,0,0,0.55)] transition-[border-color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-[#ff096c] hover:shadow-[0_12px_0_rgba(0,0,0,0.45),0_0_38px_-2px_rgba(255,9,108,0.52)] motion-reduce:transition-colors motion-reduce:hover:translate-y-0 motion-reduce:hover:shadow-[0_9px_0_rgba(0,0,0,0.55)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff096c]/80"
                 >
-                  <span className="inline-flex text-white transition-[transform,color] duration-300 ease-out group-hover/start:-translate-y-0.5 group-hover/start:text-[#ff096c]">
+                  <span className="inline-flex text-[#ff096c] transition-[color,filter,text-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/start:text-white group-hover/start:[text-shadow:0_0_18px_rgba(255,255,255,0.45)] motion-reduce:transition-none">
                     시작하기
                   </span>
                 </button>
