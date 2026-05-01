@@ -161,18 +161,14 @@ function SellerPitchStartButton({
       type="button"
       onClick={onStartClick}
       disabled={authLoading}
-      className="group pointer-events-auto relative inline-flex min-w-[188px] items-center justify-center overflow-hidden rounded-full border border-white/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.04)_18%,rgba(9,12,18,0.86)_58%,rgba(10,12,17,0.96)_100%)] px-7 py-2.5 text-[1.65rem] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-1px_0_rgba(255,255,255,0.12),0_10px_28px_rgba(0,0,0,0.45)] backdrop-blur-xl transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#fca5cf]/90 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.42),inset_0_-1px_0_rgba(236,72,153,0.35),0_0_38px_-4px_rgba(233,30,99,0.55),0_14px_36px_rgba(0,0,0,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e91e63]/80 disabled:hover:translate-y-0"
+      className="pointer-events-auto relative inline-flex min-w-[188px] items-center justify-center overflow-hidden rounded-full border border-white/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.04)_18%,rgba(9,12,18,0.86)_58%,rgba(10,12,17,0.96)_100%)] px-7 py-2.5 text-[1.65rem] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-1px_0_rgba(255,255,255,0.12),0_10px_28px_rgba(0,0,0,0.45)] backdrop-blur-xl transition-[border-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 hover:border-[#e91e63] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-1px_0_rgba(255,255,255,0.12),0_14px_34px_rgba(0,0,0,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e91e63]/80 disabled:hover:translate-y-0"
     >
       <span
-        className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-br from-[#f43f82] via-[#e91e63] to-[#db2777] opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100"
+        className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/75 to-transparent"
         aria-hidden
       />
       <span
-        className="pointer-events-none absolute inset-x-8 top-0 z-[1] h-px bg-gradient-to-r from-transparent via-white/75 to-transparent opacity-95 transition-opacity group-hover:via-white/50"
-        aria-hidden
-      />
-      <span
-        className="pointer-events-none absolute inset-x-10 bottom-0 z-[1] h-px bg-gradient-to-r from-transparent via-white/45 to-transparent opacity-90 transition-opacity group-hover:opacity-60"
+        className="pointer-events-none absolute inset-x-10 bottom-0 h-px bg-gradient-to-r from-transparent via-white/45 to-transparent"
         aria-hidden
       />
       <span className="relative z-10 drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">시작하기</span>
