@@ -107,7 +107,7 @@ export default async function SellerPage({
                 <h1 className="truncate text-2xl font-extrabold tracking-tight sm:text-[1.85rem] sm:leading-tight">
                   {nickname}
                 </h1>
-                <p className="mt-2 text-[13px] font-medium tabular-nums text-white/[0.58] [html[data-theme='light']_&]:text-zinc-600">
+                <p className="mt-3 text-[13px] font-medium tabular-nums text-white/[0.58] [html[data-theme='light']_&]:text-zinc-600">
                   판매 중 <span className="font-semibold text-[color:var(--reels-point)]">{videos.length}</span>개
                   {isDbSeller ? (
                     <span className="text-white/35 [html[data-theme='light']_&]:text-zinc-400">
