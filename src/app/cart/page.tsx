@@ -173,7 +173,7 @@ export default function CartPage() {
             담긴 영상이 없어요
           </p>
           <Link
-            href="/"
+            href="/explore"
             className={`mx-auto mt-6 ${explorePurchaseButtonClass}`}
           >
             둘러보기
