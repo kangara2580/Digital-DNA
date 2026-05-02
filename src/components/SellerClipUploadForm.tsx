@@ -23,6 +23,7 @@ import {
   captureFrameFromVideo,
   capturePosterFromFile,
 } from "@/lib/captureVideoFrame";
+import { MYPAGE_OUTLINE_BTN_MD } from "@/lib/mypageOutlineCta";
 import {
   deleteSellerUploadDraft,
   fetchSellerUploadDraft,
@@ -52,9 +53,9 @@ const SOURCE_SEGMENT_BTN_INACTIVE =
 const SOURCE_PANEL =
   "border-t border-white/[0.08] bg-black/[0.12] px-4 py-5 sm:px-5 sm:py-6 [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/40";
 
-/** 마이페이지·설정과 유사한 주요 버튼 (핑크 필) */
-const MYPAGE_PRIMARY_BTN =
-  "inline-flex cursor-pointer items-center justify-center rounded-full bg-reels-crimson px-6 py-2.5 text-[14px] font-semibold text-white shadow-[0_6px_20px_-6px_rgba(252,3,165,0.45)] transition hover:brightness-[1.05] disabled:pointer-events-none disabled:opacity-50";
+/** 마이페이지 고스트 CTA와 동일 호버 — 비활성일 때 리프트·스케일 제거 */
+const BTN_DISABLED_GHOST =
+  "disabled:pointer-events-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:scale-100";
 
 /** 본문 액션: 탭 선택과 구분되는 얇은 아웃라인 (핑크 채우기·글로우 없음) */
 const SOURCE_SECONDARY_BTN =
@@ -838,7 +839,7 @@ export function SellerClipUploadForm() {
                   <button
                     type="button"
                     onClick={onApplyThumbnailTime}
-                    className={`${MYPAGE_PRIMARY_BTN} w-full max-w-sm sm:w-auto`}
+                    className={`${MYPAGE_OUTLINE_BTN_MD} w-full max-w-sm cursor-pointer sm:w-auto ${BTN_DISABLED_GHOST}`}
                     disabled={!(durationSec != null && durationSec > 0)}
                   >
                     썸네일로 적용
@@ -952,7 +953,7 @@ export function SellerClipUploadForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-reels-crimson px-8 py-3.5 text-[14px] font-semibold text-white transition-colors hover:bg-market-bloomHover disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto sm:min-w-[10rem]"
+          className={`inline-flex w-full cursor-pointer items-center justify-center gap-2 ${MYPAGE_OUTLINE_BTN_MD} sm:w-auto sm:min-w-[10rem] ${BTN_DISABLED_GHOST}`}
         >
           {submitting ? (
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
