@@ -364,13 +364,14 @@ export function SellerClipUploadForm() {
       className="rounded-2xl border border-white/10 bg-zinc-900/50 p-6 sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm"
       onSubmit={onSubmit}
     >
-      <header className="mb-8 flex items-center gap-2.5 border-b border-white/10 pb-6 sm:gap-3 [html[data-theme='light']_&]:border-zinc-100">
+      <header className="mb-8 flex items-center gap-2 border-b border-white/10 pb-6 sm:gap-2.5 [html[data-theme='light']_&]:border-zinc-100">
         <Film
-          className="h-8 w-8 shrink-0 text-reels-crimson sm:h-9 sm:w-9"
-          strokeWidth={2}
           aria-hidden
+          color="#fc03a5"
+          className="h-6 w-6 shrink-0 sm:h-[1.625rem] sm:w-[1.625rem]"
+          strokeWidth={2}
         />
-        <h2 className="text-[clamp(1.4rem,3.95vw,1.75rem)] font-semibold leading-tight tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+        <h2 className="text-[clamp(1.2rem,3.35vw,1.5rem)] font-semibold leading-tight tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
           영상 등록
         </h2>
       </header>
