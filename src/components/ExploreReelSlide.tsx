@@ -26,7 +26,6 @@ import {
 } from "@/data/videoCommerce";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
-import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sellerProfileHrefFromVideo } from "@/lib/sellerProfile";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
@@ -308,26 +307,11 @@ function ReelDesktopRail({
     video.id,
   ]);
 
-  const startGoogleAuth = useCallback(async () => {
+  const startGoogleAuth = useCallback(() => {
     const next =
       typeof window !== "undefined"
         ? `${window.location.pathname}${window.location.search}${window.location.hash}`
         : "/";
-    const redirectTo = buildAuthCallbackRedirectTo(next);
-    const supabase = getSupabaseBrowserClient();
-    if (supabase && redirectTo) {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo,
-          queryParams: { prompt: "select_account" },
-        },
-      });
-      if (!error && data.url) {
-        window.location.assign(data.url);
-        return;
-      }
-    }
     window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
   }, []);
 

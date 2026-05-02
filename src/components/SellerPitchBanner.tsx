@@ -5,14 +5,12 @@ import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuthSession } from "@/hooks/useAuthSession";
-import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 type AuthModalProps = {
   authOpen: boolean;
   mounted: boolean;
   setAuthOpen: Dispatch<SetStateAction<boolean>>;
-  startGoogleAuth: () => Promise<void>;
+  startGoogleAuth: () => void;
 };
 
 function useSellerPitchStart() {
@@ -21,26 +19,11 @@ function useSellerPitchStart() {
   const [authOpen, setAuthOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  const startGoogleAuth = useCallback(async () => {
+  const startGoogleAuth = useCallback(() => {
     const next =
       typeof window !== "undefined"
         ? `${window.location.pathname}${window.location.search}${window.location.hash}`
         : "/";
-    const redirectTo = buildAuthCallbackRedirectTo(next);
-    const supabase = getSupabaseBrowserClient();
-    if (supabase && redirectTo) {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo,
-          queryParams: { prompt: "select_account" },
-        },
-      });
-      if (!error && data.url) {
-        window.location.assign(data.url);
-        return;
-      }
-    }
     window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
   }, []);
 

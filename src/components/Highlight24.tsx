@@ -9,8 +9,6 @@ import { createPortal } from "react-dom";
 import type { FeedVideo } from "@/data/videos";
 import { LOCAL_TRENDING_FEED_VIDEOS } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
-import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
@@ -187,26 +185,11 @@ export function Highlight24() {
 
   const activeId = active?.id;
 
-  const startGoogleAuth = useCallback(async () => {
+  const startGoogleAuth = useCallback(() => {
     const next =
       typeof window !== "undefined"
         ? `${window.location.pathname}${window.location.search}${window.location.hash}`
         : "/";
-    const redirectTo = buildAuthCallbackRedirectTo(next);
-    const supabase = getSupabaseBrowserClient();
-    if (supabase && redirectTo) {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo,
-          queryParams: { prompt: "select_account" },
-        },
-      });
-      if (!error && data.url) {
-        window.location.assign(data.url);
-        return;
-      }
-    }
     window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
   }, []);
 
