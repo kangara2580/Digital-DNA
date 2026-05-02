@@ -55,11 +55,8 @@ export function SellerFeedBioEditor({ sellerId, initialBio }: Props) {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[12px] font-bold tracking-wide text-[color:var(--reels-point)]">
-          판매 피드 소개
-        </p>
-        {isOwner ? (
+      {isOwner ? (
+        <div className="flex justify-end">
           <button
             type="button"
             onClick={() => setEditing((v) => !v)}
@@ -69,8 +66,8 @@ export function SellerFeedBioEditor({ sellerId, initialBio }: Props) {
           >
             <PencilLine className="h-4 w-4" aria-hidden />
           </button>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       {editing && isOwner ? (
         <div className="mt-3">
