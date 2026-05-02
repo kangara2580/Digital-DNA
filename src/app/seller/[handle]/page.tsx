@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { SellerFeedBioEditor } from "@/components/SellerFeedBioEditor";
+import { SellerFeedSellCta } from "@/components/SellerFeedSellCta";
 import { VideoCard } from "@/components/VideoCard";
 import type { FeedVideo } from "@/data/videos";
 import {
@@ -88,34 +89,38 @@ export default async function SellerPage({
             aria-hidden
           />
           <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,36rem)] lg:items-start lg:gap-8">
-            <div className="flex gap-4 sm:items-center sm:gap-5">
-              <div className="relative shrink-0">
-                <div
-                  className="absolute inset-0 rounded-full bg-[color:var(--reels-point)]/25 blur-lg [html[data-theme='light']_&]:bg-[color:var(--reels-point)]/15"
-                  aria-hidden
-                />
-                <Image
-                  src={buildNotionistsAvatarUrl(nickname)}
-                  width={72}
-                  height={72}
-                  alt=""
-                  unoptimized
-                  className="relative h-[4.25rem] w-[4.25rem] rounded-full object-cover ring-2 ring-white/20 ring-offset-2 ring-offset-[#070a12] sm:h-[4.75rem] sm:w-[4.75rem] [html[data-theme='light']_&]:ring-zinc-200/80 [html[data-theme='light']_&]:ring-offset-white"
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h1 className="truncate text-2xl font-extrabold tracking-tight sm:text-[1.85rem] sm:leading-tight">
-                  {nickname}
-                </h1>
-                <p className="mt-3 text-[13px] font-medium tabular-nums text-white/[0.58] [html[data-theme='light']_&]:text-zinc-600">
-                  판매 중 <span className="font-semibold text-[color:var(--reels-point)]">{videos.length}</span>개
-                  {isDbSeller ? (
-                    <span className="text-white/35 [html[data-theme='light']_&]:text-zinc-400">
-                      {" "}
-                      · 실데이터
-                    </span>
-                  ) : null}
-                </p>
+            <div className="min-w-0">
+              <SellerFeedSellCta sellerId={sellerKey} />
+              <div className="flex gap-4 sm:items-center sm:gap-5">
+                <div className="relative shrink-0">
+                  <div
+                    className="absolute inset-0 rounded-full bg-[color:var(--reels-point)]/25 blur-lg [html[data-theme='light']_&]:bg-[color:var(--reels-point)]/15"
+                    aria-hidden
+                  />
+                  <Image
+                    src={buildNotionistsAvatarUrl(nickname)}
+                    width={72}
+                    height={72}
+                    alt=""
+                    unoptimized
+                    className="relative h-[4.25rem] w-[4.25rem] rounded-full object-cover ring-2 ring-white/20 ring-offset-2 ring-offset-[#070a12] sm:h-[4.75rem] sm:w-[4.75rem] [html[data-theme='light']_&]:ring-zinc-200/80 [html[data-theme='light']_&]:ring-offset-white"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h1 className="truncate text-2xl font-extrabold tracking-tight sm:text-[1.85rem] sm:leading-tight">
+                    {nickname}
+                  </h1>
+                  <p className="mt-3 text-[13px] font-medium tabular-nums text-white/[0.58] [html[data-theme='light']_&]:text-zinc-600">
+                    판매 중{" "}
+                    <span className="font-semibold text-[color:var(--reels-point)]">{videos.length}</span>개
+                    {isDbSeller ? (
+                      <span className="text-white/35 [html[data-theme='light']_&]:text-zinc-400">
+                        {" "}
+                        · 실데이터
+                      </span>
+                    ) : null}
+                  </p>
+                </div>
               </div>
             </div>
             <div className="min-w-0 border-t border-white/[0.08] pt-5 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0 [html[data-theme='light']_&]:border-zinc-200/75">
