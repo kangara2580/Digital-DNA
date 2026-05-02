@@ -27,11 +27,20 @@ export type WishlistEntry = {
   savedAt: number;
 };
 
+/** text PK — DB·클라이언트 대소문자 불일치 시 찜 상태가 순간 깨져 보일 수 있어 통일 */
+function normalizeWishVideoId(videoId: string): string {
+  return videoId.trim().toLowerCase();
+}
+
+function normalizeWishlistEntry(e: WishlistEntry): WishlistEntry {
+  return { id: normalizeWishVideoId(e.id), savedAt: e.savedAt };
+}
+
 function rowsToWishlistEntries(rows: FavoriteRow[]): WishlistEntry[] {
   return rows.map((r) => {
     const t = Date.parse(r.created_at);
     return {
-      id: r.video_id,
+      id: normalizeWishVideoId(r.video_id),
       savedAt: Number.isFinite(t) ? t : Date.now(),
     };
   });
@@ -43,10 +52,12 @@ function rowsToWishlistEntries(rows: FavoriteRow[]): WishlistEntry[] {
  */
 function mergeWishlistServerIntoPrev(rows: FavoriteRow[], prev: WishlistEntry[]): WishlistEntry[] {
   const server = rowsToWishlistEntries(rows);
-  if (server.length === 0) return prev.length > 0 ? prev : server;
+  const prevN = prev.map(normalizeWishlistEntry);
+
+  if (server.length === 0) return prevN.length > 0 ? prevN : server;
 
   const serverIds = new Set(server.map((e) => e.id));
-  const onlyLocal = prev.filter((e) => !serverIds.has(e.id));
+  const onlyLocal = prevN.filter((e) => !serverIds.has(e.id));
   if (onlyLocal.length === 0) return server;
 
   const byId = new Map<string, WishlistEntry>();
@@ -190,7 +201,10 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   }, [authLoading, supabaseConfigured, userId, session?.access_token]);
 
   const isSaved = useCallback(
-    (videoId: string) => entries.some((e) => e.id === videoId),
+    (videoId: string) => {
+      const v = normalizeWishVideoId(videoId);
+      return entries.some((e) => normalizeWishVideoId(e.id) === v);
+    },
     [entries],
   );
 
@@ -216,16 +230,19 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       }
 
       /** 낙관적 UI를 즉시 반영한 뒤 백그라운드에서 동기화(이전: await 토큰 후에만 setEntries → 클릭이 먹통처럼 보임) */
+      const vid = normalizeWishVideoId(video.id);
+
       setEntries((prev) => {
-        const on = prev.some((e) => e.id === video.id);
+        const prevN = prev.map(normalizeWishlistEntry);
+        const on = prevN.some((e) => e.id === vid);
         if (on) {
-          const removed = prev.find((e) => e.id === video.id);
+          const removed = prevN.find((e) => e.id === vid);
           void (async () => {
             const ready = await waitForSupabaseAccessToken(supabase);
             if (!ready) {
               if (removed) {
                 setEntries((p) =>
-                  p.some((e) => e.id === video.id) ? p : [removed, ...p],
+                  p.some((e) => normalizeWishVideoId(e.id) === vid) ? p : [removed, ...p],
                 );
               }
               if (typeof window !== "undefined") {
@@ -233,38 +250,38 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
               }
               return;
             }
-            const r = await removeFavorite(supabase, userId, video.id, "wishlist");
+            const r = await removeFavorite(supabase, userId, vid, "wishlist");
             if (!r.ok && removed) {
               setEntries((p) =>
-                p.some((e) => e.id === video.id) ? p : [removed, ...p],
+                p.some((e) => normalizeWishVideoId(e.id) === vid) ? p : [removed, ...p],
               );
               void reloadFromServer();
             }
           })();
-          return prev.filter((e) => e.id !== video.id);
+          return prevN.filter((e) => e.id !== vid);
         }
 
         const now = Date.now();
-        const optimistic: WishlistEntry = { id: video.id, savedAt: now };
+        const optimistic: WishlistEntry = { id: vid, savedAt: now };
         void (async () => {
           const ready = await waitForSupabaseAccessToken(supabase);
           if (!ready) {
-            setEntries((p) => p.filter((e) => e.id !== video.id));
+            setEntries((p) => p.filter((e) => normalizeWishVideoId(e.id) !== vid));
             if (typeof window !== "undefined") {
               window.alert("세션을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.");
             }
             return;
           }
-          const r = await addFavorite(supabase, userId, video.id, "wishlist", now);
+          const r = await addFavorite(supabase, userId, vid, "wishlist", now);
           if (!r.ok) {
             if (process.env.NODE_ENV === "development") {
               console.warn("[wishlist] addFavorite failed", r.errorMessage, r.errorCode);
             }
-            setEntries((p) => p.filter((e) => e.id !== video.id));
+            setEntries((p) => p.filter((e) => normalizeWishVideoId(e.id) !== vid));
             void reloadFromServer();
           }
         })();
-        return [optimistic, ...prev];
+        return [optimistic, ...prevN.filter((e) => e.id !== vid)];
       });
     },
     [
@@ -287,17 +304,20 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       const supabase = getSupabaseBrowserClient();
       if (!supabase) return;
 
+      const vid = normalizeWishVideoId(videoId);
+
       setEntries((prev) => {
-        const removed = prev.find((e) => e.id === videoId);
-        void removeFavorite(supabase, userId, videoId, "wishlist").then((r) => {
+        const prevN = prev.map(normalizeWishlistEntry);
+        const removed = prevN.find((e) => e.id === vid);
+        void removeFavorite(supabase, userId, vid, "wishlist").then((r) => {
           if (!r.ok && removed) {
             setEntries((p) =>
-              p.some((e) => e.id === videoId) ? p : [removed, ...p],
+              p.some((e) => normalizeWishVideoId(e.id) === vid) ? p : [removed, ...p],
             );
             void reloadFromServer();
           }
         });
-        return prev.filter((e) => e.id !== videoId);
+        return prevN.filter((e) => e.id !== vid);
       });
     },
     [authLoading, supabaseConfigured, userId, reloadFromServer, alertLoginRequired],
@@ -305,7 +325,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
   const removeMany = useCallback(
     async (videoIds: string[]) => {
-      const uniq = [...new Set(videoIds)].filter(Boolean);
+      const uniq = [...new Set(videoIds)].filter(Boolean).map(normalizeWishVideoId);
       if (uniq.length === 0) return;
       if (!supabaseConfigured || !userId) {
         alertLoginRequired();
@@ -316,7 +336,11 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       const ready = await waitForSupabaseAccessToken(supabase);
       if (!ready) return;
       const prevSnapshot = entriesRef.current;
-      setEntries((p) => p.filter((e) => !uniq.includes(e.id)));
+      setEntries((p) =>
+        p
+          .map(normalizeWishlistEntry)
+          .filter((e) => !uniq.includes(e.id)),
+      );
       const results = await Promise.all(
         uniq.map((id) => removeFavorite(supabase, userId, id, "wishlist")),
       );
