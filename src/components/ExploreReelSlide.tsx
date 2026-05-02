@@ -563,13 +563,15 @@ function ReelDesktopRail({
             void toggleInternalLike();
           }}
           className={`relative ${railActionPlainBtn} ${
-            likedByMe ? "text-[#a8c9ff] hover:text-[#c4d7ff] [html[data-theme='light']_&]:text-sky-600" : ""
+            likedByMe
+              ? "text-[var(--reels-point)] hover:brightness-110 [html[data-theme='light']_&]:text-[var(--reels-point)]"
+              : ""
           }`}
           aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
           aria-pressed={likedByMe}
         >
           {likeBurst ? (
-            <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/28 animate-ping" />
+            <span className="pointer-events-none absolute inset-0 rounded-full bg-[var(--reels-point)]/28 animate-ping" />
           ) : null}
           <Heart
             strokeWidth={2.25}

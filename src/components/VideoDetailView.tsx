@@ -835,7 +835,7 @@ export function VideoDetailView({
                 }}
                 className={`relative inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border transition-all duration-200 [html[data-theme='light']_&]:bg-zinc-100 ${
                   likedByMe
-                    ? "border-[#79adff]/70 bg-[#0e1d3f] text-[#9bc4ff]"
+                    ? "border-[var(--reels-point)]/60 bg-[var(--reels-point)]/[0.14] text-[var(--reels-point)] [html[data-theme='light']_&]:border-[var(--reels-point)]/45 [html[data-theme='light']_&]:bg-[var(--reels-point)]/[0.10] [html[data-theme='light']_&]:text-[var(--reels-point)]"
                     : "border-white/10 bg-white/[0.04] text-zinc-400 hover:border-white/25 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600"
                 } ${likePulse ? "scale-110" : "scale-100"}`}
                 aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
@@ -843,11 +843,11 @@ export function VideoDetailView({
                 disabled={likeBusy}
               >
                 {likeBurst ? (
-                  <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/30 animate-ping" />
+                  <span className="pointer-events-none absolute inset-0 rounded-full bg-[var(--reels-point)]/30 animate-ping" />
                 ) : null}
                 <Heart
                   className={`relative z-[1] h-[18px] w-[18px] transition-transform duration-300 ${
-                    likedByMe ? "fill-current text-[#9bc4ff]" : ""
+                    likedByMe ? "fill-current text-[var(--reels-point)]" : ""
                   } ${likeBurst ? "scale-125" : "scale-100"}`}
                 />
               </button>
