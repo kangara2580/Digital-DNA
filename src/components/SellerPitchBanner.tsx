@@ -136,13 +136,13 @@ function SellerPitchStartButton({
   authLoading: boolean;
   onStartClick: () => void;
 }) {
-  /** 홈 히어로「시작하기」와 동일 — 테두리 굵기 고정(호버 시 레이아웃 점프·푸터 밀림 방지) */
+  /** 홈 히어로「시작하기」와 동일 — 브랜드 핑크 글래스 CTA (globals `bg-reels-crimson`) */
   return (
     <button
       type="button"
       onClick={onStartClick}
       disabled={authLoading}
-      className="shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full border-[1.5px] border-solid border-white/45 bg-transparent px-[clamp(2rem,5.2vw,3.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(calc(1.2rem-2pt),calc(2.1vw-2pt),calc(1.9rem-2pt))] font-semibold text-white transition-[border-color,opacity] duration-200 ease-out hover:border-[color:var(--reels-point)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/75 [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:focus-visible:outline-zinc-400/50 disabled:cursor-not-allowed disabled:border-white/45 disabled:text-white disabled:opacity-55 disabled:hover:border-white/45 disabled:hover:text-white [html[data-theme='light']_&]:disabled:border-zinc-300 [html[data-theme='light']_&]:disabled:text-zinc-500"
+      className="shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/25 bg-reels-crimson px-[clamp(2rem,5.2vw,3.75rem)] py-[clamp(0.52rem,0.85vw,0.72rem)] text-[clamp(calc(1.2rem-2pt),calc(2.1vw-2pt),calc(1.9rem-2pt))] font-semibold text-white transition-[filter,transform] duration-200 ease-out hover:brightness-110 hover:scale-[1.02] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100 disabled:hover:scale-100 motion-reduce:transition-[filter] motion-reduce:hover:scale-100 motion-reduce:active:scale-100 [html[data-theme='light']_&]:border-white/35 [html[data-theme='light']_&]:focus-visible:outline-zinc-400/60"
     >
       시작하기
     </button>
