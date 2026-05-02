@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Bookmark,
   Eye,
   Heart,
   ShoppingBag,
@@ -14,9 +13,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AuthPromptModal } from "@/components/AuthPromptModal";
+import { BookmarkButton } from "@/components/BookmarkButton";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
-import { useWishlist } from "@/context/WishlistContext";
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import {
   clonesRemaining,
@@ -26,6 +25,7 @@ import {
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
+import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sellerProfileHrefFromVideo } from "@/lib/sellerProfile";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
@@ -265,7 +265,6 @@ function ReelDesktopRail({
 }) {
   const router = useRouter();
   const dopamine = useDopamineBasket();
-  const { isSaved, toggle: toggleWishlist } = useWishlist();
   const { hasPurchased, markPurchased } = usePurchasedVideos();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const owned = hasPurchased(video.id);
@@ -274,7 +273,6 @@ function ReelDesktopRail({
 
   const remaining = clonesRemaining(meta);
   const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
-  const wishlisted = isSaved(video.id);
   const inCart = useMemo(
     () => dopamine.builderItems.some((item) => item.video.id === video.id),
     [dopamine.builderItems, video.id],
@@ -370,7 +368,7 @@ function ReelDesktopRail({
         ? { Authorization: `Bearer ${token}` }
         : undefined;
       const res = await fetch(
-        `/api/video/likes?videoId=${encodeURIComponent(video.id)}`,
+        `/api/video/likes?videoId=${encodeURIComponent(canonicalFavoriteVideoId(video.id))}`,
         { cache: "no-store", headers },
       );
       if (!res.ok) return;
@@ -424,7 +422,7 @@ function ReelDesktopRail({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ videoId: video.id }),
+        body: JSON.stringify({ videoId: canonicalFavoriteVideoId(video.id) }),
       });
       const body = (await res.json().catch(() => ({}))) as {
         ok?: boolean;
@@ -598,27 +596,16 @@ function ReelDesktopRail({
             } ${likePulse || likeBurst ? "scale-110" : "scale-100"}`}
           />
         </button>
-        <button
-          type="button"
-          title={wishlisted ? "찜 해제" : "찜하기"}
-          onClick={(e) => {
-            e.preventDefault();
-            if (!requireAuth()) return;
-            toggleWishlist(video);
-          }}
-          className={`${railActionPlainBtn} ${
-            wishlisted
-              ? "!text-[var(--reels-point)] hover:brightness-110 [html[data-theme='light']_&]:!text-[var(--reels-point)]"
-              : ""
-          }`}
-          aria-label={wishlisted ? "찜 해제" : "찜하기"}
-          aria-pressed={wishlisted}
-        >
-          <Bookmark
-            strokeWidth={2.25}
-            className={wishlisted ? railActionIconBrandFilled : `${railActionIcon} stroke-current`}
-          />
-        </button>
+        <BookmarkButton
+          video={video}
+          beforeToggle={requireAuth}
+          buttonClassNameBase={railActionPlainBtn}
+          buttonClassWhenBookmarked={
+            "!text-[var(--reels-point)] hover:brightness-110 [html[data-theme='light']_&]:!text-[var(--reels-point)]"
+          }
+          iconClassWhenBookmarked={railActionIconBrandFilled}
+          iconClassWhenDefault={`${railActionIcon} stroke-current`}
+        />
       </div>
 
       {mounted ? (

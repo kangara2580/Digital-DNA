@@ -30,6 +30,7 @@ import {
 } from "@/lib/externalEmbed/playerUrls";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
+import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import type { SellerSocialLink, SellerSocialPlatform } from "@/lib/sellerSocialLinks";
 
@@ -508,7 +509,7 @@ export function VideoDetailView({
         ? { Authorization: `Bearer ${token}` }
         : undefined;
       const res = await fetch(
-        `/api/video/likes?videoId=${encodeURIComponent(video.id)}`,
+        `/api/video/likes?videoId=${encodeURIComponent(canonicalFavoriteVideoId(video.id))}`,
         {
           cache: "no-store",
           headers,
@@ -564,7 +565,7 @@ export function VideoDetailView({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ videoId: video.id }),
+        body: JSON.stringify({ videoId: canonicalFavoriteVideoId(video.id) }),
       });
       const body = (await res.json().catch(() => ({}))) as {
         ok?: boolean;

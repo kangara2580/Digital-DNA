@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { supabaseTables } from "@/lib/supabaseTableNames";
 
 export type FavoriteKind = "wishlist" | "like";
@@ -66,11 +67,12 @@ export async function addFavorite(
   kind: FavoriteKind,
   createdAtMs?: number,
 ): Promise<MutateFavoriteResult> {
+  const vid = canonicalFavoriteVideoId(videoId);
   const table = getFavoritesTableName();
   try {
     const payload: Record<string, unknown> = {
       user_id: userId,
-      video_id: videoId,
+      video_id: vid,
       kind,
     };
     if (createdAtMs != null && Number.isFinite(createdAtMs)) {
@@ -109,13 +111,14 @@ export async function removeFavorite(
   videoId: string,
   kind: FavoriteKind,
 ): Promise<MutateFavoriteResult> {
+  const vid = canonicalFavoriteVideoId(videoId);
   const table = getFavoritesTableName();
   try {
     const { error } = await supabase
       .from(table)
       .delete()
       .eq("user_id", userId)
-      .eq("video_id", videoId)
+      .eq("video_id", vid)
       .eq("kind", kind);
 
     if (!error) return { ok: true };

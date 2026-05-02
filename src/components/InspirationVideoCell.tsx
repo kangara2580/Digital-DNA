@@ -10,6 +10,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
+import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 
@@ -74,7 +75,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
           ? { Authorization: `Bearer ${token}` }
           : undefined;
         const res = await fetch(
-          `/api/video/likes?videoId=${encodeURIComponent(video.id)}`,
+          `/api/video/likes?videoId=${encodeURIComponent(canonicalFavoriteVideoId(video.id))}`,
           { cache: "no-store", headers },
         );
         if (!res.ok || cancelled) return;
@@ -116,7 +117,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ videoId: video.id }),
+        body: JSON.stringify({ videoId: canonicalFavoriteVideoId(video.id) }),
       });
       const body = (await res.json().catch(() => ({}))) as {
         ok?: boolean;

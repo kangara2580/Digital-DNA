@@ -33,6 +33,7 @@ import {
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
+import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
 import { AuthModalPortal } from "@/components/AuthModalPortal";
 import {
@@ -418,7 +419,7 @@ export function VideoCard({
           ? { Authorization: `Bearer ${token}` }
           : undefined;
         const res = await fetch(
-          `/api/video/likes?videoId=${encodeURIComponent(video.id)}`,
+          `/api/video/likes?videoId=${encodeURIComponent(canonicalFavoriteVideoId(video.id))}`,
           { cache: "no-store", headers },
         );
         if (!res.ok || cancelled) return;
@@ -457,7 +458,7 @@ export function VideoCard({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ videoId: video.id }),
+        body: JSON.stringify({ videoId: canonicalFavoriteVideoId(video.id) }),
       });
       const body = (await res.json().catch(() => ({}))) as {
         ok?: boolean;

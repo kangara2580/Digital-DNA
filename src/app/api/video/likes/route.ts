@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { decodeDevUserIdFromJwt } from "@/lib/devJwtFallback";
+import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { getSupabaseServiceRoleClient } from "@/lib/supabaseServiceRole";
 import { supabaseTables } from "@/lib/supabaseTableNames";
 
@@ -10,8 +11,9 @@ const SUPABASE_TIMEOUT_MS = 450;
 
 function parseVideoIdFromUrl(request: Request): string | null {
   const { searchParams } = new URL(request.url);
-  const videoId = searchParams.get("videoId")?.trim() ?? "";
-  return videoId.length > 0 ? videoId : null;
+  const raw = searchParams.get("videoId")?.trim() ?? "";
+  if (raw.length === 0) return null;
+  return canonicalFavoriteVideoId(raw);
 }
 
 async function withTimeout<T>(work: Promise<T> | PromiseLike<T>, timeoutMs: number): Promise<T> {
@@ -26,8 +28,9 @@ async function withTimeout<T>(work: Promise<T> | PromiseLike<T>, timeoutMs: numb
 async function parseVideoIdFromBody(request: Request): Promise<string | null> {
   try {
     const body = (await request.json().catch(() => ({}))) as { videoId?: unknown };
-    const videoId = typeof body.videoId === "string" ? body.videoId.trim() : "";
-    return videoId.length > 0 ? videoId : null;
+    const raw = typeof body.videoId === "string" ? body.videoId.trim() : "";
+    if (raw.length === 0) return null;
+    return canonicalFavoriteVideoId(raw);
   } catch {
     return null;
   }

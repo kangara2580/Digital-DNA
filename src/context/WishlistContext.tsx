@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import type { FeedVideo } from "@/data/videos";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import {
   addFavorite,
@@ -19,28 +20,31 @@ import {
   type FavoriteRow,
 } from "@/lib/supabaseFavorites";
 import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
+import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { waitForSupabaseAccessToken } from "@/lib/waitSupabaseSessionReady";
+
+/** 토글 직후 짧게 토큰이 비는 레이스로 낙관적 찜만 롤백되는 현상 줄이기 */
+async function wishlistMutationAwaitSession(supabase: SupabaseClient): Promise<boolean> {
+  if (await waitForSupabaseAccessToken(supabase, 22)) return true;
+  await new Promise((r) => setTimeout(r, 380));
+  return waitForSupabaseAccessToken(supabase, 18);
+}
 
 export type WishlistEntry = {
   id: string;
   savedAt: number;
 };
 
-/** text PK — DB·클라이언트 대소문자 불일치 시 찜 상태가 순간 깨져 보일 수 있어 통일 */
-function normalizeWishVideoId(videoId: string): string {
-  return videoId.trim().toLowerCase();
-}
-
 function normalizeWishlistEntry(e: WishlistEntry): WishlistEntry {
-  return { id: normalizeWishVideoId(e.id), savedAt: e.savedAt };
+  return { id: canonicalFavoriteVideoId(e.id), savedAt: e.savedAt };
 }
 
 function rowsToWishlistEntries(rows: FavoriteRow[]): WishlistEntry[] {
   return rows.map((r) => {
     const t = Date.parse(r.created_at);
     return {
-      id: normalizeWishVideoId(r.video_id),
+      id: canonicalFavoriteVideoId(r.video_id),
       savedAt: Number.isFinite(t) ? t : Date.now(),
     };
   });
@@ -202,8 +206,8 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
   const isSaved = useCallback(
     (videoId: string) => {
-      const v = normalizeWishVideoId(videoId);
-      return entries.some((e) => normalizeWishVideoId(e.id) === v);
+      const v = canonicalFavoriteVideoId(videoId);
+      return entries.some((e) => canonicalFavoriteVideoId(e.id) === v);
     },
     [entries],
   );
@@ -230,7 +234,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       }
 
       /** 낙관적 UI를 즉시 반영한 뒤 백그라운드에서 동기화(이전: await 토큰 후에만 setEntries → 클릭이 먹통처럼 보임) */
-      const vid = normalizeWishVideoId(video.id);
+      const vid = canonicalFavoriteVideoId(video.id);
 
       setEntries((prev) => {
         const prevN = prev.map(normalizeWishlistEntry);
@@ -238,11 +242,11 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         if (on) {
           const removed = prevN.find((e) => e.id === vid);
           void (async () => {
-            const ready = await waitForSupabaseAccessToken(supabase);
+            const ready = await wishlistMutationAwaitSession(supabase);
             if (!ready) {
               if (removed) {
                 setEntries((p) =>
-                  p.some((e) => normalizeWishVideoId(e.id) === vid) ? p : [removed, ...p],
+                  p.some((e) => canonicalFavoriteVideoId(e.id) === vid) ? p : [removed, ...p],
                 );
               }
               if (typeof window !== "undefined") {
@@ -253,7 +257,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             const r = await removeFavorite(supabase, userId, vid, "wishlist");
             if (!r.ok && removed) {
               setEntries((p) =>
-                p.some((e) => normalizeWishVideoId(e.id) === vid) ? p : [removed, ...p],
+                p.some((e) => canonicalFavoriteVideoId(e.id) === vid) ? p : [removed, ...p],
               );
               void reloadFromServer();
             }
@@ -264,9 +268,9 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         const now = Date.now();
         const optimistic: WishlistEntry = { id: vid, savedAt: now };
         void (async () => {
-          const ready = await waitForSupabaseAccessToken(supabase);
+          const ready = await wishlistMutationAwaitSession(supabase);
           if (!ready) {
-            setEntries((p) => p.filter((e) => normalizeWishVideoId(e.id) !== vid));
+            setEntries((p) => p.filter((e) => canonicalFavoriteVideoId(e.id) !== vid));
             if (typeof window !== "undefined") {
               window.alert("세션을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.");
             }
@@ -277,7 +281,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             if (process.env.NODE_ENV === "development") {
               console.warn("[wishlist] addFavorite failed", r.errorMessage, r.errorCode);
             }
-            setEntries((p) => p.filter((e) => normalizeWishVideoId(e.id) !== vid));
+            setEntries((p) => p.filter((e) => canonicalFavoriteVideoId(e.id) !== vid));
             void reloadFromServer();
           }
         })();
@@ -304,7 +308,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       const supabase = getSupabaseBrowserClient();
       if (!supabase) return;
 
-      const vid = normalizeWishVideoId(videoId);
+      const vid = canonicalFavoriteVideoId(videoId);
 
       setEntries((prev) => {
         const prevN = prev.map(normalizeWishlistEntry);
@@ -312,7 +316,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         void removeFavorite(supabase, userId, vid, "wishlist").then((r) => {
           if (!r.ok && removed) {
             setEntries((p) =>
-              p.some((e) => normalizeWishVideoId(e.id) === vid) ? p : [removed, ...p],
+              p.some((e) => canonicalFavoriteVideoId(e.id) === vid) ? p : [removed, ...p],
             );
             void reloadFromServer();
           }
@@ -325,7 +329,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
   const removeMany = useCallback(
     async (videoIds: string[]) => {
-      const uniq = [...new Set(videoIds)].filter(Boolean).map(normalizeWishVideoId);
+      const uniq = [...new Set(videoIds)].filter(Boolean).map(canonicalFavoriteVideoId);
       if (uniq.length === 0) return;
       if (!supabaseConfigured || !userId) {
         alertLoginRequired();
