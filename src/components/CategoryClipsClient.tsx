@@ -31,98 +31,6 @@ const filterBtnInactive =
 const filterSectionLabel =
   "mb-3 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500";
 
-type EndlessFeedItem = {
-  instanceId: string;
-  video: FeedVideo;
-};
-
-function BestEndlessRankFeed({
-  videos,
-  onEnterWatch,
-}: {
-  videos: FeedVideo[];
-  onEnterWatch: (video: FeedVideo) => void;
-}) {
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const [items, setItems] = useState<EndlessFeedItem[]>([]);
-
-  const appendBatch = useCallback(() => {
-    if (videos.length === 0) return;
-    setItems((prev) => {
-      const start = prev.length;
-      const next: EndlessFeedItem[] = [];
-      for (let i = 0; i < 8; i++) {
-        const idx = (start + i) % videos.length;
-        const loop = Math.floor((start + i) / videos.length);
-        const v = videos[idx];
-        next.push({
-          instanceId: `${v.id}-loop-${loop}-slot-${i}`,
-          video: v,
-        });
-      }
-      return [...prev, ...next];
-    });
-  }, [videos]);
-
-  useEffect(() => {
-    setItems([]);
-  }, [videos]);
-
-  useEffect(() => {
-    if (videos.length === 0) return;
-    if (items.length === 0) appendBatch();
-  }, [appendBatch, items.length, videos.length]);
-
-  useEffect(() => {
-    const node = sentinelRef.current;
-    if (!node || videos.length === 0) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) appendBatch();
-      },
-      { rootMargin: "1400px 0px 1200px 0px" },
-    );
-    io.observe(node);
-    return () => io.disconnect();
-  }, [appendBatch, videos.length]);
-
-  return (
-    <section className="px-4 py-5 sm:px-6 lg:px-8">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {items.map((item, idx) => (
-          <article
-            key={item.instanceId}
-            className="reels-glass-card overflow-hidden rounded-xl"
-          >
-            <VideoCard
-              video={item.video}
-              reelLayout
-              reelStrip
-              hideCloneStrip
-              onPick={() => onEnterWatch(item.video)}
-              className="h-full min-w-0"
-              footerExtension={
-                <TrendingVideoStatsFooter
-                  metrics={getMetricsForVideoDetail(item.video.id)}
-                />
-              }
-            />
-            <div className="border-t border-white/10 bg-black/25 px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-              <p className="text-[11px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                인기 피드 #{idx + 1}
-              </p>
-            </div>
-          </article>
-        ))}
-      </div>
-      <div ref={sentinelRef} className="h-10 w-full" aria-hidden />
-      <p className="mt-2 text-center text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        인기 영상을 계속 불러오는 중...
-      </p>
-    </section>
-  );
-}
-
 export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   const router = useRouter();
   const label = CATEGORY_LABEL[slug];
@@ -290,20 +198,29 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   }, [sorted, visibleCount]);
 
   const renderMosaicGrid = (items: Array<{ video: FeedVideo; key: string }>) => (
-    <div className="grid grid-cols-2 gap-2 border border-white/10 p-2 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+    <div
+      className="grid grid-cols-2 gap-3 border border-white/10 p-3 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
+      role="list"
+      aria-label={`${label} 영상 목록`}
+    >
       {items.map(({ video, key }) => (
-        <div
-          key={key}
-          className="overflow-hidden rounded-lg border border-white/10 bg-black/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
-        >
+        <div key={key} className="relative min-w-0" role="listitem">
           <VideoCard
             video={video}
-            flush
-            reelLayout={video.orientation === "portrait"}
-            hideInfoBar
+            reelLayout
+            reelStrip
+            hideCreatorMeta
+            preloadMode="metadata"
+            trendingRankCardPrice
             onPick={() => openExploreWatch(video)}
             domId={`clip-${key}`}
-            className="min-h-0 w-full"
+            className="h-full min-w-0"
+            footerExtension={
+              <TrendingVideoStatsFooter
+                hideMetricLabels
+                metrics={getMetricsForVideoDetail(video.id)}
+              />
+            }
           />
         </div>
       ))}
