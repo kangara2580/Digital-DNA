@@ -40,3 +40,8 @@ html[data-theme="light"] [data-page="sell"] ::selection {
   ):not([type="button"]):not([type="hidden"]):focus-visible {
   outline: none;
 }
+
+/** 미리보기 video 기본 컨트롤 — ⋮ 오버플로 메뉴 버튼(WebKit·Chromium 계열) */
+[data-page="sell"] video::-webkit-media-controls-overflow-button {
+  display: none !important;
+}
