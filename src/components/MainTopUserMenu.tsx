@@ -23,16 +23,16 @@ import {
 } from "@/lib/authModalTheme";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
-/** 계정+장바구니 쌍: 왼쪽 드롭다운·패딩, 캡슐 왼쪽 모서리 */
+/** 계정+장바구니 쌍: 드롭다운 루트는 가로 패딩 없음(호버가 캡슐 끝까지 닿게). */
 const accountHoverRootDualClass =
-  "group/acctmenu relative flex h-full min-h-0 min-w-0 flex-[1_1_0] flex-col items-stretch overflow-visible rounded-l-full pl-2.5 sm:pl-3";
+  "group/acctmenu relative flex h-full min-h-0 min-w-0 flex-[1_1_0] flex-col items-stretch overflow-visible rounded-l-full";
 
-/** 푸터 등 계정만: 전체 라운드 */
+/** 푸터 등 계정만 */
 const accountHoverRootSoloClass =
-  "group/acctmenu relative flex h-full min-h-0 min-w-0 flex-1 flex-col items-stretch overflow-visible rounded-full px-1";
+  "group/acctmenu relative flex h-full min-h-0 min-w-0 flex-1 flex-col items-stretch overflow-visible rounded-full";
 
-const capsuleSegmentLeftLoggedClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-l-full`;
-const capsuleSegmentCartClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-r-full pr-2.5 sm:pr-3 pl-1`;
+const capsuleSegmentLeftLoggedClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-l-full pl-0 pr-2 sm:pr-2.5`;
+const capsuleSegmentCartClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-r-full pr-0 pl-2 sm:pl-2.5`;
 
 const capsuleGuestButtonClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-full pl-4 pr-3.5 sm:pl-[1.15rem] sm:pr-[1.05rem]`;
 
