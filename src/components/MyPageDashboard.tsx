@@ -20,11 +20,11 @@ type MyPageTab =
   | "likes";
 
 const TAB_ITEMS: { id: MyPageTab; label: string; href: string }[] = [
-  { id: "listings", label: "내 영상관리", href: "/mypage?tab=listings" },
   { id: "wishlist", label: "찜 목록", href: "/mypage?tab=wishlist" },
   { id: "likes", label: "좋아요한 동영상", href: "/mypage?tab=likes" },
-  { id: "analytics", label: "판매 분석", href: "/mypage?tab=analytics" },
   { id: "drafts", label: "임시 저장", href: "/mypage?tab=drafts" },
+  { id: "listings", label: "내 영상관리", href: "/mypage?tab=listings" },
+  { id: "analytics", label: "판매 분석", href: "/mypage?tab=analytics" },
 ];
 
 function LoginRequiredPanel({
@@ -62,7 +62,7 @@ function normalizeTab(input: string | null): MyPageTab {
   ) {
     return input;
   }
-  return "listings";
+  return "wishlist";
 }
 
 export function MyPageDashboard() {
@@ -118,12 +118,6 @@ export function MyPageDashboard() {
           ) : null}
           {!authLoading && !user ? <LoginRequiredPanel tab={activeTab} /> : null}
 
-          {currentTab === "listings" && user ? (
-            <MyPageSectionShell title="내 영상관리">
-              <MyPageMyListingsSection />
-            </MyPageSectionShell>
-          ) : null}
-
           {currentTab === "wishlist" && user ? (
             <MyPageSectionShell
               title="찜 목록"
@@ -142,21 +136,27 @@ export function MyPageDashboard() {
             </MyPageSectionShell>
           ) : null}
 
-          {currentTab === "analytics" && user ? (
-            <MyPageSectionShell
-              title="판매 분석"
-              description="등록한 릴스의 판매·노출 지표를 기간별로 확인할 수 있어요."
-            >
-              <MyPageSellerAnalyticsSection />
-            </MyPageSectionShell>
-          ) : null}
-
           {currentTab === "drafts" && user ? (
             <MyPageSectionShell
               title="임시 저장"
               description="커스터마이즈 중 임시 저장한 편집을 이어서 열거나 삭제할 수 있어요."
             >
               <MyPageSavedDraftsSection />
+            </MyPageSectionShell>
+          ) : null}
+
+          {currentTab === "listings" && user ? (
+            <MyPageSectionShell title="내 영상관리">
+              <MyPageMyListingsSection />
+            </MyPageSectionShell>
+          ) : null}
+
+          {currentTab === "analytics" && user ? (
+            <MyPageSectionShell
+              title="판매 분석"
+              description="등록한 릴스의 판매·노출 지표를 기간별로 확인할 수 있어요."
+            >
+              <MyPageSellerAnalyticsSection />
             </MyPageSectionShell>
           ) : null}
           </section>
