@@ -21,3 +21,22 @@ html[data-theme="light"] [data-page="sell"] ::selection {
 [data-page="sell"] input[type="range"] {
   accent-color: var(--reels-crimson);
 }
+
+/** 제목·설명 등 — WebKit 등 기본 파란 포커스 링 제거(Tailwind outline과 병행) */
+[data-page="sell"] textarea:focus,
+[data-page="sell"] textarea:focus-visible,
+[data-page="sell"] select:focus,
+[data-page="sell"] select:focus-visible {
+  outline: none;
+}
+
+[data-page="sell"]
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not(
+    [type="submit"]
+  ):not([type="button"]):not([type="hidden"]):focus,
+[data-page="sell"]
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not(
+    [type="submit"]
+  ):not([type="button"]):not([type="hidden"]):focus-visible {
+  outline: none;
+}
