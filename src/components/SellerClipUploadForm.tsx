@@ -36,16 +36,16 @@ const LABEL =
 
 /** 영상 소스: 한 트랙 안 세그먼트 (떠 있는 이중 핑크 버튼 느낌 완화) */
 const SOURCE_SEGMENT_TRACK =
-  "flex w-full gap-1 rounded-full border border-white/[0.1] bg-black/25 p-1 sm:max-w-[24rem] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80";
+  "flex w-full max-w-[min(24rem,100%)] gap-1 rounded-full border border-white/[0.1] bg-white/[0.04] p-1 [html[data-theme='light']_&]:border-zinc-200/80 [html[data-theme='light']_&]:bg-zinc-100/45";
 
 const SOURCE_SEGMENT_BTN =
-  "relative min-h-[2.75rem] flex-1 rounded-full px-4 py-2 text-[13px] font-medium leading-tight transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent sm:min-h-[2.875rem] sm:py-2.5 [html[data-theme='light']_&]:focus-visible:ring-zinc-400/40";
+  "relative flex min-h-[2.75rem] flex-1 items-center justify-center rounded-full px-4 py-2 text-center text-[13px] font-medium leading-tight transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent sm:min-h-[2.875rem] sm:py-2.5 [html[data-theme='light']_&]:focus-visible:ring-zinc-400/40";
 
 const SOURCE_SEGMENT_BTN_ACTIVE =
-  "bg-white/[0.26] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.22)] [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_1px_2px_rgba(15,23,42,0.06),inset_0_0_0_1px_rgba(255,255,255,0.85)]";
+  "bg-white/[0.17] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] [html[data-theme='light']_&]:bg-white/[0.72] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.6)]";
 
 const SOURCE_SEGMENT_BTN_INACTIVE =
-  "text-zinc-500 hover:bg-white/[0.04] hover:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:hover:text-zinc-900";
+  "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-white/40 [html[data-theme='light']_&]:hover:text-zinc-900";
 
 const SOURCE_PANEL =
   "border-t border-white/[0.08] bg-black/[0.12] px-4 py-5 sm:px-5 sm:py-6 [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/40";
@@ -446,34 +446,36 @@ export function SellerClipUploadForm() {
         <fieldset className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
           <legend className="sr-only">영상 소스</legend>
 
-          <div className="px-4 pt-4 sm:px-5 sm:pt-5">
-            <div
-              role="tablist"
-              aria-label="영상 등록 방식"
-              className={SOURCE_SEGMENT_TRACK}
-            >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={sourceType === "file"}
-                onClick={() => setSourceType("file")}
-                className={`${SOURCE_SEGMENT_BTN} ${sourceType === "file" ? SOURCE_SEGMENT_BTN_ACTIVE : SOURCE_SEGMENT_BTN_INACTIVE}`}
-              >
-                직접 업로드
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={sourceType === "url"}
-                onClick={() => setSourceType("url")}
-                className={`${SOURCE_SEGMENT_BTN} ${sourceType === "url" ? SOURCE_SEGMENT_BTN_ACTIVE : SOURCE_SEGMENT_BTN_INACTIVE}`}
-              >
-                영상 URL
-              </button>
-            </div>
-            <p className="mx-auto mt-3 max-w-md px-2 text-center text-[12px] font-medium leading-relaxed tracking-tight text-white/42 [html[data-theme='light']_&]:text-zinc-600/85">
-              둘 중 하나를 선택해서 올려주세요
+          <div className="px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
+            <p className="mx-auto mb-3 max-w-md px-2 text-center text-[12px] font-medium leading-relaxed tracking-tight text-white/42 [html[data-theme='light']_&]:text-zinc-600/85">
+              둘 중 하나의 방법을 선택해 주세요.
             </p>
+            <div className="flex justify-center">
+              <div
+                role="tablist"
+                aria-label="영상 등록 방식"
+                className={SOURCE_SEGMENT_TRACK}
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={sourceType === "file"}
+                  onClick={() => setSourceType("file")}
+                  className={`${SOURCE_SEGMENT_BTN} ${sourceType === "file" ? SOURCE_SEGMENT_BTN_ACTIVE : SOURCE_SEGMENT_BTN_INACTIVE}`}
+                >
+                  직접 업로드
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={sourceType === "url"}
+                  onClick={() => setSourceType("url")}
+                  className={`${SOURCE_SEGMENT_BTN} ${sourceType === "url" ? SOURCE_SEGMENT_BTN_ACTIVE : SOURCE_SEGMENT_BTN_INACTIVE}`}
+                >
+                  영상 URL
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className={SOURCE_PANEL}>
