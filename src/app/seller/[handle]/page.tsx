@@ -123,6 +123,7 @@ export default async function SellerPage({
                   dense
                   disableHoverScale
                   className="min-w-0"
+                  detailHref={`/video/${encodeURIComponent(video.id)}?fromSeller=${encodeURIComponent(sellerKey)}`}
                 />
               ))}
             </div>

@@ -31,10 +31,12 @@ export default async function VideoDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ from?: string }>;
+  searchParams: Promise<{ from?: string; fromSeller?: string }>;
 }) {
   const { id } = await params;
-  const { from: fromCategory } = await searchParams;
+  const resolvedSearch = await searchParams;
+  const fromCategory = resolvedSearch.from;
+  const fromSeller = resolvedSearch.fromSeller;
 
   if (id.startsWith("tiktok-")) {
     const embedId = id.slice("tiktok-".length).trim();
@@ -77,6 +79,7 @@ export default async function VideoDetailPage({
           priceWon,
         }}
         fromCategory={fromCategory}
+        fromSeller={fromSeller}
       />
     );
   }
@@ -119,6 +122,7 @@ export default async function VideoDetailPage({
           priceWon: priceWon ?? undefined,
         }}
         fromCategory={fromCategory}
+        fromSeller={fromSeller}
       />
     );
   }
@@ -145,13 +149,14 @@ export default async function VideoDetailPage({
           priceWon: priceWon ?? undefined,
         }}
         fromCategory={fromCategory}
+        fromSeller={fromSeller}
       />
     );
   }
 
   const catalogVideo = getMarketVideoById(id);
   if (catalogVideo) {
-    return <VideoDetailView video={catalogVideo} fromCategory={fromCategory} />;
+    return <VideoDetailView video={catalogVideo} fromCategory={fromCategory} fromSeller={fromSeller} />;
   }
 
   try {
@@ -160,7 +165,7 @@ export default async function VideoDetailPage({
       DB_TIMEOUT_MS,
     );
     if (row) {
-      return <VideoDetailView video={videoRowToFeedVideo(row)} fromCategory={fromCategory} />;
+      return <VideoDetailView video={videoRowToFeedVideo(row)} fromCategory={fromCategory} fromSeller={fromSeller} />;
     }
   } catch {
     /* DB 미연결 등 */

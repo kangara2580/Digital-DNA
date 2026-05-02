@@ -70,9 +70,12 @@ async function loadSellerSocialLinks(sellerId: string): Promise<SellerSocialLink
 export function VideoDetailView({
   video,
   fromCategory,
+  fromSeller,
 }: {
   video: FeedVideo;
   fromCategory?: string;
+  /** `/seller/[handle]` 리스트에서 진입 시 — 해당 판매자 클립만 이전/다음 */
+  fromSeller?: string;
 }) {
   const router = useRouter();
   const detailVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -88,6 +91,7 @@ export function VideoDetailView({
   );
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [sellerFeedIds, setSellerFeedIds] = useState<string[] | null>(null);
 
   const requireAuth = useCallback(() => {
     if (authLoading) return false;
@@ -146,6 +150,42 @@ export function VideoDetailView({
     recordView(video.id);
   }, [video.id, recordView]);
 
+  const sellerHandle = useMemo(() => (fromSeller ?? "").trim(), [fromSeller]);
+
+  useEffect(() => {
+    const key = sellerHandle;
+    if (!key) {
+      setSellerFeedIds(null);
+      return;
+    }
+    let cancelled = false;
+    setSellerFeedIds(null);
+    void fetch(`/api/seller/clips?handle=${encodeURIComponent(key)}`, { cache: "no-store" })
+      .then(async (res) => {
+        const body = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          videoIds?: string[];
+        };
+        if (!res.ok || !body.ok || !Array.isArray(body.videoIds)) return;
+        if (!cancelled) setSellerFeedIds(body.videoIds);
+      })
+      .catch(() => {
+        if (!cancelled) setSellerFeedIds([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [sellerHandle]);
+
+  const detailQuerySuffix = useMemo(() => {
+    const params = new URLSearchParams();
+    if (fromCategory) params.set("from", fromCategory);
+    const fs = sellerHandle;
+    if (fs) params.set("fromSeller", fs);
+    const s = params.toString();
+    return s ? `?${s}` : "";
+  }, [fromCategory, sellerHandle]);
+
   /* ── 카테고리 순환 네비게이션 ── */
   const categoryVideos = useMemo(() => {
     if (!fromCategory) return [];
@@ -171,22 +211,74 @@ export function VideoDetailView({
 
   const goToVideo = useCallback(
     (target: FeedVideo) => {
-      router.push(
-        `/video/${encodeURIComponent(target.id)}${fromCategory ? `?from=${encodeURIComponent(fromCategory)}` : ""}`,
-      );
+      router.push(`/video/${encodeURIComponent(target.id)}${detailQuerySuffix}`);
     },
-    [router, fromCategory],
+    [router, detailQuerySuffix],
   );
 
+  const goToVideoId = useCallback(
+    (videoId: string) => {
+      router.push(`/video/${encodeURIComponent(videoId)}${detailQuerySuffix}`);
+    },
+    [router, detailQuerySuffix],
+  );
+
+  const sellerIndex = useMemo(() => {
+    if (!sellerFeedIds || sellerFeedIds.length === 0) return -1;
+    return sellerFeedIds.indexOf(video.id);
+  }, [sellerFeedIds, video.id]);
+
+  const sellerPrevId =
+    sellerIndex > 0 && sellerFeedIds ? (sellerFeedIds[sellerIndex - 1] ?? null) : null;
+  const sellerNextId =
+    sellerIndex >= 0 && sellerFeedIds && sellerIndex < sellerFeedIds.length - 1
+      ? (sellerFeedIds[sellerIndex + 1] ?? null)
+      : null;
+
+  const useSellerFeedNav =
+    sellerHandle.length > 0 &&
+    sellerFeedIds !== null &&
+    sellerFeedIds.length > 1 &&
+    sellerIndex >= 0;
+
+  /** 판매자 피드에서 들어왔으면 카테고리 순환 폴백 없음 */
+  const prioritizeSellerFeed = sellerHandle.length > 0;
+
+  const showPrevNav = prioritizeSellerFeed
+    ? Boolean(useSellerFeedNav && sellerPrevId)
+    : Boolean(hasCategoryNav && prevVideo);
+  const showNextNav = prioritizeSellerFeed
+    ? Boolean(useSellerFeedNav && sellerNextId)
+    : Boolean(hasCategoryNav && nextVideo);
+  const showNavChrome = showPrevNav || showNextNav;
+
   useEffect(() => {
-    if (!hasCategoryNav) return;
+    if (!showNavChrome) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" && prevVideo) goToVideo(prevVideo);
-      if (e.key === "ArrowRight" && nextVideo) goToVideo(nextVideo);
+      if (prioritizeSellerFeed && useSellerFeedNav) {
+        if (e.key === "ArrowLeft" && sellerPrevId) goToVideoId(sellerPrevId);
+        if (e.key === "ArrowRight" && sellerNextId) goToVideoId(sellerNextId);
+        return;
+      }
+      if (hasCategoryNav) {
+        if (e.key === "ArrowLeft" && prevVideo) goToVideo(prevVideo);
+        if (e.key === "ArrowRight" && nextVideo) goToVideo(nextVideo);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [hasCategoryNav, prevVideo, nextVideo, goToVideo]);
+  }, [
+    showNavChrome,
+    prioritizeSellerFeed,
+    useSellerFeedNav,
+    sellerPrevId,
+    sellerNextId,
+    goToVideoId,
+    hasCategoryNav,
+    prevVideo,
+    nextVideo,
+    goToVideo,
+  ]);
 
   const meta = useMemo(
     () =>
@@ -529,28 +621,44 @@ export function VideoDetailView({
                 : "w-full lg:flex-1"
             }`}
           >
-            {hasCategoryNav && (
+            {showNavChrome && (
               <>
-                <button
-                  type="button"
-                  aria-label="이전 영상"
-                  onClick={() => prevVideo && goToVideo(prevVideo)}
-                  className="group absolute left-0 top-1/2 z-[70] -translate-x-[calc(100%+1.5rem)] -translate-y-1/2"
-                >
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-black/60 text-zinc-200 shadow-xl backdrop-blur-sm transition-all duration-200 group-hover:border-white/35 group-hover:bg-black/80 group-hover:text-white group-hover:scale-110 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-700">
-                    <ChevronLeft className="h-7 w-7" />
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  aria-label="다음 영상"
-                  onClick={() => nextVideo && goToVideo(nextVideo)}
-                  className="group absolute right-0 top-1/2 z-[70] translate-x-[calc(100%+1.5rem)] -translate-y-1/2"
-                >
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-black/60 text-zinc-200 shadow-xl backdrop-blur-sm transition-all duration-200 group-hover:border-white/35 group-hover:bg-black/80 group-hover:text-white group-hover:scale-110 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-700">
-                    <ChevronRight className="h-7 w-7" />
-                  </span>
-                </button>
+                {showPrevNav ? (
+                  <button
+                    type="button"
+                    aria-label="이전 영상"
+                    onClick={() => {
+                      if (prioritizeSellerFeed && sellerPrevId) {
+                        goToVideoId(sellerPrevId);
+                        return;
+                      }
+                      if (prevVideo) goToVideo(prevVideo);
+                    }}
+                    className="group absolute left-0 top-1/2 z-[70] -translate-x-[calc(100%+1.5rem)] -translate-y-1/2"
+                  >
+                    <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-black/60 text-zinc-200 shadow-xl backdrop-blur-sm transition-all duration-200 group-hover:border-white/35 group-hover:bg-black/80 group-hover:text-white group-hover:scale-110 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-700">
+                      <ChevronLeft className="h-7 w-7" />
+                    </span>
+                  </button>
+                ) : null}
+                {showNextNav ? (
+                  <button
+                    type="button"
+                    aria-label="다음 영상"
+                    onClick={() => {
+                      if (prioritizeSellerFeed && sellerNextId) {
+                        goToVideoId(sellerNextId);
+                        return;
+                      }
+                      if (nextVideo) goToVideo(nextVideo);
+                    }}
+                    className="group absolute right-0 top-1/2 z-[70] translate-x-[calc(100%+1.5rem)] -translate-y-1/2"
+                  >
+                    <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-black/60 text-zinc-200 shadow-xl backdrop-blur-sm transition-all duration-200 group-hover:border-white/35 group-hover:bg-black/80 group-hover:text-white group-hover:scale-110 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-700">
+                      <ChevronRight className="h-7 w-7" />
+                    </span>
+                  </button>
+                ) : null}
               </>
             )}
             <div
