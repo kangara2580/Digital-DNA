@@ -228,13 +228,15 @@ export default function CartPage() {
                 {selectedTotal.toLocaleString("ko-KR")}원
               </p>
             </div>
-            <button
-              type="button"
-              disabled
-              className="mt-6 w-full rounded-full border border-white/15 bg-white/[0.06] py-3.5 text-[15px] font-bold text-zinc-500 opacity-90 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-600"
-            >
-              결제 진행 (준비 중)
-            </button>
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                disabled
+                className="inline-flex shrink-0 rounded-full border border-white/15 bg-white/[0.06] px-10 py-3 text-[15px] font-bold text-zinc-500 opacity-90 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-600"
+              >
+                결제
+              </button>
+            </div>
           </footer>
         </>
       )}
