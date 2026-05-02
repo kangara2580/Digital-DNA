@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState, type ReactNode } from "react";
+import { useAuthSession } from "@/hooks/useAuthSession";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 type Props = {
@@ -16,13 +17,13 @@ type Props = {
 const menuPanelInner =
   "w-max overflow-hidden rounded-xl border border-white/[0.16] bg-[rgba(5,8,14,0.96)] py-1 shadow-[0_14px_42px_-12px_rgba(0,0,0,0.75)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.12)]";
 
-const menuItemMyPage =
+const menuItemLink =
   "block whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold text-zinc-100 transition-colors hover:bg-white/[0.08] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
 
 const menuItemLogout =
   "flex w-full whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold text-rose-200/95 transition-colors hover:bg-white/[0.08] disabled:opacity-50 [html[data-theme='light']_&]:text-rose-700 [html[data-theme='light']_&]:hover:bg-zinc-100";
 
-/** 로그인 전용 — 상단 헤더 프로필 호버 시 마이페이지·로그아웃 */
+/** 로그인 전용 — 프로필 호버: 내 피드 · 마이페이지 · 설정 · 로그아웃 */
 export function LoggedInAccountHoverMenu({
   triggerClassName,
   children,
@@ -31,9 +32,24 @@ export function LoggedInAccountHoverMenu({
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { user } = useAuthSession();
   const [busy, setBusy] = useState(false);
 
-  const onMypage = pathname.startsWith("/mypage");
+  const tab = searchParams?.get("tab") ?? "";
+  const onMyFeed =
+    Boolean(user?.id) &&
+    (pathname === `/seller/${user!.id}` || pathname === `/seller/${encodeURIComponent(user!.id)}`);
+  const onMypageHub = pathname.startsWith("/mypage") && tab === "";
+  const onSettings = pathname.startsWith("/mypage") && tab === "basic";
+  const accountSectionActive =
+    pathname.startsWith("/mypage") ||
+    pathname.startsWith("/seller/");
+
+  const myFeedHref =
+    user?.id != null && user.id.length > 0
+      ? `/seller/${encodeURIComponent(user.id)}`
+      : "/mypage";
 
   const onLogout = useCallback(async () => {
     setBusy(true);
@@ -63,15 +79,36 @@ export function LoggedInAccountHoverMenu({
         className={triggerClassName}
         aria-label={ariaLabel}
         aria-haspopup="menu"
-        aria-current={onMypage ? "page" : undefined}
+        aria-current={accountSectionActive ? "page" : undefined}
       >
         {children}
       </button>
 
       <div role="menu" aria-label="계정" className={menuPositionClass}>
         <div className={menuPanelInner}>
-          <Link href="/mypage" role="menuitem" className={menuItemMyPage}>
+          <Link
+            href={myFeedHref}
+            role="menuitem"
+            className={menuItemLink}
+            aria-current={onMyFeed ? "page" : undefined}
+          >
+            내 피드
+          </Link>
+          <Link
+            href="/mypage"
+            role="menuitem"
+            className={menuItemLink}
+            aria-current={onMypageHub ? "page" : undefined}
+          >
             마이페이지
+          </Link>
+          <Link
+            href="/mypage?tab=basic"
+            role="menuitem"
+            className={menuItemLink}
+            aria-current={onSettings ? "page" : undefined}
+          >
+            설정
           </Link>
           <button
             type="button"
