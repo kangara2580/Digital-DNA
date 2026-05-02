@@ -813,7 +813,7 @@ export function VideoCard({
                 disabled={likeBusy}
               >
                 <Heart
-                  className={`shrink-0 drop-shadow-md transition-all duration-200 ${actionIconSize} ${likedByMe ? "fill-current text-reels-crimson" : "text-white"} ${
+                  className={`shrink-0 drop-shadow-md transition-all duration-200 ${actionIconSize} ${likedByMe ? "fill-current text-[var(--reels-point)]" : "text-white"} ${
                     likePulse ? "scale-110" : "scale-100"
                   }`}
                 />

@@ -194,7 +194,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
             >
               <Heart
                 className={`h-8 w-8 shrink-0 drop-shadow-md transition-all duration-200 sm:h-9 sm:w-9 ${
-                  likedByMe ? "fill-current text-reels-crimson" : "text-white"
+                  likedByMe ? "fill-current text-[var(--reels-point)]" : "text-white"
                 } ${likePulse ? "scale-110" : "scale-100"}`}
               />
             </button>
