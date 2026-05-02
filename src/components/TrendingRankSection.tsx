@@ -23,7 +23,7 @@ function SkeletonGrid() {
     >
       {Array.from({ length: 10 }).map((_, i) => (
         <div key={`skeleton-${i}`} className="relative">
-          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/70">
             <div className="aspect-[3/4] animate-pulse bg-zinc-800/70 [html[data-theme='light']_&]:bg-zinc-200" />
             <div className="space-y-2 px-3 py-3">
               <div className="h-3 w-3/4 animate-pulse rounded bg-zinc-700/80 [html[data-theme='light']_&]:bg-zinc-300" />
@@ -235,7 +235,7 @@ export function TrendingRankSection() {
     <section
       id="trending-rank"
       ref={sectionRef}
-      className="trending-rank-ocean-bg home-ranked-strip border-t border-white/10"
+      className="trending-rank-ocean-bg home-ranked-strip border-t border-white/10 [html[data-theme='light']_&]:border-zinc-200/85"
       aria-labelledby="trending-rank-heading"
     >
       <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-24 lg:px-8">
@@ -243,7 +243,7 @@ export function TrendingRankSection() {
           <div className="min-w-0 text-center">
             <h2
               id="trending-rank-heading"
-              className="text-center text-[26px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:text-[30px] md:text-[32px]"
+              className="text-center text-[26px] font-extrabold leading-snug tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[30px] md:text-[32px]"
             >
               인기순위 <span className="font-bold">TOP</span> 30
             </h2>
@@ -268,7 +268,7 @@ export function TrendingRankSection() {
               <div className="mt-3 flex items-center justify-center gap-2">
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-zinc-200 transition-colors hover:border-white/35 hover:bg-white/10"
+                  className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-zinc-200 transition-colors hover:border-white/35 hover:bg-white/10 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-200/80"
                   onClick={() => void loadTrending()}
                 >
                   다시 불러오기
@@ -331,7 +331,7 @@ export function TrendingRankSection() {
               type="button"
               onClick={showCollapse ? onCollapseToFirstRow : onExpandAllRows}
               disabled={showCollapse ? !canCollapse : !canExpand}
-              className="group inline-flex h-12 min-w-[280px] items-center justify-center bg-transparent px-0 text-white transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-40 sm:h-14 sm:min-w-[360px]"
+              className="group inline-flex h-12 min-w-[280px] items-center justify-center bg-transparent px-0 text-white transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:text-zinc-800 sm:h-14 sm:min-w-[360px]"
               aria-label={showCollapse ? "인기순위 접기" : "인기순위 펼치기"}
               title={showCollapse ? "위로 접기" : "아래로 펼치기"}
             >
@@ -358,7 +358,7 @@ export function TrendingRankSection() {
             {showCollapse ? (
               <Link
                 href="/category/best"
-                className="inline-flex min-w-[140px] items-center justify-center rounded-full border border-white/30 bg-white/[0.05] px-7 py-3 text-[16px] font-semibold text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_8px_22px_-14px_rgba(0,0,0,0.6)] backdrop-blur-md transition hover:border-white/50 hover:bg-white/[0.1]"
+                className="inline-flex min-w-[140px] items-center justify-center rounded-full border border-white/30 bg-white/[0.05] px-7 py-3 text-[16px] font-semibold text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_8px_22px_-14px_rgba(0,0,0,0.6)] backdrop-blur-md transition hover:border-white/50 hover:bg-white/[0.1] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_8px_22px_-14px_rgba(15,23,42,0.12)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-50"
               >
                 더보기
               </Link>

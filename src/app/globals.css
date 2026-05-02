@@ -12,8 +12,8 @@
 
 :root {
   --reels-abyss: #02040a;
-  /** 메인 인기순위·설명(셀러 피치)·구매후기 등 연속 블록 배경 (더 짙은 남색 스트립) */
-  --home-ranked-strip-bg: #05080f;
+  /** 메인 인기순위·푸터·설명(셀러 피치)·구매후기 등 블록 배경 — 다크: 홈과 같은 블랙, 라이트는 테마 블록에서 흰색으로 덮음 */
+  --home-ranked-strip-bg: #02040a;
   --reels-void: #040916;
   --reels-lift: #070f1f;
   --reels-crimson: #fc03a5;
@@ -47,6 +47,8 @@
 :root[data-theme="light"] {
   --reels-crimson: #fc03a5;
   --reels-cyan: #00f2ea;
+  /** 홈 스트립·푸터 — 라이트에서 본문과 동일한 밝은 캔버스 */
+  --home-ranked-strip-bg: #ffffff;
   --reels-abyss: #ffffff;
   --reels-void: #fafafa;
   --reels-lift: #ffffff;
@@ -104,7 +106,7 @@
 :root[data-theme="dark"] {
   --reels-crimson: #fc03a5;
   --reels-cyan: #00f2ea;
-  --background: linear-gradient(180deg, #050a16 0%, #030711 55%, #02040a 100%);
+  --background: #02040a;
   --foreground: #fafafa;
 }
 
@@ -632,23 +634,23 @@ input.mall-search[type="search"]::-webkit-search-results-button {
     color 240ms ease;
 }
 
-/* 라이트: 페이지 흰 배경과 구분 — 연한 네이비 틴트(반투명) */
+/* 라이트: 본문과 맞춘 밝은 캔버스 + 카드 분리 */
 html[data-theme="light"] .inspiration-section {
-  --inspiration-section-bg: rgba(15, 23, 42, 0.07);
-  --inspiration-card-bg: rgba(248, 250, 252, 0.96);
+  --inspiration-section-bg: #fafafa;
+  --inspiration-card-bg: #ffffff;
   --inspiration-card-shadow: 0 10px 40px rgba(15, 23, 42, 0.06);
 }
 
-/* 다크: 흰 카드/배경이 튀지 않게 — 어두운 반투명 레이어 + 카드·글자 토큰 */
+/* 다크: 페이지와 같은 짙은 캔버스 + 카드·글자 토큰 */
 html[data-theme="dark"] .inspiration-section {
-  --inspiration-section-bg: rgba(4, 8, 18, 0.82);
+  --inspiration-section-bg: #02040a;
   --inspiration-card-bg: rgba(255, 255, 255, 0.07);
   --inspiration-card-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
   --text-main: #f4f4f5;
   --text-sub: #a1a1aa;
 }
 
-/* 인기순위 등 메인 랭킹 스트립 배경 (짙은 남네이비 통일) */
+/* 인기순위 등 메인 랭킹 스트립 배경 (--home-ranked-strip-bg) */
 .trending-rank-ocean-bg {
   position: relative;
   isolation: isolate;
@@ -665,33 +667,6 @@ html[data-theme="dark"] .inspiration-section {
 
 html[data-theme="light"] .trending-rank-ocean-bg {
   background: var(--home-ranked-strip-bg);
-}
-
-/* 라이트 테마여도 스트립은 진한 네이비 유지 → 본문 톤 재정의(home-ranked-strip 안) */
-:root[data-theme="light"] body .home-ranked-strip .text-zinc-100,
-:root[data-theme="light"] body .home-ranked-strip .text-zinc-200 {
-  color: #f4f4f5 !important;
-}
-
-:root[data-theme="light"] body .home-ranked-strip .text-zinc-300 {
-  color: #e4e4e7 !important;
-}
-
-:root[data-theme="light"] body .home-ranked-strip .text-zinc-400,
-:root[data-theme="light"] body .home-ranked-strip .text-zinc-500 {
-  color: #d4d4d8 !important;
-}
-
-:root[data-theme="light"] body .home-ranked-strip .text-zinc-600 {
-  color: #a1a1aa !important;
-}
-
-:root[data-theme="light"] body .home-ranked-strip .text-white\/78 {
-  color: rgba(244, 244, 245, 0.78) !important;
-}
-
-:root[data-theme="light"] body .home-ranked-strip .text-white {
-  color: #fafafa !important;
 }
 
 .inspiration-card {

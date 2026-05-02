@@ -18,7 +18,7 @@ export function ARAFooter() {
 
   return (
     <footer
-      className="relative z-0 mt-auto border-t border-white/[0.22] bg-[color:var(--home-ranked-strip-bg)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white/95 [html[data-theme='light']_&]:backdrop-blur-md"
+      className="relative z-0 mt-auto border-t border-white/[0.22] bg-[color:var(--home-ranked-strip-bg)] [html[data-theme='light']_&]:border-zinc-200/90"
       aria-labelledby={`${baseId}-footer-title`}
     >
       <div

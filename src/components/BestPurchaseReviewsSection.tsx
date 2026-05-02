@@ -50,37 +50,22 @@ function pickReviewVideoById(reviewId: string) {
 
 function ReviewStars({ rating }: { rating: number }) {
   return (
-    <div className="flex items-center gap-1 leading-none py-[2px]" aria-label={`별점 ${rating}점`}>
-      {Array.from({ length: 5 }).map((_, i) => {
-        const fillRatio = Math.max(0, Math.min(1, rating - i));
-        return (
-          <span
-            key={`star-${i}`}
-            className="relative inline-flex h-[17px] w-[17px] shrink-0 overflow-visible"
-          >
-            <svg
-              viewBox="-2 -2 28 28"
-              className="h-full w-full overflow-visible"
-              fill="transparent"
-              stroke="rgba(255,255,255,0.72)"
-              strokeWidth="1.75"
-              aria-hidden
-            >
-              <path
-                d="M12 3.8l2.52 5.11 5.64.82-4.08 3.98.96 5.62L12 16.7 6.96 19.33l.96-5.62-4.08-3.98 5.64-.82L12 3.8z"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+    <div
+      className="flex items-center gap-1 leading-none py-[2px] text-white/72 [html[data-theme='light']_&]:text-amber-500"
+      aria-label={`별점 ${rating}점`}
+    >
+        {Array.from({ length: 5 }).map((_, i) => {
+          const fillRatio = Math.max(0, Math.min(1, rating - i));
+          return (
             <span
-              className="absolute inset-y-0 left-0 overflow-hidden"
-              style={{ width: `${fillRatio * 100}%` }}
+              key={`star-${i}`}
+              className="relative inline-flex h-[17px] w-[17px] shrink-0 overflow-visible"
             >
               <svg
                 viewBox="-2 -2 28 28"
-                className="h-full w-[17px] overflow-visible"
-                fill="#FFFFFF"
-                stroke="#FFFFFF"
+                className="h-full w-full overflow-visible"
+                fill="transparent"
+                stroke="currentColor"
                 strokeWidth="1.75"
                 aria-hidden
               >
@@ -90,8 +75,26 @@ function ReviewStars({ rating }: { rating: number }) {
                   strokeLinejoin="round"
                 />
               </svg>
+              <span
+                className="absolute inset-y-0 left-0 overflow-hidden"
+                style={{ width: `${fillRatio * 100}%` }}
+              >
+                <svg
+                  viewBox="-2 -2 28 28"
+                  className="h-full w-[17px] overflow-visible"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  aria-hidden
+                >
+                  <path
+                    d="M12 3.8l2.52 5.11 5.64.82-4.08 3.98.96 5.62L12 16.7 6.96 19.33l.96-5.62-4.08-3.98 5.64-.82L12 3.8z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
             </span>
-          </span>
         );
       })}
     </div>
@@ -112,7 +115,7 @@ export function BestPurchaseReviewsSection() {
         <div className="relative">
           <h2
             id="best-reviews-heading"
-            className="text-center text-[28px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:text-[32px] md:text-[34px]"
+            className="text-center text-[28px] font-extrabold leading-snug tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[32px] md:text-[34px]"
           >
             구매 후기
           </h2>
@@ -139,9 +142,9 @@ export function BestPurchaseReviewsSection() {
                   className="relative block h-[410px] w-[min(68vw,216px)] shrink-0 lg:w-[216px]"
                   aria-label={`${card.author} 후기 상세 영상 보기`}
                 >
-                  <article className="review-motion-card group absolute left-0 top-1/2 flex h-[180px] w-full -translate-y-1/2 flex-col justify-center rounded-2xl border border-white/12 bg-white/[0.04] p-4 backdrop-blur-sm transition-[height,border-color,background-color,box-shadow] duration-500 ease-out hover:h-[385px] hover:justify-start hover:border-white/28 hover:bg-white/[0.06] hover:shadow-[0_18px_42px_-24px_rgba(0,0,0,0.6)]">
+                  <article className="review-motion-card group absolute left-0 top-1/2 flex h-[180px] w-full -translate-y-1/2 flex-col justify-center rounded-2xl border border-white/12 bg-white/[0.04] p-4 backdrop-blur-sm transition-[height,border-color,background-color,box-shadow] duration-500 ease-out [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_12px_32px_-18px_rgba(15,23,42,0.12)] hover:h-[385px] hover:justify-start hover:border-white/28 hover:bg-white/[0.06] hover:shadow-[0_18px_42px_-24px_rgba(0,0,0,0.6)] [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:shadow-[0_18px_42px_-24px_rgba(15,23,42,0.14)]">
                     <div className="review-hidden-meta mb-0 max-h-0 overflow-hidden opacity-0 transition-all duration-500 ease-out group-hover:mb-3 group-hover:max-h-[270px] group-hover:opacity-100">
-                      <div className="relative mx-auto mb-2.5 aspect-[9/16] w-[54%] overflow-hidden rounded-lg border border-white/20 bg-black/35">
+                      <div className="relative mx-auto mb-2.5 aspect-[9/16] w-[54%] overflow-hidden rounded-lg border border-white/20 bg-black/35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
                         {detail.poster ? (
                           <Image
                             src={detail.poster}
@@ -164,16 +167,16 @@ export function BestPurchaseReviewsSection() {
                       </div>
                       <div className="flex items-center justify-center gap-1.5">
                         <ReviewStars rating={detail.rating} />
-                        <span className="text-[11px] font-semibold text-zinc-300/90">
+                        <span className="text-[11px] font-semibold text-zinc-300/90 [html[data-theme='light']_&]:text-zinc-600">
                           {detail.rating.toFixed(1)}
                         </span>
                       </div>
-                      <p className="mt-1.5 line-clamp-2 text-[12px] font-medium leading-relaxed text-zinc-300">
+                      <p className="mt-1.5 line-clamp-2 text-[12px] font-medium leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600">
                         사용 영상: {detail.videoTitle}
                       </p>
                     </div>
                     <p
-                      className="overflow-hidden text-[15px] leading-[1.55] text-zinc-100"
+                      className="overflow-hidden text-[15px] leading-[1.55] text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
                       style={{
                         display: "-webkit-box",
                         WebkitLineClamp: 3,
@@ -192,7 +195,7 @@ export function BestPurchaseReviewsSection() {
                           className="object-cover"
                         />
                       </div>
-                      <p className="min-w-0 truncate text-[12px] font-semibold text-zinc-300">
+                      <p className="min-w-0 truncate text-[12px] font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
                         {card.author}
                       </p>
                     </div>

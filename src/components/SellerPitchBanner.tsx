@@ -142,7 +142,7 @@ function SellerPitchStartButton({
       type="button"
       onClick={onStartClick}
       disabled={authLoading}
-      className="shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full border-[1.5px] border-solid border-white/45 bg-transparent px-[clamp(2rem,5.2vw,3.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(calc(1.2rem-2pt),calc(2.1vw-2pt),calc(1.9rem-2pt))] font-semibold text-white transition-[border-color,opacity] duration-200 ease-out hover:border-[color:var(--reels-point)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/75 disabled:cursor-not-allowed disabled:border-white/45 disabled:text-white disabled:opacity-55 disabled:hover:border-white/45 disabled:hover:text-white"
+      className="shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full border-[1.5px] border-solid border-white/45 bg-transparent px-[clamp(2rem,5.2vw,3.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(calc(1.2rem-2pt),calc(2.1vw-2pt),calc(1.9rem-2pt))] font-semibold text-white transition-[border-color,opacity] duration-200 ease-out hover:border-[color:var(--reels-point)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/75 [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:focus-visible:outline-zinc-400/50 disabled:cursor-not-allowed disabled:border-white/45 disabled:text-white disabled:opacity-55 disabled:hover:border-white/45 disabled:hover:text-white [html[data-theme='light']_&]:disabled:border-zinc-300 [html[data-theme='light']_&]:disabled:text-zinc-500"
     >
       시작하기
     </button>
@@ -155,7 +155,7 @@ export function SellerPitchBottomStartButton() {
 
   return (
     <>
-      <section className="home-ranked-strip relative bg-[color:var(--home-ranked-strip-bg)]">
+      <section className="home-ranked-strip relative border-t border-white/10 bg-[color:var(--home-ranked-strip-bg)] pt-6 pb-28 [html[data-theme='light']_&]:border-zinc-200/85 sm:pb-32 sm:pt-8">
         <div className="relative mx-auto max-w-[1800px] px-4 pb-20 pt-10 sm:px-6 sm:pb-24 lg:px-8">
           <div className="flex flex-col items-center gap-8 sm:gap-9">
             <p className="max-w-[min(92vw,40rem)] text-center text-[clamp(1.35rem,4.6vw,2.25rem)] leading-snug tracking-[0.02em] text-zinc-100 sm:text-[clamp(1.45rem,3.8vw,2.4rem)] [html[data-theme='light']_&]:text-zinc-900">
@@ -192,7 +192,7 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
     <>
       <section
         id="seller-pitch"
-        className="home-ranked-strip relative border-t border-white/10 bg-[color:var(--home-ranked-strip-bg)]"
+        className="home-ranked-strip relative border-t border-white/10 bg-[color:var(--home-ranked-strip-bg)] [html[data-theme='light']_&]:border-zinc-200/85"
         aria-labelledby="seller-pitch-heading"
       >
         <div className="relative mx-auto max-w-[1800px] px-4 pb-[14px] pt-[44px] sm:px-6 sm:pb-[20px] sm:pt-[60px] lg:px-8 lg:pb-[24px] lg:pt-[76px]">
@@ -294,7 +294,7 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
             </div>
 
             <div className="mt-14 text-center sm:mt-16">
-              <p className="mt-3 text-[clamp(2.1rem,5.6vw,4rem)] font-black tracking-[0.1em] text-white [text-shadow:0_0_22px_rgba(143,208,255,0.22)]">
+              <p className="mt-3 text-[clamp(2.1rem,5.6vw,4rem)] font-black tracking-[0.1em] text-white [text-shadow:0_0_22px_rgba(143,208,255,0.22)] [html[data-theme='light']_&]:text-zinc-950 [html[data-theme='light']_&]:[text-shadow:none]">
                 ARA
               </p>
             </div>
@@ -309,45 +309,45 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
           <div className="relative mt-0 sm:mt-1">
             <div className="mx-auto mt-3 w-full max-w-[1120px] sm:mt-4">
               <div className="space-y-5 sm:space-y-6">
-                <p className="mb-6 text-center text-[clamp(1.9rem,4vw,2.9rem)] tracking-tight text-zinc-100 sm:mb-8">
+                <p className="mb-6 text-center text-[clamp(1.9rem,4vw,2.9rem)] tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:mb-8">
                   <span className="font-light">단 </span>
                   <span className="font-bold">3</span>
                   <span className="font-light">단계</span>
                 </p>
                 <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
                   {/* 사용자 카드 */}
-                  <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
+                  <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
                     <section className="flex flex-col items-center space-y-5 text-center">
-                      <p className="pt-1 text-[22px] font-extrabold tracking-tight text-white sm:text-[24px]">사용자</p>
+                      <p className="pt-1 text-[22px] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]">사용자</p>
                       <p className="pb-1 text-[clamp(0.9rem,2vw,1.1rem)] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
                         원하는 영상 AI로 재창작해서 사용하기
                       </p>
                       <ol className="w-full space-y-12">
                         <li className="flex flex-col items-center gap-4">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
+                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
                             <img src="/steps/user-step1-browse.png" alt="마켓 영상 탐색 화면" className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <div className="mt-4 space-y-2 sm:mt-5">
-                            <p className="text-[16px] font-bold text-white">1. 영상 선택</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">마켓에서 원하는 영상을 찾아보세요.</p>
+                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">1. 영상 선택</p>
+                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">마켓에서 원하는 영상을 찾아보세요.</p>
                           </div>
                         </li>
                         <li className="flex flex-col items-center gap-4">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
+                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
                             <img src="/steps/user-step2-customize.png" alt="영상 구매 및 커스터마이징 화면" className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <div className="mt-4 space-y-2 sm:mt-5">
-                            <p className="text-[16px] font-bold text-white">2. AI로 커스터마이징</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">배경, 얼굴, 스타일을 자유롭게 변경하세요.</p>
+                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">2. AI로 커스터마이징</p>
+                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">배경, 얼굴, 스타일을 자유롭게 변경하세요.</p>
                           </div>
                         </li>
                         <li className="flex flex-col items-center gap-4">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
+                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
                             <img src="/steps/user-step3-download.png" alt="인기 영상 다운로드 화면" className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <div className="mt-4 space-y-2 sm:mt-5">
-                            <p className="text-[16px] font-bold text-white">3. 다운로드 &amp; 활용</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">완성된 영상을 다운로드해 바로 활용하세요.</p>
+                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">3. 다운로드 &amp; 활용</p>
+                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">완성된 영상을 다운로드해 바로 활용하세요.</p>
                           </div>
                         </li>
                       </ol>
@@ -355,38 +355,38 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                   </div>
 
                   {/* 크리에이터 카드 */}
-                  <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
+                  <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
                     <section className="flex flex-col items-center space-y-5 text-center">
-                      <p className="pt-1 text-[22px] font-extrabold tracking-tight text-white sm:text-[24px]">크리에이터</p>
+                      <p className="pt-1 text-[22px] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]">크리에이터</p>
                       <p className="pb-1 text-[clamp(0.9rem,2vw,1.1rem)] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
                         원하는 영상 판매해서 수익 만들기
                       </p>
                       <ol className="w-full space-y-12">
                         <li className="flex flex-col items-center gap-4">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
+                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
                             <img src="/steps/creator-step1-upload.png" alt="영상 URL 등록 화면" className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <div className="mt-4 space-y-2 sm:mt-5">
-                            <p className="text-[16px] font-bold text-white">1. 영상 등록</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">직접 업로드 또는 URL을 붙여넣어 영상을 등록하세요.</p>
+                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">1. 영상 등록</p>
+                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">직접 업로드 또는 URL을 붙여넣어 영상을 등록하세요.</p>
                           </div>
                         </li>
                         <li className="flex flex-col items-center gap-4">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
+                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
                             <img src="/steps/creator-step2-price.png" alt="가격 설정 화면" className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <div className="mt-4 space-y-2 sm:mt-5">
-                            <p className="text-[16px] font-bold text-white">2. 가격 설정</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">원하는 가격을 설정하세요.</p>
+                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">2. 가격 설정</p>
+                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">원하는 가격을 설정하세요.</p>
                           </div>
                         </li>
                         <li className="flex flex-col items-center gap-4">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
+                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
                             <img src="/steps/creator-step3-sell.png" alt="마켓에 공개된 판매 영상 화면" className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <div className="mt-4 space-y-2 sm:mt-5">
-                            <p className="text-[16px] font-bold text-white">3. 판매 시작</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">플랫폼에 공개하면 누구나 구매할 수 있습니다.</p>
+                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">3. 판매 시작</p>
+                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">플랫폼에 공개하면 누구나 구매할 수 있습니다.</p>
                           </div>
                         </li>
                       </ol>
