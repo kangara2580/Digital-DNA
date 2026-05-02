@@ -172,8 +172,7 @@ export function MyPageWishlistSection() {
                     type="button"
                     onClick={deleteSelectedWishlist}
                     disabled={selected.size === 0}
-                    className="rounded-lg border border-rose-500/35 px-3 py-2 text-[13px] font-medium text-rose-300 transition-colors hover:bg-rose-500/10 disabled:opacity-40 [html[data-theme='light']_&]:text-rose-800"
-                  >
+                    className="rounded-lg border border-reels-crimson/38 px-3 py-2 text-[13px] font-medium text-[#fcd0eb] transition-colors hover:bg-reels-crimson/12 disabled:opacity-40 [html[data-theme='light']_&]:text-reels-crimson"                  >
                     선택 삭제
                   </button>
                   <button
@@ -218,7 +217,7 @@ export function MyPageWishlistSection() {
                         type="checkbox"
                         checked={selected.has(entryId)}
                         onChange={() => toggleSelect(entryId)}
-                        className="h-4 w-4 rounded border-white/30 accent-[#ff0055] [html[data-theme='light']_&]:border-zinc-400"
+                        className="h-4 w-4 rounded border-white/30 accent-[#fc03a5] [html[data-theme='light']_&]:border-zinc-400"
                       />
                       <span className="sr-only">선택</span>
                     </label>

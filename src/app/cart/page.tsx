@@ -196,7 +196,7 @@ export default function CartPage() {
                         type="checkbox"
                         checked={checked}
                         onChange={() => toggleKey(key)}
-                        className="h-5 w-5 rounded border border-white/35 bg-black/50 accent-[#ff0055] [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-white"
+                        className="h-5 w-5 rounded border border-white/35 bg-black/50 accent-[#fc03a5] [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-white"
                       />
                       <span className="sr-only">선택</span>
                     </label>
@@ -215,14 +215,14 @@ export default function CartPage() {
                   <div className="mt-3 flex min-h-0 min-w-0 flex-1 flex-col">
                     <Link
                       href={`/video/${video.id}`}
-                      className="line-clamp-2 text-left text-[15px] font-bold leading-snug text-zinc-100 transition-colors hover:text-[#ff0055] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:text-[#ff0055] sm:text-[16px]"
+                      className="line-clamp-2 text-left text-[15px] font-bold leading-snug text-zinc-100 transition-colors hover:text-[#fc03a5] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:text-[#fc03a5] sm:text-[16px]"
                     >
                       {video.title}
                     </Link>
                     <p className="mt-2 min-h-0 truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                       <Link
                         href={sellerProfileHrefFromVideo(video)}
-                        className="text-inherit underline-offset-2 transition-colors hover:text-[#ff0055] hover:underline"
+                        className="text-inherit underline-offset-2 transition-colors hover:text-[#fc03a5] hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
                         {video.creator}

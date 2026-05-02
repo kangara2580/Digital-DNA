@@ -68,7 +68,7 @@ function SparkPositive({ v }: { v: number }) {
       className={`inline-flex items-center gap-0.5 font-bold tabular-nums ${
         up
           ? "text-emerald-400 [html[data-theme='light']_&]:text-emerald-600"
-          : "text-rose-400 [html[data-theme='light']_&]:text-rose-600"
+          : "text-reels-crimson/90 [html[data-theme='light']_&]:text-reels-crimson"
       }`}
     >
       {up ? (
@@ -97,7 +97,7 @@ function KpiCard({
 }) {
   const ring =
     accent === "crimson"
-      ? "border-reels-crimson/25 shadow-[0_0_32px_-12px_rgba(255,0,85,0.35)]"
+      ? "border-reels-crimson/25 shadow-[0_0_32px_-12px_rgba(252,3,165,0.36)]"
       : accent === "violet"
         ? "border-violet-500/25 shadow-[0_0_32px_-12px_rgba(139,92,246,0.25)]"
         : "border-reels-cyan/25 shadow-[0_0_32px_-12px_rgba(0,242,234,0.22)]";
@@ -249,7 +249,7 @@ export function MyPageSellerAnalyticsSection() {
         className="reels-glass-card rounded-2xl p-5 sm:p-7"
         aria-labelledby="seller-analytics-heading"
       >
-        <p className="text-[13px] text-rose-300 [html[data-theme='light']_&]:text-rose-800">
+        <p className="text-[13px] text-[#fcd0eb] [html[data-theme='light']_&]:text-reels-crimson">
           {loadError ?? "표시할 데이터가 없습니다."}
         </p>
       </section>
@@ -462,7 +462,7 @@ export function MyPageSellerAnalyticsSection() {
                       className={
                         ch.deltaPercentPoints >= 0
                           ? "text-emerald-400"
-                          : "text-rose-400"
+                          : "text-reels-crimson/90"
                       }
                     >
                       {ch.deltaPercentPoints >= 0 ? "+" : ""}

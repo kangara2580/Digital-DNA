@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 const INPUT =
-  "w-full rounded-xl border border-white/20 bg-black/30 px-3.5 py-3 text-sm text-zinc-100 outline-none backdrop-blur-sm transition placeholder:text-zinc-500 focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-500/30";
+  "w-full rounded-xl border border-white/20 bg-black/30 px-3.5 py-3 text-sm text-zinc-100 outline-none backdrop-blur-sm transition placeholder:text-zinc-500 focus:border-[#fc03a5]/60 focus:ring-2 focus:ring-[#fc03a5]/26";
 
 type ApiOk =
   | {
@@ -150,7 +150,7 @@ export default function FindIdPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#07080f] px-4 py-12 text-zinc-100 sm:px-6">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(236,72,153,0.18),transparent_40%),radial-gradient(circle_at_80%_90%,rgba(59,130,246,0.16),transparent_45%),linear-gradient(180deg,#05060b_0%,#080913_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(252,3,165,0.17),transparent_40%),radial-gradient(circle_at_80%_90%,rgba(59,130,246,0.16),transparent_45%),linear-gradient(180deg,#05060b_0%,#080913_100%)]" />
       <div className="relative mx-auto mt-10 w-full max-w-md rounded-2xl border border-white/15 bg-white/[0.04] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:mt-16 sm:p-8">
         <p className="text-xs uppercase tracking-[0.35em] text-zinc-400">ARA</p>
         <h1 className="mt-3 text-2xl font-black tracking-tight text-white">아이디(이메일) 찾기</h1>
@@ -161,7 +161,7 @@ export default function FindIdPage() {
         </p>
 
         {error ? (
-          <p className="mt-5 rounded-xl border border-rose-500/45 bg-rose-500/10 px-3 py-2 text-[13px] font-semibold text-rose-200">
+          <p className="mt-5 rounded-xl border border-reels-crimson/45 bg-reels-crimson/12 px-3 py-2 text-[13px] font-semibold text-[#fce9f5]">
             {error}
           </p>
         ) : null}
@@ -211,7 +211,7 @@ export default function FindIdPage() {
                 type="button"
                 onClick={() => void sendSmsCode()}
                 disabled={sendingSms}
-                className="shrink-0 rounded-xl border border-fuchsia-400/40 bg-fuchsia-500/10 px-3 py-2 text-[12px] font-bold text-fuchsia-200 transition hover:bg-fuchsia-500/20 disabled:opacity-50"
+                className="shrink-0 rounded-xl border border-reels-crimson/42 bg-reels-crimson/12 px-3 py-2 text-[12px] font-bold text-[#fcd6ec] transition hover:bg-reels-crimson/22 disabled:opacity-50"
               >
                 {sendingSms ? "발송 중…" : "코드 발송"}
               </button>
@@ -238,7 +238,7 @@ export default function FindIdPage() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-full bg-gradient-to-r from-fuchsia-500 to-indigo-500 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_30px_rgba(168,85,247,0.45)] transition hover:brightness-110 disabled:opacity-60"
+            className="w-full rounded-full bg-gradient-to-r from-[#fc03a5] to-indigo-500 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_30px_rgba(252,3,165,0.42)] transition hover:brightness-110 disabled:opacity-60"
           >
             {busy ? "조회 중…" : "이메일 힌트 받기"}
           </button>
@@ -260,11 +260,11 @@ export default function FindIdPage() {
         ) : null}
 
         <p className="mt-6 text-center text-sm text-zinc-500">
-          <Link href="/login" className="font-semibold text-fuchsia-300 hover:underline">
+          <Link href="/login" className="font-semibold text-[#fda6dc] hover:underline">
             로그인으로 돌아가기
           </Link>
           {" · "}
-          <Link href="/forgot-password" className="font-semibold text-fuchsia-300 hover:underline">
+          <Link href="/forgot-password" className="font-semibold text-[#fda6dc] hover:underline">
             비밀번호 찾기
           </Link>
         </p>

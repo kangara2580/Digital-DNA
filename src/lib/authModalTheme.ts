@@ -1,5 +1,5 @@
 /**
- * 로그인·회원가입 모달/페이지 공통 색 (레퍼런스: #192731, #2a3843, #4f6172, #ff096c).
+ * 로그인·회원가입 모달/페이지 공통 색 (레퍼런스: #192731, #2a3843, #4f6172, #fc03a5).
  * 오버레이는 높은 불투명도 + 블러, 카드 패널은 불투명 그라데이션으로 배경 분리를 유지합니다.
  */
 
@@ -33,19 +33,19 @@ export const authModalDismissButtonCls =
   "absolute right-4 top-4 z-[1] inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-zinc-600 bg-zinc-50 text-[1.15rem] font-semibold leading-none text-zinc-700 shadow-[0_1px_4px_rgba(0,0,0,0.18)] transition hover:border-zinc-700 hover:bg-white hover:text-zinc-900 [html[data-theme='light']_&]:border-zinc-500 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-600";
 
 /** 브랜드 포인트 — Google CTA 화살표 등 (globals --reels-point 와 동일) */
-export const AUTH_MODAL_BRAND_PINK_HEX = "#ff096c";
+export const AUTH_MODAL_BRAND_PINK_HEX = "#fc03a5";
 
 /** Google CTA 우측 화살표 — 크기만 (색은 Chevron stroke 로 고정; 버튼 text 색 물림 방지) */
 export const authModalGoogleChevronClass =
-  "h-8 w-8 shrink-0 text-[#ff096c] sm:h-[2.125rem] sm:w-[2.125rem]";
+  "h-8 w-8 shrink-0 text-[#fc03a5] sm:h-[2.125rem] sm:w-[2.125rem]";
 
 export const authModalGlowTop =
-  "pointer-events-none absolute -left-16 -top-20 h-52 w-52 rounded-full bg-[#ff096c]/14 blur-3xl";
+  "pointer-events-none absolute -left-16 -top-20 h-52 w-52 rounded-full bg-[#fc03a5]/14 blur-3xl";
 export const authModalGlowBottom =
   "pointer-events-none absolute -bottom-20 -right-16 h-56 w-56 rounded-full bg-[#4f6172]/18 blur-3xl";
 
 export const authModalGoogleButtonShadow =
-  "shadow-[0_18px_38px_-20px_rgba(255,9,108,0.4),0_14px_32px_-18px_rgba(255,255,255,0.52)]";
+  "shadow-[0_18px_38px_-20px_rgba(252,3,165,0.42),0_14px_32px_-18px_rgba(255,255,255,0.52)]";
 
 /** Google CTA 라벨 («Google로 바로 시작») — 아이콘·패딩에 맞춘 한 줄 크기 */
 const googleOAuthCtaLabelText =
@@ -58,4 +58,4 @@ export const authModalGoogleButtonText = googleOAuthCtaLabelText;
 export const loginPageGoogleButtonText = googleOAuthCtaLabelText;
 
 export const loginPageAmbientBg =
-  "bg-[radial-gradient(circle_at_18%_12%,rgba(255,9,108,0.18),transparent_44%),radial-gradient(circle_at_82%_88%,rgba(79,97,114,0.28),transparent_46%),linear-gradient(180deg,#192731_0%,#161f28_52%,#0f1419_100%)]";
+  "bg-[radial-gradient(circle_at_18%_12%,rgba(252,3,165,0.2),transparent_44%),radial-gradient(circle_at_82%_88%,rgba(79,97,114,0.28),transparent_46%),linear-gradient(180deg,#192731_0%,#161f28_52%,#0f1419_100%)]";

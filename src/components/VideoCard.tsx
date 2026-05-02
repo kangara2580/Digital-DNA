@@ -787,7 +787,7 @@ export function VideoCard({
               type="button"
               className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full border backdrop-blur-[1px] transition-[transform,background-color,border-color,color,box-shadow] duration-300 ease-out ${actionHoverScale} active:scale-[0.94] ${actionButtonSize} ${
                 inCart
-                  ? "border-[color:var(--reels-point)]/80 bg-[var(--reels-point)]/15 text-[var(--reels-point)] shadow-[0_0_0_1px_rgba(255,9,108,0.25)]"
+                  ? "border-[color:var(--reels-point)]/80 bg-[var(--reels-point)]/15 text-[var(--reels-point)] shadow-[0_0_0_1px_rgba(252,3,165,0.28)]"
                   : "border-white/20 bg-black/35 text-white opacity-90"
               }`}
               aria-label={inCart ? "장바구니에서 빼기" : "장바구니에 담기"}
@@ -831,7 +831,7 @@ export function VideoCard({
               type="button"
               className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full border backdrop-blur-[1px] transition-[transform,background-color,border-color,color] duration-300 ease-out ${actionHoverScale} active:scale-[0.94] ${actionButtonSize} ${
                 wishlisted
-                  ? "border-[color:var(--reels-point)]/80 bg-[var(--reels-point)]/15 text-[var(--reels-point)] shadow-[0_0_0_1px_rgba(255,9,108,0.25)]"
+                  ? "border-[color:var(--reels-point)]/80 bg-[var(--reels-point)]/15 text-[var(--reels-point)] shadow-[0_0_0_1px_rgba(252,3,165,0.28)]"
                   : "border-white/20 bg-black/35 text-white opacity-90"
               }`}
               aria-label={wishlisted ? "찜 해제" : "찜하기"}

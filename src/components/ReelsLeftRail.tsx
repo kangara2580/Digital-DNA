@@ -371,7 +371,7 @@ export function ReelsLeftRail() {
                       <button
                         type="button"
                         onClick={() => setSearchQ("")}
-                        className="absolute right-1.5 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/22 bg-white/[0.06] text-[#e91e63] transition hover:border-[rgba(233,30,99,0.55)] hover:bg-white/[0.12] hover:text-[#f472b6] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-[#e91e63] [html[data-theme='light']_&]:hover:border-[rgba(233,30,99,0.45)] [html[data-theme='light']_&]:hover:bg-zinc-200 [html[data-theme='light']_&]:hover:text-[#db2777]"
+                        className="absolute right-1.5 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/22 bg-white/[0.06] text-[#fc03a5] transition hover:border-[rgba(252,3,165,0.55)] hover:bg-white/[0.12] hover:text-[#fd6ec6] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-[#fc03a5] [html[data-theme='light']_&]:hover:border-[rgba(252,3,165,0.45)] [html[data-theme='light']_&]:hover:bg-zinc-200 [html[data-theme='light']_&]:hover:text-[#d9028f]"
                         aria-label="검색어 지우기"
                       >
                         <X className="h-[18px] w-[18px]" strokeWidth={2.6} aria-hidden />

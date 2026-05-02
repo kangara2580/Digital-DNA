@@ -110,7 +110,7 @@ export default function LandingPage() {
               <span className="text-sm md:text-base font-semibold text-zinc-400 uppercase tracking-widest">Followers Gained</span>
             </div>
             <div className="flex flex-col items-center col-span-2 md:col-span-1">
-              <span className="text-4xl md:text-6xl font-black text-reels-crimson mb-2 tracking-tighter drop-shadow-[0_0_15px_rgba(255,23,107,0.3)]">$500k+</span>
+              <span className="text-4xl md:text-6xl font-black text-reels-crimson mb-2 tracking-tighter drop-shadow-[0_0_15px_rgba(252,3,165,0.35)]">$500k+</span>
               <span className="text-sm md:text-base font-semibold text-zinc-400 uppercase tracking-widest">Earnings Generated</span>
             </div>
           </div>

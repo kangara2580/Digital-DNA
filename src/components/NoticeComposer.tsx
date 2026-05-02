@@ -129,8 +129,7 @@ export function NoticeComposer() {
             >
               {submitting ? "등록 중..." : "게시하기"}
             </button>
-            {error ? <p className="text-[12px] text-rose-400">{error}</p> : null}
-            {done ? <p className="text-[12px] text-emerald-400">{done}</p> : null}
+            {error ? <p className="text-[12px] text-reels-crimson">{error}</p> : null}            {done ? <p className="text-[12px] text-emerald-400">{done}</p> : null}
           </div>
         </form>
       ) : null}

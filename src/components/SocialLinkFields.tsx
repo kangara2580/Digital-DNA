@@ -99,7 +99,7 @@ export function SocialLinkFields({
                   autoComplete="url"
                 />
                 {errors[i] ? (
-                  <p className="mt-1.5 text-[12px] font-semibold text-rose-400 [html[data-theme='light']_&]:text-rose-600">
+                  <p className="mt-1.5 text-[12px] font-semibold text-reels-crimson/95 [html[data-theme='light']_&]:text-reels-crimson">
                     {errors[i]}
                   </p>
                 ) : null}

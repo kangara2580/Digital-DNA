@@ -257,8 +257,7 @@ function DraftRowView({
                 if (typeof window !== "undefined" && !window.confirm("이 임시 저장을 삭제할까요?")) return;
                 onRemove();
               }}
-              className="inline-flex items-center gap-1 rounded-lg border border-white/12 bg-white/5 px-2.5 py-1.5 text-[11px] font-semibold text-zinc-400 transition hover:border-rose-500/35 hover:bg-rose-500/10 hover:text-rose-200 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-rose-800"
-              aria-label="임시 저장 삭제"
+              className="inline-flex items-center gap-1 rounded-lg border border-white/12 bg-white/5 px-2.5 py-1.5 text-[11px] font-semibold text-zinc-400 transition hover:border-reels-crimson/38 hover:bg-reels-crimson/12 hover:text-[#fcd0eb] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-reels-crimson"              aria-label="임시 저장 삭제"
             >
               <Trash2 className="h-3.5 w-3.5" aria-hidden />
               삭제

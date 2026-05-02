@@ -106,7 +106,7 @@ export function SellerVideoAnalyticsDetail({ videoId, days, from, to }: Props) {
 
   if (loadError && !detail) {
     return (
-      <div className="reels-glass-card rounded-2xl p-8 text-center text-rose-300">
+      <div className="reels-glass-card rounded-2xl p-8 text-center text-[#fcd0eb]">
         <p className="font-semibold">{loadError}</p>
         <Link href="/mypage?tab=analytics" className="mt-4 inline-block text-reels-cyan hover:underline">
           판매 분석으로 돌아가기
@@ -186,7 +186,7 @@ export function SellerVideoAnalyticsDetail({ videoId, days, from, to }: Props) {
               className={
                 detail.revenueMomPercent >= 0
                   ? "text-emerald-400"
-                  : "text-rose-400"
+                  : "text-reels-crimson/90"
               }
             >
               {detail.revenueMomPercent >= 0 ? "+" : ""}
@@ -203,7 +203,7 @@ export function SellerVideoAnalyticsDetail({ videoId, days, from, to }: Props) {
             직전 대비 추정 조회{" "}
             <span
               className={
-                detail.viewsMomPercent >= 0 ? "text-reels-cyan" : "text-rose-400"
+                detail.viewsMomPercent >= 0 ? "text-reels-cyan" : "text-reels-crimson/90"
               }
             >
               {detail.viewsMomPercent >= 0 ? "+" : ""}

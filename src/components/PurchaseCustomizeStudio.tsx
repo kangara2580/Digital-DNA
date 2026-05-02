@@ -438,7 +438,7 @@ function ServerGenerationStatusCard({ job }: { job: RemoteJobBanner }) {
 function previewToneFromPrompt(prompt: string): string {
   const p = prompt.toLowerCase();
   if (p.includes("neon") || p.includes("네온")) {
-    return "linear-gradient(140deg, rgba(0,242,234,0.2), rgba(255,0,85,0.18))";
+    return "linear-gradient(140deg, rgba(0,242,234,0.2), rgba(252,3,165,0.18))";
   }
   if (p.includes("sunset") || p.includes("노을") || p.includes("orange")) {
     return "linear-gradient(140deg, rgba(255,158,44,0.22), rgba(255,76,76,0.14))";
@@ -453,7 +453,7 @@ function previewToneFromPrompt(prompt: string): string {
 }
 
 const quickBuyButtonClass =
-  "inline-flex shrink-0 items-center justify-center rounded-full border border-reels-crimson/45 bg-reels-crimson/15 px-4 py-2.5 text-[12px] font-extrabold text-reels-crimson shadow-[0_0_20px_-8px_rgba(255,0,85,0.4)] transition hover:bg-reels-crimson/25 md:self-auto";
+  "inline-flex shrink-0 items-center justify-center rounded-full border border-reels-crimson/45 bg-reels-crimson/15 px-4 py-2.5 text-[12px] font-extrabold text-reels-crimson shadow-[0_0_20px_-8px_rgba(252,3,165,0.42)] transition hover:bg-reels-crimson/25 md:self-auto";
 
 export function PurchaseCustomizeStudio({
   video,

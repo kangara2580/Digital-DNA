@@ -251,8 +251,7 @@ export function TrendingRankSection() {
               전 세계 크리에이터들이 가장 많이 선택한 인기 영상
             </p>
             {errorMessage ? (
-              <p className="mt-1.5 text-[12px] font-medium text-rose-300 [html[data-theme='light']_&]:text-rose-600">
-                {errorMessage}
+              <p className="mt-1.5 text-[12px] font-medium text-reels-crimson/90 [html[data-theme='light']_&]:text-reels-crimson">                {errorMessage}
               </p>
             ) : null}
           </div>

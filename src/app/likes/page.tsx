@@ -227,8 +227,7 @@ export default function LikesPage() {
                   type="button"
                   onClick={() => void unlikeSelected()}
                   disabled={selected.size === 0}
-                  className="rounded-lg border border-rose-500/35 px-3 py-2 text-[13px] font-medium text-rose-300 transition-colors hover:bg-rose-500/10 disabled:opacity-40 [html[data-theme='light']_&]:text-rose-800"
-                >
+                  className="rounded-lg border border-reels-crimson/38 px-3 py-2 text-[13px] font-medium text-[#fcd0eb] transition-colors hover:bg-reels-crimson/12 disabled:opacity-40 [html[data-theme='light']_&]:text-reels-crimson"                >
                   선택한 좋아요 해제
                 </button>
               </>

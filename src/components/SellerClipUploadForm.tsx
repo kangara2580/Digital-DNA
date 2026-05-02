@@ -372,8 +372,7 @@ export function SellerClipUploadForm() {
           className={`mt-4 flex items-start gap-2 rounded-xl border px-3 py-2.5 text-[13px] font-semibold ${
             message.ok
               ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-200 [html[data-theme='light']_&]:text-emerald-800"
-              : "border-rose-500/45 bg-rose-500/10 text-rose-200 [html[data-theme='light']_&]:text-rose-800"
-          }`}
+              : "border-reels-crimson/45 bg-reels-crimson/12 text-[#fcd0eb] [html[data-theme='light']_&]:text-reels-crimson"          }`}
           role="status"
         >
           {message.ok ? (
