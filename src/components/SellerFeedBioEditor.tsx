@@ -88,7 +88,7 @@ export function SellerFeedBioEditor({ sellerId, initialBio }: Props) {
               type="button"
               onClick={() => void save()}
               disabled={saving}
-              className="rounded-full bg-[color:var(--reels-point)] px-4 py-1.5 text-[12px] font-bold text-white shadow-[0_6px_20px_-6px_rgba(252,3,165,0.55)] transition hover:brightness-[1.06] disabled:opacity-50"
+              className="rounded-full border border-[color:var(--reels-point)]/90 bg-transparent px-4 py-1.5 text-[12px] font-bold text-[color:var(--reels-point)] transition hover:bg-[color:var(--reels-point)]/12 hover:text-[color:var(--reels-point)] disabled:opacity-50 [html[data-theme='light']_&]:border-reels-crimson [html[data-theme='light']_&]:text-reels-crimson [html[data-theme='light']_&]:hover:bg-reels-crimson/12"
             >
               {saving ? "저장 중…" : "저장"}
             </button>
