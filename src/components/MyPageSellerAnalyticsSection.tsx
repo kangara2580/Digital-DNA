@@ -232,37 +232,31 @@ export function MyPageSellerAnalyticsSection() {
 
   if (loading && !snapshot) {
     return (
-      <section
-        className="reels-glass-card rounded-2xl p-5 sm:p-7"
-        aria-labelledby="seller-analytics-heading"
-      >
+      <div aria-busy aria-live="polite">
         <p className="text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           판매 분석을 불러오는 중…
         </p>
-      </section>
+      </div>
     );
   }
 
   if (!snapshot) {
     return (
-      <section
-        className="reels-glass-card rounded-2xl p-5 sm:p-7"
-        aria-labelledby="seller-analytics-heading"
-      >
+      <div>
         <p className="text-[13px] text-[#fcd0eb] [html[data-theme='light']_&]:text-reels-crimson">
           {loadError ?? "표시할 데이터가 없습니다."}
         </p>
-      </section>
+      </div>
     );
   }
 
   const t = snapshot.totals;
 
   return (
-    <section
-      className="reels-glass-card rounded-2xl p-5 sm:p-7"
-      aria-labelledby="seller-analytics-heading"
-    >
+    <section aria-labelledby="seller-analytics-heading">
+      <h2 id="seller-analytics-heading" className="sr-only">
+        내 판매 실적 분석
+      </h2>
       <div className="space-y-2 border-b border-white/10 pb-5 [html[data-theme='light']_&]:border-zinc-200">
         <div className="flex flex-col gap-3 min-[520px]:flex-row min-[520px]:items-center min-[520px]:justify-between min-[520px]:gap-3 lg:gap-4">
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 sm:gap-x-3">
@@ -270,12 +264,6 @@ export function MyPageSellerAnalyticsSection() {
               <Radio className="h-2.5 w-2.5 animate-pulse sm:h-3 sm:w-3" aria-hidden />
               {loading ? "동기화 중…" : "주기 갱신(60초)"}
             </span>
-            <h2
-              id="seller-analytics-heading"
-              className="min-w-0 shrink-0 text-lg font-extrabold tracking-tight whitespace-nowrap text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-xl lg:text-2xl"
-            >
-              내 판매 실적 분석
-            </h2>
           </div>
 
           <div className="flex min-w-0 w-full flex-wrap items-center justify-start gap-1.5 min-[520px]:w-auto min-[520px]:justify-end min-[520px]:flex-nowrap sm:gap-2">

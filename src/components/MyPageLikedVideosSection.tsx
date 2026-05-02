@@ -13,6 +13,7 @@ import {
   removeFavorite,
 } from "@/lib/supabaseFavorites";
 import { waitForSupabaseAccessToken } from "@/lib/waitSupabaseSessionReady";
+import { MYPAGE_OUTLINE_BTN_MD, MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 
 const SORT_OPTIONS = [
   { value: "recent", label: "최근 좋아요 순" },
@@ -166,25 +167,15 @@ export function MyPageLikedVideosSection() {
     supabaseConfigured && !authLoading && hydrated && !user;
 
   return (
-    <div className="reels-glass-card rounded-xl p-4 sm:rounded-2xl sm:p-5 lg:p-6">
-      <header className="border-b border-white/10 pb-6 [html[data-theme='light']_&]:border-zinc-200">
-        <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">
-          내가 좋아요한 동영상
-        </h2>
-        <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[13px]">
-          하트를 눌러 마음에 든 릴스만 따로 모아볼 수 있어요.
-        </p>
-      </header>
-
-      <div className="mt-6 min-h-[120px]">
+    <div className="min-h-[120px]">
         {showLoginGate ? (
-          <div className="rounded-xl border border-white/10 bg-black/15 p-8 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-            <p className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          <div className="rounded-2xl border border-dashed border-white/15 bg-black/20 px-6 py-14 text-center [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white">
+            <p className="text-[14px] text-white/65 [html[data-theme='light']_&]:text-zinc-600">
               로그인 후 좋아요한 릴스를 여기에서 모아볼 수 있어요.
             </p>
             <Link
               href={`/login?redirect=${LOGIN_REDIRECT}`}
-              className="mt-4 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[13px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
+              className={`mt-6 ${MYPAGE_OUTLINE_BTN_SM}`}
             >
               로그인
             </Link>
@@ -256,7 +247,7 @@ export function MyPageLikedVideosSection() {
                 </p>
                 <Link
                   href="/explore"
-                  className="mt-5 inline-flex rounded-full border border-reels-cyan/40 bg-reels-cyan/10 px-5 py-2.5 text-[13px] font-extrabold text-reels-cyan transition hover:bg-reels-cyan/18"
+                  className={`mt-5 inline-flex ${MYPAGE_OUTLINE_BTN_MD}`}
                 >
                   릴스 둘러보기
                 </Link>
@@ -287,6 +278,5 @@ export function MyPageLikedVideosSection() {
           </>
         )}
       </div>
-    </div>
   );
 }

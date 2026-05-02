@@ -5,10 +5,12 @@ import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { MyPageMyListingsSection } from "@/components/MyPageMyListingsSection";
 import { MyPageSavedDraftsSection } from "@/components/MyPageSavedDraftsSection";
+import { MyPageSectionShell } from "@/components/MyPageSectionShell";
 import { MyPageSellerAnalyticsSection } from "@/components/MyPageSellerAnalyticsSection";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { MyPageWishlistSection } from "@/components/MyPageWishlistSection";
 import { MyPageLikedVideosSection } from "@/components/MyPageLikedVideosSection";
+import { MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 
 type MyPageTab =
   | "drafts"
@@ -41,10 +43,7 @@ function LoginRequiredPanel({
         <p className="text-[14px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
           로그인하면 {tab.label} 탭을 포함한 마이페이지 기능을 모두 이용할 수 있어요.
         </p>
-        <Link
-          href={`/login?redirect=${redirect}`}
-          className="mt-5 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-semibold text-white shadow-[0_6px_20px_-6px_rgba(252,3,165,0.45)] transition hover:brightness-[1.05]"
-        >
+        <Link href={`/login?redirect=${redirect}`} className={`mt-5 ${MYPAGE_OUTLINE_BTN_SM}`}>
           로그인
         </Link>
       </div>
@@ -119,22 +118,46 @@ export function MyPageDashboard() {
           ) : null}
           {!authLoading && !user ? <LoginRequiredPanel tab={activeTab} /> : null}
 
-          {currentTab === "drafts" && user ? <MyPageSavedDraftsSection /> : null}
-
-          {currentTab === "wishlist" && user ? <MyPageWishlistSection /> : null}
-          {currentTab === "likes" && user ? <MyPageLikedVideosSection /> : null}
-
-          {currentTab === "analytics" && user ? <MyPageSellerAnalyticsSection /> : null}
-
           {currentTab === "listings" && user ? (
-            <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm">
-              <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                내 영상관리
-              </h2>
-              <div className="mt-8">
-                <MyPageMyListingsSection />
-              </div>
-            </div>
+            <MyPageSectionShell title="내 영상관리">
+              <MyPageMyListingsSection />
+            </MyPageSectionShell>
+          ) : null}
+
+          {currentTab === "wishlist" && user ? (
+            <MyPageSectionShell
+              title="찜 목록"
+              description="저장해 둔 릴스를 정리하고 바로 재생할 수 있어요."
+            >
+              <MyPageWishlistSection />
+            </MyPageSectionShell>
+          ) : null}
+
+          {currentTab === "likes" && user ? (
+            <MyPageSectionShell
+              title="좋아요한 동영상"
+              description="하트를 눌러 마음에 든 릴스만 따로 모아볼 수 있어요."
+            >
+              <MyPageLikedVideosSection />
+            </MyPageSectionShell>
+          ) : null}
+
+          {currentTab === "analytics" && user ? (
+            <MyPageSectionShell
+              title="판매 분석"
+              description="등록한 릴스의 판매·노출 지표를 기간별로 확인할 수 있어요."
+            >
+              <MyPageSellerAnalyticsSection />
+            </MyPageSectionShell>
+          ) : null}
+
+          {currentTab === "drafts" && user ? (
+            <MyPageSectionShell
+              title="임시 저장"
+              description="커스터마이즈 중 임시 저장한 편집을 이어서 열거나 삭제할 수 있어요."
+            >
+              <MyPageSavedDraftsSection />
+            </MyPageSectionShell>
           ) : null}
           </section>
         </div>

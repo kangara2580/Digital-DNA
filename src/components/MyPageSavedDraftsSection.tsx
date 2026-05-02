@@ -82,31 +82,20 @@ export function MyPageSavedDraftsSection() {
 
   if (!user) {
     return (
-      <section className="mt-8 reels-glass-card rounded-2xl p-5 sm:p-6">
-        <h2 className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          임시 저장한 편집
-        </h2>
-        <p className="mt-4 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          로그인하면 클라우드에 저장된 임시 편집을 이 기기에서도 이어서 열 수 있어요.
-        </p>
-      </section>
+      <p className="text-[13px] text-white/60 [html[data-theme='light']_&]:text-zinc-600">
+        로그인하면 클라우드에 저장된 임시 편집을 이 기기에서도 이어서 열 수 있어요.
+      </p>
     );
   }
 
   return (
-    <section className="mt-8 reels-glass-card rounded-2xl p-5 sm:p-6">
-      <h2 className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        임시 저장한 편집
-      </h2>
-      <p className="mt-2 text-[13px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-        <strong className="font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">임시 저장</strong>한 배경·구간·자막 설정이 계정에 연결되어 있습니다. 아래에서 확인한 뒤 이어서 편집하세요.
-      </p>
+    <>
       {cards.length === 0 ? (
-        <p className="mt-4 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="text-[13px] text-white/60 [html[data-theme='light']_&]:text-zinc-600">
           아직 임시 저장한 항목이 없어요.
         </p>
       ) : (
-        <ul className="mt-4 space-y-3">
+        <ul className="space-y-3">
           {cards.map(({ videoId, updatedAt, video, summary }) => (
             <DraftRowView
               key={videoId}
@@ -131,7 +120,7 @@ export function MyPageSavedDraftsSection() {
           ))}
         </ul>
       )}
-    </section>
+    </>
   );
 }
 

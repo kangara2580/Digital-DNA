@@ -11,6 +11,7 @@ import {
   type SellVideoCategory,
 } from "@/lib/sellVideoCategory";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { MYPAGE_OUTLINE_BTN_MD, MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 import type { FeedVideo } from "@/data/videos";
 
 export function MyPageMyListingsSection() {
@@ -240,7 +241,7 @@ export function MyPageMyListingsSection() {
         </p>
         <Link
           href="/login?redirect=%2Fmypage%3Ftab%3Dlistings"
-          className="mt-4 inline-flex items-center justify-center rounded-full border border-[color:var(--reels-point)]/90 bg-transparent px-5 py-2.5 text-[14px] font-semibold text-white transition hover:bg-[color:var(--reels-point)]/10 active:bg-[color:var(--reels-point)]/15 [html[data-theme='light']_&]:text-zinc-900"
+          className={`mt-4 inline-flex ${MYPAGE_OUTLINE_BTN_SM}`}
         >
           로그인
         </Link>
@@ -280,7 +281,7 @@ export function MyPageMyListingsSection() {
         </p>
         <Link
           href="/sell"
-          className="mt-6 inline-flex items-center justify-center rounded-full border border-[color:var(--reels-point)]/90 bg-transparent px-6 py-3 text-[14px] font-semibold text-white transition hover:bg-[color:var(--reels-point)]/10 active:bg-[color:var(--reels-point)]/15 [html[data-theme='light']_&]:text-zinc-900"
+          className={`mt-6 inline-flex ${MYPAGE_OUTLINE_BTN_MD}`}
         >
           판매 등록하기
         </Link>
