@@ -32,15 +32,15 @@ function LoginRequiredPanel({ tab }: { tab: { id: SettingsTab; label: string; hr
   const redirect = encodeURIComponent(tab.href);
 
   return (
-    <div className="reels-glass-card rounded-xl p-4 sm:rounded-2xl sm:p-5 lg:p-6">
-      <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">{tab.label}</h2>
-      <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-8 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-        <p className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+    <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+      <h2 className="text-lg font-semibold tracking-tight text-zinc-900 sm:text-xl">{tab.label}</h2>
+      <div className="mt-8 rounded-xl border border-dashed border-zinc-200 bg-zinc-50/80 p-8 text-center">
+        <p className="text-[14px] leading-relaxed text-zinc-600">
           로그인하면 설정의 {tab.label}을 포함한 계정 관리 기능을 이용할 수 있어요.
         </p>
         <Link
           href={`/login?redirect=${redirect}`}
-          className="mt-4 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
+          className="mt-5 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-semibold text-white shadow-[0_6px_20px_-6px_rgba(252,3,165,0.45)] transition hover:brightness-[1.05]"
         >
           로그인
         </Link>
@@ -191,54 +191,52 @@ export function AccountSettingsDashboard() {
   );
 
   return (
-    <main className="mx-auto min-h-[60vh] max-w-[1500px] px-3 py-8 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-5 sm:py-10 lg:px-8">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">설정</h1>
-        </div>
-      </div>
+    <main className="min-h-[60vh] bg-white text-zinc-900">
+      <div className="mx-auto max-w-[1500px] px-4 py-10 sm:px-6 sm:py-12 lg:px-10">
+        <header className="border-b border-zinc-100 pb-8">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-[1.75rem]">설정</h1>
+        </header>
 
-      <div className="mt-4 grid items-start gap-2 sm:mt-6 sm:gap-3 lg:gap-5 [grid-template-columns:minmax(10.5rem,12.5rem)_minmax(0,1fr)] lg:grid-cols-[260px_minmax(0,1fr)]">
-        <aside className="reels-glass-card w-full min-w-0 max-w-[12.5rem] justify-self-start rounded-xl p-2 sm:max-w-none sm:rounded-2xl sm:p-3 lg:sticky lg:top-20 lg:h-fit lg:max-w-none lg:p-4">
-          <nav aria-label="설정 메뉴" className="space-y-1 sm:space-y-1.5">
-            {SETTINGS_TAB_ITEMS.map((item) => {
-              const active = item.id === currentTab;
-              return (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className={`block rounded-lg border px-2 py-2 transition sm:rounded-xl sm:px-3 sm:py-2.5 ${
-                    active
-                      ? "border-reels-cyan/45 bg-reels-cyan/15 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
-                      : "border-white/10 bg-black/20 text-zinc-400 hover:border-white/20 hover:text-zinc-200 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:text-zinc-900"
-                  }`}
-                >
-                  <p className="text-[12px] font-bold leading-snug sm:text-[13px]">{item.label}</p>
-                </Link>
-              );
-            })}
-          </nav>
-        </aside>
+        <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,13.5rem)_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[15rem_minmax(0,1fr)]">
+          <aside className="lg:sticky lg:top-24 lg:self-start">
+            <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-400">메뉴</p>
+            <nav aria-label="설정 메뉴" className="flex flex-col gap-0.5">
+              {SETTINGS_TAB_ITEMS.map((item) => {
+                const active = item.id === currentTab;
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className={
+                      active
+                        ? "rounded-lg border-l-[3px] border-l-[#fc03a5] bg-zinc-50 py-2.5 pl-[13px] pr-3 text-[14px] font-semibold text-zinc-900 transition-colors"
+                        : "rounded-lg border-l-[3px] border-l-transparent py-2.5 pl-[13px] pr-3 text-[14px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
+                    }
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </aside>
 
-        <section className="min-w-0">
+          <section className="min-w-0">
           {authLoading && !user ? (
-            <div className="reels-glass-card rounded-xl p-10 text-center sm:rounded-2xl">
-              <p className="text-[14px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                불러오는 중…
-              </p>
+            <div className="rounded-2xl border border-zinc-100 bg-zinc-50/50 p-12 text-center">
+              <p className="text-[14px] font-medium text-zinc-500">불러오는 중…</p>
             </div>
           ) : null}
           {!authLoading && !user ? <LoginRequiredPanel tab={activeTab} /> : null}
 
           {currentTab === "basic" && user ? (
-            <div className="reels-glass-card rounded-xl p-4 sm:rounded-2xl sm:p-5 lg:p-6">
+            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
               <MyPageAccountOverview />
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">기본정보</h2>
+              <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-10">
+                <h2 className="text-lg font-semibold tracking-tight text-zinc-900">기본정보</h2>
                 {mySellerFeedHref ? (
                   <Link
                     href={mySellerFeedHref}
-                    className="inline-flex rounded-full border border-reels-cyan/40 bg-reels-cyan/10 px-3 py-1.5 text-[12px] font-extrabold text-reels-cyan transition hover:bg-reels-cyan/20"
+                    className="inline-flex rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-zinc-800 transition hover:border-[#fc03a5] hover:text-[#fc03a5]"
                   >
                     내 판매 피드 가기
                   </Link>
@@ -249,11 +247,9 @@ export function AccountSettingsDashboard() {
 
               <MyPagePasswordSection />
 
-              <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-                <h3 className="text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                  프로필 이미지
-                </h3>
-                <div className="mt-4 grid gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">
+              <div className="mt-10 border-t border-zinc-100 pt-10">
+                <h3 className="text-[15px] font-semibold text-zinc-900">프로필 이미지</h3>
+                <div className="mt-6 grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
                   <div className="h-full">
                     <ProfileAvatarPicker
                       density="comfortable"
@@ -268,33 +264,33 @@ export function AccountSettingsDashboard() {
                   </div>
 
                   <div className="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2">
-                    <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">아이디</p>
-                      <p className="mt-2 break-all text-[16px] font-extrabold leading-snug text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                    <div className="min-w-0 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50/60 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-400">아이디</p>
+                      <p className="mt-2 break-all text-[16px] font-semibold leading-snug text-zinc-900">
                         {displayId}
                       </p>
-                      <p className="mt-1 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                      <p className="mt-1 text-[12px] leading-relaxed text-zinc-500">
                         {user?.email ? `이메일: ${user.email}` : "닉네임/이메일 연동 전 기본 계정입니다."}
                       </p>
                     </div>
-                    <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">계정 상태</p>
-                      <p className="mt-2 text-[16px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">정상</p>
-                      <p className="mt-1 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                    <div className="min-w-0 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50/60 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-400">계정 상태</p>
+                      <p className="mt-2 text-[16px] font-semibold text-zinc-900">정상</p>
+                      <p className="mt-1 text-[12px] leading-relaxed text-zinc-500">
                         {accountSummary}
                       </p>
                     </div>
-                    <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">임시 저장</p>
-                      <p className="mt-1 text-[22px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">{draftCount}</p>
-                      <p className="text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">저장된 편집 항목 · 열어보려면 마이페이지 임시 저장 탭 이용</p>
+                    <div className="min-w-0 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50/60 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-400">임시 저장</p>
+                      <p className="mt-1 text-[22px] font-semibold tabular-nums text-zinc-900">{draftCount}</p>
+                      <p className="text-[11px] leading-snug text-zinc-500">저장된 편집 항목 · 열어보려면 마이페이지 임시 저장 탭 이용</p>
                     </div>
-                    <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">프로필 얼굴</p>
-                      <p className="mt-1 break-words text-[15px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">{profileLabel}</p>
-                      <p className="text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                    <div className="min-w-0 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50/60 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-400">프로필 얼굴</p>
+                      <p className="mt-1 break-words text-[15px] font-semibold text-zinc-900">{profileLabel}</p>
+                      <p className="text-[11px] leading-snug text-zinc-500">
                         등록은{" "}
-                        <Link href="/settings?tab=profile" className="font-semibold text-reels-cyan/90 underline-offset-2 hover:underline">
+                        <Link href="/settings?tab=profile" className="font-semibold text-[#fc03a5] underline-offset-2 hover:underline">
                           프로필 관리
                         </Link>
                         에서 변경할 수 있어요.
@@ -307,7 +303,8 @@ export function AccountSettingsDashboard() {
           ) : null}
 
           {currentTab === "profile" && user ? <FaceProfileUploadSection /> : null}
-        </section>
+          </section>
+        </div>
       </div>
     </main>
   );

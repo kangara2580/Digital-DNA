@@ -44,44 +44,40 @@ export function MyPageAccountOverview() {
 
   return (
     <div className="mb-3 grid gap-4 lg:grid-cols-2">
-      <section className="rounded-2xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+      <section className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-reels-cyan" aria-hidden />
-          <h3 className="text-[13px] font-extrabold [html[data-theme='light']_&]:text-zinc-900">
-            나의 구독
-          </h3>
+          <Sparkles className="h-4 w-4 text-zinc-400" aria-hidden />
+          <h3 className="text-[13px] font-semibold text-zinc-900">나의 구독</h3>
         </div>
         {sub ? (
           <>
-            <p className="mt-2 text-[15px] font-bold [html[data-theme='light']_&]:text-zinc-900">
+            <p className="mt-2 text-[15px] font-semibold text-zinc-900">
               {sub.planLabel}
             </p>
-            <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            <p className="mt-1 text-[12px] text-zinc-500">
               다음 갱신 {formatNextRenewal(sub.nextRenewalIso)}
             </p>
           </>
         ) : (
-          <p className="mt-2 text-[13px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+          <p className="mt-2 text-[13px] text-zinc-600">
             이용 중인 구독이 없습니다.
           </p>
         )}
         <Link
           href="/subscribe"
-          className="mt-3 inline-flex w-full items-center justify-center rounded-xl border border-reels-cyan/40 bg-reels-cyan/10 px-3 py-2 text-center text-[13px] font-extrabold text-reels-cyan transition hover:bg-reels-cyan/18"
+          className="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 py-2 text-center text-[13px] font-semibold text-zinc-900 transition hover:border-[#fc03a5] hover:text-[#fc03a5]"
         >
           {sub ? "구독 플랜 관리" : "구독 시작하기"}
         </Link>
       </section>
 
-      <section className="rounded-2xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+      <section className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
         <div className="flex items-center gap-2">
-          <Film className="h-4 w-4 text-reels-cyan" aria-hidden />
-          <h3 className="text-[13px] font-extrabold [html[data-theme='light']_&]:text-zinc-900">
-            구매한 동영상
-          </h3>
+          <Film className="h-4 w-4 text-zinc-400" aria-hidden />
+          <h3 className="text-[13px] font-semibold text-zinc-900">구매한 동영상</h3>
         </div>
         {purchasedVideos.length === 0 ? (
-          <p className="mt-2 text-[13px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+          <p className="mt-2 text-[13px] text-zinc-600">
             아직 구매한 영상이 없습니다.
           </p>
         ) : (
@@ -90,7 +86,7 @@ export function MyPageAccountOverview() {
               <li key={v.id}>
                 <Link
                   href={`/video/${v.id}`}
-                  className="font-medium text-zinc-200 hover:text-reels-cyan [html[data-theme='light']_&]:text-zinc-800"
+                  className="font-medium text-zinc-800 transition hover:text-[#fc03a5]"
                 >
                   {v.title}
                 </Link>
@@ -100,7 +96,7 @@ export function MyPageAccountOverview() {
         )}
         <Link
           href="/explore"
-          className="mt-3 inline-flex w-full items-center justify-center rounded-xl border border-reels-cyan/40 bg-reels-cyan/10 px-3 py-2 text-center text-[13px] font-extrabold text-reels-cyan transition hover:bg-reels-cyan/18"
+          className="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 py-2 text-center text-[13px] font-semibold text-zinc-900 transition hover:border-[#fc03a5] hover:text-[#fc03a5]"
         >
           둘러보기
         </Link>
