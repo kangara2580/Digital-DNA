@@ -240,7 +240,7 @@ export function MyPageMyListingsSection() {
         </p>
         <Link
           href="/login?redirect=%2Fmypage%3Ftab%3Dlistings"
-          className="mt-4 inline-flex items-center justify-center rounded-full bg-[color:var(--reels-point)] px-5 py-2.5 text-[14px] font-semibold text-white transition hover:brightness-110 active:brightness-95"
+          className="mt-4 inline-flex items-center justify-center rounded-full border border-[color:var(--reels-point)]/85 bg-transparent px-5 py-2.5 text-[14px] font-semibold text-[color:var(--reels-point)] transition hover:border-[color:var(--reels-point)] hover:bg-[color:var(--reels-point)]/10 active:bg-[color:var(--reels-point)]/15"
         >
           로그인
         </Link>
@@ -283,7 +283,7 @@ export function MyPageMyListingsSection() {
         </p>
         <Link
           href="/sell"
-          className="mt-6 inline-flex items-center justify-center rounded-full bg-[color:var(--reels-point)] px-6 py-3 text-[14px] font-semibold text-white transition hover:brightness-110 active:brightness-95"
+          className="mt-6 inline-flex items-center justify-center rounded-full border border-[color:var(--reels-point)]/85 bg-transparent px-6 py-3 text-[14px] font-semibold text-[color:var(--reels-point)] transition hover:border-[color:var(--reels-point)] hover:bg-[color:var(--reels-point)]/10 active:bg-[color:var(--reels-point)]/15"
         >
           판매 등록하기
         </Link>
