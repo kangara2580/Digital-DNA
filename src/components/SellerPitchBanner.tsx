@@ -136,13 +136,13 @@ function SellerPitchStartButton({
   authLoading: boolean;
   onStartClick: () => void;
 }) {
-  /** 홈 히어로「시작하기」와 동일 — 브랜드 핑크 글래스 CTA (globals `bg-reels-crimson`) */
+  /** 홈 히어로「시작하기」와 동일 — 미니멀 솔리드 CTA(화이트/라이트모드에서는 다크 반전) */
   return (
     <button
       type="button"
       onClick={onStartClick}
       disabled={authLoading}
-      className="shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/25 bg-reels-crimson px-[clamp(2rem,5.2vw,3.75rem)] py-[clamp(0.52rem,0.85vw,0.72rem)] text-[clamp(calc(1.2rem-2pt),calc(2.1vw-2pt),calc(1.9rem-2pt))] font-semibold text-white transition-[filter,transform] duration-200 ease-out hover:brightness-110 hover:scale-[1.02] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100 disabled:hover:scale-100 motion-reduce:transition-[filter] motion-reduce:hover:scale-100 motion-reduce:active:scale-100 [html[data-theme='light']_&]:border-white/35 [html[data-theme='light']_&]:focus-visible:outline-zinc-400/60"
+      className="shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full bg-white px-[clamp(2rem,5.2vw,3.75rem)] py-[clamp(0.52rem,0.85vw,0.72rem)] text-[clamp(calc(1.2rem-2pt),calc(2.1vw-2pt),calc(1.9rem-2pt))] font-semibold text-zinc-900 shadow-[0_4px_24px_-6px_rgba(0,0,0,0.5)] transition-[background-color,transform,box-shadow] duration-200 ease-out hover:bg-zinc-100 hover:shadow-[0_6px_28px_-6px_rgba(0,0,0,0.55)] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white disabled:hover:shadow-[0_4px_24px_-6px_rgba(0,0,0,0.5)] motion-reduce:active:scale-100 [html[data-theme='light']_&]:bg-zinc-900 [html[data-theme='light']_&]:text-white [html[data-theme='light']_&]:shadow-[0_4px_20px_-8px_rgba(0,0,0,0.22)] [html[data-theme='light']_&]:hover:bg-zinc-800 [html[data-theme='light']_&]:hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.28)] [html[data-theme='light']_&]:focus-visible:outline-zinc-400/50 [html[data-theme='light']_&]:disabled:bg-zinc-900 [html[data-theme='light']_&]:disabled:text-white/80 [html[data-theme='light']_&]:disabled:hover:bg-zinc-900"
     >
       시작하기
     </button>

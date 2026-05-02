@@ -665,7 +665,7 @@ export function Highlight24() {
                   type="button"
                   onClick={onStartClick}
                   onPointerDown={(event) => event.stopPropagation()}
-                  className="shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/25 bg-reels-crimson px-[clamp(2rem,5.2vw,3.75rem)] py-[clamp(0.52rem,0.85vw,0.72rem)] text-[clamp(calc(1.2rem-2pt),calc(2.1vw-2pt),calc(1.9rem-2pt))] font-semibold text-white transition-[filter,transform] duration-200 ease-out hover:brightness-110 hover:scale-[1.02] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 motion-reduce:transition-[filter] motion-reduce:hover:scale-100 motion-reduce:active:scale-100"
+                  className="shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full bg-white px-[clamp(2rem,5.2vw,3.75rem)] py-[clamp(0.52rem,0.85vw,0.72rem)] text-[clamp(calc(1.2rem-2pt),calc(2.1vw-2pt),calc(1.9rem-2pt))] font-semibold text-zinc-900 shadow-[0_4px_24px_-6px_rgba(0,0,0,0.5)] transition-[background-color,transform,box-shadow] duration-200 ease-out hover:bg-zinc-100 hover:shadow-[0_6px_28px_-6px_rgba(0,0,0,0.55)] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 motion-reduce:active:scale-100"
                 >
                   시작하기
                 </button>
