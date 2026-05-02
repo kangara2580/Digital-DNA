@@ -13,7 +13,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
-import { MALL_CATEGORY_NAV_ITEMS } from "@/data/mallCategoryNav";
 
 const stroke = 1.75;
 
@@ -320,7 +319,7 @@ export function ReelsLeftRail() {
                 aria-expanded={open}
                 aria-haspopup="dialog"
                 aria-controls={drawerId}
-                aria-label="더보기 — 언어·화면 테마·메뉴"
+                aria-label="더보기 — 언어·화면 테마"
               >
                 <MoreVertical className="h-[25px] w-[25px]" strokeWidth={stroke} aria-hidden />
               </button>
@@ -428,28 +427,9 @@ export function ReelsLeftRail() {
                       </button>
                     </div>
 
-                    <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 py-4">
+                    <div className="no-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto px-3 py-4">
                       <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
                         <SitePreferencesMenu layout="stack" />
-                      </div>
-
-                      <div>
-                        <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                          카테고리
-                        </p>
-                        <ul className="flex flex-col gap-0.5">
-                          {MALL_CATEGORY_NAV_ITEMS.map(({ href, label }) => (
-                            <li key={href}>
-                              <Link
-                                href={href}
-                                onClick={close}
-                                className="block rounded-xl px-3 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.06] hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black"
-                              >
-                                {label}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
                       </div>
                     </div>
                   </motion.div>
