@@ -1,4 +1,6 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
+import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
 
 export const runtime = "nodejs";
 
@@ -93,21 +95,70 @@ export async function GET(request: Request) {
   const redirectTo = new URL("/auth/callback", siteOrigin);
   redirectTo.searchParams.set("next", nextPath);
 
-  const authUrl = new URL("/auth/v1/authorize", supabaseOrigin);
-  authUrl.searchParams.set("provider", "google");
-  authUrl.searchParams.set("redirect_to", redirectTo.toString());
-  authUrl.searchParams.set("access_type", "offline");
-  authUrl.searchParams.set("prompt", "consent");
-  authUrl.searchParams.set("apikey", anonKey);
+  const cookiesToSet: {
+    name: string;
+    value: string;
+    options: Parameters<NextResponse["cookies"]["set"]>[2];
+  }[] = [];
+
+  const supabase = createServerClient(supabaseOrigin, anonKey, {
+    cookieOptions: getSupabaseAuthCookieOptions(),
+    cookies: {
+      getAll() {
+        return [];
+      },
+      setAll(items) {
+        cookiesToSet.push(
+          ...items.map(({ name, value, options }) => ({ name, value, options })),
+        );
+      },
+    },
+  });
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: redirectTo.toString(),
+      skipBrowserRedirect: true,
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
+      },
+    },
+  });
+
+  if (error || !data.url) {
+    console.log("[oauth:start] Supabase signInWithOAuth failed", {
+      origin: reqUrl.origin,
+      redirectTo: redirectTo.toString(),
+      generatedAuthUrl: null,
+      message: error?.message ?? null,
+      status: error?.status ?? null,
+      name: error?.name ?? null,
+      supabaseUrlExists: Boolean(supabaseOrigin),
+      supabaseAnonKeyExists: Boolean(anonKey),
+      env: envStatus(),
+    });
+    const errorUrl = new URL("/login", reqUrl.origin);
+    errorUrl.searchParams.set("error", "oauth_start_failed");
+    errorUrl.searchParams.set("reason", error?.message || "missing_auth_url");
+    return NextResponse.redirect(errorUrl);
+  }
 
   console.log("[oauth:start] generated Google OAuth URL", {
     origin: reqUrl.origin,
     redirectTo: redirectTo.toString(),
-    generatedAuthUrl: authUrl.toString().replace(anonKey, "[redacted]"),
+    generatedAuthUrl: data.url.replace(anonKey, "[redacted]"),
     supabaseUrlExists: Boolean(supabaseOrigin),
     supabaseAnonKeyExists: Boolean(anonKey),
+    pkceCookieCount: cookiesToSet.length,
     env: envStatus(),
   });
 
-  return NextResponse.redirect(authUrl);
+  const response = NextResponse.redirect(data.url);
+  cookiesToSet.forEach(({ name, value, options }) => {
+    response.cookies.set(name, value, options);
+  });
+
+  return response;
 }
