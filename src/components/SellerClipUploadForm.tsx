@@ -437,9 +437,6 @@ export function SellerClipUploadForm() {
                       {file?.name ?? "선택된 파일 없음"}
                     </span>
                   </div>
-                  <p className="text-[11px] leading-relaxed text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-                    MP4·MOV·WebM 권장. 미리보기에서 재생 길이·가로/세로를 자동 추정합니다.
-                  </p>
                 </div>
                 {previewUrl ? (
                   <div className="flex w-full min-w-0 justify-center overflow-hidden rounded-xl border border-white/15 bg-zinc-950/90 shadow-inner [html[data-theme='light']_&]:bg-zinc-900">
