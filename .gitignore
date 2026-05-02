@@ -42,3 +42,17 @@ yarn-error.log*
 .vercel
 .vercel.backup-*/
 dev-server.*.log
+
+# local editor and agent settings
+.cursor/
+.vscode/
+
+# local experiment outputs
+gemini_test.json
+kling_tasks_db.json
+error.html
+fix.js
+dna
+
+# separate local prototype/workspace
+bg_face_ai/
