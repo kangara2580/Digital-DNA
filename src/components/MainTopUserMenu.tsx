@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart } from "lucide-react";
+import { Plus, ShoppingCart, UserRound } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -13,8 +13,7 @@ import {
   TOP_NAV_ACCOUNT_CART_PILL_OUTER,
   TOP_NAV_ACCOUNT_CART_PILL_CELL,
   TOP_NAV_ACCOUNT_CART_PILL_DIVIDER,
-  topNavHeroCartGlyphIconClass,
-  topNavHeroProfileGlyphIconClass,
+  topNavHeroCapsuleGlyphIconClass,
 } from "@/lib/topNavIconRing";
 import {
   authModalDialogSurface,
@@ -32,18 +31,15 @@ type Props = {
   withCart?: boolean;
 };
 
-function ProfileGlyph() {
-  const g = topNavHeroProfileGlyphIconClass();
+function CapsuleUserGlyph() {
   return (
-    <svg viewBox="0 0 24 24" className={g} fill="none" stroke="currentColor" aria-hidden>
-      <circle cx="12" cy="8" r="4" strokeWidth="2.35" />
-      <path
-        d="M4 20C4 15.8 7.6 12.4 12 12.4C16.4 12.4 20 15.8 20 20H4Z"
-        strokeWidth="2.35"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <UserRound className={topNavHeroCapsuleGlyphIconClass()} strokeWidth={2} aria-hidden />
+  );
+}
+
+function CapsuleCartGlyph() {
+  return (
+    <ShoppingCart className={topNavHeroCapsuleGlyphIconClass()} strokeWidth={2} aria-hidden />
   );
 }
 
@@ -100,17 +96,9 @@ export function MainTopUserMenu({ withCart = true }: Props) {
   if (loading) return null;
 
   const guestAuthButtonInner = (
-    <span className="relative inline-flex min-h-[30px] min-w-[30px] shrink-0 items-center justify-center">
-      <ProfileGlyph />
-      <svg
-        viewBox="0 0 24 24"
-        className="absolute right-[-5px] top-[-4px] h-[13px] w-[13px]"
-        fill="none"
-        stroke="currentColor"
-        aria-hidden
-      >
-        <path d="M12 4V20M4 12H20" strokeWidth="2.35" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+    <span className="relative inline-flex size-8 shrink-0 items-center justify-center">
+      <CapsuleUserGlyph />
+      <Plus className="absolute -right-[2px] -top-[2px] size-3" strokeWidth={2.35} aria-hidden />
     </span>
   );
 
@@ -178,7 +166,7 @@ export function MainTopUserMenu({ withCart = true }: Props) {
           rootClassName={accountHoverRootClass}
           triggerClassName={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-none`}
         >
-          <ProfileGlyph />
+          <CapsuleUserGlyph />
         </LoggedInAccountHoverMenu>
         <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} aria-hidden />
         <Link
@@ -186,7 +174,7 @@ export function MainTopUserMenu({ withCart = true }: Props) {
           className={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-none`}
           aria-label="장바구니"
         >
-          <ShoppingCart className={topNavHeroCartGlyphIconClass()} strokeWidth={2} aria-hidden />
+          <CapsuleCartGlyph />
         </Link>
       </div>
     ) : (
@@ -195,7 +183,7 @@ export function MainTopUserMenu({ withCart = true }: Props) {
           rootClassName={accountHoverRootClass}
           triggerClassName={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-none`}
         >
-          <ProfileGlyph />
+          <CapsuleUserGlyph />
         </LoggedInAccountHoverMenu>
       </div>
     );

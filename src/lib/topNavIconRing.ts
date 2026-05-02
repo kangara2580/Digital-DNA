@@ -14,14 +14,17 @@ export const TOP_NAV_ACCOUNT_CART_PILL_CELL =
 export const TOP_NAV_ACCOUNT_CART_PILL_DIVIDER =
   "pointer-events-none my-2 w-px shrink-0 self-stretch bg-white/[0.14] [html[data-theme='light']_&]:bg-zinc-300/42";
 
-/** 캡슐 안 커스텀 프로필 SVG — lucide 카트와 같은 박스면 시각적으로 작아 보임 */
-export function topNavHeroProfileGlyphIconClass(): string {
-  return "h-[26px] w-[26px]";
+/** 계정 캡슐 — lucide 프로필·장바구니 동일 픽셀 박스 (strokeWidth 2 권장). */
+export function topNavHeroCapsuleGlyphIconClass(): string {
+  return "h-6 w-6 shrink-0";
 }
 
-/** lucide 장바구니 */
+export function topNavHeroProfileGlyphIconClass(): string {
+  return topNavHeroCapsuleGlyphIconClass();
+}
+
 export function topNavHeroCartGlyphIconClass(): string {
-  return "h-[22px] w-[22px]";
+  return topNavHeroCapsuleGlyphIconClass();
 }
 
 export type TopNavIconRingSize = "compact" | "default" | "hero";
@@ -48,7 +51,7 @@ export function topNavShoppingCartGlyphClass(size: TopNavIconRingSize): string {
     case "compact":
       return "h-4 w-4";
     case "hero":
-      return "h-[22px] w-[22px]";
+      return "h-6 w-6";
     default:
       return "h-[18px] w-[18px]";
   }
