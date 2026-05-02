@@ -36,10 +36,10 @@ const LABEL =
 
 /** 영상 소스: 한 트랙 안 세그먼트 (떠 있는 이중 핑크 버튼 느낌 완화) */
 const SOURCE_SEGMENT_TRACK =
-  "flex w-full gap-0.5 rounded-[0.65rem] border border-white/[0.1] bg-black/25 p-0.5 sm:max-w-[22rem] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80";
+  "flex w-full gap-1 rounded-full border border-white/[0.1] bg-black/25 p-1 sm:max-w-[24rem] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80";
 
 const SOURCE_SEGMENT_BTN =
-  "relative min-h-[2.5rem] flex-1 rounded-lg px-3 text-[13px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent [html[data-theme='light']_&]:focus-visible:ring-zinc-400/40";
+  "relative min-h-[2.75rem] flex-1 rounded-full px-4 py-2 text-[13px] font-medium leading-tight transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent sm:min-h-[2.875rem] sm:py-2.5 [html[data-theme='light']_&]:focus-visible:ring-zinc-400/40";
 
 const SOURCE_SEGMENT_BTN_ACTIVE =
   "bg-white/[0.12] text-zinc-50 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[inset_0_0_0_1px_rgba(252,3,165,0.22)]";
@@ -471,6 +471,9 @@ export function SellerClipUploadForm() {
                 영상 URL
               </button>
             </div>
+            <p className="mx-auto mt-3 max-w-md px-2 text-center text-[12px] font-medium leading-relaxed tracking-tight text-white/42 [html[data-theme='light']_&]:text-zinc-600/85">
+              둘 중 하나를 선택해서 올려주세요
+            </p>
           </div>
 
           <div className={SOURCE_PANEL}>
