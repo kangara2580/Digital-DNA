@@ -13,7 +13,8 @@ import {
   TOP_NAV_ACCOUNT_CART_PILL_OUTER,
   TOP_NAV_ACCOUNT_CART_PILL_CELL,
   TOP_NAV_ACCOUNT_CART_PILL_DIVIDER,
-  topNavHeroGlyphIconClass,
+  topNavHeroCartGlyphIconClass,
+  topNavHeroProfileGlyphIconClass,
 } from "@/lib/topNavIconRing";
 import {
   authModalDialogSurface,
@@ -32,13 +33,13 @@ type Props = {
 };
 
 function ProfileGlyph() {
-  const g = topNavHeroGlyphIconClass();
+  const g = topNavHeroProfileGlyphIconClass();
   return (
     <svg viewBox="0 0 24 24" className={g} fill="none" stroke="currentColor" aria-hidden>
-      <circle cx="12" cy="8" r="4" strokeWidth="2.2" />
+      <circle cx="12" cy="8" r="4" strokeWidth="2.25" />
       <path
         d="M4 20C4 15.8 7.6 12.4 12 12.4C16.4 12.4 20 15.8 20 20H4Z"
-        strokeWidth="2.2"
+        strokeWidth="2.25"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -193,7 +194,7 @@ export function MainTopUserMenu({ withCart = true }: Props) {
           className={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-none`}
           aria-label="장바구니"
         >
-          <ShoppingCart className={topNavHeroGlyphIconClass()} strokeWidth={2} aria-hidden />
+          <ShoppingCart className={topNavHeroCartGlyphIconClass()} strokeWidth={2} aria-hidden />
         </Link>
       </div>
     ) : (

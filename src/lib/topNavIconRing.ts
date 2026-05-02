@@ -14,9 +14,14 @@ export const TOP_NAV_ACCOUNT_CART_PILL_CELL =
 export const TOP_NAV_ACCOUNT_CART_PILL_DIVIDER =
   "pointer-events-none my-2 w-px shrink-0 self-stretch bg-white/[0.14] [html[data-theme='light']_&]:bg-zinc-300/42";
 
-/** 프로필·장바구니 글립 — 메인과 동일 18×18 */
-export function topNavHeroGlyphIconClass(): string {
-  return "h-[18px] w-[18px]";
+/** 캡슐 안 커스텀 프로필 SVG — 카트보다 뷰박스 패딩이 커 같은 px보다 크게 두어 무게 맞춤 */
+export function topNavHeroProfileGlyphIconClass(): string {
+  return "h-[23px] w-[23px]";
+}
+
+/** lucide 장바구니 — 프로필보다 살짝 작은 박스에도 덩치가 커 보이므로 프로필보다 한 단계 작게 */
+export function topNavHeroCartGlyphIconClass(): string {
+  return "h-[21px] w-[21px]";
 }
 
 export type TopNavIconRingSize = "compact" | "default" | "hero";
@@ -43,7 +48,7 @@ export function topNavShoppingCartGlyphClass(size: TopNavIconRingSize): string {
     case "compact":
       return "h-4 w-4";
     case "hero":
-      return "h-[18px] w-[18px]";
+      return "h-[21px] w-[21px]";
     default:
       return "h-[18px] w-[18px]";
   }
