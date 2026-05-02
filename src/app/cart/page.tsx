@@ -239,14 +239,14 @@ export default function CartPage() {
                   <div className="min-w-0 flex-1">
                     <Link
                       href={`/video/${video.id}`}
-                      className="line-clamp-2 text-left text-[15px] font-bold leading-snug text-zinc-100 transition-colors hover:text-reels-crimson [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:text-reels-crimson"
+                      className="line-clamp-2 text-left text-[15px] font-bold leading-snug text-zinc-100 transition-colors hover:text-[#ff0055] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:text-[#ff0055]"
                     >
                       {video.title}
                     </Link>
                     <p className="mt-1 truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                       <Link
                         href={sellerProfileHrefFromVideo(video)}
-                        className="underline-offset-2 transition-colors hover:text-reels-crimson hover:underline [html[data-theme='light']_&]:hover:text-reels-crimson"
+                        className="text-inherit underline-offset-2 transition-colors hover:text-[#ff0055] hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
                         {video.creator}
