@@ -107,7 +107,7 @@ export default async function SellerPage({
         </section>
 
         <section className="mt-8">
-          <h2 className="text-[12px] font-extrabold tracking-[0.08em] text-reels-crimson">
+          <h2 className="text-[12px] font-extrabold tracking-[0.08em] text-[color:var(--reels-point)]">
             판매 클립
           </h2>
           {videos.length > 0 ? (
