@@ -4,6 +4,7 @@ import {
   AlertCircle,
   Check,
   CheckCircle2,
+  ChevronDown,
   Film,
   Image as ImageIcon,
   Loader2,
@@ -99,6 +100,121 @@ function RightsAgreementCheckbox({
         {children}
       </span>
     </label>
+  );
+}
+
+const CATEGORY_LISTBOX_PANEL =
+  "absolute left-0 right-0 top-full z-[120] mt-1.5 max-h-[min(18rem,50vh)] overflow-y-auto overflow-x-hidden rounded-xl border border-white/[0.12] bg-[#0a0c12]/96 py-1.5 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.75)] backdrop-blur-xl [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white/95 [html[data-theme='light']_&]:shadow-[0_16px_40px_-12px_rgba(56,78,125,0.22)]";
+
+const CATEGORY_OPTION_ROW =
+  "flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-2.5 text-left text-[14px] font-medium text-zinc-200 transition-colors hover:bg-white/[0.07] focus:bg-white/[0.07] focus:outline-none [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:focus:bg-zinc-100";
+
+const CATEGORY_OPTION_ROW_SELECTED =
+  "bg-reels-crimson/[0.14] text-white hover:bg-reels-crimson/20 [html[data-theme='light']_&]:bg-reels-crimson/[0.12] [html[data-theme='light']_&]:text-zinc-900";
+
+function SellCategorySelect({
+  id,
+  listboxId,
+  value,
+  onChange,
+}: {
+  id: string;
+  listboxId: string;
+  value: SellVideoCategory;
+  onChange: (next: SellVideoCategory) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  const currentLabel =
+    SELL_VIDEO_CATEGORY_OPTIONS.find((o) => o.value === value)?.label ?? value;
+
+  useEffect(() => {
+    if (!open) return;
+    const onDocPointer = (e: PointerEvent) => {
+      const t = e.target;
+      if (t instanceof Node && wrapRef.current?.contains(t)) return;
+      setOpen(false);
+    };
+    document.addEventListener("pointerdown", onDocPointer, true);
+    return () => document.removeEventListener("pointerdown", onDocPointer, true);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.preventDefault();
+      setOpen(false);
+      triggerRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  return (
+    <div ref={wrapRef} className="relative">
+      <button
+        ref={triggerRef}
+        type="button"
+        id={id}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={listboxId}
+        onClick={() => setOpen((o) => !o)}
+        className={`${INPUT} flex min-h-[48px] w-full cursor-pointer items-center justify-between gap-3 text-left`}
+      >
+        <span className="min-w-0 truncate">{currentLabel}</span>
+        <ChevronDown
+          className={`h-5 w-5 shrink-0 text-zinc-500 transition-transform duration-200 [html[data-theme='light']_&]:text-zinc-600 ${
+            open ? "rotate-180" : ""
+          }`}
+          strokeWidth={2}
+          aria-hidden
+        />
+      </button>
+
+      {open ? (
+        <ul
+          id={listboxId}
+          role="listbox"
+          tabIndex={-1}
+          className={CATEGORY_LISTBOX_PANEL}
+          aria-label="판매 카테고리 선택"
+        >
+          {SELL_VIDEO_CATEGORY_OPTIONS.map((item) => {
+            const selected = item.value === value;
+            return (
+              <li key={item.value} role="none" className="list-none">
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                  className={`${CATEGORY_OPTION_ROW} ${selected ? CATEGORY_OPTION_ROW_SELECTED : ""}`}
+                  onClick={() => {
+                    onChange(item.value);
+                    setOpen(false);
+                    queueMicrotask(() => triggerRef.current?.focus());
+                  }}
+                >
+                  <span>{item.label}</span>
+                  {selected ? (
+                    <Check
+                      className="h-4 w-4 shrink-0 text-reels-crimson [html[data-theme='light']_&]:text-reels-crimson"
+                      strokeWidth={2.5}
+                      aria-hidden
+                    />
+                  ) : (
+                    <span className="h-4 w-4 shrink-0" aria-hidden />
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </div>
   );
 }
 
@@ -781,22 +897,12 @@ export function SellerClipUploadForm() {
             <label className={LABEL} htmlFor={`${hid}-category`}>
               카테고리
             </label>
-            <select
+            <SellCategorySelect
               id={`${hid}-category`}
-              className={`${INPUT} cursor-pointer`}
+              listboxId={`${hid}-category-listbox`}
               value={category}
-              onChange={(e) => {
-                const next = e.target.value;
-                if (isSellVideoCategory(next)) setCategory(next);
-              }}
-              required
-            >
-              {SELL_VIDEO_CATEGORY_OPTIONS.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
+              onChange={setCategory}
+            />
           </div>
 
           <div>
