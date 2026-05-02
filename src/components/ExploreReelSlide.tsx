@@ -82,26 +82,26 @@ const railActionIconBrandFilled =
 /** 레일 바깥 패딩만 (테두리 없음) */
 const railDeckClass = "shrink-0 pb-6 pt-4";
 
-/** 행: 모든 줄에서 메인 아이콘은 동일 32px 박스, 수익 줄 ▼는 옆 고정 칸(조회 등과 세로 정렬) */
+/** 행: 메인 아이콘 36px 박스 · 수익 줄 ▼는 옆 고정 칸(조회 등과 세로 정렬) */
 const railExploreRow =
-  "flex w-max max-w-full items-center gap-2 py-2 [html[data-theme='light']_&]:text-zinc-900";
+  "flex w-max max-w-full items-center gap-2 py-2.5 [html[data-theme='light']_&]:text-zinc-900";
 
 /** 수치: 고정폭 유지 + 왼쪽 정렬 */
 const railExploreStatValueCol =
-  "inline-flex min-h-[1.35em] w-[10.5rem] shrink-0 items-center justify-start tabular-nums text-left sm:w-[11.75rem]";
+  "inline-flex min-h-[1.4em] w-[11rem] shrink-0 items-center justify-start tabular-nums text-left sm:w-[12.25rem]";
 
 /** 탐색 레일 구매 버튼 (가격 블록과 분리) — `explorePurchaseButtonClass` */
 const railExploreBuyButtonClass = explorePurchaseButtonClass;
 
 const railStatValueWhite =
-  "text-[13px] font-semibold tabular-nums text-white [html[data-theme='light']_&]:text-zinc-900";
+  "text-[14px] font-semibold tabular-nums text-white [html[data-theme='light']_&]:text-zinc-900";
 
 const railStatValueBlue =
-  "text-[13px] font-semibold tabular-nums text-[#9DB9FF] [html[data-theme='light']_&]:text-sky-600";
+  "text-[14px] font-semibold tabular-nums text-[#9DB9FF] [html[data-theme='light']_&]:text-sky-600";
 
 /** 수익 상승(▲) — TrendingVideoStatsFooter와 동일 연한 빨강 */
 const railStatValueRevenueUp =
-  "text-[13px] font-semibold tabular-nums text-[#F87171] [html[data-theme='light']_&]:text-red-500";
+  "text-[14px] font-semibold tabular-nums text-[#F87171] [html[data-theme='light']_&]:text-red-500";
 
 function ReelExploreStatLine({
   icon,
@@ -125,11 +125,11 @@ function ReelExploreStatLine({
   const Body = (
     <>
       <span className="flex shrink-0 items-center gap-1">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center text-white/[0.78] [&_svg]:h-[18px] [&_svg]:w-[18px] [html[data-theme='light']_&]:text-zinc-600">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center text-white/[0.78] [&_svg]:h-[20px] [&_svg]:w-[20px] [html[data-theme='light']_&]:text-zinc-600">
           {icon}
         </span>
         <span
-          className="flex h-8 w-3 shrink-0 items-center justify-center"
+          className="flex h-9 w-3 shrink-0 items-center justify-center"
           aria-hidden={iconAdornment ? undefined : true}
         >
           {iconAdornment ?? <span className="block w-3" />}
@@ -462,7 +462,7 @@ function ReelDesktopRail({
           icon={<TrendingUp strokeWidth={2.25} className="shrink-0" />}
           iconAdornment={
             <span
-              className={`flex h-[11px] min-w-[0.875rem] items-center justify-center text-[11px] font-semibold leading-none ${
+              className={`flex h-[12px] min-w-[1rem] items-center justify-center text-[12px] font-semibold leading-none ${
                 revenueUp
                   ? "text-[#FF0000] [html[data-theme='light']_&]:text-red-600"
                   : "text-[#2FA2FF] [html[data-theme='light']_&]:text-sky-600"
