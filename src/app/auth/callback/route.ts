@@ -81,7 +81,7 @@ async function exchangeCodeWithRetry(
  * - Google Cloud Authorized redirect URI:
  *   https://<SUPABASE_PROJECT_REF>.supabase.co/auth/v1/callback
  * - Supabase Redirect URLs:
- *   https://digital-dna-aeya-live.vercel.app/auth/callback
+ *   https://ara.pink/auth/callback
  *   http://localhost:3001/auth/callback
  */
 export async function GET(request: NextRequest) {

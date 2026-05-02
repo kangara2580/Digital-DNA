@@ -36,7 +36,6 @@ The app uses Supabase Auth for Google login. The redirect flow must be configure
 
    ```txt
    https://ara.pink/auth/callback
-   https://digital-dna-aeya-live.vercel.app/auth/callback
    http://localhost:3001/auth/callback
    ```
 
