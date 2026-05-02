@@ -2,13 +2,14 @@
 
 import {
   AlertCircle,
+  Check,
   CheckCircle2,
   Film,
   Loader2,
   Upload,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import {
@@ -38,6 +39,39 @@ const SOURCE_TAB_ACTIVE =
 
 const SOURCE_TAB_IDLE =
   "border-white/[0.14] bg-white/[0.03] text-zinc-400 hover:border-white/22 hover:bg-white/[0.06] hover:text-zinc-200 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:text-zinc-900";
+
+const RIGHTS_CHECK_WRAP =
+  "mt-1 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[4px] border border-white/30 bg-transparent transition-[border-color,background-color] peer-checked:border-reels-crimson peer-checked:bg-reels-crimson peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-reels-crimson/55 [html[data-theme='light']_&]:border-zinc-300 peer-checked:[html[data-theme='light']_&]:border-reels-crimson";
+
+function RightsAgreementCheckbox({
+  checked,
+  onChange,
+  required: req,
+  children,
+}: {
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  required?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <label className="flex cursor-pointer items-start gap-3">
+      <input
+        type="checkbox"
+        className="peer sr-only"
+        checked={checked}
+        required={req}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <span className={`${RIGHTS_CHECK_WRAP} peer-checked:[&_svg]:opacity-100`} aria-hidden>
+        <Check className="h-3 w-3 text-white opacity-0 transition-opacity" strokeWidth={3} />
+      </span>
+      <span className="text-[14px] font-medium leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
+        {children}
+      </span>
+    </label>
+  );
+}
 
 function normalizeVideoUrl(raw: string): string {
   const t = raw.trim();
@@ -614,30 +648,20 @@ export function SellerClipUploadForm() {
             <p className="text-[12px] font-medium uppercase tracking-[0.1em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
               권리 확인
             </p>
-            <label className="flex cursor-pointer items-start gap-3">
-              <input
-                type="checkbox"
-                className="mt-1 h-[18px] w-[18px] shrink-0 rounded border-white/25 bg-transparent accent-reels-crimson focus:outline-none focus:ring-1 focus:ring-reels-crimson/35 [html[data-theme='light']_&]:border-zinc-300"
-                checked={rights}
-                onChange={(e) => setRights(e.target.checked)}
-                required
-              />
-              <span className="text-[14px] font-medium leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
-                이 파일에 대한 재판매·배포 권한을 보유했거나, 권리자의 동의를 받았습니다.
-              </span>
-            </label>
-            <label className="flex cursor-pointer items-start gap-3">
-              <input
-                type="checkbox"
-                className="mt-1 h-[18px] w-[18px] shrink-0 rounded border-white/25 bg-transparent accent-reels-crimson focus:outline-none focus:ring-1 focus:ring-reels-crimson/35 [html[data-theme='light']_&]:border-zinc-300"
-                checked={confirmOriginal}
-                onChange={(e) => setConfirmOriginal(e.target.checked)}
-                required
-              />
-              <span className="text-[14px] font-medium leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
-                타인의 초상·음원·상표 등 제3자 권리를 침해하지 않습니다.
-              </span>
-            </label>
+            <RightsAgreementCheckbox
+              checked={rights}
+              required
+              onChange={setRights}
+            >
+              이 파일에 대한 재판매·배포 권한을 보유했거나, 권리자의 동의를 받았습니다.
+            </RightsAgreementCheckbox>
+            <RightsAgreementCheckbox
+              checked={confirmOriginal}
+              required
+              onChange={setConfirmOriginal}
+            >
+              타인의 초상·음원·상표 등 제3자 권리를 침해하지 않습니다.
+            </RightsAgreementCheckbox>
           </div>
         </div>
       </div>
