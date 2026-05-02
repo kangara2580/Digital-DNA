@@ -271,6 +271,10 @@ function ReelDesktopRail({
   const remaining = clonesRemaining(meta);
   const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
   const wishlisted = isSaved(video.id);
+  const inCart = useMemo(
+    () => dopamine.builderItems.some((item) => item.video.id === video.id),
+    [dopamine.builderItems, video.id],
+  );
   const posterSrc = sanitizePosterSrc(video.poster);
 
   const authPromptScrollYRef = useRef(0);
@@ -484,7 +488,11 @@ function ReelDesktopRail({
           icon={
             <Heart
               strokeWidth={2.25}
-              className="shrink-0 stroke-white/[0.9] [html[data-theme='light']_&]:stroke-zinc-700"
+              className={
+                likedByMe
+                  ? "shrink-0 stroke-[var(--reels-point)] fill-[var(--reels-point)]"
+                  : "shrink-0 stroke-white/[0.9] [html[data-theme='light']_&]:stroke-zinc-700"
+              }
               aria-hidden
             />
           }
@@ -543,17 +551,24 @@ function ReelDesktopRail({
       >
         <button
           type="button"
-          title="장바구니 담기"
+          title={inCart ? "장바구니에 담김" : "장바구니 담기"}
           onClick={(e) => {
             if (soldOut) return;
             if (!requireAuth()) return;
             dopamine.launchFromCartButton(e.currentTarget, video, posterSrc ?? undefined);
           }}
-          className={`${railActionPlainBtn} disabled:cursor-not-allowed disabled:opacity-40`}
+          className={`${railActionPlainBtn} disabled:cursor-not-allowed disabled:opacity-40 ${
+            inCart
+              ? "!text-[var(--reels-point)] hover:brightness-110 [html[data-theme='light']_&]:!text-[var(--reels-point)]"
+              : ""
+          }`}
           disabled={soldOut}
-          aria-label="장바구니 담기"
+          aria-label={inCart ? "장바구니에 담김" : "장바구니 담기"}
         >
-          <ShoppingCart strokeWidth={2.25} className={`${railActionIcon} stroke-current`} />
+          <ShoppingCart
+            strokeWidth={2.25}
+            className={`${railActionIcon} stroke-current ${inCart ? "fill-current" : ""}`}
+          />
         </button>
         <button
           type="button"
@@ -564,7 +579,7 @@ function ReelDesktopRail({
           }}
           className={`relative ${railActionPlainBtn} ${
             likedByMe
-              ? "text-[var(--reels-point)] hover:brightness-110 [html[data-theme='light']_&]:text-[var(--reels-point)]"
+              ? "!text-[var(--reels-point)] hover:brightness-110 [html[data-theme='light']_&]:!text-[var(--reels-point)]"
               : ""
           }`}
           aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
@@ -593,7 +608,9 @@ function ReelDesktopRail({
             toggleWishlist(video);
           }}
           className={`${railActionPlainBtn} ${
-            wishlisted ? "!text-reels-cyan hover:!text-reels-cyan" : ""
+            wishlisted
+              ? "!text-[var(--reels-point)] hover:brightness-110 [html[data-theme='light']_&]:!text-[var(--reels-point)]"
+              : ""
           } ${wishlistPulse ? "scale-[1.05]" : "scale-100"}`}
           aria-label={wishlisted ? "찜 해제" : "찜하기"}
           aria-pressed={wishlisted}
