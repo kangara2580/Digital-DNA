@@ -79,8 +79,17 @@ export default function CartPage() {
 
   const allKeys = useMemo(() => builderItems.map((b) => b.key), [builderItems]);
 
+  const allItemsSelected =
+    allKeys.length > 0 && allKeys.every((k) => selected.has(k));
+
   const selectAll = useCallback(() => {
-    setSelected(new Set(allKeys));
+    setSelected((prev) => {
+      if (allKeys.length === 0) return prev;
+      const allSelected =
+        allKeys.every((k) => prev.has(k));
+      if (allSelected) return new Set();
+      return new Set(allKeys);
+    });
   }, [allKeys]);
 
   const deleteSelected = useCallback(() => {
@@ -106,7 +115,7 @@ export default function CartPage() {
           {cartUiReady && builderItems.length > 0 ? (
             <div className="flex flex-wrap items-center gap-2">
               <button type="button" onClick={selectAll} className={cartOutlineBtn}>
-                전체 선택
+                {allItemsSelected ? "선택 해제" : "전체 선택"}
               </button>
               <button
                 type="button"
@@ -276,7 +285,7 @@ export default function CartPage() {
               <button
                 type="button"
                 disabled
-                className="inline-flex shrink-0 rounded-full border border-white/15 bg-white/[0.06] px-10 py-3 text-[15px] font-bold text-zinc-500 opacity-90 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-600"
+                className="inline-flex shrink-0 rounded-full border border-white/15 bg-white/[0.06] px-10 py-3 text-[17px] font-bold text-zinc-500 opacity-90 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-600"
               >
                 결제
               </button>
