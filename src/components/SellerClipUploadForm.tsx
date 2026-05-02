@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, Film, Loader2, Upload } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -22,9 +22,16 @@ import {
 } from "@/lib/supabaseSellerUploadDraft";
 
 const INPUT =
-  "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none transition focus:border-reels-cyan/45 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
+  "w-full rounded-xl border border-white/14 bg-white/[0.06] px-4 py-3 text-[15px] leading-snug text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-reels-crimson/35 focus:ring-1 focus:ring-reels-crimson/15 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-400";
 
-const LABEL = "mb-1.5 block text-[12px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600";
+const LABEL =
+  "mb-2 block text-[13px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600";
+
+const SOURCE_TAB_ACTIVE =
+  "border-reels-crimson/40 bg-reels-crimson/10 text-zinc-50 [html[data-theme='light']_&]:text-zinc-900";
+
+const SOURCE_TAB_IDLE =
+  "border-white/[0.14] bg-white/[0.03] text-zinc-400 hover:border-white/22 hover:bg-white/[0.06] hover:text-zinc-200 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:text-zinc-900";
 
 function normalizeVideoUrl(raw: string): string {
   const t = raw.trim();
@@ -55,7 +62,6 @@ export function SellerClipUploadForm() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [hashtags, setHashtags] = useState("");
   const [category, setCategory] = useState<SellVideoCategory>("daily");
   const [price, setPrice] = useState("1000");
   const [isAi, setIsAi] = useState(false);
@@ -99,7 +105,6 @@ export function SellerClipUploadForm() {
       setVideoUrl(d.videoUrl);
       setTitle(d.title);
       setDescription(d.description);
-      setHashtags(d.hashtags);
       setCategory(
         typeof d.category === "string" && isSellVideoCategory(d.category)
           ? d.category
@@ -141,7 +146,7 @@ export function SellerClipUploadForm() {
       videoUrl,
       title,
       description,
-      hashtags,
+      hashtags: "",
       category,
       price,
       isAi,
@@ -163,7 +168,6 @@ export function SellerClipUploadForm() {
     videoUrl,
     title,
     description,
-    hashtags,
     category,
     price,
     isAi,
@@ -254,7 +258,7 @@ export function SellerClipUploadForm() {
       }
       fd.append("title", title.trim());
       fd.append("description", description.trim());
-      fd.append("hashtags", hashtags.trim());
+      fd.append("hashtags", "");
       fd.append("category", category);
       fd.append("price", price.trim());
       fd.append("orientation", orientation);
@@ -327,7 +331,6 @@ export function SellerClipUploadForm() {
 
       setTitle("");
       setDescription("");
-      setHashtags("");
       setCategory("daily");
       setPrice("1000");
       setIsAi(false);
@@ -352,44 +355,46 @@ export function SellerClipUploadForm() {
 
   return (
     <form
-      className="reels-glass-card rounded-2xl p-5 sm:p-7"
+      className="rounded-2xl border border-white/10 bg-zinc-900/50 p-6 sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm"
       onSubmit={onSubmit}
     >
-      <div className="flex flex-wrap items-center gap-2">
-        <Film className="h-5 w-5 text-reels-cyan" strokeWidth={2} aria-hidden />
-        <h2 className="text-lg font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-xl">
+      <header className="mb-8 flex items-start gap-3 border-b border-white/10 pb-6 [html[data-theme='light']_&]:border-zinc-100">
+        <span
+          className="mt-1.5 h-11 w-[3px] shrink-0 rounded-full bg-reels-crimson"
+          aria-hidden
+        />
+        <h2 className="text-[clamp(1.65rem,4.3vw,2.05rem)] font-semibold leading-tight tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
           영상 등록
         </h2>
-      </div>
+      </header>
 
       {message ? (
         <div
-          className={`mt-4 flex items-start gap-2 rounded-xl border px-3 py-2.5 text-[13px] font-semibold ${
+          className={`mb-8 flex items-start gap-2 rounded-xl border px-3.5 py-3 text-[13px] font-medium ${
             message.ok
-              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-200 [html[data-theme='light']_&]:text-emerald-800"
-              : "border-reels-crimson/45 bg-reels-crimson/12 text-[#fcd0eb] [html[data-theme='light']_&]:text-reels-crimson"          }`}
+              ? "border-emerald-500/35 bg-emerald-500/[0.08] text-emerald-200 [html[data-theme='light']_&]:text-emerald-900"
+              : "border-reels-crimson/35 bg-reels-crimson/[0.08] text-pink-100 [html[data-theme='light']_&]:text-reels-crimson"
+          }`}
           role="status"
         >
           {message.ok ? (
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 opacity-90" aria-hidden />
           ) : (
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 opacity-90" aria-hidden />
           )}
           <span>{message.text}</span>
         </div>
       ) : null}
 
-      <div className="mt-6 space-y-6">
-        <div>
-          <span className={LABEL}>영상 소스 선택</span>
-          <div className="mb-3 flex flex-wrap gap-2">
+      <div className="space-y-10">
+        <fieldset className="space-y-4">
+          <legend className={`${LABEL} mb-4`}>영상 소스</legend>
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => setSourceType("file")}
-              className={`rounded-xl border px-3 py-2 text-[13px] font-bold transition ${
-                sourceType === "file"
-                  ? "border-reels-cyan/50 bg-reels-cyan/15 text-zinc-100"
-                  : "border-white/12 bg-black/20 text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
+              className={`rounded-xl border px-4 py-2.5 text-[13px] font-semibold transition-colors ${
+                sourceType === "file" ? SOURCE_TAB_ACTIVE : SOURCE_TAB_IDLE
               }`}
             >
               직접 업로드
@@ -397,72 +402,72 @@ export function SellerClipUploadForm() {
             <button
               type="button"
               onClick={() => setSourceType("url")}
-              className={`rounded-xl border px-3 py-2 text-[13px] font-bold transition ${
-                sourceType === "url"
-                  ? "border-reels-cyan/50 bg-reels-cyan/15 text-zinc-100"
-                  : "border-white/12 bg-black/20 text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
+              className={`rounded-xl border px-4 py-2.5 text-[13px] font-semibold transition-colors ${
+                sourceType === "url" ? SOURCE_TAB_ACTIVE : SOURCE_TAB_IDLE
               }`}
             >
-              동영상 URL 입력
+              영상 URL
             </button>
           </div>
 
           {sourceType === "file" ? (
             <>
-              <span className={LABEL}>동영상 파일 (필수)</span>
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,520px)] lg:items-start lg:gap-6">
-                <div className="min-w-0 space-y-1.5">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <input
-                      id={`${hid}-video`}
-                      ref={fileInputRef}
-                      type="file"
-                      accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
-                      tabIndex={-1}
-                      className="sr-only"
-                      aria-hidden
-                      onChange={(e) => {
-                        onPickFile(e.target.files?.[0] ?? null);
-                        e.target.value = "";
-                      }}
-                    />
-                    <button
-                      type="button"
-                      className="inline-flex shrink-0 cursor-pointer rounded-lg bg-reels-crimson/90 px-3 py-2 text-[13px] font-bold text-white shadow-sm transition hover:brightness-110"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      파일 선택
-                    </button>
-                    <span className="pointer-events-none min-w-0 flex-1 truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                      {file?.name ?? "선택된 파일 없음"}
-                    </span>
+              <div>
+                <span className={LABEL}>동영상 파일 (필수)</span>
+                <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,520px)] lg:items-start">
+                  <div className="min-w-0 space-y-2">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <input
+                        id={`${hid}-video`}
+                        ref={fileInputRef}
+                        type="file"
+                        accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
+                        tabIndex={-1}
+                        className="sr-only"
+                        aria-hidden
+                        onChange={(e) => {
+                          onPickFile(e.target.files?.[0] ?? null);
+                          e.target.value = "";
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-xl border border-reels-crimson/45 bg-reels-crimson/12 px-4 py-2.5 text-[13px] font-semibold text-zinc-50 transition-colors hover:bg-reels-crimson/20 [html[data-theme='light']_&]:text-zinc-900"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        파일 선택
+                      </button>
+                      <span className="pointer-events-none min-w-0 flex-1 truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                        {file?.name ?? "선택된 파일 없음"}
+                      </span>
+                    </div>
                   </div>
+                  {previewUrl ? (
+                    <div className="flex w-full min-w-0 justify-center overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
+                      <video
+                        ref={videoPreviewRef}
+                        className="max-h-[min(52vh,480px)] w-full object-contain"
+                        src={previewUrl}
+                        crossOrigin="anonymous"
+                        muted
+                        playsInline
+                        controls
+                        onLoadedMetadata={onVideoMeta}
+                      />
+                    </div>
+                  ) : null}
                 </div>
-                {previewUrl ? (
-                  <div className="flex w-full min-w-0 justify-center overflow-hidden rounded-xl border border-white/15 bg-zinc-950/90 shadow-inner [html[data-theme='light']_&]:bg-zinc-900">
-                    <video
-                      ref={videoPreviewRef}
-                      className="max-h-[min(52vh,480px)] w-full object-contain"
-                      src={previewUrl}
-                      crossOrigin="anonymous"
-                      muted
-                      playsInline
-                      controls
-                      onLoadedMetadata={onVideoMeta}
-                    />
-                  </div>
-                ) : null}
               </div>
             </>
           ) : (
-            <>
+            <div className="space-y-3">
               <label className={LABEL} htmlFor={`${hid}-video-url`}>
                 동영상 URL (필수)
               </label>
-              <div className="flex flex-col gap-2 sm:flex-row">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
                 <input
                   id={`${hid}-video-url`}
-                  className={`${INPUT} flex-1`}
+                  className={`${INPUT} min-h-[48px] sm:flex-1`}
                   value={videoUrl}
                   onChange={(e) => setVideoUrl(e.target.value)}
                   placeholder="https://... 또는 /videos/sample1.mp4"
@@ -470,13 +475,13 @@ export function SellerClipUploadForm() {
                 <button
                   type="button"
                   onClick={onApplyVideoUrl}
-                  className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/[0.08] px-4 py-2.5 text-[13px] font-bold text-zinc-200 hover:border-reels-cyan/40 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800"
+                  className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-white/16 bg-white/[0.06] px-4 py-2.5 text-[13px] font-semibold text-zinc-100 transition-colors hover:border-reels-crimson/30 hover:bg-white/[0.09] sm:min-w-[112px] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-300"
                 >
                   미리보기
                 </button>
               </div>
               {previewUrl ? (
-                <div className="mt-3 flex w-full justify-center overflow-hidden rounded-xl border border-white/15 bg-zinc-950/90 shadow-inner [html[data-theme='light']_&]:bg-zinc-900">
+                <div className="flex w-full justify-center overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
                   <video
                     ref={videoPreviewRef}
                     className="max-h-[min(52vh,480px)] w-full object-contain"
@@ -489,28 +494,23 @@ export function SellerClipUploadForm() {
                   />
                 </div>
               ) : null}
-              <p className="mt-1.5 text-[11px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-                직접 업로드가 어렵다면 영상 URL로도 등록할 수 있습니다.
+              <p className="text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+                업로드가 어렵다면 공개 접근 가능한 영상 주소로도 등록할 수 있어요.
               </p>
-            </>
+            </div>
           )}
 
           {previewUrl ? (
-            <div className="mt-4 rounded-xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4 sm:p-5 [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/80">
               <span className={LABEL}>썸네일 장면</span>
-              <p className="mb-3 text-[11px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                슬라이더로 장면을 맞추면 등록 시 그 화면이 썸네일로 저장됩니다.
-                일부 외부 URL은 보안 정책으로 썸네일 추출이 안 될 수 있어요(그때는
-                기본 이미지가 들어갑니다).
+              <p className="mb-4 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                슬라이더로 장면을 고르면 등록 시 그 화면이 썸네일로 저장돼요. 일부 외부
+                주소는 정책상 썸네일 추출이 안 될 수 있어요.
               </p>
               <input
                 type="range"
                 min={0}
-                max={
-                  durationSec != null && durationSec > 0
-                    ? durationSec
-                    : 1
-                }
+                max={durationSec != null && durationSec > 0 ? durationSec : 1}
                 step={0.05}
                 value={
                   durationSec != null && durationSec > 0
@@ -518,12 +518,12 @@ export function SellerClipUploadForm() {
                     : thumbTimeSec
                 }
                 onChange={(e) => setThumbTimeSec(parseFloat(e.target.value))}
-                className="w-full accent-reels-cyan"
+                className="w-full accent-reels-crimson"
                 aria-label="썸네일 시점(초)"
               />
-              <div className="mt-1 flex justify-between text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              <div className="mt-2 flex justify-between text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                 <span>0초</span>
-                <span className="font-mono">{thumbTimeSec.toFixed(2)}초</span>
+                <span className="font-mono tabular-nums">{thumbTimeSec.toFixed(2)}초</span>
                 <span>
                   {durationSec != null && durationSec > 0
                     ? `총 ${durationSec}초`
@@ -532,9 +532,11 @@ export function SellerClipUploadForm() {
               </div>
             </div>
           ) : null}
-        </div>
+        </fieldset>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="h-px bg-white/[0.08] [html[data-theme='light']_&]:bg-zinc-100" aria-hidden />
+
+        <div className="grid gap-6 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <label className={LABEL} htmlFor={`${hid}-title`}>
               제목 (필수)
@@ -556,7 +558,7 @@ export function SellerClipUploadForm() {
             </label>
             <textarea
               id={`${hid}-desc`}
-              className={`${INPUT} min-h-[100px] resize-y`}
+              className={`${INPUT} min-h-[120px] resize-y`}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="어떤 상황에 쓰기 좋은지, 분위기, 촬영 정보 등을 적어 주세요."
@@ -564,29 +566,13 @@ export function SellerClipUploadForm() {
             />
           </div>
 
-          <div className="sm:col-span-2">
-            <label className={LABEL} htmlFor={`${hid}-tags`}>
-              해시태그
-            </label>
-            <input
-              id={`${hid}-tags`}
-              className={INPUT}
-              value={hashtags}
-              onChange={(e) => setHashtags(e.target.value)}
-              placeholder="#일상 #브이로그 #카페 또는 쉼표로 구분"
-            />
-            <p className="mt-1 text-[11px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-              저장 시 #태그 형태로 정리됩니다.
-            </p>
-          </div>
-
           <div>
             <label className={LABEL} htmlFor={`${hid}-category`}>
-              카테고리 (필수)
+              카테고리
             </label>
             <select
               id={`${hid}-category`}
-              className={INPUT}
+              className={`${INPUT} cursor-pointer`}
               value={category}
               onChange={(e) => {
                 const next = e.target.value;
@@ -616,58 +602,31 @@ export function SellerClipUploadForm() {
             />
           </div>
 
-          <div>
-            <span className={LABEL}>영상 비율 (자동 추정)</span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setOrientation("portrait")}
-                className={`flex-1 rounded-xl border px-3 py-2 text-[13px] font-bold transition ${
-                  orientation === "portrait"
-                    ? "border-reels-cyan/50 bg-reels-cyan/15 text-zinc-100"
-                    : "border-white/12 bg-black/20 text-zinc-400 hover:border-white/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
-                }`}
-              >
-                세로 (릴스형)
-              </button>
-              <button
-                type="button"
-                onClick={() => setOrientation("landscape")}
-                className={`flex-1 rounded-xl border px-3 py-2 text-[13px] font-bold transition ${
-                  orientation === "landscape"
-                    ? "border-reels-cyan/50 bg-reels-cyan/15 text-zinc-100"
-                    : "border-white/12 bg-black/20 text-zinc-400 hover:border-white/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
-                }`}
-              >
-                가로 (와이드)
-              </button>
-            </div>
-          </div>
-
-
-          <div className="sm:col-span-2 space-y-3 rounded-xl border border-amber-500/25 bg-amber-500/[0.07] p-4 [html[data-theme='light']_&]:border-amber-400/35 [html[data-theme='light']_&]:bg-amber-50">
+          <div className="sm:col-span-2 space-y-4 rounded-xl border border-white/[0.1] bg-white/[0.02] p-4 sm:p-5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/90">
+            <p className="text-[12px] font-medium uppercase tracking-[0.1em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+              권리 확인
+            </p>
             <label className="flex cursor-pointer items-start gap-3">
               <input
                 type="checkbox"
-                className="mt-1 h-4 w-4 rounded border-amber-400/50 bg-black/30 text-amber-500"
+                className="mt-1 h-[18px] w-[18px] shrink-0 rounded border-white/25 bg-transparent accent-reels-crimson focus:outline-none focus:ring-1 focus:ring-reels-crimson/35 [html[data-theme='light']_&]:border-zinc-300"
                 checked={rights}
                 onChange={(e) => setRights(e.target.checked)}
                 required
               />
-              <span className="text-[13px] font-semibold leading-snug text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
-                이 파일에 대한 재판매·배포 권한을 보유했거나, 권리자의 동의를
-                받았습니다.
+              <span className="text-[14px] font-medium leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
+                이 파일에 대한 재판매·배포 권한을 보유했거나, 권리자의 동의를 받았습니다.
               </span>
             </label>
             <label className="flex cursor-pointer items-start gap-3">
               <input
                 type="checkbox"
-                className="mt-1 h-4 w-4 rounded border-amber-400/50 bg-black/30 text-amber-500"
+                className="mt-1 h-[18px] w-[18px] shrink-0 rounded border-white/25 bg-transparent accent-reels-crimson focus:outline-none focus:ring-1 focus:ring-reels-crimson/35 [html[data-theme='light']_&]:border-zinc-300"
                 checked={confirmOriginal}
                 onChange={(e) => setConfirmOriginal(e.target.checked)}
                 required
               />
-              <span className="text-[13px] font-semibold leading-snug text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
+              <span className="text-[14px] font-medium leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
                 타인의 초상·음원·상표 등 제3자 권리를 침해하지 않습니다.
               </span>
             </label>
@@ -675,10 +634,10 @@ export function SellerClipUploadForm() {
         </div>
       </div>
 
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-[11px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
+      <div className="mt-10 flex flex-col-reverse gap-4 border-t border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between [html[data-theme='light']_&]:border-zinc-100">
+        <p className="text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
           제출 시{" "}
-          <span className="font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
+          <span className="font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
             심사·노출 정책
           </span>
           에 동의한 것으로 간주됩니다.
@@ -686,7 +645,7 @@ export function SellerClipUploadForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-reels-crimson px-7 py-3 text-[14px] font-extrabold text-white shadow-reels-crimson transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-reels-crimson px-8 py-3.5 text-[14px] font-semibold text-white transition-colors hover:bg-market-bloomHover disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto sm:min-w-[10rem]"
         >
           {submitting ? (
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden />

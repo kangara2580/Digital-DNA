@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function SellPage() {
   return (
-    <div className="min-h-screen text-[var(--foreground)] [html[data-theme='light']_&]:bg-white [html[data-theme='dark']_&]:bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(252,3,165,0.12),#02040a)]">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
       <SellPageClient />
     </div>
   );
