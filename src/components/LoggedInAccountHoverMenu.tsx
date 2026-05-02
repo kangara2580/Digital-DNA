@@ -14,13 +14,13 @@ type Props = {
 };
 
 const menuPanelInner =
-  "overflow-hidden rounded-xl border border-white/[0.16] bg-[rgba(5,8,14,0.96)] py-1 shadow-[0_14px_42px_-12px_rgba(0,0,0,0.75)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.12)]";
+  "w-max overflow-hidden rounded-xl border border-white/[0.16] bg-[rgba(5,8,14,0.96)] py-1 shadow-[0_14px_42px_-12px_rgba(0,0,0,0.75)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.12)]";
 
 const menuItemMyPage =
-  "block px-3.5 py-2.5 text-left text-[13px] font-semibold text-zinc-100 transition-colors hover:bg-white/[0.08] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
+  "block whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold text-zinc-100 transition-colors hover:bg-white/[0.08] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
 
 const menuItemLogout =
-  "flex w-full px-3.5 py-2.5 text-left text-[13px] font-semibold text-rose-200/95 transition-colors hover:bg-white/[0.08] disabled:opacity-50 [html[data-theme='light']_&]:text-rose-700 [html[data-theme='light']_&]:hover:bg-zinc-100";
+  "flex w-full whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold text-rose-200/95 transition-colors hover:bg-white/[0.08] disabled:opacity-50 [html[data-theme='light']_&]:text-rose-700 [html[data-theme='light']_&]:hover:bg-zinc-100";
 
 /** 로그인 전용 — 상단 헤더 프로필 호버 시 마이페이지·로그아웃 */
 export function LoggedInAccountHoverMenu({
@@ -50,7 +50,7 @@ export function LoggedInAccountHoverMenu({
   }, [router]);
 
   const menuPositionClass =
-    "pointer-events-none invisible absolute right-0 top-full z-[240] min-w-[10.5rem] pt-2 opacity-0 transition-[opacity,visibility] duration-150 ease-out motion-reduce:transition-none group-hover/acctmenu:pointer-events-auto group-hover/acctmenu:visible group-hover/acctmenu:opacity-100 group-focus-within/acctmenu:pointer-events-auto group-focus-within/acctmenu:visible group-focus-within/acctmenu:opacity-100";
+    "pointer-events-none invisible absolute right-0 top-full z-[240] min-w-0 w-max pt-2 opacity-0 transition-[opacity,visibility] duration-150 ease-out motion-reduce:transition-none group-hover/acctmenu:pointer-events-auto group-hover/acctmenu:visible group-hover/acctmenu:opacity-100 group-focus-within/acctmenu:pointer-events-auto group-focus-within/acctmenu:visible group-focus-within/acctmenu:opacity-100";
 
   const rootAlign =
     rootClassName ??
