@@ -83,44 +83,42 @@ export default async function SellerPage({
   return (
     <div className="min-h-screen bg-transparent text-white [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
       <div className="mx-auto max-w-[1800px] px-4 pb-14 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+        <SellerFeedSellCta sellerId={sellerKey} />
         <section className="relative overflow-hidden rounded-[1.35rem] border border-white/[0.09] bg-gradient-to-br from-white/[0.065] via-white/[0.02] to-transparent p-5 shadow-[0_0_0_1px_rgba(252,3,165,0.06),inset_0_1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-xl sm:rounded-[1.65rem] sm:p-7 [html[data-theme='light']_&]:border-zinc-200/70 [html[data-theme='light']_&]:from-white [html[data-theme='light']_&]:via-white [html[data-theme='light']_&]:to-zinc-50/90 [html[data-theme='light']_&]:shadow-[0_20px_50px_-28px_rgba(15,23,42,0.18),0_0_0_1px_rgba(252,3,165,0.07)]">
           <div
             className="pointer-events-none absolute -left-24 -top-24 h-48 w-48 rounded-full bg-[color:var(--reels-point)]/12 blur-[80px]"
             aria-hidden
           />
           <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,36rem)] lg:items-start lg:gap-8">
-            <div className="min-w-0">
-              <SellerFeedSellCta sellerId={sellerKey} />
-              <div className="flex gap-4 sm:items-center sm:gap-5">
-                <div className="relative shrink-0">
-                  <div
-                    className="absolute inset-0 rounded-full bg-[color:var(--reels-point)]/25 blur-lg [html[data-theme='light']_&]:bg-[color:var(--reels-point)]/15"
-                    aria-hidden
-                  />
-                  <Image
-                    src={buildNotionistsAvatarUrl(nickname)}
-                    width={72}
-                    height={72}
-                    alt=""
-                    unoptimized
-                    className="relative h-[4.25rem] w-[4.25rem] rounded-full object-cover ring-2 ring-white/20 ring-offset-2 ring-offset-[#070a12] sm:h-[4.75rem] sm:w-[4.75rem] [html[data-theme='light']_&]:ring-zinc-200/80 [html[data-theme='light']_&]:ring-offset-white"
-                  />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h1 className="truncate text-2xl font-extrabold tracking-tight sm:text-[1.85rem] sm:leading-tight">
-                    {nickname}
-                  </h1>
-                  <p className="mt-3 text-[13px] font-medium tabular-nums text-white/[0.58] [html[data-theme='light']_&]:text-zinc-600">
-                    판매 중{" "}
-                    <span className="font-semibold text-[color:var(--reels-point)]">{videos.length}</span>개
-                    {isDbSeller ? (
-                      <span className="text-white/35 [html[data-theme='light']_&]:text-zinc-400">
-                        {" "}
-                        · 실데이터
-                      </span>
-                    ) : null}
-                  </p>
-                </div>
+            <div className="flex min-w-0 gap-4 sm:items-center sm:gap-5">
+              <div className="relative shrink-0">
+                <div
+                  className="absolute inset-0 rounded-full bg-[color:var(--reels-point)]/25 blur-lg [html[data-theme='light']_&]:bg-[color:var(--reels-point)]/15"
+                  aria-hidden
+                />
+                <Image
+                  src={buildNotionistsAvatarUrl(nickname)}
+                  width={72}
+                  height={72}
+                  alt=""
+                  unoptimized
+                  className="relative h-[4.25rem] w-[4.25rem] rounded-full object-cover ring-2 ring-white/20 ring-offset-2 ring-offset-[#070a12] sm:h-[4.75rem] sm:w-[4.75rem] [html[data-theme='light']_&]:ring-zinc-200/80 [html[data-theme='light']_&]:ring-offset-white"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="truncate text-2xl font-extrabold tracking-tight sm:text-[1.85rem] sm:leading-tight">
+                  {nickname}
+                </h1>
+                <p className="mt-3 text-[13px] font-medium tabular-nums text-white/[0.58] [html[data-theme='light']_&]:text-zinc-600">
+                  판매 중{" "}
+                  <span className="font-semibold text-[color:var(--reels-point)]">{videos.length}</span>개
+                  {isDbSeller ? (
+                    <span className="text-white/35 [html[data-theme='light']_&]:text-zinc-400">
+                      {" "}
+                      · 실데이터
+                    </span>
+                  ) : null}
+                </p>
               </div>
             </div>
             <div className="min-w-0 border-t border-white/[0.08] pt-5 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0 [html[data-theme='light']_&]:border-zinc-200/75">
