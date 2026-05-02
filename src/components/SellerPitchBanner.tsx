@@ -136,13 +136,13 @@ function SellerPitchStartButton({
   authLoading: boolean;
   onStartClick: () => void;
 }) {
-  /** 홈 히어로「시작하기」와 동일 — 미니멀 솔리드 CTA(화이트/라이트모드에서는 다크 반전) */
+  /** 홈 히어로「시작하기」와 동일 — 테두리 굵기 고정(호버 시 레이아웃 점프·푸터 밀림 방지) */
   return (
     <button
       type="button"
       onClick={onStartClick}
       disabled={authLoading}
-      className="shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full bg-white px-[clamp(2rem,5.2vw,3.75rem)] py-[clamp(0.52rem,0.85vw,0.72rem)] text-[clamp(calc(1.2rem-2pt),calc(2.1vw-2pt),calc(1.9rem-2pt))] font-semibold text-zinc-900 shadow-[0_4px_24px_-6px_rgba(0,0,0,0.5)] transition-[background-color,transform,box-shadow] duration-200 ease-out hover:bg-zinc-100 hover:shadow-[0_6px_28px_-6px_rgba(0,0,0,0.55)] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white disabled:hover:shadow-[0_4px_24px_-6px_rgba(0,0,0,0.5)] motion-reduce:active:scale-100 [html[data-theme='light']_&]:bg-zinc-900 [html[data-theme='light']_&]:text-white [html[data-theme='light']_&]:shadow-[0_4px_20px_-8px_rgba(0,0,0,0.22)] [html[data-theme='light']_&]:hover:bg-zinc-800 [html[data-theme='light']_&]:hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.28)] [html[data-theme='light']_&]:focus-visible:outline-zinc-400/50 [html[data-theme='light']_&]:disabled:bg-zinc-900 [html[data-theme='light']_&]:disabled:text-white/80 [html[data-theme='light']_&]:disabled:hover:bg-zinc-900"
+      className="shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full border-[1.5px] border-solid border-white/45 bg-transparent px-[clamp(2rem,5.2vw,3.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(calc(1.2rem-2pt),calc(2.1vw-2pt),calc(1.9rem-2pt))] font-semibold text-white transition-[border-color,opacity] duration-200 ease-out hover:border-[color:var(--reels-point)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/75 [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:focus-visible:outline-zinc-400/50 disabled:cursor-not-allowed disabled:border-white/45 disabled:text-white disabled:opacity-55 disabled:hover:border-white/45 disabled:hover:text-white [html[data-theme='light']_&]:disabled:border-zinc-300 [html[data-theme='light']_&]:disabled:text-zinc-500"
     >
       시작하기
     </button>
