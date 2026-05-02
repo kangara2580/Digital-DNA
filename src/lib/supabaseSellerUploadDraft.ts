@@ -12,6 +12,7 @@ export type SellerUploadDraftPayload = {
   isAi: boolean;
   rights: boolean;
   confirmOriginal: boolean;
+  confirmPromotionAndLiability: boolean;
   durationSec: number | null;
   orientation: "portrait" | "landscape";
   /** 파일은 저장하지 않음 — 복원 시 다시 선택 필요 */

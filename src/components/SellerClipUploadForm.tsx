@@ -257,6 +257,8 @@ export function SellerClipUploadForm() {
   const [isAi, setIsAi] = useState(false);
   const [rights, setRights] = useState(false);
   const [confirmOriginal, setConfirmOriginal] = useState(false);
+  const [confirmPromotionAndLiability, setConfirmPromotionAndLiability] =
+    useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
@@ -306,6 +308,9 @@ export function SellerClipUploadForm() {
       setIsAi(d.isAi);
       setRights(d.rights);
       setConfirmOriginal(d.confirmOriginal);
+      setConfirmPromotionAndLiability(
+        Boolean(d.confirmPromotionAndLiability),
+      );
       setDurationSec(d.durationSec);
       setOrientation(d.orientation);
       if (d.sourceType === "url" && d.videoUrl.trim()) {
@@ -344,6 +349,7 @@ export function SellerClipUploadForm() {
       isAi,
       rights,
       confirmOriginal,
+      confirmPromotionAndLiability,
       durationSec,
       orientation,
       hadLocalFile: Boolean(file),
@@ -365,6 +371,7 @@ export function SellerClipUploadForm() {
     isAi,
     rights,
     confirmOriginal,
+    confirmPromotionAndLiability,
     durationSec,
     orientation,
     file,
@@ -445,10 +452,14 @@ export function SellerClipUploadForm() {
       setMessage({ ok: false, text: "동영상 URL을 입력해 주세요." });
       return;
     }
-    if (!rights || !confirmOriginal) {
+    if (
+      !rights ||
+      !confirmOriginal ||
+      !confirmPromotionAndLiability
+    ) {
       setMessage({
         ok: false,
-        text: "권리·원본 확인 항목에 모두 동의해 주세요.",
+        text: "권리 확인 항목에 모두 동의해 주세요.",
       });
       return;
     }
@@ -493,6 +504,10 @@ export function SellerClipUploadForm() {
       fd.append("editionKind", "open");
       fd.append("rightsConfirmed", rights ? "true" : "false");
       fd.append("confirmOriginal", confirmOriginal ? "true" : "false");
+      fd.append(
+        "confirmPromotionAndLiability",
+        confirmPromotionAndLiability ? "true" : "false",
+      );
       if (durationSec != null) {
         fd.append("durationSec", String(durationSec));
       }
@@ -937,6 +952,14 @@ export function SellerClipUploadForm() {
               onChange={setConfirmOriginal}
             >
               타인의 초상·음원·상표 등 제3자 권리를 침해하지 않습니다.
+            </RightsAgreementCheckbox>
+            <RightsAgreementCheckbox
+              checked={confirmPromotionAndLiability}
+              required
+              onChange={setConfirmPromotionAndLiability}
+            >
+              서비스 홍보를 위한 콘텐츠 활용에 동의하며, 저작권 등 제3자 권리 침해
+              시 모든 법적 책임은 본인에게 있음을 확인합니다.
             </RightsAgreementCheckbox>
           </div>
         </div>

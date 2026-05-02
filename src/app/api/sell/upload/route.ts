@@ -320,9 +320,15 @@ export async function POST(request: Request) {
 
   const rightsOk = String(fields.rightsConfirmed ?? "") === "true";
   const originalOk = String(fields.confirmOriginal ?? "") === "true";
-  if (!rightsOk || !originalOk) {
+  const promoLiabilityOk =
+    String(fields.confirmPromotionAndLiability ?? "") === "true";
+  if (!rightsOk || !originalOk || !promoLiabilityOk) {
     return NextResponse.json(
-      { ok: false, error: "권리·제3자 권리 확인에 모두 동의해 주세요." },
+      {
+        ok: false,
+        error:
+          "권리 확인·원본 진술·홍보 활용 및 책임 고지에 모두 동의해 주세요.",
+      },
       { status: 400 },
     );
   }
