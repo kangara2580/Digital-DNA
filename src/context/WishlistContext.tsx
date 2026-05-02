@@ -37,6 +37,26 @@ function rowsToWishlistEntries(rows: FavoriteRow[]): WishlistEntry[] {
   });
 }
 
+/**
+ * 서버 fetch 직후 스냅샷 적용 시, 아직 목록에 없는 로컬 항목을 유지한다.
+ * 방금 찜했을 때 토큰 갱신·재조회 레이스로 서버 응답에 행이 없으면 아이콘이 하얘지는 버그를 막음.
+ */
+function mergeWishlistServerIntoPrev(rows: FavoriteRow[], prev: WishlistEntry[]): WishlistEntry[] {
+  const server = rowsToWishlistEntries(rows);
+  if (server.length === 0) return prev.length > 0 ? prev : server;
+
+  const serverIds = new Set(server.map((e) => e.id));
+  const onlyLocal = prev.filter((e) => !serverIds.has(e.id));
+  if (onlyLocal.length === 0) return server;
+
+  const byId = new Map<string, WishlistEntry>();
+  for (const e of server) byId.set(e.id, e);
+  for (const e of onlyLocal) {
+    if (!byId.has(e.id)) byId.set(e.id, e);
+  }
+  return [...byId.values()].sort((a, b) => b.savedAt - a.savedAt);
+}
+
 type Ctx = {
   entries: WishlistEntry[];
   hydrated: boolean;
@@ -95,9 +115,11 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     }
     const result = await fetchUserFavorites(supabase, userId);
     if (result.ok) {
-      const next = rowsToWishlistEntries(result.rows);
-      lastGoodEntriesRef.current = next;
-      setEntries(next);
+      setEntries((prev) => {
+        const merged = mergeWishlistServerIntoPrev(result.rows, prev);
+        lastGoodEntriesRef.current = merged;
+        return merged;
+      });
     } else if (process.env.NODE_ENV === "development") {
       console.warn("[wishlist] reload failed", result.errorMessage, result.errorCode);
     }
@@ -144,10 +166,11 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       if (cancelled || gen !== fetchGenerationRef.current) return;
 
       if (result.ok) {
-        const next = rowsToWishlistEntries(result.rows);
-        lastGoodEntriesRef.current = next;
-        /** 서버가 비어 있으면 로컬 찜을 덮어쓰지 않음 */
-        setEntries((prev) => (next.length > 0 ? next : prev));
+        setEntries((prev) => {
+          const merged = mergeWishlistServerIntoPrev(result.rows, prev);
+          lastGoodEntriesRef.current = merged;
+          return merged;
+        });
       } else {
         if (process.env.NODE_ENV === "development") {
           console.warn("[wishlist] fetch failed — keeping previous entries", {
