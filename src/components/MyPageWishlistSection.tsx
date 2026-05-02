@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
+import { MyPageSortSelect } from "@/components/MyPageSortSelect";
 import { resolveManualTikTokVideoForStudio } from "@/data/tiktokData";
 import { buildWishlistVideoLookup } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
@@ -131,18 +132,12 @@ export function MyPageWishlistSection() {
             <div className="mb-6 flex flex-wrap items-center gap-2">
               <label className="flex items-center gap-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                 <span className="hidden font-medium sm:inline">정렬</span>
-                <select
+                <MyPageSortSelect
+                  options={SORT_OPTIONS}
                   value={sort}
-                  onChange={(e) => setSort(e.target.value as Sort)}
-                  className={selectBtn}
-                  aria-label="찜한 릴스 정렬"
-                >
-                  {SORT_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(v) => setSort(v as Sort)}
+                  ariaLabel="찜한 릴스 정렬"
+                />
               </label>
               {entries.length > 0 ? (
                 <>

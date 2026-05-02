@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
+import { MyPageSortSelect } from "@/components/MyPageSortSelect";
 import { resolveManualTikTokVideoForStudio } from "@/data/tiktokData";
 import { buildWishlistVideoLookup } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
@@ -186,18 +187,12 @@ export default function LikesPage() {
               <span className="hidden font-medium text-zinc-400 sm:inline [html[data-theme='light']_&]:text-zinc-700">
                 정렬
               </span>
-              <select
+              <MyPageSortSelect
+                options={SORT_OPTIONS}
                 value={sort}
-                onChange={(e) => setSort(e.target.value as SortValue)}
-                className="min-w-[11.5rem] cursor-pointer rounded-lg border border-white/15 bg-reels-void/80 px-3 py-2 text-[13px] font-medium text-zinc-100 outline-none transition-[border-color,background-color] hover:border-white/45 hover:bg-white/[0.08] focus-visible:border-white/50 focus-visible:outline-none [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:focus-visible:border-zinc-500"
-                aria-label="좋아요한 릴스 정렬"
-              >
-                {SORT_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => setSort(v as SortValue)}
+                ariaLabel="좋아요한 릴스 정렬"
+              />
             </label>
             {hydrated && entries.length > 0 ? (
               <>
