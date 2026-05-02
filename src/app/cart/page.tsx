@@ -6,12 +6,12 @@ import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import type { FeedVideo } from "@/data/videos";
+import { explorePurchaseButtonClass } from "@/lib/explorePurchaseButtonClass";
 import { sellerProfileHrefFromVideo } from "@/lib/sellerProfile";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 const cartOutlineBtn =
   "inline-flex shrink-0 items-center justify-center rounded-xl border border-white/30 bg-transparent px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/35 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
-
 function localCartPosterFallback(videoId: string): string {
   const hash = Array.from(videoId).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
   const idx = (Math.abs(hash) % 10) + 1;
@@ -174,7 +174,7 @@ export default function CartPage() {
           </p>
           <Link
             href="/"
-            className="mt-6 inline-flex rounded-full border-2 border-white bg-white px-5 py-2.5 text-[14px] font-extrabold text-zinc-900 transition-colors duration-200 hover:border-[#ff0055] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-[#ff0055]"
+            className={`mx-auto mt-6 ${explorePurchaseButtonClass}`}
           >
             둘러보기
           </Link>

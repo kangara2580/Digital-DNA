@@ -30,6 +30,7 @@ import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sellerProfileHrefFromVideo } from "@/lib/sellerProfile";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { getExternalLiveStatsPageUrl } from "@/lib/externalEmbed/playerUrls";
+import { explorePurchaseButtonClass } from "@/lib/explorePurchaseButtonClass";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 function formatCompactWon(n: number): string {
@@ -89,9 +90,8 @@ const railExploreRow =
 const railExploreStatValueCol =
   "inline-flex min-h-[1.35em] w-[10.5rem] shrink-0 items-center justify-start tabular-nums text-left sm:w-[11.75rem]";
 
-/** 탐색 레일 구매 버튼 (가격 블록과 분리) */
-const railExploreBuyButtonClass =
-  "relative inline-flex min-h-[44px] w-full max-w-[15rem] shrink-0 items-center justify-center rounded-full border-2 border-white/38 bg-transparent px-4 py-2.5 text-[16px] font-extrabold tracking-[0.12em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-white/65 hover:bg-white/[0.06] hover:shadow-[0_0_20px_rgba(255,255,255,0.08)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/55 [html[data-theme='light']_&]:text-zinc-900";
+/** 탐색 레일 구매 버튼 (가격 블록과 분리) — `explorePurchaseButtonClass` */
+const railExploreBuyButtonClass = explorePurchaseButtonClass;
 
 const railStatValueWhite =
   "text-[13px] font-semibold tabular-nums text-white [html[data-theme='light']_&]:text-zinc-900";
