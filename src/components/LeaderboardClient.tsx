@@ -156,17 +156,23 @@ export function LeaderboardClient() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
-      <section className="reels-glass-card overflow-hidden rounded-2xl border border-white/10 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-2xl">
-            명예의 전당
-          </h1>
+      <section className="reels-glass-card overflow-hidden rounded-2xl border border-white/[0.1] p-5 shadow-[0_0_60px_-28px_rgba(252,3,165,0.22)] sm:p-6 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_22px_50px_-32px_rgba(252,3,165,0.14)]">
+        <div className="flex flex-wrap items-start gap-3 sm:gap-4">
+          <span
+            className="mt-1 h-11 w-[3px] shrink-0 rounded-full bg-[color:var(--reels-point)] shadow-[0_0_14px_-2px_rgba(252,3,165,0.55)] sm:h-[2.875rem]"
+            aria-hidden
+          />
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-2xl">
+              명예의 전당
+            </h1>
+            <p className="mt-2 text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600 sm:text-sm">
+              판매량과 매출 기준으로 릴스 Top 10을 실시간으로 확인하세요.
+            </p>
+          </div>
         </div>
-        <p className="mt-2 text-sm text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-          판매량과 매출 기준으로 릴스 Top 10을 실시간으로 확인하세요.
-        </p>
 
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-6 flex flex-wrap gap-2">
           {(["sales", "revenue"] as const).map((tab) => {
             const active = metric === tab;
             return (
@@ -174,10 +180,10 @@ export function LeaderboardClient() {
                 key={tab}
                 type="button"
                 onClick={() => setMetric(tab)}
-                className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-bold transition ${
+                className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-bold transition-[border-color,background-color,color] ${
                   active
-                    ? "border-reels-cyan/45 bg-reels-cyan/15 text-reels-cyan"
-                    : "border-white/15 bg-black/20 text-zinc-300 hover:border-white/30 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:text-zinc-900"
+                    ? "border-[color:var(--reels-point)]/55 bg-[color:var(--reels-point)]/14 text-[color:var(--reels-point)] shadow-[0_0_32px_-18px_rgba(252,3,165,0.22)] [html[data-theme='light']_&]:border-reels-crimson/45 [html[data-theme='light']_&]:bg-reels-crimson/12 [html[data-theme='light']_&]:text-reels-crimson [html[data-theme='light']_&]:shadow-none"
+                    : "border-white/15 bg-black/20 text-zinc-300 hover:border-[color:var(--reels-point)]/28 hover:bg-[color:var(--reels-point)]/08 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-reels-crimson/25 [html[data-theme='light']_&]:hover:text-zinc-900"
                 }`}
               >
                 {tab === "sales" ? <Trophy className="h-4 w-4" aria-hidden /> : <TrendingUp className="h-4 w-4" aria-hidden />}
@@ -194,10 +200,10 @@ export function LeaderboardClient() {
                 key={tab}
                 type="button"
                 onClick={() => setPeriod(tab)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-[border-color,background-color,color] motion-reduce:transition-colors ${
                   active
-                    ? "border-white/20 bg-[linear-gradient(135deg,#0b1327_0%,#122247_50%,#1e3a8a_100%)] text-white ring-1 ring-white/10 shadow-[0_12px_28px_-14px_rgba(30,58,138,0.82)] hover:-translate-y-0.5 hover:border-white/30 hover:brightness-110 hover:shadow-[0_18px_38px_-16px_rgba(37,99,235,0.8)]"
-                    : "border-white/15 bg-black/20 text-zinc-300 hover:border-white/30 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:text-zinc-900"
+                    ? "border-[color:var(--reels-point)]/50 bg-transparent text-[color:var(--reels-point)] [html[data-theme='light']_&]:border-reels-crimson/45 [html[data-theme='light']_&]:text-reels-crimson"
+                    : "border-white/15 bg-black/20 text-zinc-300 hover:border-[color:var(--reels-point)]/25 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-reels-crimson/22 [html[data-theme='light']_&]:hover:text-zinc-900"
                 }`}
               >
                 {periodLabel(tab)}
@@ -210,7 +216,7 @@ export function LeaderboardClient() {
 
       <section className="mt-5">
         {loading ? (
-          <div className="reels-glass-card rounded-2xl border border-white/10 p-6 text-sm text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600">
+          <div className="reels-glass-card rounded-2xl border border-white/[0.1] p-6 text-sm text-zinc-400 shadow-[inset_0_0_0_1px_rgba(252,3,165,0.06)] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:shadow-[inset_0_0_0_1px_rgba(252,3,165,0.08)]">
             데이터를 불러오는 중...
           </div>
         ) : error ? (
@@ -246,7 +252,7 @@ export function LeaderboardClient() {
                     {hasData ? (
                       <Link
                         href={`/seller/${encodeURIComponent(item.sellerId)}`}
-                        className="mt-4 flex items-center gap-3 rounded-xl p-1 -m-1 transition-colors hover:bg-white/5 [html[data-theme='light']_&]:hover:bg-zinc-100"
+                        className="mt-4 flex items-center gap-3 rounded-xl p-1 -m-1 transition-colors hover:bg-[color:var(--reels-point)]/08 [html[data-theme='light']_&]:hover:bg-reels-crimson/10"
                         aria-label={`${item.nickname} 판매자 피드`}
                       >
                         <Avatar item={item} />
@@ -273,11 +279,11 @@ export function LeaderboardClient() {
                       </div>
                     )}
 
-                    <div className="mt-4 rounded-xl border border-white/15 bg-black/30 px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
+                    <div className="mt-4 rounded-xl border border-white/[0.12] bg-black/30 px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
                       <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                         {metricKoreanLabel(metric)}
                       </p>
-                      <p className="mt-1 text-lg font-extrabold text-reels-cyan">
+                      <p className="mt-1 text-lg font-extrabold tabular-nums text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-reels-crimson">
                         {empty ? "-" : metricValue(item, metric)}
                       </p>
                     </div>
@@ -287,7 +293,7 @@ export function LeaderboardClient() {
             </div>
 
             {others.length > 0 ? (
-              <div className="reels-glass-card overflow-hidden rounded-2xl border border-white/10 [html[data-theme='light']_&]:border-zinc-200">
+              <div className="reels-glass-card overflow-hidden rounded-2xl border border-white/[0.1] shadow-[inset_0_0_0_1px_rgba(252,3,165,0.05)] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:shadow-[inset_0_0_0_1px_rgba(252,3,165,0.07)]">
                 <ul>
                   {others.map((item) => (
                     <li
@@ -301,7 +307,7 @@ export function LeaderboardClient() {
                         {hasData ? (
                           <Link
                             href={`/seller/${encodeURIComponent(item.sellerId)}`}
-                            className="flex min-w-0 items-center gap-3 rounded-xl p-1 -m-1 transition-colors hover:bg-white/5 [html[data-theme='light']_&]:hover:bg-zinc-100"
+                            className="flex min-w-0 items-center gap-3 rounded-xl p-1 -m-1 transition-colors hover:bg-[color:var(--reels-point)]/08 [html[data-theme='light']_&]:hover:bg-reels-crimson/10"
                             aria-label={`${item.nickname} 판매자 피드`}
                           >
                             <Avatar item={item} />
@@ -328,7 +334,7 @@ export function LeaderboardClient() {
                           </div>
                         )}
                       </div>
-                      <span className="shrink-0 text-sm font-extrabold text-reels-cyan">
+                      <span className="shrink-0 text-sm font-extrabold tabular-nums text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-reels-crimson">
                         {hasData ? metricValue(item, metric) : "-"}
                       </span>
                     </li>
