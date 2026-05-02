@@ -36,6 +36,7 @@ export function BookmarkButton({
       title={bookmarked ? "찜 해제" : "찜하기"}
       onClick={(e) => {
         e.preventDefault();
+        e.stopPropagation();
         if (!beforeToggle()) return;
         toggle(video);
       }}

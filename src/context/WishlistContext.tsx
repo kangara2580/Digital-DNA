@@ -72,6 +72,42 @@ function mergeWishlistServerIntoPrev(rows: FavoriteRow[], prev: WishlistEntry[])
   return [...byId.values()].sort((a, b) => b.savedAt - a.savedAt);
 }
 
+/** 아직 반영 안 된 서버지만(in-flight 추가) 레일 UI가 초기 상태로 깨지지 않게 병합 */
+function injectPendingWishlistAdds(
+  merged: WishlistEntry[],
+  prev: WishlistEntry[],
+  pendingAdds: ReadonlySet<string>,
+): WishlistEntry[] {
+  if (pendingAdds.size === 0) {
+    return merged.map(normalizeWishlistEntry).sort((a, b) => b.savedAt - a.savedAt);
+  }
+  const prevN = prev.map(normalizeWishlistEntry);
+  const norm = merged.map(normalizeWishlistEntry);
+  const byId = new Map<string, WishlistEntry>();
+  for (const e of norm) {
+    byId.set(e.id, e);
+  }
+  for (const pid of pendingAdds) {
+    if (byId.has(pid)) continue;
+    const fromPrev = prevN.find((e) => e.id === pid);
+    byId.set(pid, {
+      id: pid,
+      savedAt: fromPrev?.savedAt ?? Date.now(),
+    });
+  }
+  return [...byId.values()].sort((a, b) => b.savedAt - a.savedAt);
+}
+
+/** mergeWishlist 한 뒤, 진행 중인 찜 추가(ref)까지 항상 합류 */
+function reconcileWishlistFromServerFetch(
+  rows: FavoriteRow[],
+  prev: WishlistEntry[],
+  pendingAdds: ReadonlySet<string>,
+): WishlistEntry[] {
+  const merged = mergeWishlistServerIntoPrev(rows, prev);
+  return injectPendingWishlistAdds(merged, prev, pendingAdds);
+}
+
 type Ctx = {
   entries: WishlistEntry[];
   hydrated: boolean;
@@ -140,7 +176,11 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     const result = await fetchUserFavorites(supabase, userId);
     if (result.ok) {
       setEntries((prev) => {
-        const merged = mergeWishlistServerIntoPrev(result.rows, prev);
+        const merged = reconcileWishlistFromServerFetch(
+          result.rows,
+          prev,
+          wishlistSavingAddsRef.current,
+        );
         lastGoodEntriesRef.current = merged;
         return merged;
       });
@@ -195,7 +235,11 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
       if (result.ok) {
         setEntries((prev) => {
-          const merged = mergeWishlistServerIntoPrev(result.rows, prev);
+          const merged = reconcileWishlistFromServerFetch(
+            result.rows,
+            prev,
+            wishlistSavingAddsRef.current,
+          );
           lastGoodEntriesRef.current = merged;
           return merged;
         });
@@ -221,6 +265,19 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     userId,
     bumpPersistingWishlist,
   ]);
+
+  /** entries 에 이미 반영된 id 는 pending 찜 세트에서 제거(복제된 isSaved 소스 줄이기) */
+  useEffect(() => {
+    let changed = false;
+    const ids = new Set(entries.map((e) => canonicalFavoriteVideoId(e.id)));
+    for (const id of wishlistSavingAddsRef.current) {
+      if (ids.has(id)) {
+        wishlistSavingAddsRef.current.delete(id);
+        changed = true;
+      }
+    }
+    if (changed) bumpPersistingWishlist();
+  }, [entries, bumpPersistingWishlist]);
 
   const isSaved = useCallback(
     (videoId: string) => {
@@ -316,9 +373,6 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             bumpPersistingWishlist();
             setEntries((p) => p.filter((e) => canonicalFavoriteVideoId(e.id) !== vid));
             void reloadFromServer();
-          } else {
-            wishlistSavingAddsRef.current.delete(vid);
-            bumpPersistingWishlist();
           }
         })();
         return [optimistic, ...prevN.filter((e) => e.id !== vid)];
