@@ -3,45 +3,162 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
 /// 판매 중인 영상(조각). 가격·조회·판매 수는 배치·수락 API에서 갱신됩니다.
 model Video {
-  id             String    @id @default(cuid())
-  title          String
-  creator        String
-  src            String
-  poster         String
-  orientation    String
-  durationSec    Int?
-  price          Int
-  views          Int       @default(0)
-  salesCount     Int       @default(0) @map("sales_count")
+  id               String    @id @default(cuid())
+  title            String
+  creator          String
+  src              String
+  poster           String
+  orientation      String
+  durationSec      Int?
+  price            Int
+  views            Int       @default(0)
+  salesCount       Int       @default(0) @map("sales_count")
   /// open | limited | private | batch
-  editionKind    String    @default("open") @map("edition_kind")
-  editionCap     Int?      @map("edition_cap")
-  sellerId       String    @map("seller_id")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-  flashSaleUntil DateTime? @map("flash_sale_until")
+  editionKind      String    @default("open") @map("edition_kind")
+  editionCap       Int?      @map("edition_cap")
+  sellerId         String    @map("seller_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  flashSaleUntil   DateTime? @map("flash_sale_until")
   /// 판매자 등록 시 설명(마켓 상세 연동용)
-  description    String?
+  description      String?
   /// 해시태그 — 쉼표 또는 공백 구분 저장(예: "#일상,#vlog")
-  hashtags       String?
+  hashtags         String?
   /// AI 생성 여부(직접 촬영이면 false)
-  isAiGenerated  Boolean   @default(false) @map("is_ai_generated")
+  isAiGenerated    Boolean   @default(false) @map("is_ai_generated")
   /// 판매자가 선택한 노출 카테고리(업로드/수정에서 필수 검증)
-  category       String?
+  category         String?
+  sourcePageUrl    String?   @map("source_page_url")
+  externalProvider String?   @map("external_provider")
+  externalKey      String?   @map("external_key")
+  status           String    @default("approved")
+  moderationReason String?   @map("moderation_reason")
+  approvedAt       DateTime? @map("approved_at")
+  approvedBy       String?   @map("approved_by")
 
-  notifications Notification[]
+  notifications  Notification[]
+  generationJobs GenerationJob[]
 
   @@index([sellerId])
   @@index([createdAt])
   @@index([flashSaleUntil])
+  @@index([status, createdAt])
+  @@index([externalProvider, externalKey])
   @@map("videos")
+}
+
+/// Purchase records. Reviews, seller analytics, and settlement should depend on
+/// this table instead of browser-only demo state.
+model Purchase {
+  id        String   @id @default(cuid())
+  buyerId   String   @map("buyer_id")
+  sellerId  String   @map("seller_id")
+  videoId   String   @map("video_id")
+  price     Int
+  status    String   @default("paid")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([buyerId, createdAt])
+  @@index([sellerId, createdAt])
+  @@index([videoId])
+  @@index([buyerId, videoId, status])
+  @@map("purchases")
+}
+
+/// Persistent AI generation jobs. This replaces in-memory Map state for
+/// production flows where serverless instances can restart at any time.
+model GenerationJob {
+  id            String   @id @default(cuid())
+  userId        String   @map("user_id")
+  sourceVideoId String?  @map("source_video_id")
+  status        String   @default("queued")
+  stage         String   @default("queued")
+  progress      Int      @default(0)
+  inputJson     Json?    @map("input_json")
+  providerJson  Json?    @map("provider_json")
+  outputUrl     String?  @map("output_url")
+  errorMessage  String?  @map("error_message")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  sourceVideo Video? @relation(fields: [sourceVideoId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([status, updatedAt])
+  @@index([sourceVideoId])
+  @@map("generation_jobs")
+}
+
+/// Every important admin mutation should write an audit row.
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  actorId    String   @map("actor_id")
+  actorEmail String?  @map("actor_email")
+  action     String
+  targetType String   @map("target_type")
+  targetId   String   @map("target_id")
+  beforeJson Json?    @map("before_json")
+  afterJson  Json?    @map("after_json")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([actorId, createdAt])
+  @@index([targetType, targetId])
+  @@map("admin_audit_logs")
+}
+
+model AdminNote {
+  id         String   @id @default(cuid())
+  targetType String   @map("target_type")
+  targetId   String   @map("target_id")
+  body       String
+  createdBy  String   @map("created_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([targetType, targetId, createdAt])
+  @@index([createdBy, createdAt])
+  @@map("admin_notes")
+}
+
+model ContentChangeLog {
+  id         String   @id @default(cuid())
+  targetType String   @map("target_type")
+  targetId   String   @map("target_id")
+  actorId    String   @map("actor_id")
+  actorType  String   @map("actor_type")
+  changeType String   @map("change_type")
+  beforeJson Json?    @map("before_json")
+  afterJson  Json?    @map("after_json")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([targetType, targetId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("content_change_logs")
+}
+
+/// Reports for moderation workflows.
+model Report {
+  id              String   @id @default(cuid())
+  reporterId      String?  @map("reporter_id")
+  targetType      String   @map("target_type")
+  targetId        String   @map("target_id")
+  reason          String
+  status          String   @default("open")
+  assignedAdminId String?  @map("assigned_admin_id")
+  adminNote       String?  @map("admin_note")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+  @@map("reports")
 }
 
 /// 판매자 알림(가격 제안 등)
@@ -67,13 +184,13 @@ model Notification {
 
 /// 영상 구매평 — 구매한 사용자만 작성 가능
 model VideoReview {
-  id         String   @id @default(cuid())
-  videoId    String   @map("video_id")
-  userId     String   @map("user_id")
-  nickname   String
-  rating     Int      /// 1–5
-  body       String
-  createdAt  DateTime @default(now()) @map("created_at")
+  id        String   @id @default(cuid())
+  videoId   String   @map("video_id")
+  userId    String   @map("user_id")
+  nickname  String
+  rating    Int /// 1–5
+  body      String
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@unique([videoId, userId])
   @@index([videoId, createdAt])

@@ -27,7 +27,7 @@ export async function runReelsGenerationPipeline(
   const { sourceVideoUrl, faceImageUrl, draft } = payload;
 
   try {
-    setJobStatus(jobId, "running", {
+    await setJobStatus(jobId, "running", {
       progress: 5,
       primaryProvider: "pending",
       stage: "bg-face-gemini",
@@ -35,7 +35,7 @@ export async function runReelsGenerationPipeline(
     const normalizedBackgroundPrompt = buildNormalizedBackgroundPrompt(
       draft.backgroundPrompt,
     );
-    patchJob(jobId, { normalizedBackgroundPrompt });
+    await patchJob(jobId, { normalizedBackgroundPrompt });
 
     const gemini = await startGeminiCompositeJob({
       sourceVideoUrl,
@@ -44,7 +44,7 @@ export async function runReelsGenerationPipeline(
       draft,
     });
 
-    patchJob(jobId, {
+    await patchJob(jobId, {
       progress: 25,
       primaryProvider: "gemini",
       stage: "bg-face-gemini",
@@ -62,17 +62,17 @@ export async function runReelsGenerationPipeline(
         if (g.outputUrl) intermediateVideo = g.outputUrl;
         break;
       }
-      patchJob(jobId, { progress: Math.min(45, 25 + geminiPolls * 2) });
+      await patchJob(jobId, { progress: Math.min(45, 25 + geminiPolls * 2) });
       await sleep(400);
     }
 
-    patchJob(jobId, { progress: 50, stage: "motion-kling" });
+    await patchJob(jobId, { progress: 50, stage: "motion-kling" });
 
     const motion = await startKlingMotionControlJob({
       sourceVideoUrl: intermediateVideo,
       draft,
     });
-    patchJob(jobId, {
+    await patchJob(jobId, {
       progress: 62,
       primaryProvider: "kling",
       stage: "motion-kling",
@@ -91,19 +91,19 @@ export async function runReelsGenerationPipeline(
         if (m.outputUrl) motionVideo = m.outputUrl;
         break;
       }
-      patchJob(jobId, { progress: Math.min(78, 62 + motionPolls) });
+      await patchJob(jobId, { progress: Math.min(78, 62 + motionPolls) });
       await sleep(350);
     }
 
-    patchJob(jobId, { progress: 80, stage: "encode-text", primaryProvider: "ffmpeg" });
+    await patchJob(jobId, { progress: 80, stage: "encode-text", primaryProvider: "ffmpeg" });
     const encoded = await runFfmpegEncodeJob({
       sourceVideoUrl: motionVideo,
       draft,
     });
 
-    patchJob(jobId, { progress: 88, stage: "upscale", primaryProvider: "replicate" });
+    await patchJob(jobId, { progress: 88, stage: "upscale", primaryProvider: "replicate" });
     const upscale = await startUpscaleJob({ sourceVideoUrl: encoded.outputUrl });
-    patchJob(jobId, {
+    await patchJob(jobId, {
       externalPredictionIds: {
         faceOrReskin: gemini.externalId,
         motion: motion.externalId,
@@ -120,11 +120,11 @@ export async function runReelsGenerationPipeline(
         if (u.outputUrl) finalVideo = u.outputUrl;
         break;
       }
-      patchJob(jobId, { progress: Math.min(98, 88 + upPolls) });
+      await patchJob(jobId, { progress: Math.min(98, 88 + upPolls) });
       await sleep(300);
     }
 
-    patchJob(jobId, {
+    await patchJob(jobId, {
       status: "succeeded",
       progress: 100,
       outputVideoUrl: finalVideo,
@@ -133,7 +133,7 @@ export async function runReelsGenerationPipeline(
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "pipeline_error";
-    patchJob(jobId, {
+    await patchJob(jobId, {
       status: "failed",
       error: message,
       progress: 0,

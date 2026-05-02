@@ -16,6 +16,11 @@ export function videoRowToFeedVideo(v: Video): FeedVideo {
     description: v.description ?? undefined,
     hashtags: v.hashtags ?? undefined,
     category: v.category ?? undefined,
+    sourcePageUrl: v.sourcePageUrl ?? undefined,
+    tiktokEmbedId: v.externalProvider === "tiktok" ? v.externalKey ?? undefined : undefined,
+    youtubeVideoId: v.externalProvider === "youtube" ? v.externalKey ?? undefined : undefined,
+    instagramShortcode:
+      v.externalProvider === "instagram" ? v.externalKey ?? undefined : undefined,
     listing: {
       sellerId: v.sellerId,
       views: v.views,
@@ -30,7 +35,7 @@ export function videoRowToFeedVideo(v: Video): FeedVideo {
 export async function getFlashSaleVideos(limit = 24): Promise<Video[]> {
   const t = new Date();
   return prisma.video.findMany({
-    where: { flashSaleUntil: { gt: t } },
+    where: { flashSaleUntil: { gt: t }, status: "approved" },
     orderBy: { updatedAt: "desc" },
     take: limit,
   });

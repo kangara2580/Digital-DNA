@@ -24,9 +24,13 @@ function safeNextPath(raw: string | null): string {
 
 function resolveSiteOrigin(fallbackOrigin: string): string {
   const raw =
-    process.env.NEXT_PUBLIC_SITE_URL?.trim() ??
-    process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim() ??
-    "";
+    [
+      process.env.NEXT_PUBLIC_SITE_URL,
+      process.env.NEXTAUTH_URL,
+      process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    ]
+      .map((value) => value?.trim())
+      .find(Boolean) ?? "";
   if (!raw) return fallbackOrigin;
   const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
   try {

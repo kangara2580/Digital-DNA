@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
+import { syncProfileFromAuthUser } from "@/lib/supabaseProfiles";
 
 /** Edge가 아닌 Node에서 Supabase Auth HTTP 호출 안정화 */
 export const runtime = "nodejs";
@@ -109,6 +110,13 @@ export async function GET(request: NextRequest) {
   const { error: exchangeErr } = await exchangeCodeWithRetry(supabase, code);
   if (exchangeErr) {
     return oauthErrorRedirect(requestUrl.origin, exchangeErr.message || "exchange_failed");
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) {
+    await syncProfileFromAuthUser(supabase, user);
   }
 
   return response;

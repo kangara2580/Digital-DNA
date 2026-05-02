@@ -1,47 +1,59 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-import jwt from "jsonwebtoken";
+import { prisma } from "@/lib/prisma";
 
-export async function GET() {
-  try {
-    const p = path.join(process.cwd(), "kling_tasks_db.json");
-    if (!fs.existsSync(p)) return NextResponse.json([]);
-    const dbRaw = JSON.parse(fs.readFileSync(p, "utf-8"));
-    const db = Array.isArray(dbRaw) ? dbRaw : [];
-    const validTasks = db.filter((t: any) => t?.taskId).reverse().slice(0, 10); // Check latest 10 tasks
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-    const accessKey = process.env.KLING_ACCESS_KEY;
-    const secretKey = process.env.KLING_SECRET_KEY;
-    if (!accessKey || !secretKey) return NextResponse.json([]);
-    
-    const now = Math.floor(Date.now() / 1000);
-    const token = jwt.sign(
-      { iss: accessKey, exp: now + 1800, nbf: now - 5 },
-      secretKey,
-      { algorithm: "HS256", header: { alg: "HS256", typ: "JWT" } }
-    );
-
-    const checkPromises = validTasks.map(async (task: any) => {
-        try {
-            const res = await fetch(`https://api-singapore.klingai.com/v1/videos/motion-control/${task.taskId}`, {
-                headers: { "Authorization": `Bearer ${token}` }
-            });
-            const d = await res.json();
-            return {
-                ...task,
-                status: d?.data?.task_status,
-                videoUrl: d?.data?.task_result?.videos?.[0]?.url || null
-            };
-        } catch(e) {
-            return task;
-        }
-    });
-
-    const results = await Promise.all(checkPromises);
-    return NextResponse.json(results);
-  } catch(e) {
-    return NextResponse.json([]);
-  }
+function readOutputUrl(providerJson: unknown): string | null {
+  if (!providerJson || typeof providerJson !== "object") return null;
+  const raw = (providerJson as { rawResponse?: unknown }).rawResponse;
+  if (!raw || typeof raw !== "object") return null;
+  const data = (raw as { data?: unknown }).data;
+  if (!data || typeof data !== "object") return null;
+  const result = (data as { task_result?: unknown }).task_result;
+  if (!result || typeof result !== "object") return null;
+  const videos = (result as { videos?: unknown }).videos;
+  if (!Array.isArray(videos)) return null;
+  const first = videos[0];
+  if (!first || typeof first !== "object") return null;
+  const url = (first as { url?: unknown }).url;
+  return typeof url === "string" ? url : null;
 }
 
+export async function GET() {
+  const jobs = await prisma.generationJob.findMany({
+    where: {
+      stage: { in: ["motion-kling", "done"] },
+    },
+    orderBy: { updatedAt: "desc" },
+    take: 20,
+    select: {
+      id: true,
+      status: true,
+      progress: true,
+      outputUrl: true,
+      errorMessage: true,
+      inputJson: true,
+      providerJson: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return NextResponse.json(
+    jobs.map((job) => ({
+      id: job.id,
+      taskId: job.id,
+      externalId: job.id,
+      status: job.status,
+      progress: job.progress,
+      videoUrl: job.outputUrl ?? readOutputUrl(job.providerJson),
+      outputUrl: job.outputUrl ?? readOutputUrl(job.providerJson),
+      error: job.errorMessage,
+      input: job.inputJson,
+      provider: job.providerJson,
+      createdAt: job.createdAt,
+      updatedAt: job.updatedAt,
+    })),
+  );
+}

@@ -25,6 +25,7 @@ export async function searchMarketVideos(rawQuery: string): Promise<FeedVideo[]>
   try {
     const rows = await prisma.video.findMany({
       where: {
+        status: "approved",
         OR: [
           { title: { contains: q, mode: "insensitive" } },
           { description: { contains: q, mode: "insensitive" } },
