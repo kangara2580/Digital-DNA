@@ -131,7 +131,7 @@ export default async function SellerPage({
                 className="h-9 w-[3px] shrink-0 rounded-full bg-[color:var(--reels-point)] shadow-[0_0_14px_-2px_rgba(252,3,165,0.55)]"
                 aria-hidden
               />
-              <h2 className="text-[clamp(1.05rem,2.6vw,1.2rem)] font-extrabold tracking-tight text-[color:var(--reels-point)]">
+              <h2 className="text-[clamp(1.05rem,2.6vw,1.2rem)] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
                 판매 클립
               </h2>
             </div>
