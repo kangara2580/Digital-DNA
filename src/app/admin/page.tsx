@@ -133,6 +133,12 @@ export default async function AdminPage() {
         </div>
         <nav className="space-y-1 p-3">
           <Link
+            href="/admin/members"
+            className="flex h-10 items-center rounded-md px-3 text-sm font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+          >
+            회원 관리
+          </Link>
+          <Link
             href="/admin/videos"
             className="flex h-10 items-center rounded-md bg-slate-950 px-3 text-sm font-bold text-white"
           >

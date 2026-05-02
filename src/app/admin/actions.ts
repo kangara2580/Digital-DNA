@@ -5,11 +5,14 @@ import { writeAdminAuditLog } from "@/lib/adminAudit";
 import { requireAdminAccess } from "@/lib/adminAuth";
 import { syncAllCatalogVideosToDb } from "@/lib/catalogSync";
 import { writeContentChangeLog } from "@/lib/contentChangeLog";
+import { ensureProfileAdminColumns } from "@/lib/ensureProfileAdminColumns";
 import { prisma } from "@/lib/prisma";
 
 const VIDEO_STATUSES = new Set(["approved", "pending", "rejected", "hidden"]);
 const PURCHASE_STATUSES = new Set(["paid", "refunded", "canceled"]);
 const REPORT_STATUSES = new Set(["open", "reviewing", "resolved", "dismissed"]);
+const MEMBER_STATUSES = new Set(["active", "suspended", "deleted"]);
+const MEMBER_ROLES = new Set(["user", "seller", "admin", "super_admin"]);
 
 function stringFromForm(formData: FormData, key: string): string {
   const value = formData.get(key);
@@ -208,6 +211,91 @@ export async function createAdminNote(formData: FormData): Promise<void> {
   });
 
   revalidatePath("/admin");
+  revalidatePath("/admin/members");
+}
+
+export async function updateMemberAdminState(formData: FormData): Promise<void> {
+  const actor = await requireAdminAccess();
+  await ensureProfileAdminColumns();
+
+  const userId = stringFromForm(formData, "userId");
+  const status = stringFromForm(formData, "accountStatus");
+  const role = stringFromForm(formData, "role");
+  const adminMemo = nullableString(stringFromForm(formData, "adminMemo"));
+
+  if (!userId || !MEMBER_STATUSES.has(status) || !MEMBER_ROLES.has(role)) {
+    throw new Error("회원 상태 변경 요청이 올바르지 않습니다.");
+  }
+
+  const beforeRows = await prisma.$queryRaw<
+    {
+      user_id: string;
+      account_status: string;
+      role: string;
+      admin_memo: string | null;
+      suspended_at: Date | null;
+      suspended_by: string | null;
+    }[]
+  >`
+    select user_id::text, account_status, role, admin_memo, suspended_at, suspended_by
+    from public.profiles
+    where user_id::text = ${userId}
+    limit 1
+  `;
+  const before = beforeRows[0];
+  if (!before) throw new Error("회원을 찾을 수 없습니다.");
+
+  const afterRows = await prisma.$queryRaw<
+    {
+      user_id: string;
+      account_status: string;
+      role: string;
+      admin_memo: string | null;
+      suspended_at: Date | null;
+      suspended_by: string | null;
+    }[]
+  >`
+    update public.profiles
+    set
+      account_status = ${status},
+      role = ${role},
+      admin_memo = ${adminMemo},
+      suspended_at = case
+        when ${status} = 'suspended' and account_status <> 'suspended' then now()
+        when ${status} <> 'suspended' then null
+        else suspended_at
+      end,
+      suspended_by = case
+        when ${status} = 'suspended' then ${actor.id}
+        when ${status} <> 'suspended' then null
+        else suspended_by
+      end,
+      updated_at = now()
+    where user_id::text = ${userId}
+    returning user_id::text, account_status, role, admin_memo, suspended_at, suspended_by
+  `;
+  const after = afterRows[0];
+
+  await writeAdminAuditLog({
+    actor,
+    action: `member.${status}`,
+    targetType: "member",
+    targetId: userId,
+    before,
+    after,
+  });
+  await writeContentChangeLog({
+    targetType: "member",
+    targetId: userId,
+    actorId: actor.id,
+    actorType: "admin",
+    changeType: "member_admin_state",
+    before,
+    after,
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/members");
 }
 
 export async function updatePurchaseStatus(formData: FormData): Promise<void> {
