@@ -23,8 +23,18 @@ import {
 } from "@/lib/authModalTheme";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
-const accountHoverRootClass =
-  "group/acctmenu relative flex h-full min-h-0 min-w-0 flex-[1_1_0] flex-col items-stretch";
+/** 계정+장바구니 쌍: 왼쪽 드롭다운·패딩, 캡슐 왼쪽 모서리 */
+const accountHoverRootDualClass =
+  "group/acctmenu relative flex h-full min-h-0 min-w-0 flex-[1_1_0] flex-col items-stretch overflow-visible rounded-l-full pl-2.5 sm:pl-3";
+
+/** 푸터 등 계정만: 전체 라운드 */
+const accountHoverRootSoloClass =
+  "group/acctmenu relative flex h-full min-h-0 min-w-0 flex-1 flex-col items-stretch overflow-visible rounded-full px-1";
+
+const capsuleSegmentLeftLoggedClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-l-full`;
+const capsuleSegmentCartClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-r-full pr-2.5 sm:pr-3 pl-1`;
+
+const capsuleGuestButtonClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-full pl-4 pr-3.5 sm:pl-[1.15rem] sm:pr-[1.05rem]`;
 
 type Props = {
   /** false: 장바구니 없이 계정만 (푸터 등). true: 로그인 시 계정·장바구니 한 캡슐. */
@@ -139,7 +149,7 @@ export function MainTopUserMenu({ withCart = true }: Props) {
     <button
       type="button"
       onClick={() => setAuthOpen(true)}
-      className={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-none`}
+      className={capsuleGuestButtonClass}
       aria-haspopup="dialog"
       aria-expanded={authOpen}
       aria-label="로그인/회원가입 시작하기"
@@ -163,15 +173,15 @@ export function MainTopUserMenu({ withCart = true }: Props) {
     withCart ? (
       <div className={TOP_NAV_ACCOUNT_CART_PILL_OUTER}>
         <LoggedInAccountHoverMenu
-          rootClassName={accountHoverRootClass}
-          triggerClassName={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-none`}
+          rootClassName={accountHoverRootDualClass}
+          triggerClassName={capsuleSegmentLeftLoggedClass}
         >
           <CapsuleUserGlyph />
         </LoggedInAccountHoverMenu>
         <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} aria-hidden />
         <Link
           href="/cart"
-          className={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-none`}
+          className={capsuleSegmentCartClass}
           aria-label="장바구니"
         >
           <CapsuleCartGlyph />
@@ -180,8 +190,8 @@ export function MainTopUserMenu({ withCart = true }: Props) {
     ) : (
       <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} min-w-[2.75rem]`}>
         <LoggedInAccountHoverMenu
-          rootClassName={accountHoverRootClass}
-          triggerClassName={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-none`}
+          rootClassName={accountHoverRootSoloClass}
+          triggerClassName={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-full`}
         >
           <CapsuleUserGlyph />
         </LoggedInAccountHoverMenu>
