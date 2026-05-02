@@ -82,6 +82,11 @@ export async function addFavorite(
     const { error } = await supabase.from(table).insert(payload);
     if (!error) return { ok: true };
     if (error.code === "23505") return { ok: true };
+    if (error.code === "42501" && typeof console !== "undefined") {
+      console.warn(
+        "[wishlist] RLS에 의해 차단되었습니다. Supabase Dashboard → SQL Editor 에서 레포지토리의 supabase/favorites_rls_fix.sql 을 실행하세요.",
+      );
+    }
     if (process.env.NODE_ENV === "development") {
       console.warn("[wishlist] insert failed", {
         table,

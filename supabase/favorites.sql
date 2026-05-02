@@ -21,19 +21,22 @@ drop policy if exists "favorites_select_own" on public.favorites;
 create policy "favorites_select_own"
 on public.favorites
 for select
-using (auth.uid() = user_id);
+to authenticated
+using ((select auth.uid()) = user_id);
 
 drop policy if exists "favorites_insert_own" on public.favorites;
 create policy "favorites_insert_own"
 on public.favorites
 for insert
-with check (auth.uid() = user_id);
+to authenticated
+with check ((select auth.uid()) = user_id);
 
 drop policy if exists "favorites_delete_own" on public.favorites;
 create policy "favorites_delete_own"
 on public.favorites
 for delete
-using (auth.uid() = user_id);
+to authenticated
+using ((select auth.uid()) = user_id);
 
 -- SQL Editor로만 만든 테이블은 Table Editor와 달리 역할 권한이 없을 수 있음 → API(anon JWT 경유)에서 permission denied 방지
 grant select, insert, delete on table public.favorites to authenticated;
