@@ -636,7 +636,6 @@ export function SellerClipUploadForm() {
                         썸네일로 적용
                       </span>
                       으로 확정하면 등록 시 그 순간의 화면이 썸네일로 들어가요.
-                      일부 외부 주소는 정책 때문에 썸네일 추출에 실패할 수 있어요.
                     </p>
                   </div>
                 </div>
