@@ -5,7 +5,29 @@ import { useCallback, useMemo, useState } from "react";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import type { FeedVideo } from "@/data/videos";
+import { sellerProfileHrefFromVideo } from "@/lib/sellerProfile";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
+
+function localCartPosterFallback(videoId: string): string {
+  const hash = Array.from(videoId).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  const idx = (Math.abs(hash) % 10) + 1;
+  return `/videos/sample${idx}.jpg`;
+}
+
+/** 저장 JSON에 poster가 비거나 sanitize로 빠져도 카드처럼 썸네일이 나오도록 */
+function cartThumbnailSrc(video: FeedVideo): string {
+  let u = sanitizePosterSrc(video.poster);
+  if (u) return u;
+  u = sanitizePosterSrc(video.previewSrc);
+  if (u) return u;
+  const s = typeof video.src === "string" ? video.src.trim() : "";
+  if (s && /\.(webp|jpg|jpeg|png|gif|avif)(\?|$)/i.test(s)) {
+    const t = sanitizePosterSrc(s);
+    return t ?? s;
+  }
+  return localCartPosterFallback(video.id);
+}
 
 export default function CartPage() {
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
@@ -123,7 +145,7 @@ export default function CartPage() {
               onClick={() => {
                 if (
                   typeof window !== "undefined" &&
-                  window.confirm("장바구니와 타임라인에서 모두 빼시겠어요?")
+                  window.confirm("장바구니에서 모두 빼시겠어요?")
                 ) {
                   clearBuilder();
                   setSelected(new Set());
@@ -209,7 +231,7 @@ export default function CartPage() {
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={sanitizePosterSrc(video.poster)}
+                      src={cartThumbnailSrc(video)}
                       alt=""
                       className="h-full w-full object-cover"
                     />
@@ -222,7 +244,13 @@ export default function CartPage() {
                       {video.title}
                     </Link>
                     <p className="mt-1 truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                      {video.creator}
+                      <Link
+                        href={sellerProfileHrefFromVideo(video)}
+                        className="underline-offset-2 hover:text-reels-cyan hover:underline [html[data-theme='light']_&]:hover:text-[#0891b2]"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {video.creator}
+                      </Link>
                     </p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       {video.priceWon != null ? (
@@ -246,15 +274,6 @@ export default function CartPage() {
                       >
                         삭제
                       </button>
-                      {!owned ? (
-                        <button
-                          type="button"
-                          onClick={() => markPurchased(video.id)}
-                          className="rounded-md px-2 py-1 text-[12px] font-semibold text-zinc-300 hover:bg-white/10 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100"
-                        >
-                          이 영상 구매 완료
-                        </button>
-                      ) : null}
                       {owned ? (
                         <Link
                           href={`/create?videoId=${encodeURIComponent(video.id)}`}
@@ -262,9 +281,7 @@ export default function CartPage() {
                         >
                           AI 창작하기
                         </Link>
-                      ) : (
-                        <span className="text-[12px] text-zinc-600">창작은 구매 후</span>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 </li>
