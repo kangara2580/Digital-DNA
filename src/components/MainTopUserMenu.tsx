@@ -100,24 +100,16 @@ export function MainTopUserMenu({ withCart = true }: Props) {
   if (loading) return null;
 
   const guestAuthButtonInner = (
-    <span className="relative inline-flex h-6 w-6 items-center justify-center">
-      <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" aria-hidden>
-        <circle cx="12" cy="8" r="4" strokeWidth="2.2" />
-        <path
-          d="M4 20C4 15.8 7.6 12.4 12 12.4C16.4 12.4 20 15.8 20 20H4Z"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+    <span className="relative inline-flex min-h-[26px] min-w-[26px] shrink-0 items-center justify-center">
+      <ProfileGlyph />
       <svg
         viewBox="0 0 24 24"
-        className="absolute -right-[0.28rem] -top-[0.28rem] h-3 w-3"
+        className="absolute right-[-5px] top-[-4px] h-[13px] w-[13px]"
         fill="none"
         stroke="currentColor"
         aria-hidden
       >
-        <path d="M12 4V20M4 12H20" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M12 4V20M4 12H20" strokeWidth="2.35" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </span>
   );
