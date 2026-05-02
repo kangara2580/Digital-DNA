@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -35,16 +35,25 @@ export default function CartPage() {
     builderItems,
     cartSyncReady,
     removeBuilderItem,
-    removeBuilderItemsByKeys,
-    clearBuilder,
   } = useDopamineBasket();
   /** 로그인·서버 장바구니 로드 전에는 builderItems가 잠깐 []라 빈 화면이 깜빡이지 않게 함 */
   const cartUiReady = !authLoading && cartSyncReady;
   const showLoginGate = supabaseConfigured && !authLoading && !user;
-  const { hasPurchased, markPurchased } = usePurchasedVideos();
+  const { hasPurchased } = usePurchasedVideos();
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
 
-  const allKeys = useMemo(() => builderItems.map((b) => b.key), [builderItems]);
+  useEffect(() => {
+    const valid = new Set(builderItems.map((b) => b.key));
+    setSelected((prev) => {
+      let changed = false;
+      const next = new Set<string>();
+      for (const k of prev) {
+        if (valid.has(k)) next.add(k);
+        else changed = true;
+      }
+      return changed ? next : prev;
+    });
+  }, [builderItems]);
 
   const toggleKey = useCallback((key: string) => {
     setSelected((s) => {
@@ -55,18 +64,6 @@ export default function CartPage() {
     });
   }, []);
 
-  const selectAll = useCallback(() => {
-    setSelected(new Set(allKeys));
-  }, [allKeys]);
-
-  const clearSelection = useCallback(() => setSelected(new Set()), []);
-
-  const totalWon = useMemo(
-    () =>
-      builderItems.reduce((sum, { video }) => sum + (video.priceWon ?? 0), 0),
-    [builderItems],
-  );
-
   const selectedTotal = useMemo(() => {
     let sum = 0;
     for (const { key, video } of builderItems) {
@@ -75,88 +72,12 @@ export default function CartPage() {
     return sum;
   }, [builderItems, selected]);
 
-  const deleteSelected = useCallback(() => {
-    if (selected.size === 0) return;
-    if (
-      typeof window !== "undefined" &&
-      !window.confirm(`선택한 ${selected.size}개를 장바구니에서 뺄까요?`)
-    ) {
-      return;
-    }
-    removeBuilderItemsByKeys([...selected]);
-    setSelected(new Set());
-  }, [selected, removeBuilderItemsByKeys]);
-
-  const purchaseSelected = useCallback(() => {
-    const ids = builderItems
-      .filter((b) => selected.has(b.key) && !hasPurchased(b.video.id))
-      .map((b) => b.video.id);
-    if (ids.length === 0) {
-      window.alert("선택한 항목이 없거나 이미 구매 처리된 영상입니다.");
-      return;
-    }
-    for (const id of ids) markPurchased(id);
-    window.alert(`${ids.length}개 영상을 구매 완료로 표시했습니다.`);
-  }, [builderItems, selected, hasPurchased, markPurchased]);
-
   return (
     <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12 lg:px-8">
-      <header className="flex flex-col gap-3 border-b border-white/10 pb-6 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-            장바구니
-          </h1>
-        </div>
-        {cartUiReady && builderItems.length > 0 ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={selectAll}
-              className="shrink-0 rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:border-reels-cyan/35 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-800"
-            >
-              전체 선택
-            </button>
-            <button
-              type="button"
-              onClick={clearSelection}
-              disabled={selected.size === 0}
-              className="shrink-0 rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:border-white/25 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-800"
-            >
-              선택 해제
-            </button>
-            <button
-              type="button"
-              onClick={deleteSelected}
-              disabled={selected.size === 0}
-              className="shrink-0 rounded-lg border border-rose-500/35 px-3 py-2 text-[13px] font-medium text-rose-300 transition-colors hover:bg-rose-500/10 disabled:opacity-40 [html[data-theme='light']_&]:text-rose-800"
-            >
-              선택 삭제
-            </button>
-            <button
-              type="button"
-              onClick={purchaseSelected}
-              disabled={selected.size === 0}
-              className="shrink-0 rounded-lg border border-reels-cyan/40 px-3 py-2 text-[13px] font-semibold text-reels-cyan transition-colors hover:bg-reels-cyan/10 disabled:opacity-40"
-            >
-              선택 구매 완료
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (
-                  typeof window !== "undefined" &&
-                  window.confirm("장바구니에서 모두 빼시겠어요?")
-                ) {
-                  clearBuilder();
-                  setSelected(new Set());
-                }
-              }}
-              className="shrink-0 self-start rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-reels-cyan/35 hover:bg-white/[0.06] hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900 sm:self-auto"
-            >
-              전체 비우기
-            </button>
-          </div>
-        ) : null}
+      <header className="border-b border-white/10 pb-6 [html[data-theme='light']_&]:border-zinc-200">
+        <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+          장바구니
+        </h1>
       </header>
 
       {showLoginGate ? (
@@ -290,23 +211,23 @@ export default function CartPage() {
           </ul>
 
           <footer className="mt-8 border-t border-white/10 pt-6 [html[data-theme='light']_&]:border-zinc-200">
-            <div className="flex items-baseline justify-between gap-4">
-              <span className="text-[15px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                합계
-              </span>
-              <span className="text-xl font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                {totalWon.toLocaleString("ko-KR")}원
-              </span>
-            </div>
-            {selected.size > 0 ? (
-              <p className="mt-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                선택 합계:{" "}
-                <span className="font-bold tabular-nums text-reels-cyan">
-                  {selectedTotal.toLocaleString("ko-KR")}원
-                </span>{" "}
-                ({selected.size}개)
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div className="min-w-0 space-y-1">
+                <p className="text-[16px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
+                  합계
+                </p>
+                <p className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                  {selected.size}개 선택
+                </p>
+              </div>
+              <p
+                className="text-3xl font-extrabold tabular-nums tracking-tight text-zinc-100 sm:text-4xl [html[data-theme='light']_&]:text-zinc-900"
+                aria-live="polite"
+                aria-label={`선택 합계 ${selectedTotal.toLocaleString("ko-KR")}원, ${selected.size}개`}
+              >
+                {selectedTotal.toLocaleString("ko-KR")}원
               </p>
-            ) : null}
+            </div>
             <button
               type="button"
               disabled
