@@ -32,22 +32,25 @@ const TOP_THEME: Record<
 > = {
   1: {
     border:
-      "border-[#FFD700]/70 bg-gradient-to-br from-[#FFD700]/25 via-[#8d6f00]/15 to-black/40 shadow-[0_12px_38px_-18px_rgba(255,215,0,0.55)]",
-    badge: "bg-[#FFD700]/18 text-[#FFD700] border-[#FFD700]/40",
+      "border border-amber-500/35 bg-zinc-900/60 [html[data-theme='light']_&]:border-amber-600/30 [html[data-theme='light']_&]:bg-amber-50/80",
+    badge:
+      "border border-amber-600/30 bg-amber-500/10 text-amber-100 [html[data-theme='light']_&]:border-amber-700/25 [html[data-theme='light']_&]:bg-amber-100/90 [html[data-theme='light']_&]:text-amber-950",
     icon: <Crown className="h-4 w-4" aria-hidden />,
     title: "왕",
   },
   2: {
     border:
-      "border-[#C0C0C0]/70 bg-gradient-to-br from-[#C0C0C0]/20 via-[#707070]/12 to-black/40 shadow-[0_12px_38px_-18px_rgba(192,192,192,0.45)]",
-    badge: "bg-[#C0C0C0]/16 text-[#E6E6E6] border-[#C0C0C0]/40",
+      "border border-zinc-400/30 bg-zinc-900/60 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100/90",
+    badge:
+      "border border-zinc-500/30 bg-zinc-500/10 text-zinc-200 [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-zinc-200/80 [html[data-theme='light']_&]:text-zinc-900",
     icon: <Medal className="h-4 w-4" aria-hidden />,
     title: "2위",
   },
   3: {
     border:
-      "border-[#CD7F32]/75 bg-gradient-to-br from-[#CD7F32]/22 via-[#7b4a1a]/14 to-black/40 shadow-[0_12px_38px_-18px_rgba(205,127,50,0.42)]",
-    badge: "bg-[#CD7F32]/18 text-[#E8BC8A] border-[#CD7F32]/40",
+      "border border-orange-700/35 bg-zinc-900/60 [html[data-theme='light']_&]:border-orange-800/28 [html[data-theme='light']_&]:bg-orange-50/70",
+    badge:
+      "border border-orange-800/30 bg-orange-900/15 text-orange-100/95 [html[data-theme='light']_&]:border-orange-700/30 [html[data-theme='light']_&]:bg-orange-100/90 [html[data-theme='light']_&]:text-orange-950",
     icon: <Trophy className="h-4 w-4" aria-hidden />,
     title: "3위",
   },
@@ -156,10 +159,10 @@ export function LeaderboardClient() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
-      <section className="reels-glass-card overflow-hidden rounded-2xl border border-white/[0.1] p-5 shadow-[0_0_60px_-28px_rgba(252,3,165,0.22)] sm:p-6 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_22px_50px_-32px_rgba(252,3,165,0.14)]">
+      <section className="reels-glass-card overflow-hidden rounded-2xl border border-white/[0.1] p-5 !shadow-none sm:p-6 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm">
         <div className="flex flex-wrap items-start gap-3 sm:gap-4">
           <span
-            className="mt-1 h-11 w-[3px] shrink-0 rounded-full bg-[color:var(--reels-point)] shadow-[0_0_14px_-2px_rgba(252,3,165,0.55)] sm:h-[2.875rem]"
+            className="mt-1 h-11 w-[3px] shrink-0 rounded-full bg-zinc-500 [html[data-theme='light']_&]:bg-zinc-400 sm:h-[2.875rem]"
             aria-hidden
           />
           <div className="min-w-0 flex-1">
@@ -182,8 +185,8 @@ export function LeaderboardClient() {
                 onClick={() => setMetric(tab)}
                 className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-bold transition-[border-color,background-color,color] ${
                   active
-                    ? "border-[color:var(--reels-point)]/55 bg-[color:var(--reels-point)]/14 text-[color:var(--reels-point)] shadow-[0_0_32px_-18px_rgba(252,3,165,0.22)] [html[data-theme='light']_&]:border-reels-crimson/45 [html[data-theme='light']_&]:bg-reels-crimson/12 [html[data-theme='light']_&]:text-reels-crimson [html[data-theme='light']_&]:shadow-none"
-                    : "border-white/15 bg-black/20 text-zinc-300 hover:border-[color:var(--reels-point)]/28 hover:bg-[color:var(--reels-point)]/08 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-reels-crimson/25 [html[data-theme='light']_&]:hover:text-zinc-900"
+                    ? "border-white/25 bg-white/[0.08] text-zinc-50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-200/90 [html[data-theme='light']_&]:text-zinc-900"
+                    : "border-white/12 bg-black/15 text-zinc-400 hover:border-white/20 hover:bg-white/[0.05] hover:text-zinc-200 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:text-zinc-900"
                 }`}
               >
                 {tab === "sales" ? <Trophy className="h-4 w-4" aria-hidden /> : <TrendingUp className="h-4 w-4" aria-hidden />}
@@ -202,8 +205,8 @@ export function LeaderboardClient() {
                 onClick={() => setPeriod(tab)}
                 className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-[border-color,background-color,color] motion-reduce:transition-colors ${
                   active
-                    ? "border-[color:var(--reels-point)]/50 bg-transparent text-[color:var(--reels-point)] [html[data-theme='light']_&]:border-reels-crimson/45 [html[data-theme='light']_&]:text-reels-crimson"
-                    : "border-white/15 bg-black/20 text-zinc-300 hover:border-[color:var(--reels-point)]/25 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-reels-crimson/22 [html[data-theme='light']_&]:hover:text-zinc-900"
+                    ? "border-white/22 bg-white/[0.06] text-zinc-100 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-200/70 [html[data-theme='light']_&]:text-zinc-900"
+                    : "border-white/12 bg-black/15 text-zinc-400 hover:border-white/18 hover:text-zinc-200 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:text-zinc-900"
                 }`}
               >
                 {periodLabel(tab)}
@@ -216,7 +219,7 @@ export function LeaderboardClient() {
 
       <section className="mt-5">
         {loading ? (
-          <div className="reels-glass-card rounded-2xl border border-white/[0.1] p-6 text-sm text-zinc-400 shadow-[inset_0_0_0_1px_rgba(252,3,165,0.06)] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:shadow-[inset_0_0_0_1px_rgba(252,3,165,0.08)]">
+          <div className="reels-glass-card rounded-2xl border border-white/[0.1] p-6 text-sm text-zinc-400 !shadow-none [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:shadow-sm">
             데이터를 불러오는 중...
           </div>
         ) : error ? (
@@ -252,7 +255,7 @@ export function LeaderboardClient() {
                     {hasData ? (
                       <Link
                         href={`/seller/${encodeURIComponent(item.sellerId)}`}
-                        className="mt-4 flex items-center gap-3 rounded-xl p-1 -m-1 transition-colors hover:bg-[color:var(--reels-point)]/08 [html[data-theme='light']_&]:hover:bg-reels-crimson/10"
+                        className="mt-4 flex items-center gap-3 rounded-xl p-1 -m-1 transition-colors hover:bg-white/[0.06] [html[data-theme='light']_&]:hover:bg-zinc-100"
                         aria-label={`${item.nickname} 판매자 피드`}
                       >
                         <Avatar item={item} />
@@ -283,7 +286,7 @@ export function LeaderboardClient() {
                       <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                         {metricKoreanLabel(metric)}
                       </p>
-                      <p className="mt-1 text-lg font-extrabold tabular-nums text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-reels-crimson">
+                      <p className="mt-1 text-lg font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
                         {empty ? "-" : metricValue(item, metric)}
                       </p>
                     </div>
@@ -293,7 +296,7 @@ export function LeaderboardClient() {
             </div>
 
             {others.length > 0 ? (
-              <div className="reels-glass-card overflow-hidden rounded-2xl border border-white/[0.1] shadow-[inset_0_0_0_1px_rgba(252,3,165,0.05)] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:shadow-[inset_0_0_0_1px_rgba(252,3,165,0.07)]">
+              <div className="reels-glass-card overflow-hidden rounded-2xl border border-white/[0.1] !shadow-none [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:shadow-sm">
                 <ul>
                   {others.map((item) => (
                     <li
@@ -307,7 +310,7 @@ export function LeaderboardClient() {
                         {hasData ? (
                           <Link
                             href={`/seller/${encodeURIComponent(item.sellerId)}`}
-                            className="flex min-w-0 items-center gap-3 rounded-xl p-1 -m-1 transition-colors hover:bg-[color:var(--reels-point)]/08 [html[data-theme='light']_&]:hover:bg-reels-crimson/10"
+                            className="flex min-w-0 items-center gap-3 rounded-xl p-1 -m-1 transition-colors hover:bg-white/[0.06] [html[data-theme='light']_&]:hover:bg-zinc-100"
                             aria-label={`${item.nickname} 판매자 피드`}
                           >
                             <Avatar item={item} />
@@ -334,7 +337,7 @@ export function LeaderboardClient() {
                           </div>
                         )}
                       </div>
-                      <span className="shrink-0 text-sm font-extrabold tabular-nums text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-reels-crimson">
+                      <span className="shrink-0 text-sm font-extrabold tabular-nums text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
                         {hasData ? metricValue(item, metric) : "-"}
                       </span>
                     </li>
