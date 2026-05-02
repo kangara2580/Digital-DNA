@@ -125,19 +125,14 @@ export default async function SellerPage({
         </section>
 
         <section className="mt-10 sm:mt-12">
-          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <span
-                className="h-9 w-[3px] shrink-0 rounded-full bg-[color:var(--reels-point)] shadow-[0_0_14px_-2px_rgba(252,3,165,0.55)]"
-                aria-hidden
-              />
-              <h2 className="text-[clamp(1.05rem,2.6vw,1.2rem)] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
-                판매 클립
-              </h2>
-            </div>
-            <p className="text-[12px] font-semibold tabular-nums text-white/40 [html[data-theme='light']_&]:text-zinc-500">
-              총 {videos.length}개
-            </p>
+          <div className="mb-4 flex items-center gap-3">
+            <span
+              className="h-9 w-[3px] shrink-0 rounded-full bg-[color:var(--reels-point)] shadow-[0_0_14px_-2px_rgba(252,3,165,0.55)]"
+              aria-hidden
+            />
+            <h2 className="text-[clamp(1.05rem,2.6vw,1.2rem)] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
+              판매 클립
+            </h2>
           </div>
           {videos.length > 0 ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3.5 lg:grid-cols-5 xl:gap-4">
