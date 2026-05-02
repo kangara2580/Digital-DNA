@@ -52,7 +52,11 @@ function CapsuleUserGlyph() {
 
 function CapsuleCartGlyph() {
   return (
-    <ShoppingCart className={topNavHeroCapsuleGlyphIconClass()} strokeWidth={2} aria-hidden />
+    <ShoppingCart
+      className={`${topNavHeroCapsuleGlyphIconClass()} -translate-x-[1.5px]`}
+      strokeWidth={2}
+      aria-hidden
+    />
   );
 }
 
