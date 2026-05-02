@@ -936,9 +936,41 @@ export function SellerClipUploadForm() {
           </div>
 
           <div className="sm:col-span-2 space-y-4 rounded-xl border border-white/[0.1] bg-white/[0.02] p-4 sm:p-5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/90">
-            <p className="text-[12px] font-medium uppercase tracking-[0.1em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-              권리 확인
-            </p>
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/[0.08] pb-3 [html[data-theme='light']_&]:border-zinc-200/80">
+              <p className="text-[12px] font-medium uppercase tracking-[0.1em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+                권리 확인
+              </p>
+              <div className="flex shrink-0 flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRights(true);
+                    setConfirmOriginal(true);
+                    setConfirmPromotionAndLiability(true);
+                  }}
+                  disabled={
+                    rights && confirmOriginal && confirmPromotionAndLiability
+                  }
+                  className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
+                >
+                  전체 선택
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRights(false);
+                    setConfirmOriginal(false);
+                    setConfirmPromotionAndLiability(false);
+                  }}
+                  disabled={
+                    !rights && !confirmOriginal && !confirmPromotionAndLiability
+                  }
+                  className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-white/25 disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+                >
+                  선택 해제
+                </button>
+              </div>
+            </div>
             <RightsAgreementCheckbox
               checked={rights}
               required
