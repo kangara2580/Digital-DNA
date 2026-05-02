@@ -33,10 +33,12 @@ function LoginRequiredPanel({
   const redirect = encodeURIComponent(tab.href);
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-      <h2 className="text-lg font-semibold tracking-tight text-zinc-900 sm:text-xl">{tab.label}</h2>
-      <div className="mt-8 rounded-xl border border-dashed border-zinc-200 bg-zinc-50/80 p-8 text-center">
-        <p className="text-[14px] leading-relaxed text-zinc-600">
+    <div className="rounded-2xl border border-white/10 bg-zinc-900/50 p-6 sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm">
+      <h2 className="text-lg font-semibold tracking-tight text-zinc-50 sm:text-xl [html[data-theme='light']_&]:text-zinc-900">
+        {tab.label}
+      </h2>
+      <div className="mt-8 rounded-xl border border-dashed border-white/15 bg-black/25 p-8 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/80">
+        <p className="text-[14px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
           로그인하면 {tab.label} 탭을 포함한 마이페이지 기능을 모두 이용할 수 있어요.
         </p>
         <Link
@@ -74,15 +76,19 @@ export function MyPageDashboard() {
   const { loading: authLoading, user } = useAuthSession();
 
   return (
-    <main className="min-h-[60vh] bg-white text-zinc-900">
+    <main className="min-h-[60vh] bg-zinc-950 text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
       <div className="mx-auto max-w-[1500px] px-4 py-10 sm:px-6 sm:py-12 lg:px-10">
-        <header className="border-b border-zinc-100 pb-8">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-[1.75rem]">마이페이지</h1>
+        <header className="border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-100">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-50 sm:text-[1.75rem] [html[data-theme='light']_&]:text-zinc-900">
+            마이페이지
+          </h1>
         </header>
 
         <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,13.5rem)_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[15rem_minmax(0,1fr)]">
           <aside className="lg:sticky lg:top-24 lg:self-start">
-            <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-400">메뉴</p>
+            <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
+              메뉴
+            </p>
             <nav aria-label="마이페이지 메뉴" className="flex flex-col gap-0.5">
               {TAB_ITEMS.map((item) => {
                 const active = item.id === currentTab;
@@ -92,8 +98,8 @@ export function MyPageDashboard() {
                     href={item.href}
                     className={
                       active
-                        ? "rounded-lg border-l-[3px] border-l-[#fc03a5] bg-zinc-50 py-2.5 pl-[13px] pr-3 text-[14px] font-semibold text-zinc-900 transition-colors"
-                        : "rounded-lg border-l-[3px] border-l-transparent py-2.5 pl-[13px] pr-3 text-[14px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
+                        ? "rounded-lg border-l-[3px] border-l-[#fc03a5] bg-white/[0.06] py-2.5 pl-[13px] pr-3 text-[14px] font-semibold text-zinc-50 transition-colors [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900"
+                        : "rounded-lg border-l-[3px] border-l-transparent py-2.5 pl-[13px] pr-3 text-[14px] font-medium text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
                     }
                   >
                     {item.label}
@@ -105,8 +111,10 @@ export function MyPageDashboard() {
 
           <section className="min-w-0">
           {authLoading && !user ? (
-            <div className="rounded-2xl border border-zinc-100 bg-zinc-50/50 p-12 text-center">
-              <p className="text-[14px] font-medium text-zinc-500">불러오는 중…</p>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-12 text-center [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/50">
+              <p className="text-[14px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+                불러오는 중…
+              </p>
             </div>
           ) : null}
           {!authLoading && !user ? <LoginRequiredPanel tab={activeTab} /> : null}
@@ -119,8 +127,10 @@ export function MyPageDashboard() {
           {currentTab === "analytics" && user ? <MyPageSellerAnalyticsSection /> : null}
 
           {currentTab === "listings" && user ? (
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-              <h2 className="text-lg font-semibold tracking-tight text-zinc-900">내가 등록한 영상</h2>
+            <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm">
+              <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+                내가 등록한 영상
+              </h2>
               <div className="mt-8">
                 <MyPageMyListingsSection />
               </div>

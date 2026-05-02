@@ -285,32 +285,32 @@ export function FaceProfileUploadSection() {
 
   return (
     <section
-      className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6"
+      className="rounded-2xl border border-white/10 bg-zinc-900/60 p-5 shadow-sm sm:p-6 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white"
       aria-labelledby="my-face-heading"
     >
-      <h2 id="my-face-heading" className="text-lg font-semibold tracking-tight text-zinc-900 sm:text-xl">
+      <h2 id="my-face-heading" className="text-lg font-semibold tracking-tight text-zinc-50 sm:text-xl [html[data-theme='light']_&]:text-zinc-900">
         프로필 · 3면
       </h2>
 
-      <div className="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 sm:px-5">
-        <p className="text-[15px] font-semibold leading-snug tracking-tight text-zinc-900">
-          <span className="text-cyan-600">3면 원본</span>
+      <div className="mt-5 rounded-xl border border-white/10 bg-black/25 px-4 py-3.5 sm:px-5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+        <p className="text-[15px] font-semibold leading-snug tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+          <span className="text-cyan-400 [html[data-theme='light']_&]:text-cyan-600">3면 원본</span>
           {` `}→ 가장 정확
         </p>
-        <p className="mt-2 text-[13px] font-medium leading-snug text-zinc-600">
-          1장뿐이면 → <span className="font-semibold text-cyan-600">AI로 3면 보완</span>
+        <p className="mt-2 text-[13px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+          1장뿐이면 → <span className="font-semibold text-cyan-400 [html[data-theme='light']_&]:text-cyan-600">AI로 3면 보완</span>
         </p>
       </div>
 
-      <div className="mt-8 border-t border-zinc-100 pt-8">
-        <h3 className="text-[13px] font-semibold tracking-tight text-zinc-900">
-          ① 3면 직접 <span className="text-cyan-600">(권장)</span>
+      <div className="mt-8 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-100">
+        <h3 className="text-[13px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+          ① 3면 직접 <span className="text-cyan-400 [html[data-theme='light']_&]:text-cyan-600">(권장)</span>
         </h3>
-        <p className="mt-1 text-[12px] font-semibold text-zinc-600">정면 · 좌 · 우 각 1장 (원본 20MB까지 자동 압축)</p>
+        <p className="mt-1 text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">정면 · 좌 · 우 각 1장 (원본 20MB까지 자동 압축)</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           {TRIPLE_LABELS.map(({ key, title }) => (
-            <div key={key} className="rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+            <div key={key} className="rounded-xl border border-white/10 bg-white/[0.04] p-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
               <input
                 ref={tripleInputRefs[key]}
                 type="file"
@@ -319,11 +319,11 @@ export function FaceProfileUploadSection() {
                 onChange={(e) => onTripleFile(key, e)}
                 aria-label={`${title} 프로필 사진 선택`}
               />
-              <p className="text-[13px] font-semibold text-zinc-900">{title}</p>
+              <p className="text-[13px] font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">{title}</p>
               <button
                 type="button"
                 onClick={() => tripleInputRefs[key].current?.click()}
-                className="mt-3 w-full rounded-lg border border-zinc-200 bg-white py-2 text-[11px] font-medium text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50"
+                className="mt-3 w-full rounded-lg border border-white/15 bg-white/5 py-2 text-[11px] font-medium text-zinc-300 transition hover:border-white/25 hover:bg-white/10 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
               >
                 {slotSrc(key) ? "다시 선택" : "선택"}
               </button>
@@ -331,13 +331,13 @@ export function FaceProfileUploadSection() {
                 <button
                   type="button"
                   onClick={() => clearTripleSlot(key)}
-                  className="mt-2 w-full rounded-lg border border-zinc-200 bg-white py-2 text-[11px] font-semibold text-reels-crimson transition hover:bg-zinc-50"
+                  className="mt-2 w-full rounded-lg border border-white/15 bg-transparent py-2 text-[11px] font-semibold text-[#fda6dc] transition hover:border-reels-crimson/35 hover:bg-reels-crimson/15 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-reels-crimson [html[data-theme='light']_&]:hover:bg-zinc-50"
                 >
                   취소
                 </button>
               ) : null}
               {slotSrc(key) ? (
-                <div className="mt-3 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-100 aspect-[3/4]">
+                <div className="mt-3 overflow-hidden rounded-lg border border-white/12 bg-black/35 aspect-[3/4] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={slotSrc(key)!}
@@ -350,18 +350,18 @@ export function FaceProfileUploadSection() {
           ))}
         </div>
         {uploadStatus ? (
-          <p className="mt-3 text-[12px] font-semibold text-cyan-700">
+          <p className="mt-3 text-[12px] font-semibold text-cyan-400 [html[data-theme='light']_&]:text-cyan-700">
             {uploadStatus}
           </p>
         ) : null}
 
       </div>
 
-      <div className="mt-10 border-t border-zinc-100 pt-8">
-        <h3 className="text-[13px] font-semibold tracking-tight text-zinc-900">
-          ② 1장 + <span className="text-cyan-600">AI 3면</span>
+      <div className="mt-10 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-100">
+        <h3 className="text-[13px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+          ② 1장 + <span className="text-cyan-400 [html[data-theme='light']_&]:text-cyan-600">AI 3면</span>
         </h3>
-        <p className="mt-1 text-[12px] font-semibold text-zinc-600">정면 1장 올리고 → 생성 (원본 20MB까지 자동 압축)</p>
+        <p className="mt-1 text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">정면 1장 올리고 → 생성 (원본 20MB까지 자동 압축)</p>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <input
@@ -376,7 +376,7 @@ export function FaceProfileUploadSection() {
             type="button"
             onClick={() => singleInputRef.current?.click()}
             disabled={aiRunning}
-            className="rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-[13px] font-semibold text-zinc-900 transition hover:bg-zinc-50 disabled:opacity-50"
+            className="rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-[13px] font-semibold text-zinc-100 transition hover:border-white/25 hover:bg-white/10 disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-50"
           >
             사진 1장 선택
           </button>
@@ -385,7 +385,7 @@ export function FaceProfileUploadSection() {
               type="button"
               onClick={runAiGeneration}
               disabled={aiRunning}
-              className="rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-2.5 text-[13px] font-semibold text-cyan-900 transition hover:border-cyan-300 hover:bg-cyan-100 disabled:opacity-60"
+              className="rounded-xl border border-cyan-500/35 bg-cyan-950/40 px-4 py-2.5 text-[13px] font-semibold text-cyan-100 transition hover:border-cyan-400/55 hover:bg-cyan-950/70 disabled:opacity-60 [html[data-theme='light']_&]:border-cyan-200 [html[data-theme='light']_&]:bg-cyan-50 [html[data-theme='light']_&]:text-cyan-900 [html[data-theme='light']_&]:hover:border-cyan-300 [html[data-theme='light']_&]:hover:bg-cyan-100"
             >
               {aiRunning ? "처리 중…" : "AI로 3면 생성"}
             </button>
@@ -393,17 +393,17 @@ export function FaceProfileUploadSection() {
         </div>
 
         {singlePending && !aiRunning ? (
-          <p className="mt-3 text-[11px] font-semibold text-zinc-600">생성 버튼을 누르세요.</p>
+          <p className="mt-3 text-[11px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">생성 버튼을 누르세요.</p>
         ) : null}
 
         {aiRunning ? (
           <div
-            className="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4"
+            className="mt-5 rounded-xl border border-white/12 bg-black/30 px-4 py-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
             role="status"
             aria-live="polite"
           >
-            <p className="font-mono text-[11px] font-semibold text-cyan-700">{AI_STEPS[aiStepIndex]}</p>
-            <div className="mt-3 h-1 overflow-hidden rounded-full bg-zinc-200">
+            <p className="font-mono text-[11px] font-semibold text-cyan-400 [html[data-theme='light']_&]:text-cyan-700">{AI_STEPS[aiStepIndex]}</p>
+            <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/10 [html[data-theme='light']_&]:bg-zinc-200">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-reels-crimson/80 to-reels-cyan/90 transition-[width] duration-500 ease-out motion-reduce:transition-none"
                 style={{ width: `${((aiStepIndex + 1) / AI_STEPS.length) * 100}%` }}
@@ -414,11 +414,11 @@ export function FaceProfileUploadSection() {
 
         {hydrated && showAiCrop ? (
           <div className="mt-6">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-600">AI 보완 미리보기</p>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">AI 보완 미리보기</p>
             <ul className="mt-2 grid grid-cols-3 gap-2 sm:gap-3" role="list">
               {CROP_FRAMES.map(({ label, position }) => (
                 <li key={label} className="min-w-0">
-                  <div className="relative overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 aspect-[3/4]">
+                  <div className="relative overflow-hidden rounded-xl border border-white/12 bg-black/35 aspect-[3/4] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={profile.source}
@@ -429,11 +429,11 @@ export function FaceProfileUploadSection() {
                       AI
                     </span>
                   </div>
-                  <p className="mt-1.5 text-center text-[11px] font-medium text-zinc-600">{label}</p>
+                  <p className="mt-1.5 text-center text-[11px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">{label}</p>
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-[10px] font-medium text-zinc-500">
+            <p className="mt-2 text-[10px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
               {new Date(profile.generatedAt).toLocaleString("ko-KR")}
             </p>
           </div>
@@ -441,23 +441,25 @@ export function FaceProfileUploadSection() {
       </div>
 
       {hydrated && !nothingStarted ? (
-        <div className="mt-8 flex justify-end gap-2 border-t border-zinc-100 pt-6">
-          <p className="mr-auto self-center text-[12px] font-semibold text-zinc-600">
+        <div className="mt-8 flex justify-end gap-2 border-t border-white/10 pt-6 [html[data-theme='light']_&]:border-zinc-100">
+          <p className="mr-auto self-center text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
             변경 사항은 자동 저장됩니다.
           </p>
           <button
             type="button"
             onClick={clearAll}
-            className="rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-[13px] font-medium text-zinc-700 transition hover:bg-zinc-50"
+            className="rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-[13px] font-medium text-zinc-300 transition hover:border-white/25 hover:bg-white/10 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
           >
             전체 등록 해제
           </button>
         </div>
       ) : null}
 
-      {!hydrated ? <p className="mt-6 text-[12px] text-zinc-600">불러오는 중…</p> : null}
+      {!hydrated ? (
+        <p className="mt-6 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">불러오는 중…</p>
+      ) : null}
       {hydrated && nothingStarted ? (
-            <p className="mt-6 rounded-lg border border-dashed border-zinc-200 bg-zinc-50 px-3 py-5 text-center text-[12px] font-semibold text-zinc-600">
+        <p className="mt-6 rounded-lg border border-dashed border-white/15 bg-white/[0.03] px-3 py-5 text-center text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-600">
           ① 또는 ②로 등록
         </p>
       ) : null}
