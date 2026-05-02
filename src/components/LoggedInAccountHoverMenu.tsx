@@ -41,10 +41,11 @@ export function LoggedInAccountHoverMenu({
     Boolean(user?.id) &&
     (pathname === `/seller/${user!.id}` || pathname === `/seller/${encodeURIComponent(user!.id)}`);
   const onMypageHub = pathname.startsWith("/mypage") && tab === "";
-  const onSettings = pathname.startsWith("/mypage") && tab === "basic";
+  const onSettings = pathname === "/settings" || pathname.startsWith("/settings/");
   const accountSectionActive =
     pathname.startsWith("/mypage") ||
-    pathname.startsWith("/seller/");
+    pathname.startsWith("/seller/") ||
+    onSettings;
 
   const myFeedHref =
     user?.id != null && user.id.length > 0
@@ -102,12 +103,7 @@ export function LoggedInAccountHoverMenu({
           >
             마이페이지
           </Link>
-          <Link
-            href="/mypage?tab=basic"
-            role="menuitem"
-            className={menuItemLink}
-            aria-current={onSettings ? "page" : undefined}
-          >
+          <Link href="/settings" role="menuitem" className={menuItemLink} aria-current={onSettings ? "page" : undefined}>
             설정
           </Link>
           <button

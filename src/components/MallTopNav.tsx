@@ -168,7 +168,7 @@ const subscribeFixedWrap =
 function FixedSubscribeNavLink() {
   const pathname = usePathname();
   const { user } = useAuthSession();
-  if (!user || !pathname.startsWith("/mypage")) return null;
+  if (!user || (!pathname.startsWith("/mypage") && !pathname.startsWith("/settings"))) return null;
   return (
     <Link
       href="/subscribe"
@@ -193,7 +193,8 @@ export function MallTopNav() {
   /** 명예의 전당 · 마이페이지 트리: 상단 검은 헤더바 숨김, 계정·장바구니만 우측 상단 플로팅 */
   const isLeaderboardPath =
     pathname === "/leaderboard" || pathname.startsWith("/leaderboard/");
-  const isMypagePath = pathname === "/mypage" || pathname.startsWith("/mypage/");
+  const isMypagePath =
+    pathname === "/mypage" || pathname.startsWith("/mypage/") || pathname === "/settings" || pathname.startsWith("/settings/");
   const isCartPage = pathname === "/cart";
   /** 탐색/카테고리: 메인에서 스크롤 내린 것과 같은 컴팩트 헤더를 즉시 적용 */
   const compactEffective =

@@ -61,7 +61,11 @@ export async function middleware(request: NextRequest) {
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const needsAuth = request.nextUrl.pathname.startsWith("/mypage");
+  const pathname = request.nextUrl.pathname;
+  const needsAuth =
+    pathname.startsWith("/mypage") ||
+    pathname === "/settings" ||
+    pathname.startsWith("/settings/");
 
   // 일부 환경에서 recovery 메일이 "/?code=..." 형태로 돌아오는 경우만
   // reset-password 화면으로 유도합니다.
