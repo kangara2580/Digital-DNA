@@ -785,7 +785,11 @@ export function VideoCard({
             <button
               ref={cartBtnRef}
               type="button"
-              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full border border-white/20 bg-black/35 text-white opacity-90 backdrop-blur-[1px] transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
+              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full border backdrop-blur-[1px] transition-[transform,background-color,border-color,color,box-shadow] duration-300 ease-out ${actionHoverScale} active:scale-[0.94] ${actionButtonSize} ${
+                inCart
+                  ? "border-[color:var(--reels-point)]/80 bg-[var(--reels-point)]/15 text-[var(--reels-point)] shadow-[0_0_0_1px_rgba(255,9,108,0.25)]"
+                  : "border-white/20 bg-black/35 text-white opacity-90"
+              }`}
               aria-label={inCart ? "장바구니에서 빼기" : "장바구니에 담기"}
               aria-pressed={inCart}
               title={inCart ? "장바구니에서 빼기" : "장바구니 담기"}
@@ -800,7 +804,7 @@ export function VideoCard({
               }}
             >
               <CartIcon
-                className={`shrink-0 drop-shadow-md ${actionIconSize}`}
+                className={`shrink-0 drop-shadow-md ${actionIconSize} ${inCart ? "text-[var(--reels-point)]" : "text-white"}`}
               />
             </button>
             {!hideLikeAction ? (
@@ -825,7 +829,11 @@ export function VideoCard({
             ) : null}
             <button
               type="button"
-              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full border border-white/20 bg-black/35 text-white opacity-90 backdrop-blur-[1px] transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
+              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full border backdrop-blur-[1px] transition-[transform,background-color,border-color,color] duration-300 ease-out ${actionHoverScale} active:scale-[0.94] ${actionButtonSize} ${
+                wishlisted
+                  ? "border-[color:var(--reels-point)]/80 bg-[var(--reels-point)]/15 text-[var(--reels-point)] shadow-[0_0_0_1px_rgba(255,9,108,0.25)]"
+                  : "border-white/20 bg-black/35 text-white opacity-90"
+              }`}
               aria-label={wishlisted ? "찜 해제" : "찜하기"}
               aria-pressed={wishlisted}
               onClick={(e) => {
@@ -855,17 +863,19 @@ export function VideoCard({
                   }}
                 >
                   <Bookmark
-                    className="block h-full w-full"
-                    fill="white"
+                    className="block h-full w-full text-[var(--reels-point)]"
+                    fill="currentColor"
                     stroke="none"
                     strokeWidth={0}
                     aria-hidden
                   />
                 </motion.span>
                 <Bookmark
-                  className="pointer-events-none absolute inset-0 z-[1] block h-full w-full drop-shadow-md"
+                  className={`pointer-events-none absolute inset-0 z-[1] block h-full w-full drop-shadow-md ${
+                    wishlisted ? "text-[var(--reels-point)]" : "text-white"
+                  }`}
                   fill="none"
-                  stroke="white"
+                  stroke="currentColor"
                   strokeWidth={1.75}
                   aria-hidden
                 />
