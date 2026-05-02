@@ -34,11 +34,25 @@ const INPUT =
 const LABEL =
   "mb-2 block text-[13px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600";
 
-const SOURCE_TAB_ACTIVE =
-  "border-reels-crimson/40 bg-reels-crimson/10 text-zinc-50 [html[data-theme='light']_&]:text-zinc-900";
+/** 영상 소스: 한 트랙 안 세그먼트 (떠 있는 이중 핑크 버튼 느낌 완화) */
+const SOURCE_SEGMENT_TRACK =
+  "flex w-full gap-0.5 rounded-[0.65rem] border border-white/[0.1] bg-black/25 p-0.5 sm:max-w-[22rem] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80";
 
-const SOURCE_TAB_IDLE =
-  "border-white/[0.14] bg-white/[0.03] text-zinc-400 hover:border-white/22 hover:bg-white/[0.06] hover:text-zinc-200 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:text-zinc-900";
+const SOURCE_SEGMENT_BTN =
+  "relative min-h-[2.5rem] flex-1 rounded-lg px-3 text-[13px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent [html[data-theme='light']_&]:focus-visible:ring-zinc-400/40";
+
+const SOURCE_SEGMENT_BTN_ACTIVE =
+  "bg-white/[0.12] text-zinc-50 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[inset_0_0_0_1px_rgba(252,3,165,0.22)]";
+
+const SOURCE_SEGMENT_BTN_INACTIVE =
+  "text-zinc-500 hover:bg-white/[0.04] hover:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:hover:text-zinc-900";
+
+const SOURCE_PANEL =
+  "border-t border-white/[0.08] bg-black/[0.12] px-4 py-5 sm:px-5 sm:py-6 [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/40";
+
+/** 본문 액션: 탭 선택과 구분되는 얇은 아웃라인 (핑크 채우기·글로우 없음) */
+const SOURCE_SECONDARY_BTN =
+  "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg border border-white/20 bg-transparent px-4 py-2.5 text-[13px] font-medium text-zinc-100 shadow-none transition-colors hover:border-white/[0.32] hover:bg-white/[0.06] active:bg-white/[0.04] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-50";
 
 const RIGHTS_CHECK_WRAP =
   "mt-1 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[4px] border border-white/30 bg-transparent transition-[border-color,background-color] peer-checked:border-reels-crimson peer-checked:bg-reels-crimson peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-reels-crimson/55 [html[data-theme='light']_&]:border-zinc-300 peer-checked:[html[data-theme='light']_&]:border-reels-crimson";
@@ -429,121 +443,139 @@ export function SellerClipUploadForm() {
       ) : null}
 
       <div className="space-y-10">
-        <fieldset className="space-y-4">
-          <legend className={`${LABEL} mb-4`}>영상 소스</legend>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setSourceType("file")}
-              className={`rounded-xl border px-4 py-2.5 text-[13px] font-semibold transition-colors ${
-                sourceType === "file" ? SOURCE_TAB_ACTIVE : SOURCE_TAB_IDLE
-              }`}
+        <fieldset className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
+          <legend className="block w-full border-b border-white/[0.08] bg-black/15 px-4 py-3 text-left text-[13px] font-semibold text-zinc-400 sm:px-5 [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/90 [html[data-theme='light']_&]:text-zinc-600">
+            영상 소스
+          </legend>
+
+          <div className="px-4 pt-4 sm:px-5 sm:pt-5">
+            <div
+              role="tablist"
+              aria-label="영상 등록 방식"
+              className={SOURCE_SEGMENT_TRACK}
             >
-              직접 업로드
-            </button>
-            <button
-              type="button"
-              onClick={() => setSourceType("url")}
-              className={`rounded-xl border px-4 py-2.5 text-[13px] font-semibold transition-colors ${
-                sourceType === "url" ? SOURCE_TAB_ACTIVE : SOURCE_TAB_IDLE
-              }`}
-            >
-              영상 URL
-            </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={sourceType === "file"}
+                onClick={() => setSourceType("file")}
+                className={`${SOURCE_SEGMENT_BTN} ${sourceType === "file" ? SOURCE_SEGMENT_BTN_ACTIVE : SOURCE_SEGMENT_BTN_INACTIVE}`}
+              >
+                직접 업로드
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={sourceType === "url"}
+                onClick={() => setSourceType("url")}
+                className={`${SOURCE_SEGMENT_BTN} ${sourceType === "url" ? SOURCE_SEGMENT_BTN_ACTIVE : SOURCE_SEGMENT_BTN_INACTIVE}`}
+              >
+                영상 URL
+              </button>
+            </div>
           </div>
 
-          {sourceType === "file" ? (
-            <>
-              <div>
-                <span className={LABEL}>동영상 파일 (필수)</span>
-                <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,520px)] lg:items-start">
-                  <div className="min-w-0 space-y-2">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <input
-                        id={`${hid}-video`}
-                        ref={fileInputRef}
-                        type="file"
-                        accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
-                        tabIndex={-1}
-                        className="sr-only"
-                        aria-hidden
-                        onChange={(e) => {
-                          onPickFile(e.target.files?.[0] ?? null);
-                          e.target.value = "";
-                        }}
-                      />
+          <div className={SOURCE_PANEL}>
+            {sourceType === "file" ? (
+              <>
+                <input
+                  id={`${hid}-video`}
+                  ref={fileInputRef}
+                  type="file"
+                  accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
+                  tabIndex={-1}
+                  className="sr-only"
+                  aria-hidden
+                  onChange={(e) => {
+                    onPickFile(e.target.files?.[0] ?? null);
+                    e.target.value = "";
+                  }}
+                />
+                <div className="rounded-xl border border-dashed border-white/[0.12] bg-white/[0.02] px-4 py-5 sm:p-6 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/60">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+                    <div className="min-w-0 space-y-1">
+                      <p className="text-[13px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
+                        동영상 파일
+                        <span className="font-medium text-zinc-500">&nbsp;(필수)</span>
+                      </p>
+                      <p className="text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+                        MP4 · MOV · WebM
+                      </p>
+                    </div>
+                    <div className="flex min-w-0 flex-col gap-2 sm:w-auto sm:max-w-[min(100%,22rem)] sm:items-end">
                       <button
                         type="button"
-                        className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-xl border border-reels-crimson/45 bg-reels-crimson/12 px-4 py-2.5 text-[13px] font-semibold text-zinc-50 transition-colors hover:bg-reels-crimson/20 [html[data-theme='light']_&]:text-zinc-900"
+                        className={`${SOURCE_SECONDARY_BTN} w-full sm:w-auto`}
                         onClick={() => fileInputRef.current?.click()}
                       >
                         파일 선택
                       </button>
-                      <span className="pointer-events-none min-w-0 flex-1 truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                      <p className="truncate text-center text-[12px] leading-snug text-zinc-500 sm:text-right [html[data-theme='light']_&]:text-zinc-600">
                         {file?.name ?? "선택된 파일 없음"}
-                      </span>
+                      </p>
                     </div>
                   </div>
-                  {previewUrl ? (
-                    <div className="flex w-full min-w-0 justify-center overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
-                      <video
-                        ref={videoPreviewRef}
-                        className="max-h-[min(52vh,480px)] w-full object-contain"
-                        src={previewUrl}
-                        crossOrigin="anonymous"
-                        muted
-                        playsInline
-                        controls
-                        onLoadedMetadata={onVideoMeta}
-                      />
-                    </div>
-                  ) : null}
                 </div>
-              </div>
-            </>
-          ) : (
-            <div className="space-y-3">
-              <label className={LABEL} htmlFor={`${hid}-video-url`}>
-                동영상 URL (필수)
-              </label>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
-                <input
-                  id={`${hid}-video-url`}
-                  className={`${INPUT} min-h-[48px] sm:flex-1`}
-                  value={videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                  placeholder="https://... 또는 /videos/sample1.mp4"
-                />
-                <button
-                  type="button"
-                  onClick={onApplyVideoUrl}
-                  className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-white/16 bg-white/[0.06] px-4 py-2.5 text-[13px] font-semibold text-zinc-100 transition-colors hover:border-reels-crimson/30 hover:bg-white/[0.09] sm:min-w-[112px] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-300"
-                >
-                  미리보기
-                </button>
-              </div>
-              {previewUrl ? (
-                <div className="flex w-full justify-center overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
-                  <video
-                    ref={videoPreviewRef}
-                    className="max-h-[min(52vh,480px)] w-full object-contain"
-                    src={previewUrl}
-                    crossOrigin="anonymous"
-                    muted
-                    playsInline
-                    controls
-                    onLoadedMetadata={onVideoMeta}
+                {previewUrl ? (
+                  <div className="mt-5 flex w-full min-w-0 justify-center overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
+                    <video
+                      ref={videoPreviewRef}
+                      className="max-h-[min(52vh,480px)] w-full object-contain"
+                      src={previewUrl}
+                      crossOrigin="anonymous"
+                      muted
+                      playsInline
+                      controls
+                      onLoadedMetadata={onVideoMeta}
+                    />
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <div className="space-y-3">
+                <label className={`${LABEL} mb-0`} htmlFor={`${hid}-video-url`}>
+                  동영상 URL
+                  <span className="font-medium text-zinc-500">&nbsp;(필수)</span>
+                </label>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+                  <input
+                    id={`${hid}-video-url`}
+                    className={`${INPUT} min-h-[48px] sm:flex-1`}
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    placeholder="https://... 또는 /videos/sample1.mp4"
                   />
+                  <button
+                    type="button"
+                    onClick={onApplyVideoUrl}
+                    className={`${SOURCE_SECONDARY_BTN} min-h-[48px] whitespace-nowrap sm:min-w-[7.5rem]`}
+                  >
+                    미리보기
+                  </button>
                 </div>
-              ) : null}
-              <p className="text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-                업로드가 어렵다면 공개 접근 가능한 영상 주소로도 등록할 수 있어요.
-              </p>
-            </div>
-          )}
+                <p className="text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+                  공개 접근 가능한 영상 주소를 넣으면 미리보기로 확인할 수 있어요.
+                </p>
+                {previewUrl ? (
+                  <div className="mt-5 flex w-full justify-center overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
+                    <video
+                      ref={videoPreviewRef}
+                      className="max-h-[min(52vh,480px)] w-full object-contain"
+                      src={previewUrl}
+                      crossOrigin="anonymous"
+                      muted
+                      playsInline
+                      controls
+                      onLoadedMetadata={onVideoMeta}
+                    />
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </div>
 
           {previewUrl ? (
-            <div className="rounded-xl border border-white/10 bg-black/20 p-4 sm:p-5 [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/80">
+            <div className="border-t border-white/[0.08] p-4 sm:p-5 [html[data-theme='light']_&]:border-zinc-100">
               <span className={LABEL}>썸네일 장면</span>
               <p className="mb-4 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                 슬라이더로 장면을 고르면 등록 시 그 화면이 썸네일로 저장돼요. 일부 외부
