@@ -1,14 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 const BTN =
   "flex w-full items-center justify-center gap-2.5 rounded-full border border-white/20 bg-white/[0.06] py-3 text-[14px] font-extrabold text-zinc-100 shadow-sm transition hover:border-white/35 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-55 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-50";
 
 type Props = {
-  /** 로그인/가입 후 이동할 앱 내 경로 (쿼리 `redirect` 등) */
   nextPath: string | null;
   label: string;
   className?: string;
@@ -22,34 +19,13 @@ export function GoogleOAuthButton({ nextPath, label, className }: Props) {
       type="button"
       disabled={busy}
       className={className ?? BTN}
-      onClick={async () => {
+      onClick={() => {
         const next =
           nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")
             ? nextPath
             : "/";
-        const redirectTo = buildAuthCallbackRedirectTo(next);
-        const supabase = getSupabaseBrowserClient();
         setBusy(true);
-        try {
-          if (supabase && redirectTo) {
-            const { data, error } = await supabase.auth.signInWithOAuth({
-              provider: "google",
-              options: {
-                redirectTo,
-                queryParams: { prompt: "select_account" },
-              },
-            });
-            if (error) throw error;
-            if (data.url) {
-              window.location.assign(data.url);
-              return;
-            }
-          }
-          // 환경변수/클라이언트 초기화 실패 시 서버 시작 라우트로 폴백
-          window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
-        } finally {
-          setBusy(false);
-        }
+        window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
       }}
     >
       <svg className="h-[18px] w-[18px] shrink-0" viewBox="0 0 48 48" aria-hidden>
@@ -70,7 +46,7 @@ export function GoogleOAuthButton({ nextPath, label, className }: Props) {
           d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"
         />
       </svg>
-      {busy ? "Google로 이동 중…" : label}
+      {busy ? "Google로 이동 중..." : label}
     </button>
   );
 }
