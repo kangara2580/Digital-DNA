@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { ensureProfileAdminColumns } from "@/lib/ensureProfileAdminColumns";
 
 export type AdminMembersSearchParams = {
   q?: string;
@@ -232,8 +231,49 @@ async function fetchMemberTotal(input: {
 
 async function fetchSelectedMember(userId: string | undefined): Promise<AdminMemberDetail | null> {
   if (!userId) return null;
-  const rows = await fetchMemberRows({ q: userId, status: "all", role: "all", page: 1 });
-  const base = rows.find((row) => row.user_id === userId);
+  const rows = await prisma.$queryRaw<ProfileRow[]>`
+    select
+      p.user_id::text,
+      p.email,
+      p.nickname,
+      p.phone,
+      p.country,
+      p.avatar_custom,
+      p.account_status,
+      p.role,
+      p.admin_memo,
+      p.suspended_at,
+      p.updated_at,
+      (
+        select count(*)::int
+        from public.purchases pu
+        where pu.buyer_id = p.user_id::text
+      ) as purchases_count,
+      (
+        select coalesce(sum(pu.price), 0)::int
+        from public.purchases pu
+        where pu.buyer_id = p.user_id::text
+      ) as purchases_total,
+      (
+        select count(*)::int
+        from public.generation_jobs j
+        where j.user_id = p.user_id::text
+      ) as jobs_count,
+      (
+        select count(*)::int
+        from public.reports r
+        where r.reporter_id = p.user_id::text
+      ) as reports_count,
+      (
+        select count(*)::int
+        from public.videos v
+        where v.seller_id = p.user_id::text
+      ) as videos_count
+    from public.profiles p
+    where p.user_id::text = ${userId}
+    limit 1
+  `;
+  const base = rows[0];
   if (!base) return null;
 
   const [recentPurchases, recentJobs, recentReports, recentVideos, recentNotes] =
@@ -313,8 +353,6 @@ async function fetchSelectedMember(userId: string | undefined): Promise<AdminMem
 export async function getAdminMembersData(
   params: AdminMembersSearchParams,
 ): Promise<AdminMembersData> {
-  await ensureProfileAdminColumns();
-
   const q = params.q?.trim() ?? "";
   const status = STATUSES.has(params.status ?? "") ? params.status ?? "all" : "all";
   const role = ROLES.has(params.role ?? "") ? params.role ?? "all" : "all";
