@@ -174,7 +174,7 @@ export default function CartPage() {
           </p>
           <Link
             href="/"
-            className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
+            className="mt-6 inline-flex rounded-full border-2 border-white bg-white px-5 py-2.5 text-[14px] font-extrabold text-zinc-900 transition-colors duration-200 hover:border-[#ff0055] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-[#ff0055]"
           >
             둘러보기
           </Link>
