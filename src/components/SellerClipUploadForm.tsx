@@ -358,14 +358,9 @@ export function SellerClipUploadForm() {
       <div className="flex flex-wrap items-center gap-2">
         <Film className="h-5 w-5 text-reels-cyan" strokeWidth={2} aria-hidden />
         <h2 className="text-lg font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-xl">
-          릴스 등록 · 메타데이터
+          영상 등록
         </h2>
       </div>
-      <p className="mt-2 text-[13px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        파일은 서버에 저장되며 DB에 목록이 생성됩니다. 미리보기에서 썸네일로 쓸
-        장면(기본: 첫 화면)을 고를 수 있고, 심사·노출 단계에서 다시 조정될 수
-        있어요.
-      </p>
 
       {message ? (
         <div
