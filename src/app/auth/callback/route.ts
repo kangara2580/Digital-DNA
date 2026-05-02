@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { POST_LOGIN_REDIRECT_PATH } from "@/lib/postLoginRedirect";
 import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
 
 /** Edge가 아닌 Node에서 Supabase Auth HTTP 호출 안정화 */
@@ -77,10 +78,6 @@ export async function GET(request: NextRequest) {
     requestUrl.searchParams.get("error_description") ||
     requestUrl.searchParams.get("error") ||
     "";
-  const nextRaw = requestUrl.searchParams.get("next");
-  const next =
-    nextRaw && nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/";
-
   if (providerError) {
     return oauthErrorRedirect(requestUrl.origin, providerError);
   }
@@ -89,7 +86,7 @@ export async function GET(request: NextRequest) {
     return oauthErrorRedirect(requestUrl.origin, "missing_code_or_config");
   }
 
-  const redirectTo = new URL(next, requestUrl.origin);
+  const redirectTo = new URL(POST_LOGIN_REDIRECT_PATH, requestUrl.origin);
   const response = NextResponse.redirect(redirectTo);
 
   const supabase = createServerClient(supabaseUrl, anonKey, {
