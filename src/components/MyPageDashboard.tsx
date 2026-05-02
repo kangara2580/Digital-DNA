@@ -17,12 +17,12 @@ type MyPageTab =
   | "wishlist"
   | "likes";
 
-const TAB_ITEMS: { id: MyPageTab; label: string; href: string; desc: string }[] = [
-  { id: "listings", label: "내 등록 영상", href: "/mypage?tab=listings", desc: "판매로 올린 릴스" },
-  { id: "wishlist", label: "찜 목록", href: "/mypage?tab=wishlist", desc: "저장한 릴스" },
-  { id: "likes", label: "좋아요한 동영상", href: "/mypage?tab=likes", desc: "하트 표시한 릴스" },
-  { id: "analytics", label: "판매 분석", href: "/mypage?tab=analytics", desc: "수익·성장·영상별 지표" },
-  { id: "drafts", label: "임시 저장", href: "/mypage?tab=drafts", desc: "이어 편집 · 구매" },
+const TAB_ITEMS: { id: MyPageTab; label: string; href: string }[] = [
+  { id: "listings", label: "내 등록 영상", href: "/mypage?tab=listings" },
+  { id: "wishlist", label: "찜 목록", href: "/mypage?tab=wishlist" },
+  { id: "likes", label: "좋아요한 동영상", href: "/mypage?tab=likes" },
+  { id: "analytics", label: "판매 분석", href: "/mypage?tab=analytics" },
+  { id: "drafts", label: "임시 저장", href: "/mypage?tab=drafts" },
 ];
 
 function LoginRequiredPanel({
@@ -78,13 +78,6 @@ export function MyPageDashboard() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">마이페이지</h1>
-          <p className="mt-1 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            계정 정보·프로필 이미지·비밀번호는{" "}
-            <Link href="/settings" className="text-reels-cyan/90 underline-offset-2 hover:underline">
-              설정
-            </Link>
-            에서 바꿀 수 있어요.
-          </p>
         </div>
       </div>
 
@@ -105,9 +98,6 @@ export function MyPageDashboard() {
                   }`}
                 >
                   <p className="text-[12px] font-bold leading-snug sm:text-[13px]">{item.label}</p>
-                  <p className="mt-0.5 text-[10px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[11px]">
-                    {item.desc}
-                  </p>
                 </Link>
               );
             })}

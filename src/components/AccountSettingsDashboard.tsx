@@ -23,9 +23,9 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 type SettingsTab = "basic" | "profile";
 
-const SETTINGS_TAB_ITEMS: { id: SettingsTab; label: string; href: string; desc: string }[] = [
-  { id: "basic", label: "기본정보", href: "/settings", desc: "아이디 · 활동 요약" },
-  { id: "profile", label: "프로필 관리", href: "/settings?tab=profile", desc: "3면 얼굴 등록" },
+const SETTINGS_TAB_ITEMS: { id: SettingsTab; label: string; href: string }[] = [
+  { id: "basic", label: "기본정보", href: "/settings" },
+  { id: "profile", label: "프로필 관리", href: "/settings?tab=profile" },
 ];
 
 function LoginRequiredPanel({ tab }: { tab: { id: SettingsTab; label: string; href: string } }) {
@@ -195,13 +195,6 @@ export function AccountSettingsDashboard() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">설정</h1>
-          <p className="mt-1 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            <Link href="/mypage?tab=listings" className="text-reels-cyan/90 underline-offset-2 hover:underline">
-              마이페이지
-            </Link>
-            {" · "}
-            찜, 등록 영상 등은 마이페이지에서 확인할 수 있어요.
-          </p>
         </div>
       </div>
 
@@ -221,9 +214,6 @@ export function AccountSettingsDashboard() {
                   }`}
                 >
                   <p className="text-[12px] font-bold leading-snug sm:text-[13px]">{item.label}</p>
-                  <p className="mt-0.5 text-[10px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[11px]">
-                    {item.desc}
-                  </p>
                 </Link>
               );
             })}
