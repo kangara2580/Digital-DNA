@@ -150,6 +150,18 @@ export default async function AdminPage() {
           >
             AI 작업 관리
           </Link>
+          <Link
+            href="/admin/purchases"
+            className="flex h-10 items-center rounded-md px-3 text-sm font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+          >
+            구매/환불 관리
+          </Link>
+          <Link
+            href="/admin/reports"
+            className="flex h-10 items-center rounded-md px-3 text-sm font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+          >
+            신고/검수 관리
+          </Link>
           {navItems.map(([label, href]) => (
             <Link
               key={href}

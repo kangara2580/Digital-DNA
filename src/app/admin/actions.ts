@@ -330,6 +330,7 @@ export async function updatePurchaseStatus(formData: FormData): Promise<void> {
   });
 
   revalidatePath("/admin");
+  revalidatePath("/admin/purchases");
 }
 
 export async function updateReportStatus(formData: FormData): Promise<void> {
@@ -379,6 +380,7 @@ export async function updateReportStatus(formData: FormData): Promise<void> {
   });
 
   revalidatePath("/admin");
+  revalidatePath("/admin/reports");
 }
 
 export async function syncCatalogVideosToDb(): Promise<void> {

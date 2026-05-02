@@ -9,7 +9,7 @@ export type ServerAuthUser = {
 
 export type ServerAuthResult =
   | { ok: true; user: ServerAuthUser; token: string }
-  | { ok: false; status: 401 | 503; error: string };
+  | { ok: false; status: 401 | 403 | 503; error: string };
 
 export async function requireBearerUser(request: Request): Promise<ServerAuthResult> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -27,6 +27,7 @@ export async function requireBearerUser(request: Request): Promise<ServerAuthRes
   }
 
   const supabase = createClient(url, anonKey, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const {
@@ -44,6 +45,20 @@ export async function requireBearerUser(request: Request): Promise<ServerAuthRes
       token,
       user: { id: fallbackUserId, email: null, user_metadata: {} },
     };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("account_status")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (
+    profile &&
+    typeof profile.account_status === "string" &&
+    profile.account_status !== "active"
+  ) {
+    return { ok: false, status: 403, error: `account_${profile.account_status}` };
   }
 
   return {

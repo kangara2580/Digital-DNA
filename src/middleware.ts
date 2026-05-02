@@ -61,7 +61,10 @@ export async function middleware(request: NextRequest) {
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const needsAuth = request.nextUrl.pathname.startsWith("/mypage");
+  const needsAuth =
+    request.nextUrl.pathname.startsWith("/mypage") ||
+    request.nextUrl.pathname.startsWith("/sell") ||
+    request.nextUrl.pathname.startsWith("/upload");
 
   // 일부 환경에서 recovery 메일이 "/?code=..." 형태로 돌아오는 경우만
   // reset-password 화면으로 유도합니다.
@@ -116,6 +119,24 @@ export async function middleware(request: NextRequest) {
       redirectUrl.pathname = "/login";
       const returnTo = request.nextUrl.pathname + request.nextUrl.search;
       redirectUrl.searchParams.set("redirect", returnTo);
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("account_status")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (
+      profile &&
+      typeof profile.account_status === "string" &&
+      profile.account_status !== "active"
+    ) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/account-suspended";
+      redirectUrl.search = "";
+      redirectUrl.searchParams.set("status", profile.account_status);
       return NextResponse.redirect(redirectUrl);
     }
   } catch {

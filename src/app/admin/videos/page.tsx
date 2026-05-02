@@ -23,10 +23,10 @@ type PageProps = {
 const navItems = [
   ["요약", "/admin"],
   ["영상 관리", "/admin/videos"],
-  ["회원", "/admin#members"],
-  ["구매", "/admin#purchases"],
+  ["회원", "/admin/members"],
+  ["구매", "/admin/purchases"],
   ["AI 작업", "/admin#jobs"],
-  ["신고", "/admin#reports"],
+  ["신고", "/admin/reports"],
   ["기록", "/admin#audit"],
 ];
 
