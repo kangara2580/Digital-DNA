@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useState, type ReactNode } from "react";
+import { Suspense, useCallback, useState, type ReactNode } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
@@ -23,29 +23,30 @@ const menuItemLink =
 const menuItemLogout =
   "flex w-full whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold text-rose-200/95 transition-colors hover:bg-white/[0.08] disabled:opacity-50 [html[data-theme='light']_&]:text-rose-700 [html[data-theme='light']_&]:hover:bg-zinc-100";
 
-/** 로그인 전용 — 프로필 호버: 내 피드 · 마이페이지 · 설정 · 로그아웃 */
-export function LoggedInAccountHoverMenu({
+type InnerProps = Props & {
+  /** `/mypage?tab=` 값 — Next 15에서 `useSearchParams`는 Suspense 경계 안에서만 씀 */
+  mypageQueryTab: string;
+};
+
+function LoggedInAccountHoverMenuInner({
   triggerClassName,
   children,
   "aria-label": ariaLabel = "계정 메뉴",
   rootClassName,
-}: Props) {
+  mypageQueryTab,
+}: InnerProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { user } = useAuthSession();
   const [busy, setBusy] = useState(false);
 
-  const tab = searchParams?.get("tab") ?? "";
   const onMyFeed =
     Boolean(user?.id) &&
     (pathname === `/seller/${user!.id}` || pathname === `/seller/${encodeURIComponent(user!.id)}`);
-  const onMypageHub = pathname.startsWith("/mypage") && tab === "";
+  const onMypageHub = pathname.startsWith("/mypage") && mypageQueryTab === "";
   const onSettings = pathname === "/settings" || pathname.startsWith("/settings/");
   const accountSectionActive =
-    pathname.startsWith("/mypage") ||
-    pathname.startsWith("/seller/") ||
-    onSettings;
+    pathname.startsWith("/mypage") || pathname.startsWith("/seller/") || onSettings;
 
   const myFeedHref =
     user?.id != null && user.id.length > 0
@@ -70,8 +71,7 @@ export function LoggedInAccountHoverMenu({
     "pointer-events-none invisible absolute right-0 top-full z-[240] min-w-0 w-max pt-2 opacity-0 transition-[opacity,visibility] duration-150 ease-out motion-reduce:transition-none group-hover/acctmenu:pointer-events-auto group-hover/acctmenu:visible group-hover/acctmenu:opacity-100 group-focus-within/acctmenu:pointer-events-auto group-focus-within/acctmenu:visible group-focus-within/acctmenu:opacity-100";
 
   const rootAlign =
-    rootClassName ??
-    "group/acctmenu relative inline-flex shrink-0 flex-col items-end";
+    rootClassName ?? "group/acctmenu relative inline-flex shrink-0 flex-col items-end";
 
   return (
     <div className={rootAlign}>
@@ -103,7 +103,12 @@ export function LoggedInAccountHoverMenu({
           >
             마이페이지
           </Link>
-          <Link href="/settings" role="menuitem" className={menuItemLink} aria-current={onSettings ? "page" : undefined}>
+          <Link
+            href="/settings"
+            role="menuitem"
+            className={menuItemLink}
+            aria-current={onSettings ? "page" : undefined}
+          >
             설정
           </Link>
           <button
@@ -118,5 +123,20 @@ export function LoggedInAccountHoverMenu({
         </div>
       </div>
     </div>
+  );
+}
+
+function LoggedInAccountHoverSearchParamsBinder(props: Props) {
+  const searchParams = useSearchParams();
+  const mypageQueryTab = searchParams?.get("tab") ?? "";
+  return <LoggedInAccountHoverMenuInner {...props} mypageQueryTab={mypageQueryTab} />;
+}
+
+/** 로그인 전용 — 프로필 호버: 내 피드 · 마이페이지 · 설정 · 로그아웃 */
+export function LoggedInAccountHoverMenu(props: Props) {
+  return (
+    <Suspense fallback={<LoggedInAccountHoverMenuInner {...props} mypageQueryTab="" />}>
+      <LoggedInAccountHoverSearchParamsBinder {...props} />
+    </Suspense>
   );
 }
