@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import type { AuthError } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
+import { syncProfileFromAuthUserAsServer } from "@/lib/serverProfileSync";
 import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
 import { syncProfileFromAuthUser } from "@/lib/supabaseProfiles";
 
@@ -209,7 +210,10 @@ export async function GET(request: NextRequest) {
   }
 
   if (user) {
-    await syncProfileFromAuthUser(supabase, user);
+    const profile = await syncProfileFromAuthUser(supabase, user);
+    if (!profile) {
+      await syncProfileFromAuthUserAsServer(user);
+    }
   }
 
   return response;
