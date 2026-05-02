@@ -444,9 +444,7 @@ export function SellerClipUploadForm() {
 
       <div className="space-y-10">
         <fieldset className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
-          <legend className="block w-full border-b border-white/[0.08] bg-black/15 px-4 py-3 text-left text-[13px] font-semibold text-zinc-400 sm:px-5 [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/90 [html[data-theme='light']_&]:text-zinc-600">
-            영상 소스
-          </legend>
+          <legend className="sr-only">영상 소스</legend>
 
           <div className="px-4 pt-4 sm:px-5 sm:pt-5">
             <div
@@ -496,7 +494,6 @@ export function SellerClipUploadForm() {
                     <div className="min-w-0 space-y-1">
                       <p className="text-[13px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
                         동영상 파일
-                        <span className="font-medium text-zinc-500">&nbsp;(필수)</span>
                       </p>
                       <p className="text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
                         MP4 · MOV · WebM
@@ -535,7 +532,6 @@ export function SellerClipUploadForm() {
               <div className="space-y-3">
                 <label className={`${LABEL} mb-0`} htmlFor={`${hid}-video-url`}>
                   동영상 URL
-                  <span className="font-medium text-zinc-500">&nbsp;(필수)</span>
                 </label>
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
                   <input
