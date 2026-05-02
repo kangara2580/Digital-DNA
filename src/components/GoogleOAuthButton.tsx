@@ -25,7 +25,9 @@ export function GoogleOAuthButton({ nextPath, label, className }: Props) {
             ? nextPath
             : "/";
         setBusy(true);
-        window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
+        const authStart = new URL("/api/auth/google/start", window.location.origin);
+        authStart.searchParams.set("next", next);
+        window.location.assign(authStart.toString());
       }}
     >
       <svg className="h-[18px] w-[18px] shrink-0" viewBox="0 0 48 48" aria-hidden>
