@@ -28,7 +28,7 @@ import {
 } from "@/lib/supabaseSellerUploadDraft";
 
 const INPUT =
-  "w-full rounded-xl border border-white/14 bg-white/[0.06] px-4 py-3 text-[15px] leading-snug text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-reels-crimson/35 focus:ring-1 focus:ring-reels-crimson/15 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-400";
+  "w-full rounded-xl border border-white/14 bg-white/[0.06] px-4 py-3 text-[15px] leading-snug text-zinc-100 caret-reels-crimson outline-none transition placeholder:text-zinc-600 focus:border-reels-crimson/35 focus:ring-1 focus:ring-reels-crimson/15 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-400";
 
 const LABEL =
   "mb-2 block text-[13px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600";

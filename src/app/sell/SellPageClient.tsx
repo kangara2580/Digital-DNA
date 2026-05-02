@@ -43,7 +43,12 @@ export function SellPageClient() {
       <main className="mx-auto max-w-[min(40rem,100%)] px-4 pb-14 pt-[max(4rem,env(safe-area-inset-top)+2.75rem)] text-zinc-100 sm:px-6 [html[data-theme='light']_&]:text-zinc-900">
         <div className="rounded-2xl border border-white/10 bg-zinc-900/50 p-6 sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm">
           <div className="flex items-center gap-2">
-            <Store className="h-6 w-6 shrink-0 text-reels-crimson" strokeWidth={2} aria-hidden />
+            <Store
+              aria-hidden
+              className="h-6 w-6 shrink-0"
+              color="#fc03a5"
+              strokeWidth={2}
+            />
             <h1 className="text-[clamp(1.15rem,3.2vw,1.35rem)] font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
               릴스를 판매하려면 로그인이 필요해요
             </h1>
