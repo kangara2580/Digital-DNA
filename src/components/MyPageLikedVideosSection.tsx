@@ -205,13 +205,6 @@ export function MyPageLikedVideosSection() {
                   ))}
                 </select>
               </label>
-              <button
-                type="button"
-                onClick={() => void loadLikes()}
-                className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
-              >
-                새로고침
-              </button>
               {entries.length > 0 ? (
                 <>
                   <button
