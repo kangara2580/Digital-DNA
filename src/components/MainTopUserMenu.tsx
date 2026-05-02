@@ -36,10 +36,10 @@ function ProfileGlyph() {
   const g = topNavHeroProfileGlyphIconClass();
   return (
     <svg viewBox="0 0 24 24" className={g} fill="none" stroke="currentColor" aria-hidden>
-      <circle cx="12" cy="8" r="4" strokeWidth="2.25" />
+      <circle cx="12" cy="8" r="4" strokeWidth="2.35" />
       <path
         d="M4 20C4 15.8 7.6 12.4 12 12.4C16.4 12.4 20 15.8 20 20H4Z"
-        strokeWidth="2.25"
+        strokeWidth="2.35"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -100,7 +100,7 @@ export function MainTopUserMenu({ withCart = true }: Props) {
   if (loading) return null;
 
   const guestAuthButtonInner = (
-    <span className="relative inline-flex min-h-[26px] min-w-[26px] shrink-0 items-center justify-center">
+    <span className="relative inline-flex min-h-[30px] min-w-[30px] shrink-0 items-center justify-center">
       <ProfileGlyph />
       <svg
         viewBox="0 0 24 24"
