@@ -102,7 +102,32 @@ export default function LicensePage() {
         </article>
 
         <article className="border-t border-white/15 pt-6 [html[data-theme='light']_&]:border-zinc-200">
-          <h2 className={h2}>제 5 조 (이용자의 의무 및 금지 사항)</h2>
+          <h2 className={h2}>제 5 조 (콘텐츠의 심사 및 게재)</h2>
+          <div className={body}>
+            <p>
+              당사는 서비스의 품질 유지 및 법령 준수를 위해 이용자가 판매 목적으로 업로드한 콘텐츠에 대하여
+              사전 또는 사후 심사를 진행할 수 있습니다.
+            </p>
+            <p>
+              당사는 다음 각 호에 해당하는 콘텐츠에 대하여 승인을 거부하거나 노출을 제한, 삭제할 수 있습니다.
+            </p>
+            <p>
+              <span className={lbl}>①</span> 당사가 정한 기술적 규격(해상도, 파일 형식 등)에 미달하는 경우
+            </p>
+            <p>
+              <span className={lbl}>②</span> 콘텐츠의 내용이 제 6 조(이용자의 의무 및 금지 사항)를 위반하는 경우
+            </p>
+            <p>
+              <span className={lbl}>③</span> 기타 서비스의 운영 목적에 부합하지 않는다고 판단되는 경우
+            </p>
+            <p>
+              콘텐츠의 노출 순서, 영역 및 방식은 당사의 운영 정책 및 알고리즘에 따라 결정됩니다.
+            </p>
+          </div>
+        </article>
+
+        <article className="border-t border-white/15 pt-6 [html[data-theme='light']_&]:border-zinc-200">
+          <h2 className={h2}>제 6 조 (이용자의 의무 및 금지 사항)</h2>
           <div className={body}>
             <p>
               다음 행위는 엄격히 금지되며, 위반 시 서비스 이용 제한 및 법적 책임을 물을 수 있습니다.
@@ -126,7 +151,7 @@ export default function LicensePage() {
         </article>
 
         <article className="border-t border-white/15 pt-6 [html[data-theme='light']_&]:border-zinc-200">
-          <h2 className={h2}>제 6 조 (책임 및 면책 조항)</h2>
+          <h2 className={h2}>제 7 조 (책임 및 면책 조항)</h2>
           <div className={body}>
             <p>
               <span className={lbl}>기술 제공자의 지위:</span> 당사는 AI 생성 기술 및 플랫폼을 제공할 뿐이며,
@@ -144,7 +169,7 @@ export default function LicensePage() {
         </article>
 
         <article className="border-t border-white/15 pt-6 [html[data-theme='light']_&]:border-zinc-200">
-          <h2 className={h2}>제 7 조 (손해배상 및 구상권)</h2>
+          <h2 className={h2}>제 8 조 (손해배상 및 구상권)</h2>
           <div className={body}>
             <p>
               이용자의 약관 위반으로 인하여 당사가 제3자로부터 법적 청구 또는 손해배상 책임을 부담하게 될 경우,
@@ -154,7 +179,7 @@ export default function LicensePage() {
         </article>
 
         <article className="border-t border-white/15 pt-6 [html[data-theme='light']_&]:border-zinc-200">
-          <h2 className={h2}>제 8 조 (수사기관 협조)</h2>
+          <h2 className={h2}>제 9 조 (수사기관 협조)</h2>
           <div className={body}>
             <p>
               당사는 관련 법령에 따라 적법한 절차에 의한 요청이 있는 경우, 이용자의 서비스 이용 기록 및 관련
@@ -164,7 +189,7 @@ export default function LicensePage() {
         </article>
 
         <article className="border-t border-white/15 pt-6 [html[data-theme='light']_&]:border-zinc-200">
-          <h2 className={h2}>제 9 조 (개인정보 보호 및 보안)</h2>
+          <h2 className={h2}>제 10 조 (개인정보 보호 및 보안)</h2>
           <div className={body}>
             <p>당사는 관련 법령이 정하는 바에 따라 이용자의 개인정보를 보호하기 위해 노력합니다.</p>
             <p>
@@ -175,7 +200,7 @@ export default function LicensePage() {
         </article>
 
         <article className="border-t border-white/15 pt-6 [html[data-theme='light']_&]:border-zinc-200">
-          <h2 className={h2}>제 10 조 (서비스의 중단 및 변경)</h2>
+          <h2 className={h2}>제 11 조 (서비스의 중단 및 변경)</h2>
           <div className={body}>
             <p>
               당사는 시스템 점검, 교체, 고장 또는 운영상 상당한 이유가 있는 경우 서비스의 전부 또는 일부를
@@ -189,7 +214,7 @@ export default function LicensePage() {
         </article>
 
         <article className="border-t border-white/15 pt-6 [html[data-theme='light']_&]:border-zinc-200">
-          <h2 className={h2}>제 11 조 (약관 외 준칙)</h2>
+          <h2 className={h2}>제 12 조 (약관 외 준칙)</h2>
           <div className={body}>
             <p>
               본 약관에 명시되지 않은 사항은 전기통신기본법, 전기통신사업법, 저작권법 및 기타 관련 법령의 규정에
@@ -199,7 +224,7 @@ export default function LicensePage() {
         </article>
 
         <article className="border-t border-white/15 pt-6 [html[data-theme='light']_&]:border-zinc-200">
-          <h2 className={h2}>제 12 조 (재판권 및 준거법)</h2>
+          <h2 className={h2}>제 13 조 (재판권 및 준거법)</h2>
           <div className={body}>
             <p>
               당사와 이용자 간에 발생한 분쟁에 관한 소송은 당사의 본사 소재지를 관할하는 법원을 합의 관할 법원으로
@@ -210,7 +235,7 @@ export default function LicensePage() {
         </article>
 
         <article className="border-t border-b border-white/15 pb-6 pt-6 [html[data-theme='light']_&]:border-zinc-200">
-          <h2 className={h2}>제 13 조 (약관 변경)</h2>
+          <h2 className={h2}>제 14 조 (약관 변경)</h2>
           <div className={body}>
             <p>
               당사는 서비스 운영 및 법적 기준의 변경에 따라 본 약관을 수정할 수 있습니다.
