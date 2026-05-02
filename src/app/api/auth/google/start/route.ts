@@ -69,7 +69,14 @@ export async function GET(request: Request) {
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? "";
 
   if (!supabaseOrigin || !anonKey) {
-    console.error("[oauth:start] missing Supabase env", envStatus());
+    console.log("[oauth:start] missing Supabase env", {
+      origin: reqUrl.origin,
+      redirectTo: null,
+      generatedAuthUrl: null,
+      supabaseUrlExists: Boolean(supabaseOrigin),
+      supabaseAnonKeyExists: Boolean(anonKey),
+      env: envStatus(),
+    });
     const errorUrl = new URL("/login", reqUrl.origin);
     errorUrl.searchParams.set("error", "oauth_start_failed");
     errorUrl.searchParams.set(
@@ -93,10 +100,12 @@ export async function GET(request: Request) {
   authUrl.searchParams.set("prompt", "consent");
   authUrl.searchParams.set("apikey", anonKey);
 
-  console.info("[oauth:start] generated Google OAuth URL", {
+  console.log("[oauth:start] generated Google OAuth URL", {
     origin: reqUrl.origin,
     redirectTo: redirectTo.toString(),
-    supabaseAuthorizeUrl: authUrl.toString().replace(anonKey, "[redacted]"),
+    generatedAuthUrl: authUrl.toString().replace(anonKey, "[redacted]"),
+    supabaseUrlExists: Boolean(supabaseOrigin),
+    supabaseAnonKeyExists: Boolean(anonKey),
     env: envStatus(),
   });
 

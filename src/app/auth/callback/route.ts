@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import type { AuthError } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
 import { syncProfileFromAuthUser } from "@/lib/supabaseProfiles";
@@ -56,21 +57,21 @@ function isTransientNetworkAuthError(message: string): boolean {
 async function exchangeCodeWithRetry(
   supabase: ReturnType<typeof createServerClient>,
   code: string,
-): Promise<{ error: { message: string } | null }> {
-  let last = "exchange_failed";
+): Promise<{ error: AuthError | Error | null }> {
+  let last: AuthError | Error = new Error("exchange_failed");
 
   for (let attempt = 0; attempt < 2; attempt++) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) return { error: null };
 
-    last = error.message || "exchange_failed";
-    if (!isTransientNetworkAuthError(last) || attempt === 1) {
-      return { error: { message: last } };
+    last = error;
+    if (!isTransientNetworkAuthError(error.message || "") || attempt === 1) {
+      return { error };
     }
     await new Promise((resolve) => setTimeout(resolve, 320));
   }
 
-  return { error: { message: last } };
+  return { error: last };
 }
 
 /**
@@ -86,41 +87,69 @@ async function exchangeCodeWithRetry(
 export async function GET(request: NextRequest) {
   const requestUrl = request.nextUrl;
   const code = requestUrl.searchParams.get("code");
+  const error = requestUrl.searchParams.get("error");
+  const errorDescription = requestUrl.searchParams.get("error_description");
   const providerError =
-    requestUrl.searchParams.get("error_description") ||
-    requestUrl.searchParams.get("error") ||
+    errorDescription ||
+    error ||
     "";
   const next = safeNextPath(requestUrl.searchParams.get("next"));
-
-  if (providerError) {
-    console.error("[oauth:callback] provider returned error", {
-      providerError,
-      origin: requestUrl.origin,
-    });
-    return callbackFailureRedirect(requestUrl.origin, providerError);
-  }
-
-  if (!code) {
-    console.error("[oauth:callback] missing code", {
-      origin: requestUrl.origin,
-      pathname: requestUrl.pathname,
-      searchParams: Array.from(requestUrl.searchParams.keys()),
-      env: envStatus(),
-    });
-    return callbackFailureRedirect(requestUrl.origin, "missing_code");
-  }
-
   const supabaseUrl = normalizeSupabaseOrigin(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
   );
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? "";
 
+  console.log("[oauth:callback] received callback", {
+    href: requestUrl.href,
+    searchParams: Object.fromEntries(requestUrl.searchParams.entries()),
+    codeExists: Boolean(code),
+    error,
+    error_description: errorDescription,
+    supabaseUrlExists: Boolean(supabaseUrl),
+    supabaseAnonKeyExists: Boolean(anonKey),
+  });
+
+  if (providerError) {
+    console.log("[oauth:callback] provider returned error", {
+      href: requestUrl.href,
+      searchParams: Object.fromEntries(requestUrl.searchParams.entries()),
+      codeExists: Boolean(code),
+      error,
+      error_description: errorDescription,
+      providerError,
+      supabaseUrlExists: Boolean(supabaseUrl),
+      supabaseAnonKeyExists: Boolean(anonKey),
+    });
+    return callbackFailureRedirect(requestUrl.origin, providerError);
+  }
+
+  if (!code) {
+    console.log("[oauth:callback] missing code", {
+      href: requestUrl.href,
+      searchParams: Object.fromEntries(requestUrl.searchParams.entries()),
+      searchParamKeys: Array.from(requestUrl.searchParams.keys()),
+      codeExists: false,
+      error,
+      error_description: errorDescription,
+      supabaseUrlExists: Boolean(supabaseUrl),
+      supabaseAnonKeyExists: Boolean(anonKey),
+    });
+    return callbackFailureRedirect(requestUrl.origin, "missing_code");
+  }
+
   if (!supabaseUrl || !anonKey) {
     const reason = !supabaseUrl
       ? "missing_NEXT_PUBLIC_SUPABASE_URL"
       : "missing_NEXT_PUBLIC_SUPABASE_ANON_KEY";
-    console.error("[oauth:callback] missing Supabase env", {
+    console.log("[oauth:callback] missing Supabase env", {
       reason,
+      href: requestUrl.href,
+      searchParams: Object.fromEntries(requestUrl.searchParams.entries()),
+      codeExists: Boolean(code),
+      error,
+      error_description: errorDescription,
+      supabaseUrlExists: Boolean(supabaseUrl),
+      supabaseAnonKeyExists: Boolean(anonKey),
       env: envStatus(),
     });
     return callbackFailureRedirect(requestUrl.origin, reason);
@@ -145,8 +174,18 @@ export async function GET(request: NextRequest) {
 
   const { error: exchangeErr } = await exchangeCodeWithRetry(supabase, code);
   if (exchangeErr) {
-    console.error("[oauth:callback] exchangeCodeForSession failed", {
+    const errWithStatus = exchangeErr as AuthError & { status?: number };
+    console.log("[oauth:callback] exchangeCodeForSession failed", {
       message: exchangeErr.message,
+      status: errWithStatus.status ?? null,
+      name: exchangeErr.name ?? null,
+      href: requestUrl.href,
+      searchParams: Object.fromEntries(requestUrl.searchParams.entries()),
+      codeExists: Boolean(code),
+      error,
+      error_description: errorDescription,
+      supabaseUrlExists: Boolean(supabaseUrl),
+      supabaseAnonKeyExists: Boolean(anonKey),
       origin: requestUrl.origin,
       redirectTo: redirectTo.toString(),
     });
@@ -162,8 +201,10 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (userErr) {
-    console.error("[oauth:callback] getUser failed after exchange", {
+    console.log("[oauth:callback] getUser failed after exchange", {
       message: userErr.message,
+      status: userErr.status ?? null,
+      name: userErr.name ?? null,
     });
   }
 
