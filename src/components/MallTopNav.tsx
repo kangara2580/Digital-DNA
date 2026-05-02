@@ -194,6 +194,7 @@ export function MallTopNav() {
   const isLeaderboardPath =
     pathname === "/leaderboard" || pathname.startsWith("/leaderboard/");
   const isMypagePath = pathname === "/mypage" || pathname.startsWith("/mypage/");
+  const isCartPage = pathname === "/cart";
   /** 탐색/카테고리: 메인에서 스크롤 내린 것과 같은 컴팩트 헤더를 즉시 적용 */
   const compactEffective =
     pathname === "/explore" || isShopPage || isCategoryPage || isVideoDetailPage;
@@ -203,7 +204,11 @@ export function MallTopNav() {
     (isShopPage || isCategoryPage) && !isExploreWatchMode;
   const [moreOpen, setMoreOpen] = useState(false);
   const showFloatingChromeOnlyNav =
-    isExploreWatchMode || isVideoDetailPage || isLeaderboardPath || isMypagePath;
+    isExploreWatchMode ||
+    isVideoDetailPage ||
+    isLeaderboardPath ||
+    isMypagePath ||
+    isCartPage;
   const [mounted, setMounted] = useState(false);
   const moreWrapRef = useRef<HTMLDivElement>(null);
   const menuPortalRef = useRef<HTMLDivElement>(null);
