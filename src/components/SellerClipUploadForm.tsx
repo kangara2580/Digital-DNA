@@ -255,10 +255,12 @@ export function SellerClipUploadForm() {
   const [category, setCategory] = useState<SellVideoCategory>("daily");
   const [price, setPrice] = useState("1000");
   const [isAi, setIsAi] = useState(false);
-  const [rights, setRights] = useState(false);
-  const [confirmOriginal, setConfirmOriginal] = useState(false);
+  const [rights, setRights] = useState(true);
+  const [confirmOriginal, setConfirmOriginal] = useState(true);
   const [confirmPromotionAndLiability, setConfirmPromotionAndLiability] =
-    useState(false);
+    useState(true);
+  /** 접으면 조항 숨김 — 클릭 시 펼침 */
+  const [rightsDisclosureOpen, setRightsDisclosureOpen] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
@@ -309,7 +311,9 @@ export function SellerClipUploadForm() {
       setRights(d.rights);
       setConfirmOriginal(d.confirmOriginal);
       setConfirmPromotionAndLiability(
-        Boolean(d.confirmPromotionAndLiability),
+        typeof d.confirmPromotionAndLiability === "boolean"
+          ? d.confirmPromotionAndLiability
+          : true,
       );
       setDurationSec(d.durationSec);
       setOrientation(d.orientation);
@@ -935,64 +939,109 @@ export function SellerClipUploadForm() {
             />
           </div>
 
-          <div className="sm:col-span-2 space-y-4 rounded-xl border border-white/[0.1] bg-white/[0.02] p-4 sm:p-5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/90">
-            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/[0.08] pb-3 [html[data-theme='light']_&]:border-zinc-200/80">
-              <p className="text-[12px] font-medium uppercase tracking-[0.1em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+          <div className="sm:col-span-2 rounded-xl border border-white/[0.1] bg-white/[0.02] px-4 py-1 sm:p-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/90">
+            <button
+              type="button"
+              id={`${hid}-rights-toggle`}
+              aria-expanded={rightsDisclosureOpen}
+              aria-controls={`${hid}-rights-panel`}
+              className="flex w-full flex-col items-center justify-center gap-1 py-4 text-center transition-[color,background-color] hover:bg-white/[0.03] rounded-lg [html[data-theme='light']_&]:hover:bg-zinc-100/70"
+              onClick={() =>
+                setRightsDisclosureOpen((open) => !open)
+              }
+            >
+              <span
+                id={`${hid}-rights-heading`}
+                className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-[0.14em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500"
+              >
                 권리 확인
-              </p>
-              <div className="flex shrink-0 flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRights(true);
-                    setConfirmOriginal(true);
-                    setConfirmPromotionAndLiability(true);
-                  }}
-                  disabled={
-                    rights && confirmOriginal && confirmPromotionAndLiability
-                  }
-                  className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
+                <ChevronDown
+                  strokeWidth={2}
+                  aria-hidden
+                  className={`h-4 w-4 shrink-0 text-zinc-500 transition-transform duration-200 [html[data-theme='light']_&]:text-zinc-600 ${
+                    rightsDisclosureOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </span>
+              {!rightsDisclosureOpen ? (
+                <span className="max-w-md text-[11px] font-normal leading-relaxed tracking-normal normal-case text-zinc-600 [html[data-theme='light']_&]:text-zinc-600">
+                  필수 동의 항목이 적용되어 있어요. 문구를 보려면 눌러 펼치세요.
+                </span>
+              ) : null}
+            </button>
+
+            {rightsDisclosureOpen ? (
+              <div
+                id={`${hid}-rights-panel`}
+                role="region"
+                aria-labelledby={`${hid}-rights-heading`}
+                className="space-y-4 border-t border-white/[0.08] px-0 pb-4 pt-5 [html[data-theme='light']_&]:border-zinc-200/80 sm:px-1"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3 pb-3">
+                  <p className="text-[11px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+                    개별 선택
+                  </p>
+                  <div className="flex shrink-0 flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRights(true);
+                        setConfirmOriginal(true);
+                        setConfirmPromotionAndLiability(true);
+                      }}
+                      disabled={
+                        rights &&
+                        confirmOriginal &&
+                        confirmPromotionAndLiability
+                      }
+                      className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
+                    >
+                      전체 선택
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRights(false);
+                        setConfirmOriginal(false);
+                        setConfirmPromotionAndLiability(false);
+                      }}
+                      disabled={
+                        !rights &&
+                        !confirmOriginal &&
+                        !confirmPromotionAndLiability
+                      }
+                      className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-white/25 disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+                    >
+                      선택 해제
+                    </button>
+                  </div>
+                </div>
+                <RightsAgreementCheckbox
+                  checked={rights}
+                  required
+                  onChange={setRights}
                 >
-                  전체 선택
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRights(false);
-                    setConfirmOriginal(false);
-                    setConfirmPromotionAndLiability(false);
-                  }}
-                  disabled={
-                    !rights && !confirmOriginal && !confirmPromotionAndLiability
-                  }
-                  className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-white/25 disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+                  이 파일에 대한 재판매·배포 권한을 보유했거나, 권리자의 동의를 받았습니다.
+                </RightsAgreementCheckbox>
+                <RightsAgreementCheckbox
+                  checked={confirmOriginal}
+                  required
+                  onChange={setConfirmOriginal}
                 >
-                  선택 해제
-                </button>
+                  타인의 초상·음원·상표 등 제3자 권리를 침해하지 않습니다.
+                </RightsAgreementCheckbox>
+                <RightsAgreementCheckbox
+                  checked={confirmPromotionAndLiability}
+                  required
+                  onChange={setConfirmPromotionAndLiability}
+                >
+                  서비스 홍보를 위한 콘텐츠 활용에 동의하며, 저작권 등 제3자 권리 침해
+                  시 모든 법적 책임은 본인에게 있음을 확인합니다.
+                </RightsAgreementCheckbox>
               </div>
-            </div>
-            <RightsAgreementCheckbox
-              checked={rights}
-              required
-              onChange={setRights}
-            >
-              이 파일에 대한 재판매·배포 권한을 보유했거나, 권리자의 동의를 받았습니다.
-            </RightsAgreementCheckbox>
-            <RightsAgreementCheckbox
-              checked={confirmOriginal}
-              required
-              onChange={setConfirmOriginal}
-            >
-              타인의 초상·음원·상표 등 제3자 권리를 침해하지 않습니다.
-            </RightsAgreementCheckbox>
-            <RightsAgreementCheckbox
-              checked={confirmPromotionAndLiability}
-              required
-              onChange={setConfirmPromotionAndLiability}
-            >
-              서비스 홍보를 위한 콘텐츠 활용에 동의하며, 저작권 등 제3자 권리 침해
-              시 모든 법적 책임은 본인에게 있음을 확인합니다.
-            </RightsAgreementCheckbox>
+            ) : null}
           </div>
         </div>
       </div>
