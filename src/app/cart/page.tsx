@@ -146,19 +146,19 @@ export default function CartPage() {
           </Link>
         </div>
       ) : !cartUiReady ? (
-        <div className="mx-auto mt-14 max-w-md space-y-4 sm:max-w-lg" aria-busy="true" aria-live="polite">
+        <div className="mx-auto mt-14 w-full max-w-[1800px] space-y-4" aria-busy="true" aria-live="polite">
           <div className="mx-auto h-4 w-40 animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-x-8 lg:gap-y-8">
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="flex gap-3 py-2 sm:gap-5"
+                className="flex min-w-0 flex-col rounded-xl border border-white/10 p-4 [html[data-theme='light']_&]:border-zinc-200"
               >
-                <div className="h-[88px] w-[66px] shrink-0 animate-pulse rounded-lg bg-white/10 sm:h-[100px] sm:w-[75px] [html[data-theme='light']_&]:bg-zinc-200" />
-                <div className="min-w-0 flex-1 space-y-2 pt-1">
-                  <div className="h-4 w-[80%] max-w-sm animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
-                  <div className="h-3 w-24 animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
-                  <div className="h-3 w-32 animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
+                <div className="aspect-[9/16] w-full animate-pulse rounded-lg bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
+                <div className="mt-3 space-y-2">
+                  <div className="h-4 w-[88%] animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
+                  <div className="h-3 w-28 animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
+                  <div className="mt-4 h-3 w-24 animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
                 </div>
               </div>
             ))}
@@ -181,43 +181,45 @@ export default function CartPage() {
         </div>
       ) : (
         <>
-          <ul className="mt-6 divide-y divide-white/10 [html[data-theme='light']_&]:divide-zinc-200">
+          <ul className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-x-8 lg:gap-y-8">
             {builderItems.map(({ key, video }) => {
               const owned = hasPurchased(video.id);
               const checked = selected.has(key);
               return (
                 <li
                   key={key}
-                  className="flex gap-3 py-4 first:pt-0 sm:gap-5 sm:py-5"
+                  className="flex min-w-0 flex-col rounded-xl border border-white/10 bg-white/[0.02] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
                 >
-                  <label className="flex shrink-0 cursor-pointer items-start pt-1">
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggleKey(key)}
-                      className="h-5 w-5 rounded border border-white/35 bg-black/50 accent-[#ff0055] [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-white"
-                    />
-                    <span className="sr-only">선택</span>
-                  </label>
-                  <Link
-                    href={`/video/${video.id}`}
-                    className="relative h-[88px] w-[66px] shrink-0 overflow-hidden rounded-lg border border-white/12 bg-black/40 sm:h-[100px] sm:w-[75px]"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={cartThumbnailSrc(video)}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
-                  </Link>
-                  <div className="min-w-0 flex-1">
+                  <div className="relative w-full shrink-0">
+                    <label className="absolute left-3 top-3 z-[2] cursor-pointer rounded-md bg-black/50 p-1.5 backdrop-blur-sm [html[data-theme='light']_&]:bg-white/80">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleKey(key)}
+                        className="h-5 w-5 rounded border border-white/35 bg-black/50 accent-[#ff0055] [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-white"
+                      />
+                      <span className="sr-only">선택</span>
+                    </label>
                     <Link
                       href={`/video/${video.id}`}
-                      className="line-clamp-2 text-left text-[15px] font-bold leading-snug text-zinc-100 transition-colors hover:text-[#ff0055] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:text-[#ff0055]"
+                      className="relative block aspect-[9/16] w-full overflow-hidden rounded-lg border border-white/12 bg-black/40 ring-1 ring-white/10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={cartThumbnailSrc(video)}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    </Link>
+                  </div>
+                  <div className="mt-3 flex min-h-0 min-w-0 flex-1 flex-col">
+                    <Link
+                      href={`/video/${video.id}`}
+                      className="line-clamp-2 text-left text-[15px] font-bold leading-snug text-zinc-100 transition-colors hover:text-[#ff0055] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:text-[#ff0055] sm:text-[16px]"
                     >
                       {video.title}
                     </Link>
-                    <p className="mt-1 truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                    <p className="mt-2 min-h-0 truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                       <Link
                         href={sellerProfileHrefFromVideo(video)}
                         className="text-inherit underline-offset-2 transition-colors hover:text-[#ff0055] hover:underline"
@@ -226,9 +228,9 @@ export default function CartPage() {
                         {video.creator}
                       </Link>
                     </p>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-2 border-t border-white/10 pt-3 [html[data-theme='light']_&]:border-zinc-200">
                       {video.priceWon != null ? (
-                        <span className="text-[15px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                        <span className="text-[15px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[16px]">
                           {video.priceWon.toLocaleString("ko-KR")}원
                         </span>
                       ) : (
