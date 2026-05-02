@@ -1,6 +1,12 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, Loader2, Upload } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Film,
+  Loader2,
+  Upload,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -358,12 +364,13 @@ export function SellerClipUploadForm() {
       className="rounded-2xl border border-white/10 bg-zinc-900/50 p-6 sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm"
       onSubmit={onSubmit}
     >
-      <header className="mb-8 flex items-start gap-3 border-b border-white/10 pb-6 [html[data-theme='light']_&]:border-zinc-100">
-        <span
-          className="mt-1.5 h-11 w-[3px] shrink-0 rounded-full bg-reels-crimson"
+      <header className="mb-8 flex items-center gap-2.5 border-b border-white/10 pb-6 sm:gap-3 [html[data-theme='light']_&]:border-zinc-100">
+        <Film
+          className="h-8 w-8 shrink-0 text-reels-crimson sm:h-9 sm:w-9"
+          strokeWidth={2}
           aria-hidden
         />
-        <h2 className="text-[clamp(1.65rem,4.3vw,2.05rem)] font-semibold leading-tight tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+        <h2 className="text-[clamp(1.4rem,3.95vw,1.75rem)] font-semibold leading-tight tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
           영상 등록
         </h2>
       </header>
