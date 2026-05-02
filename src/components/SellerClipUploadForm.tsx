@@ -11,7 +11,7 @@ import {
   Upload,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import {
@@ -30,6 +30,7 @@ import {
   upsertSellerUploadDraft,
   type SellerUploadDraftPayload,
 } from "@/lib/supabaseSellerUploadDraft";
+import { parseSocialVideoEmbed } from "@/lib/socialVideoEmbed";
 
 const INPUT =
   "w-full rounded-xl border border-white/[0.085] bg-white/[0.06] px-4 py-3 text-[15px] leading-snug text-zinc-100 caret-reels-crimson outline-none transition-[border-color,box-shadow] placeholder:text-zinc-600 focus:border-white/[0.32] focus:shadow-[0_0_0_1px_rgba(255,255,255,0.35)] focus:outline-none focus-visible:outline-none [html[data-theme='light']_&]:border-zinc-200/75 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-400 [html[data-theme='light']_&]:focus:border-zinc-400/85 [html[data-theme='light']_&]:focus:shadow-[0_0_0_1px_rgba(0,0,0,0.12)]";
@@ -60,6 +61,9 @@ const BTN_DISABLED_GHOST =
 /** 본문 액션: 탭 선택과 구분되는 얇은 아웃라인 (핑크 채우기·글로우 없음) */
 const SOURCE_SECONDARY_BTN =
   "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg border border-white/20 bg-transparent px-4 py-2.5 text-[13px] font-medium text-zinc-100 shadow-none transition-colors hover:border-white/[0.32] hover:bg-white/[0.06] active:bg-white/[0.04] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-50";
+
+const EMBED_IFRAME_ALLOW =
+  "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
 
 /** 등록 포스터 캡처 시점(sec) 안전 클램프 */
 function clampThumbSec(t: number, durationSec: number | null): number {
@@ -267,9 +271,19 @@ export function SellerClipUploadForm() {
     null,
   );
 
+  /** YouTube·TikTok·Instagram 공유 주소 등 — `<video src>` 불가 시 iframe 미리보기 */
+  const socialEmbedPreview = useMemo(() => {
+    if (sourceType !== "url" || !previewUrl) return null;
+    return parseSocialVideoEmbed(previewUrl);
+  }, [sourceType, previewUrl]);
+
   const resetPreview = useCallback(() => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
+    if (previewUrl?.startsWith("blob:")) {
+      try {
+        URL.revokeObjectURL(previewUrl);
+      } catch {
+        /* noop */
+      }
     }
     setPreviewUrl(null);
     setFile(null);
@@ -403,6 +417,18 @@ export function SellerClipUploadForm() {
     const t = cap !== undefined ? Math.min(next, cap) : next;
     el.currentTime = Number.isFinite(t) ? t : 0;
   }, [thumbPickerOpen, thumbCommittedSec, previewUrl, durationSec]);
+
+  /** 공식 임베드(YouTube·TikTok·Instagram): duration·썸네일 시간 UI 제거 — 직접 URL은 resetPreview가 피커를 연다 */
+  useEffect(() => {
+    if (sourceType !== "url" || !previewUrl?.trim()) return;
+    const embed = parseSocialVideoEmbed(previewUrl);
+    if (!embed) return;
+    setDurationSec(null);
+    setThumbDraftSec(0);
+    setThumbCommittedSec(0);
+    setThumbPickerOpen(false);
+    setOrientation(embed.aspect === "9:16" ? "portrait" : "landscape");
+  }, [sourceType, previewUrl]);
 
   const onPickFile = (f: File | null) => {
     resetPreview();
@@ -750,30 +776,63 @@ export function SellerClipUploadForm() {
                   </button>
                 </div>
                 <p className="text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-                  공개 접근 가능한 영상 주소를 넣으면 미리보기로 확인할 수 있어요.
+                  YouTube·인스타그램(릴·게시물)·TikTok 영상 페이지 전체 주소(예: …/video/숫자)는
+                  여기서 미리보기됩니다. 공개 MP4 등 직접 스트림 주소도 넣을 수 있어요. TikTok
+                  단축 링크(vm 등)는 브라우저에서 미리보기가 안 될 수 있어요.
                 </p>
                 {previewUrl ? (
-                  <div className="mt-5 flex w-full justify-center overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
-                    <video
-                      ref={videoPreviewRef}
-                      className="sell-video-preview max-h-[min(52vh,480px)] w-full object-contain"
-                      src={previewUrl}
-                      crossOrigin="anonymous"
-                      muted
-                      playsInline
-                      controls
-                      controlsList="nodownload noplaybackrate noremoteplayback nopictureinpicture"
-                      disablePictureInPicture
-                      disableRemotePlayback
-                      onLoadedMetadata={onVideoMeta}
-                    />
+                  <div className="mt-5 flex w-full flex-col items-center overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
+                    {socialEmbedPreview ? (
+                      <>
+                        <div
+                          className={
+                            socialEmbedPreview.aspect === "9:16"
+                              ? "relative mx-auto w-full max-w-[min(100%,340px)] aspect-[9/16] max-h-[min(52vh,520px)] overflow-hidden rounded-lg"
+                              : "relative w-full aspect-video max-h-[min(52vh,480px)] overflow-hidden rounded-lg"
+                          }
+                        >
+                          <iframe
+                            src={socialEmbedPreview.iframeSrc}
+                            title={
+                              socialEmbedPreview.provider === "youtube"
+                                ? "YouTube 미리보기"
+                                : socialEmbedPreview.provider === "tiktok"
+                                  ? "TikTok 미리보기"
+                                  : "Instagram 미리보기"
+                            }
+                            loading="lazy"
+                            allow={EMBED_IFRAME_ALLOW}
+                            allowFullScreen
+                            className="absolute inset-0 h-full w-full border-0"
+                          />
+                        </div>
+                        <p className="mt-2 max-w-xl px-2 text-center text-[11px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                          플랫폼 제공 미리보기입니다. 등록 시 썸네일 시간 조절은 직접 주소(MP4 등)만
+                          지원돼요.
+                        </p>
+                      </>
+                    ) : (
+                      <video
+                        ref={videoPreviewRef}
+                        className="sell-video-preview max-h-[min(52vh,480px)] w-full object-contain"
+                        src={previewUrl}
+                        crossOrigin="anonymous"
+                        muted
+                        playsInline
+                        controls
+                        controlsList="nodownload noplaybackrate noremoteplayback nopictureinpicture"
+                        disablePictureInPicture
+                        disableRemotePlayback
+                        onLoadedMetadata={onVideoMeta}
+                      />
+                    )}
                   </div>
                 ) : null}
               </div>
             )}
           </div>
 
-          {previewUrl && thumbPickerOpen ? (
+          {previewUrl && thumbPickerOpen && !socialEmbedPreview ? (
             <div className="border-t border-white/[0.08] p-4 sm:p-6 [html[data-theme='light']_&]:border-zinc-100">
               <div className="flex min-w-0 gap-3">
                 <div
@@ -868,7 +927,7 @@ export function SellerClipUploadForm() {
             </div>
           ) : null}
 
-          {previewUrl && !thumbPickerOpen ? (
+          {previewUrl && !thumbPickerOpen && !socialEmbedPreview ? (
             <div className="border-t border-white/[0.08] px-4 py-4 sm:px-6 [html[data-theme='light']_&]:border-zinc-100">
               <button
                 type="button"
