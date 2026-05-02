@@ -9,6 +9,9 @@ import type { FeedVideo } from "@/data/videos";
 import { sellerProfileHrefFromVideo } from "@/lib/sellerProfile";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
+const cartOutlineBtn =
+  "inline-flex shrink-0 items-center justify-center rounded-xl border border-white/30 bg-transparent px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/35 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
+
 function localCartPosterFallback(videoId: string): string {
   const hash = Array.from(videoId).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
   const idx = (Math.abs(hash) % 10) + 1;
@@ -35,6 +38,8 @@ export default function CartPage() {
     builderItems,
     cartSyncReady,
     removeBuilderItem,
+    removeBuilderItemsByKeys,
+    clearBuilder,
   } = useDopamineBasket();
   /** 로그인·서버 장바구니 로드 전에는 builderItems가 잠깐 []라 빈 화면이 깜빡이지 않게 함 */
   const cartUiReady = !authLoading && cartSyncReady;
@@ -72,12 +77,51 @@ export default function CartPage() {
     return sum;
   }, [builderItems, selected]);
 
+  const allKeys = useMemo(() => builderItems.map((b) => b.key), [builderItems]);
+
+  const selectAll = useCallback(() => {
+    setSelected(new Set(allKeys));
+  }, [allKeys]);
+
+  const deleteSelected = useCallback(() => {
+    if (selected.size === 0) return;
+    removeBuilderItemsByKeys([...selected]);
+    setSelected(new Set());
+  }, [selected, removeBuilderItemsByKeys]);
+
+  const confirmClearCart = useCallback(() => {
+    if (typeof window === "undefined") return;
+    if (!window.confirm("다 삭제하시겠습니까?")) return;
+    clearBuilder();
+    setSelected(new Set());
+  }, [clearBuilder]);
+
   return (
     <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12 lg:px-8">
       <header className="border-b border-white/10 pb-6 [html[data-theme='light']_&]:border-zinc-200">
-        <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-          장바구니
-        </h1>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+            장바구니
+          </h1>
+          {cartUiReady && builderItems.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <button type="button" onClick={selectAll} className={cartOutlineBtn}>
+                전체 선택
+              </button>
+              <button
+                type="button"
+                onClick={deleteSelected}
+                disabled={selected.size === 0}
+                className={cartOutlineBtn}
+              >
+                삭제
+              </button>
+              <button type="button" onClick={confirmClearCart} className={cartOutlineBtn}>
+                비우기
+              </button>
+            </div>
+          ) : null}
+        </div>
       </header>
 
       {showLoginGate ? (
