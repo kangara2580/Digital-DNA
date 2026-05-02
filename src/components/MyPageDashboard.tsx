@@ -18,7 +18,7 @@ type MyPageTab =
   | "likes";
 
 const TAB_ITEMS: { id: MyPageTab; label: string; href: string }[] = [
-  { id: "listings", label: "내 등록 영상", href: "/mypage?tab=listings" },
+  { id: "listings", label: "내 영상관리", href: "/mypage?tab=listings" },
   { id: "wishlist", label: "찜 목록", href: "/mypage?tab=wishlist" },
   { id: "likes", label: "좋아요한 동영상", href: "/mypage?tab=likes" },
   { id: "analytics", label: "판매 분석", href: "/mypage?tab=analytics" },
@@ -129,7 +129,7 @@ export function MyPageDashboard() {
           {currentTab === "listings" && user ? (
             <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm">
               <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                내가 등록한 영상
+                내 영상관리
               </h2>
               <div className="mt-8">
                 <MyPageMyListingsSection />
