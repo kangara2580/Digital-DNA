@@ -16,6 +16,11 @@ import { prisma } from "@/lib/prisma";
 import { getSupabaseServiceRoleClient } from "@/lib/supabaseServiceRole";
 import { supabaseTables } from "@/lib/supabaseTableNames";
 
+/** Supabase `auth.users` id style; used so “내 피드” (`/seller/{userId}`) never 404s when there are no listings yet. */
+function isProbablySellerUserId(key: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key);
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function SellerPage({
@@ -70,7 +75,8 @@ export default async function SellerPage({
     videos = getVideosBySellerHandle(normalized);
   }
   const hasProfileOnly = Boolean(profileNickname || profileBio);
-  if (videos.length === 0 && !hasProfileOnly) notFound();
+  const allowEmptyOwnSellerPage = isProbablySellerUserId(sellerKey);
+  if (videos.length === 0 && !hasProfileOnly && !allowEmptyOwnSellerPage) notFound();
 
   const nickname = profileNickname || (videos[0] ? getSellerNickname(videos[0].creator) : sellerKey.slice(0, 8));
 
