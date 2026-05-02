@@ -42,7 +42,7 @@ const SOURCE_SEGMENT_BTN =
   "relative min-h-[2.75rem] flex-1 rounded-full px-4 py-2 text-[13px] font-medium leading-tight transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent sm:min-h-[2.875rem] sm:py-2.5 [html[data-theme='light']_&]:focus-visible:ring-zinc-400/40";
 
 const SOURCE_SEGMENT_BTN_ACTIVE =
-  "bg-white/[0.12] text-zinc-50 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[inset_0_0_0_1px_rgba(252,3,165,0.22)]";
+  "bg-white/[0.26] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.22)] [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_1px_2px_rgba(15,23,42,0.06),inset_0_0_0_1px_rgba(255,255,255,0.85)]";
 
 const SOURCE_SEGMENT_BTN_INACTIVE =
   "text-zinc-500 hover:bg-white/[0.04] hover:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:hover:text-zinc-900";
