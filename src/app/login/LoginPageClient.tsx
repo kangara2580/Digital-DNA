@@ -6,6 +6,33 @@ import { GoogleOAuthButton } from "@/components/GoogleOAuthButton";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { postLoginRedirectPath } from "@/lib/postLoginRedirect";
 
+function oauthErrorMessage(reason: string): string {
+  const lower = reason.toLowerCase();
+
+  if (lower.includes("redirect") || lower.includes("mismatch")) {
+    return "리다이렉트 URL이 정확히 등록되지 않았습니다. Supabase Redirect URLs와 현재 접속 주소의 /auth/callback 경로를 다시 확인해 주세요.";
+  }
+  if (lower.includes("provider") && lower.includes("enabled")) {
+    return "Supabase Authentication > Providers에서 Google 제공자가 켜져 있는지 확인해 주세요.";
+  }
+  if (lower.includes("invalid client") || lower.includes("oauth client")) {
+    return "Google OAuth Client ID 또는 Client Secret 설정이 올바르지 않습니다. Google Cloud와 Supabase Provider 설정을 다시 저장해 주세요.";
+  }
+  if (lower.includes("access_denied")) {
+    return "Google 인증 화면에서 권한 승인이 취소되었습니다. 다시 시도해 주세요.";
+  }
+  if (lower.includes("missing_code_or_config")) {
+    return "로그인 완료 코드가 없거나 Supabase 환경변수 설정이 비어 있습니다. 새 로그인 버튼으로 다시 시작해 주세요.";
+  }
+  if (lower.includes("fetch failed") || lower.includes("failed to fetch")) {
+    return "서버가 Supabase에 연결하지 못했습니다. 잠시 후 다시 시도하고, Vercel 환경변수의 Supabase URL과 Anon Key를 확인해 주세요.";
+  }
+  if (reason) {
+    return `원인: ${reason}`;
+  }
+  return "Supabase 대시보드에서 Google 제공자를 켜고, Redirect URL에 현재 사이트 주소의 /auth/callback 경로가 등록되어 있는지 확인해 주세요.";
+}
+
 export function LoginPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -15,33 +42,10 @@ export function LoginPageClient() {
   const notice = "";
 
   useEffect(() => {
-    if (searchParams.get("error") === "oauth") {
-      const reasonRaw = searchParams.get("reason") ?? "";
-      const reason = decodeURIComponent(reasonRaw);
-      const lower = reason.toLowerCase();
-      let detail = "";
-      if (lower.includes("redirect") || lower.includes("mismatch")) {
-        detail =
-          "리다이렉트 URL이 정확히 등록되지 않았습니다. Supabase Redirect URLs와 현재 접속 주소의 /auth/callback 경로를 다시 확인해 주세요.";
-      } else if (lower.includes("provider") && lower.includes("enabled")) {
-        detail = "Supabase Authentication > Providers에서 Google 제공자가 켜져 있는지 확인해 주세요.";
-      } else if (lower.includes("invalid client") || lower.includes("oauth client")) {
-        detail =
-          "Google OAuth Client ID/Secret 설정이 올바르지 않습니다. Google Cloud와 Supabase 설정을 다시 저장해 주세요.";
-      } else if (lower.includes("access_denied")) {
-        detail = "Google 인증 화면에서 권한이 취소되었습니다. 다시 시도해 주세요.";
-      } else if (lower.includes("missing_code_or_config")) {
-        detail = "콜백 코드가 누락되었거나 환경변수 설정이 비어 있습니다.";
-      } else if (lower.includes("fetch failed") || lower.includes("failed to fetch")) {
-        detail =
-          "서버가 Supabase에 연결하지 못했습니다. Vercel(또는 호스팅) 환경변수의 NEXT_PUBLIC_SUPABASE_URL·NEXT_PUBLIC_SUPABASE_ANON_KEY가 맞는지 확인하고, 잠시 후 다시 시도해 주세요.";
-      } else if (reason) {
-        detail = `원인: ${reason}`;
-      }
-      setError(
-        `Google 로그인에 실패했습니다. ${detail || "Supabase 대시보드에서 Google 제공자를 켜고, 리다이렉트 URL에 이 사이트 주소를 등록했는지 확인해 주세요."}`,
-      );
-    }
+    if (searchParams.get("error") !== "oauth") return;
+
+    const reason = decodeURIComponent(searchParams.get("reason") ?? "");
+    setError(`Google 로그인에 실패했습니다. ${oauthErrorMessage(reason)}`);
   }, [searchParams]);
 
   useEffect(() => {
@@ -66,7 +70,7 @@ export function LoginPageClient() {
             className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/10 text-zinc-200 transition hover:bg-white/20"
             aria-label="닫기"
           >
-            ×
+            x
           </button>
           <p className="relative text-center text-[clamp(1.85rem,6vw,2.65rem)] font-black tracking-tight text-white">
             ARA

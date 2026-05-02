@@ -22,7 +22,20 @@ function safeNextPath(raw: string | null): string {
   return raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
 }
 
+function isLocalOrigin(origin: string): boolean {
+  try {
+    const { hostname } = new URL(origin);
+    return hostname === "localhost" || hostname === "127.0.0.1";
+  } catch {
+    return false;
+  }
+}
+
 function resolveSiteOrigin(fallbackOrigin: string): string {
+  if (process.env.NODE_ENV !== "production" && isLocalOrigin(fallbackOrigin)) {
+    return fallbackOrigin;
+  }
+
   const raw =
     [
       process.env.NEXT_PUBLIC_SITE_URL,

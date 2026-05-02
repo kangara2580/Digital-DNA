@@ -146,7 +146,10 @@ export async function POST(req: Request) {
     );
   }
 
-  const baseUrl = process.env.NEXTAUTH_URL || "https://1d45b42ed2109d.lhr.life";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXTAUTH_URL ||
+    new URL(req.url).origin;
   const imageUrl = absoluteUrl(body.imageUrl, baseUrl);
   const videoUrl = absoluteUrl(body.videoUrl, baseUrl);
   const prompt = body.prompt ?? "";
