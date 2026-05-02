@@ -24,6 +24,8 @@ import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
+import { TOP_NAV_ACCOUNT_CART_DUAL_MIN_WIDTH } from "@/lib/topNavIconRing";
+
 function ChevronLeft({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
@@ -498,7 +500,10 @@ export function Highlight24() {
         <div className="relative z-20 mb-5 flex justify-end sm:mb-6 md:mb-7" aria-hidden>
           {user ? (
             <div className="pointer-events-none flex shrink-0 items-center gap-2 sm:gap-2">
-              <div className="h-11 min-w-[5.5rem] shrink-0 rounded-full" aria-hidden />
+              <div
+                className={`pointer-events-none h-11 shrink-0 rounded-full ${TOP_NAV_ACCOUNT_CART_DUAL_MIN_WIDTH}`}
+                aria-hidden
+              />
             </div>
           ) : (
             <div className="h-11 min-w-[2.75rem] shrink-0 rounded-full" aria-hidden />

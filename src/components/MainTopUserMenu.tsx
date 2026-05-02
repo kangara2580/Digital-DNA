@@ -13,6 +13,8 @@ import {
   TOP_NAV_ACCOUNT_CART_PILL_OUTER,
   TOP_NAV_ACCOUNT_CART_PILL_CELL,
   TOP_NAV_ACCOUNT_CART_PILL_DIVIDER,
+  TOP_NAV_ACCOUNT_CART_PILL_DUAL_LAYOUT,
+  TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE,
   topNavHeroCapsuleGlyphIconClass,
 } from "@/lib/topNavIconRing";
 import {
@@ -25,16 +27,17 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 /** 계정+장바구니 쌍: 드롭다운 루트는 가로 패딩 없음(호버가 캡슐 끝까지 닿게). */
 const accountHoverRootDualClass =
-  "group/acctmenu relative flex h-full min-h-0 min-w-0 flex-[1_1_0] flex-col items-stretch overflow-visible rounded-l-full";
+  "group/acctmenu relative flex h-full min-h-0 w-full min-w-0 flex-col items-stretch overflow-visible rounded-l-full";
 
 /** 푸터 등 계정만 */
 const accountHoverRootSoloClass =
-  "group/acctmenu relative flex h-full min-h-0 min-w-0 flex-1 flex-col items-stretch overflow-visible rounded-full";
+  "group/acctmenu relative flex h-full min-h-0 w-full min-w-0 flex-col items-stretch overflow-visible rounded-full";
 
-const capsuleSegmentLeftLoggedClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-l-full pl-0 pr-2 sm:pr-2.5`;
-const capsuleSegmentCartClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-r-full pr-0 pl-2 sm:pl-2.5`;
+/** 양 칸 같은 px 패딩; 가로폭은 grid 1fr|1fr 로 대칭 */
+const capsuleSegmentLeftLoggedClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-l-full px-2.5`;
+const capsuleSegmentCartClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-r-full px-2.5`;
 
-const capsuleGuestButtonClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-full pl-4 pr-3.5 sm:pl-[1.15rem] sm:pr-[1.05rem]`;
+const capsuleGuestButtonClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-full px-3.5`;
 
 type Props = {
   /** false: 장바구니 없이 계정만 (푸터 등). true: 로그인 시 계정·장바구니 한 캡슐. */
@@ -161,7 +164,9 @@ export function MainTopUserMenu({ withCart = true }: Props) {
   if (!user) {
     return (
       <>
-        <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} min-w-[2.75rem]`}>
+        <div
+          className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE} min-w-[2.75rem]`}
+        >
           {guestCapsuleButton}
         </div>
         {guestModal}
@@ -171,7 +176,7 @@ export function MainTopUserMenu({ withCart = true }: Props) {
 
   const loggedRow =
     withCart ? (
-      <div className={TOP_NAV_ACCOUNT_CART_PILL_OUTER}>
+      <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_DUAL_LAYOUT}`}>
         <LoggedInAccountHoverMenu
           rootClassName={accountHoverRootDualClass}
           triggerClassName={capsuleSegmentLeftLoggedClass}
@@ -188,10 +193,10 @@ export function MainTopUserMenu({ withCart = true }: Props) {
         </Link>
       </div>
     ) : (
-      <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} min-w-[2.75rem]`}>
+      <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE} min-w-[2.75rem]`}>
         <LoggedInAccountHoverMenu
           rootClassName={accountHoverRootSoloClass}
-          triggerClassName={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-full`}
+          triggerClassName={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-full px-2.5`}
         >
           <CapsuleUserGlyph />
         </LoggedInAccountHoverMenu>
