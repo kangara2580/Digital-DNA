@@ -74,6 +74,10 @@ const railActionPlainBtn =
 const railActionIcon =
   "h-[21px] w-[21px] shrink-0 pointer-events-none stroke-[2.25] [html[data-theme='light']_&]:stroke-zinc-700";
 
+/** 담김·찜·좋아요 활성 — `railActionIcon`의 라이트 zinc 테두리가 브랜드색 가리지 않도록 고정 채색 */
+const railActionIconBrandFilled =
+  "h-[21px] w-[21px] shrink-0 pointer-events-none stroke-[2.25] stroke-[var(--reels-point)] fill-[var(--reels-point)] [html[data-theme='light']_&]:stroke-[var(--reels-point)] [html[data-theme='light']_&]:fill-[var(--reels-point)]";
+
 /** 레일 바깥 패딩만 (테두리 없음) */
 const railDeckClass = "shrink-0 pb-6 pt-4";
 
@@ -285,7 +289,6 @@ function ReelDesktopRail({
   const likeInFlightRef = useRef(false);
   const [likePulse, setLikePulse] = useState(false);
   const [likeBurst, setLikeBurst] = useState(false);
-  const [wishlistPulse, setWishlistPulse] = useState(false);
 
   const displayedLikeTotal = Math.max(0, externalLikeCount + internalLikeCount);
 
@@ -567,7 +570,7 @@ function ReelDesktopRail({
         >
           <ShoppingCart
             strokeWidth={2.25}
-            className={`${railActionIcon} stroke-current ${inCart ? "fill-current" : ""}`}
+            className={inCart ? railActionIconBrandFilled : `${railActionIcon} stroke-current`}
           />
         </button>
         <button
@@ -590,10 +593,8 @@ function ReelDesktopRail({
           ) : null}
           <Heart
             strokeWidth={2.25}
-            className={`relative z-[1] ${railActionIcon} stroke-current transition-transform duration-150 ${
-              likedByMe
-                ? "fill-current"
-                : ""
+            className={`relative z-[1] transition-transform duration-150 ${
+              likedByMe ? railActionIconBrandFilled : `${railActionIcon} stroke-current`
             } ${likePulse || likeBurst ? "scale-110" : "scale-100"}`}
           />
         </button>
@@ -603,21 +604,19 @@ function ReelDesktopRail({
           onClick={(e) => {
             e.preventDefault();
             if (!requireAuth()) return;
-            setWishlistPulse(true);
-            window.setTimeout(() => setWishlistPulse(false), 170);
             toggleWishlist(video);
           }}
           className={`${railActionPlainBtn} ${
             wishlisted
               ? "!text-[var(--reels-point)] hover:brightness-110 [html[data-theme='light']_&]:!text-[var(--reels-point)]"
               : ""
-          } ${wishlistPulse ? "scale-[1.05]" : "scale-100"}`}
+          }`}
           aria-label={wishlisted ? "찜 해제" : "찜하기"}
           aria-pressed={wishlisted}
         >
           <Bookmark
             strokeWidth={2.25}
-            className={`${railActionIcon} stroke-current ${wishlisted ? "fill-current" : ""}`}
+            className={wishlisted ? railActionIconBrandFilled : `${railActionIcon} stroke-current`}
           />
         </button>
       </div>
