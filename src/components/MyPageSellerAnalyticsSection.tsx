@@ -67,7 +67,7 @@ function SparkPositive({ v }: { v: number }) {
     <span
       className={`inline-flex items-center gap-0.5 font-bold tabular-nums ${
         up
-          ? "text-emerald-400 [html[data-theme='light']_&]:text-emerald-600"
+          ? "text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-reels-crimson"
           : "text-reels-crimson/90 [html[data-theme='light']_&]:text-reels-crimson"
       }`}
     >
@@ -93,14 +93,14 @@ function KpiCard({
   label: string;
   value: React.ReactNode;
   sub?: React.ReactNode;
-  accent?: "cyan" | "crimson" | "violet";
+  accent?: "crimson" | "violet";
 }) {
   const ring =
     accent === "crimson"
-      ? "border-reels-crimson/25 shadow-[0_0_32px_-12px_rgba(252,3,165,0.36)]"
+      ? "border-reels-crimson/30 shadow-[0_0_32px_-12px_rgba(252,3,165,0.38)]"
       : accent === "violet"
-        ? "border-violet-500/25 shadow-[0_0_32px_-12px_rgba(139,92,246,0.25)]"
-        : "border-reels-cyan/25 shadow-[0_0_32px_-12px_rgba(0,242,234,0.22)]";
+        ? "border-reels-crimson/18 shadow-[0_0_28px_-14px_rgba(252,3,165,0.22)]"
+        : "border-reels-crimson/22 shadow-[0_0_28px_-14px_rgba(252,3,165,0.26)]";
   return (
     <div
       className={`rounded-2xl border bg-black/30 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white ${ring}`}
@@ -109,7 +109,7 @@ function KpiCard({
         <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[12px]">
           {label}
         </p>
-        <Icon className="h-4 w-4 shrink-0 text-reels-cyan/80 [html[data-theme='light']_&]:text-reels-cyan" aria-hidden />
+        <Icon className="h-4 w-4 shrink-0 text-reels-crimson [html[data-theme='light']_&]:text-reels-crimson" aria-hidden />
       </div>
       <div className="mt-2 text-[22px] font-extrabold tabular-nums leading-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]">
         {value}
@@ -133,7 +133,7 @@ function RevenueBars({ data }: { data: SellerAnalyticsSnapshot["revenueByDay"] }
           <div key={d.label} className="flex min-w-0 flex-1 flex-col items-center gap-1">
             <div className="flex w-full flex-1 flex-col justify-end">
               <div
-                className="w-full rounded-t-md bg-gradient-to-t from-reels-cyan/25 to-reels-cyan/70 [html[data-theme='light']_&]:from-violet-200 [html[data-theme='light']_&]:to-violet-500"
+                className="w-full rounded-t-md bg-gradient-to-t from-reels-crimson/35 to-[color:var(--reels-point)] [html[data-theme='light']_&]:from-[#ffe4f3] [html[data-theme='light']_&]:to-reels-crimson"
                 style={{ height: `${Math.max(8, h)}%` }}
                 title={formatWon(d.revenueWon)}
               />
@@ -260,7 +260,7 @@ export function MyPageSellerAnalyticsSection() {
       <div className="space-y-2 border-b border-white/10 pb-5 [html[data-theme='light']_&]:border-zinc-200">
         <div className="flex flex-col gap-3 min-[520px]:flex-row min-[520px]:items-center min-[520px]:justify-between min-[520px]:gap-3 lg:gap-4">
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 sm:gap-x-3">
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-500/35 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-300 [html[data-theme='light']_&]:text-emerald-700 sm:px-2 sm:text-[10px]">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-reels-crimson/40 bg-reels-crimson/12 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#ffd0ea] [html[data-theme='light']_&]:text-reels-crimson sm:px-2 sm:text-[10px]">
               <Radio className="h-2.5 w-2.5 animate-pulse sm:h-3 sm:w-3" aria-hidden />
               {loading ? "동기화 중…" : "주기 갱신(60초)"}
             </span>
@@ -272,7 +272,7 @@ export function MyPageSellerAnalyticsSection() {
               role="group"
               aria-label="분석 기간 프리셋"
             >
-              <BarChart3 className="h-4 w-4 shrink-0 text-reels-cyan sm:h-[18px] sm:w-[18px]" aria-hidden />
+              <BarChart3 className="h-4 w-4 shrink-0 text-reels-crimson sm:h-[18px] sm:w-[18px]" aria-hidden />
               {([7, 28, 90] as const).map((d) => (
                 <button
                   key={d}
@@ -280,8 +280,8 @@ export function MyPageSellerAnalyticsSection() {
                   onClick={() => setPeriod({ kind: "preset", days: d })}
                   className={`rounded-lg border px-2 py-1 text-[10px] font-bold transition sm:px-2.5 sm:py-1.5 sm:text-[11px] ${
                     period.kind === "preset" && period.days === d
-                      ? "border-reels-cyan/45 bg-reels-cyan/15 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
-                      : "border-white/10 bg-black/20 text-zinc-400 hover:border-white/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-600"
+                      ? "border-[color:var(--reels-point)]/50 bg-[color:var(--reels-point)]/14 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
+                      : "border-white/10 bg-black/20 text-zinc-400 hover:border-[color:var(--reels-point)]/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-600"
                   }`}
                 >
                   {d === 7 ? "7일" : d === 28 ? "28일" : "90일"}
@@ -309,7 +309,7 @@ export function MyPageSellerAnalyticsSection() {
               <button
                 type="button"
                 onClick={applyCustomRange}
-                className="shrink-0 rounded border border-reels-cyan/40 bg-reels-cyan/12 px-2 py-0.5 text-[10px] font-bold text-reels-cyan hover:bg-reels-cyan/20 sm:px-2.5 sm:py-1 sm:text-[11px]"
+                className="shrink-0 rounded border border-[color:var(--reels-point)]/45 bg-[color:var(--reels-point)]/12 px-2 py-0.5 text-[10px] font-bold text-[color:var(--reels-point)] hover:bg-[color:var(--reels-point)]/18 sm:px-2.5 sm:py-1 sm:text-[11px]"
               >
                 적용
               </button>
@@ -317,7 +317,7 @@ export function MyPageSellerAnalyticsSection() {
           </div>
         </div>
         {period.kind === "custom" ? (
-          <p className="text-right text-[10px] text-reels-cyan/90 [html[data-theme='light']_&]:text-reels-cyan">
+          <p className="text-right text-[10px] text-[color:var(--reels-point)]/95 [html[data-theme='light']_&]:text-reels-crimson">
             사용자 지정: {period.start} ~ {period.end} ({snapshot.periodDays}일)
           </p>
         ) : null}
@@ -340,7 +340,6 @@ export function MyPageSellerAnalyticsSection() {
               <SparkPositive v={t.revenueGrowthPercent} />
             </>
           }
-          accent="cyan"
         />
         <KpiCard
           icon={ShoppingBag}
@@ -349,7 +348,7 @@ export function MyPageSellerAnalyticsSection() {
           sub={
             <>
               전 기간 대비{" "}
-              <span className="font-semibold text-emerald-400 [html[data-theme='light']_&]:text-emerald-600">
+              <span className="font-semibold text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-reels-crimson">
                 {t.salesGrowthPercent >= 0 ? "+" : ""}
                 {t.salesGrowthPercent}%
               </span>
@@ -371,12 +370,11 @@ export function MyPageSellerAnalyticsSection() {
           sub={
             <>
               상세 → 구매 전환{" "}
-              <span className="font-semibold text-reels-cyan">
+              <span className="font-semibold text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-reels-crimson">
                 {t.purchaseConversionPercent}%
               </span>
             </>
           }
-          accent="cyan"
         />
       </div>
 
@@ -415,7 +413,7 @@ export function MyPageSellerAnalyticsSection() {
                 </div>
                 <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/5 [html[data-theme='light']_&]:bg-zinc-200">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-reels-cyan/40 to-reels-crimson/70"
+                    className="h-full rounded-full bg-gradient-to-r from-reels-crimson/55 to-[color:var(--reels-point)]"
                     style={{ width: `${Math.min(100, stage.funnelPercent)}%` }}
                   />
                 </div>
@@ -429,7 +427,7 @@ export function MyPageSellerAnalyticsSection() {
         {/* 유입 채널 */}
         <div className="rounded-2xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:p-5">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-reels-cyan" aria-hidden />
+            <Users className="h-4 w-4 text-reels-crimson" aria-hidden />
             <h3 className="text-[14px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[15px]">
               유입 채널
             </h3>
@@ -449,7 +447,7 @@ export function MyPageSellerAnalyticsSection() {
                     <span
                       className={
                         ch.deltaPercentPoints >= 0
-                          ? "text-emerald-400"
+                          ? "text-[color:var(--reels-point)]"
                           : "text-reels-crimson/90"
                       }
                     >
@@ -460,7 +458,7 @@ export function MyPageSellerAnalyticsSection() {
                 </div>
                 <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/5 [html[data-theme='light']_&]:bg-zinc-200">
                   <div
-                    className="h-full rounded-full bg-reels-cyan/70"
+                    className="h-full rounded-full bg-reels-crimson/75"
                     style={{ width: `${ch.percent}%` }}
                   />
                 </div>
@@ -472,7 +470,7 @@ export function MyPageSellerAnalyticsSection() {
         {/* 시청 유지 */}
         <div className="rounded-2xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:p-5">
           <div className="flex items-center gap-2">
-            <Eye className="h-4 w-4 text-reels-cyan" aria-hidden />
+            <Eye className="h-4 w-4 text-reels-crimson" aria-hidden />
             <h3 className="text-[14px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[15px]">
               시청 유지 곡선
             </h3>
@@ -493,7 +491,7 @@ export function MyPageSellerAnalyticsSection() {
                 </div>
                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/5 [html[data-theme='light']_&]:bg-zinc-200">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-violet-500/80 to-reels-cyan/80"
+                    className="h-full rounded-full bg-gradient-to-r from-reels-crimson/50 to-[color:var(--reels-point)]/90"
                     style={{ width: `${r.audiencePercent}%` }}
                   />
                 </div>
@@ -584,7 +582,7 @@ export function MyPageSellerAnalyticsSection() {
                         alt=""
                         className="h-10 w-10 shrink-0 rounded-md object-cover ring-1 ring-white/10 [html[data-theme='light']_&]:ring-zinc-200"
                       />
-                      <span className="line-clamp-2 min-w-0 font-semibold text-reels-cyan/95 group-hover:underline [html[data-theme='light']_&]:text-violet-700">
+                      <span className="line-clamp-2 min-w-0 font-semibold text-[color:var(--reels-point)]/95 group-hover:underline [html[data-theme='light']_&]:text-reels-crimson">
                         {row.title}
                       </span>
                     </Link>
@@ -592,7 +590,7 @@ export function MyPageSellerAnalyticsSection() {
                   <td className="px-2 py-2.5 tabular-nums text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
                     {row.salesCount.toLocaleString("ko-KR")}
                   </td>
-                  <td className="px-2 py-2.5 tabular-nums font-semibold text-emerald-300 [html[data-theme='light']_&]:text-emerald-800">
+                  <td className="px-2 py-2.5 tabular-nums font-semibold text-[#ffd0ea] [html[data-theme='light']_&]:text-reels-crimson">
                     {formatWon(row.cumulativeRevenueWon)}
                   </td>
                   <td className="px-2 py-2.5 tabular-nums text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
