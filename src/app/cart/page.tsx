@@ -142,7 +142,7 @@ export default function CartPage() {
                       type="checkbox"
                       checked={checked}
                       onChange={() => toggleKey(key)}
-                      className="h-4 w-4 rounded border-white/25 bg-black/40 accent-reels-cyan [html[data-theme='light']_&]:border-zinc-300"
+                      className="h-5 w-5 rounded border border-white/35 bg-black/50 accent-[#ff0055] [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-white"
                     />
                     <span className="sr-only">선택</span>
                   </label>
@@ -211,17 +211,17 @@ export default function CartPage() {
           </ul>
 
           <footer className="mt-8 border-t border-white/10 pt-6 [html[data-theme='light']_&]:border-zinc-200">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div className="min-w-0 space-y-1">
-                <p className="text-[16px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
+            <div className="flex flex-wrap items-end justify-end gap-x-5 gap-y-2 sm:gap-x-6">
+              <div className="space-y-0.5 text-right">
+                <p className="text-[15px] font-semibold leading-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
                   합계
                 </p>
-                <p className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                <p className="text-[14px] font-medium leading-tight text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
                   {selected.size}개 선택
                 </p>
               </div>
               <p
-                className="text-3xl font-extrabold tabular-nums tracking-tight text-zinc-100 sm:text-4xl [html[data-theme='light']_&]:text-zinc-900"
+                className="text-4xl font-extrabold tabular-nums tracking-tight text-zinc-100 sm:text-5xl [html[data-theme='light']_&]:text-zinc-900"
                 aria-live="polite"
                 aria-label={`선택 합계 ${selectedTotal.toLocaleString("ko-KR")}원, ${selected.size}개`}
               >
