@@ -5,6 +5,7 @@ import {
   Check,
   CheckCircle2,
   Film,
+  Image as ImageIcon,
   Loader2,
   Upload,
 } from "lucide-react";
@@ -53,6 +54,16 @@ const SOURCE_PANEL =
 /** 본문 액션: 탭 선택과 구분되는 얇은 아웃라인 (핑크 채우기·글로우 없음) */
 const SOURCE_SECONDARY_BTN =
   "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg border border-white/20 bg-transparent px-4 py-2.5 text-[13px] font-medium text-zinc-100 shadow-none transition-colors hover:border-white/[0.32] hover:bg-white/[0.06] active:bg-white/[0.04] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-50";
+
+/** 등록 포스터 캡처 시점(sec) 안전 클램프 */
+function clampThumbSec(t: number, durationSec: number | null): number {
+  const x = Number.isFinite(t) ? Math.max(0, t) : 0;
+  if (durationSec != null && Number.isFinite(durationSec) && durationSec > 0) {
+    const cap = Math.max(0, durationSec - 0.05);
+    return Math.min(x, cap);
+  }
+  return x;
+}
 
 const RIGHTS_CHECK_WRAP =
   "mt-1 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[4px] border border-white/30 bg-transparent transition-[border-color,background-color] peer-checked:border-reels-crimson peer-checked:bg-reels-crimson peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-reels-crimson/55 [html[data-theme='light']_&]:border-zinc-300 peer-checked:[html[data-theme='light']_&]:border-reels-crimson";
@@ -108,8 +119,10 @@ export function SellerClipUploadForm() {
   const [videoUrl, setVideoUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [durationSec, setDurationSec] = useState<number | null>(null);
-  /** 썸네일로 쓸 프레임 시점(초) — 기본 0(첫 화면) */
-  const [thumbTimeSec, setThumbTimeSec] = useState(0);
+  /** 슬라이더·영상 미리보기 동기 시점(초) */
+  const [thumbDraftSec, setThumbDraftSec] = useState(0);
+  /** 등록 시 포스터 캡처에 쓸 확정 시점(초) —「썸네일로 적용」으로 갱신 */
+  const [thumbCommittedSec, setThumbCommittedSec] = useState(0);
   const [orientation, setOrientation] = useState<"portrait" | "landscape">(
     "portrait",
   );
@@ -134,7 +147,8 @@ export function SellerClipUploadForm() {
     setPreviewUrl(null);
     setFile(null);
     setDurationSec(null);
-    setThumbTimeSec(0);
+    setThumbDraftSec(0);
+    setThumbCommittedSec(0);
   }, [previewUrl]);
 
   useEffect(() => {
@@ -232,15 +246,15 @@ export function SellerClipUploadForm() {
     file,
   ]);
 
-  /** 미리보기 비디오: 슬라이더(thumbTimeSec)와 동기 시 seek (훅은 항상 동일 순서로 유지) */
+  /** 미리보기 비디오: 슬라이더(draft)와 동기 시 seek */
   useEffect(() => {
     const el = videoPreviewRef.current;
     if (!el || !previewUrl) return;
     const d = el.duration;
     const cap = Number.isFinite(d) && d > 0 ? d - 0.04 : undefined;
-    const t = cap !== undefined ? Math.min(thumbTimeSec, cap) : thumbTimeSec;
+    const t = cap !== undefined ? Math.min(thumbDraftSec, cap) : thumbDraftSec;
     el.currentTime = Number.isFinite(t) ? t : 0;
-  }, [thumbTimeSec, previewUrl]);
+  }, [thumbDraftSec, previewUrl]);
 
   const onPickFile = (f: File | null) => {
     resetPreview();
@@ -268,9 +282,24 @@ export function SellerClipUploadForm() {
     const d = el.duration;
     if (Number.isFinite(d) && d > 0) {
       setDurationSec(Math.round(d));
-      setThumbTimeSec((prev) => (prev > d ? Math.max(0, d - 0.05) : prev));
+      setThumbDraftSec((prev) => clampThumbSec(prev, Math.round(d)));
+      setThumbCommittedSec((prev) => clampThumbSec(prev, Math.round(d)));
     }
     setOrientation(el.videoWidth >= el.videoHeight ? "landscape" : "portrait");
+  };
+
+  const onApplyThumbnailTime = () => {
+    const d = durationSec != null ? durationSec : null;
+    const next = clampThumbSec(thumbDraftSec, d);
+    setThumbCommittedSec(next);
+    setThumbDraftSec(next);
+    const el = videoPreviewRef.current;
+    if (el && previewUrl) {
+      const raw = el.duration;
+      const cap = Number.isFinite(raw) && raw > 0 ? raw - 0.04 : undefined;
+      const t = cap !== undefined ? Math.min(next, cap) : next;
+      el.currentTime = Number.isFinite(t) ? t : 0;
+    }
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -294,6 +323,18 @@ export function SellerClipUploadForm() {
     }
     if (!category) {
       setMessage({ ok: false, text: "카테고리를 선택해 주세요." });
+      return;
+    }
+    if (
+      previewUrl &&
+      durationSec != null &&
+      durationSec > 0 &&
+      Math.abs(thumbDraftSec - thumbCommittedSec) > 0.035
+    ) {
+      setMessage({
+        ok: false,
+        text: '슬라이더로 장면을 맞춘 뒤「썸네일로 적용」 버튼을 눌러 저장한 다음 등록해 주세요.',
+      });
       return;
     }
 
@@ -329,13 +370,13 @@ export function SellerClipUploadForm() {
         if (previewUrl && videoPreviewRef.current) {
           posterBlob = await captureFrameFromVideo(
             videoPreviewRef.current,
-            thumbTimeSec,
+            thumbCommittedSec,
             "image/jpeg",
             0.92,
           );
         }
         if (!posterBlob) {
-          posterBlob = await capturePosterFromFile(file, thumbTimeSec);
+          posterBlob = await capturePosterFromFile(file, thumbCommittedSec);
         }
         if (!posterBlob) {
           setMessage({
@@ -349,7 +390,7 @@ export function SellerClipUploadForm() {
       } else if (sourceType === "url" && previewUrl && videoPreviewRef.current) {
         const posterBlob = await captureFrameFromVideo(
           videoPreviewRef.current,
-          thumbTimeSec,
+          thumbCommittedSec,
           "image/jpeg",
           0.92,
         );
@@ -576,34 +617,127 @@ export function SellerClipUploadForm() {
           </div>
 
           {previewUrl ? (
-            <div className="border-t border-white/[0.08] p-4 sm:p-5 [html[data-theme='light']_&]:border-zinc-100">
-              <span className={LABEL}>썸네일 장면</span>
-              <p className="mb-4 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                슬라이더로 장면을 고르면 등록 시 그 화면이 썸네일로 저장돼요. 일부 외부
-                주소는 정책상 썸네일 추출이 안 될 수 있어요.
-              </p>
-              <input
-                type="range"
-                min={0}
-                max={durationSec != null && durationSec > 0 ? durationSec : 1}
-                step={0.05}
-                value={
-                  durationSec != null && durationSec > 0
-                    ? Math.min(thumbTimeSec, durationSec)
-                    : thumbTimeSec
-                }
-                onChange={(e) => setThumbTimeSec(parseFloat(e.target.value))}
-                className="w-full accent-reels-crimson"
-                aria-label="썸네일 시점(초)"
-              />
-              <div className="mt-2 flex justify-between text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                <span>0초</span>
-                <span className="font-mono tabular-nums">{thumbTimeSec.toFixed(2)}초</span>
-                <span>
-                  {durationSec != null && durationSec > 0
-                    ? `총 ${durationSec}초`
-                    : "길이 로딩…"}
-                </span>
+            <div className="border-t border-white/[0.08] p-4 sm:p-6 [html[data-theme='light']_&]:border-zinc-100">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex min-w-0 gap-3">
+                  <div
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/12 bg-white/[0.05] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
+                    aria-hidden
+                  >
+                    <ImageIcon className="h-5 w-5 text-reels-crimson" strokeWidth={2} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[14px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                      썸네일 장면
+                    </p>
+                    <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                      슬라이더로 프레임을 맞춘 뒤{" "}
+                      <span className="font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
+                        썸네일로 적용
+                      </span>
+                      으로 확정하면 등록 시 그 순간의 화면이 썸네일로 들어가요.
+                      일부 외부 주소는 정책 때문에 썸네일 추출에 실패할 수 있어요.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-xl border border-white/10 bg-black/20 p-4 sm:p-5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/90">
+                <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+                  <label
+                    htmlFor={`${hid}-thumb-range`}
+                    className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600"
+                  >
+                    재생 프레임 맞추기
+                  </label>
+                  <span className="font-mono text-[13px] tabular-nums text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
+                    미리보기{" "}
+                    {(durationSec != null && durationSec > 0
+                      ? Math.min(thumbDraftSec, durationSec)
+                      : thumbDraftSec
+                    ).toFixed(2)}{" "}
+                    초
+                  </span>
+                </div>
+
+                <input
+                  id={`${hid}-thumb-range`}
+                  type="range"
+                  min={0}
+                  max={
+                    durationSec != null && durationSec > 0 ? durationSec : 1
+                  }
+                  step={0.05}
+                  value={
+                    durationSec != null && durationSec > 0
+                      ? Math.min(thumbDraftSec, durationSec)
+                      : thumbDraftSec
+                  }
+                  onChange={(e) =>
+                    setThumbDraftSec(parseFloat(e.target.value))
+                  }
+                  className="w-full cursor-pointer accent-reels-crimson"
+                  aria-valuemin={0}
+                  aria-valuemax={
+                    durationSec != null && durationSec > 0
+                      ? durationSec
+                      : 1
+                  }
+                  aria-valuenow={
+                    durationSec != null && durationSec > 0
+                      ? Math.min(thumbDraftSec, durationSec)
+                      : thumbDraftSec
+                  }
+                  aria-label="썸네일로 쓸 동영상 시점(초)"
+                />
+
+                <div className="mt-2 flex justify-between text-[11px] text-zinc-500 tabular-nums [html[data-theme='light']_&]:text-zinc-500">
+                  <span>0초</span>
+                  <span>
+                    {durationSec != null && durationSec > 0
+                      ? `총 ${durationSec}초`
+                      : "길이 로딩…"}
+                  </span>
+                </div>
+
+                <div className="mt-5 flex flex-col gap-4 border-t border-white/[0.08] pt-5 sm:flex-row sm:items-center sm:justify-between [html[data-theme='light']_&]:border-zinc-100">
+                  <div className="min-w-0 space-y-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+                      등록에 반영되는 시점
+                    </p>
+                    <p className="font-mono text-lg font-semibold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                      {thumbCommittedSec.toFixed(2)}
+                      <span className="ml-1 text-[14px] font-medium text-zinc-400">
+                        초
+                      </span>
+                    </p>
+                    {previewUrl &&
+                    durationSec != null &&
+                    durationSec > 0 &&
+                    Math.abs(thumbDraftSec - thumbCommittedSec) > 0.035 ? (
+                      <p className="text-[12px] text-amber-200/95 [html[data-theme='light']_&]:text-amber-800">
+                        미리본 시점이 아직 적용 전이에요.
+                      </p>
+                    ) : durationSec != null && durationSec > 0 ? (
+                      <p className="text-[12px] text-emerald-300/95 [html[data-theme='light']_&]:text-emerald-800">
+                        썸네일 저장 시 이 시점으로 잘려요.
+                      </p>
+                    ) : (
+                      <p className="text-[12px] text-zinc-500">
+                        재생 시간을 불러오는 중이에요.
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={onApplyThumbnailTime}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-reels-crimson/35 bg-reels-crimson/12 px-5 py-3 text-[13px] font-semibold text-zinc-50 transition-colors hover:bg-reels-crimson/22 disabled:pointer-events-none disabled:opacity-50 sm:w-auto sm:min-w-[10.5rem] [html[data-theme='light']_&]:text-zinc-900"
+                    disabled={!(durationSec != null && durationSec > 0)}
+                  >
+                    <Check className="h-4 w-4 shrink-0" strokeWidth={2.25} aria-hidden />
+                    썸네일로 적용
+                  </button>
+                </div>
               </div>
             </div>
           ) : null}
