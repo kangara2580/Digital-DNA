@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SellerFeedBioEditor } from "@/components/SellerFeedBioEditor";
 import { VideoCard } from "@/components/VideoCard";
@@ -83,14 +82,6 @@ export default async function SellerPage({
   return (
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
       <div className="mx-auto max-w-[1800px] px-4 py-8 sm:px-6 lg:px-8">
-        <nav className="mb-6 font-mono text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          <Link href="/" className="text-reels-cyan/90 hover:text-reels-cyan">
-            홈
-          </Link>
-          <span className="mx-1.5 text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
-          <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">{nickname}</span>
-        </nav>
-
         <section className="reels-glass-card rounded-2xl border border-white/10 bg-white/[0.04] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80 sm:p-5">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,34rem)] lg:items-center">
             <div className="flex items-center gap-3 sm:gap-4">
