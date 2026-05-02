@@ -21,7 +21,7 @@ The app uses Supabase Auth for Google login. The redirect flow must be configure
    Do not add the app callback URL here:
 
    ```txt
-   https://digital-dna-aeya-live.vercel.app/auth/callback
+   https://ara.pink/auth/callback
    ```
 
 2. Supabase Dashboard > Authentication > URL Configuration
@@ -29,12 +29,13 @@ The app uses Supabase Auth for Google login. The redirect flow must be configure
    Site URL:
 
    ```txt
-   https://digital-dna-aeya-live.vercel.app
+   https://ara.pink
    ```
 
    Additional Redirect URLs:
 
    ```txt
+   https://ara.pink/auth/callback
    https://digital-dna-aeya-live.vercel.app/auth/callback
    http://localhost:3001/auth/callback
    ```
@@ -48,8 +49,8 @@ The app uses Supabase Auth for Google login. The redirect flow must be configure
    ```txt
    NEXT_PUBLIC_SUPABASE_URL=https://ynlfcnezvieqzultbklf.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-   NEXT_PUBLIC_SITE_URL=https://digital-dna-aeya-live.vercel.app
-   NEXTAUTH_URL=https://digital-dna-aeya-live.vercel.app
+   NEXT_PUBLIC_SITE_URL=https://ara.pink
+   NEXTAUTH_URL=https://ara.pink
    ```
 
 ## Expected Google login flow
@@ -60,7 +61,7 @@ User clicks Google login
 -> Supabase authorize URL
 -> Google login
 -> https://ynlfcnezvieqzultbklf.supabase.co/auth/v1/callback
--> https://digital-dna-aeya-live.vercel.app/auth/callback?code=...
+-> https://ara.pink/auth/callback?code=...
 -> supabase.auth.exchangeCodeForSession(code)
 -> app redirects to the requested page
 ```
