@@ -106,7 +106,7 @@ export default function CartPage() {
   }, [clearBuilder]);
 
   return (
-    <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12 lg:px-8">
+    <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 pb-10 pt-[max(5rem,calc(env(safe-area-inset-top,0px)+4.25rem))] text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:pb-12 sm:pt-[5.75rem] lg:px-8">
       <header className="border-b border-white/10 pb-6 [html[data-theme='light']_&]:border-zinc-200">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
