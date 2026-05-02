@@ -3,17 +3,14 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
 import { syncProfileFromAuthUser } from "@/lib/supabaseProfiles";
 
-/** Edge가 아닌 Node에서 Supabase Auth HTTP 호출 안정화 */
 export const runtime = "nodejs";
-
-const FALLBACK_SUPABASE_ORIGIN = "https://ynlfcnezvieqzultbklf.supabase.co";
-const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_6UqQ0Aqd5OlxM8U3KCtLWQ_g_1VZ9dc";
 
 function normalizeSupabaseOrigin(raw: string | undefined): string | null {
   const trimmed = raw?.trim() ?? "";
   if (!trimmed) return null;
-  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  const withProtocol = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
   try {
     return new URL(withProtocol).origin;
   } catch {
@@ -21,13 +18,26 @@ function normalizeSupabaseOrigin(raw: string | undefined): string | null {
   }
 }
 
-function oauthErrorRedirect(origin: string, reason?: string): NextResponse {
-  const url = new URL("/login?error=oauth", origin);
-  const trimmed = (reason ?? "").trim();
-  if (trimmed) {
-    url.searchParams.set("reason", trimmed.slice(0, 220));
-  }
+function safeNextPath(raw: string | null): string {
+  return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
+}
+
+function callbackFailureRedirect(
+  origin: string,
+  reason: string,
+  status = "oauth_callback_failed",
+): NextResponse {
+  const url = new URL("/login", origin);
+  url.searchParams.set("error", status);
+  url.searchParams.set("reason", reason.slice(0, 220));
   return NextResponse.redirect(url);
+}
+
+function envStatus() {
+  return {
+    hasSupabaseUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()),
+    hasSupabaseAnonKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()),
+  };
 }
 
 function isTransientNetworkAuthError(message: string): boolean {
@@ -48,46 +58,72 @@ async function exchangeCodeWithRetry(
   code: string,
 ): Promise<{ error: { message: string } | null }> {
   let last = "exchange_failed";
-  /** OAuth code는 성공 시 한 번만 유효 — 과도한 재시도는 invalid_grant 위험이 있어 2회만 */
+
   for (let attempt = 0; attempt < 2; attempt++) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) return { error: null };
+
     last = error.message || "exchange_failed";
     if (!isTransientNetworkAuthError(last) || attempt === 1) {
       return { error: { message: last } };
     }
-    await new Promise((r) => setTimeout(r, 320));
+    await new Promise((resolve) => setTimeout(resolve, 320));
   }
+
   return { error: { message: last } };
 }
 
 /**
- * Supabase OAuth(PKCE) 콜백 — `signInWithOAuth` 후 Google 등에서 리다이렉트됩니다.
- * @see https://supabase.com/docs/guides/auth/server-side/nextjs
+ * Supabase OAuth callback.
+ *
+ * Required external settings:
+ * - Google Cloud Authorized redirect URI:
+ *   https://<SUPABASE_PROJECT_REF>.supabase.co/auth/v1/callback
+ * - Supabase Redirect URLs:
+ *   https://digital-dna-aeya-live.vercel.app/auth/callback
+ *   http://localhost:3001/auth/callback
  */
 export async function GET(request: NextRequest) {
-  const supabaseUrl =
-    normalizeSupabaseOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL) ??
-    FALLBACK_SUPABASE_ORIGIN;
-  const anonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
-    FALLBACK_SUPABASE_PUBLISHABLE_KEY;
-  const requestUrl = new URL(request.url);
+  const requestUrl = request.nextUrl;
   const code = requestUrl.searchParams.get("code");
   const providerError =
     requestUrl.searchParams.get("error_description") ||
     requestUrl.searchParams.get("error") ||
     "";
-  const nextRaw = requestUrl.searchParams.get("next");
-  const next =
-    nextRaw && nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/";
+  const next = safeNextPath(requestUrl.searchParams.get("next"));
 
   if (providerError) {
-    return oauthErrorRedirect(requestUrl.origin, providerError);
+    console.error("[oauth:callback] provider returned error", {
+      providerError,
+      origin: requestUrl.origin,
+    });
+    return callbackFailureRedirect(requestUrl.origin, providerError);
   }
 
-  if (!supabaseUrl || !anonKey || !code) {
-    return oauthErrorRedirect(requestUrl.origin, "missing_code_or_config");
+  if (!code) {
+    console.error("[oauth:callback] missing code", {
+      origin: requestUrl.origin,
+      pathname: requestUrl.pathname,
+      searchParams: Array.from(requestUrl.searchParams.keys()),
+      env: envStatus(),
+    });
+    return callbackFailureRedirect(requestUrl.origin, "missing_code");
+  }
+
+  const supabaseUrl = normalizeSupabaseOrigin(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+  );
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? "";
+
+  if (!supabaseUrl || !anonKey) {
+    const reason = !supabaseUrl
+      ? "missing_NEXT_PUBLIC_SUPABASE_URL"
+      : "missing_NEXT_PUBLIC_SUPABASE_ANON_KEY";
+    console.error("[oauth:callback] missing Supabase env", {
+      reason,
+      env: envStatus(),
+    });
+    return callbackFailureRedirect(requestUrl.origin, reason);
   }
 
   const redirectTo = new URL(next, requestUrl.origin);
@@ -109,12 +145,28 @@ export async function GET(request: NextRequest) {
 
   const { error: exchangeErr } = await exchangeCodeWithRetry(supabase, code);
   if (exchangeErr) {
-    return oauthErrorRedirect(requestUrl.origin, exchangeErr.message || "exchange_failed");
+    console.error("[oauth:callback] exchangeCodeForSession failed", {
+      message: exchangeErr.message,
+      origin: requestUrl.origin,
+      redirectTo: redirectTo.toString(),
+    });
+    return callbackFailureRedirect(
+      requestUrl.origin,
+      exchangeErr.message || "exchange_failed",
+    );
   }
 
   const {
     data: { user },
+    error: userErr,
   } = await supabase.auth.getUser();
+
+  if (userErr) {
+    console.error("[oauth:callback] getUser failed after exchange", {
+      message: userErr.message,
+    });
+  }
+
   if (user) {
     await syncProfileFromAuthUser(supabase, user);
   }

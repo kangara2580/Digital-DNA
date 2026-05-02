@@ -2,10 +2,6 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-const FALLBACK_SUPABASE_ORIGIN = "https://ynlfcnezvieqzultbklf.supabase.co";
-const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_6UqQ0Aqd5OlxM8U3KCtLWQ_g_1VZ9dc";
-
 function normalizeSupabaseOrigin(raw: string | undefined): string | null {
   const trimmed = raw?.trim() ?? "";
   if (!trimmed) return null;
@@ -53,17 +49,36 @@ function resolveSiteOrigin(fallbackOrigin: string): string {
   }
 }
 
+function envStatus() {
+  return {
+    hasSupabaseUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()),
+    hasSupabaseAnonKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()),
+    hasPublicSiteUrl: Boolean(process.env.NEXT_PUBLIC_SITE_URL?.trim()),
+    hasNextAuthUrl: Boolean(process.env.NEXTAUTH_URL?.trim()),
+    hasVercelProductionUrl: Boolean(
+      process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim(),
+    ),
+  };
+}
+
 export async function GET(request: Request) {
   const reqUrl = new URL(request.url);
-  const supabaseOrigin =
-    normalizeSupabaseOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL) ??
-    FALLBACK_SUPABASE_ORIGIN;
-  const anonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
-    FALLBACK_SUPABASE_PUBLISHABLE_KEY;
+  const supabaseOrigin = normalizeSupabaseOrigin(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+  );
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? "";
 
   if (!supabaseOrigin || !anonKey) {
-    return NextResponse.redirect(new URL("/login?error=oauth", reqUrl.origin));
+    console.error("[oauth:start] missing Supabase env", envStatus());
+    const errorUrl = new URL("/login", reqUrl.origin);
+    errorUrl.searchParams.set("error", "oauth_start_failed");
+    errorUrl.searchParams.set(
+      "reason",
+      !supabaseOrigin
+        ? "missing_NEXT_PUBLIC_SUPABASE_URL"
+        : "missing_NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    );
+    return NextResponse.redirect(errorUrl);
   }
 
   const nextPath = safeNextPath(reqUrl.searchParams.get("next"));
@@ -74,8 +89,16 @@ export async function GET(request: Request) {
   const authUrl = new URL("/auth/v1/authorize", supabaseOrigin);
   authUrl.searchParams.set("provider", "google");
   authUrl.searchParams.set("redirect_to", redirectTo.toString());
-  authUrl.searchParams.set("prompt", "select_account");
+  authUrl.searchParams.set("access_type", "offline");
+  authUrl.searchParams.set("prompt", "consent");
   authUrl.searchParams.set("apikey", anonKey);
+
+  console.info("[oauth:start] generated Google OAuth URL", {
+    origin: reqUrl.origin,
+    redirectTo: redirectTo.toString(),
+    supabaseAuthorizeUrl: authUrl.toString().replace(anonKey, "[redacted]"),
+    env: envStatus(),
+  });
 
   return NextResponse.redirect(authUrl);
 }

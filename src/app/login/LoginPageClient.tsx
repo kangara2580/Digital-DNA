@@ -21,8 +21,17 @@ function oauthErrorMessage(reason: string): string {
   if (lower.includes("access_denied")) {
     return "Google 인증 화면에서 권한 승인이 취소되었습니다. 다시 시도해 주세요.";
   }
-  if (lower.includes("missing_code_or_config")) {
-    return "로그인 완료 코드가 없거나 Supabase 환경변수 설정이 비어 있습니다. 새 로그인 버튼으로 다시 시작해 주세요.";
+  if (lower.includes("missing_code_or_config") || lower.includes("missing_code")) {
+    return "로그인 완료 코드가 없습니다. 이전 실패 URL을 새로고침하지 말고, Google 로그인 버튼으로 다시 시작해 주세요.";
+  }
+  if (lower.includes("missing_next_public_supabase_url")) {
+    return "서버 환경변수 NEXT_PUBLIC_SUPABASE_URL이 비어 있습니다. Vercel Environment Variables를 확인해 주세요.";
+  }
+  if (lower.includes("missing_next_public_supabase_anon_key")) {
+    return "서버 환경변수 NEXT_PUBLIC_SUPABASE_ANON_KEY가 비어 있습니다. Vercel Environment Variables를 확인해 주세요.";
+  }
+  if (lower.includes("exchange") || lower.includes("invalid_grant")) {
+    return "Supabase가 Google 로그인 코드를 세션으로 바꾸지 못했습니다. Supabase Redirect URL과 Google Cloud callback URI를 다시 확인해 주세요.";
   }
   if (lower.includes("fetch failed") || lower.includes("failed to fetch")) {
     return "서버가 Supabase에 연결하지 못했습니다. 잠시 후 다시 시도하고, Vercel 환경변수의 Supabase URL과 Anon Key를 확인해 주세요.";
@@ -42,7 +51,8 @@ export function LoginPageClient() {
   const notice = "";
 
   useEffect(() => {
-    if (searchParams.get("error") !== "oauth") return;
+    const errorType = searchParams.get("error") ?? "";
+    if (!errorType.startsWith("oauth")) return;
 
     const reason = decodeURIComponent(searchParams.get("reason") ?? "");
     setError(`Google 로그인에 실패했습니다. ${oauthErrorMessage(reason)}`);
