@@ -239,14 +239,14 @@ export default function CartPage() {
                   <div className="min-w-0 flex-1">
                     <Link
                       href={`/video/${video.id}`}
-                      className="line-clamp-2 text-left text-[15px] font-bold leading-snug text-zinc-100 hover:text-reels-cyan [html[data-theme='light']_&]:text-zinc-900"
+                      className="line-clamp-2 text-left text-[15px] font-bold leading-snug text-zinc-100 transition-colors hover:text-reels-crimson [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:text-reels-crimson"
                     >
                       {video.title}
                     </Link>
                     <p className="mt-1 truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                       <Link
                         href={sellerProfileHrefFromVideo(video)}
-                        className="underline-offset-2 hover:text-reels-cyan hover:underline [html[data-theme='light']_&]:hover:text-[#0891b2]"
+                        className="underline-offset-2 transition-colors hover:text-reels-crimson hover:underline [html[data-theme='light']_&]:hover:text-reels-crimson"
                         onClick={(e) => e.stopPropagation()}
                       >
                         {video.creator}
@@ -254,7 +254,7 @@ export default function CartPage() {
                     </p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       {video.priceWon != null ? (
-                        <span className="text-[15px] font-extrabold tabular-nums text-reels-cyan">
+                        <span className="text-[15px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
                           {video.priceWon.toLocaleString("ko-KR")}원
                         </span>
                       ) : (
