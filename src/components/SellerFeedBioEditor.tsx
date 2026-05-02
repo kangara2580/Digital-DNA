@@ -53,16 +53,16 @@ export function SellerFeedBioEditor({ sellerId, initialBio }: Props) {
   };
 
   return (
-    <div className="w-full rounded-xl border border-white/10 bg-black/20 p-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:p-4">
+    <div className="w-full">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="text-[12px] font-bold tracking-wide text-[color:var(--reels-point)]">
           판매 피드 소개
         </p>
         {isOwner ? (
           <button
             type="button"
             onClick={() => setEditing((v) => !v)}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-zinc-300 transition hover:border-reels-cyan/45 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/18 bg-white/[0.06] text-white/75 transition hover:border-[color:var(--reels-point)]/45 hover:bg-[color:var(--reels-point)]/10 hover:text-[color:var(--reels-point)] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-[color:var(--reels-point)]/40"
             aria-label="소개글 수정"
             title="소개글 수정"
           >
@@ -72,30 +72,30 @@ export function SellerFeedBioEditor({ sellerId, initialBio }: Props) {
       </div>
 
       {editing && isOwner ? (
-        <div className="mt-2">
+        <div className="mt-3">
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value.slice(0, 240))}
             rows={3}
-            className="w-full resize-none rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-[13px] text-zinc-100 outline-none focus:border-reels-cyan/45 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+            className="w-full resize-none rounded-xl border border-white/14 bg-black/35 px-3.5 py-2.5 text-[13px] leading-relaxed text-white/[0.95] outline-none ring-0 transition placeholder:text-white/35 focus:border-[color:var(--reels-point)]/45 focus:ring-1 focus:ring-[color:var(--reels-point)]/35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-400"
             placeholder="내 판매 피드 소개를 적어보세요."
           />
-          <div className="mt-2 flex items-center justify-between">
-            <p className="text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          <div className="mt-2.5 flex items-center justify-between">
+            <p className="text-[11px] font-medium text-white/40 [html[data-theme='light']_&]:text-zinc-500">
               {bio.trim().length}/240
             </p>
             <button
               type="button"
               onClick={() => void save()}
               disabled={saving}
-              className="rounded-full bg-reels-cyan/20 px-3 py-1.5 text-[12px] font-bold text-reels-cyan transition hover:bg-reels-cyan/30 disabled:opacity-50"
+              className="rounded-full bg-[color:var(--reels-point)] px-4 py-1.5 text-[12px] font-bold text-white shadow-[0_6px_20px_-6px_rgba(252,3,165,0.55)] transition hover:brightness-[1.06] disabled:opacity-50"
             >
               {saving ? "저장 중…" : "저장"}
             </button>
           </div>
         </div>
       ) : (
-        <p className="mt-2 min-h-[3.25rem] whitespace-pre-wrap text-[13px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
+        <p className="mt-2.5 min-h-[3.25rem] whitespace-pre-wrap text-[13px] leading-relaxed text-white/[0.78] [html[data-theme='light']_&]:text-zinc-700">
           {helpText}
         </p>
       )}
