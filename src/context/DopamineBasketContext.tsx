@@ -22,6 +22,7 @@ import {
   fetchUserCartVideos,
   replaceUserCart,
 } from "@/lib/supabaseUserSync";
+import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { waitForSupabaseAccessToken } from "@/lib/waitSupabaseSessionReady";
 
@@ -44,6 +45,8 @@ type Ctx = {
     poster?: string,
   ) => void;
   builderItems: BuilderTimelineItem[];
+  /** 동일 영상(정규화 id)이 장바구니 타임라인에 있는지 — UI 토글 라벨용 */
+  isVideoInCart: (videoId: string) => boolean;
   removeBuilderItem: (key: string) => void;
   removeBuilderItemsByKeys: (keys: string[]) => void;
   clearBuilder: () => void;
@@ -63,8 +66,21 @@ export function useDopamineBasketOptional() {
   return useContext(DopamineBasketContext);
 }
 
+function dedupeCartVideosByCanonicalId(videos: FeedVideo[]): FeedVideo[] {
+  const seen = new Set<string>();
+  const out: FeedVideo[] = [];
+  for (const v of videos) {
+    const id = canonicalFavoriteVideoId(v.id);
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(v);
+  }
+  return out;
+}
+
 function videosToBuilderItems(videos: FeedVideo[]): BuilderTimelineItem[] {
-  return videos.map((video, i) => ({
+  const uniq = dedupeCartVideosByCanonicalId(videos);
+  return uniq.map((video, i) => ({
     key: `b-load-${video.id}-${i}`,
     video,
   }));
@@ -100,6 +116,14 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
     setFlyItems((items) => items.filter((x) => x.id !== id));
   }, []);
 
+  const isVideoInCart = useCallback(
+    (videoId: string) => {
+      const vid = canonicalFavoriteVideoId(videoId);
+      return builderItems.some((b) => canonicalFavoriteVideoId(b.video.id) === vid);
+    },
+    [builderItems],
+  );
+
   const launchFromCartButton = useCallback(
     (buttonEl: HTMLElement, video: FeedVideo, poster?: string) => {
       if (typeof window === "undefined") return;
@@ -112,8 +136,19 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
         window.alert("장바구니를 불러오는 중입니다. 잠시 후 다시 눌러 주세요.");
         return;
       }
-      const key = `b-${video.id}-${++builderSeq.current}`;
-      setBuilderItems((items) => [...items, { key, video }]);
+      const vid = canonicalFavoriteVideoId(video.id);
+      let didAdd = false;
+      setBuilderItems((items) => {
+        const had = items.some((b) => canonicalFavoriteVideoId(b.video.id) === vid);
+        if (had) {
+          return items.filter((b) => canonicalFavoriteVideoId(b.video.id) !== vid);
+        }
+        didAdd = true;
+        const key = `b-${video.id}-${++builderSeq.current}`;
+        return [...items, { key, video }];
+      });
+
+      if (!didAdd) return;
 
       const cartEl = cartAnchorRef.current;
       if (!cartEl) return;
@@ -249,7 +284,7 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
     if (!supabaseConfigured || !userId) return;
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
-    const videos = builderItems.map((b) => b.video);
+    const videos = dedupeCartVideosByCanonicalId(builderItems.map((b) => b.video));
     const handle = window.setTimeout(() => {
       void (async () => {
         const ok = await waitForSupabaseAccessToken(supabase);
@@ -269,6 +304,7 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
       cartSyncReady,
       launchFromCartButton,
       builderItems,
+      isVideoInCart,
       removeBuilderItem,
       removeBuilderItemsByKeys,
       clearBuilder,
@@ -278,6 +314,7 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
       cartSyncReady,
       launchFromCartButton,
       builderItems,
+      isVideoInCart,
       removeBuilderItem,
       removeBuilderItemsByKeys,
       clearBuilder,

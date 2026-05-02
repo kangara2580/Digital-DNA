@@ -303,6 +303,7 @@ export function VideoDetailView({
   const price = video.priceWon ?? 0;
   const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
   const wishlisted = isSaved(video.id);
+  const inCart = dopamine.isVideoInCart(video.id);
   const [wishlistPulse, setWishlistPulse] = useState(false);
   const [likePulse, setLikePulse] = useState(false);
   const [internalLikeCount, setInternalLikeCount] = useState(0);
@@ -815,15 +816,20 @@ export function VideoDetailView({
             <div className="flex items-center justify-center gap-4">
               <button
                 type="button"
-                title="장바구니 담기"
+                title={inCart ? "장바구니에서 빼기" : "장바구니 담기"}
                 onClick={(e) => {
                   if (soldOut) return;
                   if (!requireAuth()) return;
                   dopamine.launchFromCartButton(e.currentTarget, video, posterSrc);
                 }}
-                className="inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-zinc-400 transition-colors hover:border-white/25 hover:text-zinc-100 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-600"
+                className={`inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border border-white/10 bg-white/[0.04] transition-colors hover:border-white/25 hover:text-zinc-100 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 ${
+                  inCart
+                    ? "border-[var(--reels-point)]/55 text-[var(--reels-point)] hover:border-[var(--reels-point)]/75 [html[data-theme='light']_&]:text-[var(--reels-point)]"
+                    : "text-zinc-400 [html[data-theme='light']_&]:text-zinc-600"
+                }`}
                 disabled={soldOut}
-                aria-label="장바구니 담기"
+                aria-label={inCart ? "장바구니에서 빼기" : "장바구니 담기"}
+                aria-pressed={inCart}
               >
                 <ShoppingCart className="h-[18px] w-[18px]" />
               </button>

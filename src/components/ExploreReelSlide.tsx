@@ -273,10 +273,7 @@ function ReelDesktopRail({
 
   const remaining = clonesRemaining(meta);
   const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
-  const inCart = useMemo(
-    () => dopamine.builderItems.some((item) => item.video.id === video.id),
-    [dopamine.builderItems, video.id],
-  );
+  const inCart = dopamine.isVideoInCart(video.id);
   const posterSrc = sanitizePosterSrc(video.poster);
 
   const authPromptScrollYRef = useRef(0);
@@ -552,7 +549,7 @@ function ReelDesktopRail({
       >
         <button
           type="button"
-          title={inCart ? "장바구니에 담김" : "장바구니 담기"}
+          title={inCart ? "장바구니에서 빼기" : "장바구니 담기"}
           onClick={(e) => {
             if (soldOut) return;
             if (!requireAuth()) return;
@@ -564,7 +561,8 @@ function ReelDesktopRail({
               : ""
           }`}
           disabled={soldOut}
-          aria-label={inCart ? "장바구니에 담김" : "장바구니 담기"}
+          aria-label={inCart ? "장바구니에서 빼기" : "장바구니 담기"}
+          aria-pressed={inCart}
         >
           <ShoppingCart
             strokeWidth={2.25}

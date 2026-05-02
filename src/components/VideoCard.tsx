@@ -255,6 +255,7 @@ export function VideoCard({
   const showAiBadge = false;
   const cartBtnRef = useRef<HTMLButtonElement>(null);
   const wishlisted = wishlist.isSaved(video.id);
+  const inCart = dopamine?.isVideoInCart(video.id) ?? false;
   const [likedByMe, setLikedByMe] = useState(false);
   const [likeBusy, setLikeBusy] = useState(false);
   const [likePulse, setLikePulse] = useState(false);
@@ -785,7 +786,9 @@ export function VideoCard({
               ref={cartBtnRef}
               type="button"
               className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full border border-white/20 bg-black/35 text-white opacity-90 backdrop-blur-[1px] transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
-              aria-label="장바구니에 담기"
+              aria-label={inCart ? "장바구니에서 빼기" : "장바구니에 담기"}
+              aria-pressed={inCart}
+              title={inCart ? "장바구니에서 빼기" : "장바구니 담기"}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();

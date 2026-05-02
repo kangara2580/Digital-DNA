@@ -32,6 +32,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const inView = useInView(wrapRef, { amount: 0.2, margin: "0px 0px -8% 0px", once: false });
   const wishlisted = wishlist.isSaved(video.id);
+  const inCart = dopamine?.isVideoInCart(video.id) ?? false;
   const [likedByMe, setLikedByMe] = useState(false);
   const [likeBusy, setLikeBusy] = useState(false);
   const [likePulse, setLikePulse] = useState(false);
@@ -169,7 +170,9 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
               ref={cartBtnRef}
               type="button"
               className="pointer-events-auto relative z-[8] inline-flex h-10 w-10 items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 sm:h-11 sm:w-11"
-              aria-label="장바구니에 담기"
+              title={inCart ? "장바구니에서 빼기" : "장바구니 담기"}
+              aria-label={inCart ? "장바구니에서 빼기" : "장바구니에 담기"}
+              aria-pressed={inCart}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
