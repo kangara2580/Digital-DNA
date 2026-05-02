@@ -240,7 +240,7 @@ export function MyPageMyListingsSection() {
         </p>
         <Link
           href="/login?redirect=%2Fmypage%3Ftab%3Dlistings"
-          className="mt-4 inline-flex items-center justify-center rounded-full border border-[color:var(--reels-point)]/85 bg-transparent px-5 py-2.5 text-[14px] font-semibold text-[color:var(--reels-point)] transition hover:border-[color:var(--reels-point)] hover:bg-[color:var(--reels-point)]/10 active:bg-[color:var(--reels-point)]/15"
+          className="mt-4 inline-flex items-center justify-center rounded-full border border-[color:var(--reels-point)]/90 bg-transparent px-5 py-2.5 text-[14px] font-semibold text-white transition hover:bg-[color:var(--reels-point)]/10 active:bg-[color:var(--reels-point)]/15 [html[data-theme='light']_&]:text-zinc-900"
         >
           로그인
         </Link>
@@ -275,15 +275,12 @@ export function MyPageMyListingsSection() {
     return (
       <div className="rounded-2xl border border-dashed border-white/15 bg-black/20 px-6 py-14 text-center [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-50">
         <Film className="mx-auto h-10 w-10 text-zinc-500 [html[data-theme='light']_&]:text-zinc-400" aria-hidden />
-        <p className="mt-4 text-[15px] font-bold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
+        <p className="mt-4 text-[15px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">
           아직 등록한 영상이 없어요
-        </p>
-        <p className="mt-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          판매 등록 페이지에서 릴스를 올리면 여기에 표시됩니다.
         </p>
         <Link
           href="/sell"
-          className="mt-6 inline-flex items-center justify-center rounded-full border border-[color:var(--reels-point)]/85 bg-transparent px-6 py-3 text-[14px] font-semibold text-[color:var(--reels-point)] transition hover:border-[color:var(--reels-point)] hover:bg-[color:var(--reels-point)]/10 active:bg-[color:var(--reels-point)]/15"
+          className="mt-6 inline-flex items-center justify-center rounded-full border border-[color:var(--reels-point)]/90 bg-transparent px-6 py-3 text-[14px] font-semibold text-white transition hover:bg-[color:var(--reels-point)]/10 active:bg-[color:var(--reels-point)]/15 [html[data-theme='light']_&]:text-zinc-900"
         >
           판매 등록하기
         </Link>
