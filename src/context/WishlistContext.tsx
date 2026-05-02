@@ -100,7 +100,6 @@ export function useWishlistOptional() {
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const {
     user,
-    session,
     loading: authLoading,
     supabaseConfigured,
   } = useAuthSession();
@@ -113,6 +112,16 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   entriesRef.current = entries;
   const fetchGenerationRef = useRef(0);
   const [wishlistSyncReady, setWishlistSyncReady] = useState(false);
+  /**
+   * 낙관적 추가(찜) 직후 `entries`가 토큰 갱신·재조회 등으로 잠시 비거나 엇갈릴 때
+   * 버튼이 하얘지는 현상 완충 — `isSaved`가 ref까지 보도록 하고 버전/state로 재렌더 유도.
+   */
+  const wishlistSavingAddsRef = useRef<Set<string>>(new Set());
+  const [persistingWishlistBump, setPersistingWishlistBump] = useState(0);
+  const bumpPersistingWishlist = useCallback(
+    () => setPersistingWishlistBump((n) => n + 1),
+    [],
+  );
 
   const alertLoginRequired = useCallback(() => {
     redirectToLoginStart();
@@ -140,6 +149,8 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     }
   }, [userId]);
 
+  /** 찜 초기 로드: JWT만 바뀌는 경우(session.access_token)에는 재실행하지 않는다 —
+   *  같은 사용자 목록에는 변화가 없는데 불필요한 재조회·ready 플립이 레이스를 만든다. */
   useEffect(() => {
     if (authLoading) {
       return;
@@ -148,6 +159,8 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     if (!supabaseConfigured || !userId) {
       fetchGenerationRef.current += 1;
       lastGoodEntriesRef.current = [];
+      wishlistSavingAddsRef.current.clear();
+      bumpPersistingWishlist();
       setEntries([]);
       setWishlistSyncReady(true);
       setHydrated(true);
@@ -202,14 +215,20 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [authLoading, supabaseConfigured, userId, session?.access_token]);
+  }, [
+    authLoading,
+    supabaseConfigured,
+    userId,
+    bumpPersistingWishlist,
+  ]);
 
   const isSaved = useCallback(
     (videoId: string) => {
       const v = canonicalFavoriteVideoId(videoId);
+      if (wishlistSavingAddsRef.current.has(v)) return true;
       return entries.some((e) => canonicalFavoriteVideoId(e.id) === v);
     },
-    [entries],
+    [entries, persistingWishlistBump],
   );
 
   const toggle = useCallback(
@@ -235,6 +254,16 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
       /** 낙관적 UI를 즉시 반영한 뒤 백그라운드에서 동기화(이전: await 토큰 후에만 setEntries → 클릭이 먹통처럼 보임) */
       const vid = canonicalFavoriteVideoId(video.id);
+
+      /** setState 업데이터 안에서는 부수효과 금지 — ref는 여기서만 맞춤 */
+      const prevSnap = entriesRef.current.map(normalizeWishlistEntry);
+      const bookmarkedBefore = prevSnap.some((e) => e.id === vid);
+      if (!bookmarkedBefore) {
+        wishlistSavingAddsRef.current.add(vid);
+      } else {
+        wishlistSavingAddsRef.current.delete(vid);
+      }
+      bumpPersistingWishlist();
 
       setEntries((prev) => {
         const prevN = prev.map(normalizeWishlistEntry);
@@ -270,6 +299,8 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         void (async () => {
           const ready = await wishlistMutationAwaitSession(supabase);
           if (!ready) {
+            wishlistSavingAddsRef.current.delete(vid);
+            bumpPersistingWishlist();
             setEntries((p) => p.filter((e) => canonicalFavoriteVideoId(e.id) !== vid));
             if (typeof window !== "undefined") {
               window.alert("세션을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.");
@@ -281,8 +312,13 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             if (process.env.NODE_ENV === "development") {
               console.warn("[wishlist] addFavorite failed", r.errorMessage, r.errorCode);
             }
+            wishlistSavingAddsRef.current.delete(vid);
+            bumpPersistingWishlist();
             setEntries((p) => p.filter((e) => canonicalFavoriteVideoId(e.id) !== vid));
             void reloadFromServer();
+          } else {
+            wishlistSavingAddsRef.current.delete(vid);
+            bumpPersistingWishlist();
           }
         })();
         return [optimistic, ...prevN.filter((e) => e.id !== vid)];
@@ -295,6 +331,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       wishlistSyncReady,
       reloadFromServer,
       alertLoginRequired,
+      bumpPersistingWishlist,
     ],
   );
 
@@ -309,6 +346,8 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       if (!supabase) return;
 
       const vid = canonicalFavoriteVideoId(videoId);
+      wishlistSavingAddsRef.current.delete(vid);
+      bumpPersistingWishlist();
 
       setEntries((prev) => {
         const prevN = prev.map(normalizeWishlistEntry);
@@ -324,7 +363,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         return prevN.filter((e) => e.id !== vid);
       });
     },
-    [authLoading, supabaseConfigured, userId, reloadFromServer, alertLoginRequired],
+    [authLoading, supabaseConfigured, userId, reloadFromServer, alertLoginRequired, bumpPersistingWishlist],
   );
 
   const removeMany = useCallback(
@@ -339,6 +378,10 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       if (!supabase) return;
       const ready = await waitForSupabaseAccessToken(supabase);
       if (!ready) return;
+      for (const id of uniq) {
+        wishlistSavingAddsRef.current.delete(id);
+      }
+      bumpPersistingWishlist();
       const prevSnapshot = entriesRef.current;
       setEntries((p) =>
         p
@@ -353,7 +396,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         await reloadFromServer();
       }
     },
-    [supabaseConfigured, userId, reloadFromServer, alertLoginRequired],
+    [supabaseConfigured, userId, reloadFromServer, alertLoginRequired, bumpPersistingWishlist],
   );
 
   const clear = useCallback(async () => {
@@ -368,12 +411,14 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     }
     const ok = await removeAllWishlistForUser(supabase, userId);
     if (ok) {
+      wishlistSavingAddsRef.current.clear();
+      bumpPersistingWishlist();
       setEntries([]);
       lastGoodEntriesRef.current = [];
     } else {
       await reloadFromServer();
     }
-  }, [supabaseConfigured, userId, reloadFromServer, alertLoginRequired]);
+  }, [supabaseConfigured, userId, reloadFromServer, alertLoginRequired, bumpPersistingWishlist]);
 
   const value = useMemo(
     () => ({
