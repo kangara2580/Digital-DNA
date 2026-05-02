@@ -41,7 +41,10 @@ html[data-theme="light"] [data-page="sell"] ::selection {
   outline: none;
 }
 
-/** 미리보기 video 기본 컨트롤 — ⋮ 오버플로 메뉴 버튼(WebKit·Chromium 계열) */
-[data-page="sell"] video::-webkit-media-controls-overflow-button {
+/** 미리보기 video 기본 컨트롤 — ⋮ 오버플로 메뉴(WebKit·Chromium; attrs와 함께 사용) */
+[data-page="sell"] video.sell-video-preview::-webkit-media-controls-overflow-button {
   display: none !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  opacity: 0 !important;
 }

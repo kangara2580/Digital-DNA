@@ -578,12 +578,15 @@ export function SellerClipUploadForm() {
                   <div className="mt-5 flex w-full min-w-0 justify-center overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
                     <video
                       ref={videoPreviewRef}
-                      className="max-h-[min(52vh,480px)] w-full object-contain"
+                      className="sell-video-preview max-h-[min(52vh,480px)] w-full object-contain"
                       src={previewUrl}
                       crossOrigin="anonymous"
                       muted
                       playsInline
                       controls
+                      controlsList="nodownload noplaybackrate noremoteplayback nopictureinpicture"
+                      disablePictureInPicture
+                      disableRemotePlayback
                       onLoadedMetadata={onVideoMeta}
                     />
                   </div>
@@ -617,12 +620,15 @@ export function SellerClipUploadForm() {
                   <div className="mt-5 flex w-full justify-center overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
                     <video
                       ref={videoPreviewRef}
-                      className="max-h-[min(52vh,480px)] w-full object-contain"
+                      className="sell-video-preview max-h-[min(52vh,480px)] w-full object-contain"
                       src={previewUrl}
                       crossOrigin="anonymous"
                       muted
                       playsInline
                       controls
+                      controlsList="nodownload noplaybackrate noremoteplayback nopictureinpicture"
+                      disablePictureInPicture
+                      disableRemotePlayback
                       onLoadedMetadata={onVideoMeta}
                     />
                   </div>
