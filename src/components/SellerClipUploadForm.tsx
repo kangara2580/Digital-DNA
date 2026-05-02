@@ -39,7 +39,7 @@ const SOURCE_SEGMENT_TRACK =
   "flex w-full max-w-[min(24rem,100%)] gap-1 rounded-full border border-white/[0.1] bg-white/[0.04] p-1 [html[data-theme='light']_&]:border-zinc-200/80 [html[data-theme='light']_&]:bg-zinc-100/45";
 
 const SOURCE_SEGMENT_BTN =
-  "relative flex min-h-[2.75rem] flex-1 items-center justify-center rounded-full px-4 py-2 text-center text-[13px] font-medium leading-tight transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent sm:min-h-[2.875rem] sm:py-2.5 [html[data-theme='light']_&]:focus-visible:ring-zinc-400/40";
+  "relative flex min-h-[2.75rem] flex-1 items-center justify-center rounded-full px-4 py-2 text-center text-[15px] font-medium leading-tight transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent sm:min-h-[2.875rem] sm:py-2.5 [html[data-theme='light']_&]:focus-visible:ring-zinc-400/40";
 
 const SOURCE_SEGMENT_BTN_ACTIVE =
   "bg-white/[0.17] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] [html[data-theme='light']_&]:bg-white/[0.72] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.6)]";
