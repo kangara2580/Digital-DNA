@@ -91,7 +91,7 @@ export function MyPageSavedDraftsSection() {
   return (
     <>
       {cards.length === 0 ? (
-        <p className="text-[13px] text-white/60 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="w-full text-center text-[13px] text-white/60 [html[data-theme='light']_&]:text-zinc-600">
           아직 임시 저장한 항목이 없어요.
         </p>
       ) : (
