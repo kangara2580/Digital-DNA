@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bookmark, ChevronLeft, ChevronRight, Heart, ShoppingCart } from "lucide-react";
 import { AuthPromptModal } from "@/components/AuthPromptModal";
+import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
 import { SellerSocialPlatformIcon } from "@/components/SellerSocialPlatformIcon";
 import { SellerIdentityLink } from "@/components/SellerIdentityLink";
 import { VideoDetailRecommendations } from "@/components/VideoDetailRecommendations";
@@ -32,7 +33,8 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
-import type { SellerSocialLink, SellerSocialPlatform } from "@/lib/sellerSocialLinks";
+import type { SellerSocialLink } from "@/lib/sellerSocialLinks";
+import { getVideoContentSource } from "@/lib/videoSourcePlatform";
 
 const sellerSocialLinksCache = new Map<string, SellerSocialLink[]>();
 const sellerSocialLinksInFlight = new Map<string, Promise<SellerSocialLink[]>>();
@@ -356,48 +358,8 @@ export function VideoDetailView({
         : getExternalLiveStatsPageUrl(video),
     [video],
   );
+  const videoContentSource = useMemo(() => getVideoContentSource(video), [video]);
   const externalLikeCount = liveStats?.diggCount ?? rankMetrics.totalLikes;
-  const detectExternalPlatformFromUrl = useCallback((raw?: string | null): SellerSocialPlatform | null => {
-    if (!raw) return null;
-    const v = raw.trim().toLowerCase();
-    if (!v) return null;
-    if (
-      v.includes("tiktok.com/") ||
-      v.includes("vm.tiktok.com/") ||
-      v.includes("vt.tiktok.com/")
-    ) {
-      return "tiktok";
-    }
-    if (
-      v.includes("youtube.com/") ||
-      v.includes("youtu.be/")
-    ) {
-      return "youtube";
-    }
-    if (
-      v.includes("instagram.com/")
-    ) {
-      return "instagram";
-    }
-    return null;
-  }, []);
-  const externalLikePlatform = useMemo<SellerSocialPlatform>(() => {
-    if (video.tiktokEmbedId) return "tiktok";
-    if (video.instagramShortcode) return "instagram";
-    if (video.youtubeVideoId) return "youtube";
-    const fromSourcePage = detectExternalPlatformFromUrl(video.sourcePageUrl);
-    if (fromSourcePage) return fromSourcePage;
-    const fromSrc = detectExternalPlatformFromUrl(video.src);
-    if (fromSrc) return fromSrc;
-    return "website";
-  }, [
-    video.tiktokEmbedId,
-    video.instagramShortcode,
-    video.youtubeVideoId,
-    video.sourcePageUrl,
-    video.src,
-    detectExternalPlatformFromUrl,
-  ]);
   const totalLikeCount = useMemo(
     () => Math.max(0, externalLikeCount + internalLikeCount),
     [externalLikeCount, internalLikeCount],
@@ -714,12 +676,18 @@ export function VideoDetailView({
                     </span>
                   ) : null}
                   <div className="mb-4 flex flex-wrap items-center gap-2">
-                    <SellerIdentityLink
-                      creator={video.creator}
-                      sellerId={video.listing?.sellerId}
-                      size="compact"
-                      className="w-fit"
-                    />
+                    <div className="flex min-w-0 max-w-full items-center gap-2">
+                      <VideoSourcePlatformIcon
+                        source={videoContentSource}
+                        className="h-4 w-4 shrink-0 text-zinc-400 [html[data-theme='light']_&]:text-zinc-600"
+                      />
+                      <SellerIdentityLink
+                        creator={video.creator}
+                        sellerId={video.listing?.sellerId}
+                        size="compact"
+                        className="min-w-0 flex-1"
+                      />
+                    </div>
                     {sellerSocialLinks.length > 0 ? (
                       <div className="flex items-center gap-1.5">
                         {sellerSocialLinks.slice(0, 4).map((link) => (

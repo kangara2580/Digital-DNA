@@ -25,11 +25,13 @@ import {
 import { getExternalIframeForCard } from "@/lib/externalEmbed/playerUrls";
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { CartIcon } from "@/components/CartIcon";
+import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
 import type { SellerSocialLink } from "@/lib/sellerSocialLinks";
 import {
   sellerDisplayNameFromVideo,
   sellerProfileHrefFromVideo,
 } from "@/lib/sellerProfile";
+import { getVideoContentSource } from "@/lib/videoSourcePlatform";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
@@ -531,6 +533,7 @@ export function VideoCard({
     (video.sellerSocialLinks?.length ?? 0) > 0 ? video.sellerSocialLinks! : sellerSocialLinks;
   const sellerHref = useMemo(() => sellerProfileHrefFromVideo(video), [video]);
   const sellerName = useMemo(() => sellerDisplayNameFromVideo(video), [video]);
+  const videoContentSource = useMemo(() => getVideoContentSource(video), [video]);
 
   const quilt =
     showRelatedQuilt && !dense ? <RelatedDnaQuilt video={video} /> : null;
@@ -912,6 +915,12 @@ export function VideoCard({
             </Link>
           ) : null}
           <div className={`flex min-w-0 items-center ${dense ? "gap-1" : "gap-2"}`}>
+            <VideoSourcePlatformIcon
+              source={videoContentSource}
+              className={`shrink-0 text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 ${
+                dense ? "h-3 w-3" : "h-3.5 w-3.5"
+              }`}
+            />
             <h3
               className={`line-clamp-2 min-w-0 flex-1 text-left font-semibold leading-snug text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 ${
                 dense
