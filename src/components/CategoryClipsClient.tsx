@@ -22,14 +22,18 @@ type PriceFilter = "all" | "high" | "low";
 type NewestFilter = "all" | "newest" | "oldest";
 const CATEGORY_FEED_CACHE_TTL_MS = 120_000;
 
-/** 사이드 필터 버튼 — 다크 / 라이트 */
-const filterBtnActive =
-  "bg-white/10 text-zinc-100 [html[data-theme='light']_&]:bg-zinc-200 [html[data-theme='light']_&]:text-zinc-900";
-const filterBtnInactive =
-  "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900";
+/** 필터 칩 — 컴팩트(전체 너비 행 제거) */
+const chipBase =
+  "inline-flex shrink-0 items-center justify-center rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-[background-color,color,opacity] tabular-nums";
+const chipOn =
+  "bg-white/12 text-zinc-50 ring-1 ring-white/18 [html[data-theme='light']_&]:bg-zinc-900 [html[data-theme='light']_&]:text-white [html[data-theme='light']_&]:ring-zinc-800/40";
+const chipOff =
+  "text-zinc-500 hover:bg-white/[0.07] hover:text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900";
+const chipDisabled =
+  "cursor-not-allowed opacity-40 hover:bg-transparent hover:text-zinc-600 [html[data-theme='light']_&]:hover:bg-transparent";
 
-const filterSectionLabel =
-  "mb-3 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500";
+const filterGroupLabel =
+  "mb-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500";
 
 export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   const router = useRouter();
@@ -281,119 +285,115 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                 {filterOpen ? (
                   <section
                     id="category-filter-popover"
-                    className="absolute right-0 top-[calc(100%+0.6rem)] z-30 w-[min(16rem,calc(100vw-1rem))] rounded-2xl border border-white/10 bg-[#030816]/95 px-3 py-4 shadow-[0_18px_48px_-20px_rgba(0,0,0,0.55)] backdrop-blur-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white"
+                    className="absolute right-0 top-[calc(100%+0.45rem)] z-30 w-max min-w-[10.5rem] max-w-[calc(100vw-1.25rem)] rounded-xl border border-white/10 bg-[#070b14]/98 px-2.5 py-2.5 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white"
                     aria-label="카테고리 필터"
                   >
-                    <div className="mb-2 flex items-center justify-between">
-                      <p className="text-[13px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                        상세 필터
+                    <div className="mb-2.5 flex items-center justify-between gap-3">
+                      <p className="text-[12px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                        필터
                       </p>
                       <button
                         type="button"
                         onClick={() => setFilterOpen(false)}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/15 text-zinc-400 transition hover:border-white/25 hover:text-zinc-200 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+                        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-zinc-500 transition hover:bg-white/[0.08] hover:text-zinc-200 [html[data-theme='light']_&]:text-zinc-500 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
                         aria-label="필터 닫기"
                       >
-                        <X className="h-4 w-4" aria-hidden />
+                        <X className="h-3.5 w-3.5" aria-hidden />
                       </button>
                     </div>
 
-                    <p className={filterSectionLabel}>방향</p>
-                    <div className="space-y-1">
-                      <button
-                        type="button"
-                        onClick={() => setOrientationFilter("all")}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          orientationFilter === "all" ? filterBtnActive : filterBtnInactive
-                        }`}
-                      >
-                        전체
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setOrientationFilter("portrait")}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          orientationFilter === "portrait" ? filterBtnActive : filterBtnInactive
-                        }`}
-                      >
-                        세로
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setOrientationFilter("landscape")}
-                        disabled={orientationCounts.landscape === 0}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          orientationCounts.landscape === 0
-                            ? "cursor-not-allowed text-zinc-600 opacity-45 [html[data-theme='light']_&]:text-zinc-400"
-                            : orientationFilter === "landscape"
-                              ? filterBtnActive
-                              : filterBtnInactive
-                        }`}
-                      >
-                        가로
-                      </button>
-                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <p className={filterGroupLabel}>방향</p>
+                        <div className="flex flex-wrap gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setOrientationFilter("all")}
+                            className={`${chipBase} ${
+                              orientationFilter === "all" ? chipOn : chipOff
+                            }`}
+                          >
+                            전체
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setOrientationFilter("portrait")}
+                            className={`${chipBase} ${
+                              orientationFilter === "portrait" ? chipOn : chipOff
+                            }`}
+                          >
+                            세로
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setOrientationFilter("landscape")}
+                            disabled={orientationCounts.landscape === 0}
+                            className={`${chipBase} ${
+                              orientationCounts.landscape === 0
+                                ? chipDisabled
+                                : orientationFilter === "landscape"
+                                  ? chipOn
+                                  : chipOff
+                            }`}
+                          >
+                            가로
+                          </button>
+                        </div>
+                      </div>
 
-                    <p className={`mt-5 ${filterSectionLabel}`}>가격</p>
-                    <div className="space-y-1">
-                      <button
-                        type="button"
-                        onClick={() => setPriceFilter("all")}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          priceFilter === "all" ? filterBtnActive : filterBtnInactive
-                        }`}
-                      >
-                        전체
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setPriceFilter("high")}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          priceFilter === "high" ? filterBtnActive : filterBtnInactive
-                        }`}
-                      >
-                        높은순
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setPriceFilter("low")}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          priceFilter === "low" ? filterBtnActive : filterBtnInactive
-                        }`}
-                      >
-                        낮은순
-                      </button>
-                    </div>
+                      <div>
+                        <p className={filterGroupLabel}>가격</p>
+                        <div className="flex flex-wrap gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setPriceFilter("all")}
+                            className={`${chipBase} ${priceFilter === "all" ? chipOn : chipOff}`}
+                          >
+                            전체
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPriceFilter("high")}
+                            className={`${chipBase} ${priceFilter === "high" ? chipOn : chipOff}`}
+                          >
+                            높은순
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPriceFilter("low")}
+                            className={`${chipBase} ${priceFilter === "low" ? chipOn : chipOff}`}
+                          >
+                            낮은순
+                          </button>
+                        </div>
+                      </div>
 
-                    <p className={`mt-5 ${filterSectionLabel}`}>최신</p>
-                    <div className="space-y-1">
-                      <button
-                        type="button"
-                        onClick={() => setNewestFilter("all")}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          newestFilter === "all" ? filterBtnActive : filterBtnInactive
-                        }`}
-                      >
-                        전체
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setNewestFilter("newest")}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          newestFilter === "newest" ? filterBtnActive : filterBtnInactive
-                        }`}
-                      >
-                        최신순
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setNewestFilter("oldest")}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          newestFilter === "oldest" ? filterBtnActive : filterBtnInactive
-                        }`}
-                      >
-                        오래된순
-                      </button>
+                      <div>
+                        <p className={filterGroupLabel}>최신</p>
+                        <div className="flex flex-wrap gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setNewestFilter("all")}
+                            className={`${chipBase} ${newestFilter === "all" ? chipOn : chipOff}`}
+                          >
+                            전체
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setNewestFilter("newest")}
+                            className={`${chipBase} ${newestFilter === "newest" ? chipOn : chipOff}`}
+                          >
+                            최신순
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setNewestFilter("oldest")}
+                            className={`${chipBase} ${newestFilter === "oldest" ? chipOn : chipOff}`}
+                          >
+                            오래된순
+                          </button>
+                        </div>
+                      </div>
                     </div>
 
                     <button
@@ -403,9 +403,9 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                         setPriceFilter("all");
                         setNewestFilter("all");
                       }}
-                      className="mt-5 w-full rounded-full border border-white/40 bg-transparent py-2 text-[12px] font-bold text-white transition hover:border-white/70 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-800 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-950 [html[data-theme='light']_&]:hover:bg-zinc-100"
+                      className="mt-3 w-full rounded-full border border-white/20 py-1.5 text-[11px] font-semibold text-zinc-300 transition hover:border-white/35 hover:bg-white/[0.05] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-50"
                     >
-                      필터 초기화
+                      초기화
                     </button>
                   </section>
                 ) : null}
