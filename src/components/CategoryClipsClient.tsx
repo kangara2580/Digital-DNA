@@ -24,16 +24,16 @@ const CATEGORY_FEED_CACHE_TTL_MS = 120_000;
 
 /** 필터 칩 — 컴팩트(전체 너비 행 제거) */
 const chipBase =
-  "inline-flex shrink-0 items-center justify-center rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-[background-color,color,opacity] tabular-nums";
+  "inline-flex shrink-0 items-center justify-center rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition-[background-color,color,opacity] tabular-nums";
 const chipOn =
-  "bg-white/12 text-zinc-50 ring-1 ring-white/18 [html[data-theme='light']_&]:bg-zinc-900 [html[data-theme='light']_&]:text-white [html[data-theme='light']_&]:ring-zinc-800/40";
+  "bg-white/22 text-white ring-2 ring-white/35 [html[data-theme='light']_&]:bg-zinc-900 [html[data-theme='light']_&]:text-white [html[data-theme='light']_&]:ring-zinc-700";
 const chipOff =
-  "text-zinc-500 hover:bg-white/[0.07] hover:text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900";
+  "text-zinc-200 hover:bg-white/14 hover:text-white [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-200 [html[data-theme='light']_&]:hover:text-zinc-950";
 const chipDisabled =
-  "cursor-not-allowed opacity-40 hover:bg-transparent hover:text-zinc-600 [html[data-theme='light']_&]:hover:bg-transparent";
+  "cursor-not-allowed opacity-45 hover:bg-transparent hover:text-zinc-400 [html[data-theme='light']_&]:text-zinc-400 [html[data-theme='light']_&]:hover:bg-transparent [html[data-theme='light']_&]:hover:text-zinc-400";
 
 const filterGroupLabel =
-  "mb-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500";
+  "mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-300 [html[data-theme='light']_&]:text-zinc-600";
 
 export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   const router = useRouter();
@@ -285,17 +285,17 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                 {filterOpen ? (
                   <section
                     id="category-filter-popover"
-                    className="absolute right-0 top-[calc(100%+0.45rem)] z-30 w-max min-w-[10.5rem] max-w-[calc(100vw-1.25rem)] rounded-xl border border-white/10 bg-[#070b14]/98 px-2.5 py-2.5 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white"
+                    className="absolute right-0 top-[calc(100%+0.45rem)] z-30 w-max min-w-[10.5rem] max-w-[calc(100vw-1.25rem)] rounded-xl border border-white/18 bg-[#03050c]/[0.97] px-2.5 py-2.5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.75)] backdrop-blur-sm [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-lg"
                     aria-label="카테고리 필터"
                   >
                     <div className="mb-2.5 flex items-center justify-between gap-3">
-                      <p className="text-[12px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                      <p className="text-[12px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">
                         필터
                       </p>
                       <button
                         type="button"
                         onClick={() => setFilterOpen(false)}
-                        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-zinc-500 transition hover:bg-white/[0.08] hover:text-zinc-200 [html[data-theme='light']_&]:text-zinc-500 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
+                        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/12 hover:text-white [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-200 [html[data-theme='light']_&]:hover:text-zinc-950"
                         aria-label="필터 닫기"
                       >
                         <X className="h-3.5 w-3.5" aria-hidden />
@@ -403,7 +403,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
                         setPriceFilter("all");
                         setNewestFilter("all");
                       }}
-                      className="mt-3 w-full rounded-full border border-white/20 py-1.5 text-[11px] font-semibold text-zinc-300 transition hover:border-white/35 hover:bg-white/[0.05] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-50"
+                      className="mt-3 w-full rounded-full border border-white/30 py-1.5 text-[11px] font-semibold text-zinc-100 transition hover:border-white/45 hover:bg-white/[0.08] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-500 [html[data-theme='light']_&]:hover:bg-zinc-100"
                     >
                       초기화
                     </button>
