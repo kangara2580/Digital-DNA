@@ -155,7 +155,7 @@ export function SellerPitchBottomStartButton() {
 
   return (
     <>
-      <section className="home-ranked-strip relative border-t border-white/10 bg-[color:var(--home-ranked-strip-bg)] pt-6 pb-28 [html[data-theme='light']_&]:border-zinc-200/85 sm:pb-32 sm:pt-8">
+      <section className="home-ranked-strip relative bg-[color:var(--home-ranked-strip-bg)] pt-6 pb-28 sm:pb-32 sm:pt-8">
         <div className="relative mx-auto max-w-[1800px] px-4 pb-20 pt-10 sm:px-6 sm:pb-24 lg:px-8">
           <div className="flex flex-col items-center gap-8 sm:gap-9">
             <p className="max-w-[min(92vw,40rem)] text-center text-[clamp(1.35rem,4.6vw,2.25rem)] leading-snug tracking-[0.02em] text-zinc-100 sm:text-[clamp(1.45rem,3.8vw,2.4rem)] [html[data-theme='light']_&]:text-zinc-900">
