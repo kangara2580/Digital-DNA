@@ -192,7 +192,7 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
     <>
       <section
         id="seller-pitch"
-        className="home-ranked-strip relative border-t border-white/10 bg-[color:var(--home-ranked-strip-bg)] [html[data-theme='light']_&]:border-zinc-200/85"
+        className="home-ranked-strip relative bg-[color:var(--home-ranked-strip-bg)]"
         aria-labelledby="seller-pitch-heading"
       >
         <div className="relative mx-auto max-w-[1800px] px-4 pb-[14px] pt-[44px] sm:px-6 sm:pb-[20px] sm:pt-[60px] lg:px-8 lg:pb-[24px] lg:pt-[76px]">
