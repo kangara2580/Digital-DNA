@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { HomeStartCtaButton } from "@/components/HomeStartCtaButton";
 import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
 import { AuthModalPortal } from "@/components/AuthModalPortal";
 import {
@@ -136,16 +137,8 @@ function SellerPitchStartButton({
   authLoading: boolean;
   onStartClick: () => void;
 }) {
-  /** 홈 히어로「시작하기」와 동일 — 테두리 굵기 고정(호버 시 레이아웃 점프·푸터 밀림 방지) */
   return (
-    <button
-      type="button"
-      onClick={onStartClick}
-      disabled={authLoading}
-      className="shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full border-[1.5px] border-solid border-white/45 bg-transparent px-[clamp(2rem,5.2vw,3.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(calc(1.2rem-2pt),calc(2.1vw-2pt),calc(1.9rem-2pt))] font-semibold text-white transition-[border-color,opacity] duration-200 ease-out hover:border-[color:var(--reels-point)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/75 [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:focus-visible:outline-zinc-400/50 disabled:cursor-not-allowed disabled:border-white/45 disabled:text-white disabled:opacity-55 disabled:hover:border-white/45 disabled:hover:text-white [html[data-theme='light']_&]:disabled:border-zinc-300 [html[data-theme='light']_&]:disabled:text-zinc-500"
-    >
-      시작하기
-    </button>
+    <HomeStartCtaButton onClick={onStartClick} disabled={authLoading} />
   );
 }
 

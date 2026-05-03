@@ -11,6 +11,7 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
 import { AuthModalPortal } from "@/components/AuthModalPortal";
+import { HomeStartCtaButton } from "@/components/HomeStartCtaButton";
 import { MainTopUserMenu } from "@/components/MainTopUserMenu";
 import {
   authModalDialogSurface,
@@ -661,14 +662,10 @@ export function Highlight24() {
               </p>
               {/* 시작하기 + 섹션 네비 — 한 줄 가로 배치 */}
               <div className="pointer-events-auto -translate-x-[40px] z-[85] mt-[clamp(0.5rem,1.2vw,1.5rem)] flex items-center gap-6">
-                <button
-                  type="button"
+                <HomeStartCtaButton
                   onClick={onStartClick}
                   onPointerDown={(event) => event.stopPropagation()}
-                  className="shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full border-[1.5px] border-solid border-white/45 bg-transparent px-[clamp(2rem,5.2vw,3.75rem)] py-[clamp(0.45rem,0.8vw,0.66rem)] text-[clamp(calc(1.2rem-2pt),calc(2.1vw-2pt),calc(1.9rem-2pt))] font-semibold text-white transition-[border-color] duration-200 ease-out hover:border-[color:var(--reels-point)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/75"
-                >
-                  시작하기
-                </button>
+                />
 
                 {/* 섹션 이동 네비게이션 */}
                 <div className="flex shrink-0 items-center gap-5">
