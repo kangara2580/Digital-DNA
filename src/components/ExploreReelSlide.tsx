@@ -665,6 +665,9 @@ export function ExploreReelSlide({
   const progressRailRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const [isScrubbing, setIsScrubbing] = useState(false);
+  useEffect(() => {
+    setProgress(0);
+  }, [video.id]);
   const [volume, setVolume] = useState(0.75);
   const [volumeUiVisible, setVolumeUiVisible] = useState(false);
   const previewSrc = video.previewSrc ?? video.src;
@@ -707,41 +710,62 @@ export function ExploreReelSlide({
   const onTimeUpdate = useCallback(() => {
     if (isScrubbing) return;
     const el = videoRef.current;
-    if (!el?.duration) return;
-    setProgress(el.currentTime / el.duration);
+    if (el == null) return;
+    const d = el.duration;
+    if (!Number.isFinite(d) || d <= 0) return;
+    setProgress(el.currentTime / d);
   }, [isScrubbing]);
+
+  const syncProgressFromVideo = useCallback(() => {
+    const el = videoRef.current;
+    if (el == null) return;
+    const d = el.duration;
+    if (!Number.isFinite(d) || d <= 0) return;
+    setProgress(Math.min(1, Math.max(0, el.currentTime / d)));
+  }, []);
 
   useEffect(() => {
     const el = videoRef.current;
     if (!el) return;
     let rafId = 0;
-    const sync = () => {
-      if (!isScrubbing && el.duration) {
-        setProgress(el.currentTime / el.duration);
+    const tick = () => {
+      if (!isScrubbing) {
+        const d = el.duration;
+        if (Number.isFinite(d) && d > 0) {
+          setProgress(Math.min(1, Math.max(0, el.currentTime / d)));
+        }
       }
       if (!el.paused && !el.ended) {
-        rafId = window.requestAnimationFrame(sync);
+        rafId = window.requestAnimationFrame(tick);
       }
     };
-    const onPlay = () => {
+    const startRaf = () => {
       if (rafId) window.cancelAnimationFrame(rafId);
-      rafId = window.requestAnimationFrame(sync);
+      rafId = window.requestAnimationFrame(tick);
     };
-    const onPauseLike = () => {
+    const stopRaf = () => {
       if (rafId) window.cancelAnimationFrame(rafId);
       rafId = 0;
     };
-    el.addEventListener("play", onPlay);
-    el.addEventListener("pause", onPauseLike);
-    el.addEventListener("ended", onPauseLike);
-    if (!el.paused && !el.ended) onPlay();
-    return () => {
-      el.removeEventListener("play", onPlay);
-      el.removeEventListener("pause", onPauseLike);
-      el.removeEventListener("ended", onPauseLike);
-      if (rafId) window.cancelAnimationFrame(rafId);
+    const onDurationChange = () => {
+      syncProgressFromVideo();
+      if (!el.paused && !el.ended) startRaf();
     };
-  }, [isScrubbing]);
+    el.addEventListener("play", startRaf);
+    el.addEventListener("playing", startRaf);
+    el.addEventListener("pause", stopRaf);
+    el.addEventListener("ended", stopRaf);
+    el.addEventListener("durationchange", onDurationChange);
+    if (!el.paused && !el.ended) startRaf();
+    return () => {
+      el.removeEventListener("play", startRaf);
+      el.removeEventListener("playing", startRaf);
+      el.removeEventListener("pause", stopRaf);
+      el.removeEventListener("ended", stopRaf);
+      el.removeEventListener("durationchange", onDurationChange);
+      stopRaf();
+    };
+  }, [isScrubbing, syncProgressFromVideo]);
 
   const toggleMute = useCallback(() => {
     setVolumeUiVisible(true);
@@ -772,12 +796,6 @@ export function ExploreReelSlide({
     }
   }, []);
 
-  const syncProgressFromVideo = useCallback(() => {
-    const el = videoRef.current;
-    if (!el?.duration) return;
-    setProgress(el.currentTime / el.duration);
-  }, []);
-
   useEffect(() => {
     const el = videoRef.current;
     if (!el) return;
@@ -788,12 +806,14 @@ export function ExploreReelSlide({
   const seekByClientX = useCallback((clientX: number) => {
     const rail = progressRailRef.current;
     const el = videoRef.current;
-    if (!rail || !el?.duration) return;
+    if (!rail || el == null) return;
+    const d = el.duration;
+    if (!Number.isFinite(d) || d <= 0) return;
     const rect = rail.getBoundingClientRect();
     if (rect.width <= 0) return;
     const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
     setProgress(ratio);
-    el.currentTime = ratio * el.duration;
+    el.currentTime = ratio * d;
   }, []);
 
   useEffect(() => {
@@ -895,10 +915,10 @@ export function ExploreReelSlide({
               </p>
             </div>
 
-            {/* 진행 바 (틱톡 스타일) */}
+            {/* 진행 바 — 단색 화이트(그라데이션·글로우 없음) */}
             <div
               ref={progressRailRef}
-              className="pointer-events-auto absolute inset-x-0 bottom-0 z-[4] h-[5px] cursor-ew-resize bg-transparent"
+              className="pointer-events-auto absolute inset-x-0 bottom-0 z-[4] h-[7px] cursor-ew-resize bg-white/25"
               onPointerDown={(e) => {
                 setIsScrubbing(true);
                 seekByClientX(e.clientX);
@@ -910,13 +930,9 @@ export function ExploreReelSlide({
               aria-valuenow={Math.round((progress || 0) * 100)}
             >
               <div
-                className="h-full rounded-r-full"
+                className="h-full bg-white"
                 style={{
-                  width: `${progress > 0 ? Math.max(0.8, Math.min(100, progress * 100)) : 0}%`,
-                  background:
-                    "linear-gradient(90deg, #7F8FA8 0%, #F4F2E8 38%, #D6DFEE 66%, #8C9DB8 100%)",
-                  boxShadow: "0 0 10px rgba(214,223,238,0.45)",
-                  transition: isScrubbing ? "none" : "width 90ms linear",
+                  width: `${Math.min(100, Math.max(0, (progress || 0) * 100))}%`,
                 }}
               />
             </div>
