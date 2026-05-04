@@ -228,7 +228,7 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "seller.bio.saving": "저장 중…",
     "seller.bio.save": "저장",
     "seller.menu.aria":
-      "내 찜·좋아요·임시저장·영상관리·판매분석 바로가기",
+      "내 찜·좋아요·구매내역·임시저장·영상관리·판매분석 바로가기",
     "mypage.title": "마이페이지",
     "mypage.menuLabel": "메뉴",
     "mypage.navAria": "마이페이지 메뉴",
@@ -1225,7 +1225,7 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "seller.bio.saving": "Saving…",
     "seller.bio.save": "Save",
     "seller.menu.aria":
-      "Shortcuts to wishlist, likes, drafts, video management, and sales analytics",
+      "Shortcuts to wishlist, likes, purchase history, drafts, video management, and sales analytics",
     "mypage.title": "My page",
     "mypage.menuLabel": "Menu",
     "mypage.navAria": "My page menu",
