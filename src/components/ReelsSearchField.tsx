@@ -19,9 +19,9 @@ const pinkSubmitTileClass =
 const pinkSubmitTileHeroClass =
   "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(228,41,128,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white";
 
-/** 풀시청 검색창 펼침 — 느리고 부드러운 감속 */
+/** 풀시청 검색창 펼침 — 느리고 부드러운 감속 + 펼침 시 하단 밑줄 */
 const exploreWatchExpandTransition =
-  "transition-[max-width,background-color,border-color,box-shadow,padding,border-radius] duration-[680ms] ease-[cubic-bezier(0.16,1,0.22,1)] motion-reduce:transition-none";
+  "transition-[max-width,background-color,border-color,padding,border-radius] duration-[680ms] ease-[cubic-bezier(0.16,1,0.22,1)] motion-reduce:transition-none";
 
 export function ReelsSearchField({
   compact,
@@ -83,7 +83,7 @@ export function ReelsSearchField({
   if (exploreWatchExpand) {
     return (
       <form
-        className={`group relative ml-auto flex h-11 max-w-11 shrink-0 flex-row items-center justify-end overflow-hidden rounded-2xl border border-transparent bg-transparent py-0 shadow-none backdrop-blur-0 hover:max-w-[min(15rem,38vw)] hover:rounded-full hover:border-white/15 hover:bg-white/[0.06] hover:pr-1 focus-within:max-w-[min(15rem,38vw)] focus-within:rounded-full focus-within:border-white/15 focus-within:bg-white/[0.06] focus-within:pr-1 motion-reduce:max-w-[min(15rem,38vw)] motion-reduce:rounded-full motion-reduce:border-white/15 motion-reduce:bg-white/[0.06] motion-reduce:pr-1 sm:hover:max-w-[min(17rem,34vw)] sm:focus-within:max-w-[min(17rem,34vw)] ${exploreWatchExpandTransition} [html[data-theme='dark']_&]:hover:border-white/20 [html[data-theme='dark']_&]:hover:bg-white/[0.1] [html[data-theme='dark']_&]:focus-within:border-white/20 [html[data-theme='dark']_&]:focus-within:bg-white/[0.1] [html[data-theme='light']_&]:hover:border-zinc-200 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:focus-within:border-zinc-200 [html[data-theme='light']_&]:focus-within:bg-zinc-50`}
+        className={`group relative ml-auto flex h-11 max-w-11 shrink-0 flex-row items-center justify-end overflow-hidden rounded-2xl border-0 border-b-2 border-transparent bg-transparent py-0 shadow-none backdrop-blur-0 hover:max-w-[min(15rem,38vw)] hover:rounded-none hover:border-white/40 hover:bg-transparent hover:pr-1 focus-within:max-w-[min(15rem,38vw)] focus-within:rounded-none focus-within:border-[color:rgba(255,45,141,0.55)] focus-within:bg-transparent focus-within:pr-1 motion-reduce:max-w-[min(15rem,38vw)] motion-reduce:rounded-none motion-reduce:border-white/40 motion-reduce:bg-transparent motion-reduce:pr-1 motion-reduce:focus-within:border-[color:rgba(255,45,141,0.55)] sm:hover:max-w-[min(17rem,34vw)] sm:focus-within:max-w-[min(17rem,34vw)] ${exploreWatchExpandTransition} [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:focus-within:border-[color:var(--reels-point)]`}
         onSubmit={(e) => {
           e.preventDefault();
           runSearch();
