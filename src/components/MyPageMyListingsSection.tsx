@@ -260,7 +260,7 @@ export function MyPageMyListingsSection() {
 
   if (error && videos.length === 0) {
     return (
-      <div className="rounded-2xl border border-reels-crimson/38 bg-reels-crimson/12 px-3 py-4 text-[14px] text-[#fcd0eb] [html[data-theme='light']_&]:text-zinc-900">        {error}
+      <div className="rounded-2xl border border-reels-crimson/38 bg-reels-crimson/12 px-3 py-4 text-[14px] text-[#F3C4D9] [html[data-theme='light']_&]:text-zinc-900">        {error}
         <button
           type="button"
           onClick={() => void load()}
@@ -369,7 +369,7 @@ export function MyPageMyListingsSection() {
           type="button"
           disabled={deleteBusy || selectedIds.length === 0}
           onClick={confirmDeleteSelected}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-reels-crimson/42 bg-reels-crimson/14 px-3 py-1.5 text-[12px] font-bold text-[#fce9f5] transition hover:bg-reels-crimson/24 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:text-zinc-900"        >
+          className="inline-flex items-center gap-1.5 rounded-lg border border-reels-crimson/42 bg-reels-crimson/14 px-3 py-1.5 text-[12px] font-bold text-[#F9ECF3] transition hover:bg-reels-crimson/24 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:text-zinc-900"        >
           {deleteBusy ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
           ) : (

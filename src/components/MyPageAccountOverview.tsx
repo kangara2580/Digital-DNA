@@ -65,7 +65,7 @@ export function MyPageAccountOverview() {
         )}
         <Link
           href="/subscribe"
-          className="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-center text-[13px] font-semibold text-zinc-100 transition hover:border-[#fc03a5] hover:text-[#fda6dc] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:text-[#fc03a5]"
+          className="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-center text-[13px] font-semibold text-zinc-100 transition hover:border-[#E42980] hover:text-[#F07AB0] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:text-[#E42980]"
         >
           {sub ? "구독 플랜 관리" : "구독 시작하기"}
         </Link>
@@ -86,7 +86,7 @@ export function MyPageAccountOverview() {
               <li key={v.id}>
                 <Link
                   href={`/video/${v.id}`}
-                  className="font-medium text-zinc-200 transition hover:text-[#fda6dc] [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:text-[#fc03a5]"
+                  className="font-medium text-zinc-200 transition hover:text-[#F07AB0] [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:text-[#E42980]"
                 >
                   {v.title}
                 </Link>
@@ -96,7 +96,7 @@ export function MyPageAccountOverview() {
         )}
         <Link
           href="/explore"
-          className="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-center text-[13px] font-semibold text-zinc-100 transition hover:border-[#fc03a5] hover:text-[#fda6dc] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:text-[#fc03a5]"
+          className="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-center text-[13px] font-semibold text-zinc-100 transition hover:border-[#E42980] hover:text-[#F07AB0] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:text-[#E42980]"
         >
           둘러보기
         </Link>

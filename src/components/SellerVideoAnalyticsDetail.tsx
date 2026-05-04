@@ -106,7 +106,7 @@ export function SellerVideoAnalyticsDetail({ videoId, days, from, to }: Props) {
 
   if (loadError && !detail) {
     return (
-      <div className="reels-glass-card rounded-2xl p-8 text-center text-[#fcd0eb]">
+      <div className="reels-glass-card rounded-2xl p-8 text-center text-[#F3C4D9]">
         <p className="font-semibold">{loadError}</p>
         <Link href="/mypage?tab=analytics" className="mt-4 inline-block text-reels-cyan hover:underline">
           판매 분석으로 돌아가기

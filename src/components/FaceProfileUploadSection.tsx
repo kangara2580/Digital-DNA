@@ -331,7 +331,7 @@ export function FaceProfileUploadSection() {
                 <button
                   type="button"
                   onClick={() => clearTripleSlot(key)}
-                  className="mt-2 w-full rounded-lg border border-white/15 bg-transparent py-2 text-[11px] font-semibold text-[#fda6dc] transition hover:border-reels-crimson/35 hover:bg-reels-crimson/15 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-reels-crimson [html[data-theme='light']_&]:hover:bg-zinc-50"
+                  className="mt-2 w-full rounded-lg border border-white/15 bg-transparent py-2 text-[11px] font-semibold text-[#F07AB0] transition hover:border-reels-crimson/35 hover:bg-reels-crimson/15 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-reels-crimson [html[data-theme='light']_&]:hover:bg-zinc-50"
                 >
                   취소
                 </button>

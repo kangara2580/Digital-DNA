@@ -280,7 +280,7 @@ export function MyListingEditDialog({ video, open, onClose, onSaved }: Props) {
 
         <div className="min-h-0 flex-1 overflow-y-scroll overflow-x-hidden overscroll-contain px-4 py-3 touch-pan-y [scrollbar-gutter:stable]">
           {error ? (
-            <p className="mb-3 rounded-lg border border-reels-crimson/42 bg-reels-crimson/12 px-3 py-2 text-[13px] text-[#fce9f5] [html[data-theme='light']_&]:text-zinc-900">              {error}
+            <p className="mb-3 rounded-lg border border-reels-crimson/42 bg-reels-crimson/12 px-3 py-2 text-[13px] text-[#F9ECF3] [html[data-theme='light']_&]:text-zinc-900">              {error}
             </p>
           ) : null}
 

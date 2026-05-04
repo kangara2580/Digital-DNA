@@ -46,7 +46,7 @@ export function SellPageClient() {
             <Store
               aria-hidden
               className="h-6 w-6 shrink-0"
-              color="#fc03a5"
+              color="#E42980"
               strokeWidth={2}
             />
             <h1 className="text-[clamp(1.15rem,3.2vw,1.35rem)] font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">

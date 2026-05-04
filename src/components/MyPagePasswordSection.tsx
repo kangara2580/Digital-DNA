@@ -246,7 +246,7 @@ export function MyPagePasswordSection() {
       </div>
 
       {error ? (
-        <p className="mt-3 rounded-lg border border-reels-crimson/45 bg-reels-crimson/12 px-3 py-2 text-[12px] font-semibold text-[#fcd0eb] [html[data-theme='light']_&]:text-reels-crimson">          {error}
+        <p className="mt-3 rounded-lg border border-reels-crimson/45 bg-reels-crimson/12 px-3 py-2 text-[12px] font-semibold text-[#F3C4D9] [html[data-theme='light']_&]:text-reels-crimson">          {error}
         </p>
       ) : null}
       {message ? (

@@ -2,7 +2,7 @@
 
 import type { ButtonHTMLAttributes } from "react";
 
-const BRAND_PINK = "#fc03a5";
+const BRAND_PINK = "#E42980";
 
 export type HomeStartCtaButtonProps = {
   onClick: NonNullable<ButtonHTMLAttributes<HTMLButtonElement>["onClick"]>;
@@ -34,8 +34,8 @@ export function HomeStartCtaButton({
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:h-11 sm:w-11"
         style={{
           backgroundColor: BRAND_PINK,
-          boxShadow:
-            "inset 0 1px 0 rgba(255,255,255,0.26), inset 0 -2px 6px rgba(0,0,0,0.14)",
+          /* 스와치처럼 선명한 핑크: 아래쪽 검은 인셋 제거(전체가 어둡게 보이던 원인) */
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35)",
         }}
       >
         <svg

@@ -44,9 +44,9 @@ const TOP_PASTEL: Record<number, { shell: string; chip: string; rankHint: string
   },
   3: {
     shell:
-      "bg-rose-500/[0.07] ring-1 ring-rose-400/15 [html[data-theme='light']_&]:bg-rose-50 [html[data-theme='light']_&]:ring-rose-200/80",
+      "bg-reels-crimson/[0.07] ring-1 ring-reels-crimson/15 [html[data-theme='light']_&]:bg-[#FCEEF6] [html[data-theme='light']_&]:ring-[#F9C6D4]/80",
     chip:
-      "bg-rose-500/15 text-rose-100 [html[data-theme='light']_&]:bg-rose-100 [html[data-theme='light']_&]:text-rose-900",
+      "bg-reels-crimson/15 text-[#F9ECF3] [html[data-theme='light']_&]:bg-[#FCEEF6] [html[data-theme='light']_&]:text-reels-crimson",
     rankHint: "3위",
   },
 };
@@ -250,7 +250,7 @@ export function LeaderboardClient() {
             <span className="inline-block animate-pulse">잠깐만요… 불러오는 중</span>
           </div>
         ) : error ? (
-          <div className="rounded-3xl border border-rose-400/25 bg-rose-500/[0.08] px-5 py-6 text-center text-[13px] font-medium text-rose-100 [html[data-theme='light']_&]:border-rose-200 [html[data-theme='light']_&]:bg-rose-50 [html[data-theme='light']_&]:text-rose-800">
+          <div className="rounded-3xl border border-reels-crimson/25 bg-reels-crimson/[0.08] px-5 py-6 text-center text-[13px] font-medium text-[#F9ECF3] [html[data-theme='light']_&]:border-[#F9C6D4] [html[data-theme='light']_&]:bg-[#FCEEF6] [html[data-theme='light']_&]:text-reels-crimson">
             랭킹을 못 불러왔어요. 조금 뒤에 다시 눌러 주세요.
           </div>
         ) : (

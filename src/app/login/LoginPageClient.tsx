@@ -88,7 +88,7 @@ export function LoginPageClient() {
           </p>
           {error ? (
             <p
-              className="mt-5 rounded-xl border border-reels-crimson/45 bg-reels-crimson/12 px-3 py-2 text-[13px] font-semibold text-[#fce9f5]"
+              className="mt-5 rounded-xl border border-reels-crimson/45 bg-reels-crimson/12 px-3 py-2 text-[13px] font-semibold text-[#F9ECF3]"
               role="alert"
             >
               {error}

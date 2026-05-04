@@ -633,7 +633,7 @@ export function SellerClipUploadForm() {
       <header className="mb-8 flex items-center gap-2 border-b border-white/10 pb-6 sm:gap-2.5 [html[data-theme='light']_&]:border-zinc-100">
         <Film
           aria-hidden
-          color="#fc03a5"
+          color="#E42980"
           className="h-6 w-6 shrink-0 sm:h-[1.625rem] sm:w-[1.625rem]"
           strokeWidth={2}
         />
@@ -647,7 +647,7 @@ export function SellerClipUploadForm() {
           className={`mb-8 flex items-start gap-2 rounded-xl border px-3.5 py-3 text-[13px] font-medium ${
             message.ok
               ? "border-emerald-500/35 bg-emerald-500/[0.08] text-emerald-200 [html[data-theme='light']_&]:text-emerald-900"
-              : "border-reels-crimson/35 bg-reels-crimson/[0.08] text-pink-100 [html[data-theme='light']_&]:text-reels-crimson"
+              : "border-reels-crimson/35 bg-reels-crimson/[0.08] text-[#F9ECF3] [html[data-theme='light']_&]:text-reels-crimson"
           }`}
           role="status"
         >

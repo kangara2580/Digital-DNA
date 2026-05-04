@@ -21,7 +21,7 @@ const menuItemLink =
   "block whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold text-zinc-100 transition-colors hover:bg-white/[0.08] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
 
 const menuItemLogout =
-  "flex w-full whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold text-[#fcd0eb]/95 transition-colors hover:bg-white/[0.08] disabled:opacity-50 [html[data-theme='light']_&]:text-reels-crimson [html[data-theme='light']_&]:hover:bg-zinc-100";
+  "flex w-full whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold text-[#F3C4D9]/95 transition-colors hover:bg-white/[0.08] disabled:opacity-50 [html[data-theme='light']_&]:text-reels-crimson [html[data-theme='light']_&]:hover:bg-zinc-100";
 type InnerProps = Props & {
   /** `/mypage?tab=` 값 — Next 15에서 `useSearchParams`는 Suspense 경계 안에서만 씀 */
   mypageQueryTab: string;

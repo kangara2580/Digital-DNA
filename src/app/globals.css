@@ -1,7 +1,7 @@
 /**
  * ARA — Design System (Apple minimal + Cyberpunk contrast + IG-trendy)
- * Primary brand pink: #fc03a5 | #00F2EA Cyber Cyan | #050505 Deep Abyss (crimson토큰 = 동일 브랜드 핑크)
- * Point (`--reels-point`): #fc03a5 — 명시된 UI 안내 등
+ * Primary brand pink: #E42980 | #00F2EA Cyber Cyan | #050505 Deep Abyss (crimson토큰 = 동일 브랜드 핑크)
+ * Point (`--reels-point`): #E42980 — 명시된 UI 안내 등
  * Surface/card: glass + 1px border (see .reels-glass-card)
  * Typography: Inter (layout.tsx) + Pretendard (KR). Headings: 700–800.
  * Motion: page enter template.tsx — 0.4s ease-in-out + blur; AI CTAs: .reels-ai-glow
@@ -16,15 +16,15 @@
   --home-ranked-strip-bg: #02040a;
   --reels-void: #040916;
   --reels-lift: #070f1f;
-  --reels-crimson: #fc03a5;
+  --reels-crimson: #E42980;
   --reels-cyan: #00f2ea;
   /** 브랜드 포인트 핑크 — 코드·명시 안내 외 다른 곳에는 임의로 쓰지 않음 */
-  --reels-point: #fc03a5;
+  --reels-point: #E42980;
   --reels-surface-card: rgba(255, 255, 255, 0.08);
   --reels-glass: rgba(255, 255, 255, 0.09);
   --reels-glass-strong: rgba(255, 255, 255, 0.15);
   --reels-border: rgba(255, 255, 255, 0.2);
-  --reels-border-hot: rgba(252, 3, 165, 0.38);
+  --reels-border-hot: rgba(228, 41, 128, 0.38);
   --reels-shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.25);
   --reels-icon-glass: rgba(255, 255, 255, 0.18);
   --reels-icon-border: rgba(255, 255, 255, 0.26);
@@ -45,7 +45,7 @@
 }
 
 :root[data-theme="light"] {
-  --reels-crimson: #fc03a5;
+  --reels-crimson: #E42980;
   --reels-cyan: #00f2ea;
   /** 홈 스트립·푸터 — 라이트에서 본문과 동일한 밝은 캔버스 */
   --home-ranked-strip-bg: #ffffff;
@@ -56,7 +56,7 @@
   --reels-glass: rgba(255, 255, 255, 0.68);
   --reels-glass-strong: rgba(255, 255, 255, 0.82);
   --reels-border: rgba(132, 153, 199, 0.32);
-  --reels-border-hot: rgba(252, 3, 165, 0.36);
+  --reels-border-hot: rgba(228, 41, 128, 0.36);
   --reels-shadow-soft: 0 10px 30px rgba(56, 78, 125, 0.12);
   --reels-icon-glass: rgba(255, 255, 255, 0.88);
   --reels-icon-border: rgba(140, 161, 208, 0.36);
@@ -104,7 +104,7 @@
 }
 
 :root[data-theme="dark"] {
-  --reels-crimson: #fc03a5;
+  --reels-crimson: #E42980;
   --reels-cyan: #00f2ea;
   --background: #02040a;
   --foreground: #fafafa;
@@ -203,7 +203,7 @@ html {
   .text-legible-white {
     text-shadow:
       0 1px 2px rgba(0, 0, 0, 0.65),
-      0 0 14px rgba(252, 3, 165, 0.32);
+      0 0 14px rgba(228, 41, 128, 0.32);
   }
 
   /** Glassmorphism 카드 — 1px 라이트 보더 */
@@ -253,7 +253,7 @@ html {
     box-shadow:
       0 0 0 1px rgba(155, 109, 255, 0.38),
       0 0 24px -4px rgba(155, 109, 255, 0.55),
-      0 0 48px -12px rgba(252, 3, 165, 0.38);
+      0 0 48px -12px rgba(228, 41, 128, 0.38);
   }
 
   .reels-ai-glow::after {
@@ -266,7 +266,7 @@ html {
       110deg,
       transparent 30%,
       rgba(155, 109, 255, 0.5) 45%,
-      rgba(252, 3, 165, 0.28) 55%,
+      rgba(228, 41, 128, 0.28) 55%,
       transparent 70%
     );
     background-size: 200% 100%;
@@ -287,7 +287,7 @@ html {
     border: 1px solid transparent;
     background:
       linear-gradient(var(--reels-lift), var(--reels-lift)) padding-box,
-      linear-gradient(135deg, rgba(252, 3, 165, 0.42), rgba(155, 109, 255, 0.35))
+      linear-gradient(135deg, rgba(228, 41, 128, 0.42), rgba(155, 109, 255, 0.35))
         border-box;
   }
 
@@ -310,7 +310,7 @@ html {
       transparent,
       rgba(155, 109, 255, 0.12),
       rgba(155, 109, 255, 0.35),
-      rgba(252, 3, 165, 0.14),
+      rgba(228, 41, 128, 0.14),
       transparent
     );
     animation: reels-scan-move 1.35s ease-in-out infinite;
@@ -366,7 +366,7 @@ html {
     border-color: rgba(155, 109, 255, 0.5);
     box-shadow:
       0 0 22px rgba(155, 109, 255, 0.35),
-      0 0 36px rgba(252, 3, 165, 0.14),
+      0 0 36px rgba(228, 41, 128, 0.14),
       inset 0 0 0 1px rgba(155, 109, 255, 0.2);
   }
 }
@@ -379,7 +379,7 @@ html {
   50% {
     text-shadow:
       0 0 14px rgba(155, 109, 255, 0.55),
-      0 0 24px rgba(252, 3, 165, 0.22);
+      0 0 24px rgba(228, 41, 128, 0.22);
   }
 }
 
@@ -468,18 +468,18 @@ html {
   }
 }
 
-/* Primary CTA: reels-crimson — 브랜드 핑크 (#fc03a5) 유리 버튼 */
+/* Primary CTA: reels-crimson — 브랜드 핑크 (#E42980) 유리 버튼 */
 :where(button, a)[class*="bg-reels-crimson"] {
   background:
     linear-gradient(
       135deg,
-      rgba(252, 3, 165, 0.55) 0%,
+      rgba(228, 41, 128, 0.55) 0%,
       rgba(226, 2, 130, 0.42) 52%,
-      rgba(252, 3, 165, 0.5) 100%
+      rgba(228, 41, 128, 0.5) 100%
     ) !important;
   color: #ffffff !important;
   box-shadow:
-    0 0 28px -8px rgba(252, 3, 165, 0.72),
+    0 0 28px -8px rgba(228, 41, 128, 0.72),
     0 12px 28px -14px rgba(210, 2, 120, 0.55),
     inset 0 1px 0 rgba(255, 210, 240, 0.38) !important;
   backdrop-filter: blur(10px) saturate(1.12) !important;
@@ -488,17 +488,17 @@ html {
 
 :where(button, a)[class*="shadow-reels-crimson"] {
   box-shadow:
-    0 0 28px -8px rgba(252, 3, 165, 0.72),
+    0 0 28px -8px rgba(228, 41, 128, 0.72),
     0 12px 28px -14px rgba(210, 2, 120, 0.55),
     inset 0 1px 0 rgba(255, 210, 240, 0.38) !important;
 }
 
 :where(button, a)[class*="border-reels-crimson"] {
   border-width: 1.5px !important;
-  border-color: rgba(252, 3, 165, 0.62) !important;
+  border-color: rgba(228, 41, 128, 0.62) !important;
   box-shadow:
-    0 0 0 1px rgba(252, 3, 165, 0.35),
-    0 0 28px -8px rgba(252, 3, 165, 0.55),
+    0 0 0 1px rgba(228, 41, 128, 0.35),
+    0 0 28px -8px rgba(228, 41, 128, 0.55),
     0 12px 28px -14px rgba(210, 2, 120, 0.5),
     inset 0 1px 0 rgba(255, 210, 240, 0.34) !important;
 }
@@ -508,13 +508,13 @@ html {
 }
 
 :where(button, a)[class*="from-reels-crimson"] {
-  --tw-gradient-from: rgba(252, 3, 165, 0.92) var(--tw-gradient-from-position) !important;
-  --tw-gradient-to: rgba(252, 3, 165, 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-from: rgba(228, 41, 128, 0.92) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgba(228, 41, 128, 0) var(--tw-gradient-to-position) !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
 
 :where(button, a)[class*="to-reels-crimson"] {
-  --tw-gradient-to: rgba(252, 3, 165, 0.88) var(--tw-gradient-to-position) !important;
+  --tw-gradient-to: rgba(228, 41, 128, 0.88) var(--tw-gradient-to-position) !important;
 }
 
 /* 가로 피드 스크롤바 — 불투명 흰 썸(보라 X). 다크 배경: 밝은 트랙 */

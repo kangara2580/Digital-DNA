@@ -42,7 +42,7 @@ function LoginRequiredPanel({ tab }: { tab: { id: SettingsTab; label: string; hr
         </p>
         <Link
           href={`/login?redirect=${redirect}`}
-          className="mt-5 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-semibold text-white shadow-[0_6px_20px_-6px_rgba(252,3,165,0.45)] transition hover:brightness-[1.05]"
+          className="mt-5 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-semibold text-white shadow-[0_6px_20px_-6px_rgba(228,41,128,0.45)] transition hover:brightness-[1.05]"
         >
           로그인
         </Link>
@@ -215,7 +215,7 @@ export function AccountSettingsDashboard() {
                     href={item.href}
                     className={
                       active
-                        ? "rounded-lg border-l-[3px] border-l-[#fc03a5] bg-white/[0.06] py-2.5 pl-[13px] pr-3 text-[14px] font-semibold text-zinc-50 transition-colors [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900"
+                        ? "rounded-lg border-l-[3px] border-l-[#E42980] bg-white/[0.06] py-2.5 pl-[13px] pr-3 text-[14px] font-semibold text-zinc-50 transition-colors [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900"
                         : "rounded-lg border-l-[3px] border-l-transparent py-2.5 pl-[13px] pr-3 text-[14px] font-medium text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
                     }
                   >
@@ -246,7 +246,7 @@ export function AccountSettingsDashboard() {
                 {mySellerFeedHref ? (
                   <Link
                     href={mySellerFeedHref}
-                    className="inline-flex rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-zinc-100 transition hover:border-[#fc03a5] hover:text-[#fda6dc] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:text-[#fc03a5]"
+                    className="inline-flex rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-zinc-100 transition hover:border-[#E42980] hover:text-[#F07AB0] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:text-[#E42980]"
                   >
                     내 판매 피드 가기
                   </Link>
@@ -318,7 +318,7 @@ export function AccountSettingsDashboard() {
                       </p>
                       <p className="text-[11px] leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500">
                         등록은{" "}
-                        <Link href="/settings?tab=profile" className="font-semibold text-[#fc03a5] underline-offset-2 hover:underline">
+                        <Link href="/settings?tab=profile" className="font-semibold text-[#E42980] underline-offset-2 hover:underline">
                           프로필 관리
                         </Link>
                         에서 변경할 수 있어요.

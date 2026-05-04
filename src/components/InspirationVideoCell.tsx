@@ -38,7 +38,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
   const [likePulse, setLikePulse] = useState(false);
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(video.src);
   const fallbackPoster = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
-    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#fc03a5'/><stop offset='100%' stop-color='#00f2ea'/></linearGradient></defs><rect width='600' height='600' fill='#050505'/><rect x='20' y='20' width='560' height='560' rx='36' fill='url(#g)' opacity='0.86'/></svg>",
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#E42980'/><stop offset='100%' stop-color='#00f2ea'/></linearGradient></defs><rect width='600' height='600' fill='#050505'/><rect x='20' y='20' width='560' height='560' rx='36' fill='url(#g)' opacity='0.86'/></svg>",
   )}`;
   const normalizedPoster = video.poster?.trim()
     ? /^\/videos\/.+\.jpg$/i.test(video.poster)

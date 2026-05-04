@@ -14,7 +14,7 @@ export function SellerFeedSellCta({ sellerId }: { sellerId: string }) {
   return (
     <div className="mb-3 flex items-center gap-3 sm:mb-4">
       <span
-        className="h-9 w-[3px] shrink-0 rounded-full bg-[color:var(--reels-point)] shadow-[0_0_14px_-2px_rgba(252,3,165,0.55)]"
+        className="h-9 w-[3px] shrink-0 rounded-full bg-[color:var(--reels-point)] shadow-[0_0_14px_-2px_rgba(228,41,128,0.55)]"
         aria-hidden
       />
       <Link

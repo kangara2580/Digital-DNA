@@ -689,7 +689,7 @@ export function Highlight24() {
                       <span className="whitespace-nowrap text-[15px] font-medium text-white/60 transition-colors duration-300 group-hover:text-white">
                         {label}
                       </span>
-                      <span className="h-[1.5px] w-full origin-left scale-x-0 rounded-full bg-[#fc03a5] transition-transform duration-300 group-hover:scale-x-100" />
+                      <span className="h-[1.5px] w-full origin-left scale-x-0 rounded-full bg-[#E42980] transition-transform duration-300 group-hover:scale-x-100" />
                     </button>
                   ))}
                 </div>

@@ -6,7 +6,7 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 const INPUT =
-  "w-full rounded-xl border border-white/20 bg-black/30 px-3.5 py-3 text-sm text-zinc-100 outline-none backdrop-blur-sm transition placeholder:text-zinc-500 focus:border-[#fc03a5]/60 focus:ring-2 focus:ring-[#fc03a5]/26";
+  "w-full rounded-xl border border-white/20 bg-black/30 px-3.5 py-3 text-sm text-zinc-100 outline-none backdrop-blur-sm transition placeholder:text-zinc-500 focus:border-[#E42980]/60 focus:ring-2 focus:ring-[#E42980]/26";
 const SAME_PASSWORD_MESSAGE = "기존 비밀번호와 동일해요. 새로운 비밀번호로 변경해 주세요.";
 const RECOVERY_COOKIE = "rm_recovery_in_progress";
 
@@ -206,7 +206,7 @@ export default function ResetPasswordPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#07080f] px-4 py-12 text-zinc-100 sm:px-6">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(252,3,165,0.17),transparent_40%),radial-gradient(circle_at_80%_90%,rgba(59,130,246,0.16),transparent_45%),linear-gradient(180deg,#05060b_0%,#080913_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(228,41,128,0.17),transparent_40%),radial-gradient(circle_at_80%_90%,rgba(59,130,246,0.16),transparent_45%),linear-gradient(180deg,#05060b_0%,#080913_100%)]" />
       <div className="relative mx-auto mt-10 w-full max-w-md rounded-2xl border border-white/15 bg-white/[0.04] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:mt-16 sm:p-8">
         <p className="text-xs uppercase tracking-[0.35em] text-zinc-400">ARA</p>
         <h1 className="mt-3 text-2xl font-black tracking-tight text-white">새 비밀번호 설정</h1>
@@ -221,7 +221,7 @@ export default function ResetPasswordPage() {
         {!initializing && !ready && !done ? (
           <p className="mt-6 text-[13px] text-zinc-500">
             유효한 재설정 링크가 아니거나 만료되었을 수 있습니다.{" "}
-            <Link href="/forgot-password" className="font-semibold text-[#fda6dc] hover:underline">
+            <Link href="/forgot-password" className="font-semibold text-[#F07AB0] hover:underline">
               비밀번호 찾기
             </Link>
             를 다시 시도해 주세요.
@@ -229,7 +229,7 @@ export default function ResetPasswordPage() {
         ) : null}
 
         {error ? (
-          <p className="mt-5 rounded-xl border border-reels-crimson/45 bg-reels-crimson/12 px-3 py-2 text-[13px] font-semibold text-[#fce9f5]">
+          <p className="mt-5 rounded-xl border border-reels-crimson/45 bg-reels-crimson/12 px-3 py-2 text-[13px] font-semibold text-[#F9ECF3]">
             {error}
           </p>
         ) : null}
@@ -269,7 +269,7 @@ export default function ResetPasswordPage() {
             <button
               type="submit"
               disabled={busy}
-              className="w-full rounded-full bg-gradient-to-r from-[#fc03a5] to-indigo-500 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_30px_rgba(252,3,165,0.42)] transition hover:brightness-110 disabled:opacity-60"
+              className="w-full rounded-full bg-gradient-to-r from-[#E42980] to-indigo-500 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_30px_rgba(228,41,128,0.42)] transition hover:brightness-110 disabled:opacity-60"
             >
               {busy ? "저장 중…" : "비밀번호 저장"}
             </button>
@@ -277,7 +277,7 @@ export default function ResetPasswordPage() {
         ) : null}
 
         <p className="mt-6 text-center text-sm text-zinc-500">
-          <Link href="/login" className="font-semibold text-[#fda6dc] hover:underline">
+          <Link href="/login" className="font-semibold text-[#F07AB0] hover:underline">
             로그인으로 이동
           </Link>
         </p>

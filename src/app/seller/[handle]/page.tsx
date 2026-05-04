@@ -84,7 +84,7 @@ export default async function SellerPage({
     <div className="min-h-screen bg-transparent text-white [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
       <div className="mx-auto max-w-[1800px] px-4 pb-14 pt-6 sm:px-6 sm:pt-8 lg:px-8">
         <SellerFeedSellCta sellerId={sellerKey} />
-        <section className="relative overflow-hidden rounded-[1.35rem] border border-white/[0.09] bg-gradient-to-br from-white/[0.065] via-white/[0.02] to-transparent p-5 shadow-[0_0_0_1px_rgba(252,3,165,0.06),inset_0_1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-xl sm:rounded-[1.65rem] sm:p-7 [html[data-theme='light']_&]:border-zinc-200/70 [html[data-theme='light']_&]:from-white [html[data-theme='light']_&]:via-white [html[data-theme='light']_&]:to-zinc-50/90 [html[data-theme='light']_&]:shadow-[0_20px_50px_-28px_rgba(15,23,42,0.18),0_0_0_1px_rgba(252,3,165,0.07)]">
+        <section className="relative overflow-hidden rounded-[1.35rem] border border-white/[0.09] bg-gradient-to-br from-white/[0.065] via-white/[0.02] to-transparent p-5 shadow-[0_0_0_1px_rgba(228,41,128,0.06),inset_0_1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-xl sm:rounded-[1.65rem] sm:p-7 [html[data-theme='light']_&]:border-zinc-200/70 [html[data-theme='light']_&]:from-white [html[data-theme='light']_&]:via-white [html[data-theme='light']_&]:to-zinc-50/90 [html[data-theme='light']_&]:shadow-[0_20px_50px_-28px_rgba(15,23,42,0.18),0_0_0_1px_rgba(228,41,128,0.07)]">
           <div
             className="pointer-events-none absolute -left-24 -top-24 h-48 w-48 rounded-full bg-[color:var(--reels-point)]/12 blur-[80px]"
             aria-hidden
@@ -130,7 +130,7 @@ export default async function SellerPage({
         <section className="mt-10 sm:mt-12">
           <div className="mb-4 flex items-center gap-3">
             <span
-              className="h-9 w-[3px] shrink-0 rounded-full bg-[color:var(--reels-point)] shadow-[0_0_14px_-2px_rgba(252,3,165,0.55)]"
+              className="h-9 w-[3px] shrink-0 rounded-full bg-[color:var(--reels-point)] shadow-[0_0_14px_-2px_rgba(228,41,128,0.55)]"
               aria-hidden
             />
             <h2 className="text-[clamp(1.05rem,2.6vw,1.2rem)] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">

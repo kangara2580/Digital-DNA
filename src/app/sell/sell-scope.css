@@ -1,11 +1,11 @@
 /** /sell 트리 — 전역(selection 시안)·브라우저 기본(캐럿·레인지) 블루 성격을 줄이고 핑크 톤에 맞춤 */
 [data-page="sell"] ::selection {
-  background-color: rgba(252, 3, 165, 0.32);
+  background-color: rgba(228, 41, 128, 0.32);
   color: inherit;
 }
 
 html[data-theme="light"] [data-page="sell"] ::selection {
-  background-color: rgba(252, 3, 165, 0.22);
+  background-color: rgba(228, 41, 128, 0.22);
   color: inherit;
 }
 

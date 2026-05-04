@@ -97,10 +97,10 @@ function KpiCard({
 }) {
   const ring =
     accent === "crimson"
-      ? "border-reels-crimson/30 shadow-[0_0_32px_-12px_rgba(252,3,165,0.38)]"
+      ? "border-reels-crimson/30 shadow-[0_0_32px_-12px_rgba(228,41,128,0.38)]"
       : accent === "violet"
-        ? "border-reels-crimson/18 shadow-[0_0_28px_-14px_rgba(252,3,165,0.22)]"
-        : "border-reels-crimson/22 shadow-[0_0_28px_-14px_rgba(252,3,165,0.26)]";
+        ? "border-reels-crimson/18 shadow-[0_0_28px_-14px_rgba(228,41,128,0.22)]"
+        : "border-reels-crimson/22 shadow-[0_0_28px_-14px_rgba(228,41,128,0.26)]";
   return (
     <div
       className={`rounded-2xl border bg-black/30 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white ${ring}`}
@@ -133,7 +133,7 @@ function RevenueBars({ data }: { data: SellerAnalyticsSnapshot["revenueByDay"] }
           <div key={d.label} className="flex min-w-0 flex-1 flex-col items-center gap-1">
             <div className="flex w-full flex-1 flex-col justify-end">
               <div
-                className="w-full rounded-t-md bg-gradient-to-t from-reels-crimson/35 to-[color:var(--reels-point)] [html[data-theme='light']_&]:from-[#ffe4f3] [html[data-theme='light']_&]:to-reels-crimson"
+                className="w-full rounded-t-md bg-gradient-to-t from-reels-crimson/35 to-[color:var(--reels-point)] [html[data-theme='light']_&]:from-[#FCEEF6] [html[data-theme='light']_&]:to-reels-crimson"
                 style={{ height: `${Math.max(8, h)}%` }}
                 title={formatWon(d.revenueWon)}
               />
@@ -243,7 +243,7 @@ export function MyPageSellerAnalyticsSection() {
   if (!snapshot) {
     return (
       <div>
-        <p className="text-[13px] text-[#fcd0eb] [html[data-theme='light']_&]:text-reels-crimson">
+        <p className="text-[13px] text-[#F3C4D9] [html[data-theme='light']_&]:text-reels-crimson">
           {loadError ?? "표시할 데이터가 없습니다."}
         </p>
       </div>
@@ -260,7 +260,7 @@ export function MyPageSellerAnalyticsSection() {
       <div className="space-y-2 border-b border-white/10 pb-5 [html[data-theme='light']_&]:border-zinc-200">
         <div className="flex flex-col gap-3 min-[520px]:flex-row min-[520px]:items-center min-[520px]:justify-between min-[520px]:gap-3 lg:gap-4">
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 sm:gap-x-3">
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-reels-crimson/40 bg-reels-crimson/12 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#ffd0ea] [html[data-theme='light']_&]:text-reels-crimson sm:px-2 sm:text-[10px]">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-reels-crimson/40 bg-reels-crimson/12 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#FAD4E8] [html[data-theme='light']_&]:text-reels-crimson sm:px-2 sm:text-[10px]">
               <Radio className="h-2.5 w-2.5 animate-pulse sm:h-3 sm:w-3" aria-hidden />
               {loading ? "동기화 중…" : "주기 갱신(60초)"}
             </span>
@@ -590,7 +590,7 @@ export function MyPageSellerAnalyticsSection() {
                   <td className="px-2 py-2.5 tabular-nums text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
                     {row.salesCount.toLocaleString("ko-KR")}
                   </td>
-                  <td className="px-2 py-2.5 tabular-nums font-semibold text-[#ffd0ea] [html[data-theme='light']_&]:text-reels-crimson">
+                  <td className="px-2 py-2.5 tabular-nums font-semibold text-[#FAD4E8] [html[data-theme='light']_&]:text-reels-crimson">
                     {formatWon(row.cumulativeRevenueWon)}
                   </td>
                   <td className="px-2 py-2.5 tabular-nums text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
