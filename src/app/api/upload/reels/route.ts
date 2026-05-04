@@ -13,7 +13,7 @@ function isNonEmptyString(v: unknown): v is string {
 }
 
 /**
- * 판매자 릴스 URL 등록(데모) — 본문의 `is_ai_generated`를 검증·수신합니다.
+ * 판매자 동영상 URL 등록(데모) — 본문의 `is_ai_generated`를 검증·수신합니다.
  * 실서비스에서는 DB 저장·큐 연동 등으로 확장하세요.
  */
 export async function POST(request: NextRequest) {

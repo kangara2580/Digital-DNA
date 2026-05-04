@@ -3,7 +3,7 @@ import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 export const metadata = {
   title: "회사소개 — ARA",
   description:
-    "더 빠르게 만들고, 더 완성도 높게. 탐색 · 획득 · 변환을 연결하는 Digital DNA 릴스 소스 플랫폼.",
+    "더 빠르게 만들고, 더 완성도 높게. 탐색 · 획득 · 변환을 연결하는 Digital DNA 동영상 소스 플랫폼.",
 };
 
 export default function AboutPage() {

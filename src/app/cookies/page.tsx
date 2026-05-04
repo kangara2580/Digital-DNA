@@ -60,7 +60,7 @@ export default function CookiesPage() {
               <strong className="font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
                 Trend Analysis:
               </strong>{" "}
-              어떤 릴스 소스가 가장 인기 있는지 분석하여, 당신의 취향에 맞는 트렌디한 소스를 우선적으로
+              어떤 동영상 소스가 가장 인기 있는지 분석하여, 당신의 취향에 맞는 트렌디한 소스를 우선적으로
               추천합니다.
             </li>
             <li>

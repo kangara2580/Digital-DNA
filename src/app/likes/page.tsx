@@ -179,7 +179,7 @@ export default function LikesPage() {
     <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12 lg:px-8">
       <header className="flex flex-col gap-4 border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-end sm:justify-between">
         <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-          좋아요한 릴스
+          좋아요한 동영상
         </h1>
         {!showLoginGate ? (
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
@@ -191,7 +191,7 @@ export default function LikesPage() {
                 options={SORT_OPTIONS}
                 value={sort}
                 onChange={(v) => setSort(v as SortValue)}
-                ariaLabel="좋아요한 릴스 정렬"
+                ariaLabel="좋아요한 동영상 정렬"
               />
             </label>
             {hydrated && entries.length > 0 ? (
@@ -227,7 +227,7 @@ export default function LikesPage() {
       {showLoginGate ? (
         <div className="mx-auto mt-16 max-w-md text-center">
           <p className="text-[15px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            로그인 후 좋아요한 릴스를 찾아볼 수 있어요.
+            로그인 후 좋아요한 동영상을 찾아볼 수 있어요.
           </p>
           <Link
             href={`/login?redirect=${encodeURIComponent("/likes")}`}
@@ -247,13 +247,13 @@ export default function LikesPage() {
       ) : rows.length === 0 ? (
         <div className="mx-auto mt-16 max-w-md text-center">
           <p className="text-[15px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            아직 좋아요한 릴스가 없어요.
+            아직 좋아요한 동영상이 없어요.
           </p>
           <Link
             href="/"
             className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
           >
-            릴스 둘러보기
+            동영상 둘러보기
           </Link>
         </div>
       ) : (

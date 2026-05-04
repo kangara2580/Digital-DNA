@@ -39,7 +39,7 @@ export default async function SearchPage({
       {!query ? null : videos.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-white/15 bg-black/20 px-6 py-14 text-center [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-50">
           <p className="text-[15px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-            일치하는 릴스가 없어요
+            일치하는 동영상이 없어요
           </p>
           <p className="mt-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             다른 검색어나 영문·띄어쓰기를 바꿔 보세요.

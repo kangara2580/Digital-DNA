@@ -91,7 +91,7 @@ export function SocialLinkFields({
                   className={`${INPUT_CLS} mt-2`}
                   placeholder={
                     placeholder ??
-                    "Instagram 릴스, TikTok, YouTube(Shorts/일반), 채널 등 공개 URL"
+                    "Instagram 동영상, TikTok, YouTube(Shorts/일반), 채널 등 공개 URL"
                   }
                   value={url}
                   onChange={(e) => setAt(i, e.target.value)}

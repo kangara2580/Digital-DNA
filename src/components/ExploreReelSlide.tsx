@@ -608,7 +608,7 @@ function ReelDesktopRail({
   );
 }
 
-/** 모바일: 하단 한 줄 요약 (쇼츠·릴스 하단 메타와 유사) */
+/** 모바일: 하단 한 줄 요약 (쇼츠·동영상 하단 메타와 유사) */
 function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
   const { t, locale } = useTranslation();
   const fmt = useMemo(() => getExploreFormatters(locale), [locale]);

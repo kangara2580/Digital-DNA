@@ -6,7 +6,7 @@ import {
 import { resolvePosterThumbnailHttpsUrl } from "@/lib/externalEmbed/posterServer";
 
 /**
- * 외부 릴스 URL(TikTok·YouTube·Instagram) → 썸네일 HTTPS 로 302.
+ * 외부 동영상 URL(TikTok·YouTube·Instagram) → 썸네일 HTTPS 로 302.
  * `<img src="/api/embed/poster?url=...">` 형태로 사용합니다.
  */
 export async function GET(request: NextRequest) {

@@ -410,7 +410,7 @@ function ServerGenerationStatusCard({ job }: { job: RemoteJobBanner }) {
             >
               탐색 탭
             </Link>
-            릴스를 구경해 보세요.
+            동영상을 구경해 보세요.
           </p>
         </div>
       ) : null}
@@ -1303,12 +1303,12 @@ export function PurchaseCustomizeStudio({
   //   return (
   //     <div className="mx-auto max-w-lg rounded-2xl border border-white/10 bg-black/30 px-6 py-14 text-center">
   //       <p className="text-[15px] font-semibold text-zinc-200">모션 권한 구매 후 이용할 수 있어요.</p>
-  //       <p className="mt-2 text-[13px] text-zinc-500">릴스 구매 후 얼굴·배경·편집 설정을 저장할 수 있습니다.</p>
+  //       <p className="mt-2 text-[13px] text-zinc-500">동영상 구매 후 얼굴·배경·편집 설정을 저장할 수 있습니다.</p>
   //       <Link
   //         href={`/video/${video.id}`}
   //         className="mt-6 inline-flex rounded-full border border-reels-cyan/40 bg-reels-cyan/10 px-6 py-3 text-[14px] font-extrabold text-reels-cyan hover:bg-reels-cyan/18"
   //       >
-  //         릴스 상세로 돌아가기
+  //         동영상 상세로 돌아가기
   //       </Link>
   //     </div>
   //   );
@@ -2258,7 +2258,7 @@ export function PurchaseCustomizeStudio({
                   <section className="reels-glass-card rounded-xl p-4 sm:p-5 relative overflow-hidden ring-2 ring-reels-cyan shadow-[0_0_30px_rgba(0,242,234,0.15)] animate-fade-in-up mt-6">
                     <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-zinc-100 mb-5">
                       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-reels-cyan text-[11px] font-black text-black shadow-[0_0_10px_rgba(0,242,234,0.5)]">5</span>
-                      최종 릴스 완성 및 다운로드
+                      최종 동영상 완성 및 다운로드
                     </h2>
 
                     {klingJob && klingJob.status !== "succeeded" && klingJob.status !== "failed" && (
@@ -2289,7 +2289,7 @@ export function PurchaseCustomizeStudio({
                             <div className="w-full flex justify-between items-end mb-4 px-1">
                                 <div>
                                     <h3 className="text-[16px] font-extrabold text-reels-cyan">✨ 영상 생성의 마법이 끝났습니다!</h3>
-                                    <p className="text-[11px] text-zinc-400 mt-1">생성된 릴스는 마이페이지 생명연구소에 자동 저장됩니다.</p>
+                                    <p className="text-[11px] text-zinc-400 mt-1">생성된 동영상은 마이페이지 생명연구소에 자동 저장됩니다.</p>
                                 </div>
                                 <span className="px-2 py-1 bg-green-500/20 text-green-400 text-[10px] font-bold rounded flex items-center gap-1 border border-green-500/30 shadow-[0_0_10px_rgba(34,197,94,0.2)]">
                                     <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
@@ -2348,7 +2348,7 @@ export function PurchaseCustomizeStudio({
                     
                     <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-zinc-100 mb-5 relative z-10">
                       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-zinc-800 text-[10px] font-black text-white border border-zinc-600">📜</span>
-                      이전 렌더링 완성본 목록 (내 릴스 보관함)
+                      이전 렌더링 완성본 목록 (내 동영상 보관함)
                     </h2>
                     
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 relative z-10">

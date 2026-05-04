@@ -121,7 +121,7 @@ export function MyPageDashboard() {
           {currentTab === "wishlist" && user ? (
             <MyPageSectionShell
               title="찜 목록"
-              description="저장해 둔 릴스를 정리하고 바로 재생할 수 있어요."
+              description="저장해 둔 동영상을 정리하고 바로 재생할 수 있어요."
             >
               <MyPageWishlistSection />
             </MyPageSectionShell>
@@ -130,7 +130,7 @@ export function MyPageDashboard() {
           {currentTab === "likes" && user ? (
             <MyPageSectionShell
               title="좋아요한 동영상"
-              description="하트를 눌러 마음에 든 릴스만 따로 모아볼 수 있어요."
+              description="하트를 눌러 마음에 든 동영상만 따로 모아볼 수 있어요."
             >
               <MyPageLikedVideosSection />
             </MyPageSectionShell>
@@ -154,7 +154,7 @@ export function MyPageDashboard() {
           {currentTab === "analytics" && user ? (
             <MyPageSectionShell
               title="판매 분석"
-              description="등록한 릴스의 판매·노출 지표를 기간별로 확인할 수 있어요."
+              description="등록한 동영상의 판매·노출 지표를 기간별로 확인할 수 있어요."
             >
               <MyPageSellerAnalyticsSection />
             </MyPageSectionShell>

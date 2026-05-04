@@ -28,7 +28,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
     >
       <div className="flex items-center gap-2 px-2 py-1.5 sm:px-2.5 sm:py-2">
         <p className="min-w-0 text-[10px] font-bold uppercase tracking-[0.12em] text-reels-cyan/90 [html[data-theme='light']_&]:text-reels-cyan">
-          연관 릴스
+          연관 동영상
         </p>
       </div>
       <div className="flex gap-1 px-2 pb-2 sm:gap-1.5 sm:px-2.5">

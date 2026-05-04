@@ -141,7 +141,7 @@ function DraftRowView({
   onPurchaseDemo: () => void;
   onRemove: () => void;
 }) {
-  const title = video?.title ?? `릴스 ${videoId}`;
+  const title = video?.title ?? `동영상 ${videoId}`;
   const poster = sanitizePosterSrc(video?.poster) ?? "";
   const creator = video?.creator;
   const when = (() => {

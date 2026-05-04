@@ -74,7 +74,7 @@ export function ReelsLinkUploader() {
         Seller · Reels URL
       </p>
       <h1 className="mt-1 text-xl font-extrabold tracking-tight text-zinc-100 sm:text-2xl">
-        릴스 링크 등록
+        동영상 링크 등록
       </h1>
       <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-zinc-500">
         TikTok·Instagram·YouTube(숏츠 포함) URL을 붙여 넣으면 아래에서 미리 재생할 수 있어요.
@@ -123,7 +123,7 @@ export function ReelsLinkUploader() {
         </div>
 
         <label htmlFor="reels-url" className="sr-only">
-          릴스 URL
+          동영상 URL
         </label>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
           <input
@@ -202,7 +202,7 @@ export function ReelsLinkUploader() {
               }
             >
               <iframe
-                title="릴스 미리보기"
+                title="동영상 미리보기"
                 src={parsed.embedUrl}
                 className="h-full w-full border-0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

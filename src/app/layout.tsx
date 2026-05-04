@@ -50,7 +50,7 @@ const songMyung = Song_Myung({
 export const metadata: Metadata = {
   title: "ARA — Buy the Motion, Own the Moment",
   description:
-    "Buy motion rights and reskin with Kling 3.0. A curated reels market with bestsellers, flash sales, and mood-based picks.",
+    "Buy motion rights and reskin with Kling 3.0. A curated short-form video market with bestsellers, flash sales, and mood-based picks.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

@@ -37,7 +37,7 @@ export const BEST_PURCHASE_REVIEWS: PurchaseReviewCard[] = [
   {
     id: "rv-1",
     quote:
-      "'라면 끓이는 영상' 릴스를 브이로그 인트로에 붙였는데 조회수 터졌어요. '이걸 어디다 쓰지?'가 한 번에 해결됐어요.",
+      "'라면 끓이는 영상'을 브이로그 인트로에 붙였는데 조회수 터졌어요. '이걸 어디다 쓰지?'가 한 번에 해결됐어요.",
     highlightPhrases: ["조회수 터졌어요"],
     author: "@clip_editor_mina",
     badge: "실제 활용 샷",
@@ -126,8 +126,8 @@ export const BEST_PURCHASE_REVIEWS: PurchaseReviewCard[] = [
   {
     id: "rv-8",
     quote:
-      "설원 하이킹 풋짐만 샀는데 여행 광고 모의편집에 넣으니 클라이언트가 바로 OK. 짧은 릴스가 설득력을 만들어요.",
-    highlightPhrases: ["바로 OK", "짧은 릴스가 설득력을 만들어요"],
+      "설원 하이킹 풋짐만 샀는데 여행 광고 모의편집에 넣으니 클라이언트가 바로 OK. 짧은 동영상이 설득력을 만들어요.",
+    highlightPhrases: ["바로 OK", "짧은 동영상이 설득력을 만들어요"],
     author: "@pitch_editor",
     badge: "실제 활용 샷",
     pickLabel: "Pitch Ready",
@@ -205,7 +205,7 @@ export const EDITOR_CURATIONS: EditorCuration[] = [
   {
     id: "cur-puppy",
     emoji: "🐶",
-    title: "강아지가 애교 부릴 때 쓰기 좋은 릴스 모음",
+    title: "강아지가 애교 부릴 때 쓰기 좋은 동영상 모음",
     categorySlug: "animals",
   },
 ];

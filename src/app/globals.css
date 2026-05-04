@@ -639,7 +639,7 @@ html[data-theme="light"] .feed-scroll-wide::-webkit-scrollbar-thumb:hover {
   display: none;
 }
 
-/* 홈 베스트 릴스 무한 마퀴 — 두 번째 절반까지 translate 로 끊김 없이 루프 */
+/* 홈 베스트 동영상 무한 마퀴 — 두 번째 절반까지 translate 로 끊김 없이 루프 */
 @keyframes home-best-marquee {
   from {
     transform: translate3d(0, 0, 0);

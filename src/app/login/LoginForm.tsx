@@ -56,7 +56,7 @@ export function LoginForm() {
           로그인
         </h1>
         <p className="mt-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          릴스 판매 등록 등 회원 전용 기능에 사용됩니다.
+          동영상 판매 등록 등 회원 전용 기능에 사용됩니다.
         </p>
 
         {error ? (

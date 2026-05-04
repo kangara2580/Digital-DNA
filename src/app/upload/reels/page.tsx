@@ -2,8 +2,8 @@ import Link from "next/link";
 import { ReelsLinkUploader } from "@/components/ReelsLinkUploader";
 
 export const metadata = {
-  title: "릴스 링크 등록 — ARA",
-  description: "TikTok·Instagram 릴스 URL을 등록하고 미리보기합니다.",
+  title: "동영상 링크 등록 — ARA",
+  description: "TikTok·Instagram 동영상 URL을 등록하고 미리보기합니다.",
 };
 
 export default function UploadReelsLinkPage() {
@@ -15,7 +15,7 @@ export default function UploadReelsLinkPage() {
             홈
           </Link>
           <span className="mx-1.5 text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
-          <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">릴스 링크 등록</span>
+          <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">동영상 링크 등록</span>
         </nav>
         <ReelsLinkUploader />
       </main>

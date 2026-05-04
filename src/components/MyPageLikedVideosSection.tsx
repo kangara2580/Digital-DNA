@@ -169,7 +169,7 @@ export function MyPageLikedVideosSection() {
         {showLoginGate ? (
           <div className="rounded-2xl border border-dashed border-white/15 bg-black/20 px-6 py-14 text-center [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white">
             <p className="text-[14px] text-white/65 [html[data-theme='light']_&]:text-zinc-600">
-              로그인 후 좋아요한 릴스를 여기에서 모아볼 수 있어요.
+              로그인 후 좋아요한 동영상을 여기에서 모아볼 수 있어요.
             </p>
             <Link
               href={`/login?redirect=${LOGIN_REDIRECT}`}
@@ -194,7 +194,7 @@ export function MyPageLikedVideosSection() {
                   options={SORT_OPTIONS}
                   value={sort}
                   onChange={(v) => setSort(v as Sort)}
-                  ariaLabel="좋아요한 릴스 정렬"
+                  ariaLabel="좋아요한 동영상 정렬"
                 />
               </label>
               {entries.length > 0 ? (
@@ -228,13 +228,13 @@ export function MyPageLikedVideosSection() {
             {rows.length === 0 ? (
               <div className="py-12 text-center">
                 <p className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                  아직 좋아요한 릴스가 없어요.
+                  아직 좋아요한 동영상이 없어요.
                 </p>
                 <Link
                   href="/explore"
                   className={`mt-5 inline-flex ${MYPAGE_OUTLINE_BTN_MD}`}
                 >
-                  릴스 둘러보기
+                  동영상 둘러보기
                 </Link>
               </div>
             ) : (

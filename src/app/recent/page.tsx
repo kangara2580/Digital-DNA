@@ -136,7 +136,7 @@ export default function RecentPage() {
       <header className="flex flex-col gap-4 border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-            최근 본 릴스
+            최근 본 동영상
           </h1>
         </div>
 
@@ -150,7 +150,7 @@ export default function RecentPage() {
               value={sort}
               onChange={(e) => setSort(e.target.value as SortValue)}
               className="min-w-[11.5rem] cursor-pointer rounded-lg border border-white/15 bg-reels-void/80 px-3 py-2 text-[13px] font-medium text-zinc-100 outline-none transition-colors hover:border-reels-cyan/35 focus:border-reels-cyan/50 focus:ring-2 focus:ring-reels-cyan/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
-              aria-label="최근 본 릴스 정렬"
+              aria-label="최근 본 동영상 정렬"
             >
               {SORT_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -185,7 +185,7 @@ export default function RecentPage() {
       ) : rows.length === 0 ? (
         <div className="mx-auto mt-16 max-w-md text-center">
           <p className="mt-2 text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            로그인 후 최근 본 릴스를 찾아볼 수 있어요.
+            로그인 후 최근 본 동영상을 찾아볼 수 있어요.
           </p>
           <div
             className={`mt-6 transition-[opacity,transform] duration-300 ease-out ${
@@ -198,7 +198,7 @@ export default function RecentPage() {
               href="/"
               className="inline-flex items-center justify-center rounded-full border border-white/20 bg-[linear-gradient(135deg,#0b1327_0%,#122247_50%,#1e3a8a_100%)] px-7 py-2.5 text-[14px] font-bold text-white ring-1 ring-white/10 shadow-[0_12px_28px_-14px_rgba(30,58,138,0.82)] transition-all duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:brightness-110 hover:shadow-[0_18px_38px_-16px_rgba(37,99,235,0.8)]"
             >
-              릴스 둘러보기
+              동영상 둘러보기
             </Link>
           </div>
         </div>

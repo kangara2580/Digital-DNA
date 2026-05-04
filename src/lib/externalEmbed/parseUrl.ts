@@ -57,7 +57,7 @@ export function tryExtractInstagramShortcode(raw: string): string | null {
 }
 
 /**
- * 지원: TikTok 영상 페이지, YouTube watch/shorts, Instagram 릴스·게시물.
+ * 지원: TikTok 영상 페이지, YouTube watch/shorts, Instagram 동영상·게시물.
  * 단축 URL(vm.tiktok 등)은 id 추출 전 리다이렉트가 필요해 여기서는 제외됩니다.
  */
 export function parseExternalMediaUrl(raw: string): ParsedExternalMediaUrl | null {

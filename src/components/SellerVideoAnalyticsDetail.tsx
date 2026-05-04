@@ -176,7 +176,7 @@ export function SellerVideoAnalyticsDetail({ videoId, days, from, to }: Props) {
           className="inline-flex shrink-0 items-center gap-2 self-start rounded-xl border border-white/12 bg-white/[0.04] px-4 py-2.5 text-[13px] font-bold text-zinc-200 transition hover:border-reels-cyan/35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-800"
         >
           <ArrowLeft className="h-4 w-4" />
-          릴스 상세
+          동영상 상세
         </Link>
       </header>
 

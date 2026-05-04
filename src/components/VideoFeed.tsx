@@ -103,7 +103,7 @@ export function VideoFeed() {
                 추천 영상
               </h2>
               <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-zinc-400 sm:text-[16px]">
-                지금 눈에 들어오는 릴스만 모았어요. 스크롤 멈추고 하나씩
+                지금 눈에 들어오는 동영상만 모았어요. 스크롤 멈추고 하나씩
                 골라보기 좋은 라인업입니다.
               </p>
             </div>

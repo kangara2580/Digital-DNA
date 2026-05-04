@@ -415,7 +415,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
 
           {sorted.length === 0 ? (
             <p className="px-4 py-16 text-center font-mono text-[12px] text-zinc-500 sm:px-6 [html[data-theme='light']_&]:text-zinc-600">
-              이 조건에 맞는 릴스가 없어요.
+              이 조건에 맞는 동영상이 없어요.
             </p>
           ) : (
             <>

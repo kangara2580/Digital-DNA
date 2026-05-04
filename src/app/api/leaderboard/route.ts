@@ -72,7 +72,7 @@ function pickAvatarUrl(avatarCustom: string | null): string | null {
 }
 
 function fallbackTitle(seed: string): string {
-  return `인기 릴스 #${seed.slice(0, 6)}`;
+  return `인기 동영상 #${seed.slice(0, 6)}`;
 }
 
 function hashToIndex(input: string, length: number): number {

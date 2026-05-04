@@ -60,7 +60,7 @@ export function InspirationCategoryGrid() {
             영감이 필요한 순간
           </h2>
           <p className="mt-2 text-[15px] text-[var(--text-sub)]">
-            카테고리별로 큐레이션된 릴스를 둘러보세요
+            카테고리별로 큐레이션된 동영상을 둘러보세요
           </p>
         </div>
 

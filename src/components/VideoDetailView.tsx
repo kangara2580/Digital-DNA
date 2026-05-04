@@ -296,7 +296,7 @@ export function VideoDetailView({
       return {
         tier: "active" as const,
         label: "",
-        subline: "판매자가 등록한 릴스 조각입니다.",
+        subline: "판매자가 등록한 동영상 조각입니다.",
       };
     }
     return getFreshnessForVideoId(video.id);

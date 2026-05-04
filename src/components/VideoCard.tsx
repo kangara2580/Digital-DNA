@@ -67,7 +67,7 @@ type Props = {
   overlapOnHover?: boolean;
   /** 썸네일 좌상단 배지 문구(다른 배지와 겹치면 우측으로 이동) */
   topBadge?: string;
-  /** 앵커 링크용 (연관 릴스에서 스크롤) */
+  /** 앵커 링크용 (연관 동영상에서 스크롤) */
   domId?: string;
   /** 같은 무드 연관 조각 퀼트 */
   showRelatedQuilt?: boolean;
@@ -81,7 +81,7 @@ type Props = {
    */
   instantPreview?: boolean;
   /**
-   * 홈 인기순위·실패 섹션 등 — 세로 9:16·여백·타이포를 릴스 마켓형으로
+   * 홈 인기순위·실패 섹션 등 — 세로 9:16·여백·타이포를 동영상 마켓형으로
    */
   reelLayout?: boolean;
   /**
@@ -102,7 +102,7 @@ type Props = {
   onPick?: () => void;
   /** 비디오 preload 전략 제어 (기본 metadata) */
   preloadMode?: "none" | "metadata" | "auto";
-  /** 카드 폭이 작은 구간(연관 릴스 등)에서 hover 액션 아이콘만 축소 */
+  /** 카드 폭이 작은 구간(연관 동영상 등)에서 hover 액션 아이콘만 축소 */
   compactHoverActions?: boolean;
   /** true면 호버 액션에서 좋아요(하트) 아이콘 숨김 */
   hideLikeAction?: boolean;

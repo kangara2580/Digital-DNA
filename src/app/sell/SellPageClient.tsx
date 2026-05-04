@@ -24,7 +24,7 @@ export function SellPageClient() {
       <main className="mx-auto max-w-[min(44rem,100%)] px-4 pb-14 pt-[max(4rem,env(safe-area-inset-top)+2.75rem)] text-zinc-100 sm:px-6 lg:max-w-3xl lg:pb-16 [html[data-theme='light']_&]:text-zinc-900">
         <div className="mb-8 rounded-2xl border border-white/10 bg-zinc-900/50 p-6 sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm">
           <h1 className="text-[clamp(1.25rem,3.5vw,1.6rem)] font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-            릴스 판매 등록 (데모 모드)
+            동영상 판매 등록 (데모 모드)
           </h1>
           <p className="mt-3 text-[14px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
             로그인 없이도 등록 폼을 사용할 수 있도록 임시 판매 모드로 열었습니다.
@@ -50,7 +50,7 @@ export function SellPageClient() {
               strokeWidth={2}
             />
             <h1 className="text-[clamp(1.15rem,3.2vw,1.35rem)] font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-              릴스를 판매하려면 로그인이 필요해요
+              동영상을 판매하려면 로그인이 필요해요
             </h1>
           </div>
           <p className="mt-3 text-[14px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">

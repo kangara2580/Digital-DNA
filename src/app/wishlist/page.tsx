@@ -157,7 +157,7 @@ export default function WishlistPage() {
                 options={SORT_OPTIONS}
                 value={sort}
                 onChange={(v) => setSort(v as SortValue)}
-                ariaLabel="찜한 릴스 정렬"
+                ariaLabel="찜한 동영상 정렬"
               />
             </label>
             {hydrated && entries.length > 0 ? (
@@ -190,7 +190,7 @@ export default function WishlistPage() {
                     void (async () => {
                       if (
                         typeof window !== "undefined" &&
-                        window.confirm("찜한 릴스를 모두 목록에서 삭제할까요?")
+                        window.confirm("찜한 동영상을 모두 목록에서 삭제할까요?")
                       ) {
                         await clear();
                         setSelected(new Set());
@@ -210,7 +210,7 @@ export default function WishlistPage() {
       {showLoginGate ? (
         <div className="mx-auto mt-16 max-w-md text-center">
           <p className="text-[15px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            로그인하면 찜한 릴스를 볼 수 있어요!
+            로그인하면 찜한 동영상을 볼 수 있어요!
           </p>
           <div
             className={`mt-6 transition-[opacity,transform] duration-300 ease-out ${
@@ -234,13 +234,13 @@ export default function WishlistPage() {
       ) : rows.length === 0 ? (
         <div className="mx-auto mt-16 max-w-md text-center">
           <p className="text-[15px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            아직 찜한 릴스가 없어요.
+            아직 찜한 동영상이 없어요.
           </p>
           <Link
             href="/"
             className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
           >
-            릴스 둘러보기
+            동영상 둘러보기
           </Link>
         </div>
       ) : (
