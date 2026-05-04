@@ -71,7 +71,7 @@ function ExploreBrowseGrid({
   }, [pool.length, setVisibleGridCount]);
 
   return (
-    <div className="mx-auto max-w-[1800px] px-4 pb-20 pt-4 sm:px-6 md:pl-[calc(var(--reels-rail-w,0px)+1rem)] lg:px-8">
+    <div className="mx-auto max-w-[1800px] px-4 pb-20 pt-[max(3.75rem,1rem)] sm:px-6 md:pl-[calc(var(--reels-rail-w,0px)+1rem)] lg:px-8">
       <div
         className="grid grid-cols-2 gap-3 border border-white/10 p-3 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
         role="list"
@@ -219,20 +219,20 @@ function ExploreWatchReels({
         <button
           type="button"
           onClick={goPrevReel}
-          className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
+          className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
           aria-label="이전 영상"
           title="이전 영상"
         >
-          <ChevronUp className="h-6 w-6" strokeWidth={2.25} aria-hidden />
+          <ChevronUp className="h-6 w-6 text-reels-crimson transition-colors group-hover:text-[#F56BA5]" strokeWidth={2.85} aria-hidden />
         </button>
         <button
           type="button"
           onClick={goNextReel}
-          className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
+          className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
           aria-label="다음 영상"
           title="다음 영상"
         >
-          <ChevronDown className="h-6 w-6" strokeWidth={2.25} aria-hidden />
+          <ChevronDown className="h-6 w-6 text-reels-crimson transition-colors group-hover:text-[#F56BA5]" strokeWidth={2.85} aria-hidden />
         </button>
       </div>
 

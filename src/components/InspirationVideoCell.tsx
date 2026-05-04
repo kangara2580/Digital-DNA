@@ -12,6 +12,14 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
 import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import {
+  reelActionBtn,
+  reelActionBtnActive,
+  reelActionIcon,
+  reelActionRailColumn,
+  reelActionRailOuter,
+  videoReelMediaContainer,
+} from "@/lib/videoReelActionStyles";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 
 function formatPrice(v: FeedVideo): string {
@@ -140,7 +148,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
     <div className="inspiration-cell group flex min-w-0 flex-col gap-1.5">
       <div
         ref={wrapRef}
-        className="inspiration-cell__media relative overflow-hidden rounded-[12px]"
+        className={`${videoReelMediaContainer} inspiration-cell__media relative overflow-hidden rounded-[12px]`}
       >
         <video
           ref={videoRef}
@@ -162,14 +170,12 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
           className="absolute inset-0 z-[3]"
           aria-label={`${video.title} 상세 페이지`}
         />
-        <div className="pointer-events-none absolute inset-0 z-[7] flex items-center justify-center p-3">
-          <div
-            className="flex items-center justify-center gap-5 opacity-100 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 max-lg:translate-y-0 max-lg:opacity-100 translate-y-1 lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 sm:gap-6"
-          >
+        <div className={reelActionRailOuter}>
+          <div className={reelActionRailColumn}>
             <button
               ref={cartBtnRef}
               type="button"
-              className="pointer-events-auto relative z-[8] inline-flex h-10 w-10 items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 sm:h-11 sm:w-11"
+              className={`${reelActionBtn} ${inCart ? reelActionBtnActive : ""}`}
               title={inCart ? "장바구니에서 빼기" : "장바구니 담기"}
               aria-label={inCart ? "장바구니에서 빼기" : "장바구니에 담기"}
               aria-pressed={inCart}
@@ -182,11 +188,13 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
                 }
               }}
             >
-              <CartIcon className="h-8 w-8 shrink-0 drop-shadow-md sm:h-9 sm:w-9" />
+              <CartIcon
+                className={`${reelActionIcon} ${inCart ? "text-[var(--reels-point)]" : "text-white"}`}
+              />
             </button>
             <button
               type="button"
-              className="pointer-events-auto relative z-[8] inline-flex h-10 w-10 items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 sm:h-11 sm:w-11"
+              className={reelActionBtn}
               aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
               aria-pressed={likedByMe}
               onClick={(e) => {
@@ -197,14 +205,13 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
               disabled={likeBusy}
             >
               <Heart
-                className={`h-8 w-8 shrink-0 drop-shadow-md transition-all duration-200 sm:h-9 sm:w-9 ${
-                  likedByMe ? "fill-current text-[var(--reels-point)]" : "text-white"
-                } ${likePulse ? "scale-110" : "scale-100"}`}
+                strokeWidth={1.5}
+                className={`${reelActionIcon} transition-all duration-200 ${likedByMe ? "fill-current text-[var(--reels-point)]" : "text-white"} ${likePulse ? "scale-110" : "scale-100"}`}
               />
             </button>
             <button
               type="button"
-              className="pointer-events-auto relative z-[8] inline-flex h-10 w-10 items-center justify-center rounded-full text-white opacity-90 transition-transform duration-300 ease-out hover:scale-110 sm:h-11 sm:w-11"
+              className={`${reelActionBtn} ${wishlisted ? reelActionBtnActive : ""}`}
               aria-label={wishlisted ? "찜 해제" : "찜하기"}
               aria-pressed={wishlisted}
               onClick={(e) => {
@@ -213,7 +220,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
                 wishlist.toggle(video);
               }}
             >
-              <span className="relative isolate block h-8 w-8 shrink-0 sm:h-9 sm:w-9">
+              <span className={`relative isolate block ${reelActionIcon}`}>
                 <motion.span
                   className="absolute inset-0 overflow-hidden"
                   initial={false}
@@ -228,18 +235,18 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
                   }}
                 >
                   <Bookmark
-                    className="block h-full w-full"
-                    fill="white"
+                    className="block h-full w-full text-[var(--reels-point)]"
+                    fill="currentColor"
                     stroke="none"
                     strokeWidth={0}
                     aria-hidden
                   />
                 </motion.span>
                 <Bookmark
-                  className="pointer-events-none absolute inset-0 z-[1] block h-full w-full drop-shadow-md"
+                  className={`pointer-events-none absolute inset-0 z-[1] block h-full w-full ${wishlisted ? "text-[var(--reels-point)]" : "text-white"}`}
                   fill="none"
-                  stroke="white"
-                  strokeWidth={1.75}
+                  stroke="currentColor"
+                  strokeWidth={1.5}
                   aria-hidden
                 />
               </span>

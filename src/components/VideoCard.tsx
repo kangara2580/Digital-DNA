@@ -44,6 +44,18 @@ import {
   authModalGlowBottom,
   authModalGlowTop,
 } from "@/lib/authModalTheme";
+import {
+  reelActionBtn,
+  reelActionBtnActive,
+  reelActionBtnCompact,
+  reelActionBtnDense,
+  reelActionIcon,
+  reelActionIconCompact,
+  reelActionIconDense,
+  reelActionRailColumn,
+  reelActionRailOuter,
+  videoReelMediaContainer,
+} from "@/lib/videoReelActionStyles";
 
 type Props = {
   video: FeedVideo;
@@ -561,40 +573,16 @@ export function VideoCard({
         ? "origin-top hover:z-[2] hover:scale-[1.02] motion-reduce:hover:scale-100"
         : "hover:z-[2] hover:scale-[1.05] motion-reduce:hover:scale-100";
   const compactActions = compactHoverActions && !dense;
-  const actionOverlayPadding = "p-0";
-  const actionStackGap = dense
-    ? "gap-1"
+  const reelBtnShell = dense
+    ? reelActionBtnDense
     : compactActions
-      ? "gap-1"
-      : reelStrip
-        ? "gap-1.5"
-        : reelLayout
-          ? "gap-2"
-          : "gap-1.5";
-  const actionButtonSize = dense
-    ? "h-7 w-7"
+      ? reelActionBtnCompact
+      : reelActionBtn;
+  const reelIconCls = dense
+    ? reelActionIconDense
     : compactActions
-      ? "h-8 w-8 sm:h-9 sm:w-9"
-    : reelStrip
-      ? "h-8 w-8 sm:h-9 sm:w-9"
-      : reelLayout
-        ? "h-9 w-9 sm:h-10 sm:w-10"
-        : "h-8 w-8 sm:h-9 sm:w-9";
-  const actionIconSize = dense
-    ? "h-[22px] w-[22px]"
-    : compactActions
-      ? "h-[22px] w-[22px] sm:h-6 sm:w-6"
-    : reelStrip
-      ? "h-6 w-6 sm:h-[26px] sm:w-[26px]"
-      : reelLayout
-        ? "h-[26px] w-[26px] sm:h-7 sm:w-7"
-        : "h-6 w-6 sm:h-[26px] sm:w-[26px]";
-  const actionHoverScale = compactActions ? "hover:scale-100" : "hover:scale-110";
-  const actionStackPos = showMicro
-    ? "left-1.5 top-9 sm:left-2 sm:top-10"
-    : !showMicro && (showAiBadge || topBadge)
-      ? "left-1.5 top-12 sm:left-2 sm:top-[3.2rem]"
-      : "left-1.5 top-[2.2rem] sm:left-2 sm:top-[2.35rem]";
+      ? reelActionIconCompact
+      : reelActionIcon;
 
   return (
     <>
@@ -631,7 +619,9 @@ export function VideoCard({
       }
       onMouseMove={externalIframe ? playTikTok : undefined}
     >
-      <div className={`relative overflow-hidden bg-black/40 ${aspectClass}`}>
+      <div
+        className={`${videoReelMediaContainer} relative overflow-hidden bg-black/40 ${aspectClass}`}
+      >
         {externalIframe ? (
           <div className="absolute inset-0 z-0 flex items-center justify-center">
             <iframe
@@ -779,111 +769,94 @@ export function VideoCard({
           </div>
         ) : null}
         {!hideHoverActions ? (
-          <div
-            className={`pointer-events-none absolute z-[7] ${actionStackPos} ${actionOverlayPadding}`}
-          >
-            <div
-              className={`flex flex-col items-center justify-center opacity-100 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 max-lg:translate-y-0 max-lg:opacity-100 translate-y-1 lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 ${actionStackGap}`}
-            >
-            <button
-              ref={cartBtnRef}
-              type="button"
-              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full border backdrop-blur-[1px] transition-[transform,background-color,border-color,color,box-shadow] duration-300 ease-out ${actionHoverScale} active:scale-[0.94] ${actionButtonSize} ${
-                inCart
-                  ? "border-[color:var(--reels-point)]/80 bg-[var(--reels-point)]/15 text-[var(--reels-point)] shadow-[0_0_0_1px_rgba(228,41,128,0.28)]"
-                  : "border-white/20 bg-black/35 text-white opacity-90"
-              }`}
-              aria-label={inCart ? "장바구니에서 빼기" : "장바구니에 담기"}
-              aria-pressed={inCart}
-              title={inCart ? "장바구니에서 빼기" : "장바구니 담기"}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (!requireAuth()) return;
-                const el = cartBtnRef.current;
-                if (el && dopamine) {
-                  dopamine.launchFromCartButton(el, video, thumbnailSrc);
-                }
-              }}
-            >
-              <CartIcon
-                className={`shrink-0 drop-shadow-md ${actionIconSize} ${inCart ? "text-[var(--reels-point)]" : "text-white"}`}
-              />
-            </button>
-            {!hideLikeAction ? (
+          <div className={reelActionRailOuter}>
+            <div className={reelActionRailColumn}>
               <button
+                ref={cartBtnRef}
                 type="button"
-                className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full border border-white/20 bg-black/35 text-white opacity-90 backdrop-blur-[1px] transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
-                aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
-                aria-pressed={likedByMe}
+                className={`${reelBtnShell} ${inCart ? reelActionBtnActive : ""}`}
+                aria-label={inCart ? "장바구니에서 빼기" : "장바구니에 담기"}
+                aria-pressed={inCart}
+                title={inCart ? "장바구니에서 빼기" : "장바구니 담기"}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  void toggleInternalLike();
+                  if (!requireAuth()) return;
+                  const el = cartBtnRef.current;
+                  if (el && dopamine) {
+                    dopamine.launchFromCartButton(el, video, thumbnailSrc);
+                  }
                 }}
-                disabled={likeBusy}
               >
-                <Heart
-                  className={`shrink-0 drop-shadow-md transition-all duration-200 ${actionIconSize} ${likedByMe ? "fill-current text-[var(--reels-point)]" : "text-white"} ${
-                    likePulse ? "scale-110" : "scale-100"
-                  }`}
+                <CartIcon
+                  className={`${reelIconCls} ${inCart ? "text-[var(--reels-point)]" : "text-white"}`}
                 />
               </button>
-            ) : null}
-            <button
-              type="button"
-              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full border backdrop-blur-[1px] transition-[transform,background-color,border-color,color] duration-300 ease-out ${actionHoverScale} active:scale-[0.94] ${actionButtonSize} ${
-                wishlisted
-                  ? "border-[color:var(--reels-point)]/80 bg-[var(--reels-point)]/15 text-[var(--reels-point)] shadow-[0_0_0_1px_rgba(228,41,128,0.28)]"
-                  : "border-white/20 bg-black/35 text-white opacity-90"
-              }`}
-              aria-label={wishlisted ? "찜 해제" : "찜하기"}
-              aria-pressed={wishlisted}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (!requireAuth()) return;
-                wishlist.toggle(video);
-              }}
-            >
-              <span
-                className={`relative isolate block shrink-0 ${
-                  actionIconSize
-                }`}
-              >
-                {/* 찜(북마크) 클릭 시에만 아래→위 채움 */}
-                <motion.span
-                  className="absolute inset-0 overflow-hidden"
-                  initial={false}
-                  animate={{
-                    clipPath: wishlisted
-                      ? "inset(0% 0% 0% 0%)"
-                      : "inset(0% 0% 100% 0%)",
+              {!hideLikeAction ? (
+                <button
+                  type="button"
+                  className={reelBtnShell}
+                  aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+                  aria-pressed={likedByMe}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    void toggleInternalLike();
                   }}
-                  transition={{
-                    duration: reduceMotion ? 0 : 0.52,
-                    ease: [0.22, 0.99, 0.36, 1],
-                  }}
+                  disabled={likeBusy}
                 >
+                  <Heart
+                    strokeWidth={1.5}
+                    className={`${reelIconCls} transition-transform duration-200 ${likedByMe ? "fill-current text-[var(--reels-point)]" : "text-white"} ${
+                      likePulse ? "scale-110" : "scale-100"
+                    }`}
+                  />
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className={`${reelBtnShell} ${wishlisted ? reelActionBtnActive : ""}`}
+                aria-label={wishlisted ? "찜 해제" : "찜하기"}
+                aria-pressed={wishlisted}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!requireAuth()) return;
+                  wishlist.toggle(video);
+                }}
+              >
+                <span className={`relative isolate block ${reelIconCls}`}>
+                  {/* 찜(북마크) 클릭 시에만 아래→위 채움 */}
+                  <motion.span
+                    className="absolute inset-0 overflow-hidden"
+                    initial={false}
+                    animate={{
+                      clipPath: wishlisted
+                        ? "inset(0% 0% 0% 0%)"
+                        : "inset(0% 0% 100% 0%)",
+                    }}
+                    transition={{
+                      duration: reduceMotion ? 0 : 0.52,
+                      ease: [0.22, 0.99, 0.36, 1],
+                    }}
+                  >
+                    <Bookmark
+                      className="block h-full w-full text-[var(--reels-point)]"
+                      fill="currentColor"
+                      stroke="none"
+                      strokeWidth={0}
+                      aria-hidden
+                    />
+                  </motion.span>
                   <Bookmark
-                    className="block h-full w-full text-[var(--reels-point)]"
-                    fill="currentColor"
-                    stroke="none"
-                    strokeWidth={0}
+                    className={`pointer-events-none absolute inset-0 z-[1] block h-full w-full ${wishlisted ? "text-[var(--reels-point)]" : "text-white"}`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
                     aria-hidden
                   />
-                </motion.span>
-                <Bookmark
-                  className={`pointer-events-none absolute inset-0 z-[1] block h-full w-full drop-shadow-md ${
-                    wishlisted ? "text-[var(--reels-point)]" : "text-white"
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.75}
-                  aria-hidden
-                />
-              </span>
-            </button>
+                </span>
+              </button>
             </div>
           </div>
         ) : null}

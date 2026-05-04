@@ -19,6 +19,8 @@ export function FloatingHelp() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const scrollRafRef = useRef(0);
   const scrollTopAnimRafRef = useRef(0);
+  /** pointerdown/키 입력 직전 뷰포트 스크롤 — 클릭 후 포커스·브라우저 기본 동작으로 밀린 값을 쓰지 않기 위함 */
+  const scrollTopClickAnchorRef = useRef<number | null>(null);
   const showMirrorRef = useRef(false);
 
   useEffect(() => {
@@ -72,8 +74,13 @@ export function FloatingHelp() {
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const root = document.scrollingElement ?? document.documentElement;
-    const startY = root.scrollTop;
+    const startY = scrollTopClickAnchorRef.current ?? getViewportScrollTop();
+    scrollTopClickAnchorRef.current = null;
+
     if (startY <= 0) return;
+
+    // 포커스 등으로 클릭 직전에 스크롤이 밀렸으면, 애니 시작 전에 원래 누른 위치로 즉시 복구
+    root.scrollTop = startY;
 
     if (reduce) {
       root.scrollTop = 0;
@@ -109,6 +116,20 @@ export function FloatingHelp() {
     >
       <button
         type="button"
+        onPointerDown={(e) => {
+          scrollTopClickAnchorRef.current = getViewportScrollTop();
+          // 마우스/펜: 포커스 이동으로 문서가 아래로 밀리는 현상 방지 (터치는 클릭 합성에 영향을 줄 수 있어 제외)
+          if (e.pointerType === "mouse" || e.pointerType === "pen") {
+            e.preventDefault();
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key !== "Enter" && e.key !== " ") return;
+          scrollTopClickAnchorRef.current = getViewportScrollTop();
+          if (e.key === " ") {
+            e.preventDefault();
+          }
+        }}
         onClick={scrollToTop}
         aria-label="맨 위로 가기"
         className={`flex h-11 w-11 items-center justify-center rounded-full ${scrollTopShell} scale-95 opacity-0 transition-[opacity,transform,box-shadow] duration-[400ms] ease-in-out hover:border-white/55 hover:bg-white/8 hover:shadow-[0_12px_36px_-14px_rgba(255,255,255,0.45)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 motion-reduce:transition-none ${

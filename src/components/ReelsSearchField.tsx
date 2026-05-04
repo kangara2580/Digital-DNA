@@ -17,7 +17,7 @@ const searchIconMotion =
 export function ReelsSearchField({
   compact,
   topNavPill = false,
-  /** 메인 히어로: 넓은 둥근 필드·플레이스홀더·핑크 포인트 (다른 화면과 구분) */
+  /** 메인 히어로: 넓은 둥근 필드·핑크 포인트 (다른 화면과 구분) */
   homeHero = false,
   q,
   setQ,
@@ -73,7 +73,7 @@ export function ReelsSearchField({
         name="q"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder={mode === "homeHero" ? "릴스, 키워드, 분위기 검색" : ""}
+        placeholder=""
         autoComplete="off"
         enterKeyHint="search"
         className={`mall-search w-full border outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,color,box-shadow] ${easeLayout} ${searchEase} focus:ring-0 ${placeholderClass} ${

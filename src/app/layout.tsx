@@ -13,6 +13,7 @@ import { AppProviders } from "@/components/AppProviders";
 import { NavigationRecovery } from "@/components/NavigationRecovery";
 import { DnaBuilderDock } from "@/components/DnaBuilderDock";
 import { FloatingHelp } from "@/components/FloatingHelp";
+import { FloatingReelsSearch } from "@/components/FloatingReelsSearch";
 import { MallTopNav } from "@/components/MallTopNav";
 import { ReelsLeftRail } from "@/components/ReelsLeftRail";
 import { ARAFooter } from "@/components/ARAFooter";
@@ -101,6 +102,7 @@ export default function RootLayout({
           <NavigationRecovery />
           <ReelsLeftRail />
           <div className="min-w-0 md:pl-[var(--reels-rail-w)]">
+            <FloatingReelsSearch />
             <MallTopNav />
             {children}
             <ARAFooter />

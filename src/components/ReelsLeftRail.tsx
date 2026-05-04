@@ -1,16 +1,10 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import {
-  Compass,
-  MoreVertical,
-  Search,
-  Trophy,
-  X,
-} from "lucide-react";
+import { Compass, MoreVertical, Trophy, X } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 
@@ -98,61 +92,15 @@ const RAIL_ITEMS: RailItem[] = [
 
 export function ReelsLeftRail() {
   const pathname = usePathname();
-  const router = useRouter();
   const reduceMotion = useReducedMotion() ?? false;
   const [open, setOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQ, setSearchQ] = useState("");
-  const [searchPanelPos, setSearchPanelPos] = useState<{ top: number; left: number } | null>(
-    null,
-  );
   const [mounted, setMounted] = useState(false);
   const drawerTitleId = useId();
   const drawerId = useId();
-  const searchBtnRef = useRef<HTMLButtonElement | null>(null);
-  const searchPanelRef = useRef<HTMLFormElement | null>(null);
-  const searchHoverCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  /** 데스크톱: 호버만으로 검색창 열기 (터치·저사양 포인터는 기존 클릭만) */
-  const [searchHoverMode, setSearchHoverMode] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
-    const sync = () => setSearchHoverMode(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, []);
-
-  const cancelSearchHoverClose = useCallback(() => {
-    if (searchHoverCloseTimerRef.current != null) {
-      clearTimeout(searchHoverCloseTimerRef.current);
-      searchHoverCloseTimerRef.current = null;
-    }
-  }, []);
-
-  const searchPathActive = pathname === "/search" || pathname.startsWith("/search/");
-
-  const scheduleSearchHoverClose = useCallback(() => {
-    if (!searchHoverMode) return;
-    cancelSearchHoverClose();
-    searchHoverCloseTimerRef.current = setTimeout(() => {
-      setSearchOpen(false);
-      searchHoverCloseTimerRef.current = null;
-    }, 300);
-  }, [searchHoverMode, cancelSearchHoverClose]);
-
-  useEffect(() => {
-    return () => cancelSearchHoverClose();
-  }, [cancelSearchHoverClose]);
-
-  useEffect(() => {
-    if (!searchOpen) cancelSearchHoverClose();
-  }, [searchOpen, cancelSearchHoverClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -173,59 +121,6 @@ export function ReelsLeftRail() {
   }, [open]);
 
   const close = useCallback(() => setOpen(false), []);
-  const runSearch = useCallback(() => {
-    const q = searchQ.trim();
-    if (!q) return;
-    cancelSearchHoverClose();
-    router.push(`/search?q=${encodeURIComponent(q)}`);
-    setSearchOpen(false);
-  }, [router, searchQ, cancelSearchHoverClose]);
-
-  const measureSearchPanel = useCallback(() => {
-    const btn = searchBtnRef.current;
-    if (!btn) return;
-    const r = btn.getBoundingClientRect();
-    setSearchPanelPos({
-      top: r.top + r.height / 2,
-      left: r.right + 20,
-    });
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!searchOpen) {
-      setSearchPanelPos(null);
-      return;
-    }
-    measureSearchPanel();
-    window.addEventListener("resize", measureSearchPanel);
-    window.addEventListener("scroll", measureSearchPanel, true);
-    return () => {
-      window.removeEventListener("resize", measureSearchPanel);
-      window.removeEventListener("scroll", measureSearchPanel, true);
-    };
-  }, [searchOpen, measureSearchPanel]);
-
-  useEffect(() => {
-    if (!searchOpen) return;
-    const onPointerDown = (e: PointerEvent) => {
-      const n = e.target as Node;
-      if (searchBtnRef.current?.contains(n) || searchPanelRef.current?.contains(n)) return;
-      cancelSearchHoverClose();
-      setSearchOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        cancelSearchHoverClose();
-        setSearchOpen(false);
-      }
-    };
-    document.addEventListener("pointerdown", onPointerDown, true);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown, true);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [searchOpen, cancelSearchHoverClose]);
 
   return (
     <>
@@ -252,36 +147,6 @@ export function ReelsLeftRail() {
             className="flex shrink-0 flex-col items-center gap-2 overflow-visible py-2"
             aria-label="빠른 이동"
           >
-            <div
-              onMouseEnter={() => {
-                if (!searchHoverMode) return;
-                cancelSearchHoverClose();
-                setSearchOpen(true);
-              }}
-              onMouseLeave={() => {
-                if (!searchHoverMode) return;
-                scheduleSearchHoverClose();
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  if (searchHoverMode) {
-                    cancelSearchHoverClose();
-                    setSearchOpen(true);
-                    return;
-                  }
-                  setSearchOpen((v) => !v);
-                }}
-                ref={searchBtnRef}
-                className={`${railIconBtn} ${searchPathActive ? railIconActive : ""}`}
-                aria-label="검색 열기"
-                aria-expanded={searchOpen}
-                aria-current={searchPathActive ? "page" : undefined}
-              >
-                <Search className="h-[23px] w-[23px]" strokeWidth={1.9} aria-hidden />
-              </button>
-            </div>
             {RAIL_ITEMS.map(({ href, label, Icon, isActive }) => {
               const on = isActive(pathname);
               return (
@@ -316,7 +181,7 @@ export function ReelsLeftRail() {
             })}
           </nav>
 
-          <div className="flex shrink-0 flex-col items-center border-t border-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 px-0 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="flex shrink-0 flex-col items-center border-t border-white/[0.06] px-0 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] [html[data-theme='light']_&]:border-zinc-200">
             <button
               type="button"
               onClick={() => setOpen(true)}
@@ -335,52 +200,6 @@ export function ReelsLeftRail() {
       {mounted
         ? createPortal(
             <AnimatePresence>
-              {searchOpen && searchPanelPos ? (
-                <motion.form
-                  key="rail-search-popover"
-                  initial={reduceMotion ? false : { opacity: 0, x: -8, width: 0 }}
-                  animate={{ opacity: 1, x: 0, width: 340 }}
-                  exit={reduceMotion ? undefined : { opacity: 0, x: -8, width: 0 }}
-                  transition={{ duration: 0.22, ease: "easeOut" }}
-                  ref={searchPanelRef}
-                  onMouseEnter={() => {
-                    if (!searchHoverMode) return;
-                    cancelSearchHoverClose();
-                  }}
-                  onMouseLeave={() => {
-                    if (!searchHoverMode) return;
-                    scheduleSearchHoverClose();
-                  }}
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    runSearch();
-                  }}
-                  className="fixed z-[260] -translate-y-1/2 overflow-hidden rounded-full border border-white/15 bg-reels-void/95 p-1 shadow-[0_18px_30px_-18px_rgba(0,0,0,0.8)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/95"
-                  style={{ top: searchPanelPos.top - 20, left: searchPanelPos.left }}
-                >
-                  <div className="relative flex items-center">
-                    <input
-                      type="text"
-                      value={searchQ}
-                      onChange={(e) => setSearchQ(e.target.value)}
-                      placeholder="검색어 입력"
-                      className="h-10 w-[312px] min-w-0 bg-transparent pl-4 pr-10 text-[16px] text-zinc-100 outline-none placeholder:text-zinc-500 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-500"
-                      autoFocus
-                      enterKeyHint="search"
-                    />
-                    {searchQ ? (
-                      <button
-                        type="button"
-                        onClick={() => setSearchQ("")}
-                        className="absolute right-1.5 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/22 bg-white/[0.06] text-[#E42980] transition hover:border-[rgba(228,41,128,0.55)] hover:bg-white/[0.12] hover:text-[#F56BA5] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-[#E42980] [html[data-theme='light']_&]:hover:border-[rgba(228,41,128,0.45)] [html[data-theme='light']_&]:hover:bg-zinc-200 [html[data-theme='light']_&]:hover:text-[#C41F6E]"
-                        aria-label="검색어 지우기"
-                      >
-                        <X className="h-[18px] w-[18px]" strokeWidth={2.6} aria-hidden />
-                      </button>
-                    ) : null}
-                  </div>
-                </motion.form>
-              ) : null}
               {open ? (
                 <motion.div
                   key="rail-drawer"
@@ -411,7 +230,7 @@ export function ReelsLeftRail() {
                       damping: 38,
                     }}
                   >
-                    <div className="flex items-center justify-between border-b border-white/10 [html[data-theme='light']_&]:border-zinc-200 px-4 py-3 pr-3">
+                    <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 pr-3 [html[data-theme='light']_&]:border-zinc-200">
                       <p
                         id={drawerTitleId}
                         className="text-[15px] font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"

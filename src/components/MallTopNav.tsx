@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronLeft, ChevronRight, Search, Wallet } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Wallet } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -13,9 +13,9 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { MALL_CATEGORY_NAV_ITEMS as ITEMS } from "@/data/mallCategoryNav";
-import { SEARCH_GUIDE_PHRASES, shuffleSearchGuides } from "@/data/searchGuidePhrases";
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 import { MainTopUserMenu } from "@/components/MainTopUserMenu";
+import { ReelsSearchField } from "@/components/ReelsSearchField";
 import { useAuthSession } from "@/hooks/useAuthSession";
 
 /** 카테고리 pill — 라이트 모드에서 검정 텍스트 */
@@ -39,124 +39,6 @@ const easeTitleCollapse =
   `transition-[max-height] ${easeLayout}`;
 
 const easeNav = `transition-[padding,margin,font-size,line-height,box-shadow,gap,border-color,width,max-width,flex] ${easeLayout}`;
-
-const searchEase =
-  "duration-300 ease-out motion-reduce:duration-150 motion-reduce:ease-linear";
-
-/** 돋보기: 색만 살짝 (변형·회전 제거로 스크롤/페인트 부담 감소) */
-const searchIconMotion =
-  "transition-colors duration-200 ease-out group-hover:text-reels-cyan group-focus-within:text-reels-cyan";
-
-const ROTATE_MS = 4500;
-
-function RotatingSearchField({
-  compact,
-  q,
-  setQ,
-  showTrailingIcon = true,
-  onAfterSearch,
-}: {
-  compact: boolean;
-  q: string;
-  setQ: (v: string) => void;
-  showTrailingIcon?: boolean;
-  /** 검색으로 이동한 직후(예: 상세 화면 검색 드롭다운 닫기) */
-  onAfterSearch?: () => void;
-}) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [phrases, setPhrases] = useState<string[]>(() => [...SEARCH_GUIDE_PHRASES]);
-  const [phraseIdx, setPhraseIdx] = useState(0);
-  const [focused, setFocused] = useState(false);
-
-  const runSearch = useCallback(() => {
-    const t = q.trim();
-    if (!t) return;
-    router.push(`/search?q=${encodeURIComponent(t)}`);
-    onAfterSearch?.();
-  }, [q, router, onAfterSearch]);
-
-  useEffect(() => {
-    setPhrases(shuffleSearchGuides([...SEARCH_GUIDE_PHRASES]));
-    setPhraseIdx(0);
-  }, [pathname]);
-
-  useEffect(() => {
-    if (phrases.length === 0) return;
-    const id = window.setInterval(() => {
-      setPhraseIdx((i) => (i + 1) % phrases.length);
-    }, ROTATE_MS);
-    return () => window.clearInterval(id);
-  }, [phrases]);
-
-  const showGuide = q.trim() === "" && !focused;
-  const current = phrases[phraseIdx] ?? phrases[0] ?? "";
-
-  return (
-    <form
-      className="group relative"
-      onSubmit={(e) => {
-        e.preventDefault();
-        runSearch();
-      }}
-    >
-      <input
-        type="search"
-        name="q"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        placeholder=""
-        autoComplete="off"
-        enterKeyHint="search"
-        className={`mall-search w-full rounded-full border text-zinc-100 outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,color] ${easeLayout} ${searchEase} placeholder:text-zinc-600 focus:ring-0 [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='dark']_&]:placeholder:text-zinc-300 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-500 ${
-          compact
-            ? `h-9 border-white/15 bg-white/[0.06] pl-3 ${showTrailingIcon ? "pr-10" : "pr-3"} text-[13px] hover:border-reels-cyan/35 hover:bg-white/10 focus:border-reels-cyan/50 focus:bg-white/[0.09] [html[data-theme='dark']_&]:border-white/20 [html[data-theme='dark']_&]:bg-white/[0.1] [html[data-theme='dark']_&]:hover:bg-white/[0.14] [html[data-theme='dark']_&]:focus:bg-white/[0.16] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:border-zinc-400 [html[data-theme='light']_&]:focus:bg-white`
-            : `h-[3.25rem] border-2 border-white/20 bg-white/[0.08] pl-6 ${showTrailingIcon ? "pr-14" : "pr-6"} text-[15px] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-reels-cyan/40 hover:bg-white/12 focus:border-reels-cyan/55 focus:bg-white/[0.1] [html[data-theme='dark']_&]:border-white/25 [html[data-theme='dark']_&]:bg-white/[0.12] [html[data-theme='dark']_&]:hover:bg-white/[0.16] [html[data-theme='dark']_&]:focus:bg-white/[0.18] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] [html[data-theme='light']_&]:hover:border-reels-cyan/35 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:focus:border-reels-cyan/35 [html[data-theme='light']_&]:focus:bg-white`
-        }`}
-        aria-label={`릴스 검색. 안내: ${current}`}
-      />
-      {showGuide ? (
-        <div
-          className={`pointer-events-none absolute inset-y-0 left-0 flex items-center overflow-hidden text-left text-zinc-500 [html[data-theme='dark']_&]:text-zinc-300 [html[data-theme='light']_&]:text-zinc-500 ${
-            compact
-              ? `${showTrailingIcon ? "right-10" : "right-3"} pl-3 text-[13px]`
-              : `${showTrailingIcon ? "right-14" : "right-6"} pl-6 text-[15px]`
-          }`}
-          aria-hidden
-        >
-          <div className="relative w-full min-w-0">
-            <div
-              className={`overflow-hidden ${compact ? "h-[18px]" : "h-[24px]"}`}
-            >
-              <span className="block truncate transition-opacity duration-200">
-                {current}
-              </span>
-            </div>
-          </div>
-        </div>
-      ) : null}
-      {showTrailingIcon ? (
-        <button
-          type="submit"
-          className={`absolute top-1/2 z-10 -translate-y-1/2 rounded-full p-1 text-zinc-500 transition-colors hover:text-reels-cyan focus-visible:outline focus-visible:ring-2 focus-visible:ring-reels-cyan/50 [html[data-theme='dark']_&]:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 ${
-            compact ? "right-1.5" : "right-3"
-          }`}
-          aria-label="검색 실행"
-        >
-          <span className={`block ${searchIconMotion}`}>
-            <Search
-              className={`shrink-0 ${compact ? "h-4 w-4" : "h-5 w-5"}`}
-              strokeWidth={2}
-              aria-hidden
-            />
-          </span>
-        </button>
-      ) : null}
-    </form>
-  );
-}
 
 const subscribeNavClass =
   "inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-reels-cyan/40 bg-reels-cyan/10 text-reels-cyan transition hover:bg-reels-cyan/15 sm:size-10 [html[data-theme='light']_&]:border-reels-cyan/35 [html[data-theme='light']_&]:bg-reels-cyan/10";
@@ -212,6 +94,7 @@ export function MallTopNav() {
     isMypagePath ||
     isCartPage ||
     isSellPage;
+  const [mallSearchQ, setMallSearchQ] = useState("");
   const [mounted, setMounted] = useState(false);
   const moreWrapRef = useRef<HTMLDivElement>(null);
   const menuPortalRef = useRef<HTMLDivElement>(null);
@@ -477,6 +360,11 @@ export function MallTopNav() {
           compactEffective ? "pb-1.5 pt-1.5" : "pb-1.5 pt-2"
         }`}
       >
+        {(isShopPage || isCategoryPage) && !isExploreWatchMode ? (
+          <div className="mb-1.5 w-full min-w-0">
+            <ReelsSearchField compact q={mallSearchQ} setQ={setMallSearchQ} />
+          </div>
+        ) : null}
         <div
           className={`flex min-h-0 w-full [contain:layout] ${easeLayout} ${
             compactEffective
