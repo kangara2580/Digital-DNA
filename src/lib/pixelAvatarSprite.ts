@@ -284,15 +284,19 @@ export type AraDotProfilePreset = {
   palette: PixelAvatarPalette;
 };
 
+/** 프로필에서 고를 기본 도트 수 (스프라이트 variant 폭과 무관하게 고정 열거) */
+const ARA_DOT_PRESET_SLOTS = 8;
+
 function buildAraDotPresetList(): readonly AraDotProfilePreset[] {
   const out: AraDotProfilePreset[] = [];
-  for (let i = 0; i < PIXEL_VARIANT_COUNT; i++) {
+  for (let i = 0; i < ARA_DOT_PRESET_SLOTS; i++) {
     const palette: PixelAvatarPalette = i % 2 === 0 ? "mochi" : "stardust";
+    const variant = (i * 2 + 3) % PIXEL_VARIANT_COUNT;
     out.push({
       storageSeed: `ara-dot-${String(i).padStart(2, "0")}`,
       label: `기본 도트 ${i + 1}`,
-      entropy: `ara-cute-preset-${i}-v${i}-${palette}`,
-      variant: i,
+      entropy: `ara-cute-preset-${i}-v${variant}-${palette}`,
+      variant,
       palette,
     });
   }

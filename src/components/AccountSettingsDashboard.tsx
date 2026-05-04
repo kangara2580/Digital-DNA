@@ -67,6 +67,13 @@ function normalizeSettingsTab(input: string | null): SettingsTab {
   return "basic";
 }
 
+function profileAvatarKey(v: ProfileAvatar | null): string {
+  if (!v) return "null";
+  if (v.kind === "preset") return `preset:${v.seed}`;
+  if (v.kind === "upload") return `upload:${String(v.dataUrl.length)}:${v.dataUrl.slice(0, 32)}`;
+  return `custom:${v.parts.seed}:${v.parts.gender}`;
+}
+
 export function AccountSettingsDashboard() {
   const router = useRouter();
   const params = useSearchParams();
@@ -90,17 +97,29 @@ export function AccountSettingsDashboard() {
     [profileRecord, user],
   );
 
-  const profileAvatar = useMemo(
+  const profileAvatarSynced = useMemo(
     () => resolveProfileAvatar(user, profileForForm),
     [user, profileForForm],
   );
 
+  const [profileAvatarDraft, setProfileAvatarDraft] = useState<ProfileAvatar | null>(null);
+
+  useEffect(() => {
+    const syncedKey = profileAvatarKey(profileAvatarSynced);
+    setProfileAvatarDraft((prev) => {
+      if (prev !== null && profileAvatarKey(prev) === syncedKey) return null;
+      return prev;
+    });
+  }, [profileAvatarSynced]);
+
+  const profileAvatar = profileAvatarDraft ?? profileAvatarSynced;
+
   const persistProfileAvatar = useCallback(
-    async (next: ProfileAvatar | null) => {
+    async (next: ProfileAvatar | null): Promise<boolean> => {
       const supabase = getSupabaseBrowserClient();
-      if (!supabase || !user) return;
+      if (!supabase || !user) return false;
       try {
-        await supabase.auth.updateUser({
+        const { error: authErr } = await supabase.auth.updateUser({
           data: {
             avatar_kind: next?.kind ?? null,
             avatar_seed: next?.kind === "preset" ? next.seed : null,
@@ -112,7 +131,9 @@ export function AccountSettingsDashboard() {
                   : null,
           },
         });
-        const updated = await upsertUserProfile(supabase, user.id, {
+        if (authErr) return false;
+
+        const rowPatch = {
           avatar_kind: next?.kind ?? null,
           avatar_seed: next?.kind === "preset" ? next.seed : null,
           avatar_custom:
@@ -121,13 +142,32 @@ export function AccountSettingsDashboard() {
               : next?.kind === "upload"
                 ? next.dataUrl
                 : null,
-        });
-        if (updated) setProfileRecord(updated);
+        };
+        const upserted = await upsertUserProfile(supabase, user.id, rowPatch);
+        const { data: authData } = await supabase.auth.getUser();
+        const authUser = authData?.user ?? user;
+
+        if (!upserted) return false;
+        setProfileRecord(mergeProfileRowWithAuthUser(upserted, authUser));
+        return true;
       } catch {
-        /* noop */
+        return false;
       }
     },
     [user],
+  );
+
+  const onProfileAvatarPick = useCallback(
+    async (next: ProfileAvatar | null) => {
+      setProfileAvatarDraft(next);
+      if (!user || !getSupabaseBrowserClient()) {
+        setProfileAvatarDraft(null);
+        return;
+      }
+      const ok = await persistProfileAvatar(next);
+      if (!ok) setProfileAvatarDraft(null);
+    },
+    [user, persistProfileAvatar],
   );
 
   useEffect(() => {
@@ -253,7 +293,7 @@ export function AccountSettingsDashboard() {
                 <ProfileAvatarPicker
                   density="comfortable"
                   value={profileAvatar}
-                  onChange={persistProfileAvatar}
+                  onChange={onProfileAvatarPick}
                   hint={
                     user
                       ? t("settings.avatar.hintSaved")

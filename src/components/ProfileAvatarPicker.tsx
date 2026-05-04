@@ -134,7 +134,7 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
 
   const presetGridCls = isComfortable
     ? "mt-3 grid grid-cols-4 gap-2.5 sm:grid-cols-8"
-    : "mt-2.5 grid grid-cols-4 gap-2 sm:gap-2.5";
+    : "mt-2.5 grid grid-cols-4 gap-2 sm:grid-cols-4";
 
   const presetTileCls = isComfortable ? "h-14 w-14 sm:h-[3.65rem] sm:w-[3.65rem]" : "h-11 w-11 sm:h-12 sm:w-12";
 
