@@ -52,20 +52,38 @@ function pickReviewVideoById(reviewId: string) {
 function ReviewStars({ rating }: { rating: number }) {
   return (
     <div
-      className="flex items-center gap-1 leading-none py-[2px] text-white/72 [html[data-theme='light']_&]:text-amber-500"
+      className="flex items-center gap-1 py-[2px] leading-none"
       aria-label={`별점 ${rating}점`}
     >
-        {Array.from({ length: 5 }).map((_, i) => {
-          const fillRatio = Math.max(0, Math.min(1, rating - i));
-          return (
+      {Array.from({ length: 5 }).map((_, i) => {
+        const fillRatio = Math.max(0, Math.min(1, rating - i));
+        return (
+          <span
+            key={`star-${i}`}
+            className="relative inline-flex h-[17px] w-[17px] shrink-0 overflow-visible"
+          >
+            <svg
+              viewBox="-2 -2 28 28"
+              className="h-full w-full overflow-visible text-white/50 [html[data-theme='light']_&]:text-zinc-400"
+              fill="transparent"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              aria-hidden
+            >
+              <path
+                d="M12 3.8l2.52 5.11 5.64.82-4.08 3.98.96 5.62L12 16.7 6.96 19.33l.96-5.62-4.08-3.98 5.64-.82L12 3.8z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
             <span
-              key={`star-${i}`}
-              className="relative inline-flex h-[17px] w-[17px] shrink-0 overflow-visible"
+              className="absolute inset-y-0 left-0 overflow-hidden text-white/85 transition-colors duration-200 ease-out group-hover:text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-amber-500 [html[data-theme='light']_&]:group-hover:text-[color:var(--reels-point)]"
+              style={{ width: `${fillRatio * 100}%` }}
             >
               <svg
                 viewBox="-2 -2 28 28"
-                className="h-full w-full overflow-visible"
-                fill="transparent"
+                className="h-full w-[17px] overflow-visible"
+                fill="currentColor"
                 stroke="currentColor"
                 strokeWidth="1.75"
                 aria-hidden
@@ -76,26 +94,8 @@ function ReviewStars({ rating }: { rating: number }) {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span
-                className="absolute inset-y-0 left-0 overflow-hidden"
-                style={{ width: `${fillRatio * 100}%` }}
-              >
-                <svg
-                  viewBox="-2 -2 28 28"
-                  className="h-full w-[17px] overflow-visible"
-                  fill="currentColor"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  aria-hidden
-                >
-                  <path
-                    d="M12 3.8l2.52 5.11 5.64.82-4.08 3.98.96 5.62L12 16.7 6.96 19.33l.96-5.62-4.08-3.98 5.64-.82L12 3.8z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
             </span>
+          </span>
         );
       })}
     </div>
