@@ -66,23 +66,23 @@ function HomeBestMarquee({ videos }: { videos: FeedVideo[] }) {
 
   return (
     <div
-      className="relative w-full overflow-hidden py-5 sm:py-7"
+      className="relative w-full overflow-hidden py-6 sm:py-9"
       aria-label="베스트 릴스 미리보기"
     >
       <div
-        className="pointer-events-none absolute inset-y-5 left-0 z-[1] w-10 bg-gradient-to-r from-[#070708] to-transparent sm:inset-y-7 sm:w-16 [html[data-theme='light']_&]:from-[var(--background)]"
+        className="pointer-events-none absolute inset-y-6 left-0 z-[1] w-12 bg-gradient-to-r from-[#070708] to-transparent sm:inset-y-9 sm:w-20 [html[data-theme='light']_&]:from-[var(--background)]"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-y-5 right-0 z-[1] w-10 bg-gradient-to-l from-[#070708] to-transparent sm:inset-y-7 sm:w-16 [html[data-theme='light']_&]:from-[var(--background)]"
+        className="pointer-events-none absolute inset-y-6 right-0 z-[1] w-12 bg-gradient-to-l from-[#070708] to-transparent sm:inset-y-9 sm:w-20 [html[data-theme='light']_&]:from-[var(--background)]"
         aria-hidden
       />
-      <div className="home-best-marquee-track flex gap-3 sm:gap-4">
+      <div className="home-best-marquee-track flex gap-4 sm:gap-5 md:gap-6">
         {loop.map((v, i) => (
           <Link
             key={`${v.id}-${i}`}
             href={`/video/${v.id}`}
-            className="group relative aspect-[9/16] h-[min(200px,36vw)] shrink-0 overflow-hidden rounded-xl border border-white/12 bg-black/30 shadow-[0_12px_40px_-18px_rgba(0,0,0,0.55)] outline-none transition-[border-color,transform,box-shadow] hover:z-[2] hover:border-[color:rgba(228,41,128,0.45)] hover:shadow-[0_16px_48px_-16px_rgba(228,41,128,0.12)] focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070708] [html[data-theme='light']_&]:border-zinc-200/80 [html[data-theme='light']_&]:bg-zinc-100/80 [html[data-theme='light']_&]:focus-visible:ring-offset-white"
+            className="group relative aspect-[216/384] h-[clamp(288px,52vh,460px)] shrink-0 overflow-hidden rounded-2xl border border-white/12 bg-black/30 shadow-[0_16px_48px_-20px_rgba(0,0,0,0.55)] outline-none transition-[border-color,transform,box-shadow] hover:z-[2] hover:border-[color:rgba(228,41,128,0.45)] hover:shadow-[0_20px_56px_-18px_rgba(228,41,128,0.12)] focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070708] [html[data-theme='light']_&]:border-zinc-200/80 [html[data-theme='light']_&]:bg-zinc-100/80 [html[data-theme='light']_&]:focus-visible:ring-offset-white"
           >
             <div className="relative h-full w-full">
               <MarqueeCardPreview video={v} />
@@ -212,7 +212,7 @@ export function Highlight24() {
 
       <div className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-4 pb-6 pt-[max(1rem,env(safe-area-inset-top)+4.5rem)] text-center sm:px-6 sm:pb-8 sm:pt-[max(1.25rem,env(safe-area-inset-top)+5rem)]">
         <h1
-          className="select-none text-[clamp(2.75rem,12vw,5rem)] font-semibold leading-none tracking-[0.02em] text-white"
+          className="select-none text-[clamp(3.6rem,16.5vw,7.5rem)] font-semibold leading-none tracking-[0.02em] text-white"
           style={{
             fontFamily: "var(--font-fredoka), ui-rounded, system-ui, sans-serif",
           }}
@@ -226,6 +226,7 @@ export function Highlight24() {
         <div className="mt-5 flex w-full max-w-xl flex-col items-center gap-4 sm:mt-6">
           <div className="flex w-full flex-wrap items-center justify-center gap-x-6 gap-y-3">
             <HomeStartCtaButton
+              compactSpacing
               onClick={onStartClick}
               onPointerDown={(event) => event.stopPropagation()}
             />
