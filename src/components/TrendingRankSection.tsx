@@ -11,6 +11,7 @@ import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { type FeedVideo } from "@/data/videos";
 import { liveStatsKeyFromFeedVideo } from "@/lib/externalEmbed/parseUrl";
 import { TrendingVideoStatsFooter } from "./TrendingVideoStatsFooter";
+import { homeSectionHeadingH2ClassName } from "@/lib/homeSectionHeadingTypography";
 import { VideoCard } from "./VideoCard";
 
 function SkeletonGrid() {
@@ -241,10 +242,7 @@ export function TrendingRankSection() {
       <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-24 lg:px-8">
         <div className="flex flex-col items-center gap-3 py-9 sm:py-10">
           <div className="min-w-0 text-center">
-            <h2
-              id="trending-rank-heading"
-              className="text-center text-[26px] font-extrabold leading-snug tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[30px] md:text-[32px]"
-            >
+            <h2 id="trending-rank-heading" className={homeSectionHeadingH2ClassName}>
               인기순위 <span className="font-bold">TOP</span> 30
             </h2>
             <p className="mt-2 text-center text-[16px] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">

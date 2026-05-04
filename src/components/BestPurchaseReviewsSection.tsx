@@ -3,6 +3,7 @@ import Link from "next/link";
 import { buildNotionistsAvatarUrl } from "@/data/reelsAvatarPresets";
 import { BEST_PURCHASE_REVIEWS } from "@/data/marketing";
 import { LOCAL_TRENDING_FEED_VIDEOS } from "@/data/videos";
+import { homeSectionHeadingH2ClassName } from "@/lib/homeSectionHeadingTypography";
 
 type ReviewDetailMeta = {
   videoTitle: string;
@@ -113,10 +114,7 @@ export function BestPurchaseReviewsSection() {
     >
       <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-28 sm:px-6 sm:pb-20 sm:pt-32 lg:px-8">
         <div className="relative">
-          <h2
-            id="best-reviews-heading"
-            className="text-center text-[28px] font-extrabold leading-snug tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[32px] md:text-[34px]"
-          >
+          <h2 id="best-reviews-heading" className={homeSectionHeadingH2ClassName}>
             구매 후기
           </h2>
           <p className="mx-auto mt-2 max-w-2xl text-center text-[16px] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">

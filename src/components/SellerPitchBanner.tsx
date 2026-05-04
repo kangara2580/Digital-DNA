@@ -16,6 +16,7 @@ import {
   authModalGlowBottom,
   authModalGlowTop,
 } from "@/lib/authModalTheme";
+import { homeSectionHeadingH2ClassName } from "@/lib/homeSectionHeadingTypography";
 
 type AuthModalProps = {
   authOpen: boolean;
@@ -302,11 +303,12 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
           <div className="relative mt-0 sm:mt-1">
             <div className="mx-auto mt-3 w-full max-w-[1120px] sm:mt-4">
               <div className="space-y-5 sm:space-y-6">
-                <p className="mb-6 text-center text-[clamp(1.9rem,4vw,2.9rem)] tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:mb-8">
-                  <span className="font-light">단 </span>
-                  <span className="font-bold">3</span>
-                  <span className="font-light">단계</span>
-                </p>
+                <h2
+                  id="seller-pitch-heading"
+                  className={`mb-6 sm:mb-8 ${homeSectionHeadingH2ClassName}`}
+                >
+                  단 <span className="font-bold">3</span>단계
+                </h2>
                 <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
                   {/* 사용자 카드 */}
                   <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
