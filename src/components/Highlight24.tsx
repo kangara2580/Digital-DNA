@@ -32,7 +32,7 @@ function HomeBestMarquee({ videos }: { videos: FeedVideo[] }) {
       className="relative w-full overflow-hidden py-4 sm:py-6"
       aria-label="베스트 릴스 미리보기"
     >
-      <div className="home-best-marquee-mask px-6 sm:px-10 md:px-16 lg:px-[4.5rem] xl:px-24">
+      <div className="home-best-marquee-mask pr-6 pl-2 sm:pr-10 sm:pl-3 md:pr-16 md:pl-[max(0px,env(safe-area-inset-left))] lg:pr-[4.5rem] xl:pr-24">
         <div className="home-best-marquee-track flex gap-1.5 sm:gap-2 md:gap-2.5">
           {loop.map((v, i) => (
             <HomeMarqueeVideoCard key={`${v.id}-${i}`} video={v} />
