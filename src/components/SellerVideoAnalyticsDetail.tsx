@@ -17,6 +17,7 @@ import type { SellerVideoDetailSnapshot } from "@/data/sellerAnalytics";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import {
   revenueAmountClass,
+  revenueTrendDeltaGlyphClass,
   revenueTrendDownClass,
   revenueTrendUpClass,
 } from "@/lib/revenueDisplayTokens";
@@ -189,9 +190,9 @@ export function SellerVideoAnalyticsDetail({ videoId, days, from, to }: Props) {
             직전 동일 길이 기간 대비{" "}
             <span className="inline-flex items-center gap-0.5">
               <span
-                className={
+                className={`${revenueTrendDeltaGlyphClass} ${
                   detail.revenueMomPercent >= 0 ? revenueTrendUpClass : revenueTrendDownClass
-                }
+                }`}
                 aria-hidden
               >
                 {detail.revenueMomPercent >= 0 ? "▲" : "▼"}

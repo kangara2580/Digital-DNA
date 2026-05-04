@@ -2,6 +2,7 @@ import { Eye, Heart, ShoppingBag, TrendingUp } from "lucide-react";
 import type { TrendingRankMetrics } from "@/data/trendingStats";
 import {
   revenueAmountClass,
+  revenueTrendDeltaGlyphClass,
   revenueTrendDownClass,
   revenueTrendUpClass,
 } from "@/lib/revenueDisplayTokens";
@@ -78,7 +79,7 @@ export function TrendingVideoStatsFooter({
               "수익"
             )}
             <span
-              className={`text-[11px] leading-none ${isUp ? revenueTrendUpClass : revenueTrendDownClass}`}
+              className={`${revenueTrendDeltaGlyphClass} text-[11px] leading-none ${isUp ? revenueTrendUpClass : revenueTrendDownClass}`}
               aria-hidden
             >
               {isUp ? "▲" : "▼"}

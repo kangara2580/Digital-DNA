@@ -12,3 +12,7 @@ export const revenueTrendUpClass =
 /** 수익 추세 하향(▼·화살표) — 연회색 */
 export const revenueTrendDownClass =
   "text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
+
+/** Unicode ▲▼ — 가로 폭 확대(삼각형이 좁아 보이지 않도록) */
+export const revenueTrendDeltaGlyphClass =
+  "inline-block origin-center scale-x-[1.55] motion-reduce:scale-x-100";

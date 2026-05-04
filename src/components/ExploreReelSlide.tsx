@@ -33,6 +33,7 @@ import { getExternalLiveStatsPageUrl } from "@/lib/externalEmbed/playerUrls";
 import { explorePurchaseButtonClass } from "@/lib/explorePurchaseButtonClass";
 import {
   revenueAmountClass,
+  revenueTrendDeltaGlyphClass,
   revenueTrendDownClass,
   revenueTrendUpClass,
 } from "@/lib/revenueDisplayTokens";
@@ -462,7 +463,7 @@ function ReelDesktopRail({
           icon={<TrendingUp strokeWidth={2.25} className="shrink-0" />}
           iconAdornment={
             <span
-              className={`flex h-[12px] min-w-[1rem] items-center justify-center text-[12px] font-semibold leading-none ${
+              className={`${revenueTrendDeltaGlyphClass} flex h-[12px] min-w-[1.15rem] items-center justify-center text-[12px] font-semibold leading-none ${
                 revenueUp ? revenueTrendUpClass : revenueTrendDownClass
               }`}
               aria-hidden
@@ -627,7 +628,7 @@ function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
         <p className="truncate text-[11px] font-bold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
           수익{" "}
           <span
-            className={`inline tabular-nums ${revenueUp ? revenueTrendUpClass : revenueTrendDownClass}`}
+            className={`${revenueTrendDeltaGlyphClass} inline tabular-nums ${revenueUp ? revenueTrendUpClass : revenueTrendDownClass}`}
             aria-hidden
           >
             {revenueUp ? "▲" : "▼"}
