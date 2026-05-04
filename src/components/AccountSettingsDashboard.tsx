@@ -248,10 +248,7 @@ export function AccountSettingsDashboard() {
               <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
                 {t("settings.language.heading")}
               </h2>
-              <p className="mt-2 max-w-xl text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                {t("settings.language.lead")}
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-8">
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-8">
                 <span className="shrink-0 text-[14px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
                   {t("settings.language.fieldLabel")}
                 </span>
