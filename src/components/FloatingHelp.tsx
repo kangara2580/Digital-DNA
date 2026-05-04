@@ -9,9 +9,16 @@ const SCROLL_TOP_THRESHOLD = 80;
 const scrollTopShell =
   "border border-white/15 bg-reels-void/90 text-zinc-100 shadow-[0_10px_36px_-16px_rgba(255,255,255,0.14)] backdrop-blur-xl";
 
+function getViewportScrollTop(): number {
+  if (typeof document === "undefined") return 0;
+  const root = document.scrollingElement ?? document.documentElement;
+  return root.scrollTop;
+}
+
 export function FloatingHelp() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const scrollRafRef = useRef(0);
+  const scrollTopAnimRafRef = useRef(0);
   const showMirrorRef = useRef(false);
 
   useEffect(() => {
@@ -21,12 +28,7 @@ export function FloatingHelp() {
   useEffect(() => {
     const apply = () => {
       scrollRafRef.current = 0;
-      const y =
-        window.scrollY ||
-        window.pageYOffset ||
-        document.documentElement.scrollTop ||
-        document.body.scrollTop ||
-        0;
+      const y = getViewportScrollTop();
       const next = y > SCROLL_TOP_THRESHOLD;
       if (next !== showMirrorRef.current) {
         showMirrorRef.current = next;
@@ -51,11 +53,50 @@ export function FloatingHelp() {
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (scrollTopAnimRafRef.current) {
+        cancelAnimationFrame(scrollTopAnimRafRef.current);
+        scrollTopAnimRafRef.current = 0;
+      }
+    };
+  }, []);
+
   const scrollToTop = useCallback(() => {
-    const reduce =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    if (typeof window === "undefined" || typeof document === "undefined") return;
+
+    if (scrollTopAnimRafRef.current) {
+      cancelAnimationFrame(scrollTopAnimRafRef.current);
+      scrollTopAnimRafRef.current = 0;
+    }
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const root = document.scrollingElement ?? document.documentElement;
+    const startY = root.scrollTop;
+    if (startY <= 0) return;
+
+    if (reduce) {
+      root.scrollTop = 0;
+      return;
+    }
+
+    const durationMs = 420;
+    let startTime: number | undefined;
+    const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
+
+    const tick = (now: number) => {
+      if (startTime === undefined) startTime = now;
+      const t = Math.min(1, (now - startTime) / durationMs);
+      root.scrollTop = startY * (1 - easeOutCubic(t));
+      if (t < 1) {
+        scrollTopAnimRafRef.current = requestAnimationFrame(tick);
+      } else {
+        root.scrollTop = 0;
+        scrollTopAnimRafRef.current = 0;
+      }
+    };
+
+    scrollTopAnimRafRef.current = requestAnimationFrame(tick);
   }, []);
 
   return (
