@@ -115,9 +115,9 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
   );
 
   const pixelWellCls =
-    pixelPreview.type === "pixel" && pixelPreview.palette === "mono"
-      ? "absolute inset-0 flex items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-black/10 [html[data-theme='dark']_&]:bg-zinc-900 [html[data-theme='dark']_&]:ring-white/15"
-      : "absolute inset-0 flex items-center justify-center overflow-hidden rounded-full bg-[#96B877]/28 [html[data-theme='light']_&]:bg-[#96B877]/38 [html[data-theme='dark']_&]:bg-[#96B877]/22";
+    pixelPreview.type === "pixel" && pixelPreview.palette === "stardust"
+      ? "absolute inset-0 flex items-center justify-center overflow-hidden rounded-full bg-[#e8ecf7] ring-1 ring-[#3d4558]/18 [html[data-theme='dark']_&]:bg-[#1a1f2e] [html[data-theme='dark']_&]:ring-white/12"
+      : "absolute inset-0 flex items-center justify-center overflow-hidden rounded-full bg-[#f3e8f0] ring-1 ring-[#4a3f55]/15 [html[data-theme='dark']_&]:bg-[#241c2a] [html[data-theme='dark']_&]:ring-white/10";
 
   const applyCustom = useCallback(
     (next: CharacterPartsV1) => {
@@ -193,6 +193,7 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
               <div className={pixelWellCls}>
                 <div className="h-[132%] w-[132%] min-h-[8rem] min-w-[8rem] shrink-0 sm:min-h-[9rem] sm:min-w-[9rem]">
                   <ProfileAvatarSprite
+                    entropy={pixelPreview.entropy}
                     palette={pixelPreview.palette}
                     variant={pixelPreview.variant}
                     alt=""
@@ -342,6 +343,7 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
             <div className={pixelWellCls}>
               <div className="h-[130%] w-[130%] min-h-[7.5rem] min-w-[7.5rem] shrink-0 sm:min-h-[8.75rem] sm:min-w-[8.75rem]">
                 <ProfileAvatarSprite
+                  entropy={pixelPreview.entropy}
                   palette={pixelPreview.palette}
                   variant={pixelPreview.variant}
                   alt=""

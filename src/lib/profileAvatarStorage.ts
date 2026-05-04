@@ -25,7 +25,7 @@ export type ProfileAvatar =
 
 export type ProfileAvatarPixelPreview =
   | { type: "upload"; src: string }
-  | { type: "pixel"; palette: PixelAvatarPalette; variant: number };
+  | { type: "pixel"; palette: PixelAvatarPalette; variant: number; entropy: string };
 
 export function getProfileAvatarPixelPreview(
   v: ProfileAvatar | null,
@@ -42,6 +42,7 @@ export function getProfileAvatarPixelPreview(
       type: "pixel",
       palette: paletteForSeed(seed),
       variant: variantIndexFromSeed(seed),
+      entropy: seed,
     };
   }
   if (v?.kind === "custom") {
@@ -50,12 +51,14 @@ export function getProfileAvatarPixelPreview(
       type: "pixel",
       palette: paletteForSeed(p.seed),
       variant: variantIndexFromParts(p),
+      entropy: `${p.seed}|${p.gender}|${p.hair}|${p.eyes}|${p.lips}|${p.faceShape}`,
     };
   }
   return {
     type: "pixel",
     palette: paletteForSeed(seedFallback),
     variant: variantIndexFromSeed(seedFallback),
+    entropy: seedFallback,
   };
 }
 
