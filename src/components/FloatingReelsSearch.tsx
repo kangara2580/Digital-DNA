@@ -42,10 +42,11 @@ export function FloatingReelsSearch() {
   if (isHome) return null;
 
   if (isExplore && exploreWatch) {
+    /* 우측 플로팅 캡슐(MallTopNav z-120, ~7rem+) + right-4/6 — pr로 확보, 검색은 좌측 정렬 */
     return (
       <div className="pointer-events-none fixed inset-x-0 top-0 z-[102] md:pl-[var(--reels-rail-w)]">
-        <div className="pointer-events-none flex justify-end pt-[max(0.65rem,env(safe-area-inset-top))] pr-[max(0.75rem,env(safe-area-inset-right))] sm:pt-[max(0.75rem,env(safe-area-inset-top))] sm:pr-5">
-          <div className="pointer-events-auto mr-[4.25rem] w-[min(15rem,calc(100vw-var(--reels-rail-w,0px)-8.5rem))] shrink-0 sm:mr-[5.25rem]">
+        <div className="pointer-events-none flex justify-start pt-[max(0.65rem,env(safe-area-inset-top))] pl-4 pr-[calc(10rem+env(safe-area-inset-right,0px))] sm:pt-[max(0.75rem,env(safe-area-inset-top))] sm:pl-6 sm:pr-[calc(11.25rem+env(safe-area-inset-right,0px))]">
+          <div className="pointer-events-auto w-full min-w-0 max-w-[18rem] sm:max-w-[20rem]">
             <ReelsSearchField compact q={q} setQ={setQ} />
           </div>
         </div>
