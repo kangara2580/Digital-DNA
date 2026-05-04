@@ -766,7 +766,6 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "faceProfile.aiPreviewLabel": "AI 보완 미리보기",
     "faceProfile.autoSaved": "변경 사항은 자동 저장됩니다.",
     "faceProfile.clearAll": "전체 등록 해제",
-    "faceProfile.emptyHint": "① 빠른 등록 또는 ② 원본 3장 중 편한 방법으로 시작해 주세요.",
     "faceProfile.singleLabelAria": "정면 사진 1장 선택",
     "avatar.alertTooLarge":
       "이미지 용량이 커서 저장할 수 없어요. 더 작은 사진을 선택해 주세요.",
@@ -1754,7 +1753,6 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "faceProfile.aiPreviewLabel": "AI preview",
     "faceProfile.autoSaved": "Changes save automatically.",
     "faceProfile.clearAll": "Clear all",
-    "faceProfile.emptyHint": "Start with ① (quick) or ② (most accurate)—whichever fits you.",
     "faceProfile.singleLabelAria": "Choose one front photo",
     "avatar.alertTooLarge": "Image is too large to save. Pick a smaller photo.",
     "avatar.alertLoadFail": "Couldn’t load the image. Try another file.",

@@ -570,11 +570,6 @@ export function FaceProfileUploadSection() {
           {t("settings.loading")}
         </p>
       ) : null}
-      {hydrated && nothingStarted ? (
-        <p className="mt-6 rounded-lg border border-dashed border-white/15 bg-white/[0.03] px-3 py-5 text-center text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-600">
-          {t("faceProfile.emptyHint")}
-        </p>
-      ) : null}
     </section>
   );
 }
