@@ -40,7 +40,7 @@ function HomeBestMarquee({ videos }: { videos: FeedVideo[] }) {
         className="pointer-events-none absolute inset-y-4 right-0 z-[1] w-12 bg-gradient-to-l from-[#070708] to-transparent sm:inset-y-6 sm:w-20 [html[data-theme='light']_&]:from-[var(--background)]"
         aria-hidden
       />
-      <div className="home-best-marquee-track flex gap-2 sm:gap-3 md:gap-4">
+      <div className="home-best-marquee-track flex gap-1 sm:gap-1.5 md:gap-2">
         {loop.map((v, i) => (
           <HomeMarqueeVideoCard key={`${v.id}-${i}`} video={v} />
         ))}
