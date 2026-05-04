@@ -212,6 +212,19 @@ function ExploreWatchReels({
     };
   }, [goNextReel, goPrevReel]);
 
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overflow;
+    const prevBody = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = prevHtml;
+      body.style.overflow = prevBody;
+    };
+  }, []);
+
   return (
     <>
       {/* 틱톡 스타일: 위·아래로 한 영상씩 이동 */}
