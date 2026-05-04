@@ -72,6 +72,8 @@ export function MallTopNav() {
   const isVideoDetailPage =
     pathname.startsWith("/video/") && !pathname.endsWith("/customize");
   const isCategoryPage = pathname.startsWith("/category/");
+  const isExplorePath =
+    pathname === "/explore" || pathname.startsWith("/explore/");
   /** 명예의 전당 · 마이페이지 트리: 상단 검은 헤더바 숨김, 계정·장바구니만 우측 상단 플로팅 */
   const isLeaderboardPath =
     pathname === "/leaderboard" || pathname.startsWith("/leaderboard/");
@@ -95,6 +97,7 @@ export function MallTopNav() {
     isCartPage ||
     isSellPage;
   const [mallSearchQ, setMallSearchQ] = useState("");
+  const [exploreSearchQ, setExploreSearchQ] = useState("");
   const [mounted, setMounted] = useState(false);
   const moreWrapRef = useRef<HTMLDivElement>(null);
   const menuPortalRef = useRef<HTMLDivElement>(null);
@@ -325,6 +328,28 @@ export function MallTopNav() {
   }
 
   if (showFloatingChromeOnlyNav) {
+    if (isExplorePath && isExploreWatchMode) {
+      return (
+        <Fragment>
+          <div className="pointer-events-none fixed inset-x-0 top-0 z-[120] md:pl-[var(--reels-rail-w)]">
+            <div className="pointer-events-none flex w-full items-center justify-end gap-2 px-4 pt-[max(0.65rem,env(safe-area-inset-top))] pr-[max(1rem,env(safe-area-inset-right))] sm:gap-2.5 sm:px-6 sm:pt-[max(0.75rem,env(safe-area-inset-top))] sm:pr-6">
+              {/** 폭은 ExploreReelSlide 우측 스탯 덱(`max-w-[min(15rem,38vw)]`)과 동일 시각 정렬 */}
+              <div className="pointer-events-auto w-[min(15rem,38vw)] min-w-0 shrink-0 sm:w-[min(17rem,34vw)]">
+                <ReelsSearchField
+                  compact
+                  q={exploreSearchQ}
+                  setQ={setExploreSearchQ}
+                />
+              </div>
+              <div className="pointer-events-auto shrink-0">
+                <MainTopUserMenu />
+              </div>
+            </div>
+          </div>
+          <FixedSubscribeNavLink />
+        </Fragment>
+      );
+    }
     return (
       <Fragment>
         <div className="pointer-events-none fixed right-4 top-4 z-[120] sm:right-6 sm:top-5">
@@ -420,6 +445,15 @@ export function MallTopNav() {
                 : "flex flex-col"
             }`}
           >
+            {isExplorePath && !isExploreWatchMode ? (
+              <div className="relative z-20 mt-0 min-w-0 flex-1 pr-1 sm:pr-2">
+                <ReelsSearchField
+                  compact
+                  q={exploreSearchQ}
+                  setQ={setExploreSearchQ}
+                />
+              </div>
+            ) : null}
             {showCategoryNav ? (
               showAllCategoriesInline ? (
                 <div className={`relative z-20 mt-0 flex min-w-0 flex-1 items-center gap-1.5 pr-1 ${easeNav}`}>
@@ -585,7 +619,7 @@ export function MallTopNav() {
 
           {compactEffective && (
             <div
-              className={`relative z-10 mr-1 flex shrink-0 items-center gap-1.5 sm:mr-2 sm:gap-2 lg:mr-2 ${easeLayout}`}
+              className={`relative z-10 mr-1 flex min-w-0 shrink-0 items-center gap-1.5 sm:mr-2 sm:gap-2 lg:mr-2 ${easeLayout}`}
             >
               <MainTopUserMenu />
               <div className="md:hidden">

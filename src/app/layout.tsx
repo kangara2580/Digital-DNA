@@ -14,7 +14,6 @@ import { GlobalLenis } from "@/components/GlobalLenis";
 import { NavigationRecovery } from "@/components/NavigationRecovery";
 import { DnaBuilderDock } from "@/components/DnaBuilderDock";
 import { FloatingHelp } from "@/components/FloatingHelp";
-import { FloatingReelsSearch } from "@/components/FloatingReelsSearch";
 import { MallTopNav } from "@/components/MallTopNav";
 import { RailHomeLogoSvgFilters } from "@/components/RailHomeLogoSvgFilters";
 import { ReelsLeftRail } from "@/components/ReelsLeftRail";
@@ -106,7 +105,6 @@ export default function RootLayout({
           <GlobalLenis />
           <ReelsLeftRail />
           <div className="min-w-0 md:pl-[var(--reels-rail-w)]">
-            <FloatingReelsSearch />
             <MallTopNav />
             {children}
             <ARAFooter />
