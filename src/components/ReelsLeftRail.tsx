@@ -12,14 +12,21 @@ const railNavIconClass = (href: string) =>
     ? "h-[38px] w-[38px]"
     : "h-[30px] w-[30px]";
 
+/** 아이콘+라벨 한 덩어리: 부모 Link에만 호버 시 반투명 네모 배경 */
+const railNavItemLink =
+  "group flex w-full max-w-full flex-col items-center gap-1 rounded-xl px-2 py-2 no-underline outline-none transition-[background-color,transform] duration-200 hover:bg-white/[0.08] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--reels-abyss)] [html[data-theme='light']_&]:hover:bg-zinc-100/85";
+
+const railNavItemLinkCurrent =
+  "bg-white/[0.05] hover:bg-white/[0.1] [html[data-theme='light']_&]:bg-zinc-100/55 [html[data-theme='light']_&]:hover:bg-zinc-100/90";
+
 const railIconBtn =
-  "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/[0.02] text-zinc-300 transition-[background-color,color,transform] duration-200 hover:bg-white/[0.09] hover:text-zinc-100 active:scale-[0.96] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
+  "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-transparent text-zinc-300 transition-[color,transform] duration-200 group-hover:text-zinc-100 group-active:scale-[0.96] motion-reduce:transition-none motion-reduce:group-active:scale-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:group-hover:text-black";
 
 const railIconActive =
-  "border-0 shadow-none bg-white/[0.02] !text-[color:var(--reels-point)] [&_svg]:!text-[color:var(--reels-point)] hover:bg-white/[0.08] hover:!text-[color:var(--reels-point)] hover:[&_svg]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:border-0 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:[&_svg]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:hover:[&_svg]:!text-[color:var(--reels-point)]";
+  "!text-[color:var(--reels-point)] [&_svg]:!text-[color:var(--reels-point)] group-hover:!text-[color:var(--reels-point)] group-hover:[&_svg]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:[&_svg]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:group-hover:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:group-hover:[&_svg]:!text-[color:var(--reels-point)]";
 
 const railItemLabelBase =
-  "max-w-[3.75rem] text-center text-[10px] font-medium leading-[1.2] tracking-tight [html[data-theme='light']_&]:text-zinc-700";
+  "max-w-[3.75rem] cursor-pointer text-center text-[10px] font-medium leading-[1.2] tracking-tight transition-colors duration-200 group-hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:group-hover:text-zinc-950";
 
 type RailItem = {
   href: string;
@@ -124,11 +131,13 @@ export function ReelsLeftRail() {
             {RAIL_ITEMS.map(({ href, label, Icon, isActive }) => {
               const on = isActive(pathname);
               return (
-                <div key={href} className="flex flex-col items-center gap-1">
-                  <Link
-                    href={href}
-                    aria-label={label}
-                    aria-current={on ? "page" : undefined}
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={on ? "page" : undefined}
+                  className={`${railNavItemLink} ${on ? railNavItemLinkCurrent : ""}`}
+                >
+                  <span
                     className={`${railIconBtn} ${on ? railIconActive : ""}`}
                   >
                     <Icon
@@ -136,17 +145,17 @@ export function ReelsLeftRail() {
                       strokeWidth={stroke}
                       aria-hidden
                     />
-                  </Link>
+                  </span>
                   <span
                     className={`${railItemLabelBase} ${
                       on
-                        ? "text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-[color:var(--reels-point)]"
+                        ? "text-[color:var(--reels-point)] group-hover:text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-[color:var(--reels-point)] [html[data-theme='light']_&]:group-hover:text-[color:var(--reels-point)]"
                         : "text-white/88"
                     }`}
                   >
                     {label}
                   </span>
-                </div>
+                </Link>
               );
             })}
           </nav>
@@ -182,11 +191,13 @@ export function ReelsLeftRail() {
           {RAIL_ITEMS.map(({ href, label, Icon, isActive }) => {
             const on = isActive(pathname);
             return (
-              <div key={href} className="flex flex-col items-center gap-1">
-                <Link
-                  href={href}
-                  aria-label={label}
-                  aria-current={on ? "page" : undefined}
+              <Link
+                key={href}
+                href={href}
+                aria-current={on ? "page" : undefined}
+                className={`${railNavItemLink} ${on ? railNavItemLinkCurrent : ""}`}
+              >
+                <span
                   className={`${railIconBtn} ${on ? railIconActive : ""}`}
                 >
                   <Icon
@@ -194,17 +205,17 @@ export function ReelsLeftRail() {
                     strokeWidth={stroke}
                     aria-hidden
                   />
-                </Link>
+                </span>
                 <span
                   className={`${railItemLabelBase} ${
                     on
-                      ? "text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-[color:var(--reels-point)]"
+                      ? "text-[color:var(--reels-point)] group-hover:text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-[color:var(--reels-point)] [html[data-theme='light']_&]:group-hover:text-[color:var(--reels-point)]"
                       : "text-white/88"
                   }`}
                 >
                   {label}
                 </span>
-              </div>
+              </Link>
             );
           })}
         </nav>
