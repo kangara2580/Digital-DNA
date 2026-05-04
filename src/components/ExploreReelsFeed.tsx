@@ -267,25 +267,28 @@ function ExploreWatchReels({
 
       <div
         ref={scrollRef}
-        className="explore-reels-feed no-scrollbar fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[30] overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth snap-y snap-mandatory md:left-[var(--reels-rail-w)]"
+        className="explore-reels-feed no-scrollbar fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[30] overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth snap-y snap-mandatory"
         style={{ WebkitOverflowScrolling: "touch" }}
         role="feed"
         aria-label="세로 탐색 릴스 피드 — 아래로 스크롤해 계속 보기"
       >
-        {slides.map((video, i) => (
-          <ExploreReelSlide
-            key={`${video.id}-${watchOffset}-${i}`}
-            video={video}
-            scrollRootRef={scrollRef}
-            muted={reelMuted}
-            onMutedChange={setReelMuted}
+        {/* 스크롤 트랙은 뷰포트 전폭(스크롤바가 화면 맨 오른쪽), 콘텐츠만 레일 폭만큼 들여 레이아웃은 기존과 동일 */}
+        <div className="md:pl-[var(--reels-rail-w)]">
+          {slides.map((video, i) => (
+            <ExploreReelSlide
+              key={`${video.id}-${watchOffset}-${i}`}
+              video={video}
+              scrollRootRef={scrollRef}
+              muted={reelMuted}
+              onMutedChange={setReelMuted}
+            />
+          ))}
+          <div
+            ref={sentinelRef}
+            className="h-px w-full shrink-0 snap-none"
+            aria-hidden
           />
-        ))}
-        <div
-          ref={sentinelRef}
-          className="h-px w-full shrink-0 snap-none"
-          aria-hidden
-        />
+        </div>
       </div>
     </>
   );
