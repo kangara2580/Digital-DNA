@@ -1,9 +1,11 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 import { parseSocialReelsUrl } from "@/lib/socialReelsUrl";
 
 export function ReelsLinkUploader() {
+  const { t } = useTranslation();
   const [url, setUrl] = useState("");
   /** 서버 전송 시 JSON 키 `is_ai_generated`로 매핑 */
   const [isAiGenerated, setIsAiGenerated] = useState(false);
@@ -22,7 +24,7 @@ export function ReelsLinkUploader() {
       if (!trimmed) {
         setSubmitMessage({
           kind: "err",
-          text: "URL을 입력한 뒤 등록해 주세요.",
+          text: t("upload.link.errEmpty"),
         });
         return;
       }
@@ -46,38 +48,36 @@ export function ReelsLinkUploader() {
         if (!res.ok) {
           setSubmitMessage({
             kind: "err",
-            text: data.message ?? "등록에 실패했습니다.",
+            text: data.message ?? t("upload.link.errFail"),
           });
           return;
         }
         setSubmitMessage({
           kind: "ok",
-          text: isAiGenerated
-            ? "등록되었습니다. AI 생성물로 표시됩니다."
-            : "등록되었습니다.",
+          text: isAiGenerated ? t("upload.link.okAi") : t("upload.link.ok"),
         });
       } catch {
         setSubmitMessage({
           kind: "err",
-          text: "네트워크 오류로 등록하지 못했습니다.",
+          text: t("upload.link.errNetwork"),
         });
       } finally {
         setIsSubmitting(false);
       }
     },
-    [url, isAiGenerated],
+    [url, isAiGenerated, t],
   );
 
   return (
     <div className="reels-border-gradient rounded-2xl p-5 sm:p-7">
       <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-reels-cyan">
-        Seller · Reels URL
+        {t("upload.link.kicker")}
       </p>
       <h1 className="mt-1 text-xl font-extrabold tracking-tight text-zinc-100 sm:text-2xl">
-        동영상 링크 등록
+        {t("upload.link.title")}
       </h1>
       <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-zinc-500">
-        TikTok·Instagram·YouTube(숏츠 포함) URL을 붙여 넣으면 아래에서 미리 재생할 수 있어요.
+        {t("upload.link.lead")}
       </p>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-5">
@@ -87,7 +87,7 @@ export function ReelsLinkUploader() {
               id="ai-generated-label"
               className="text-[14px] font-medium leading-snug text-zinc-200"
             >
-              이 영상은 AI 기술로 제작되었나요?
+              {t("upload.link.aiQuestion")}
             </p>
             <button
               type="button"
@@ -105,7 +105,7 @@ export function ReelsLinkUploader() {
               }`}
             >
               <span className="sr-only">
-                {isAiGenerated ? "예, AI 제작" : "아니오"}
+                {isAiGenerated ? t("upload.link.aiSrOn") : t("upload.link.aiSrOff")}
               </span>
               <span
                 aria-hidden
@@ -117,13 +117,13 @@ export function ReelsLinkUploader() {
           </div>
           {isAiGenerated ? (
             <p className="mt-2.5 text-[12px] leading-relaxed text-reels-cyan/90">
-              AI 생성물로 명시됩니다
+              {t("upload.link.aiNote")}
             </p>
           ) : null}
         </div>
 
         <label htmlFor="reels-url" className="sr-only">
-          동영상 URL
+          {t("upload.link.urlSr")}
         </label>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
           <input
@@ -135,7 +135,7 @@ export function ReelsLinkUploader() {
               setUrl(e.target.value);
               setSubmitMessage(null);
             }}
-            placeholder="tiktok.com/…/video/… · instagram.com/reel/… · youtube.com/shorts/…"
+            placeholder={t("upload.link.placeholder")}
             className="min-w-0 flex-1 rounded-xl border border-white/12 bg-black/35 px-4 py-3 text-[14px] text-zinc-100 placeholder:text-zinc-600 focus:border-reels-cyan/45 focus:outline-none focus:ring-1 focus:ring-reels-cyan/35"
             autoComplete="url"
           />
@@ -144,7 +144,7 @@ export function ReelsLinkUploader() {
             disabled={isSubmitting}
             className="shrink-0 rounded-xl bg-reels-crimson px-6 py-3 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? "등록 중…" : "등록하기"}
+            {isSubmitting ? t("upload.link.submitting") : t("upload.link.submit")}
           </button>
         </div>
         {submitMessage ? (
@@ -163,33 +163,27 @@ export function ReelsLinkUploader() {
 
       <div className="mt-8">
         <p className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-          미리보기
+          {t("upload.link.preview")}
         </p>
         {!parsed ? (
           <div className="rounded-xl border border-dashed border-white/15 bg-black/25 px-4 py-12 text-center text-[13px] text-zinc-500">
-            링크를 입력하면 TikTok·Instagram·YouTube는 임베드로 재생됩니다.
+            {t("upload.link.previewEmpty")}
           </div>
         ) : parsed.platform === "unknown" || parsed.platform === "twitter" ? (
           <div className="rounded-xl border border-amber-500/25 bg-amber-500/5 px-4 py-6 text-[13px] leading-relaxed text-zinc-300">
             <p className="font-semibold text-amber-200/95">
               {parsed.platform === "twitter"
-                ? "X(Twitter) 링크는 미리보기 임베드를 지원하지 않아요"
-                : "지원 형식을 확인하지 못했어요"}
+                ? t("upload.link.unsupportedTwitter")
+                : t("upload.link.unsupportedUnknown")}
             </p>
-            <p className="mt-2 text-zinc-400">
-              TikTok <code className="rounded bg-black/40 px-1 text-[12px]">…/video/숫자</code>,
-              Instagram{" "}
-              <code className="rounded bg-black/40 px-1 text-[12px]">/reel/코드</code>, YouTube{" "}
-              <code className="rounded bg-black/40 px-1 text-[12px]">/shorts/…</code> 또는{" "}
-              <code className="rounded bg-black/40 px-1 text-[12px]">?v=</code> 형식을 사용해 주세요.
-            </p>
+            <p className="mt-2 text-zinc-400">{t("upload.link.unsupportedHint")}</p>
             <a
               href={parsed.href.startsWith("http") ? parsed.href : `https://${parsed.href}`}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-4 inline-flex text-reels-cyan hover:underline"
             >
-              새 탭에서 링크 열기
+              {t("upload.link.openNewTab")}
             </a>
           </div>
         ) : (
@@ -202,7 +196,7 @@ export function ReelsLinkUploader() {
               }
             >
               <iframe
-                title="동영상 미리보기"
+                title={t("upload.link.iframeTitle")}
                 src={parsed.embedUrl}
                 className="h-full w-full border-0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -211,10 +205,10 @@ export function ReelsLinkUploader() {
             </div>
             <p className="border-t border-white/10 px-3 py-2 font-mono text-[10px] text-zinc-500">
               {parsed.platform === "tiktok"
-                ? `TikTok · video ${parsed.videoId}`
+                ? t("upload.link.footerTiktok", { id: String(parsed.videoId ?? "") })
                 : parsed.platform === "youtube"
-                  ? `YouTube · ${parsed.videoId}`
-                  : `Instagram · reel ${parsed.shortcode}`}
+                  ? t("upload.link.footerYoutube", { id: String(parsed.videoId ?? "") })
+                  : t("upload.link.footerInstagram", { code: String(parsed.shortcode ?? "") })}
             </p>
           </div>
         )}
