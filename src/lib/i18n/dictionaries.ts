@@ -656,6 +656,8 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "drafts.loginHint":
       "로그인하면 클라우드에 저장된 임시 편집을 이 기기에서도 이어서 열 수 있어요.",
     "drafts.empty": "아직 임시 저장한 항목이 없어요.",
+    "drafts.noPoster": "포스터 없음",
+    "drafts.keywordLead": "· 키워드:",
     "drafts.videoFallback": "동영상 {id}",
     "drafts.savedAt": "{when} 저장",
     "drafts.unknownCatalog":
@@ -794,6 +796,7 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "analytics.demo.retention.loop": "완주·반복",
     "analytics.suffixWon": "원",
     "analytics.suffixCount": "건",
+    "studioSection.heading": "내 스튜디오",
     "studioSection.lead":
       "AI로 얼굴·배경을 적용해 만든 영상 기록입니다. 계정에 저장되며 기기를 바꿔도 같은 기록을 볼 수 있어요.",
     "studioSection.findVideo": "새 동영상 찾기",
@@ -1467,6 +1470,8 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "drafts.loginHint":
       "Sign in to open cloud-saved drafts on this device.",
     "drafts.empty": "No drafts yet.",
+    "drafts.noPoster": "No poster",
+    "drafts.keywordLead": "· keyword:",
     "drafts.videoFallback": "Video {id}",
     "drafts.savedAt": "Saved {when}",
     "drafts.unknownCatalog": "Not in catalog — body restores only",
@@ -1601,6 +1606,7 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "analytics.demo.retention.loop": "Finish / repeat",
     "analytics.suffixWon": " KRW",
     "analytics.suffixCount": "",
+    "studioSection.heading": "My Studio",
     "studioSection.lead":
       "AI face/background videos saved to your account. Available on any device when you’re signed in.",
     "studioSection.findVideo": "Find a video",

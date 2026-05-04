@@ -6,12 +6,15 @@ import { useStudioHistory } from "@/context/StudioHistoryContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { getMarketVideoById } from "@/data/videoCommerce";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { SiteLocale } from "@/lib/sitePreferences";
 
-function formatWhen(iso: string): string {
+function formatWhen(iso: string, locale: SiteLocale): string {
   try {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return "—";
-    return new Intl.DateTimeFormat("ko-KR", {
+    const locTag = locale === "en" ? "en-US" : "ko-KR";
+    return new Intl.DateTimeFormat(locTag, {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -26,6 +29,7 @@ function formatWhen(iso: string): string {
 export function MyPageStudioSection() {
   const { items, hydrated } = useStudioHistory();
   const { user } = useAuthSession();
+  const { t, locale } = useTranslation();
 
   return (
     <section
@@ -40,10 +44,10 @@ export function MyPageStudioSection() {
               id="my-studio-heading"
               className="text-[15px] font-extrabold tracking-tight [html[data-theme='light']_&]:text-zinc-900"
             >
-              My Studio
+              {t("studioSection.heading")}
             </h2>
             <p className="mt-0.5 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-              AI로 얼굴·배경을 적용해 만든 영상 기록입니다. 계정에 저장되며 기기를 바꿔도 같은 기록을 볼 수 있어요.
+              {t("studioSection.lead")}
             </p>
           </div>
         </div>
@@ -51,25 +55,23 @@ export function MyPageStudioSection() {
           href="/explore"
           className="text-[12px] font-semibold text-reels-cyan/90 hover:underline"
         >
-          새 동영상 찾기
+          {t("studioSection.findVideo")}
         </Link>
       </div>
 
       {!hydrated && user ? (
         <p className="mt-6 rounded-xl border border-white/10 bg-black/20 px-4 py-10 text-center text-[13px] text-zinc-500 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-600">
-          기록을 불러오는 중…
+          {t("studioSection.loading")}
         </p>
       ) : items.length === 0 ? (
         <p className="mt-6 rounded-xl border border-dashed border-white/15 bg-black/20 px-4 py-10 text-center text-[13px] text-zinc-500 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-600">
-          {user
-            ? "아직 저장된 스튜디오 결과가 없어요. 창작 스튜디오에서 생성이 완료되면 여기에 쌓입니다."
-            : "로그인하면 생성 완료된 영상 기록이 계정에 쌓입니다."}
+          {user ? t("studioSection.emptyAuthed") : t("studioSection.emptyGuest")}
         </p>
       ) : (
         <ul className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {items.map((row) => {
             const video = getMarketVideoById(row.videoId);
-            const title = video?.title ?? `동영상 ${row.videoId}`;
+            const title = video?.title ?? t("studioSection.videoFallback", { id: row.videoId });
             const poster = video ? sanitizePosterSrc(video.poster) : "";
 
             return (
@@ -87,11 +89,11 @@ export function MyPageStudioSection() {
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center text-[11px] text-zinc-500">
-                      썸네일 없음
+                      {t("studioSection.noThumb")}
                     </div>
                   )}
                   <span className="absolute left-2 top-2 rounded-md bg-black/65 px-2 py-0.5 text-[10px] font-semibold text-zinc-200 backdrop-blur-sm">
-                    {formatWhen(row.createdAtIso)}
+                    {formatWhen(row.createdAtIso, locale)}
                   </span>
                 </div>
                 <div className="flex flex-1 flex-col gap-2 p-3">
@@ -100,7 +102,7 @@ export function MyPageStudioSection() {
                   </p>
                   {row.normalizedBackgroundPrompt ? (
                     <p className="line-clamp-2 text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                      배경: {row.normalizedBackgroundPrompt}
+                      {t("studioSection.background")} {row.normalizedBackgroundPrompt}
                     </p>
                   ) : null}
                   <div className="mt-auto flex flex-wrap gap-2 pt-1">
@@ -112,21 +114,21 @@ export function MyPageStudioSection() {
                       className="inline-flex flex-1 min-w-[8rem] items-center justify-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2 text-[12px] font-bold text-zinc-200 transition hover:border-reels-cyan/40 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
                     >
                       <Download className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                      다시 다운로드
+                      {t("studioSection.downloadAgain")}
                     </a>
                     <Link
                       href={`/video/${row.videoId}/customize`}
                       className="inline-flex flex-1 min-w-[8rem] items-center justify-center gap-1.5 rounded-lg border border-reels-cyan/35 bg-reels-cyan/12 px-3 py-2 text-[12px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20"
                     >
                       <Pencil className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                      다른 배경으로 재편집
+                      {t("studioSection.reedit")}
                     </Link>
                   </div>
                   <Link
                     href={`/generation/result/${encodeURIComponent(row.jobId)}`}
                     className="text-center text-[11px] font-medium text-zinc-500 hover:text-reels-cyan [html[data-theme='light']_&]:text-zinc-600"
                   >
-                    생성 결과 페이지 열기
+                    {t("studioSection.openResult")}
                   </Link>
                 </div>
               </li>

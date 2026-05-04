@@ -13,8 +13,10 @@ import {
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { MYPAGE_OUTLINE_BTN_MD, MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 import type { FeedVideo } from "@/data/videos";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export function MyPageMyListingsSection() {
+  const { t } = useTranslation();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const [videos, setVideos] = useState<FeedVideo[]>([]);
   const [editing, setEditing] = useState<FeedVideo | null>(null);
@@ -62,14 +64,14 @@ export function MyPageMyListingsSection() {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
       setLoading(false);
-      setError("Supabase 클라이언트를 초기화할 수 없습니다.");
+      setError(t("listings.errClient"));
       return;
     }
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData.session?.access_token;
     if (!token) {
       setLoading(false);
-      setError("세션이 없습니다. 다시 로그인해 주세요.");
+      setError(t("listings.errNoSession"));
       return;
     }
 
@@ -88,21 +90,21 @@ export function MyPageMyListingsSection() {
         setVideos([]);
         setError(
           body.error === "login_required"
-            ? "로그인이 필요합니다."
+            ? t("listings.errLoginRequired")
             : body.error === "invalid_session"
-              ? "세션이 만료되었습니다. 다시 로그인해 주세요."
-              : "목록을 불러오지 못했습니다.",
+              ? t("listings.errSessionExpired")
+              : t("listings.errLoadFailed"),
         );
         return;
       }
       setVideos(body.videos);
     } catch {
       setVideos([]);
-      setError("네트워크 오류가 발생했습니다.");
+      setError(t("listings.errNetwork"));
     } finally {
       setLoading(false);
     }
-  }, [user, supabaseConfigured]);
+  }, [user, supabaseConfigured, t]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -166,7 +168,7 @@ export function MyPageMyListingsSection() {
       if (ids.length === 0) return;
       const token = await getToken();
       if (!token) {
-        setError("세션이 없습니다. 다시 로그인해 주세요.");
+        setError(t("listings.errNoSession"));
         return;
       }
       setDeleteBusy(true);
@@ -198,17 +200,17 @@ export function MyPageMyListingsSection() {
         if (failed.length) {
           setError(
             failed.length === ids.length
-              ? "삭제하지 못했습니다. 다시 시도해 주세요."
-              : `${removed.length}개 삭제됨 · ${failed.length}개 실패`,
+              ? t("listings.deleteFail")
+              : t("listings.deletePartial", { ok: removed.length, fail: failed.length }),
           );
         }
       } catch {
-        setError("네트워크 오류가 발생했습니다.");
+        setError(t("listings.errNetwork"));
       } finally {
         setDeleteBusy(false);
       }
     },
-    [getToken, removeFromSelection],
+    [getToken, removeFromSelection, t],
   );
 
   const confirmDeleteSelected = useCallback(() => {
@@ -216,19 +218,19 @@ export function MyPageMyListingsSection() {
     const n = selectedIds.length;
     if (
       !window.confirm(
-        `선택한 영상 ${n}개를 삭제할까요?\n삭제 후에는 복구할 수 없습니다.`,
+        t("listings.deleteConfirm", { n }),
       )
     ) {
       return;
     }
     void deleteByIds([...selectedIds]);
-  }, [deleteBusy, selectedIds, deleteByIds]);
+  }, [deleteBusy, selectedIds, deleteByIds, t]);
 
   if (authLoading) {
     return (
       <div className="flex items-center gap-2 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
         <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-        <span>계정 확인 중…</span>
+        <span>{t("listings.checkingAccount")}</span>
       </div>
     );
   }
@@ -237,13 +239,13 @@ export function MyPageMyListingsSection() {
     return (
       <div className="rounded-2xl border border-white/10 bg-black/20 p-8 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
         <p className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          로그인하면 여기에서 판매로 등록한 영상을 모아 볼 수 있어요.
+          {t("listings.loginGate")}
         </p>
         <Link
           href="/login?redirect=%2Fmypage%3Ftab%3Dlistings"
           className={`mt-4 inline-flex ${MYPAGE_OUTLINE_BTN_SM}`}
         >
-          로그인
+          {t("listings.loginCta")}
         </Link>
       </div>
     );
@@ -253,20 +255,21 @@ export function MyPageMyListingsSection() {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-16 text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
         <Loader2 className="h-8 w-8 animate-spin text-[color:var(--reels-point)]" aria-hidden />
-        <p className="text-[14px]">등록한 영상을 불러오는 중…</p>
+        <p className="text-[14px]">{t("listings.loading")}</p>
       </div>
     );
   }
 
   if (error && videos.length === 0) {
     return (
-      <div className="rounded-2xl border border-reels-crimson/38 bg-reels-crimson/12 px-3 py-4 text-[14px] text-[#F3C4D9] [html[data-theme='light']_&]:text-zinc-900">        {error}
+      <div className="rounded-2xl border border-reels-crimson/38 bg-reels-crimson/12 px-3 py-4 text-[14px] text-[#F3C4D9] [html[data-theme='light']_&]:text-zinc-900">
+        {error}
         <button
           type="button"
           onClick={() => void load()}
           className="ml-3 font-semibold text-reels-cyan underline underline-offset-2 hover:text-reels-cyan/90"
         >
-          다시 시도
+          {t("listings.retry")}
         </button>
       </div>
     );
@@ -277,13 +280,13 @@ export function MyPageMyListingsSection() {
       <div className="rounded-2xl border border-dashed border-white/15 bg-black/20 px-6 py-14 text-center [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-50">
         <Film className="mx-auto h-10 w-10 text-zinc-500 [html[data-theme='light']_&]:text-zinc-400" aria-hidden />
         <p className="mt-4 text-[15px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">
-          아직 등록한 영상이 없어요
+          {t("listings.empty")}
         </p>
         <Link
           href="/sell"
           className={`mt-6 inline-flex ${MYPAGE_OUTLINE_BTN_MD}`}
         >
-          판매 등록하기
+          {t("listings.sellCta")}
         </Link>
       </div>
     );
@@ -299,14 +302,10 @@ export function MyPageMyListingsSection() {
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <p className="text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          총{" "}
-          <strong className="text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
-            {visibleVideos.length}
-          </strong>
-          개
+          {t("listings.totalCountVisible", { n: visibleVideos.length })}
           {activeCategory !== "all" ? (
             <span className="ml-1 text-[12px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-              (전체 {videos.length}개)
+              {t("listings.totalWithFilter", { all: videos.length })}
             </span>
           ) : null}
         </p>
@@ -314,7 +313,7 @@ export function MyPageMyListingsSection() {
           href="/sell"
           className="text-[12px] font-semibold text-reels-cyan hover:underline"
         >
-          새로 등록하기 →
+          {t("listings.newListing")}
         </Link>
       </div>
 
@@ -328,7 +327,7 @@ export function MyPageMyListingsSection() {
               : "border-white/15 bg-black/25 text-zinc-400 hover:border-white/25 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
           }`}
         >
-          전체 ({videos.length})
+          {t("listings.selectAllTab", { n: videos.length })}
         </button>
         {SELL_VIDEO_CATEGORY_OPTIONS.filter(
           (item) => (categoryCounts.get(item.value) ?? 0) > 0,
@@ -345,7 +344,7 @@ export function MyPageMyListingsSection() {
                   : "border-white/15 bg-black/25 text-zinc-400 hover:border-white/25 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
               }`}
             >
-              {item.label} ({count})
+              {t(`nav.cat.${item.value}`)} ({count})
             </button>
           );
         })}
@@ -360,9 +359,9 @@ export function MyPageMyListingsSection() {
             onChange={toggleSelectAll}
             disabled={deleteBusy || videos.length === 0}
             className="h-4 w-4 rounded border-white/30 bg-black/40 text-reels-cyan focus:ring-reels-cyan/40 [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-white"
-            aria-label="전체 선택"
+            aria-label={t("listings.selectAllAria")}
           />
-          전체 선택
+          {t("listings.selectAllAria")}
         </label>
         <span className="hidden h-4 w-px bg-white/15 sm:block [html[data-theme='light']_&]:bg-zinc-300" aria-hidden />
         <button
@@ -375,16 +374,16 @@ export function MyPageMyListingsSection() {
           ) : (
             <Trash2 className="h-3.5 w-3.5" aria-hidden />
           )}
-          삭제
+          {t("listings.delete")}
           {selectedIds.length > 0 ? ` (${selectedIds.length})` : ""}
         </button>
         {selectedIds.length > 0 ? (
           <span className="text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            {selectedIds.length}개 선택됨
+            {t("listings.selectedCount", { n: selectedIds.length })}
           </span>
         ) : (
           <span className="text-[12px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-            카드 왼쪽 체크로 고른 뒤 삭제할 수 있어요.
+            {t("listings.selectHint")}
           </span>
         )}
       </div>
@@ -401,7 +400,7 @@ export function MyPageMyListingsSection() {
                   onChange={() => toggleSelect(v.id)}
                   disabled={deleteBusy}
                   className="h-3.5 w-3.5 rounded border-white/35 text-reels-cyan focus:ring-reels-cyan/40 [html[data-theme='light']_&]:border-zinc-400"
-                  aria-label={`${v.title} 선택`}
+                  aria-label={t("listings.selectVideoAria", { title: v.title })}
                 />
               </label>
               <VideoCard video={v} className="min-w-0" hideHoverActions />
@@ -412,7 +411,7 @@ export function MyPageMyListingsSection() {
                   disabled={deleteBusy}
                   className="rounded-lg border border-white/20 bg-black/60 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-md backdrop-blur-sm transition hover:bg-black/75 sm:px-2.5 sm:py-1.5 sm:text-[11px]"
                 >
-                  편집
+                  {t("listings.edit")}
                 </button>
               </div>
             </li>
