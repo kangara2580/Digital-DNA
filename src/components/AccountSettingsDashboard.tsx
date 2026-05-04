@@ -25,7 +25,7 @@ type SettingsTab = "basic" | "profile";
 
 const SETTINGS_TAB_ITEMS: { id: SettingsTab; label: string; href: string }[] = [
   { id: "basic", label: "기본정보", href: "/settings" },
-  { id: "profile", label: "프로필 관리", href: "/settings?tab=profile" },
+  { id: "profile", label: "AI 프로필 설정", href: "/settings?tab=profile" },
 ];
 
 function LoginRequiredPanel({ tab }: { tab: { id: SettingsTab; label: string; href: string } }) {
@@ -319,7 +319,7 @@ export function AccountSettingsDashboard() {
                       <p className="text-[11px] leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500">
                         등록은{" "}
                         <Link href="/settings?tab=profile" className="font-semibold text-[#E42980] underline-offset-2 hover:underline">
-                          프로필 관리
+                          AI 프로필 설정
                         </Link>
                         에서 변경할 수 있어요.
                       </p>

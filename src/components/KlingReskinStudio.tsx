@@ -8,7 +8,7 @@ import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 type Props = {
   video: FeedVideo;
-  /** 창작 탭 전용: 설정(프로필 관리) 선택 등 추가 단계 */
+  /** 창작 탭 전용: 설정(AI 프로필 설정) 선택 등 추가 단계 */
   creationFlow?: boolean;
 };
 
@@ -107,12 +107,12 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
           {creationFlow ? (
             <div className="reels-glass-card rounded-xl p-4">
               <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                ① 설정 — 프로필 관리
+                ① 설정 — AI 프로필 설정
               </p>
               <p className="mt-1 text-[12px] text-zinc-400">
                 창작에 쓸 얼굴입니다.{" "}
                 <a href="/settings?tab=profile" className="text-reels-cyan/90 underline-offset-2 hover:underline">
-                  설정 › 프로필 관리
+                  설정 › AI 프로필 설정
                 </a>
                 에서 등록하는 이미지와 동일한 데모 세트입니다.
               </p>
