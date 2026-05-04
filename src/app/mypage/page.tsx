@@ -14,7 +14,7 @@ export default async function MyPage({
   const sp = await searchParams;
   const raw = sp.tab;
   const tab = Array.isArray(raw) ? raw[0] : raw;
-  if (tab === "basic" || tab === "profile") {
+  if (tab === "basic" || tab === "profile" || tab === "edit") {
     redirect(`/settings?tab=${encodeURIComponent(tab)}`);
   }
 

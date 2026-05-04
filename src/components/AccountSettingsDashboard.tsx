@@ -21,10 +21,11 @@ import {
 } from "@/lib/supabaseProfiles";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
-type SettingsTab = "basic" | "profile";
+type SettingsTab = "basic" | "edit" | "profile";
 
 const SETTINGS_TAB_ITEMS: { id: SettingsTab; label: string; href: string }[] = [
   { id: "basic", label: "기본정보", href: "/settings" },
+  { id: "edit", label: "프로필 편집", href: "/settings?tab=edit" },
   { id: "profile", label: "AI 프로필 설정", href: "/settings?tab=profile" },
 ];
 
@@ -53,6 +54,7 @@ function LoginRequiredPanel({ tab }: { tab: { id: SettingsTab; label: string; hr
 
 function normalizeSettingsTab(input: string | null): SettingsTab {
   if (input === "profile") return "profile";
+  if (input === "edit") return "edit";
   return "basic";
 }
 
@@ -259,73 +261,81 @@ export function AccountSettingsDashboard() {
 
               <div className="mt-10 border-t border-white/10 pt-10 [html[data-theme='light']_&]:border-zinc-100">
                 <h3 className="text-[15px] font-semibold text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                  프로필 이미지
+                  계정 요약
                 </h3>
-                <div className="mt-6 grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
-                  <div className="h-full">
-                    <ProfileAvatarPicker
-                      density="comfortable"
-                      value={profileAvatar}
-                      onChange={persistProfileAvatar}
-                      hint={
-                        user
-                          ? "변경 내용은 계정에 저장됩니다."
-                          : "로그인 후 프로필 이미지를 계정에 연결할 수 있습니다."
-                      }
-                    />
+                <div className="mt-6 grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2">
+                  <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/60">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
+                      아이디
+                    </p>
+                    <p className="mt-2 break-all text-[16px] font-semibold leading-snug text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+                      {displayId}
+                    </p>
+                    <p className="mt-1 text-[12px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-500">
+                      {user?.email ? `이메일: ${user.email}` : "닉네임/이메일 연동 전 기본 계정입니다."}
+                    </p>
                   </div>
-
-                  <div className="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2">
-                    <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/60">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
-                        아이디
-                      </p>
-                      <p className="mt-2 break-all text-[16px] font-semibold leading-snug text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                        {displayId}
-                      </p>
-                      <p className="mt-1 text-[12px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-500">
-                        {user?.email ? `이메일: ${user.email}` : "닉네임/이메일 연동 전 기본 계정입니다."}
-                      </p>
-                    </div>
-                    <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/60">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
-                        계정 상태
-                      </p>
-                      <p className="mt-2 text-[16px] font-semibold text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                        정상
-                      </p>
-                      <p className="mt-1 text-[12px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-500">
-                        {accountSummary}
-                      </p>
-                    </div>
-                    <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/60">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
-                        임시 저장
-                      </p>
-                      <p className="mt-1 text-[22px] font-semibold tabular-nums text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                        {draftCount}
-                      </p>
-                      <p className="text-[11px] leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500">
-                        저장된 편집 항목 · 열어보려면 마이페이지 임시 저장 탭 이용
-                      </p>
-                    </div>
-                    <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/60">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
-                        프로필 얼굴
-                      </p>
-                      <p className="mt-1 break-words text-[15px] font-semibold text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                        {profileLabel}
-                      </p>
-                      <p className="text-[11px] leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500">
-                        등록은{" "}
-                        <Link href="/settings?tab=profile" className="font-semibold text-[#E42980] underline-offset-2 hover:underline">
-                          AI 프로필 설정
-                        </Link>
-                        에서 변경할 수 있어요.
-                      </p>
-                    </div>
+                  <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/60">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
+                      계정 상태
+                    </p>
+                    <p className="mt-2 text-[16px] font-semibold text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+                      정상
+                    </p>
+                    <p className="mt-1 text-[12px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-500">
+                      {accountSummary}
+                    </p>
+                  </div>
+                  <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/60">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
+                      임시 저장
+                    </p>
+                    <p className="mt-1 text-[22px] font-semibold tabular-nums text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+                      {draftCount}
+                    </p>
+                    <p className="text-[11px] leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500">
+                      저장된 편집 항목 · 열어보려면 마이페이지 임시 저장 탭 이용
+                    </p>
+                  </div>
+                  <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/60">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
+                      프로필 얼굴
+                    </p>
+                    <p className="mt-1 break-words text-[15px] font-semibold text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+                      {profileLabel}
+                    </p>
+                    <p className="text-[11px] leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500">
+                      등록은{" "}
+                      <Link href="/settings?tab=profile" className="font-semibold text-[#E42980] underline-offset-2 hover:underline">
+                        AI 프로필 설정
+                      </Link>
+                      에서 변경할 수 있어요.
+                    </p>
                   </div>
                 </div>
+              </div>
+            </div>
+          ) : null}
+
+          {currentTab === "edit" && user ? (
+            <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
+              <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+                프로필 편집
+              </h2>
+              <p className="mt-2 max-w-xl text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                계정에 표시되는 프로필 이미지를 바꿀 수 있어요. 변경 내용은 계정에 저장됩니다.
+              </p>
+              <div className="mt-8 max-w-[420px]">
+                <ProfileAvatarPicker
+                  density="comfortable"
+                  value={profileAvatar}
+                  onChange={persistProfileAvatar}
+                  hint={
+                    user
+                      ? "변경 내용은 계정에 저장됩니다."
+                      : "로그인 후 프로필 이미지를 계정에 연결할 수 있습니다."
+                  }
+                />
               </div>
             </div>
           ) : null}
