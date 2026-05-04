@@ -20,6 +20,7 @@ import {
 } from "@/lib/supabaseProfiles";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useTranslation } from "@/hooks/useTranslation";
+import { DocumentTitleI18n } from "@/components/DocumentTitleI18n";
 
 type SettingsTab = "basic" | "edit" | "profile" | "language";
 
@@ -151,6 +152,7 @@ export function AccountSettingsDashboard() {
 
   return (
     <main className="min-h-[60vh] bg-zinc-950 text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
+      <DocumentTitleI18n titleKey="meta.settings" />
       <div className="mx-auto max-w-[1500px] px-4 py-10 sm:px-6 sm:py-12 lg:px-10">
         <header className="border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-100">
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-50 sm:text-[1.75rem] [html[data-theme='light']_&]:text-zinc-900">

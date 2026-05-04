@@ -20,6 +20,7 @@ import {
   upsertUserProfile,
   type AppProfile,
 } from "@/lib/supabaseProfiles";
+import { useTranslation } from "@/hooks/useTranslation";
 
 function nz(s: string): string | null {
   const t = s.trim();
@@ -36,6 +37,7 @@ export function MyPageProfileEditForm({
   profileForForm: AppProfile | null;
   onSaved: (p: AppProfile) => void;
 }) {
+  const { t } = useTranslation();
   const { user, supabaseConfigured } = useAuthSession();
   const [nickname, setNickname] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -110,12 +112,12 @@ export function MyPageProfileEditForm({
   const save = useCallback(async () => {
     setMessage(null);
     if (!user || !supabaseConfigured) {
-      setMessage("로그인 후 저장할 수 있습니다.");
+      setMessage(t("profileForm.saveLoginRequired"));
       return;
     }
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
-      setMessage("Supabase 연결을 확인해 주세요.");
+      setMessage(t("profileForm.supabaseCheck"));
       return;
     }
     setBusy(true);
@@ -142,7 +144,7 @@ export function MyPageProfileEditForm({
         },
       });
       if (authErr) {
-        setMessage("계정 메타데이터 갱신에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+        setMessage(t("profileForm.authMetaFailed"));
         return;
       }
       const updated = await upsertUserProfile(supabase, user.id, {
@@ -159,7 +161,7 @@ export function MyPageProfileEditForm({
       const { data: authFresh, error: refreshErr } = await supabase.auth.getUser();
       const freshUser = authFresh.user;
       if (refreshErr || !freshUser) {
-        setMessage("저장 상태를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        setMessage(t("profileForm.saveStateUnknown"));
         return;
       }
       const row = await fetchUserProfile(supabase, user.id);
@@ -179,6 +181,7 @@ export function MyPageProfileEditForm({
     country,
     profileForForm?.email,
     onSaved,
+    t,
   ]);
 
   useEffect(() => {
@@ -197,7 +200,7 @@ export function MyPageProfileEditForm({
       );
       setSocialBusy(false);
       if (!ok) {
-        setMessage("SNS 링크 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+        setMessage(t("profileForm.socialSaveFailed"));
         return;
       }
       // 동일 브라우저 세션에서 판매 카드 아이콘을 즉시 갱신합니다.
@@ -209,12 +212,12 @@ export function MyPageProfileEditForm({
     }, 450);
 
     return () => window.clearTimeout(timer);
-  }, [socialLinks, socialLinksReady, supabaseConfigured, user]);
+  }, [socialLinks, socialLinksReady, supabaseConfigured, user, t]);
 
   if (!user) {
     return (
       <p className="text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        로그인하면 프로필 정보를 수정할 수 있습니다.
+        {t("profileForm.loginToEdit")}
       </p>
     );
   }
@@ -225,15 +228,15 @@ export function MyPageProfileEditForm({
   return (
     <div className="mt-6 space-y-4 rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
       <h3 className="text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-        프로필 정보 수정
+        {t("profileForm.heading")}
       </h3>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          닉네임
+          {t("profileForm.nickname")}
           <input className={input} value={nickname} onChange={(e) => setNickname(e.target.value)} autoComplete="nickname" />
         </label>
         <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          이메일 (읽기 전용)
+          {t("profileForm.emailReadonly")}
           <input className={`${input} opacity-70`} value={user.email ?? ""} readOnly />
         </label>
         <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
@@ -257,15 +260,15 @@ export function MyPageProfileEditForm({
           />
         </label>
         <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          전화 국가번호
+          {t("profileForm.phoneCountry")}
           <input className={input} value={phoneCountryCode} onChange={(e) => setPhoneCountryCode(e.target.value)} placeholder="+82" />
         </label>
         <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          전화번호
+          {t("profileForm.phone")}
           <input className={input} value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
         </label>
         <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          국가 (ISO 코드, 예: KR)
+          {t("profileForm.country")}
           <input
             className={input}
             value={country}
@@ -278,21 +281,21 @@ export function MyPageProfileEditForm({
       </div>
       <div>
         <p className="text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          SNS 링크 (TikTok / Instagram / YouTube / X)
+          {t("profileForm.snsHeading")}
         </p>
         <p className="mt-1 text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          입력 후 잠시 기다리면 자동 저장되고, 판매 영상 카드 아이콘에 바로 반영됩니다.
+          {t("profileForm.snsHint")}
         </p>
         <div className="mt-2">
           <SocialLinkFields
             links={socialLinks}
             onChange={setSocialLinks}
-            placeholder="ex. tiktok.com/@yourid"
+            placeholder={t("profileForm.snsPlaceholder")}
           />
         </div>
         {socialBusy ? (
           <p className="mt-2 text-[12px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-            SNS 링크 저장 중...
+            {t("profileForm.snsSaving")}
           </p>
         ) : null}
       </div>
@@ -307,7 +310,7 @@ export function MyPageProfileEditForm({
         onClick={() => void save()}
         className="rounded-full bg-reels-cyan/20 px-5 py-2.5 text-[14px] font-extrabold text-reels-cyan transition hover:bg-reels-cyan/30 disabled:opacity-50 [html[data-theme='light']_&]:text-teal-800"
       >
-        {busy ? "저장 중…" : "변경 사항 저장"}
+        {busy ? t("profileForm.saveBusy") : t("profileForm.save")}
       </button>
     </div>
   );
