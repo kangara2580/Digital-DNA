@@ -227,8 +227,8 @@ function ExploreWatchReels({
 
   return (
     <>
-      {/* 틱톡 스타일: 위·아래로 한 영상씩 이동 */}
-      <div className="pointer-events-none fixed right-3 top-1/2 z-[101] flex -translate-y-1/2 flex-col gap-2 sm:right-5 md:right-6">
+      {/* 틱톡 스타일: 위·아래로 한 영상씩 이동 — 우측 여백은 탐색 시청 시 플로팅 계정 메뉴(MallTopNav)와 동일 */}
+      <div className="pointer-events-none fixed right-4 top-1/2 z-[101] flex -translate-y-1/2 flex-col gap-2 sm:right-6">
         <button
           type="button"
           onClick={goPrevReel}
