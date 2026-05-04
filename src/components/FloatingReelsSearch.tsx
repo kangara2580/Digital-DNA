@@ -41,8 +41,8 @@ export function FloatingReelsSearch() {
   if (isHome) {
     return (
       <div className="pointer-events-none fixed inset-y-0 right-0 left-0 z-[118] md:left-[var(--reels-rail-w)]">
-        <div className="pointer-events-auto w-full pl-4 pr-[max(9.5rem,env(safe-area-inset-right))] pt-4 sm:pl-6 sm:pr-[max(10.5rem,env(safe-area-inset-right))] sm:pt-5">
-          <div className="mx-auto w-full min-w-0 max-w-3xl sm:max-w-4xl">
+        <div className="pointer-events-none w-full pl-4 pr-[max(9.5rem,env(safe-area-inset-right))] pt-4 sm:pl-6 sm:pr-[max(10.5rem,env(safe-area-inset-right))] sm:pt-5">
+          <div className="pointer-events-auto mx-auto w-full min-w-0 max-w-3xl sm:max-w-4xl">
             <ReelsSearchField compact={false} topNavPill q={q} setQ={setQ} />
           </div>
         </div>
@@ -53,8 +53,8 @@ export function FloatingReelsSearch() {
   if (isExplore && exploreWatch) {
     return (
       <div className="pointer-events-none fixed inset-x-0 top-0 z-[102] md:pl-[var(--reels-rail-w)]">
-        <div className="pointer-events-auto flex justify-end pt-[max(0.65rem,env(safe-area-inset-top))] pr-[max(0.75rem,env(safe-area-inset-right))] sm:pt-[max(0.75rem,env(safe-area-inset-top))] sm:pr-5">
-          <div className="mr-[4.25rem] w-[min(15rem,calc(100vw-var(--reels-rail-w,0px)-8.5rem))] sm:mr-[5.25rem]">
+        <div className="pointer-events-none flex justify-end pt-[max(0.65rem,env(safe-area-inset-top))] pr-[max(0.75rem,env(safe-area-inset-right))] sm:pt-[max(0.75rem,env(safe-area-inset-top))] sm:pr-5">
+          <div className="pointer-events-auto mr-[4.25rem] w-[min(15rem,calc(100vw-var(--reels-rail-w,0px)-8.5rem))] shrink-0 sm:mr-[5.25rem]">
             <ReelsSearchField compact q={q} setQ={setQ} />
           </div>
         </div>
@@ -64,8 +64,8 @@ export function FloatingReelsSearch() {
 
   return (
     <div className="pointer-events-none fixed left-0 right-0 top-0 z-[118]">
-      <div className="pointer-events-auto mx-auto max-w-[1800px] pl-4 pr-[calc(7.5rem+env(safe-area-inset-right))] pt-[max(0.65rem,env(safe-area-inset-top))] sm:pl-6 sm:pr-[calc(8rem+env(safe-area-inset-right))] sm:pt-[max(0.75rem,env(safe-area-inset-top))] md:pl-[calc(var(--reels-rail-w)+1rem)] lg:pl-8">
-        <div className="w-full max-w-[15.5rem] sm:max-w-[17rem]">
+      <div className="pointer-events-none mx-auto max-w-[1800px] pl-4 pr-[calc(7.5rem+env(safe-area-inset-right))] pt-[max(0.65rem,env(safe-area-inset-top))] sm:pl-6 sm:pr-[calc(8rem+env(safe-area-inset-right))] sm:pt-[max(0.75rem,env(safe-area-inset-top))] md:pl-[calc(var(--reels-rail-w)+1rem)] lg:pl-8">
+        <div className="pointer-events-auto w-full max-w-[15.5rem] sm:max-w-[17rem]">
           <ReelsSearchField compact q={q} setQ={setQ} />
         </div>
       </div>
