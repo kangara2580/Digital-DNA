@@ -242,7 +242,7 @@ export function ReelsLeftRail() {
             <img
               src="/brand/rail-home-logo.png"
               alt=""
-              className="h-7 w-7 max-w-full object-contain object-center select-none [html[data-theme='light']_&]:h-9 [html[data-theme='light']_&]:w-9"
+              className="h-7 w-7 max-w-full -translate-y-[3px] object-contain object-center select-none [html[data-theme='light']_&]:h-9 [html[data-theme='light']_&]:w-9 [html[data-theme='light']_&]:translate-y-0"
               draggable={false}
             />
           </Link>
