@@ -16,10 +16,10 @@ export function RailHomeLogoSvgFilters() {
         <filter
           id="reelsRailLogoOutlineDark"
           colorInterpolationFilters="sRGB"
-          x="-50%"
-          y="-50%"
-          width="200%"
-          height="200%"
+          x="-100%"
+          y="-100%"
+          width="300%"
+          height="300%"
           primitiveUnits="userSpaceOnUse"
         >
           <feMorphology
@@ -49,10 +49,10 @@ export function RailHomeLogoSvgFilters() {
         <filter
           id="reelsRailLogoOutlineLight"
           colorInterpolationFilters="sRGB"
-          x="-50%"
-          y="-50%"
-          width="200%"
-          height="200%"
+          x="-100%"
+          y="-100%"
+          width="300%"
+          height="300%"
           primitiveUnits="userSpaceOnUse"
         >
           <feMorphology
