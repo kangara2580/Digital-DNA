@@ -1,6 +1,6 @@
 import type { PrivacyArticle } from "@/lib/i18n/privacyPolicyKo";
 
-/** English privacy policy — same structure as Korean; wording is audience-facing, not a certified legal translation. */
+/** English privacy policy — mirrors the Korean structure; written for clarity for international readers. Official interpretation follows the Korean version where they differ. */
 export const PRIVACY_ARTICLES_EN: PrivacyArticle[] = [
   {
     title: "Article 1 (General)",
@@ -8,7 +8,7 @@ export const PRIVACY_ARTICLES_EN: PrivacyArticle[] = [
       {
         type: "p",
         text:
-          "ARA (“the Company”) takes the protection of your personal information seriously and complies with the Personal Information Protection Act and other applicable laws in Korea. This Privacy Policy explains how we collect, use, and safeguard personal information when you use our AI-powered video creation and content marketplace services.",
+          "ARA (“we,” “us,” or “the Company”) is committed to protecting your privacy. We process personal information in line with the Personal Information Protection Act and other applicable laws in Korea. This Privacy Policy describes what we collect, why we collect it, and how we protect it when you use our short-form video marketplace and related AI creation features.",
       },
     ],
   },
