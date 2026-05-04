@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import type { FeedVideo } from "@/data/videos";
 import { explorePurchaseButtonClass } from "@/lib/explorePurchaseButtonClass";
 import { sellerProfileHrefFromVideo } from "@/lib/sellerProfile";
@@ -34,6 +35,7 @@ function cartThumbnailSrc(video: FeedVideo): string {
 
 export default function CartPage() {
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
+  const displayTitle = useVideoDisplayTitle();
   const {
     builderItems,
     cartSyncReady,
@@ -217,7 +219,7 @@ export default function CartPage() {
                       href={`/video/${video.id}`}
                       className="line-clamp-2 text-left text-[15px] font-bold leading-snug text-zinc-100 transition-colors hover:text-[#E42980] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:text-[#E42980] sm:text-[16px]"
                     >
-                      {video.title}
+                      {displayTitle(video)}
                     </Link>
                     <p className="mt-2 min-h-0 truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                       <Link

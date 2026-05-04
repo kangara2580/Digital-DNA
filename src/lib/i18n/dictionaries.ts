@@ -24,7 +24,7 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "settings.edit.lead":
       "계정에 표시되는 프로필 이미지를 바꿀 수 있어요. 변경 내용은 계정에 저장됩니다.",
     "settings.language.lead":
-      "사이트 메뉴·푸터·주요 안내 문구에 적용됩니다. 내용(영상 제목 등)은 원문 그대로입니다.",
+      "사이트 메뉴·푸터·주요 안내 문구에 적용됩니다. 데모·카탈로그 영상은 English 선택 시 제목도 함께 표시됩니다. 판매자가 직접 등록한 제목은 등록한 그대로입니다.",
     "settings.language.fieldLabel": "언어",
     "settings.language.selectAria": "표시 언어 선택",
     "settings.avatar.hintSaved": "변경 내용은 계정에 저장됩니다.",
@@ -334,7 +334,7 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "settings.edit.lead":
       "Update the profile picture shown on your account. Changes are saved to your profile.",
     "settings.language.lead":
-      "Applies to menus, the footer, and key UI copy. Video titles and user-generated text stay as published.",
+      "Applies to menus, the footer, and key UI copy. Demo and catalog videos show English titles when English is selected; titles creators enter stay as submitted.",
     "settings.language.fieldLabel": "Language",
     "settings.language.selectAria": "Choose display language",
     "settings.avatar.hintSaved": "Changes are saved to your account.",

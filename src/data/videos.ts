@@ -5,6 +5,8 @@ import type { SellerSocialLink } from "@/lib/sellerSocialLinks";
 export type FeedVideo = {
   id: string;
   title: string;
+  /** English catalog title when UI locale is `en` */
+  titleEn?: string;
   creator: string;
   src: string;
   poster: string;
@@ -464,6 +466,7 @@ export const LOCAL_TRENDING_FEED_VIDEOS: FeedVideo[] = MOCK_VIDEOS.map(
   (m, i) => ({
     id: m.id,
     title: m.title,
+    titleEn: m.titleEn,
     creator: "@reels_local",
     src: m.video_url,
     poster: posterForLocalTrendingClip(m.video_url, m.thumbnail_url),

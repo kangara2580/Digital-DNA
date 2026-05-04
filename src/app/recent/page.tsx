@@ -5,8 +5,12 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
 import { useRecentClips } from "@/context/RecentClipsContext";
+import { useSitePreferences } from "@/context/SitePreferencesContext";
 import { ALL_MARKET_VIDEOS } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
+import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
+import { videoDisplayTitle } from "@/lib/videoDisplayTitle";
+import type { SiteLocale } from "@/lib/sitePreferences";
 
 const SORT_OPTIONS = [
   { value: "recent", label: "최근 본 순" },
@@ -67,7 +71,7 @@ function compareDurationDesc(a: Row, b: Row): number {
   return compareViewedAtDesc(a, b);
 }
 
-function sortRows(rows: Row[], sort: SortValue): Row[] {
+function sortRows(rows: Row[], sort: SortValue, locale: SiteLocale): Row[] {
   const copy = [...rows];
   switch (sort) {
     case "recent":
@@ -80,15 +84,19 @@ function sortRows(rows: Row[], sort: SortValue): Row[] {
       return copy.sort(comparePriceDesc);
     case "title-asc":
       return copy.sort((a, b) =>
-        a.video.title.localeCompare(b.video.title, undefined, {
-          sensitivity: "base",
-        }),
+        videoDisplayTitle(a.video, locale).localeCompare(
+          videoDisplayTitle(b.video, locale),
+          locale === "en" ? "en" : "ko",
+          { sensitivity: "base" },
+        ),
       );
     case "title-desc":
       return copy.sort((a, b) =>
-        b.video.title.localeCompare(a.video.title, undefined, {
-          sensitivity: "base",
-        }),
+        videoDisplayTitle(b.video, locale).localeCompare(
+          videoDisplayTitle(a.video, locale),
+          locale === "en" ? "en" : "ko",
+          { sensitivity: "base" },
+        ),
       );
     case "duration-asc":
       return copy.sort(compareDurationAsc);
@@ -101,6 +109,8 @@ function sortRows(rows: Row[], sort: SortValue): Row[] {
 
 export default function RecentPage() {
   const { entries, hydrated, clear, remove } = useRecentClips();
+  const { locale } = useSitePreferences();
+  const displayTitle = useVideoDisplayTitle();
   const [sort, setSort] = useState<SortValue>("recent");
   const [browseCtaVisible, setBrowseCtaVisible] = useState(false);
 
@@ -115,8 +125,8 @@ export default function RecentPage() {
       const video = catalogById.get(e.id);
       if (video) list.push({ video, viewedAt: e.viewedAt });
     }
-    return sortRows(list, sort);
-  }, [entries, catalogById, sort]);
+    return sortRows(list, sort, locale as SiteLocale);
+  }, [entries, catalogById, sort, locale]);
 
   const showEmptyGate = hydrated && rows.length === 0;
 
@@ -210,7 +220,7 @@ export default function RecentPage() {
                 type="button"
                 onClick={() => remove(video.id)}
                 className="absolute right-2 top-2 z-[25] flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-reels-void/90 text-zinc-300 shadow-md backdrop-blur-md transition-colors hover:border-reels-crimson/40 hover:bg-white/10 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:bg-zinc-100"
-                aria-label={`${video.title} — 최근 본 목록에서 제거`}
+                aria-label={`${displayTitle(video)} — 최근 본 목록에서 제거`}
               >
                 <X className="h-4 w-4" strokeWidth={2.2} aria-hidden />
               </button>

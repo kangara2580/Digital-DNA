@@ -9,6 +9,7 @@ import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
 import { useWishlist } from "@/context/WishlistContext";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
 import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
@@ -34,6 +35,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const wishlist = useWishlist();
+  const displayTitle = useVideoDisplayTitle();
   const reduceMotion = useReducedMotion() ?? false;
   const cartBtnRef = useRef<HTMLButtonElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -168,7 +170,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
         <Link
           href={`/video/${video.id}`}
           className="absolute inset-0 z-[3]"
-          aria-label={`${video.title} 상세 페이지`}
+          aria-label={`${displayTitle(video)} 상세 페이지`}
         />
         <div className={reelActionRailOuter}>
           <div className={reelActionRailColumn}>
@@ -256,7 +258,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
       </div>
       <div className="min-w-0 px-0.5">
         <p className="truncate text-[13px] font-medium leading-snug text-[var(--text-main)]">
-          {video.title}
+          {displayTitle(video)}
         </p>
         <p className="text-[13px] font-bold text-[var(--primary-color)]">
           {formatPrice(video)}

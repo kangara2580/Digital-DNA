@@ -18,6 +18,7 @@ import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useRecentClips } from "@/context/RecentClipsContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import type { FeedVideo } from "@/data/videos";
 import {
   clonesRemaining,
@@ -90,6 +91,7 @@ export function VideoDetailView({
   const { hasPurchased, markPurchased } = usePurchasedVideos();
   const { recordView } = useRecentClips();
   const { t, locale } = useTranslation();
+  const displayTitle = useVideoDisplayTitle();
   const owned = hasPurchased(video.id);
   const isOwner = Boolean(
     user?.id && video.listing?.sellerId && user.id === video.listing.sellerId,
@@ -638,7 +640,7 @@ export function VideoDetailView({
               {externalEmbed ? (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <iframe
-                    title={video.title}
+                    title={displayTitle(video)}
                     src={externalEmbed.src}
                     className="h-full w-full border-0"
                     allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
@@ -715,7 +717,7 @@ export function VideoDetailView({
                     ) : null}
                   </div>
                   <h1 className="min-w-0 text-center text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">
-                    {video.title}
+                    {displayTitle(video)}
                   </h1>
                   {video.description ? (
                     <p className="mt-3 whitespace-pre-wrap text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">

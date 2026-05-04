@@ -18,6 +18,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import type { FeedVideo } from "@/data/videos";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
 import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
+import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import {
   clonesRemaining,
   getCommerceMeta,
@@ -276,6 +277,7 @@ export function VideoCard({
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const authPromptScrollYRef = useRef(0);
+  const displayTitle = useVideoDisplayTitle();
   const reelAspectPortrait =
     reelLayout && reelStrip ? "aspect-[3/4] w-full" : "aspect-[9/16] w-full";
   const reelAspectLandscape =
@@ -625,7 +627,7 @@ export function VideoCard({
         {externalIframe ? (
           <div className="absolute inset-0 z-0 flex items-center justify-center">
             <iframe
-              title={`${video.title}-${externalIframe.kind}`}
+              title={`${displayTitle(video)}-${externalIframe.kind}`}
               src={externalIframe.src}
               className="pointer-events-none h-full w-full border-0"
               allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
@@ -683,7 +685,7 @@ export function VideoCard({
             type="button"
             onClick={onPick}
             className="absolute inset-0 z-[3] cursor-pointer border-0 bg-transparent p-0"
-            aria-label={`${video.title} — 세로 릴로 보기`}
+            aria-label={`${displayTitle(video)} — 세로 릴로 보기`}
           />
         ) : (
           <Link
@@ -691,8 +693,8 @@ export function VideoCard({
             className="absolute inset-0 z-[3]"
             aria-label={
               detailHref?.endsWith("/customize")
-                ? `${video.title} 맞춤 리스킨 스튜디오`
-                : `${video.title} 상세 페이지`
+                ? `${displayTitle(video)} 맞춤 리스킨 스튜디오`
+                : `${displayTitle(video)} 상세 페이지`
             }
           />
         )}
@@ -905,7 +907,7 @@ export function VideoCard({
                       : "text-[11px] sm:text-[12px]"
               }`}
             >
-              {video.title}
+              {displayTitle(video)}
             </h3>
             {priceLabel ? (
               <span

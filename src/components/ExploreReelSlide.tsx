@@ -42,6 +42,7 @@ import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
 import { getVideoContentSource } from "@/lib/videoSourcePlatform";
 import { getExploreFormatters } from "@/lib/exploreLocaleFormat";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 
 type ReelSlideProps = {
   video: FeedVideo;
@@ -653,6 +654,7 @@ export function ExploreReelSlide({
   onMutedChange,
 }: ReelSlideProps) {
   const { t } = useTranslation();
+  const displayTitle = useVideoDisplayTitle();
   const videoRef = useRef<HTMLVideoElement>(null);
   const blockRef = useRef<HTMLDivElement>(null);
   const progressRailRef = useRef<HTMLDivElement>(null);
@@ -903,7 +905,7 @@ export function ExploreReelSlide({
                 {video.creator}
               </Link>
               <p className="line-clamp-3 text-left text-[15px] font-bold leading-snug text-white sm:text-[16px]">
-                {video.title}
+                {displayTitle(video)}
               </p>
             </div>
 

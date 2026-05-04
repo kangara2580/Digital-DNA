@@ -3,4 +3,5 @@ export interface VideoData {
   video_url: string;
   thumbnail_url: string;
   title: string;
+  titleEn?: string;
 }

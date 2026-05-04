@@ -7,7 +7,10 @@ import { MyPageSortSelect } from "@/components/MyPageSortSelect";
 import { resolveManualTikTokVideoForStudio } from "@/data/tiktokData";
 import { buildWishlistVideoLookup } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
+import { useSitePreferences } from "@/context/SitePreferencesContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { videoDisplayTitle } from "@/lib/videoDisplayTitle";
+import type { SiteLocale } from "@/lib/sitePreferences";
 import { useWishlist } from "@/context/WishlistContext";
 import { MYPAGE_OUTLINE_BTN_MD, MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 
@@ -25,7 +28,7 @@ type Sort = (typeof SORT_OPTIONS)[number]["value"];
 
 type Row = { entryId: string; video: FeedVideo; savedAt: number };
 
-function sortRows(rows: Row[], sort: Sort): Row[] {
+function sortRows(rows: Row[], sort: Sort, locale: SiteLocale): Row[] {
   const copy = [...rows];
   const noPrice = 1e12;
   switch (sort) {
@@ -39,11 +42,19 @@ function sortRows(rows: Row[], sort: Sort): Row[] {
       return copy.sort((a, b) => (b.video.priceWon ?? -1) - (a.video.priceWon ?? -1));
     case "title-asc":
       return copy.sort((a, b) =>
-        a.video.title.localeCompare(b.video.title, undefined, { sensitivity: "base" }),
+        videoDisplayTitle(a.video, locale).localeCompare(
+          videoDisplayTitle(b.video, locale),
+          locale === "en" ? "en" : "ko",
+          { sensitivity: "base" },
+        ),
       );
     case "title-desc":
       return copy.sort((a, b) =>
-        b.video.title.localeCompare(a.video.title, undefined, { sensitivity: "base" }),
+        videoDisplayTitle(b.video, locale).localeCompare(
+          videoDisplayTitle(a.video, locale),
+          locale === "en" ? "en" : "ko",
+          { sensitivity: "base" },
+        ),
       );
     case "duration-asc":
       return copy.sort((a, b) => (a.video.durationSec ?? 0) - (b.video.durationSec ?? 0));
@@ -61,6 +72,7 @@ const LOGIN_REDIRECT = encodeURIComponent("/mypage?tab=wishlist");
 
 export function MyPageWishlistSection() {
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
+  const { locale } = useSitePreferences();
   const videoByStoredId = useMemo(() => buildWishlistVideoLookup(), []);
   const { entries, hydrated, clear, removeMany } = useWishlist();
   const [sort, setSort] = useState<Sort>("recent");
@@ -74,8 +86,8 @@ export function MyPageWishlistSection() {
         fromCatalog ?? resolveManualTikTokVideoForStudio(e.id) ?? undefined;
       if (video) list.push({ entryId: e.id, video, savedAt: e.savedAt });
     }
-    return sortRows(list, sort);
-  }, [entries, videoByStoredId, sort]);
+    return sortRows(list, sort, locale as SiteLocale);
+  }, [entries, videoByStoredId, sort, locale]);
 
   const allEntryIds = useMemo(() => rows.map((r) => r.entryId), [rows]);
 

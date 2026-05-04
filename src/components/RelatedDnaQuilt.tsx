@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { FeedVideo } from "@/data/videos";
 import { getRelatedByVibe } from "@/data/videoCatalog";
+import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 type Props = {
@@ -14,6 +15,7 @@ type Props = {
 /** 같은 Vibe를 공유하는 조각을 퀼트처럼 엮어 표시 */
 export function RelatedDnaQuilt({ video, className }: Props) {
   const related = getRelatedByVibe(video.id, 28);
+  const displayTitle = useVideoDisplayTitle();
   const [visibleCount, setVisibleCount] = useState(6);
 
   const [hero, ...rest] = related;
@@ -46,7 +48,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
           </div>
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent px-1.5 pb-1.5 pt-6">
             <p className="line-clamp-2 text-[10px] font-medium leading-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.55)]">
-              {hero.title}
+              {displayTitle(hero)}
             </p>
             {hero.priceWon != null ? (
               <p className="mt-0.5 text-[10px] font-bold tabular-nums text-white">
@@ -72,7 +74,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
               </div>
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent px-1 pb-1 pt-4">
                 <p className="line-clamp-2 text-[9px] font-medium leading-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">
-                  {v.title}
+                  {displayTitle(v)}
                 </p>
                 {v.priceWon != null ? (
                   <p className="text-[9px] font-bold tabular-nums text-white/95">
@@ -102,7 +104,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
                 />
               </div>
               <div className="px-1.5 py-1">
-                <p className="line-clamp-2 text-[9px] font-medium text-zinc-200">{v.title}</p>
+                <p className="line-clamp-2 text-[9px] font-medium text-zinc-200">{displayTitle(v)}</p>
                 {v.priceWon != null ? (
                   <p className="text-[9px] font-bold tabular-nums text-reels-cyan">
                     {v.priceWon.toLocaleString("ko-KR")}원
