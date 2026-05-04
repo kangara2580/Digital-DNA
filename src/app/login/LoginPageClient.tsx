@@ -15,9 +15,11 @@ import {
 } from "@/lib/authModalTheme";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { postLoginRedirectPath } from "@/lib/postLoginRedirect";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export function LoginPageClient() {
   const router = useRouter();
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuthSession();
 
@@ -76,7 +78,7 @@ export function LoginPageClient() {
             type="button"
             onClick={() => router.back()}
             className={authModalDismissButtonCls}
-            aria-label="닫기"
+            aria-label={t("a11y.close")}
           >
             ×
           </button>
@@ -84,7 +86,7 @@ export function LoginPageClient() {
             ARA
           </p>
           <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
-            로그인/회원가입
+            {t("auth.loginSignupTitle")}
           </p>
           {error ? (
             <p
@@ -105,7 +107,7 @@ export function LoginPageClient() {
           <div className="mx-auto mt-9 w-full max-w-[360px]">
             <GoogleOAuthButton
               nextPath={redirectPath}
-              label="Google로 바로 시작"
+              label={t("auth.googleCta")}
               googleLabelTypographyClass={loginPageGoogleButtonText}
               showBrandChevron
               className={`flex w-full items-center justify-center gap-2.5 rounded-full bg-white px-4 py-3 font-extrabold text-[#1a1a1a] transition hover:brightness-95 sm:gap-3 sm:px-6 sm:py-4 ${authModalGoogleButtonShadow}`}

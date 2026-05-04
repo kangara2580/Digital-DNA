@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import type { CategorySlug } from "@/data/videoCatalog";
-import { CATEGORY_LABEL } from "@/data/videoCatalog";
+import { useTranslation } from "@/hooks/useTranslation";
+import { categoryNavKey } from "@/lib/i18n/dictionaries";
 
 type Props = {
   category: CategorySlug;
@@ -34,13 +37,14 @@ function Chevron({ className }: { className?: string }) {
 
 export function SectionMoreLink({
   category,
-  label = "더보기",
+  label,
   variant = "dark",
   showChevron = true,
   className = "",
 }: Props) {
-  const catName = CATEGORY_LABEL[category];
-  const text = label;
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t("home.trending.moreLink");
+  const catLabel = t(categoryNavKey(`/category/${category}`));
   const href = `/category/${category}`;
 
   const styles =
@@ -57,9 +61,9 @@ export function SectionMoreLink({
     <Link
       href={href}
       className={`group inline-flex items-center justify-center gap-2 rounded-full border px-4 py-2 text-[13px] font-semibold leading-none tracking-tight transition-all duration-300 ease-out sm:px-4 sm:py-2 sm:text-[13px] ${widthCls} ${styles} ${className}`}
-      aria-label={`${catName} 카테고리에서 더 많은 영상 보기`}
+      aria-label={t("section.more.aria", { cat: catLabel })}
     >
-      <span className="whitespace-nowrap">{text}</span>
+      <span className="whitespace-nowrap">{resolvedLabel}</span>
       {showChevron ? (
         <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/12 text-white/95 transition-transform duration-300 group-hover:translate-x-0.5 [html[data-theme='light']_&]:bg-white/30">
           <Chevron className="h-3.5 w-3.5 shrink-0 opacity-95" />

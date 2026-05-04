@@ -19,6 +19,7 @@ import { VideoCard } from "@/components/VideoCard";
 import { buildWishlistVideoLookup } from "@/data/videoCatalog";
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import type { FeedVideo } from "@/data/videos";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const BATCH = 6;
 /** 세로 릴: 풀을 순환해 이 개수까지 슬라이드 추가 (과도한 DOM 방지로 상한 유지) */
@@ -44,6 +45,7 @@ function ExploreBrowseGrid({
   setVisibleGridCount: Dispatch<SetStateAction<number>>;
   onEnterWatch: (video: FeedVideo, gridIndex: number) => void;
 }) {
+  const { t } = useTranslation();
   const browseVideos = useMemo(() => {
     if (pool.length === 0) return [];
     const n = Math.min(visibleGridCount, MAX_GRID_ITEMS);
@@ -77,7 +79,7 @@ function ExploreBrowseGrid({
       <div
         className="grid grid-cols-2 gap-3 border border-white/10 p-3 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
         role="list"
-        aria-label="탐색 그리드"
+        aria-label={t("explore.gridAria")}
       >
         {browseVideos.map(({ video, rowKey }, gridIndex) => (
           <div key={rowKey} className="min-w-0" role="listitem">
@@ -120,6 +122,7 @@ function ExploreWatchReels({
   pool: FeedVideo[];
   watchOffset: number;
 }) {
+  const { t } = useTranslation();
   const [count, setCount] = useState(BATCH);
   const [reelMuted, setReelMutedState] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -243,8 +246,8 @@ function ExploreWatchReels({
           type="button"
           onClick={goPrevReel}
           className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
-          aria-label="이전 영상"
-          title="이전 영상"
+          aria-label={t("explore.prevVideo")}
+          title={t("explore.prevVideo")}
         >
           <ChevronUp
             className="h-6 w-6 text-white transition-colors group-hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:group-hover:text-zinc-950"
@@ -256,8 +259,8 @@ function ExploreWatchReels({
           type="button"
           onClick={goNextReel}
           className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
-          aria-label="다음 영상"
-          title="다음 영상"
+          aria-label={t("explore.nextVideo")}
+          title={t("explore.nextVideo")}
         >
           <ChevronDown
             className="h-6 w-6 text-white transition-colors group-hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:group-hover:text-zinc-950"
@@ -278,7 +281,7 @@ function ExploreWatchReels({
         className="explore-reels-feed no-scrollbar fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[30] overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth snap-y snap-mandatory"
         style={{ WebkitOverflowScrolling: "touch" }}
         role="feed"
-        aria-label="세로 탐색 릴스 피드 — 아래로 스크롤해 계속 보기"
+        aria-label={t("explore.feedAria")}
       >
         {/* 스크롤 트랙은 뷰포트 전폭(스크롤바가 화면 맨 오른쪽), 콘텐츠만 레일 폭만큼 들여 레이아웃은 기존과 동일 */}
         <div className="md:pl-[var(--reels-rail-w)]">

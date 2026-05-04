@@ -17,6 +17,7 @@ import {
   authModalGlowTop,
 } from "@/lib/authModalTheme";
 import { homeSectionHeadingH2ClassName } from "@/lib/homeSectionHeadingTypography";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type AuthModalProps = {
   authOpen: boolean;
@@ -94,13 +95,14 @@ function SellerPitchAuthModal({
   setAuthOpen,
   startGoogleAuth,
 }: AuthModalProps) {
+  const { t } = useTranslation();
   return mounted && authOpen
     ? createPortal(
         <AuthModalPortal onDismiss={() => setAuthOpen(false)}>
           <div
             role="dialog"
             aria-modal="true"
-            aria-label="로그인 또는 회원가입"
+            aria-label={t("auth.dialogAria")}
             className={`relative w-full max-h-[min(92vh,760px)] overflow-y-auto rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
           >
             <div className={authModalGlowTop} aria-hidden />
@@ -109,7 +111,7 @@ function SellerPitchAuthModal({
               type="button"
               onClick={() => setAuthOpen(false)}
               className={authModalDismissButtonCls}
-              aria-label="닫기"
+              aria-label={t("a11y.close")}
             >
               ×
             </button>
@@ -117,7 +119,7 @@ function SellerPitchAuthModal({
               ARA
             </p>
             <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
-              로그인/회원가입
+              {t("auth.loginSignupTitle")}
             </p>
             <AuthModalGoogleStartButton onClick={() => void startGoogleAuth()} />
           </div>
@@ -144,6 +146,7 @@ function SellerPitchStartButton({
 }
 
 export function SellerPitchBottomStartButton() {
+  const { t } = useTranslation();
   const { authLoading, authOpen, mounted, onStartClick, setAuthOpen, startGoogleAuth } =
     useSellerPitchStart();
 
@@ -153,7 +156,7 @@ export function SellerPitchBottomStartButton() {
         <div className="relative mx-auto max-w-[1800px] px-4 pb-20 pt-8 sm:px-6 sm:pb-24 sm:pt-10 lg:px-8">
           <div className="flex flex-col items-center gap-8 sm:gap-9">
             <p className="mx-auto w-full min-w-0 text-center whitespace-nowrap text-[clamp(1.35rem,4.6vw,2.25rem)] leading-snug tracking-[0.02em] text-zinc-100 sm:text-[clamp(1.45rem,3.8vw,2.4rem)] [html[data-theme='light']_&]:text-zinc-900">
-              ARA에서 영상을 사면, 바로 내 콘텐츠가 됩니다
+              {t("home.pitch.bottomTagline")}
             </p>
             <SellerPitchStartButton authLoading={authLoading} onStartClick={onStartClick} />
           </div>
@@ -170,6 +173,7 @@ export function SellerPitchBottomStartButton() {
 }
 
 export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerProps) {
+  const { t } = useTranslation();
   const { authLoading, authOpen, mounted, onStartClick, setAuthOpen, startGoogleAuth } =
     useSellerPitchStart();
 
@@ -286,42 +290,44 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                   id="seller-pitch-heading"
                   className={`${homeSectionHeadingH2ClassName}`}
                 >
-                  단, <span className="font-bold">3</span>단계면 충분합니다.
+                  {t("home.pitch.headingLead")}
+                  <span className="font-bold">3</span>
+                  {t("home.pitch.headingTrail")}
                 </h2>
                 <div className="grid gap-7 lg:grid-cols-2 lg:gap-10 xl:gap-12">
                   {/* 사용자 카드 */}
                   <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-black px-6 py-8 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-7 sm:py-9 lg:px-9 lg:py-10">
                     <section className="flex flex-col items-center space-y-7 text-center sm:space-y-8">
-                      <p className="pt-0.5 text-[22px] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]">사용자</p>
+                      <p className="pt-0.5 text-[22px] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]">{t("home.pitch.roleUser")}</p>
                       <p className="max-w-md text-[clamp(0.9rem,2vw,1.1rem)] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
-                        원하는 영상 AI로 재창작해서 사용하기
+                        {t("home.pitch.userIntro")}
                       </p>
                       <ol className="w-full space-y-14 sm:space-y-16 lg:space-y-[4.5rem]">
                         <li className="flex flex-col items-center gap-6 sm:gap-8">
                           <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
-                            <img src="/steps/user-step1-browse.png" alt="마켓 영상 탐색 화면" className="h-[220px] w-full object-cover object-top" />
+                            <img src="/steps/user-step1-browse.png" alt={t("home.pitch.user.step1Alt")} className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <div className="space-y-2.5">
-                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">1. 영상 선택</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">마켓에서 원하는 영상을 찾아보세요.</p>
+                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">{t("home.pitch.user.step1Title")}</p>
+                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">{t("home.pitch.user.step1Body")}</p>
                           </div>
                         </li>
                         <li className="flex flex-col items-center gap-6 sm:gap-8">
                           <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
-                            <img src="/steps/user-step2-customize.png" alt="영상 구매 및 커스터마이징 화면" className="h-[220px] w-full object-cover object-top" />
+                            <img src="/steps/user-step2-customize.png" alt={t("home.pitch.user.step2Alt")} className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <div className="space-y-2.5">
-                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">2. AI로 커스터마이징</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">배경, 얼굴, 스타일을 자유롭게 변경하세요.</p>
+                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">{t("home.pitch.user.step2Title")}</p>
+                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">{t("home.pitch.user.step2Body")}</p>
                           </div>
                         </li>
                         <li className="flex flex-col items-center gap-6 sm:gap-8">
                           <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
-                            <img src="/steps/user-step3-download.png" alt="인기 영상 다운로드 화면" className="h-[220px] w-full object-cover object-top" />
+                            <img src="/steps/user-step3-download.png" alt={t("home.pitch.user.step3Alt")} className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <div className="space-y-2.5">
-                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">3. 다운로드 &amp; 활용</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">완성된 영상을 다운로드해 바로 활용하세요.</p>
+                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">{t("home.pitch.user.step3Title")}</p>
+                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">{t("home.pitch.user.step3Body")}</p>
                           </div>
                         </li>
                       </ol>
@@ -331,36 +337,36 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                   {/* 크리에이터 카드 */}
                   <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-black px-6 py-8 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-7 sm:py-9 lg:px-9 lg:py-10">
                     <section className="flex flex-col items-center space-y-7 text-center sm:space-y-8">
-                      <p className="pt-0.5 text-[22px] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]">크리에이터</p>
+                      <p className="pt-0.5 text-[22px] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]">{t("home.pitch.roleCreator")}</p>
                       <p className="max-w-md text-[clamp(0.9rem,2vw,1.1rem)] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
-                        원하는 영상 판매해서 수익 만들기
+                        {t("home.pitch.creatorIntro")}
                       </p>
                       <ol className="w-full space-y-14 sm:space-y-16 lg:space-y-[4.5rem]">
                         <li className="flex flex-col items-center gap-6 sm:gap-8">
                           <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
-                            <img src="/steps/creator-step1-upload.png" alt="영상 URL 등록 화면" className="h-[220px] w-full object-cover object-top" />
+                            <img src="/steps/creator-step1-upload.png" alt={t("home.pitch.creator.step1Alt")} className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <div className="space-y-2.5">
-                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">1. 영상 등록</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">직접 업로드 또는 URL을 붙여넣어 영상을 등록하세요.</p>
+                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">{t("home.pitch.creator.step1Title")}</p>
+                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">{t("home.pitch.creator.step1Body")}</p>
                           </div>
                         </li>
                         <li className="flex flex-col items-center gap-6 sm:gap-8">
                           <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
-                            <img src="/steps/creator-step2-price.png" alt="가격 설정 화면" className="h-[220px] w-full object-cover object-top" />
+                            <img src="/steps/creator-step2-price.png" alt={t("home.pitch.creator.step2Alt")} className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <div className="space-y-2.5">
-                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">2. 가격 설정</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">원하는 가격을 설정하세요.</p>
+                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">{t("home.pitch.creator.step2Title")}</p>
+                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">{t("home.pitch.creator.step2Body")}</p>
                           </div>
                         </li>
                         <li className="flex flex-col items-center gap-6 sm:gap-8">
                           <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
-                            <img src="/steps/creator-step3-sell.png" alt="마켓에 공개된 판매 영상 화면" className="h-[220px] w-full object-cover object-top" />
+                            <img src="/steps/creator-step3-sell.png" alt={t("home.pitch.creator.step3Alt")} className="h-[220px] w-full object-cover object-top" />
                           </div>
                           <div className="space-y-2.5">
-                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">3. 판매 시작</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">플랫폼에 공개하면 누구나 구매할 수 있습니다.</p>
+                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">{t("home.pitch.creator.step3Title")}</p>
+                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">{t("home.pitch.creator.step3Body")}</p>
                           </div>
                         </li>
                       </ol>

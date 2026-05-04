@@ -1,6 +1,7 @@
 "use client";
 
 import type { ButtonHTMLAttributes } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 /**
  * 홈·하이라이트 공통 시작 CTA — 옅은 검정 필 + 1px 반투명 화이트 테두리,
@@ -20,6 +21,7 @@ export function HomeStartCtaButton({
   onPointerDown,
   compactSpacing = false,
 }: HomeStartCtaButtonProps) {
+  const { t } = useTranslation();
   const sizeCls = compactSpacing
     ? "px-6 py-2.5 text-[16px] sm:px-7 sm:py-3 sm:text-[17px]"
     : "px-7 py-3.5 text-[17px] sm:px-9 sm:py-4 sm:text-[19px]";
@@ -33,7 +35,7 @@ export function HomeStartCtaButton({
       className={`group inline-flex shrink-0 cursor-pointer items-center justify-center gap-2.5 rounded-full border border-white/38 bg-black/25 ${sizeCls} font-semibold tracking-[-0.02em] text-white transition-[box-shadow,background-color,border-color] duration-300 ease-out hover:border-[rgba(228,41,128,0.58)] hover:bg-black/38 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.5)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-reels-crimson/45 focus-visible:ring-offset-0 [html[data-theme='light']_&]:border-white/45 [html[data-theme='light']_&]:bg-black/15 [html[data-theme='light']_&]:hover:border-[rgba(228,41,128,0.52)] [html[data-theme='light']_&]:hover:bg-black/28 [html[data-theme='light']_&]:hover:shadow-[0_6px_20px_-10px_rgba(0,0,0,0.28)] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:border-white/38 disabled:hover:bg-black/25 disabled:hover:shadow-none disabled:[html[data-theme='light']_&]:hover:border-white/45 disabled:[html[data-theme='light']_&]:hover:bg-black/15`}
     >
       <span className="select-none text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.45)]">
-        시작하기
+        {t("home.cta.start")}
       </span>
       <svg
         viewBox="0 0 20 20"

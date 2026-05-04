@@ -7,6 +7,7 @@ import {
   authModalGoogleButtonText,
   authModalGoogleChevronClass,
 } from "@/lib/authModalTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Props = {
   onClick: () => void | Promise<void>;
@@ -35,6 +36,7 @@ const googleGlyph = (
 
 /** 로그인·회원가입 모달 공통 — Google CTA (브랜드 핑크 화살표) */
 export function AuthModalGoogleStartButton({ onClick }: Props) {
+  const { t } = useTranslation();
   return (
     <button
       type="button"
@@ -42,7 +44,7 @@ export function AuthModalGoogleStartButton({ onClick }: Props) {
       className={`relative mx-auto mt-9 flex w-full max-w-[360px] items-center justify-center gap-2.5 rounded-full bg-white px-4 py-3 font-extrabold text-[#1a1a1a] transition hover:brightness-95 sm:gap-3 sm:px-6 sm:py-4 ${authModalGoogleButtonShadow}`}
     >
       {googleGlyph}
-      <span className={`shrink-0 ${authModalGoogleButtonText}`}>Google로 바로 시작</span>
+      <span className={`shrink-0 ${authModalGoogleButtonText}`}>{t("auth.googleCta")}</span>
       <ChevronRight
         className={authModalGoogleChevronClass}
         color={AUTH_MODAL_BRAND_PINK_HEX}

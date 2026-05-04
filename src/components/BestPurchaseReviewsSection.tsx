@@ -1,39 +1,27 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { buildNotionistsAvatarUrl } from "@/data/reelsAvatarPresets";
 import { BEST_PURCHASE_REVIEWS } from "@/data/marketing";
 import { LOCAL_TRENDING_FEED_VIDEOS } from "@/data/videos";
 import { homeSectionHeadingH2ClassName } from "@/lib/homeSectionHeadingTypography";
+import { useTranslation } from "@/hooks/useTranslation";
 
-type ReviewDetailMeta = {
-  videoTitle: string;
-  rating: number;
-  poster: string;
-  previewSrc: string;
-};
-
-const REVIEW_DETAIL_BY_ID: Record<string, ReviewDetailMeta> = {
+const REVIEW_DETAIL_POSTER: Record<string, { poster: string; previewSrc: string }> = {
   "rv-1": {
-    videoTitle: "라면 끓이는 일상 릴스",
-    rating: 5,
     poster: LOCAL_TRENDING_FEED_VIDEOS[0]?.poster ?? "",
     previewSrc: LOCAL_TRENDING_FEED_VIDEOS[0]?.src ?? "",
   },
   "rv-2": {
-    videoTitle: "비 오는 창가 무드 클립",
-    rating: 4,
     poster: LOCAL_TRENDING_FEED_VIDEOS[1]?.poster ?? "",
     previewSrc: LOCAL_TRENDING_FEED_VIDEOS[1]?.src ?? "",
   },
   "rv-3": {
-    videoTitle: "넘어지는 순간 숏클립",
-    rating: 5,
     poster: LOCAL_TRENDING_FEED_VIDEOS[2]?.poster ?? "",
     previewSrc: LOCAL_TRENDING_FEED_VIDEOS[2]?.src ?? "",
   },
   "rv-4": {
-    videoTitle: "카페 거품 ASMR 하이라이트",
-    rating: 4,
     poster: LOCAL_TRENDING_FEED_VIDEOS[3]?.poster ?? "",
     previewSrc: LOCAL_TRENDING_FEED_VIDEOS[3]?.src ?? "",
   },
@@ -50,10 +38,11 @@ function pickReviewVideoById(reviewId: string) {
 }
 
 function ReviewStars({ rating }: { rating: number }) {
+  const { t } = useTranslation();
   return (
     <div
       className="flex items-center gap-1 py-[2px] leading-none"
-      aria-label={`별점 ${rating}점`}
+      aria-label={t("home.reviews.starsAria", { n: rating })}
     >
       {Array.from({ length: 5 }).map((_, i) => {
         const fillRatio = Math.max(0, Math.min(1, rating - i));
@@ -103,6 +92,7 @@ function ReviewStars({ rating }: { rating: number }) {
 }
 
 export function BestPurchaseReviewsSection() {
+  const { t } = useTranslation();
   const quickReviews = BEST_PURCHASE_REVIEWS.slice(0, 4);
   const marqueeReviews = [...quickReviews, ...quickReviews];
 
@@ -115,10 +105,10 @@ export function BestPurchaseReviewsSection() {
       <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-28 sm:px-6 sm:pb-20 sm:pt-32 lg:px-8">
         <div className="relative">
           <h2 id="best-reviews-heading" className={homeSectionHeadingH2ClassName}>
-            구매 후기
+            {t("home.reviews.heading")}
           </h2>
           <p className="mx-auto mt-2 max-w-2xl text-center text-[16px] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
-            좋다고 떠들지 않겠습니다. 직접 써본 분들의 안목을 믿어보세요.
+            {t("home.reviews.subtitle")}
           </p>
         </div>
 
@@ -126,11 +116,25 @@ export function BestPurchaseReviewsSection() {
           <div className="review-marquee-track">
             {marqueeReviews.map((card, idx) => {
               const sampleVideo = pickReviewVideoById(card.id);
-              const detail = REVIEW_DETAIL_BY_ID[card.id] ?? {
-                videoTitle: sampleVideo?.title ?? "인기 영상 클립 후기",
-                rating: 4,
-                poster: sampleVideo?.poster ?? "",
-                previewSrc: sampleVideo?.src ?? "",
+              const posterMeta = REVIEW_DETAIL_POSTER[card.id];
+              const titleKey = `home.reviews.videoTitle.${card.id}`;
+              const quoteKey = `home.reviews.quote.${card.id}`;
+              const titled = t(titleKey);
+              const quoted = t(quoteKey);
+              const videoTitle =
+                titled !== titleKey ? titled : (sampleVideo?.title ?? t("home.reviews.fallbackVideoTitle"));
+              const quote = quoted !== quoteKey ? quoted : card.quote;
+              const rating =
+                card.id === "rv-1" || card.id === "rv-3"
+                  ? 5
+                  : card.id === "rv-2" || card.id === "rv-4"
+                    ? 4
+                    : 4;
+              const detail = {
+                videoTitle,
+                rating,
+                poster: posterMeta?.poster ?? sampleVideo?.poster ?? "",
+                previewSrc: posterMeta?.previewSrc ?? sampleVideo?.src ?? "",
               };
               const detailHref = sampleVideo ? `/video/${sampleVideo.id}` : "/category/best";
               return (
@@ -138,7 +142,7 @@ export function BestPurchaseReviewsSection() {
                   key={`${card.id}-${idx}`}
                   href={detailHref}
                   className="relative block h-[410px] w-[min(68vw,216px)] shrink-0 lg:w-[216px]"
-                  aria-label={`${card.author} 후기 상세 영상 보기`}
+                  aria-label={t("home.reviews.detailLink", { author: card.author })}
                 >
                   <article className="review-motion-card group absolute left-0 top-1/2 flex h-[180px] w-full -translate-y-1/2 flex-col justify-center rounded-2xl border border-white/12 bg-white/[0.04] p-4 backdrop-blur-sm transition-[height,border-color,background-color,box-shadow] duration-500 ease-out [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_12px_32px_-18px_rgba(15,23,42,0.12)] hover:h-[385px] hover:justify-start hover:border-white/28 hover:bg-white/[0.06] hover:shadow-[0_18px_42px_-24px_rgba(0,0,0,0.6)] [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:shadow-[0_18px_42px_-24px_rgba(15,23,42,0.14)]">
                     <div className="review-hidden-meta mb-0 max-h-0 overflow-hidden opacity-0 transition-all duration-500 ease-out group-hover:mb-3 group-hover:max-h-[270px] group-hover:opacity-100">
@@ -170,7 +174,7 @@ export function BestPurchaseReviewsSection() {
                         </span>
                       </div>
                       <p className="mt-1.5 line-clamp-2 text-[12px] font-medium leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600">
-                        사용 영상: {detail.videoTitle}
+                        {t("home.reviews.usedVideo", { title: detail.videoTitle })}
                       </p>
                     </div>
                     <p
@@ -181,7 +185,7 @@ export function BestPurchaseReviewsSection() {
                         WebkitBoxOrient: "vertical",
                       }}
                     >
-                      {card.quote}
+                      {quote}
                     </p>
                     <div className="mt-2.5 flex items-center gap-2">
                       <div className="relative h-8 w-8 overflow-hidden rounded-full">

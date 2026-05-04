@@ -22,15 +22,17 @@ import {
 } from "@/lib/authModalTheme";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
+import { useTranslation } from "@/hooks/useTranslation";
 
 function HomeBestMarquee({ videos }: { videos: FeedVideo[] }) {
+  const { t } = useTranslation();
   const loop = useMemo(() => [...videos, ...videos], [videos]);
   if (videos.length === 0) return null;
 
   return (
     <div
       className="relative w-full overflow-hidden py-4 sm:py-6"
-      aria-label="베스트 릴스 미리보기"
+      aria-label={t("home.hero.marqueeAria")}
     >
       <div className="pr-6 pl-2 sm:pr-10 sm:pl-3 md:pr-16 md:pl-[max(0px,env(safe-area-inset-left))] lg:pr-[4.5rem] xl:pr-24">
         <div className="home-best-marquee-track flex gap-1.5 sm:gap-2 md:gap-2.5">
@@ -45,6 +47,7 @@ function HomeBestMarquee({ videos }: { videos: FeedVideo[] }) {
 
 export function Highlight24() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { user, loading: authLoading } = useAuthSession();
   /** 베스트 피드 — 로컬 인기 10종, 판매가 높은 순(데모) */
   const bestVideos = useMemo(() => {
@@ -141,7 +144,7 @@ export function Highlight24() {
         marginTop: "calc(var(--header-height, 0px) * -1)",
         paddingTop: "var(--header-height, 0px)",
       }}
-      aria-label="ARA 메인"
+      aria-label={t("home.hero.sectionAria")}
     >
       <div
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_50%_-10%,rgba(228,41,128,0.09),transparent_55%)]"
@@ -165,7 +168,7 @@ export function Highlight24() {
           ARA
         </h1>
         <p className="mx-auto mt-2 max-w-[46rem] px-2 text-center text-[16px] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
-          누구나 쉽고 빠르게 숏폼을 거래하는 글로벌 동영상 쇼핑몰입니다.
+          {t("home.hero.tagline")}
         </p>
 
         <div className="mt-4 flex w-full max-w-xl flex-col items-center gap-3 sm:mt-5 sm:gap-4">
@@ -178,11 +181,11 @@ export function Highlight24() {
             <div className="flex shrink-0 flex-wrap items-center justify-center gap-5">
               {(
                 [
-                  { label: "인기순위", target: "trending-rank" },
-                  { label: "설명", target: "seller-pitch" },
-                  { label: "후기", target: "best-reviews" },
+                  { labelKey: "home.hero.jump.trending", target: "trending-rank" },
+                  { labelKey: "home.hero.jump.howItWorks", target: "seller-pitch" },
+                  { labelKey: "home.hero.jump.reviews", target: "best-reviews" },
                 ] as const
-              ).map(({ label, target }) => (
+              ).map(({ labelKey, target }) => (
                 <button
                   key={target}
                   type="button"
@@ -199,7 +202,7 @@ export function Highlight24() {
                       aria-hidden
                     />
                     <span className="whitespace-nowrap text-[15px] font-medium text-white/60 transition-colors duration-300 group-hover:text-white [html[data-theme='light']_&]:text-zinc-500 [html[data-theme='light']_&]:group-hover:text-zinc-900">
-                      {label}
+                      {t(labelKey)}
                     </span>
                   </span>
                   <span className="h-[1.5px] w-full origin-left scale-x-0 rounded-full bg-[color:var(--reels-point)] transition-transform duration-300 group-hover:scale-x-100" />
@@ -229,7 +232,7 @@ export function Highlight24() {
               <div
                 role="dialog"
                 aria-modal="true"
-                aria-label="로그인 또는 회원가입"
+                aria-label={t("auth.dialogAria")}
                 className={`relative w-full max-h-[min(92vh,760px)] overflow-y-auto rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
               >
                 <div className={authModalGlowTop} aria-hidden />
@@ -238,7 +241,7 @@ export function Highlight24() {
                   type="button"
                   onClick={() => setAuthOpen(false)}
                   className={authModalDismissButtonCls}
-                  aria-label="닫기"
+                  aria-label={t("a11y.close")}
                 >
                   ×
                 </button>
@@ -251,7 +254,7 @@ export function Highlight24() {
                   ARA
                 </p>
                 <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
-                  로그인/회원가입
+                  {t("auth.loginSignupTitle")}
                 </p>
                 <AuthModalGoogleStartButton onClick={startGoogleAuth} />
               </div>
