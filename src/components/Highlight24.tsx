@@ -1,7 +1,5 @@
 "use client";
 
-import { useReducedMotion } from "framer-motion";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
 import { createPortal } from "react-dom";
@@ -12,6 +10,7 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
 import { AuthModalPortal } from "@/components/AuthModalPortal";
+import { HomeMarqueeVideoCard } from "@/components/HomeMarqueeVideoCard";
 import { HomeStartCtaButton } from "@/components/HomeStartCtaButton";
 import { MainTopUserMenu } from "@/components/MainTopUserMenu";
 import { ReelsSearchField } from "@/components/ReelsSearchField";
@@ -22,43 +21,7 @@ import {
   authModalGlowTop,
 } from "@/lib/authModalTheme";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
-import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
-import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
-
-/** 링 호버와 동일: 로컬은 구간 루프, 외부는 짧은 프리뷰 */
-function MarqueeCardPreview({ video }: { video: FeedVideo }) {
-  const reduceMotion = useReducedMotion() ?? false;
-  const previewSrc = video.previewSrc ?? video.src;
-  const isLocal = isLocalPublicVideo(previewSrc);
-  const hover = useHoverInstantPreview(!isLocal, video, reduceMotion);
-  const localPb = useLocalSamplePlayback(video.id, previewSrc, {
-    enableHoverLoop: isLocal && !reduceMotion,
-    reduceMotion,
-  });
-  const posterSrc = sanitizePosterSrc(video.poster);
-  return (
-    <div
-      className="absolute inset-0"
-      onMouseEnter={isLocal ? localPb.onEnter : hover.onEnter}
-      onMouseLeave={isLocal ? localPb.onLeave : hover.onLeave}
-    >
-      <video
-        ref={isLocal ? localPb.ref : hover.ref}
-        className="absolute inset-0 h-full w-full object-cover"
-        poster={isLocal ? undefined : posterSrc}
-        playsInline
-        muted
-        preload="auto"
-        loop={false}
-        onTimeUpdate={isLocal ? localPb.onTimeUpdate : hover.onTimeUpdate}
-      >
-        <source src={previewSrc} type="video/mp4" />
-      </video>
-    </div>
-  );
-}
 
 function HomeBestMarquee({ videos }: { videos: FeedVideo[] }) {
   const loop = useMemo(() => [...videos, ...videos], [videos]);
@@ -79,19 +42,7 @@ function HomeBestMarquee({ videos }: { videos: FeedVideo[] }) {
       />
       <div className="home-best-marquee-track flex gap-4 sm:gap-5 md:gap-6">
         {loop.map((v, i) => (
-          <Link
-            key={`${v.id}-${i}`}
-            href={`/video/${v.id}`}
-            className="group relative aspect-[216/384] h-[clamp(288px,52vh,460px)] shrink-0 overflow-hidden rounded-2xl bg-black/30 shadow-[0_16px_48px_-20px_rgba(0,0,0,0.55)] outline-none transition-[transform,box-shadow] hover:z-[2] hover:shadow-[0_20px_56px_-18px_rgba(228,41,128,0.12)] focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070708] [html[data-theme='light']_&]:bg-zinc-100/80 [html[data-theme='light']_&]:focus-visible:ring-offset-white"
-          >
-            <div className="relative h-full w-full">
-              <MarqueeCardPreview video={v} />
-              <div
-                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/15"
-                aria-hidden
-              />
-            </div>
-          </Link>
+          <HomeMarqueeVideoCard key={`${v.id}-${i}`} video={v} />
         ))}
       </div>
     </div>
