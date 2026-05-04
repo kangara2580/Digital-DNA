@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { flushSync } from "react-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaceProfileUploadSection } from "@/components/FaceProfileUploadSection";
 import { LocalePreferenceSelect } from "@/components/LocalePreferenceSelect";
@@ -67,11 +68,19 @@ function normalizeSettingsTab(input: string | null): SettingsTab {
   return "basic";
 }
 
-function profileAvatarKey(v: ProfileAvatar | null): string {
-  if (!v) return "null";
-  if (v.kind === "preset") return `preset:${v.seed}`;
-  if (v.kind === "upload") return `upload:${String(v.dataUrl.length)}:${v.dataUrl.slice(0, 32)}`;
-  return `custom:${v.parts.seed}:${v.parts.gender}`;
+function appProfileAvatarPatch(
+  next: ProfileAvatar | null,
+): Pick<AppProfile, "avatar_kind" | "avatar_seed" | "avatar_custom"> {
+  return {
+    avatar_kind: next?.kind ?? null,
+    avatar_seed: next?.kind === "preset" ? next.seed : null,
+    avatar_custom:
+      next?.kind === "custom"
+        ? JSON.stringify(next.parts)
+        : next?.kind === "upload"
+          ? next.dataUrl
+          : null,
+  };
 }
 
 export function AccountSettingsDashboard() {
@@ -97,22 +106,10 @@ export function AccountSettingsDashboard() {
     [profileRecord, user],
   );
 
-  const profileAvatarSynced = useMemo(
+  const profileAvatar = useMemo(
     () => resolveProfileAvatar(user, profileForForm),
     [user, profileForForm],
   );
-
-  const [profileAvatarDraft, setProfileAvatarDraft] = useState<ProfileAvatar | null>(null);
-
-  useEffect(() => {
-    const syncedKey = profileAvatarKey(profileAvatarSynced);
-    setProfileAvatarDraft((prev) => {
-      if (prev !== null && profileAvatarKey(prev) === syncedKey) return null;
-      return prev;
-    });
-  }, [profileAvatarSynced]);
-
-  const profileAvatar = profileAvatarDraft ?? profileAvatarSynced;
 
   const persistProfileAvatar = useCallback(
     async (next: ProfileAvatar | null): Promise<boolean> => {
@@ -159,13 +156,37 @@ export function AccountSettingsDashboard() {
 
   const onProfileAvatarPick = useCallback(
     async (next: ProfileAvatar | null) => {
-      setProfileAvatarDraft(next);
-      if (!user || !getSupabaseBrowserClient()) {
-        setProfileAvatarDraft(null);
-        return;
-      }
+      if (!user) return;
+
+      flushSync(() => {
+        setProfileRecord((prev) => {
+          const empty: AppProfile = {
+            user_id: user.id,
+            email: null,
+            nickname: null,
+            first_name: null,
+            last_name: null,
+            phone: null,
+            phone_country_code: null,
+            country: null,
+            timezone: null,
+            avatar_kind: null,
+            avatar_seed: null,
+            avatar_custom: null,
+          };
+          const base = prev ?? empty;
+          return mergeProfileRowWithAuthUser({ ...base, ...appProfileAvatarPatch(next) }, user);
+        });
+      });
+
+      const supabase = getSupabaseBrowserClient();
+      if (!supabase) return;
+
       const ok = await persistProfileAvatar(next);
-      if (!ok) setProfileAvatarDraft(null);
+      if (!ok) {
+        const merged = await loadProfileMergedWithBackfill(supabase, user);
+        if (merged) setProfileRecord(merged);
+      }
     },
     [user, persistProfileAvatar],
   );
