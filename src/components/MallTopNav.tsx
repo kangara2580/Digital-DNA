@@ -333,10 +333,10 @@ export function MallTopNav() {
         <Fragment>
           <div className="pointer-events-none fixed inset-x-0 top-0 z-[120] md:pl-[var(--reels-rail-w)]">
             <div className="pointer-events-none flex w-full items-center justify-end gap-2 px-4 pt-[max(0.65rem,env(safe-area-inset-top))] pr-[max(1rem,env(safe-area-inset-right))] sm:gap-2.5 sm:px-6 sm:pt-[max(0.75rem,env(safe-area-inset-top))] sm:pr-6">
-              {/** 폭은 ExploreReelSlide 우측 스탯 덱(`max-w-[min(15rem,38vw)]`)과 동일 시각 정렬 */}
-              <div className="pointer-events-auto w-[min(15rem,38vw)] min-w-0 shrink-0 sm:w-[min(17rem,34vw)]">
+              <div className="pointer-events-auto shrink-0">
                 <ReelsSearchField
                   compact
+                  exploreWatchExpand
                   q={exploreSearchQ}
                   setQ={setExploreSearchQ}
                 />
@@ -449,6 +449,7 @@ export function MallTopNav() {
               <div className="relative z-20 mt-0 min-w-0 flex-1 pr-1 sm:pr-2">
                 <ReelsSearchField
                   compact
+                  pinkTrailingSubmit
                   q={exploreSearchQ}
                   setQ={setExploreSearchQ}
                 />
