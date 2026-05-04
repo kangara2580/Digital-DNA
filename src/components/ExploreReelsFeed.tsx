@@ -5,12 +5,14 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type Dispatch,
   type SetStateAction,
 } from "react";
+import { createPortal } from "react-dom";
 import { ExploreReelSlide } from "@/components/ExploreReelSlide";
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { VideoCard } from "@/components/VideoCard";
@@ -190,6 +192,11 @@ function ExploreWatchReels({
   const goNextReel = useCallback(() => scrollByOneSlide(1), [scrollByOneSlide]);
   const goPrevReel = useCallback(() => scrollByOneSlide(-1), [scrollByOneSlide]);
 
+  const [chevronPortal, setChevronPortal] = useState<HTMLElement | null>(null);
+  useLayoutEffect(() => {
+    setChevronPortal(document.body);
+  }, []);
+
   // 키보드 이동만 커스텀 처리(휠/트랙패드는 네이티브 스크롤로 버벅임 최소화)
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -225,29 +232,33 @@ function ExploreWatchReels({
     };
   }, []);
 
+  const chevronRail = (
+    /* 틱톡 스타일: 위·아래 한 장씩 — transform 없이 뷰포트 고정(MallTopNav 플로팅과 동일 right-4/sm:right-6) */
+    <div className="pointer-events-none fixed inset-y-0 right-[max(1rem,env(safe-area-inset-right))] z-[101] flex flex-col justify-center gap-2 sm:right-[max(1.5rem,env(safe-area-inset-right))]">
+      <button
+        type="button"
+        onClick={goPrevReel}
+        className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
+        aria-label="이전 영상"
+        title="이전 영상"
+      >
+        <ChevronUp className="h-6 w-6 text-reels-crimson transition-colors group-hover:text-[#F56BA5]" strokeWidth={2.85} aria-hidden />
+      </button>
+      <button
+        type="button"
+        onClick={goNextReel}
+        className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
+        aria-label="다음 영상"
+        title="다음 영상"
+      >
+        <ChevronDown className="h-6 w-6 text-reels-crimson transition-colors group-hover:text-[#F56BA5]" strokeWidth={2.85} aria-hidden />
+      </button>
+    </div>
+  );
+
   return (
     <>
-      {/* 틱톡 스타일: 위·아래로 한 영상씩 이동 — 우측 여백은 탐색 시청 시 플로팅 계정 메뉴(MallTopNav)와 동일 */}
-      <div className="pointer-events-none fixed right-4 top-1/2 z-[101] flex -translate-y-1/2 flex-col gap-2 sm:right-6">
-        <button
-          type="button"
-          onClick={goPrevReel}
-          className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
-          aria-label="이전 영상"
-          title="이전 영상"
-        >
-          <ChevronUp className="h-6 w-6 text-reels-crimson transition-colors group-hover:text-[#F56BA5]" strokeWidth={2.85} aria-hidden />
-        </button>
-        <button
-          type="button"
-          onClick={goNextReel}
-          className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
-          aria-label="다음 영상"
-          title="다음 영상"
-        >
-          <ChevronDown className="h-6 w-6 text-reels-crimson transition-colors group-hover:text-[#F56BA5]" strokeWidth={2.85} aria-hidden />
-        </button>
-      </div>
+      {chevronPortal ? createPortal(chevronRail, chevronPortal) : chevronRail}
 
       <div
         ref={scrollRef}
