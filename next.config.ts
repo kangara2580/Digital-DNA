@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+/** 상위 디렉터리에 다른 lockfile이 있어도 이 프로젝트를 트레이싱 루트로 고정 */
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
+  outputFileTracingRoot: projectRoot,
   /**
    * dev 서버(.next)와 production build 산출물(.next-build)을 분리해
    * 동시/교차 실행 시 chunk·manifest 충돌(ENOENT, MODULE_NOT_FOUND)을 방지합니다.
