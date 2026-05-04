@@ -25,7 +25,7 @@ export function RailHomeLogoSvgFilters() {
           <feMorphology
             in="SourceAlpha"
             operator="dilate"
-            radius="0.55"
+            radius="1.1"
             result="spread"
           />
           <feComposite
@@ -58,7 +58,7 @@ export function RailHomeLogoSvgFilters() {
           <feMorphology
             in="SourceAlpha"
             operator="dilate"
-            radius="0.55"
+            radius="1.1"
             result="spread"
           />
           <feComposite
