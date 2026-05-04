@@ -171,7 +171,7 @@ export function Highlight24() {
         >
           ARA
         </h1>
-        <p className="mt-2 max-w-[46rem] px-2 text-[clamp(13px,3.2vw,16px)] font-medium leading-snug tracking-[0.01em] text-white/75 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="mx-auto mt-2 max-w-[46rem] px-2 text-center text-[16px] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
           누구나 쉽고 빠르게 숏폼을 거래하는 글로벌 동영상 쇼핑몰입니다.
         </p>
 
