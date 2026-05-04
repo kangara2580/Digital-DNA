@@ -1,7 +1,7 @@
 /**
  * ARA — Design System (Apple minimal + Cyberpunk contrast + IG-trendy)
- * Primary brand pink: #E42980 | #00F2EA Cyber Cyan | #050505 Deep Abyss (crimson토큰 = 동일 브랜드 핑크)
- * Point (`--reels-point`): #E42980 — 명시된 UI 안내 등
+ * Primary brand pink: Pink Glo 근사 디지털값 #FF2D8D (Pantone 17-2435 TN 계열) | #00F2EA Cyber Cyan | #050505 Deep Abyss
+ * Point (`--reels-point`): #FF2D8D — 브랜드 포인트 UI
  * Surface/card: glass + 1px border (see .reels-glass-card)
  * Typography: Inter (layout.tsx) + Pretendard (KR). Headings: 700–800.
  * Motion: page enter template.tsx — 0.4s ease-in-out + blur; AI CTAs: .reels-ai-glow
@@ -16,15 +16,15 @@
   --home-ranked-strip-bg: #02040a;
   --reels-void: #040916;
   --reels-lift: #070f1f;
-  --reels-crimson: #E42980;
+  --reels-crimson: #ff2d8d;
   --reels-cyan: #00f2ea;
-  /** 브랜드 포인트 핑크 — 코드·명시 안내 외 다른 곳에는 임의로 쓰지 않음 */
-  --reels-point: #E42980;
+  /** 브랜드 포인트 핑크 (Pink Glo 계열) */
+  --reels-point: #ff2d8d;
   --reels-surface-card: rgba(255, 255, 255, 0.08);
   --reels-glass: rgba(255, 255, 255, 0.09);
   --reels-glass-strong: rgba(255, 255, 255, 0.15);
   --reels-border: rgba(255, 255, 255, 0.2);
-  --reels-border-hot: rgba(228, 41, 128, 0.38);
+  --reels-border-hot: rgba(255, 45, 141, 0.4);
   --reels-shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.25);
   --reels-icon-glass: rgba(255, 255, 255, 0.18);
   --reels-icon-border: rgba(255, 255, 255, 0.26);
@@ -45,7 +45,7 @@
 }
 
 :root[data-theme="light"] {
-  --reels-crimson: #E42980;
+  --reels-crimson: #ff2d8d;
   --reels-cyan: #00f2ea;
   /** 홈 스트립·푸터 — 라이트에서 본문과 동일한 밝은 캔버스 */
   --home-ranked-strip-bg: #ffffff;
@@ -56,7 +56,7 @@
   --reels-glass: rgba(255, 255, 255, 0.68);
   --reels-glass-strong: rgba(255, 255, 255, 0.82);
   --reels-border: rgba(132, 153, 199, 0.32);
-  --reels-border-hot: rgba(228, 41, 128, 0.36);
+  --reels-border-hot: rgba(255, 45, 141, 0.38);
   --reels-shadow-soft: 0 10px 30px rgba(56, 78, 125, 0.12);
   --reels-icon-glass: rgba(255, 255, 255, 0.88);
   --reels-icon-border: rgba(140, 161, 208, 0.36);
@@ -112,7 +112,7 @@
 
 @media (min-width: 768px) {
   :root {
-    --reels-rail-w: 4rem;
+    --reels-rail-w: 4.5rem;
   }
 }
 
@@ -611,6 +611,29 @@ html[data-theme="light"] .feed-scroll-wide::-webkit-scrollbar-thumb:hover {
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* 홈 베스트 릴스 무한 마퀴 — 두 번째 절반까지 translate 로 끊김 없이 루프 */
+@keyframes home-best-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.home-best-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: home-best-marquee 100s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-best-marquee-track {
+    animation: none;
+  }
 }
 
 input.mall-search[type="search"] {

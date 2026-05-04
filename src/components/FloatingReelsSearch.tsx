@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 import { ReelsSearchField } from "@/components/ReelsSearchField";
 
 /**
- * 헤더 바 없이 로그인 버튼과 같이 화면에 고정되는 검색.
- * — 홈·탐색만 (쇼핑몰은 MallTopNav sticky 행, 순위 페이지는 제외)
+ * 헤더 바 없이 고정되는 검색.
+ * — 홈(/)은 Highlight24 히어로에 포함, 여기서는 탐색 등만.
  */
 export function FloatingReelsSearch() {
   const pathname = usePathname();
@@ -38,17 +38,8 @@ export function FloatingReelsSearch() {
   if (isLeaderboard || isShop) return null;
   if (!isHome && !isExplore) return null;
 
-  if (isHome) {
-    return (
-      <div className="pointer-events-none fixed inset-y-0 right-0 left-0 z-[118] md:left-[var(--reels-rail-w)]">
-        <div className="pointer-events-none w-full pl-4 pr-[max(9.5rem,env(safe-area-inset-right))] pt-4 sm:pl-6 sm:pr-[max(10.5rem,env(safe-area-inset-right))] sm:pt-5">
-          <div className="pointer-events-auto mx-auto w-full min-w-0 max-w-3xl sm:max-w-4xl">
-            <ReelsSearchField compact={false} homeHero q={q} setQ={setQ} />
-          </div>
-        </div>
-      </div>
-    );
-  }
+  /* 홈: 검색은 Highlight24 히어로 안에서만 노출 */
+  if (isHome) return null;
 
   if (isExplore && exploreWatch) {
     return (
