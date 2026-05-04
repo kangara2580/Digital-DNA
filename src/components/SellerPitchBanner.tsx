@@ -286,7 +286,7 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                   id="seller-pitch-heading"
                   className={`${homeSectionHeadingH2ClassName}`}
                 >
-                  단 <span className="font-bold">3</span>단계
+                  단, <span className="font-bold">3</span>단계면 충분합니다.
                 </h2>
                 <div className="grid gap-7 lg:grid-cols-2 lg:gap-10 xl:gap-12">
                   {/* 사용자 카드 */}
