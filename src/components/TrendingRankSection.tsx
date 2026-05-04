@@ -336,7 +336,7 @@ export function TrendingRankSection() {
               <svg viewBox="0 0 220 48" fill="none" className="h-7 w-[190px] sm:h-8 sm:w-[220px]" aria-hidden>
                 {showCollapse ? (
                   <path
-                    d="M10 34L110 10L210 34"
+                    d="M10 34L110 7L210 34"
                     stroke="currentColor"
                     strokeWidth="7"
                     strokeLinecap="round"
@@ -344,7 +344,7 @@ export function TrendingRankSection() {
                   />
                 ) : (
                   <path
-                    d="M10 14L110 38L210 14"
+                    d="M10 14L110 41L210 14"
                     stroke="currentColor"
                     strokeWidth="7"
                     strokeLinecap="round"
