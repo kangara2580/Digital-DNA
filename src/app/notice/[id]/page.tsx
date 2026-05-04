@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 import { NoticeDetailClient } from "@/components/NoticeDetailClient";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
+import { translate } from "@/lib/i18n/dictionaries";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
 import { getNoticeById } from "@/lib/noticesRepo";
 
 type Props = { params: Promise<{ id: string }> };
@@ -19,9 +22,18 @@ export async function generateMetadata({ params }: Props) {
   const { id } = await params;
   const safeId = decodeNoticeId(id);
   const notice = await getNoticeById(safeId);
-  if (!notice) return { title: "Notices — ARA" };
+  if (!notice) {
+    return buildPageMetadata({
+      titleKey: "meta.notice",
+      descriptionKey: "meta.noticeListDescription",
+    });
+  }
+  const locale = await getSiteLocale();
+  const suffix = translate(locale, "meta.brandSuffix");
   return {
-    title: `${notice.title} — Notices`,
+    title: {
+      absolute: `${translate(locale, "meta.noticeDetailTitle", { title: notice.title })}${suffix}`,
+    },
     description: notice.title,
   };
 }

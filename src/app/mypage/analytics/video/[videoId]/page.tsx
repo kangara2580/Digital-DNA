@@ -1,11 +1,14 @@
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { SellerVideoAnalyticsDetail } from "@/components/SellerVideoAnalyticsDetail";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "영상 인사이트 — ARA",
-  description: "개별 동영상의 조회·수익·퍼널·기기·시간대 분석",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({
+    titleKey: "meta.videoInsight",
+    descriptionKey: "meta.videoInsightDescription",
+  });
+}
 
 export default async function SellerVideoAnalyticsPage({
   params,

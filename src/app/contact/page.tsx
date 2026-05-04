@@ -1,10 +1,13 @@
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 import { SupportCenterPageClient } from "@/components/SupportCenterPageClient";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 
-export const metadata = {
-  title: "Help center — ARA",
-  description: "FAQ and contact",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({
+    titleKey: "meta.contact",
+    descriptionKey: "meta.contactDescription",
+  });
+}
 
 export default function ContactPage() {
   return (

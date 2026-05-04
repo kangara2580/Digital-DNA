@@ -3,12 +3,14 @@ import {
   Check,
   CreditCard,
 } from "lucide-react";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 
-export const metadata = {
-  title: "구독·결제 — ARA",
-  description:
-    "구독 플랜과 카드 등록 후 이용 시점 결제를 한곳에서 안내합니다.",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({
+    titleKey: "meta.subscribe",
+    descriptionKey: "meta.subscribeDescription",
+  });
+}
 
 const plans = [
   {

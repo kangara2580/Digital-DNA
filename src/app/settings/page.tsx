@@ -1,9 +1,10 @@
 import { Suspense } from "react";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { AccountSettingsDashboard } from "@/components/AccountSettingsDashboard";
 
-export const metadata = {
-  title: "설정 — ARA",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({ titleKey: "meta.settings" });
+}
 
 export default function SettingsPage() {
   return (

@@ -1,5 +1,6 @@
-/** 브라우저 로컬 저장소 키 — 쿠키 정책 Preferences(개인화)와 대응 */
+/** Browser localStorage keys — aligned with `/cookies` Preferences (personalization). */
 export const STORAGE_THEME = "reels-theme";
+/** Language preference; also stored as a first-party cookie of the same name for SSR/SEO. */
 export const STORAGE_LOCALE = "reels-locale";
 
 export type SiteLocale = "ko" | "en";
@@ -21,5 +22,12 @@ export function applyLocaleToDocument(locale: SiteLocale): void {
     window.localStorage.setItem(STORAGE_LOCALE, locale);
   } catch {
     /* quota / private mode */
+  }
+  try {
+    const secure =
+      typeof window !== "undefined" && window.location?.protocol === "https:";
+    document.cookie = `${STORAGE_LOCALE}=${encodeURIComponent(locale)};path=/;max-age=31536000;samesite=lax${secure ? ";secure" : ""}`;
+  } catch {
+    /* private mode */
   }
 }

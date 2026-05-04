@@ -1,10 +1,13 @@
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 import { LicensePolicyBody } from "@/components/LicensePolicyBody";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 
-export const metadata = {
-  title: "Terms & policies — ARA",
-  description: "Digital DNA (ARA) terms, credits, and content policies",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({
+    titleKey: "meta.license",
+    descriptionKey: "meta.licenseDescription",
+  });
+}
 
 export default function LicensePage() {
   return (

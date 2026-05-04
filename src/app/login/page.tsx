@@ -1,9 +1,10 @@
 import { Suspense } from "react";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { LoginPageClient } from "./LoginPageClient";
 
-export const metadata = {
-  title: "로그인 — ARA",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({ titleKey: "meta.login" });
+}
 
 function LoginFallback() {
   return (

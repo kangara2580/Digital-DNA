@@ -1,12 +1,18 @@
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
+import { translate } from "@/lib/i18n/dictionaries";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
 
-export const metadata = {
-  title: "쿠키 정책 — ARA",
-  description:
-    "Digital DNA 쿠키 정책 — Essential, Performance & Insights, Preferences.",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({
+    titleKey: "meta.cookies",
+    descriptionKey: "meta.cookiesDescription",
+  });
+}
 
-export default function CookiesPage() {
+export default async function CookiesPage() {
+  const locale = await getSiteLocale();
+  const localeCookieHint = translate(locale, "cookies.prefs.localeCookieHint");
   return (
     <FooterLegalPageShell title="쿠키 정책" withCard={false} mainMaxClass="max-w-3xl">
       <div className="mt-10 space-y-12">
@@ -105,6 +111,8 @@ export default function CookiesPage() {
             </code>
             )를 저장해, 상단 메뉴·탐색 설정을 다음 방문 시에도 유지합니다. (UI 번역은 단계적으로 확대할 수
             있습니다.)
+            {" "}
+            {localeCookieHint}
           </p>
         </section>
       </div>

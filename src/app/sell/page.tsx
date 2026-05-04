@@ -1,10 +1,12 @@
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { SellPageClient } from "./SellPageClient";
 
-export const metadata = {
-  title: "동영상 판매 등록 — ARA",
-  description:
-    "동영상 파일을 업로드하고 제목·설명·가격·AI 여부 등을 등록합니다.",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({
+    titleKey: "meta.sell",
+    descriptionKey: "meta.sellDescription",
+  });
+}
 
 export default function SellPage() {
   return (

@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { attachLocalePreferenceCookie } from "@/lib/localeCookieMiddleware";
 import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
 
 function canonicalHostFromEnv(): string | null {
@@ -39,7 +40,7 @@ export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname === "/%20auth/callback") {
     const fixed = request.nextUrl.clone();
     fixed.pathname = "/auth/callback";
-    return NextResponse.redirect(fixed);
+    return attachLocalePreferenceCookie(request, NextResponse.redirect(fixed));
   }
 
   const canonicalHost = canonicalHostFromEnv();
@@ -56,7 +57,7 @@ export async function middleware(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.host = canonicalHost;
     redirectUrl.protocol = "https:";
-    return NextResponse.redirect(redirectUrl);
+    return attachLocalePreferenceCookie(request, NextResponse.redirect(redirectUrl));
   }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -77,17 +78,17 @@ export async function middleware(request: NextRequest) {
   if (maybeRecoveryCodeAtRoot) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/reset-password";
-    return NextResponse.redirect(redirectUrl);
+    return attachLocalePreferenceCookie(request, NextResponse.redirect(redirectUrl));
   }
 
   if (!url?.length || !key?.length) {
-    return NextResponse.next({ request });
+    return attachLocalePreferenceCookie(request, NextResponse.next({ request }));
   }
 
   // 비로그인 접근이 허용된 페이지는 Supabase 사용자 조회를 건너뛰어
   // DNS/네트워크 불안정 시 네비게이션이 멈추는 현상을 방지합니다.
   if (!needsAuth) {
-    return NextResponse.next({ request });
+    return attachLocalePreferenceCookie(request, NextResponse.next({ request }));
   }
 
   let supabaseResponse = NextResponse.next({ request });
@@ -120,17 +121,17 @@ export async function middleware(request: NextRequest) {
       redirectUrl.pathname = "/login";
       const returnTo = request.nextUrl.pathname + request.nextUrl.search;
       redirectUrl.searchParams.set("redirect", returnTo);
-      return NextResponse.redirect(redirectUrl);
+      return attachLocalePreferenceCookie(request, NextResponse.redirect(redirectUrl));
     }
   } catch {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     const returnTo = request.nextUrl.pathname + request.nextUrl.search;
     redirectUrl.searchParams.set("redirect", returnTo);
-    return NextResponse.redirect(redirectUrl);
+    return attachLocalePreferenceCookie(request, NextResponse.redirect(redirectUrl));
   }
 
-  return supabaseResponse;
+  return attachLocalePreferenceCookie(request, supabaseResponse);
 }
 
 export const config = {

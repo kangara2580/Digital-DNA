@@ -1,10 +1,13 @@
 import Link from "next/link";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { ReelsLinkUploader } from "@/components/ReelsLinkUploader";
 
-export const metadata = {
-  title: "동영상 링크 등록 — ARA",
-  description: "TikTok·Instagram 동영상 URL을 등록하고 미리보기합니다.",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({
+    titleKey: "meta.uploadReels",
+    descriptionKey: "meta.uploadReelsDescription",
+  });
+}
 
 export default function UploadReelsLinkPage() {
   return (

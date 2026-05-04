@@ -1,10 +1,13 @@
 import { Suspense } from "react";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { CreateStudioPage } from "@/components/CreateStudioPage";
 
-export const metadata = {
-  title: "AI 창작 — ARA",
-  description: "구매한 동영상을 Kling 3.0으로 리스킨합니다.",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({
+    titleKey: "meta.create",
+    descriptionKey: "meta.createDescription",
+  });
+}
 
 function CreateFallback() {
   return (

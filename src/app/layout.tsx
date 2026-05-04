@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-page-custom-font */
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { translate } from "@/lib/i18n/dictionaries";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
 import {
   Black_Han_Sans,
   Fredoka,
@@ -47,21 +49,30 @@ const songMyung = Song_Myung({
   variable: "--font-song-myung",
 });
 
-export const metadata: Metadata = {
-  title: "ARA — Buy the Motion, Own the Moment",
-  description:
-    "Buy motion rights and reskin with Kling 3.0. A curated short-form video market with bestsellers, flash sales, and mood-based picks.",
-  icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getSiteLocale();
+  const suffix = translate(locale, "meta.brandSuffix");
+  return {
+    title: {
+      default: translate(locale, "meta.rootTitle"),
+      template: `%s${suffix}`,
+    },
+    description: translate(locale, "meta.rootDescription"),
+    icons: {
+      icon: "/favicon.svg",
+      shortcut: "/favicon.svg",
+    },
+  };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
+  const locale = await getSiteLocale();
+  const htmlLang = locale === "en" ? "en" : "ko";
+
   const themeBootScript = `
     (function () {
       try {
@@ -72,8 +83,30 @@ export default function RootLayout({
         document.documentElement.dataset.theme = "dark";
       }
       try {
-        var loc = localStorage.getItem("reels-locale");
+        var cookieMatch = document.cookie.match(/(?:^|;\s)reels-locale=([^;]+)/);
+        var cookieLoc = cookieMatch ? decodeURIComponent(cookieMatch[1].trim()) : null;
+        var storedLoc = localStorage.getItem("reels-locale");
+        var loc =
+          storedLoc === "en" || storedLoc === "ko"
+            ? storedLoc
+            : cookieLoc === "en" || cookieLoc === "ko"
+              ? cookieLoc
+              : "ko";
         document.documentElement.lang = loc === "en" ? "en" : "ko";
+        try {
+          if (storedLoc !== loc) localStorage.setItem("reels-locale", loc);
+          if (cookieLoc !== loc) {
+            var secure =
+              typeof window !== "undefined" &&
+              window.location &&
+              window.location.protocol === "https:";
+            document.cookie =
+              "reels-locale=" +
+              encodeURIComponent(loc) +
+              ";path=/;max-age=31536000;samesite=lax" +
+              (secure ? ";secure" : "");
+          }
+        } catch (e3) {}
       } catch (e2) {
         document.documentElement.lang = "ko";
       }
@@ -82,7 +115,7 @@ export default function RootLayout({
 
   return (
     <html
-      lang="ko"
+      lang={htmlLang}
       data-theme="dark"
       suppressHydrationWarning
       className={`${inter.variable} ${fredoka.variable} ${montserrat.variable} ${blackHanSans.variable} ${nanumGothic.variable} ${songMyung.variable}`}

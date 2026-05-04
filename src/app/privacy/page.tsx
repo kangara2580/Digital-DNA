@@ -1,10 +1,13 @@
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 import { PrivacyPolicyBody } from "@/components/PrivacyPolicyBody";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 
-export const metadata = {
-  title: "Privacy — ARA",
-  description: "ARA privacy policy",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({
+    titleKey: "meta.privacy",
+    descriptionKey: "meta.privacyDescription",
+  });
+}
 
 export default function PrivacyPage() {
   return (

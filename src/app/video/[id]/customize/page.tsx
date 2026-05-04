@@ -1,18 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { PurchaseCustomizeStudio } from "@/components/PurchaseCustomizeStudio";
 import { ALL_MARKET_VIDEO_IDS, getMarketVideoById } from "@/data/videoCommerce";
-
-export const dynamic = "force-static";
 
 export function generateStaticParams() {
   return ALL_MARKET_VIDEO_IDS.map((id) => ({ id }));
 }
 
-export const metadata = {
-  title: "맞춤 리스킨 · 편집 — ARA",
-  description: "구매한 동영상에 얼굴·배경·구간·텍스트를 지정합니다.",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({
+    titleKey: "meta.customize",
+    descriptionKey: "meta.customizeDescription",
+  });
+}
 
 export default async function VideoCustomizePage({
   params,

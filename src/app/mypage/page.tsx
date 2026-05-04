@@ -1,10 +1,11 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { MyPageDashboard } from "@/components/MyPageDashboard";
 
-export const metadata = {
-  title: "마이페이지 — ARA",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({ titleKey: "meta.mypage" });
+}
 
 export default async function MyPage({
   searchParams,

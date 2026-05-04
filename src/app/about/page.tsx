@@ -1,11 +1,13 @@
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 import { AboutPageBody } from "@/components/AboutPageBody";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 
-export const metadata = {
-  title: "About — ARA",
-  description:
-    "Turn video value into assets — a short-form video marketplace connecting creators and buyers.",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({
+    titleKey: "meta.about",
+    descriptionKey: "meta.aboutDescription",
+  });
+}
 
 export default function AboutPage() {
   return (

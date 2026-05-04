@@ -497,6 +497,36 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "meta.resetPassword": "새 비밀번호 설정",
     "meta.faq": "FAQ",
     "meta.landing": "ARA 랜딩",
+    "meta.rootTitle": "ARA — 모션을 사고, 순간을 소유하세요",
+    "meta.rootDescription":
+      "Kling 3.0으로 리스킨할 수 있는 큐레이션 숏폼 영상 마켓. 베스트셀러·플래시 세일·무드별 추천.",
+    "meta.licenseDescription":
+      "Digital DNA(ARA) 이용약관, 크레딧, 콘텐츠 정책을 안내합니다.",
+    "meta.privacyDescription": "ARA 개인정보처리방침",
+    "meta.uploadReelsDescription":
+      "TikTok·인스타그램 등 동영상 URL을 등록하고 미리봅니다.",
+    "meta.sellDescription":
+      "동영상 파일을 업로드하고 제목·설명·가격·AI 여부 등을 등록합니다.",
+    "meta.contactDescription": "FAQ와 문의 안내",
+    "meta.videoInsightDescription":
+      "개별 동영상의 조회·수익·퍼널·기기·시간대 분석",
+    "meta.cookiesDescription":
+      "Digital DNA 쿠키 정책 — Essential, Performance & Insights, Preferences.",
+    "meta.generationResultDescription":
+      "AI 맞춤 리스킨 생성이 완료된 영상을 확인합니다.",
+    "meta.customizeDescription":
+      "구매한 동영상에 얼굴·배경·구간·텍스트를 지정합니다.",
+    "meta.createDescription": "구매한 동영상을 Kling 3.0으로 리스킨합니다.",
+    "meta.subscribeDescription":
+      "구독 플랜과 카드 등록 후 이용 시점 결제를 한곳에서 안내합니다.",
+    "meta.checkoutDescription": "구독 결제 수단 등록과 결제 확인을 진행합니다.",
+    "meta.aboutDescription":
+      "숏폼 영상의 가치를 자산으로 연결하는 마켓플레이스를 소개합니다.",
+    "meta.noticeListDescription":
+      "서비스 업데이트, 정책 변경, 이벤트 공지",
+    "meta.noticeDetailTitle": "{title} — 공지",
+    "cookies.prefs.localeCookieHint":
+      "언어 선택은 초기 화면의 언어·접근성·SEO 메타 정보와 맞추기 위해 동일한 이름의 쿠키에도 저장될 수 있으며, 브라우저에서 고른 값과 동기화됩니다.",
     "mypage.sort.recentViewed": "최근 본 순",
     "mypage.sort.recentViewedAria": "최근 본 동영상 정렬",
     "mypage.recent.clearConfirm": "이 기기에서 최근 본 기록을 모두 지울까요?",
@@ -1361,6 +1391,36 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "meta.resetPassword": "Set a new password",
     "meta.faq": "FAQ",
     "meta.landing": "ARA",
+    "meta.rootTitle": "ARA — Buy the Motion, Own the Moment",
+    "meta.rootDescription":
+      "Buy motion rights and reskin with Kling 3.0. A curated short-form video market with bestsellers, flash sales, and mood-based picks.",
+    "meta.licenseDescription":
+      "Digital DNA (ARA) terms, credits, and content policies",
+    "meta.privacyDescription": "ARA privacy policy",
+    "meta.uploadReelsDescription":
+      "Register TikTok·Instagram·YouTube-style URLs and preview embeds.",
+    "meta.sellDescription":
+      "Upload your file and set title, description, price, and AI flags.",
+    "meta.contactDescription": "FAQ and contact",
+    "meta.videoInsightDescription":
+      "Per-video views, revenue, funnel, devices, and time-of-day analytics.",
+    "meta.cookiesDescription":
+      "Digital DNA cookie policy — Essential, Performance & Insights, Preferences.",
+    "meta.generationResultDescription":
+      "View your completed AI reskin output.",
+    "meta.customizeDescription":
+      "Pick face, background, trim, and text overlays for a purchased video.",
+    "meta.createDescription": "Reskin purchased videos with Kling 3.0.",
+    "meta.subscribeDescription":
+      "Plans, saved cards, and pay-as-you-go billing in one place.",
+    "meta.checkoutDescription": "Complete subscription payment and confirmation.",
+    "meta.aboutDescription":
+      "Turn video value into assets — a short-form marketplace for creators and buyers.",
+    "meta.noticeListDescription":
+      "Service updates, policy changes, and events",
+    "meta.noticeDetailTitle": "{title} — Notice",
+    "cookies.prefs.localeCookieHint":
+      "Your language choice may also be stored in a first-party cookie with the same name so the first paint, <html lang>, and SEO tags match; it stays in sync with what you select in the UI.",
     "mypage.sort.recentViewed": "Recently watched",
     "mypage.sort.recentViewedAria": "Sort recently watched videos",
     "mypage.recent.clearConfirm": "Clear all recently watched videos on this device?",

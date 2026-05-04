@@ -1,8 +1,9 @@
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 
-export const metadata = {
-  title: "FAQ — ARA",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({ titleKey: "meta.faq" });
+}
 
 export default function FaqPage() {
   return (

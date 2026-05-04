@@ -1,12 +1,15 @@
 import { NoticeComposer } from "@/components/NoticeComposer";
 import { NoticeListClient } from "@/components/NoticeListClient";
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { listNotices } from "@/lib/noticesRepo";
 
-export const metadata = {
-  title: "Notices — ARA",
-  description: "Service updates, policy changes, and events",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({
+    titleKey: "meta.notice",
+    descriptionKey: "meta.noticeListDescription",
+  });
+}
 
 export const dynamic = "force-dynamic";
 
