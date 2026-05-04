@@ -82,7 +82,7 @@ export function MyPageSortSelect({
                   aria-selected={isSel}
                   className={`flex w-full min-w-[11.25rem] max-w-[20rem] items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--reels-point)]/40 [html[data-theme='light']_&]:focus-visible:ring-reels-crimson/35 ${
                     isSel
-                      ? "bg-[color:var(--reels-point)]/16 font-semibold text-zinc-50 [html[data-theme='light']_&]:bg-reels-crimson/12 [html[data-theme='light']_&]:text-reels-crimson"
+                      ? "font-semibold text-zinc-100 hover:bg-white/[0.06] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100"
                       : "text-zinc-300 hover:bg-white/[0.06] hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
                   }`}
                   onClick={() => {
