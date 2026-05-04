@@ -133,6 +133,32 @@ body {
 html {
   overflow-x: clip;
   scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+
+html[data-theme="light"] {
+  scrollbar-color: rgba(15, 23, 42, 0.22) transparent;
+}
+
+html::-webkit-scrollbar {
+  width: 10px;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+html[data-theme="light"]::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.2);
+  background-clip: content-box;
 }
 
 /**
@@ -634,6 +660,29 @@ html[data-theme="light"] .feed-scroll-wide::-webkit-scrollbar-thumb:hover {
   .home-best-marquee-track {
     animation: none;
   }
+}
+
+/* 홈 베스트 마퀴: 양끝 동일 페이드(스크롤 방향과 무관) — mask로 레일아웃·z-index 이슈 없음 */
+.home-best-marquee-mask {
+  --marquee-edge: clamp(3rem, 12vw, 6.75rem);
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 var(--marquee-edge),
+    #000 calc(100% - var(--marquee-edge)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 var(--marquee-edge),
+    #000 calc(100% - var(--marquee-edge)),
+    transparent 100%
+  );
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
 input.mall-search[type="search"] {
