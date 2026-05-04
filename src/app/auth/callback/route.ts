@@ -3,6 +3,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { POST_LOGIN_REDIRECT_PATH } from "@/lib/postLoginRedirect";
 import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
 
+/**
+ * OAuth 리다이렉트 전용 Route Handler — HTML을 렌더링하지 않으므로 `generateMetadata`는
+ * 적용되지 않습니다. 탭 제목·검색 스니펫은 이전 페이지 또는 `/login` 등 최종 목적지
+ * 메타가 유지됩니다.
+ */
+
 /** Edge가 아닌 Node에서 Supabase Auth HTTP 호출 안정화 */
 export const runtime = "nodejs";
 

@@ -8,6 +8,7 @@ import {
 } from "@/data/tiktokData";
 import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { translate } from "@/lib/i18n/dictionaries";
+import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
 import { getSiteLocale } from "@/lib/i18n/serverLocale";
 import { resolveVideoDetailSeoTitle } from "@/lib/seo/videoDetailSeo";
 import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
@@ -45,9 +46,13 @@ export async function generateMetadata({
     });
   }
   const locale = await getSiteLocale();
+  const description = translate(locale, "meta.videoDetailDescription", {
+    title,
+  });
   return {
     title,
-    description: translate(locale, "meta.videoDetailDescription", { title }),
+    description,
+    ...socialMetadataFields(locale, title, description),
   };
 }
 

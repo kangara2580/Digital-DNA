@@ -22,6 +22,7 @@ import { prisma } from "@/lib/prisma";
 import { getSupabaseServiceRoleClient } from "@/lib/supabaseServiceRole";
 import { supabaseTables } from "@/lib/supabaseTableNames";
 import { translate } from "@/lib/i18n/dictionaries";
+import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
 import { getSiteLocale } from "@/lib/i18n/serverLocale";
 import { resolveSellerDisplayNameForSeo } from "@/lib/seo/sellerSeo";
 
@@ -46,9 +47,12 @@ export async function generateMetadata({
   }
   const name = await resolveSellerDisplayNameForSeo(sellerKey);
   const locale = await getSiteLocale();
+  const title = translate(locale, "meta.sellerTitle", { name });
+  const description = translate(locale, "meta.sellerDescription", { name });
   return {
-    title: translate(locale, "meta.sellerTitle", { name }),
-    description: translate(locale, "meta.sellerDescription", { name }),
+    title,
+    description,
+    ...socialMetadataFields(locale, title, description),
   };
 }
 

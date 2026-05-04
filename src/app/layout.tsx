@@ -2,7 +2,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { translate } from "@/lib/i18n/dictionaries";
+import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
 import { getSiteLocale } from "@/lib/i18n/serverLocale";
+import { getSiteMetadataBase } from "@/lib/siteMetadataBase";
 import {
   Black_Han_Sans,
   Fredoka,
@@ -52,16 +54,21 @@ const songMyung = Song_Myung({
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getSiteLocale();
   const suffix = translate(locale, "meta.brandSuffix");
+  const titleDefault = translate(locale, "meta.rootTitle");
+  const desc = translate(locale, "meta.rootDescription");
+  const base = getSiteMetadataBase();
   return {
+    ...(base ? { metadataBase: base } : {}),
     title: {
-      default: translate(locale, "meta.rootTitle"),
+      default: titleDefault,
       template: `%s${suffix}`,
     },
-    description: translate(locale, "meta.rootDescription"),
+    description: desc,
     icons: {
       icon: "/favicon.svg",
       shortcut: "/favicon.svg",
     },
+    ...socialMetadataFields(locale, titleDefault, desc),
   };
 }
 

@@ -13,16 +13,19 @@ export function attachLocalePreferenceCookie(
   request: NextRequest,
   response: NextResponse,
 ): NextResponse {
+  let effective: "ko" | "en";
   const cur = request.cookies.get(STORAGE_LOCALE)?.value;
   if (cur === "ko" || cur === "en") {
-    return response;
+    effective = cur;
+  } else {
+    effective = parseAcceptLanguageLocale(request.headers.get("accept-language"));
+    response.cookies.set(STORAGE_LOCALE, effective, {
+      path: "/",
+      maxAge: ONE_YEAR,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
   }
-  const locale = parseAcceptLanguageLocale(request.headers.get("accept-language"));
-  response.cookies.set(STORAGE_LOCALE, locale, {
-    path: "/",
-    maxAge: ONE_YEAR,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-  });
+  response.headers.set("Content-Language", effective === "en" ? "en" : "ko");
   return response;
 }

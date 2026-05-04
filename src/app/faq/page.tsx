@@ -1,15 +1,21 @@
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
+import { translate } from "@/lib/i18n/dictionaries";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
 
 export async function generateMetadata() {
-  return buildPageMetadata({ titleKey: "meta.faq" });
+  return buildPageMetadata({
+    titleKey: "meta.faq",
+    descriptionKey: "meta.faqDescription",
+  });
 }
 
-export default function FaqPage() {
+export default async function FaqPage() {
+  const locale = await getSiteLocale();
   return (
     <FooterLegalPageShell
-      title="FAQ"
-      description="구매·환불·라이선스·업로드 등 자주 묻는 질문을 정리합니다."
+      title={translate(locale, "faq.shellTitle")}
+      description={translate(locale, "faq.shellDescription")}
     />
   );
 }

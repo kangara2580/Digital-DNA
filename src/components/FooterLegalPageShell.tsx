@@ -37,7 +37,7 @@ export function FooterLegalPageShell({
       <main className={`mx-auto ${mainMaxClass} px-4 py-14 sm:px-6 sm:py-16`}>
         {showBreadcrumb ? (
           <nav
-            aria-label="Breadcrumb"
+            aria-label={t("legal.shell.breadcrumb")}
             className="mb-8 font-mono text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600"
           >
             <ol className="flex items-center">

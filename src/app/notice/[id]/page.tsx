@@ -3,6 +3,7 @@ import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 import { NoticeDetailClient } from "@/components/NoticeDetailClient";
 import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { translate } from "@/lib/i18n/dictionaries";
+import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
 import { getSiteLocale } from "@/lib/i18n/serverLocale";
 import { getNoticeById } from "@/lib/noticesRepo";
 
@@ -30,11 +31,13 @@ export async function generateMetadata({ params }: Props) {
   }
   const locale = await getSiteLocale();
   const suffix = translate(locale, "meta.brandSuffix");
+  const fullTitle = `${translate(locale, "meta.noticeDetailTitle", { title: notice.title })}${suffix}`;
+  const desc =
+    notice.body.replace(/\s+/g, " ").trim().slice(0, 160) || notice.title;
   return {
-    title: {
-      absolute: `${translate(locale, "meta.noticeDetailTitle", { title: notice.title })}${suffix}`,
-    },
-    description: notice.title,
+    title: { absolute: fullTitle },
+    description: desc,
+    ...socialMetadataFields(locale, fullTitle, desc),
   };
 }
 

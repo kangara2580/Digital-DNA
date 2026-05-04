@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { CategoryClipsClient } from "@/components/CategoryClipsClient";
 import { CATEGORY_SLUGS, type CategorySlug } from "@/data/videoCatalog";
 import { translate } from "@/lib/i18n/dictionaries";
+import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
 import { getSiteLocale } from "@/lib/i18n/serverLocale";
 
 export function generateStaticParams() {
@@ -20,11 +21,13 @@ export async function generateMetadata({
   }
   const locale = await getSiteLocale();
   const label = translate(locale, `meta.category.${slug}`);
+  const description = translate(locale, "meta.categoryPageDescription", {
+    category: label,
+  });
   return {
     title: label,
-    description: translate(locale, "meta.categoryPageDescription", {
-      category: label,
-    }),
+    description,
+    ...socialMetadataFields(locale, label, description),
   };
 }
 

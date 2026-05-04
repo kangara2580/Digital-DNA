@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { translate } from "@/lib/i18n/dictionaries";
 import { getSiteLocale } from "@/lib/i18n/serverLocale";
+import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
 
-/** `title` / `description` from dictionary keys using the request locale cookie. */
+/** `title` / `description` (+ Open Graph / Twitter) from dictionary keys using request locale. */
 export async function buildPageMetadata(keys: {
   titleKey: string;
   descriptionKey?: string;
@@ -10,11 +11,14 @@ export async function buildPageMetadata(keys: {
   descriptionVars?: Record<string, string | number>;
 }): Promise<Metadata> {
   const locale = await getSiteLocale();
+  const title = translate(locale, keys.titleKey, keys.titleVars);
+  const description = keys.descriptionKey
+    ? translate(locale, keys.descriptionKey, keys.descriptionVars)
+    : undefined;
   const meta: Metadata = {
-    title: translate(locale, keys.titleKey, keys.titleVars),
+    title,
+    ...(description ? { description } : {}),
+    ...socialMetadataFields(locale, title, description),
   };
-  if (keys.descriptionKey) {
-    meta.description = translate(locale, keys.descriptionKey, keys.descriptionVars);
-  }
   return meta;
 }

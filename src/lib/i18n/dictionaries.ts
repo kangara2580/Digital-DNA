@@ -212,6 +212,7 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "video.reviews.anonymous": "익명",
     "common.loading": "불러오는 중…",
     "legal.shell.home": "홈",
+    "legal.shell.breadcrumb": "경로",
     "legal.shell.backHomeAria": "홈으로 돌아가기",
     "legal.shell.cardPlaceholder":
       "상세 페이지는 준비 중입니다. 정책 확정 시 본문이 게시됩니다.",
@@ -580,6 +581,35 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "meta.forgotPasswordDescription":
       "비밀번호 재설정 링크를 이메일로 받습니다.",
     "meta.resetPasswordDescription": "새 비밀번호를 설정하고 로그인합니다.",
+    "meta.settingsDescription":
+      "계정, 알림, 테마·언어 등 ARA 서비스 설정을 관리합니다.",
+    "meta.faqDescription":
+      "구매·환불·라이선스·업로드 등 자주 묻는 질문과 답변을 안내합니다.",
+    "meta.mypageDescription":
+      "구매·판매·좋아요·최근 본 영화 등 내 ARA 활동을 한곳에서 봅니다.",
+    "meta.notFound": "페이지를 찾을 수 없음",
+    "meta.notFoundDescription":
+      "요청한 주소의 페이지가 없거나 이동했습니다.",
+    "meta.notFoundHeading": "페이지를 찾을 수 없습니다",
+    "meta.notFoundBody":
+      "링크가 잘못되었거나 삭제된 페이지일 수 있어요.",
+    "meta.notFoundHome": "홈으로",
+    "meta.errorBoundary": "오류",
+    "meta.errorBoundaryDescription":
+      "일부 화면을 불러오지 못했습니다. 다시 시도해 주세요.",
+    "error.boundaryHeading": "화면을 불러오지 못했습니다",
+    "error.boundaryUnknown": "알 수 없는 오류가 발생했습니다.",
+    "error.boundaryRetry": "다시 시도",
+    "error.globalHeading": "앱을 불러오지 못했습니다",
+    "error.globalBody":
+      "일시적인 문제일 수 있습니다. 아래를 눌러 다시 시도해 주세요.",
+    "error.globalRetry": "다시 시도",
+    "meta.authHub": "계정",
+    "meta.authHubDescription":
+      "로그인·회원가입·OAuth 콜백으로 이어지는 계정 경로입니다.",
+    "faq.shellTitle": "FAQ",
+    "faq.shellDescription":
+      "구매·환불·라이선스·업로드 등 자주 묻는 질문을 정리합니다.",
     "cookies.prefs.localeCookieHint":
       "언어 선택은 초기 화면의 언어·접근성·SEO 메타 정보와 맞추기 위해 동일한 이름의 쿠키에도 저장될 수 있으며, 브라우저에서 고른 값과 동기화됩니다.",
     "mypage.sort.recentViewed": "최근 본 순",
@@ -1156,6 +1186,7 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "video.reviews.anonymous": "Anonymous",
     "common.loading": "Loading…",
     "legal.shell.home": "Home",
+    "legal.shell.breadcrumb": "Breadcrumb",
     "legal.shell.backHomeAria": "Back to home",
     "legal.shell.cardPlaceholder":
       "This page is not ready yet. The full policy will be published once finalized.",
@@ -1527,6 +1558,35 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "meta.findIdDescription": "Look up the email tied to your account.",
     "meta.forgotPasswordDescription": "Get a password reset link by email.",
     "meta.resetPasswordDescription": "Set a new password and sign in.",
+    "meta.settingsDescription":
+      "Manage account, notifications, theme, language, and ARA preferences.",
+    "meta.faqDescription":
+      "Billing, refunds, licenses, uploads, and other common questions.",
+    "meta.mypageDescription":
+      "Purchases, listings, likes, recents, and your ARA activity.",
+    "meta.notFound": "Page not found",
+    "meta.notFoundDescription":
+      "This URL doesn’t match a page, or it may have moved.",
+    "meta.notFoundHeading": "We couldn’t find that page",
+    "meta.notFoundBody":
+      "The link may be wrong, or the page may have been removed.",
+    "meta.notFoundHome": "Back to home",
+    "meta.errorBoundary": "Something went wrong",
+    "meta.errorBoundaryDescription":
+      "Part of the page failed to load. You can try again.",
+    "error.boundaryHeading": "We couldn’t load this screen",
+    "error.boundaryUnknown": "Something unexpected went wrong.",
+    "error.boundaryRetry": "Try again",
+    "error.globalHeading": "We couldn’t load the app",
+    "error.globalBody":
+      "This might be temporary. Try again with the button below.",
+    "error.globalRetry": "Try again",
+    "meta.authHub": "Account",
+    "meta.authHubDescription":
+      "Entry path for sign-in, sign-up, and OAuth callbacks.",
+    "faq.shellTitle": "FAQ",
+    "faq.shellDescription":
+      "Billing, refunds, licenses, uploads, and common questions.",
     "cookies.prefs.localeCookieHint":
       "Your language choice may also be stored in a first-party cookie with the same name so the first paint, <html lang>, and SEO tags match; it stays in sync with what you select in the UI.",
     "mypage.sort.recentViewed": "Recently watched",

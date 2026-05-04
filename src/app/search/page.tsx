@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { VideoCard } from "@/components/VideoCard";
 import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { translate } from "@/lib/i18n/dictionaries";
+import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
 import { getSiteLocale } from "@/lib/i18n/serverLocale";
 import { searchMarketVideos } from "@/lib/searchMarketVideos";
 
@@ -19,9 +20,14 @@ export async function generateMetadata({
     });
   }
   const locale = await getSiteLocale();
+  const title = translate(locale, "meta.searchResultsTitle", { query });
+  const description = translate(locale, "meta.searchResultsDescription", {
+    query,
+  });
   return {
-    title: translate(locale, "meta.searchResultsTitle", { query }),
-    description: translate(locale, "meta.searchResultsDescription", { query }),
+    title,
+    description,
+    ...socialMetadataFields(locale, title, description),
   };
 }
 

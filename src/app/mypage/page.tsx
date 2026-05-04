@@ -4,7 +4,10 @@ import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { MyPageDashboard } from "@/components/MyPageDashboard";
 
 export async function generateMetadata() {
-  return buildPageMetadata({ titleKey: "meta.mypage" });
+  return buildPageMetadata({
+    titleKey: "meta.mypage",
+    descriptionKey: "meta.mypageDescription",
+  });
 }
 
 export default async function MyPage({
