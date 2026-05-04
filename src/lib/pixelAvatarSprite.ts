@@ -274,3 +274,35 @@ export function araCutePixelSvgDataUrl(
   const svg = buildAraCutePixelSvg(entropy, variant, palette, theme);
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
+
+/** 설정에서 고를 수 있는 고정 도트 캐릭터 (저장 값은 `storageSeed`) */
+export type AraDotProfilePreset = {
+  storageSeed: string;
+  label: string;
+  entropy: string;
+  variant: number;
+  palette: PixelAvatarPalette;
+};
+
+function buildAraDotPresetList(): readonly AraDotProfilePreset[] {
+  const out: AraDotProfilePreset[] = [];
+  for (let i = 0; i < PIXEL_VARIANT_COUNT; i++) {
+    const palette: PixelAvatarPalette = i % 2 === 0 ? "mochi" : "stardust";
+    out.push({
+      storageSeed: `ara-dot-${String(i).padStart(2, "0")}`,
+      label: `기본 도트 ${i + 1}`,
+      entropy: `ara-cute-preset-${i}-v${i}-${palette}`,
+      variant: i,
+      palette,
+    });
+  }
+  return out;
+}
+
+export const ARA_DOT_PROFILE_PRESETS = buildAraDotPresetList();
+
+export const DEFAULT_ARA_DOT_PRESET_SEED = ARA_DOT_PROFILE_PRESETS[0]!.storageSeed;
+
+export function getAraDotPresetByStorageSeed(seed: string): AraDotProfilePreset | undefined {
+  return ARA_DOT_PROFILE_PRESETS.find((p) => p.storageSeed === seed);
+}

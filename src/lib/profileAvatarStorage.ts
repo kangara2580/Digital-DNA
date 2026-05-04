@@ -9,6 +9,8 @@ import {
   paletteForSeed,
   variantIndexFromParts,
   variantIndexFromSeed,
+  getAraDotPresetByStorageSeed,
+  DEFAULT_ARA_DOT_PRESET_SEED,
   type PixelAvatarPalette,
 } from "@/lib/pixelAvatarSprite";
 import type { User } from "@supabase/supabase-js";
@@ -31,13 +33,20 @@ export function getProfileAvatarPixelPreview(
   v: ProfileAvatar | null,
   fallbackSeed: string,
 ): ProfileAvatarPixelPreview {
-  const seedFallback = fallbackSeed.trim() || "reels-market";
-
   if (v?.kind === "upload") {
     return { type: "upload", src: v.dataUrl };
   }
   if (v?.kind === "preset" && v.seed.trim()) {
     const seed = v.seed.trim();
+    const pinned = getAraDotPresetByStorageSeed(seed);
+    if (pinned) {
+      return {
+        type: "pixel",
+        palette: pinned.palette,
+        variant: pinned.variant,
+        entropy: pinned.entropy,
+      };
+    }
     return {
       type: "pixel",
       palette: paletteForSeed(seed),
@@ -54,11 +63,21 @@ export function getProfileAvatarPixelPreview(
       entropy: `${p.seed}|${p.gender}|${p.hair}|${p.eyes}|${p.lips}|${p.faceShape}`,
     };
   }
+  const seedFb = fallbackSeed.trim() || DEFAULT_ARA_DOT_PRESET_SEED;
+  const pinnedFb = getAraDotPresetByStorageSeed(seedFb);
+  if (pinnedFb) {
+    return {
+      type: "pixel",
+      palette: pinnedFb.palette,
+      variant: pinnedFb.variant,
+      entropy: pinnedFb.entropy,
+    };
+  }
   return {
     type: "pixel",
-    palette: paletteForSeed(seedFallback),
-    variant: variantIndexFromSeed(seedFallback),
-    entropy: seedFallback,
+    palette: paletteForSeed(seedFb),
+    variant: variantIndexFromSeed(seedFb),
+    entropy: seedFb,
   };
 }
 
