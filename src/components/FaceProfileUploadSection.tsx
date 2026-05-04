@@ -148,7 +148,8 @@ const emptyTriple = (): TripleDraft => ({ front: null, left: null, right: null }
 
 /** 찜 빈 화면·마이페이지와 동일: 알약형 · 핑크 테두리 · 투명 배경 */
 const outlineCtaMd = `${MYPAGE_OUTLINE_BTN_CORE} px-5 py-2.5 text-[13px]`;
-const outlineCtaSm = `${MYPAGE_OUTLINE_BTN_CORE} px-4 py-2 text-[12px]`;
+/** 사진 1장 / 3장 한 번에 — 터치 영역 넓힌 동일 단계 */
+const outlineCtaComfortable = `${MYPAGE_OUTLINE_BTN_CORE} px-6 py-3.5 text-[15px]`;
 /** 보조 픽 버튼 공통 스타일(테두리·배경·호버) — 크기는 각 버튼에서 지정 */
 const faceProfileNeutralPickBtn =
   "inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 text-zinc-100 transition hover:border-white/25 hover:bg-white/10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-50";
@@ -383,7 +384,7 @@ export function FaceProfileUploadSection() {
             type="button"
             onClick={() => singleInputRef.current?.click()}
             disabled={aiRunning}
-            className={`${faceProfileNeutralPickBtn} px-5 py-2.5 text-[13px] font-semibold disabled:opacity-50`}
+            className={`${faceProfileNeutralPickBtn} px-6 py-3.5 text-[15px] font-semibold disabled:opacity-50`}
           >
             {t("faceProfile.pickOne")}
           </button>
@@ -482,7 +483,7 @@ export function FaceProfileUploadSection() {
           <button
             type="button"
             onClick={() => tripleBatchInputRef.current?.click()}
-            className={outlineCtaSm}
+            className={outlineCtaComfortable}
           >
             {t("faceProfile.pickThreeAtOnce")}
           </button>
