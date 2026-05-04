@@ -13,11 +13,11 @@ const searchIconMotion =
 
 /** compact 핑크 트레일(탐색 헤더 등): 작은 원형 타일 */
 const pinkSubmitTileClass =
-  "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(228,41,128,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white";
+  "flex h-[1.625rem] w-[1.625rem] shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(228,41,128,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white";
 
-/** 메인 히어로·탐색 풀시청 공통: 핑크 원형(h-11) · 돋보기와 동일 슬롯 */
+/** 메인 히어로·탐색 풀시청 공통: 핑크 원형(살짝 작은 2.5rem) */
 const pinkSubmitTileHeroClass =
-  "flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(228,41,128,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white";
+  "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(228,41,128,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white";
 
 /** 풀시청 검색창 펼침 — 느리고 부드러운 감속 */
 const exploreWatchExpandTransition =
@@ -68,11 +68,11 @@ export function ReelsSearchField({
 
   let inputClassByMode =
     mode === "homeHero"
-      ? `mall-search min-h-[3rem] h-12 rounded-full border border-white/18 bg-white/[0.07] pl-4 ${showTrailingIcon ? "pr-[3.75rem]" : "pr-4"} text-[15px] font-medium leading-snug text-zinc-100 shadow-[0_10px_40px_-14px_rgba(0,0,0,0.48)] backdrop-blur-xl hover:border-white/30 hover:bg-white/[0.11] hover:shadow-[0_12px_44px_-14px_rgba(0,0,0,0.52)] focus:border-[color:rgba(255,45,141,0.5)] focus:bg-white/[0.13] focus:shadow-[0_0_0_2px_rgba(255,45,141,0.22),0_14px_48px_-16px_rgba(0,0,0,0.58)] focus:outline-none focus:ring-0 [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white/[0.72] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_4px_28px_-10px_rgba(0,0,0,0.1)] [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-white/[0.86] [html[data-theme='light']_&]:focus:border-[color:rgba(228,41,128,0.48)] [html[data-theme='light']_&]:focus:bg-white/[0.9] [html[data-theme='light']_&]:focus:shadow-[0_0_0_2px_rgba(255,45,141,0.18),0_8px_32px_-12px_rgba(0,0,0,0.08)]`
+      ? `mall-search min-h-[3rem] h-12 rounded-full border border-white/18 bg-white/[0.07] pl-4 ${showTrailingIcon ? "pr-14" : "pr-4"} text-[15px] font-medium leading-snug text-zinc-100 shadow-[0_10px_40px_-14px_rgba(0,0,0,0.48)] backdrop-blur-xl hover:border-white/30 hover:bg-white/[0.11] hover:shadow-[0_12px_44px_-14px_rgba(0,0,0,0.52)] focus:border-[color:rgba(255,45,141,0.5)] focus:bg-white/[0.13] focus:shadow-[0_0_0_2px_rgba(255,45,141,0.22),0_14px_48px_-16px_rgba(0,0,0,0.58)] focus:outline-none focus:ring-0 [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white/[0.72] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_4px_28px_-10px_rgba(0,0,0,0.1)] [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-white/[0.86] [html[data-theme='light']_&]:focus:border-[color:rgba(228,41,128,0.48)] [html[data-theme='light']_&]:focus:bg-white/[0.9] [html[data-theme='light']_&]:focus:shadow-[0_0_0_2px_rgba(255,45,141,0.18),0_8px_32px_-12px_rgba(0,0,0,0.08)]`
       : mode === "pill"
         ? `h-11 min-h-[2.75rem] rounded-full border border-white/40 bg-black/20 pl-3.5 ${showTrailingIcon ? "pr-11" : "pr-3.5"} text-[13px] text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-md hover:border-white/52 hover:bg-black/28 focus:bg-black/28 ${pinkBorder} [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/[0.6] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.05)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-white/[0.72] [html[data-theme='light']_&]:focus:bg-white/[0.72]`
         : mode === "compact"
-          ? `h-9 border-white/15 bg-white/[0.06] pl-3 ${showTrailingIcon ? (pinkTrailingSubmit ? "pr-11" : "pr-10") : "pr-3"} text-[13px] ${pinkBorder} hover:bg-white/10 focus:bg-white/[0.09] [html[data-theme='dark']_&]:border-white/20 [html[data-theme='dark']_&]:bg-white/[0.1] [html[data-theme='dark']_&]:hover:bg-white/[0.14] [html[data-theme='dark']_&]:focus:bg-white/[0.16] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:bg-white`
+          ? `h-9 border-white/15 bg-white/[0.06] pl-3 ${showTrailingIcon ? "pr-10" : "pr-3"} text-[13px] ${pinkBorder} hover:bg-white/10 focus:bg-white/[0.09] [html[data-theme='dark']_&]:border-white/20 [html[data-theme='dark']_&]:bg-white/[0.1] [html[data-theme='dark']_&]:hover:bg-white/[0.14] [html[data-theme='dark']_&]:focus:bg-white/[0.16] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:bg-white`
           : `h-[3.25rem] border-2 border-white/20 bg-white/[0.08] pl-6 ${showTrailingIcon ? "pr-14" : "pr-6"} text-[15px] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${pinkBorder} hover:bg-white/12 focus:bg-white/[0.1] [html[data-theme='dark']_&]:border-white/25 [html[data-theme='dark']_&]:bg-white/[0.12] [html[data-theme='dark']_&]:hover:bg-white/[0.16] [html[data-theme='dark']_&]:focus:bg-white/[0.18] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:focus:bg-white`;
 
   const placeholderClass =
@@ -83,7 +83,7 @@ export function ReelsSearchField({
   if (exploreWatchExpand) {
     return (
       <form
-        className={`group relative ml-auto flex h-11 max-w-11 shrink-0 flex-row items-center justify-end overflow-hidden rounded-2xl border border-transparent bg-transparent py-0 shadow-none backdrop-blur-0 hover:max-w-[min(15rem,38vw)] hover:rounded-full hover:border-white/15 hover:bg-white/[0.06] hover:pr-1 focus-within:max-w-[min(15rem,38vw)] focus-within:rounded-full focus-within:border-white/15 focus-within:bg-white/[0.06] focus-within:pr-1 motion-reduce:max-w-[min(15rem,38vw)] motion-reduce:rounded-full motion-reduce:border-white/15 motion-reduce:bg-white/[0.06] motion-reduce:pr-1 sm:hover:max-w-[min(17rem,34vw)] sm:focus-within:max-w-[min(17rem,34vw)] ${exploreWatchExpandTransition} [html[data-theme='dark']_&]:hover:border-white/20 [html[data-theme='dark']_&]:hover:bg-white/[0.1] [html[data-theme='dark']_&]:focus-within:border-white/20 [html[data-theme='dark']_&]:focus-within:bg-white/[0.1] [html[data-theme='light']_&]:hover:border-zinc-200 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:focus-within:border-zinc-200 [html[data-theme='light']_&]:focus-within:bg-zinc-50`}
+        className={`group relative ml-auto flex h-11 max-w-10 shrink-0 flex-row items-center justify-end overflow-hidden rounded-2xl border border-transparent bg-transparent py-0 shadow-none backdrop-blur-0 hover:max-w-[min(15rem,38vw)] hover:rounded-full hover:border-white/15 hover:bg-white/[0.06] hover:pr-1 focus-within:max-w-[min(15rem,38vw)] focus-within:rounded-full focus-within:border-white/15 focus-within:bg-white/[0.06] focus-within:pr-1 motion-reduce:max-w-[min(15rem,38vw)] motion-reduce:rounded-full motion-reduce:border-white/15 motion-reduce:bg-white/[0.06] motion-reduce:pr-1 sm:hover:max-w-[min(17rem,34vw)] sm:focus-within:max-w-[min(17rem,34vw)] ${exploreWatchExpandTransition} [html[data-theme='dark']_&]:hover:border-white/20 [html[data-theme='dark']_&]:hover:bg-white/[0.1] [html[data-theme='dark']_&]:focus-within:border-white/20 [html[data-theme='dark']_&]:focus-within:bg-white/[0.1] [html[data-theme='light']_&]:hover:border-zinc-200 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:focus-within:border-zinc-200 [html[data-theme='light']_&]:focus-within:bg-zinc-50`}
         onSubmit={(e) => {
           e.preventDefault();
           runSearch();
@@ -108,7 +108,7 @@ export function ReelsSearchField({
           >
             <span className="block">
               <Search
-                className="h-6 w-6 shrink-0"
+                className="h-[1.125rem] w-[1.125rem] shrink-0"
                 strokeWidth={2.25}
                 aria-hidden
               />
@@ -162,7 +162,7 @@ export function ReelsSearchField({
             <Search
               className={`shrink-0 ${
                 mode === "homeHero"
-                  ? "h-6 w-6"
+                  ? "h-[1.125rem] w-[1.125rem]"
                   : mode === "compact" && pinkTrailingSubmit
                     ? "h-[1.125rem] w-[1.125rem]"
                     : mode === "pill"
