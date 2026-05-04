@@ -348,7 +348,7 @@ export function FaceProfileUploadSection() {
     >
       <h2
         id="my-face-heading"
-        className="text-lg font-semibold tracking-tight text-zinc-50 sm:text-xl [html[data-theme='light']_&]:text-zinc-900"
+        className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900"
       >
         {t("faceProfile.heading")}
       </h2>
