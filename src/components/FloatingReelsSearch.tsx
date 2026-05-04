@@ -43,9 +43,9 @@ export function FloatingReelsSearch() {
       <div className="pointer-events-none fixed inset-y-0 right-0 left-0 z-[118] md:left-[var(--reels-rail-w)]">
         <div className="pointer-events-auto flex w-full items-center justify-end px-4 pt-4 pr-[max(1rem,env(safe-area-inset-right))] sm:px-6 sm:pt-5 sm:pr-[max(1.5rem,env(safe-area-inset-right))]">
           {/*
-            로그인 캡슐 왼쪽: right inset + 캡슐 min-w + 검색–캡슐 간격(0.25rem)
+            검색–캡슐 간격 축소분만큼 필드 너비를 더해 왼쪽 끝은 유지하고 오른쪽만 캡슐 쪽으로 확장
           */}
-          <div className="mr-[calc(1rem+6.875rem+0.25rem)] w-[min(15.5rem,calc(100vw-var(--reels-rail-w,0px)-9.5rem))] shrink-0 sm:mr-[calc(1.5rem+7rem+0.25rem)] sm:w-[min(17rem,calc(100vw-var(--reels-rail-w,0px)-10.5rem))]">
+          <div className="mr-[calc(1rem+6.875rem+0.125rem)] w-[min(15.625rem,calc(100vw-var(--reels-rail-w,0px)-9.375rem))] shrink-0 sm:mr-[calc(1.5rem+7rem+0.125rem)] sm:w-[min(17.125rem,calc(100vw-var(--reels-rail-w,0px)-10.375rem))]">
             <ReelsSearchField compact={false} topNavPill q={q} setQ={setQ} />
           </div>
         </div>
