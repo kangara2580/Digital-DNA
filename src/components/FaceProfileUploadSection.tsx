@@ -149,9 +149,9 @@ const emptyTriple = (): TripleDraft => ({ front: null, left: null, right: null }
 /** 찜 빈 화면·마이페이지와 동일: 알약형 · 핑크 테두리 · 투명 배경 */
 const outlineCtaMd = `${MYPAGE_OUTLINE_BTN_CORE} px-5 py-2.5 text-[13px]`;
 const outlineCtaSm = `${MYPAGE_OUTLINE_BTN_CORE} px-4 py-2 text-[12px]`;
-/** 정면·좌·우 슬롯 — 눈부심 줄이기 위해 핑크 라인 대신 흰 알약 */
-const slotPickBtn =
-  "mt-3 inline-flex w-full items-center justify-center rounded-full border border-white/20 bg-white px-3 py-2 text-[11px] font-semibold text-zinc-900 outline-none transition-[transform,background-color,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-zinc-100 active:translate-y-0 active:scale-[0.98] motion-reduce:transition-colors motion-reduce:hover:scale-100 motion-reduce:hover:translate-y-0 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-sm [html[data-theme='light']_&]:hover:bg-zinc-50";
+/** 「사진 1장 선택」과 동일한 보조 버튼 — 3면 슬롯에도 동일 토큰 */
+const faceProfileNeutralPickBtn =
+  "inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 font-semibold text-zinc-100 transition hover:border-white/25 hover:bg-white/10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-50";
 const outlineDisabled =
   "disabled:pointer-events-none disabled:opacity-45 disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:hover:bg-transparent";
 
@@ -383,7 +383,7 @@ export function FaceProfileUploadSection() {
             type="button"
             onClick={() => singleInputRef.current?.click()}
             disabled={aiRunning}
-            className="rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-[13px] font-semibold text-zinc-100 transition hover:border-white/25 hover:bg-white/10 disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-50"
+            className={`${faceProfileNeutralPickBtn} px-5 py-2.5 text-[13px] disabled:opacity-50`}
           >
             {t("faceProfile.pickOne")}
           </button>
@@ -416,7 +416,7 @@ export function FaceProfileUploadSection() {
             </p>
             <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/10 [html[data-theme='light']_&]:bg-zinc-200">
               <div
-            className="h-full rounded-full bg-[color:var(--reels-point)]/40 transition-[width] duration-500 ease-out motion-reduce:transition-none [html[data-theme='light']_&]:bg-[color:var(--reels-point)]/35"
+                className="h-full rounded-full bg-[color:var(--reels-point)]/40 transition-[width] duration-500 ease-out motion-reduce:transition-none [html[data-theme='light']_&]:bg-[color:var(--reels-point)]/35"
                 style={{
                   width: `${((aiStepIndex + 1) / AI_STEP_KEYS.length) * 100}%`,
                 }}
@@ -516,7 +516,7 @@ export function FaceProfileUploadSection() {
               <button
                 type="button"
                 onClick={() => tripleInputRefs[key].current?.click()}
-                className={slotPickBtn}
+                className={`${faceProfileNeutralPickBtn} mt-3 px-5 py-2.5 text-[13px]`}
               >
                 {slotSrc(key) ? t("faceProfile.repick") : t("faceProfile.choose")}
               </button>
