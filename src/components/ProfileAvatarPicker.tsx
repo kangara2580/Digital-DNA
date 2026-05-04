@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Dices, ImagePlus, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Dices, ImagePlus } from "lucide-react";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { DEFAULT_BEST_REVIEW_AVATAR_SEED } from "@/data/reelsAvatarPresets";
 import {
@@ -182,9 +182,6 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
               />
             )}
           </div>
-          <span className="pointer-events-none absolute -bottom-1 -right-1 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-reels-cyan/25 text-reels-cyan shadow-md backdrop-blur-sm sm:h-11 sm:w-11">
-            <Sparkles className="h-5 w-5 sm:h-[22px] sm:w-[22px]" aria-hidden />
-          </span>
         </div>
 
         <div className="min-w-0 w-full">
@@ -331,11 +328,6 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
             />
           )}
         </div>
-        <span
-          className="pointer-events-none absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-reels-cyan/25 text-reels-cyan shadow-md backdrop-blur-sm"
-        >
-          <Sparkles className="h-4 w-4" aria-hidden />
-        </span>
       </div>
 
       <div className="min-w-0 w-full flex-1">
