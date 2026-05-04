@@ -7,9 +7,6 @@ import { useCallback } from "react";
 const easeLayout =
   "duration-300 ease-out motion-reduce:duration-150 motion-reduce:ease-linear";
 
-const searchEase =
-  "duration-300 ease-out motion-reduce:duration-150 motion-reduce:ease-linear";
-
 /** 호버·포커스: 브랜드 핑크(Pink Glo 계열 — --reels-point) */
 const searchIconMotion =
   "transition-colors duration-200 ease-out group-hover:text-[color:var(--reels-point)] group-focus-within:text-[color:var(--reels-point)]";
@@ -46,9 +43,14 @@ export function ReelsSearchField({
 
   const mode = homeHero ? "homeHero" : topNavPill ? "pill" : compact ? "compact" : "default";
 
+  const inputTransitionClass =
+    mode === "homeHero"
+      ? "transition-[border-color,background-color,box-shadow,height,padding,font-size,color] duration-[480ms] ease-[cubic-bezier(0.33,1,0.45,1)] motion-reduce:duration-200 motion-reduce:ease-linear"
+      : `transition-[height,padding,font-size,background-color,border-color,color,box-shadow] ${easeLayout}`;
+
   const inputClassByMode =
     mode === "homeHero"
-      ? `mall-search min-h-[3rem] h-12 rounded-2xl border border-white/15 bg-zinc-950/50 pl-4 ${showTrailingIcon ? "pr-14" : "pr-4"} text-[15px] font-medium leading-snug text-zinc-100 shadow-[0_10px_40px_-14px_rgba(0,0,0,0.65)] backdrop-blur-xl transition-[border-color,background-color,box-shadow] ease-out hover:border-white/24 hover:bg-zinc-950/58 focus:border-[color:rgba(228,41,128,0.55)] focus:bg-zinc-950/65 focus:shadow-[0_0_0_3px_rgba(228,41,128,0.22),0_14px_48px_-18px_rgba(0,0,0,0.7)] focus:outline-none focus:ring-0 [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/[0.94] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_4px_28px_-10px_rgba(0,0,0,0.12)] [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:focus:border-[color:rgba(228,41,128,0.5)] [html[data-theme='light']_&]:focus:shadow-[0_0_0_3px_rgba(228,41,128,0.18),0_8px_32px_-12px_rgba(0,0,0,0.1)]`
+      ? `mall-search min-h-[3rem] h-12 rounded-full border border-white/18 bg-white/[0.07] pl-4 ${showTrailingIcon ? "pr-14" : "pr-4"} text-[15px] font-medium leading-snug text-zinc-100 shadow-[0_10px_40px_-14px_rgba(0,0,0,0.48)] backdrop-blur-xl hover:border-white/30 hover:bg-white/[0.11] hover:shadow-[0_12px_44px_-14px_rgba(0,0,0,0.52)] focus:border-[color:rgba(255,45,141,0.5)] focus:bg-white/[0.13] focus:shadow-[0_0_0_2px_rgba(255,45,141,0.22),0_14px_48px_-16px_rgba(0,0,0,0.58)] focus:outline-none focus:ring-0 [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white/[0.72] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_4px_28px_-10px_rgba(0,0,0,0.1)] [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-white/[0.86] [html[data-theme='light']_&]:focus:border-[color:rgba(228,41,128,0.48)] [html[data-theme='light']_&]:focus:bg-white/[0.9] [html[data-theme='light']_&]:focus:shadow-[0_0_0_2px_rgba(255,45,141,0.18),0_8px_32px_-12px_rgba(0,0,0,0.08)]`
       : mode === "pill"
         ? `h-11 min-h-[2.75rem] rounded-full border border-white/40 bg-black/20 pl-3.5 ${showTrailingIcon ? "pr-11" : "pr-3.5"} text-[13px] text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-md hover:border-white/52 hover:bg-black/28 focus:bg-black/28 ${pinkBorder} [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/[0.6] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.05)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-white/[0.72] [html[data-theme='light']_&]:focus:bg-white/[0.72]`
         : mode === "compact"
@@ -76,9 +78,7 @@ export function ReelsSearchField({
         placeholder=""
         autoComplete="off"
         enterKeyHint="search"
-        className={`mall-search w-full border outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,color,box-shadow] ${easeLayout} ${searchEase} focus:ring-0 ${placeholderClass} ${
-          mode === "homeHero" ? "rounded-2xl" : "rounded-full"
-        } ${inputClassByMode}`}
+        className={`mall-search w-full border outline-none ring-0 ${inputTransitionClass} focus:ring-0 ${placeholderClass} rounded-full ${inputClassByMode}`}
         aria-label="릴스·키워드 검색"
       />
       {showTrailingIcon ? (
