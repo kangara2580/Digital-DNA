@@ -41,7 +41,7 @@ export function FloatingReelsSearch() {
   if (isHome) {
     return (
       <div className="pointer-events-none fixed inset-y-0 right-0 left-0 z-[118] md:left-[var(--reels-rail-w)]">
-        <div className="pointer-events-auto flex h-full w-full items-center justify-center px-4 sm:px-6">
+        <div className="pointer-events-auto flex w-full justify-center px-4 pt-[max(0.65rem,env(safe-area-inset-top))] sm:px-6 sm:pt-[max(0.75rem,env(safe-area-inset-top))]">
           <div className="w-full max-w-lg sm:max-w-xl md:max-w-2xl">
             <ReelsSearchField compact={false} q={q} setQ={setQ} />
           </div>
