@@ -1,5 +1,10 @@
 import { Eye, Heart, ShoppingBag, TrendingUp } from "lucide-react";
 import type { TrendingRankMetrics } from "@/data/trendingStats";
+import {
+  revenueAmountClass,
+  revenueTrendDownClass,
+  revenueTrendUpClass,
+} from "@/lib/revenueDisplayTokens";
 
 function formatCountCompact(n: number): string {
   if (n >= 100_000_000) {
@@ -73,18 +78,14 @@ export function TrendingVideoStatsFooter({
               "수익"
             )}
             <span
-              className={`text-[11px] leading-none ${isUp ? "text-[#FF0000] [html[data-theme='light']_&]:text-red-600" : "text-[#2FA2FF] [html[data-theme='light']_&]:text-sky-600"}`}
+              className={`text-[11px] leading-none ${isUp ? revenueTrendUpClass : revenueTrendDownClass}`}
               aria-hidden
             >
               {isUp ? "▲" : "▼"}
             </span>
           </dt>
           <dd
-            className={`min-w-0 font-extrabold tabular-nums ${metricValueSize} ${valueDdExtras} ${
-              isUp
-                ? "text-[#F87171] [html[data-theme='light']_&]:text-red-500"
-                : "text-[#B9CCFF] [html[data-theme='light']_&]:text-[#2F4FA8]"
-            }`}
+            className={`min-w-0 font-extrabold tabular-nums ${metricValueSize} ${valueDdExtras} ${revenueAmountClass}`}
           >
             {Math.max(0, Math.floor(metrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}
           </dd>

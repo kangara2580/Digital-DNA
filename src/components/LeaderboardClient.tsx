@@ -3,6 +3,7 @@
 import { Sparkles, TrendingUp, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { revenueAmountClass } from "@/lib/revenueDisplayTokens";
 
 type Metric = "sales" | "revenue";
 type Period = "today" | "7d" | "30d";
@@ -298,7 +299,13 @@ export function LeaderboardClient() {
                       <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
                         {metricKoreanLabel(metric)}
                       </p>
-                      <p className="mt-1 text-lg font-extrabold tabular-nums tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+                      <p
+                        className={`mt-1 text-lg font-extrabold tabular-nums tracking-tight ${
+                          metric === "revenue"
+                            ? revenueAmountClass
+                            : "text-zinc-50 [html[data-theme='light']_&]:text-zinc-900"
+                        }`}
+                      >
                         {empty ? "—" : metricValue(item, metric)}
                       </p>
                     </div>
@@ -354,7 +361,13 @@ export function LeaderboardClient() {
                             </div>
                           )}
                         </div>
-                        <span className="shrink-0 rounded-lg border border-[color:rgba(255,45,141,0.2)] bg-[color:rgba(255,45,141,0.06)] px-2.5 py-1.5 text-right text-[12px] font-extrabold tabular-nums text-[color:var(--reels-point)] [html[data-theme='light']_&]:border-[color:rgba(255,45,141,0.25)] [html[data-theme='light']_&]:bg-[color:rgba(255,45,141,0.08)]">
+                        <span
+                          className={`shrink-0 rounded-lg px-2.5 py-1.5 text-right text-[12px] font-extrabold tabular-nums ${
+                            metric === "revenue"
+                              ? "border border-white/12 bg-white/[0.06] text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-950"
+                              : "border border-[color:rgba(255,45,141,0.2)] bg-[color:rgba(255,45,141,0.06)] text-[color:var(--reels-point)] [html[data-theme='light']_&]:border-[color:rgba(255,45,141,0.25)] [html[data-theme='light']_&]:bg-[color:rgba(255,45,141,0.08)]"
+                          }`}
+                        >
                           {hasData ? metricValue(item, metric) : "—"}
                         </span>
                       </div>

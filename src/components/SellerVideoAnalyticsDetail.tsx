@@ -15,6 +15,11 @@ import {
 } from "lucide-react";
 import type { SellerVideoDetailSnapshot } from "@/data/sellerAnalytics";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import {
+  revenueAmountClass,
+  revenueTrendDownClass,
+  revenueTrendUpClass,
+} from "@/lib/revenueDisplayTokens";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 function formatWon(n: number): string {
@@ -177,20 +182,24 @@ export function SellerVideoAnalyticsDetail({ videoId, days, from, to }: Props) {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-2xl border border-reels-cyan/25 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
           <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">기간 추정 수익</p>
-          <p className="mt-1 text-[22px] font-extrabold tabular-nums text-emerald-300 [html[data-theme='light']_&]:text-emerald-800">
+          <p className={`mt-1 text-[22px] font-extrabold tabular-nums ${revenueAmountClass}`}>
             {formatWon(detail.periodRevenueWon)}
           </p>
           <p className="mt-1 text-[11px] text-zinc-500">
             직전 동일 길이 기간 대비{" "}
-            <span
-              className={
-                detail.revenueMomPercent >= 0
-                  ? "text-emerald-400"
-                  : "text-reels-crimson/90"
-              }
-            >
-              {detail.revenueMomPercent >= 0 ? "+" : ""}
-              {detail.revenueMomPercent}%
+            <span className="inline-flex items-center gap-0.5">
+              <span
+                className={
+                  detail.revenueMomPercent >= 0 ? revenueTrendUpClass : revenueTrendDownClass
+                }
+                aria-hidden
+              >
+                {detail.revenueMomPercent >= 0 ? "▲" : "▼"}
+              </span>
+              <span className={`text-[11px] font-semibold ${revenueAmountClass}`}>
+                {detail.revenueMomPercent >= 0 ? "+" : ""}
+                {detail.revenueMomPercent}%
+              </span>
             </span>
           </p>
         </div>

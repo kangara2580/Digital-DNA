@@ -31,6 +31,11 @@ import { sellerProfileHrefFromVideo } from "@/lib/sellerProfile";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { getExternalLiveStatsPageUrl } from "@/lib/externalEmbed/playerUrls";
 import { explorePurchaseButtonClass } from "@/lib/explorePurchaseButtonClass";
+import {
+  revenueAmountClass,
+  revenueTrendDownClass,
+  revenueTrendUpClass,
+} from "@/lib/revenueDisplayTokens";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
 import { getVideoContentSource } from "@/lib/videoSourcePlatform";
@@ -97,13 +102,6 @@ const railExploreBuyButtonClass = explorePurchaseButtonClass;
 
 const railStatValueWhite =
   "text-[14px] font-semibold tabular-nums text-white [html[data-theme='light']_&]:text-zinc-900";
-
-const railStatValueBlue =
-  "text-[14px] font-semibold tabular-nums text-[#9DB9FF] [html[data-theme='light']_&]:text-sky-600";
-
-/** 수익 상승(▲) — TrendingVideoStatsFooter와 동일 연한 빨강 */
-const railStatValueRevenueUp =
-  "text-[14px] font-semibold tabular-nums text-[#F87171] [html[data-theme='light']_&]:text-red-500";
 
 function ReelExploreStatLine({
   icon,
@@ -465,9 +463,7 @@ function ReelDesktopRail({
           iconAdornment={
             <span
               className={`flex h-[12px] min-w-[1rem] items-center justify-center text-[12px] font-semibold leading-none ${
-                revenueUp
-                  ? "text-[#FF0000] [html[data-theme='light']_&]:text-red-600"
-                  : "text-[#2FA2FF] [html[data-theme='light']_&]:text-sky-600"
+                revenueUp ? revenueTrendUpClass : revenueTrendDownClass
               }`}
               aria-hidden
             >
@@ -475,7 +471,7 @@ function ReelDesktopRail({
             </span>
           }
           value={Math.round(Math.max(0, rankMetrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}
-          valueClassName={revenueUp ? railStatValueRevenueUp : railStatValueBlue}
+          valueClassName={railStatValueWhite}
           aria-label={`수익 ${Math.round(Math.max(0, rankMetrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}원`}
         />
         <ReelExploreStatLine
@@ -631,12 +627,12 @@ function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
         <p className="truncate text-[11px] font-bold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
           수익{" "}
           <span
-            className={`tabular-nums ${
-              revenueUp
-                ? "text-[#F87171] [html[data-theme='light']_&]:text-red-500"
-                : "text-[#9DB9FF] [html[data-theme='light']_&]:text-sky-600"
-            }`}
+            className={`inline tabular-nums ${revenueUp ? revenueTrendUpClass : revenueTrendDownClass}`}
+            aria-hidden
           >
+            {revenueUp ? "▲" : "▼"}
+          </span>{" "}
+          <span className={`tabular-nums ${revenueAmountClass}`}>
             {formatCompactWon(metrics.cumulativeRevenueWon)}
           </span>
           {" "}
@@ -845,11 +841,10 @@ export function ExploreReelSlide({
     >
       <div className="flex min-h-0 w-full flex-1 items-center justify-center px-2 pt-2 md:px-4 md:pt-0">
         {/*
-          영상 열에 명시적 max-width를 두어 aspect-[9/16] + w-full 이 0으로 무너지지 않게 함.
-          레일은 같은 flex 줄에서 영상 바로 옆에만 붙음(가운데 단독 정렬 방지).
+          부모(탐색 스크롤 루트)가 이미 레일 폭만큼 inset 되었으므로 여기서는 100vw에서 레일을 또 빼지 않음.
         */}
-        <div className="flex w-full max-w-[min(56rem,calc(100vw-var(--reels-rail-w,0px)-1.5rem))] flex-row items-center justify-center gap-1 md:gap-1.5 lg:gap-2">
-          <div className="relative w-[min(100%,min(420px,calc(100vw-var(--reels-rail-w,0px)-16rem)))] shrink-0">
+        <div className="flex w-full max-w-[min(56rem,100%)] flex-row items-center justify-center gap-1 md:gap-1.5 lg:gap-2">
+          <div className="relative w-[min(100%,min(420px,calc(100%-15rem)))] shrink-0">
             <div
               className="relative aspect-[9/16] w-full max-h-[min(78dvh,calc(100dvh-var(--header-height)-7rem))] overflow-hidden rounded-2xl border border-white/12 bg-black shadow-[0_24px_80px_-30px_rgba(0,0,0,0.85)] md:max-h-[min(92dvh,calc(100dvh-var(--header-height)-2rem))] [html[data-theme='light']_&]:border-zinc-200"
             >

@@ -18,6 +18,11 @@ import type { LucideIcon } from "lucide-react";
 import type { SellerAnalyticsSnapshot } from "@/data/sellerAnalytics";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
+import {
+  revenueAmountClass,
+  revenueTrendDownClass,
+  revenueTrendUpClass,
+} from "@/lib/revenueDisplayTokens";
 
 type PeriodState =
   | { kind: "preset"; days: 7 | 28 | 90 }
@@ -64,20 +69,16 @@ function SparkPositive({ v }: { v: number }) {
   const flat = v === 0;
   if (flat) return <span className="text-zinc-500">—</span>;
   return (
-    <span
-      className={`inline-flex items-center gap-0.5 font-bold tabular-nums ${
-        up
-          ? "text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-reels-crimson"
-          : "text-reels-crimson/90 [html[data-theme='light']_&]:text-reels-crimson"
-      }`}
-    >
+    <span className="inline-flex items-center gap-0.5 font-bold tabular-nums">
       {up ? (
-        <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
+        <ArrowUpRight className={`h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4 ${revenueTrendUpClass}`} aria-hidden />
       ) : (
-        <ArrowDownRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
+        <ArrowDownRight className={`h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4 ${revenueTrendDownClass}`} aria-hidden />
       )}
-      {up ? "+" : ""}
-      {v.toFixed(1)}%
+      <span className={revenueAmountClass}>
+        {up ? "+" : ""}
+        {v.toFixed(1)}%
+      </span>
     </span>
   );
 }
@@ -333,7 +334,7 @@ export function MyPageSellerAnalyticsSection() {
         <KpiCard
           icon={TrendingUp}
           label={`${snapshot.periodLabel} 추정 수익`}
-          value={formatWon(t.cumulativeRevenueWon)}
+          value={<span className={revenueAmountClass}>{formatWon(t.cumulativeRevenueWon)}</span>}
           sub={
             <>
               전 기간 대비 성장{" "}
@@ -590,7 +591,7 @@ export function MyPageSellerAnalyticsSection() {
                   <td className="px-2 py-2.5 tabular-nums text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
                     {row.salesCount.toLocaleString("ko-KR")}
                   </td>
-                  <td className="px-2 py-2.5 tabular-nums font-semibold text-[#FAD4E8] [html[data-theme='light']_&]:text-reels-crimson">
+                  <td className={`px-2 py-2.5 tabular-nums font-semibold ${revenueAmountClass}`}>
                     {formatWon(row.cumulativeRevenueWon)}
                   </td>
                   <td className="px-2 py-2.5 tabular-nums text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
