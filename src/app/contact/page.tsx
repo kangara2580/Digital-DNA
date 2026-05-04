@@ -2,8 +2,8 @@ import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 import { SupportCenterPageClient } from "@/components/SupportCenterPageClient";
 
 export const metadata = {
-  title: "고객센터 — ARA",
-  description: "FAQ 및 1:1 문의",
+  title: "Help center — ARA",
+  description: "FAQ and contact",
 };
 
 export default function ContactPage() {

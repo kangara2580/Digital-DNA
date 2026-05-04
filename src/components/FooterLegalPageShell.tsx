@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { Home } from "lucide-react";
 import type { ReactNode } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Props = {
   title: string;
@@ -28,6 +31,7 @@ export function FooterLegalPageShell({
   showTitle = true,
   homeLinkTopClass = "mt-8",
 }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="min-h-[60vh] text-[var(--foreground,#fafafa)] [html[data-theme='light']_&]:bg-white [html[data-theme='dark']_&]:bg-transparent">
       <main className={`mx-auto ${mainMaxClass} px-4 py-14 sm:px-6 sm:py-16`}>
@@ -42,7 +46,7 @@ export function FooterLegalPageShell({
                   href="/"
                   className="font-bold text-zinc-100 transition hover:text-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:text-zinc-950"
                 >
-                  홈
+                  {t("legal.shell.home")}
                 </Link>
               </li>
               <li
@@ -69,7 +73,7 @@ export function FooterLegalPageShell({
           <div className="reels-glass-card mt-8 rounded-2xl p-6 sm:p-8">
             {children ?? (
               <p className="text-[14px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                상세 페이지는 준비 중입니다. 정책 확정 시 본문이 게시됩니다.
+                {t("legal.shell.cardPlaceholder")}
               </p>
             )}
           </div>
@@ -82,7 +86,7 @@ export function FooterLegalPageShell({
           <Link
             href="/"
             className="inline-flex items-center gap-1.5 font-semibold text-white transition hover:opacity-90 [html[data-theme='light']_&]:text-zinc-900"
-            aria-label="홈으로 돌아가기"
+            aria-label={t("legal.shell.backHomeAria")}
           >
             <Home className="h-6 w-6" aria-hidden />
           </Link>

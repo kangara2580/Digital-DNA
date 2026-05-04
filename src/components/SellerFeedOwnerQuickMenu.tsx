@@ -9,15 +9,16 @@ import {
   Save,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useTranslation } from "@/hooks/useTranslation";
 
-const ITEMS = [
-  { href: "/mypage?tab=wishlist", label: "찜 목록", Icon: Bookmark },
-  { href: "/mypage?tab=likes", label: "좋아요한 동영상", Icon: Heart },
-  { href: "/mypage?tab=drafts", label: "임시 저장", Icon: Save },
-  { href: "/mypage?tab=listings", label: "영상 관리", Icon: Clapperboard },
-  { href: "/mypage?tab=analytics", label: "판매 분석", Icon: BarChart3 },
+const ITEM_DEFS = [
+  { href: "/mypage?tab=wishlist", tabKey: "wishlist" as const, Icon: Bookmark },
+  { href: "/mypage?tab=likes", tabKey: "likes" as const, Icon: Heart },
+  { href: "/mypage?tab=drafts", tabKey: "drafts" as const, Icon: Save },
+  { href: "/mypage?tab=listings", tabKey: "listingsShort" as const, Icon: Clapperboard },
+  { href: "/mypage?tab=analytics", tabKey: "analytics" as const, Icon: BarChart3 },
 ] as const;
 
 const triggerClass =
@@ -35,10 +36,20 @@ const iconClass =
 /** 내 피드 상단 — 마이페이지 주요 탭으로 바로가기(본인만) */
 export function SellerFeedOwnerQuickMenu({ sellerId }: { sellerId: string }) {
   const { user, loading } = useAuthSession();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const btnId = useId();
   const menuId = useId();
+
+  const items = useMemo(
+    () =>
+      ITEM_DEFS.map((d) => ({
+        ...d,
+        label: t(`mypage.tab.${d.tabKey}`),
+      })),
+    [t],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -67,7 +78,7 @@ export function SellerFeedOwnerQuickMenu({ sellerId }: { sellerId: string }) {
         type="button"
         id={btnId}
         className={triggerClass}
-        aria-label="내 찜·좋아요·임시저장·영상관리·판매분석 바로가기"
+        aria-label={t("seller.menu.aria")}
         aria-expanded={open}
         aria-haspopup="menu"
         aria-controls={open ? menuId : undefined}
@@ -82,7 +93,7 @@ export function SellerFeedOwnerQuickMenu({ sellerId }: { sellerId: string }) {
           aria-labelledby={btnId}
           className={panelClass}
         >
-          {ITEMS.map(({ href, label, Icon }) => (
+          {items.map(({ href, label, Icon }) => (
             <li key={href} role="none">
               <Link
                 role="menuitem"

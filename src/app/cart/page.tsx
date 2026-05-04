@@ -4,11 +4,14 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
+import { useSitePreferences } from "@/context/SitePreferencesContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import type { FeedVideo } from "@/data/videos";
 import { explorePurchaseButtonClass } from "@/lib/explorePurchaseButtonClass";
 import { sellerProfileHrefFromVideo } from "@/lib/sellerProfile";
+import type { SiteLocale } from "@/lib/sitePreferences";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 const cartOutlineBtn =
@@ -35,6 +38,10 @@ function cartThumbnailSrc(video: FeedVideo): string {
 
 export default function CartPage() {
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
+  const { t } = useTranslation();
+  const { locale } = useSitePreferences();
+  const loc = locale as SiteLocale;
+  const numLocale = loc === "en" ? "en-US" : "ko-KR";
   const displayTitle = useVideoDisplayTitle();
   const {
     builderItems,
@@ -102,22 +109,22 @@ export default function CartPage() {
 
   const confirmClearCart = useCallback(() => {
     if (typeof window === "undefined") return;
-    if (!window.confirm("다 삭제하시겠습니까?")) return;
+    if (!window.confirm(t("cart.confirmClear"))) return;
     clearBuilder();
     setSelected(new Set());
-  }, [clearBuilder]);
+  }, [clearBuilder, t]);
 
   return (
     <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 pb-10 pt-[max(5rem,calc(env(safe-area-inset-top,0px)+4.25rem))] text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:pb-12 sm:pt-[5.75rem] lg:px-8">
       <header className="border-b border-white/10 pb-6 [html[data-theme='light']_&]:border-zinc-200">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-            장바구니
+            {t("cart.title")}
           </h1>
           {cartUiReady && builderItems.length > 0 ? (
             <div className="flex flex-wrap items-center gap-2">
               <button type="button" onClick={selectAll} className={cartOutlineBtn}>
-                {allItemsSelected ? "선택 해제" : "전체 선택"}
+                {allItemsSelected ? t("cart.deselectAll") : t("cart.selectAll")}
               </button>
               <button
                 type="button"
@@ -125,10 +132,10 @@ export default function CartPage() {
                 disabled={selected.size === 0}
                 className={cartOutlineBtn}
               >
-                삭제
+                {t("cart.delete")}
               </button>
               <button type="button" onClick={confirmClearCart} className={cartOutlineBtn}>
-                비우기
+                {t("cart.clear")}
               </button>
             </div>
           ) : null}
@@ -138,13 +145,13 @@ export default function CartPage() {
       {showLoginGate ? (
         <div className="mx-auto mt-14 max-w-md text-center sm:max-w-lg">
           <p className="text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            로그인하면 장바구니를 사용할 수 있어요.
+            {t("cart.loginHint")}
           </p>
           <Link
             href={`/login?redirect=${encodeURIComponent("/cart")}`}
             className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
           >
-            로그인
+            {t("mypage.loginCta")}
           </Link>
         </div>
       ) : !cartUiReady ? (
@@ -166,19 +173,19 @@ export default function CartPage() {
             ))}
           </div>
           <p className="text-center text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            장바구니를 불러오는 중…
+            {t("cart.loading")}
           </p>
         </div>
       ) : builderItems.length === 0 ? (
         <div className="mx-auto mt-14 max-w-md text-center sm:max-w-lg">
           <p className="text-[15px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
-            담긴 영상이 없어요
+            {t("cart.empty")}
           </p>
           <Link
             href="/explore"
             className={`mx-auto mt-6 ${explorePurchaseButtonClass}`}
           >
-            둘러보기
+            {t("cart.browse")}
           </Link>
         </div>
       ) : (
@@ -200,7 +207,7 @@ export default function CartPage() {
                         onChange={() => toggleKey(key)}
                         className="h-5 w-5 rounded border border-white/35 bg-black/50 accent-[#E42980] [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-white"
                       />
-                      <span className="sr-only">선택</span>
+                      <span className="sr-only">{t("cart.selectAria")}</span>
                     </label>
                     <Link
                       href={`/video/${video.id}`}
@@ -233,10 +240,11 @@ export default function CartPage() {
                     <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-2 border-t border-white/10 pt-3 [html[data-theme='light']_&]:border-zinc-200">
                       {video.priceWon != null ? (
                         <span className="text-[15px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[16px]">
-                          {video.priceWon.toLocaleString("ko-KR")}원
+                          {video.priceWon.toLocaleString(numLocale)}
+                          {t("cart.currencySuffix")}
                         </span>
                       ) : (
-                        <span className="text-[14px] text-zinc-500">가격 문의</span>
+                        <span className="text-[14px] text-zinc-500">{t("cart.priceInquire")}</span>
                       )}
                       <button
                         type="button"
@@ -250,14 +258,14 @@ export default function CartPage() {
                         }}
                         className="rounded-md px-2 py-1 text-[12px] font-medium text-zinc-500 underline-offset-2 hover:bg-white/10 hover:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
                       >
-                        삭제
+                        {t("cart.delete")}
                       </button>
                       {owned ? (
                         <Link
                           href={`/create?videoId=${encodeURIComponent(video.id)}`}
                           className="rounded-md px-2 py-1 text-[12px] font-semibold text-reels-cyan hover:bg-reels-cyan/10 hover:underline"
                         >
-                          AI 창작하기
+                          {t("cart.creditAiCta")}
                         </Link>
                       ) : null}
                     </div>
@@ -271,18 +279,22 @@ export default function CartPage() {
             <div className="flex flex-wrap items-end justify-end gap-x-5 gap-y-2 sm:gap-x-6">
               <div className="space-y-0.5 text-right">
                 <p className="text-[15px] font-semibold leading-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                  합계
+                  {t("cart.subtotalLabel")}
                 </p>
                 <p className="text-[14px] font-medium leading-tight text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                  {selected.size}개 선택
+                  {t("cart.selectedCount", { n: selected.size })}
                 </p>
               </div>
               <p
                 className="text-4xl font-extrabold tabular-nums tracking-tight text-zinc-100 sm:text-5xl [html[data-theme='light']_&]:text-zinc-900"
                 aria-live="polite"
-                aria-label={`선택 합계 ${selectedTotal.toLocaleString("ko-KR")}원, ${selected.size}개`}
+                aria-label={t("cart.totalAria", {
+                  amount: selectedTotal.toLocaleString(numLocale),
+                  n: selected.size,
+                })}
               >
-                {selectedTotal.toLocaleString("ko-KR")}원
+                {selectedTotal.toLocaleString(numLocale)}
+                {t("cart.currencySuffix")}
               </p>
             </div>
             <div className="mt-6 flex justify-end">
@@ -291,7 +303,7 @@ export default function CartPage() {
                 disabled
                 className="inline-flex shrink-0 rounded-full border border-white/15 bg-white/[0.06] px-10 py-3 text-[17px] font-bold text-zinc-500 opacity-90 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-600"
               >
-                결제
+                {t("cart.checkout")}
               </button>
             </div>
           </footer>

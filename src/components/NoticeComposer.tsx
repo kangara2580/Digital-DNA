@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export function NoticeComposer() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { session, loading } = useAuthSession();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -39,10 +41,10 @@ export function NoticeComposer() {
       });
       const json = (await res.json().catch(() => ({}))) as { error?: string; id?: string };
       if (!res.ok) {
-        setError(json.error ?? "등록에 실패했습니다.");
+        setError(json.error ?? t("notice.postFail"));
         return;
       }
-      setDone("공지글이 등록되었습니다.");
+      setDone(t("notice.posted"));
       setTitle("");
       setBody("");
       setImages([]);
@@ -60,7 +62,7 @@ export function NoticeComposer() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-[clamp(1.25rem,2.8vw,1.75rem)] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
-            공지사항
+            {t("notice.pageTitle")}
           </h2>
         </div>
         <button
@@ -68,7 +70,7 @@ export function NoticeComposer() {
           onClick={() => setOpen((v) => !v)}
           className="rounded-lg border border-white/20 px-3 py-2 text-[13px] font-semibold text-white transition hover:border-white/35 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-900"
         >
-          {open ? "닫기" : "글쓰기"}
+          {open ? t("notice.close") : t("notice.write")}
         </button>
       </div>
 
@@ -77,7 +79,7 @@ export function NoticeComposer() {
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="제목"
+            placeholder={t("notice.titlePh")}
             className="w-full rounded-lg border border-white/20 bg-transparent px-3 py-2 text-[14px] text-zinc-100 placeholder:text-zinc-500 focus:border-white/40 focus:outline-none [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-900"
             maxLength={120}
             required
@@ -85,7 +87,7 @@ export function NoticeComposer() {
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder="공지 내용을 입력하세요."
+            placeholder={t("notice.bodyPlaceholder")}
             className="min-h-[180px] w-full rounded-lg border border-white/20 bg-transparent px-3 py-2 text-[14px] leading-relaxed text-zinc-100 placeholder:text-zinc-500 focus:border-white/40 focus:outline-none [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-900"
             required
           />
@@ -95,7 +97,7 @@ export function NoticeComposer() {
               onClick={() => setShowImagePicker((v) => !v)}
               className="rounded-md border border-white/20 px-3 py-1.5 text-[12px] font-semibold text-zinc-200 transition hover:border-white/35 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-800"
             >
-              {showImagePicker ? "이미지 첨부 닫기" : "이미지 첨부"}
+              {showImagePicker ? t("notice.imageAttachClose") : t("notice.imageAttach")}
             </button>
             {showImagePicker ? (
               <input
@@ -108,7 +110,7 @@ export function NoticeComposer() {
             ) : null}
             {images.length > 0 ? (
               <p className="text-[12px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                {images.length}개 첨부됨
+                {t("notice.imagesAttachedCount", { n: images.length })}
               </p>
             ) : null}
           </div>
@@ -119,7 +121,7 @@ export function NoticeComposer() {
               onChange={(e) => setPinned(e.target.checked)}
               className="h-4 w-4 accent-zinc-300 [html[data-theme='light']_&]:accent-zinc-700"
             />
-            상단 고정
+            {t("notice.pin")}
           </label>
           <div className="flex flex-wrap items-center justify-end gap-3">
             <button
@@ -127,7 +129,7 @@ export function NoticeComposer() {
               disabled={submitting || loading}
               className="rounded-lg bg-white px-4 py-2 text-[13px] font-bold text-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {submitting ? "등록 중..." : "게시하기"}
+              {submitting ? t("notice.submitting") : t("notice.publish")}
             </button>
             {error ? <p className="text-[12px] text-reels-crimson">{error}</p> : null}            {done ? <p className="text-[12px] text-emerald-400">{done}</p> : null}
           </div>

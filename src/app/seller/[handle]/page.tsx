@@ -1,6 +1,11 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { SellerFeedBioEditor } from "@/components/SellerFeedBioEditor";
+import {
+  SellerFeedClipsHeading,
+  SellerFeedEmptyListings,
+  SellerFeedListingCount,
+} from "@/components/SellerFeedI18n";
 import { SellerFeedSellCta } from "@/components/SellerFeedSellCta";
 import { VideoCard } from "@/components/VideoCard";
 import type { FeedVideo } from "@/data/videos";
@@ -109,16 +114,7 @@ export default async function SellerPage({
                 <h1 className="truncate text-2xl font-extrabold tracking-tight sm:text-[1.85rem] sm:leading-tight">
                   {nickname}
                 </h1>
-                <p className="mt-3 text-[13px] font-medium tabular-nums text-white/[0.58] [html[data-theme='light']_&]:text-zinc-600">
-                  판매 중{" "}
-                  <span className="font-semibold text-[color:var(--reels-point)]">{videos.length}</span>개
-                  {isDbSeller ? (
-                    <span className="text-white/35 [html[data-theme='light']_&]:text-zinc-400">
-                      {" "}
-                      · 실데이터
-                    </span>
-                  ) : null}
-                </p>
+                <SellerFeedListingCount videoCount={videos.length} isDbSeller={isDbSeller} />
               </div>
             </div>
             <div className="min-w-0 border-t border-white/[0.08] pt-5 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0 [html[data-theme='light']_&]:border-zinc-200/75">
@@ -133,9 +129,7 @@ export default async function SellerPage({
               className="h-9 w-[3px] shrink-0 rounded-full bg-[color:var(--reels-point)] shadow-[0_0_14px_-2px_rgba(228,41,128,0.55)]"
               aria-hidden
             />
-            <h2 className="text-[clamp(1.05rem,2.6vw,1.2rem)] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
-              판매 클립
-            </h2>
+            <SellerFeedClipsHeading />
           </div>
           {videos.length > 0 ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3.5 lg:grid-cols-5 xl:gap-4">
@@ -152,14 +146,7 @@ export default async function SellerPage({
               ))}
             </div>
           ) : (
-            <div className="relative overflow-hidden rounded-2xl border border-dashed border-white/[0.18] bg-white/[0.02] px-6 py-14 text-center [html[data-theme='light']_&]:border-zinc-300/65 [html[data-theme='light']_&]:bg-white">
-              <p className="text-[15px] font-semibold text-white/[0.92] [html[data-theme='light']_&]:text-zinc-800">
-                아직 등록된 판매 영상이 없습니다.
-              </p>
-              <p className="mx-auto mt-2 max-w-sm text-[13px] leading-relaxed text-white/45 [html[data-theme='light']_&]:text-zinc-500">
-                판매 등록 후 이곳에 클립이 모여 보여요.
-              </p>
-            </div>
+            <SellerFeedEmptyListings />
           )}
         </section>
       </div>

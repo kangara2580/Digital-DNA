@@ -12,19 +12,18 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 import { videoDisplayTitle } from "@/lib/videoDisplayTitle";
 import type { SiteLocale } from "@/lib/sitePreferences";
 import { useWishlist } from "@/context/WishlistContext";
+import { useTranslation } from "@/hooks/useTranslation";
 import { MYPAGE_OUTLINE_BTN_MD, MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 
-const SORT_OPTIONS = [
-  { value: "recent", label: "최근 찜한 순" },
-  { value: "oldest", label: "오래된 순" },
-  { value: "price-asc", label: "가격 낮은 순" },
-  { value: "price-desc", label: "가격 높은 순" },
-  { value: "title-asc", label: "제목 가나다순" },
-  { value: "title-desc", label: "제목 역순" },
-  { value: "duration-asc", label: "재생 짧은 순" },
-  { value: "duration-desc", label: "재생 긴 순" },
-] as const;
-type Sort = (typeof SORT_OPTIONS)[number]["value"];
+type Sort =
+  | "recent"
+  | "oldest"
+  | "price-asc"
+  | "price-desc"
+  | "title-asc"
+  | "title-desc"
+  | "duration-asc"
+  | "duration-desc";
 
 type Row = { entryId: string; video: FeedVideo; savedAt: number };
 
@@ -73,6 +72,29 @@ const LOGIN_REDIRECT = encodeURIComponent("/mypage?tab=wishlist");
 export function MyPageWishlistSection() {
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const { locale } = useSitePreferences();
+  const { t } = useTranslation();
+  const loc = locale as SiteLocale;
+
+  const sortOptions = useMemo(
+    () =>
+      [
+        { value: "recent" as const, label: t("mypage.sort.recentSaved") },
+        { value: "oldest" as const, label: t("mypage.sort.oldestSaved") },
+        { value: "price-asc" as const, label: t("mypage.sort.priceAsc") },
+        { value: "price-desc" as const, label: t("mypage.sort.priceDesc") },
+        {
+          value: "title-asc" as const,
+          label: loc === "en" ? t("mypage.sort.titleAscEn") : t("mypage.sort.titleAsc"),
+        },
+        {
+          value: "title-desc" as const,
+          label: loc === "en" ? t("mypage.sort.titleDescEn") : t("mypage.sort.titleDesc"),
+        },
+        { value: "duration-asc" as const, label: t("mypage.sort.durationAsc") },
+        { value: "duration-desc" as const, label: t("mypage.sort.durationDesc") },
+      ] as const,
+    [t, loc],
+  );
   const videoByStoredId = useMemo(() => buildWishlistVideoLookup(), []);
   const { entries, hydrated, clear, removeMany } = useWishlist();
   const [sort, setSort] = useState<Sort>("recent");
@@ -104,12 +126,12 @@ export function MyPageWishlistSection() {
     if (selected.size === 0) return;
     if (
       typeof window !== "undefined" &&
-      !window.confirm(`선택한 ${selected.size}개를 찜 목록에서 뺄까요?`)
+      !window.confirm(t("mypage.wishlist.confirmRemoveSelected", { n: selected.size }))
     ) {
       return;
     }
     void removeMany([...selected]).then(() => setSelected(new Set()));
-  }, [selected, removeMany]);
+  }, [selected, removeMany, t]);
 
   const showLoginGateWishlistOnly =
     supabaseConfigured &&
@@ -123,13 +145,13 @@ export function MyPageWishlistSection() {
         {!authLoading && showLoginGateWishlistOnly ? (
           <div className="rounded-2xl border border-dashed border-white/15 bg-black/20 px-6 py-14 text-center [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white">
             <p className="text-[14px] text-white/65 [html[data-theme='light']_&]:text-zinc-600">
-              로그인하면 찜한 동영상을 여기에서 모아볼 수 있어요.
+              {t("mypage.wishlist.loginHint")}
             </p>
             <Link
               href={`/login?redirect=${LOGIN_REDIRECT}`}
               className={`mt-6 ${MYPAGE_OUTLINE_BTN_SM}`}
             >
-              로그인
+              {t("mypage.loginCta")}
             </Link>
           </div>
         ) : !hydrated ? (
@@ -137,18 +159,18 @@ export function MyPageWishlistSection() {
             className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600"
             aria-live="polite"
           >
-            불러오는 중…
+            {t("common.loading")}
           </p>
         ) : (
           <>
             <div className="mb-6 flex flex-wrap items-center gap-2">
               <label className="flex items-center gap-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                <span className="hidden font-medium sm:inline">정렬</span>
+                <span className="hidden font-medium sm:inline">{t("mypage.sort.label")}</span>
                 <MyPageSortSelect
-                  options={SORT_OPTIONS}
+                  options={[...sortOptions]}
                   value={sort}
                   onChange={(v) => setSort(v as Sort)}
-                  ariaLabel="찜한 동영상 정렬"
+                  ariaLabel={t("mypage.wishlist.sortAria")}
                 />
               </label>
               {entries.length > 0 ? (
@@ -158,7 +180,7 @@ export function MyPageWishlistSection() {
                     onClick={() => setSelected(new Set(allEntryIds))}
                     className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
                   >
-                    전체 선택
+                    {t("mypage.wishlist.selectAll")}
                   </button>
                   <button
                     type="button"
@@ -166,14 +188,14 @@ export function MyPageWishlistSection() {
                     disabled={selected.size === 0}
                     className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-white/25 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
                   >
-                    선택 해제
+                    {t("mypage.wishlist.deselect")}
                   </button>
                   <button
                     type="button"
                     onClick={deleteSelectedWishlist}
                     disabled={selected.size === 0}
                     className="rounded-lg border border-reels-crimson/38 px-3 py-2 text-[13px] font-medium text-[#F3C4D9] transition-colors hover:bg-reels-crimson/12 disabled:opacity-40 [html[data-theme='light']_&]:text-reels-crimson"                  >
-                    선택 삭제
+                    {t("mypage.wishlist.deleteSelected")}
                   </button>
                   <button
                     type="button"
@@ -181,7 +203,7 @@ export function MyPageWishlistSection() {
                       void (async () => {
                         if (
                           typeof window !== "undefined" &&
-                          window.confirm("찜한 동영상을 모두 목록에서 삭제할까요?")
+                          window.confirm(t("mypage.wishlist.confirmClearAll"))
                         ) {
                           await clear();
                           setSelected(new Set());
@@ -190,7 +212,7 @@ export function MyPageWishlistSection() {
                     }}
                     className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
                   >
-                    전체 삭제
+                    {t("mypage.wishlist.deleteAll")}
                   </button>
                 </>
               ) : null}
@@ -199,13 +221,13 @@ export function MyPageWishlistSection() {
             {rows.length === 0 ? (
               <div className="py-12 text-center">
                 <p className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                  아직 찜한 동영상이 없어요.
+                  {t("mypage.wishlist.empty")}
                 </p>
                 <Link
                   href="/explore"
                   className={`mt-5 inline-flex ${MYPAGE_OUTLINE_BTN_MD}`}
                 >
-                  동영상 둘러보기
+                  {t("mypage.wishlist.browse")}
                 </Link>
               </div>
             ) : (
@@ -219,7 +241,7 @@ export function MyPageWishlistSection() {
                         onChange={() => toggleSelect(entryId)}
                         className="h-4 w-4 rounded border-white/30 accent-[#E42980] [html[data-theme='light']_&]:border-zinc-400"
                       />
-                      <span className="sr-only">선택</span>
+                      <span className="sr-only">{t("mypage.selectItemAria")}</span>
                     </label>
                     <VideoCard
                       video={video}

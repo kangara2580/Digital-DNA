@@ -4,11 +4,13 @@ import Link from "next/link";
 import { Upload } from "lucide-react";
 import { SellerFeedOwnerQuickMenu } from "@/components/SellerFeedOwnerQuickMenu";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useTranslation } from "@/hooks/useTranslation";
 import { MYPAGE_OUTLINE_BTN_MD } from "@/lib/mypageOutlineCta";
 
 /** 내 피드(`/seller/{내 user id}`)에서만 — 프로필 카드 테두리 바깥 상단 */
 export function SellerFeedSellCta({ sellerId }: { sellerId: string }) {
   const { user, loading: authLoading } = useAuthSession();
+  const { t } = useTranslation();
 
   if (authLoading || !user?.id || user.id !== sellerId) return null;
 
@@ -21,7 +23,7 @@ export function SellerFeedSellCta({ sellerId }: { sellerId: string }) {
         />
         <Link href="/sell" className={`${MYPAGE_OUTLINE_BTN_MD} gap-2`}>
           <Upload className="h-[1.05rem] w-[1.05rem] shrink-0" strokeWidth={2.5} aria-hidden />
-          판매하기
+          {t("seller.feed.sellCta")}
         </Link>
       </div>
       <SellerFeedOwnerQuickMenu sellerId={sellerId} />
