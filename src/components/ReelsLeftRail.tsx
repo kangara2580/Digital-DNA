@@ -88,6 +88,70 @@ const RAIL_ITEMS: RailItem[] = [
 
 export function ReelsLeftRail() {
   const pathname = usePathname();
+  const isHome = pathname === "/";
+
+  if (isHome) {
+    return (
+      <aside
+        className="pointer-events-none fixed inset-y-0 left-0 z-[52] hidden w-[var(--reels-rail-w)] flex-col bg-transparent md:flex"
+        aria-label="주요 메뉴"
+      >
+        <div className="pointer-events-auto relative flex w-full shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
+          <Link
+            href="/"
+            className="mx-auto inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-white/[0.14] p-1 transition-[opacity,transform,background-color] duration-200 hover:bg-white/[0.19] hover:opacity-95 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:size-auto [html[data-theme='light']_&]:shrink [html[data-theme='light']_&]:mx-0 [html[data-theme='light']_&]:flex [html[data-theme='light']_&]:min-h-[52px] [html[data-theme='light']_&]:w-full [html[data-theme='light']_&]:rounded-[0.85rem] [html[data-theme='light']_&]:bg-transparent [html[data-theme='light']_&]:p-0 [html[data-theme='light']_&]:py-2 [html[data-theme='light']_&]:hover:bg-zinc-900/[0.04] [html[data-theme='light']_&]:active:scale-[0.98]"
+            aria-label="홈"
+          >
+            <img
+              src="/brand/rail-home-logo.png"
+              alt=""
+              className="h-7 w-7 max-w-full -translate-y-[3px] object-contain object-center select-none [html[data-theme='light']_&]:h-9 [html[data-theme='light']_&]:w-9 [html[data-theme='light']_&]:translate-y-0"
+              draggable={false}
+            />
+          </Link>
+        </div>
+        <div className="pointer-events-none flex min-h-0 flex-1 flex-col items-stretch pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <nav
+            className="pointer-events-auto flex shrink-0 flex-col items-center gap-2 overflow-visible py-2"
+            aria-label="빠른 이동"
+          >
+            {RAIL_ITEMS.map(({ href, label, Icon, isActive }) => {
+              const on = isActive(pathname);
+              return (
+                <div key={href} className="flex flex-col items-center gap-1">
+                  <Link
+                    href={href}
+                    aria-label={label}
+                    aria-current={on ? "page" : undefined}
+                    className={`${railIconBtn} ${on ? railIconActive : ""}`}
+                  >
+                    <Icon
+                      className={
+                        href === "/category/best" || href === "/shop"
+                          ? "h-[31px] w-[31px]"
+                          : "h-[25px] w-[25px]"
+                      }
+                      strokeWidth={stroke}
+                      aria-hidden
+                    />
+                  </Link>
+                  <span
+                    className={`${railItemLabelBase} ${
+                      on
+                        ? "text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-[color:var(--reels-point)]"
+                        : "text-white/88"
+                    }`}
+                  >
+                    {label}
+                  </span>
+                </div>
+              );
+            })}
+          </nav>
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <aside
