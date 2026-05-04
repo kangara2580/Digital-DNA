@@ -9,8 +9,6 @@ import { MyPagePasswordSection } from "@/components/MyPagePasswordSection";
 import { MyPageProfileEditForm } from "@/components/MyPageProfileEditForm";
 import { ProfileAvatarPicker } from "@/components/ProfileAvatarPicker";
 import { useAuthSession } from "@/hooks/useAuthSession";
-import { useStoredFaceProfile } from "@/hooks/useStoredFaceProfile";
-import { fetchUserCustomizeDrafts } from "@/lib/supabaseUserSync";
 import type { ProfileAvatar } from "@/lib/profileAvatarStorage";
 import { resolveProfileAvatar } from "@/lib/profileAvatarStorage";
 import {
@@ -65,9 +63,7 @@ export function AccountSettingsDashboard() {
     () => SETTINGS_TAB_ITEMS.find((item) => item.id === currentTab) ?? SETTINGS_TAB_ITEMS[0],
     [currentTab],
   );
-  const { user, supabaseConfigured, loading: authLoading } = useAuthSession();
-  const { profile, hydrated } = useStoredFaceProfile();
-  const [draftCount, setDraftCount] = useState(0);
+  const { user, loading: authLoading } = useAuthSession();
   const [profileRecord, setProfileRecord] = useState<AppProfile | null>(null);
 
   const profileForForm = useMemo(
@@ -115,28 +111,6 @@ export function AccountSettingsDashboard() {
     [user],
   );
 
-  const refreshDraftCount = useCallback(() => {
-    if (!user || !supabaseConfigured) {
-      setDraftCount(0);
-      return;
-    }
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-    void fetchUserCustomizeDrafts(supabase, user.id).then((rows) => {
-      setDraftCount(rows.length);
-    });
-  }, [user, supabaseConfigured]);
-
-  useEffect(() => {
-    refreshDraftCount();
-    window.addEventListener("focus", refreshDraftCount);
-    window.addEventListener("reels-drafts-updated", refreshDraftCount);
-    return () => {
-      window.removeEventListener("focus", refreshDraftCount);
-      window.removeEventListener("reels-drafts-updated", refreshDraftCount);
-    };
-  }, [refreshDraftCount]);
-
   useEffect(() => {
     if (!user) {
       setProfileRecord(null);
@@ -158,36 +132,6 @@ export function AccountSettingsDashboard() {
       cancelled = true;
     };
   }, [user]);
-
-  const displayId = useMemo(() => {
-    const nickname = String(profileForForm?.nickname ?? "").trim();
-    const email = String(profileForForm?.email ?? user?.email ?? "").trim();
-    if (nickname) return nickname;
-    if (email) return email;
-    return user?.id ? `id·${user.id.slice(0, 8)}…` : "계정";
-  }, [profileForForm?.email, profileForForm?.nickname, user?.email, user?.id]);
-
-  const accountSummary = useMemo(() => {
-    const firstName = String(profileForForm?.first_name ?? "").trim();
-    const lastName = String(profileForForm?.last_name ?? "").trim();
-    const phone = String(profileForForm?.phone ?? "").trim();
-    const country = String(profileForForm?.country ?? "").trim();
-    const name = [firstName, lastName].filter(Boolean).join(" ").trim();
-    const details = [name, phone, country].filter(Boolean);
-    if (details.length > 0) return details.join(" · ");
-    return "가입 정보가 없으면 다음 로그인 시 동기화됩니다.";
-  }, [
-    profileForForm?.country,
-    profileForForm?.first_name,
-    profileForForm?.last_name,
-    profileForForm?.phone,
-  ]);
-
-  const profileLabel = useMemo(() => {
-    if (!hydrated) return "불러오는 중";
-    if (!profile) return "미등록";
-    return profile.kind === "triple" ? "3면 직접 등록됨" : "AI 3면 생성됨";
-  }, [hydrated, profile]);
 
   const mySellerFeedHref = useMemo(
     () => (user?.id ? `/seller/${encodeURIComponent(user.id)}` : null),
@@ -258,62 +202,6 @@ export function AccountSettingsDashboard() {
               <MyPageProfileEditForm profileForForm={profileForForm} onSaved={setProfileRecord} />
 
               <MyPagePasswordSection />
-
-              <div className="mt-10 border-t border-white/10 pt-10 [html[data-theme='light']_&]:border-zinc-100">
-                <h3 className="text-[15px] font-semibold text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                  계정 요약
-                </h3>
-                <div className="mt-6 grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2">
-                  <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/60">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
-                      아이디
-                    </p>
-                    <p className="mt-2 break-all text-[16px] font-semibold leading-snug text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                      {displayId}
-                    </p>
-                    <p className="mt-1 text-[12px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-500">
-                      {user?.email ? `이메일: ${user.email}` : "닉네임/이메일 연동 전 기본 계정입니다."}
-                    </p>
-                  </div>
-                  <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/60">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
-                      계정 상태
-                    </p>
-                    <p className="mt-2 text-[16px] font-semibold text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                      정상
-                    </p>
-                    <p className="mt-1 text-[12px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-500">
-                      {accountSummary}
-                    </p>
-                  </div>
-                  <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/60">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
-                      임시 저장
-                    </p>
-                    <p className="mt-1 text-[22px] font-semibold tabular-nums text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                      {draftCount}
-                    </p>
-                    <p className="text-[11px] leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500">
-                      저장된 편집 항목 · 열어보려면 마이페이지 임시 저장 탭 이용
-                    </p>
-                  </div>
-                  <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/60">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
-                      프로필 얼굴
-                    </p>
-                    <p className="mt-1 break-words text-[15px] font-semibold text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                      {profileLabel}
-                    </p>
-                    <p className="text-[11px] leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500">
-                      등록은{" "}
-                      <Link href="/settings?tab=profile" className="font-semibold text-[#E42980] underline-offset-2 hover:underline">
-                        AI 프로필 설정
-                      </Link>
-                      에서 변경할 수 있어요.
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
           ) : null}
 
