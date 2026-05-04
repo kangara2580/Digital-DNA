@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getTikTokManualRanking,
@@ -13,14 +12,15 @@ import { liveStatsKeyFromFeedVideo } from "@/lib/externalEmbed/parseUrl";
 import { TrendingVideoStatsFooter } from "./TrendingVideoStatsFooter";
 import { homeSectionHeadingH2ClassName } from "@/lib/homeSectionHeadingTypography";
 import { VideoCard } from "./VideoCard";
+import { useTranslation } from "@/hooks/useTranslation";
 
-function SkeletonGrid() {
+function SkeletonGrid({ ariaLabel }: { ariaLabel: string }) {
   return (
     <div
       className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
       role="status"
       aria-live="polite"
-      aria-label="인기순위 영상 불러오는 중"
+      aria-label={ariaLabel}
     >
       {Array.from({ length: 10 }).map((_, i) => (
         <div key={`skeleton-${i}`} className="relative">
@@ -38,12 +38,12 @@ function SkeletonGrid() {
 }
 
 export function TrendingRankSection() {
-  const router = useRouter();
+  const { t } = useTranslation();
   const sectionRef = useRef<HTMLElement | null>(null);
   const gridAnchorRef = useRef<HTMLDivElement | null>(null);
   const [trendingClips, setTrendingClips] = useState<FeedVideo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<"dev" | "fallback" | null>(null);
   const [liveStatsByKey, setLiveStatsByKey] = useState<
     Record<string, { playCount: number; diggCount: number }>
   >({});
@@ -83,7 +83,7 @@ export function TrendingRankSection() {
 
   const loadTrending = useCallback(() => {
     setLoading(true);
-    setErrorMessage(null);
+    setErrorKind(null);
     void (async () => {
       try {
         const response = await fetch("/api/trending/rank?limit=30", {
@@ -110,11 +110,9 @@ export function TrendingRankSection() {
         }));
         setTrendingClips(fallback);
         if (!fallback.length) {
-          setErrorMessage(
-            "표시할 영상이 없습니다. TikTok·YouTube·Instagram 공유 URL을 src/data/tiktokData.ts 의 FILE_RAW_MANUAL_TIKTOK_URLS 또는 Vercel NEXT_PUBLIC_TRENDING_TIKTOK_URLS 에 넣어 주세요.",
-          );
+          setErrorKind("dev");
         } else {
-          setErrorMessage("실시간 랭킹 연결에 실패해 샘플 랭킹을 표시합니다.");
+          setErrorKind("fallback");
         }
       } finally {
         setLoading(false);
@@ -246,13 +244,13 @@ export function TrendingRankSection() {
         <div className="flex flex-col items-center gap-3 py-9 sm:py-10">
           <div className="min-w-0 text-center">
             <h2 id="trending-rank-heading" className={homeSectionHeadingH2ClassName}>
-              인기순위 <span className="font-bold">TOP</span> 30
+              {t("home.trending.title")}
             </h2>
             <p className="mt-2 text-center text-[16px] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
-              전 세계 크리에이터들이 가장 많이 선택한 인기 영상
+              {t("home.trending.subtitle")}
             </p>
-            {errorMessage ? (
-              <p className="mt-1.5 text-[12px] font-medium text-reels-crimson/90 [html[data-theme='light']_&]:text-reels-crimson">                {errorMessage}
+            {errorKind ? (
+              <p className="mt-1.5 text-[12px] font-medium text-reels-crimson/90 [html[data-theme='light']_&]:text-reels-crimson">                {t(errorKind === "dev" ? "home.trending.errorDev" : "home.trending.errorFallback")}
               </p>
             ) : null}
           </div>
@@ -262,12 +260,12 @@ export function TrendingRankSection() {
           ref={gridAnchorRef}
           className="relative mt-0 scroll-mt-6 sm:scroll-mt-8 md:scroll-mt-10"
         >
-          {loading ? <SkeletonGrid /> : null}
+          {loading ? <SkeletonGrid ariaLabel={t("home.trending.loadingAria")} /> : null}
 
           {!loading && rankedRows.length === 0 ? (
             <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-6 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
               <p className="text-[14px] font-medium text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-                표시할 인기 영상이 없습니다.
+                {t("home.trending.empty")}
               </p>
               <div className="mt-3 flex items-center justify-center gap-2">
                 <button
@@ -275,7 +273,7 @@ export function TrendingRankSection() {
                   className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-zinc-200 transition-colors hover:border-white/35 hover:bg-white/10 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-200/80"
                   onClick={() => void loadTrending()}
                 >
-                  다시 불러오기
+                  {t("home.trending.retry")}
                 </button>
               </div>
             </div>
@@ -285,7 +283,7 @@ export function TrendingRankSection() {
             <div
               className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5"
               role="list"
-              aria-label="인기순위 영상 목록"
+              aria-label={t("home.trending.listAria")}
             >
               {visibleRowsData.map((entry, rankIndex) => (
                 <div
@@ -298,7 +296,7 @@ export function TrendingRankSection() {
                   <VideoCard
                     video={{
                       ...entry.video,
-                      title: `${rankIndex + 1}위`,
+                      title: t("home.trending.rankLabel", { n: rankIndex + 1 }),
                     }}
                     reelLayout
                     reelStrip
@@ -336,8 +334,8 @@ export function TrendingRankSection() {
               onClick={showCollapse ? onCollapseToFirstRow : onExpandAllRows}
               disabled={showCollapse ? !canCollapse : !canExpand}
               className="group inline-flex h-12 min-w-[280px] items-center justify-center bg-transparent px-0 text-white transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:text-zinc-800 sm:h-14 sm:min-w-[360px]"
-              aria-label={showCollapse ? "인기순위 접기" : "인기순위 펼치기"}
-              title={showCollapse ? "위로 접기" : "아래로 펼치기"}
+              aria-label={showCollapse ? t("home.trending.collapseAria") : t("home.trending.expandAria")}
+              title={showCollapse ? t("home.trending.collapseTitle") : t("home.trending.expandTitle")}
             >
               <svg viewBox="0 0 220 48" fill="none" className="h-7 w-[190px] sm:h-8 sm:w-[220px]" aria-hidden>
                 {showCollapse ? (
@@ -364,7 +362,7 @@ export function TrendingRankSection() {
                 href="/category/best"
                 className="inline-flex min-w-[140px] items-center justify-center rounded-full border border-white/30 bg-white/[0.05] px-7 py-3 text-[16px] font-semibold text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_8px_22px_-14px_rgba(0,0,0,0.6)] backdrop-blur-md transition hover:border-white/50 hover:bg-white/[0.1] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_8px_22px_-14px_rgba(15,23,42,0.12)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-50"
               >
-                더보기
+                {t("home.trending.moreLink")}
               </Link>
             ) : null}
           </div>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useState, type ReactNode } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useTranslation } from "@/hooks/useTranslation";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 type Props = {
@@ -37,6 +38,7 @@ function LoggedInAccountHoverMenuInner({
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuthSession();
+  const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
 
   const onMyFeed =
@@ -84,7 +86,7 @@ function LoggedInAccountHoverMenuInner({
         {children}
       </button>
 
-      <div role="menu" aria-label="계정" className={menuPositionClass}>
+      <div role="menu" aria-label={t("account.menu.aria")} className={menuPositionClass}>
         <div className={menuPanelInner}>
           <Link
             href={myFeedHref}
@@ -92,7 +94,7 @@ function LoggedInAccountHoverMenuInner({
             className={menuItemLink}
             aria-current={onMyFeed ? "page" : undefined}
           >
-            내 피드
+            {t("account.feed")}
           </Link>
           <Link
             href="/mypage"
@@ -100,7 +102,7 @@ function LoggedInAccountHoverMenuInner({
             className={menuItemLink}
             aria-current={onMypageHub ? "page" : undefined}
           >
-            마이페이지
+            {t("account.mypage")}
           </Link>
           <Link
             href="/settings"
@@ -108,7 +110,7 @@ function LoggedInAccountHoverMenuInner({
             className={menuItemLink}
             aria-current={onSettings ? "page" : undefined}
           >
-            설정
+            {t("account.settings")}
           </Link>
           <button
             type="button"
@@ -117,7 +119,7 @@ function LoggedInAccountHoverMenuInner({
             disabled={busy}
             className={menuItemLogout}
           >
-            {busy ? "처리 중…" : "로그아웃"}
+            {busy ? t("account.logoutBusy") : t("account.logout")}
           </button>
         </div>
       </div>

@@ -17,6 +17,8 @@ import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 import { MainTopUserMenu } from "@/components/MainTopUserMenu";
 import { ReelsSearchField } from "@/components/ReelsSearchField";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useTranslation } from "@/hooks/useTranslation";
+import { categoryNavKey } from "@/lib/i18n/dictionaries";
 
 /** 카테고리 pill — 라이트 모드에서 검정 텍스트 */
 const categoryPillClass =
@@ -50,13 +52,14 @@ const subscribeFixedWrap =
 function FixedSubscribeNavLink() {
   const pathname = usePathname();
   const { user } = useAuthSession();
+  const { t } = useTranslation();
   if (!user || (!pathname.startsWith("/mypage") && !pathname.startsWith("/settings"))) return null;
   return (
     <Link
       href="/subscribe"
       className={`${subscribeNavClass} ${subscribeFixedWrap}`}
-      aria-label="구독·결제 페이지로 이동"
-      title="구독"
+      aria-label={t("nav.subscribe.aria")}
+      title={t("nav.subscribe.title")}
     >
       <Wallet className="h-4 w-4 shrink-0 sm:h-[18px] sm:w-[18px]" strokeWidth={2} aria-hidden />
     </Link>
@@ -67,6 +70,7 @@ export function MallTopNav() {
   const headerRef = useRef<HTMLElement>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useTranslation();
   const isHomePage = pathname === "/";
   const isShopPage = pathname === "/shop";
   const isVideoDetailPage =
@@ -402,13 +406,13 @@ export function MallTopNav() {
             isVideoDetailPage ? (
               <div className={`flex shrink-0 items-center ${easeLayout}`}>
                 <Link href="/" className={`${logoClass} sr-only`}>
-                  홈으로 이동
+                  {t("nav.homeLogo.aria")}
                 </Link>
               </div>
             ) : (
               <div className={`flex shrink-0 items-center ${easeLayout}`}>
                 <Link href="/" className={`${logoClass} sr-only`}>
-                  홈으로 이동
+                  {t("nav.homeLogo.aria")}
                 </Link>
               </div>
             )
@@ -427,7 +431,7 @@ export function MallTopNav() {
               <div className="pt-0.5">
                 <div className="flex w-full min-w-0 flex-wrap items-center gap-3 sm:flex-nowrap sm:gap-5">
                   <Link href="/" className="sr-only">
-                    홈으로 이동
+                    {t("nav.homeLogo.aria")}
                   </Link>
                   <div className="flex w-full min-w-0 flex-1 items-center justify-end gap-2 sm:ml-auto sm:w-auto sm:gap-3">
                     <MainTopUserMenu />
@@ -463,25 +467,25 @@ export function MallTopNav() {
                     onClick={() => scrollCategoryRow(-1)}
                     disabled={!canScrollCategoryLeft}
                     className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white disabled:cursor-default disabled:opacity-35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
-                    aria-label="이전 카테고리"
+                    aria-label={t("nav.categoryPrev")}
                   >
                     <ChevronLeft className="h-4 w-4" strokeWidth={2.2} aria-hidden />
                   </button>
                   <nav
                     ref={categoryScrollRef}
                     className="no-scrollbar flex min-w-0 flex-1 items-center justify-start gap-1 overflow-x-auto px-0.5 py-0 sm:gap-1.5"
-                    aria-label="카테고리"
+                    aria-label={t("nav.category")}
                   >
                     {ITEMS.map((item) => {
                       const active = pathname === item.href;
                       return (
                         <Link
-                          key={item.label}
+                          key={item.href}
                           href={item.href}
                           aria-current={active ? "page" : undefined}
                           className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} shrink-0 whitespace-nowrap px-3 py-[9px] text-[13px] sm:px-3.5 sm:py-[9px] sm:text-[14px]`}
                         >
-                          {item.label}
+                          {t(categoryNavKey(item.href))}
                         </Link>
                       );
                     })}
@@ -491,7 +495,7 @@ export function MallTopNav() {
                     onClick={() => scrollCategoryRow(1)}
                     disabled={!canScrollCategoryRight}
                     className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white disabled:cursor-default disabled:opacity-35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
-                    aria-label="다음 카테고리"
+                    aria-label={t("nav.categoryNext")}
                   >
                     <ChevronRight className="h-4 w-4" strokeWidth={2.2} aria-hidden />
                   </button>
@@ -503,7 +507,7 @@ export function MallTopNav() {
                       ? "mt-0 flex-1 justify-center gap-1 overflow-visible border-0 py-0 sm:gap-1.5"
                       : "no-scrollbar mt-3 justify-center gap-1 overflow-x-auto border-t border-white/10 pt-2 sm:gap-1.5 [html[data-theme='light']_&]:border-zinc-200"
                   }`}
-                  aria-label="카테고리"
+                  aria-label={t("nav.category")}
                 >
                   {compactEffective ? (
                     <>
@@ -511,12 +515,12 @@ export function MallTopNav() {
                         const active = pathname === item.href;
                         return (
                           <Link
-                            key={item.label}
+                            key={item.href}
                             href={item.href}
                             aria-current={active ? "page" : undefined}
                             className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} px-2.5 py-[7px] text-[12px] sm:px-3 sm:py-[7px] sm:text-[13px]`}
                           >
-                            {item.label}
+                            {t(categoryNavKey(item.href))}
                           </Link>
                         );
                       })}
@@ -538,7 +542,7 @@ export function MallTopNav() {
                           id="mall-category-trigger"
                           className={`inline-flex items-center gap-0.5 ${categoryPillClass} ${easeLayout} px-2.5 py-[7px] text-[12px] sm:px-3 sm:py-[7px] sm:text-[13px]`}
                         >
-                          카테고리
+                          {t("nav.category")}
                           <ChevronDown
                             className={`h-3.5 w-3.5 shrink-0 opacity-70 transition-transform duration-200 ${moreOpen ? "rotate-180" : ""}`}
                             strokeWidth={2}
@@ -568,13 +572,13 @@ export function MallTopNav() {
                               <div className="no-scrollbar flex justify-center overflow-x-auto px-2 py-1 sm:px-2.5 sm:py-1.5">
                                 <nav
                                   className="inline-flex min-w-0 flex-nowrap items-center justify-center gap-1 sm:gap-1.5"
-                                  aria-label="추가 카테고리"
+                                  aria-label={t("nav.categoryMore")}
                                 >
                                   {COMPACT_MORE.map((item) => {
                                     const active = pathname === item.href;
                                     return (
                                       <Link
-                                        key={item.label}
+                                        key={item.href}
                                         href={item.href}
                                         aria-current={active ? "page" : undefined}
                                         onClick={() => {
@@ -587,7 +591,7 @@ export function MallTopNav() {
                                             : "border border-transparent"
                                         }`}
                                       >
-                                        {item.label}
+                                        {t(categoryNavKey(item.href))}
                                       </Link>
                                     );
                                   })}
@@ -603,12 +607,12 @@ export function MallTopNav() {
                       const active = pathname === item.href;
                       return (
                         <Link
-                          key={item.label}
+                          key={item.href}
                           href={item.href}
                           aria-current={active ? "page" : undefined}
                           className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} px-2.5 py-[7px] text-[12px] sm:px-3 sm:py-[7px] sm:text-[13px]`}
                         >
-                          {item.label}
+                          {t(categoryNavKey(item.href))}
                         </Link>
                       );
                     })

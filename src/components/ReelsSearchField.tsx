@@ -3,6 +3,7 @@
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const easeLayout =
   "duration-300 ease-out motion-reduce:duration-150 motion-reduce:ease-linear";
@@ -48,6 +49,7 @@ export function ReelsSearchField({
   onAfterSearch?: () => void;
 }) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const runSearch = useCallback(() => {
     const t = q.trim();
@@ -98,13 +100,13 @@ export function ReelsSearchField({
           autoComplete="off"
           enterKeyHint="search"
           className={`mall-search min-h-0 w-0 min-w-0 flex-1 appearance-none border-0 bg-transparent py-0 pl-0 pr-1 text-[13px] text-zinc-100 outline-none ring-0 transition-[max-width,opacity,color,padding,width] duration-500 ease-[cubic-bezier(0.16,1,0.22,1)] focus:ring-0 motion-reduce:transition-none ${placeholderClass} rounded-none opacity-0 pointer-events-none [-webkit-appearance:none] group-hover:w-auto group-hover:min-w-0 group-hover:pl-3 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:w-auto group-focus-within:min-w-0 group-focus-within:pl-3 group-focus-within:opacity-100 group-focus-within:pointer-events-auto motion-reduce:pointer-events-auto motion-reduce:w-auto motion-reduce:pl-3 motion-reduce:opacity-100 [html[data-theme='dark']_&]:text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden`}
-          aria-label="릴스·키워드 검색"
+          aria-label={t("search.aria.input")}
         />
         {showTrailingIcon ? (
           <button
             type="submit"
             className={`${pinkSubmitTileHeroClass} shrink-0`}
-            aria-label="검색 실행"
+            aria-label={t("search.aria.submit")}
           >
             <span className="block">
               <Search
@@ -136,7 +138,7 @@ export function ReelsSearchField({
         autoComplete="off"
         enterKeyHint="search"
         className={`mall-search w-full border outline-none ring-0 ${inputTransitionClass} focus:ring-0 ${placeholderClass} rounded-full ${inputClassByMode}`}
-        aria-label="릴스·키워드 검색"
+        aria-label={t("search.aria.input")}
       />
       {showTrailingIcon ? (
         <button
@@ -150,7 +152,7 @@ export function ReelsSearchField({
                     mode === "pill" ? "right-1.5" : mode === "compact" ? "right-1.5" : "right-3"
                   }`
           }
-          aria-label="검색 실행"
+          aria-label={t("search.aria.submit")}
         >
           <span
             className={

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaceProfileUploadSection } from "@/components/FaceProfileUploadSection";
+import { LocalePreferenceSelect } from "@/components/LocalePreferenceSelect";
 import { MyPageAccountOverview } from "@/components/MyPageAccountOverview";
 import { MyPagePasswordSection } from "@/components/MyPagePasswordSection";
 import { MyPageProfileEditForm } from "@/components/MyPageProfileEditForm";
@@ -18,32 +19,41 @@ import {
   type AppProfile,
 } from "@/lib/supabaseProfiles";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { useTranslation } from "@/hooks/useTranslation";
 
-type SettingsTab = "basic" | "edit" | "profile";
+type SettingsTab = "basic" | "edit" | "profile" | "language";
 
-const SETTINGS_TAB_ITEMS: { id: SettingsTab; label: string; href: string }[] = [
-  { id: "basic", label: "기본정보", href: "/settings" },
-  { id: "edit", label: "프로필 편집", href: "/settings?tab=edit" },
-  { id: "profile", label: "AI 프로필 설정", href: "/settings?tab=profile" },
+const SETTINGS_TAB_DEFS: { id: SettingsTab; href: string }[] = [
+  { id: "basic", href: "/settings" },
+  { id: "edit", href: "/settings?tab=edit" },
+  { id: "profile", href: "/settings?tab=profile" },
+  { id: "language", href: "/settings?tab=language" },
 ];
 
-function LoginRequiredPanel({ tab }: { tab: { id: SettingsTab; label: string; href: string } }) {
-  const redirect = encodeURIComponent(tab.href);
+function LoginRequiredPanel({
+  sectionLabel,
+  redirectHref,
+}: {
+  sectionLabel: string;
+  redirectHref: string;
+}) {
+  const { t } = useTranslation();
+  const redirect = encodeURIComponent(redirectHref);
 
   return (
     <div className="rounded-2xl border border-white/10 bg-zinc-900/50 p-6 sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm">
       <h2 className="text-lg font-semibold tracking-tight text-zinc-50 sm:text-xl [html[data-theme='light']_&]:text-zinc-900">
-        {tab.label}
+        {sectionLabel}
       </h2>
       <div className="mt-8 rounded-xl border border-dashed border-white/15 bg-black/25 p-8 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/80">
         <p className="text-[14px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-          로그인하면 설정의 {tab.label}을 포함한 계정 관리 기능을 이용할 수 있어요.
+          {t("settings.loginPrompt", { section: sectionLabel })}
         </p>
         <Link
           href={`/login?redirect=${redirect}`}
           className="mt-5 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-semibold text-white shadow-[0_6px_20px_-6px_rgba(228,41,128,0.45)] transition hover:brightness-[1.05]"
         >
-          로그인
+          {t("settings.loginCta")}
         </Link>
       </div>
     </div>
@@ -53,16 +63,17 @@ function LoginRequiredPanel({ tab }: { tab: { id: SettingsTab; label: string; hr
 function normalizeSettingsTab(input: string | null): SettingsTab {
   if (input === "profile") return "profile";
   if (input === "edit") return "edit";
+  if (input === "language") return "language";
   return "basic";
 }
 
 export function AccountSettingsDashboard() {
   const params = useSearchParams();
+  const { t } = useTranslation();
   const currentTab = normalizeSettingsTab(params.get("tab"));
-  const activeTab = useMemo(
-    () => SETTINGS_TAB_ITEMS.find((item) => item.id === currentTab) ?? SETTINGS_TAB_ITEMS[0],
-    [currentTab],
-  );
+  const activeHref =
+    SETTINGS_TAB_DEFS.find((item) => item.id === currentTab)?.href ?? SETTINGS_TAB_DEFS[0].href;
+  const activeSectionLabel = t(`settings.tab.${currentTab}`);
   const { user, loading: authLoading } = useAuthSession();
   const [profileRecord, setProfileRecord] = useState<AppProfile | null>(null);
 
@@ -143,17 +154,17 @@ export function AccountSettingsDashboard() {
       <div className="mx-auto max-w-[1500px] px-4 py-10 sm:px-6 sm:py-12 lg:px-10">
         <header className="border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-100">
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-50 sm:text-[1.75rem] [html[data-theme='light']_&]:text-zinc-900">
-            설정
+            {t("settings.title")}
           </h1>
         </header>
 
         <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,13.5rem)_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[15rem_minmax(0,1fr)]">
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
-              메뉴
+              {t("settings.menu")}
             </p>
-            <nav aria-label="설정 메뉴" className="flex flex-col gap-0.5">
-              {SETTINGS_TAB_ITEMS.map((item) => {
+            <nav aria-label={t("settings.menu")} className="flex flex-col gap-0.5">
+              {SETTINGS_TAB_DEFS.map((item) => {
                 const active = item.id === currentTab;
                 return (
                   <Link
@@ -165,7 +176,7 @@ export function AccountSettingsDashboard() {
                         : "rounded-lg border-l-[3px] border-l-transparent py-2.5 pl-[13px] pr-3 text-[14px] font-medium text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
                     }
                   >
-                    {item.label}
+                    {t(`settings.tab.${item.id}`)}
                   </Link>
                 );
               })}
@@ -176,25 +187,27 @@ export function AccountSettingsDashboard() {
           {authLoading && !user ? (
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-12 text-center [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/50">
               <p className="text-[14px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-                불러오는 중…
+                {t("settings.loading")}
               </p>
             </div>
           ) : null}
-          {!authLoading && !user ? <LoginRequiredPanel tab={activeTab} /> : null}
+          {!authLoading && !user ? (
+            <LoginRequiredPanel sectionLabel={activeSectionLabel} redirectHref={activeHref} />
+          ) : null}
 
           {currentTab === "basic" && user ? (
             <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
               <MyPageAccountOverview />
               <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-10 [html[data-theme='light']_&]:border-zinc-100">
                 <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                  기본정보
+                  {t("settings.tab.basic")}
                 </h2>
                 {mySellerFeedHref ? (
                   <Link
                     href={mySellerFeedHref}
                     className="inline-flex rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-zinc-100 transition hover:border-[#E42980] hover:text-[#F07AB0] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:text-[#E42980]"
                   >
-                    내 판매 피드 가기
+                    {t("account.feed")}
                   </Link>
                 ) : null}
               </div>
@@ -208,10 +221,10 @@ export function AccountSettingsDashboard() {
           {currentTab === "edit" && user ? (
             <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
               <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                프로필 편집
+                {t("settings.tab.edit")}
               </h2>
               <p className="mt-2 max-w-xl text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                계정에 표시되는 프로필 이미지를 바꿀 수 있어요. 변경 내용은 계정에 저장됩니다.
+                {t("settings.edit.lead")}
               </p>
               <div className="mt-8 max-w-[420px]">
                 <ProfileAvatarPicker
@@ -220,9 +233,29 @@ export function AccountSettingsDashboard() {
                   onChange={persistProfileAvatar}
                   hint={
                     user
-                      ? "변경 내용은 계정에 저장됩니다."
-                      : "로그인 후 프로필 이미지를 계정에 연결할 수 있습니다."
+                      ? t("settings.avatar.hintSaved")
+                      : t("settings.avatar.hintGuest")
                   }
+                />
+              </div>
+            </div>
+          ) : null}
+
+          {currentTab === "language" && user ? (
+            <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
+              <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+                {t("settings.language.heading")}
+              </h2>
+              <p className="mt-2 max-w-xl text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                {t("settings.language.lead")}
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-8">
+                <span className="shrink-0 text-[14px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                  {t("settings.language.fieldLabel")}
+                </span>
+                <LocalePreferenceSelect
+                  ariaLabel={t("settings.language.selectAria")}
+                  className="w-full min-w-0 sm:max-w-xs"
                 />
               </div>
             </div>

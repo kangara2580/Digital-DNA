@@ -3,6 +3,7 @@
 import { Compass, Trophy } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const stroke = 1.75;
 
@@ -37,7 +38,7 @@ const railHomeLogoImg =
 
 type RailItem = {
   href: string;
-  label: string;
+  labelKey: string;
   Icon: React.ComponentType<{
     className?: string;
     strokeWidth?: number;
@@ -87,20 +88,20 @@ function ShopBagOutline({
 const RAIL_ITEMS: RailItem[] = [
   {
     href: "/explore",
-    label: "탐색",
+    labelKey: "rail.explore",
     Icon: Compass,
     isActive: (p) => p === "/explore" || p.startsWith("/explore/"),
   },
   {
     href: "/category/best",
-    label: "쇼핑몰",
+    labelKey: "rail.shop",
     Icon: ShopBagOutline,
     isActive: (p) =>
       p === "/shop" || p.startsWith("/shop/") || p.startsWith("/category/"),
   },
   {
     href: "/leaderboard",
-    label: "순위",
+    labelKey: "rail.leaderboard",
     Icon: Trophy,
     isActive: (p) => p === "/leaderboard" || p.startsWith("/leaderboard/"),
   },
@@ -108,16 +109,17 @@ const RAIL_ITEMS: RailItem[] = [
 
 export function ReelsLeftRail() {
   const pathname = usePathname();
+  const { t } = useTranslation();
   const isHome = pathname === "/";
 
   if (isHome) {
     return (
       <aside
         className="pointer-events-none fixed inset-y-0 left-0 z-[52] hidden w-[var(--reels-rail-w)] flex-col bg-transparent md:flex"
-        aria-label="주요 메뉴"
+        aria-label={t("rail.aria.main")}
       >
         <div className="pointer-events-auto relative flex w-full shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
-          <Link href="/" className={railHomeLogoLink} aria-label="홈">
+          <Link href="/" className={railHomeLogoLink} aria-label={t("rail.aria.home")}>
             <img
               src="/brand/rail-home-logo.png"
               alt=""
@@ -129,9 +131,9 @@ export function ReelsLeftRail() {
         <div className="pointer-events-none flex min-h-0 flex-1 flex-col items-stretch pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <nav
             className="pointer-events-auto flex shrink-0 flex-col items-center gap-2 overflow-visible py-2"
-            aria-label="빠른 이동"
+            aria-label={t("rail.quickNav")}
           >
-            {RAIL_ITEMS.map(({ href, label, Icon, isActive }) => {
+            {RAIL_ITEMS.map(({ href, labelKey, Icon, isActive }) => {
               const on = isActive(pathname);
               return (
                 <Link
@@ -156,7 +158,7 @@ export function ReelsLeftRail() {
                         : "text-white/88"
                     }`}
                   >
-                    {label}
+                    {t(labelKey)}
                   </span>
                 </Link>
               );
@@ -170,10 +172,10 @@ export function ReelsLeftRail() {
   return (
     <aside
       className="fixed inset-y-0 left-0 z-[52] hidden w-[var(--reels-rail-w)] flex-col border-r border-white/[0.08] bg-reels-abyss/80 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[1px_0_0_rgba(0,0,0,0.04)] md:flex"
-      aria-label="주요 메뉴"
+      aria-label={t("rail.aria.main")}
     >
       <div className="relative flex w-full shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
-        <Link href="/" className={railHomeLogoLink} aria-label="홈">
+        <Link href="/" className={railHomeLogoLink} aria-label={t("rail.aria.home")}>
           <img
             src="/brand/rail-home-logo.png"
             alt=""
@@ -185,9 +187,9 @@ export function ReelsLeftRail() {
       <div className="flex min-h-0 flex-1 flex-col items-stretch pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <nav
           className="flex shrink-0 flex-col items-center gap-2 overflow-visible py-2"
-          aria-label="빠른 이동"
+          aria-label={t("rail.quickNav")}
         >
-          {RAIL_ITEMS.map(({ href, label, Icon, isActive }) => {
+          {RAIL_ITEMS.map(({ href, labelKey, Icon, isActive }) => {
             const on = isActive(pathname);
             return (
               <Link
@@ -212,7 +214,7 @@ export function ReelsLeftRail() {
                       : "text-white/88"
                   }`}
                 >
-                  {label}
+                  {t(labelKey)}
                 </span>
               </Link>
             );
