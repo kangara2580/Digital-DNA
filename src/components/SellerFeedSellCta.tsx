@@ -21,7 +21,7 @@ export function SellerFeedSellCta({ sellerId }: { sellerId: string }) {
         />
         <Link href="/sell" className={`${MYPAGE_OUTLINE_BTN_MD} gap-2`}>
           <Upload className="h-[1.05rem] w-[1.05rem] shrink-0" strokeWidth={2.5} aria-hidden />
-          판매 동영상 올리기
+          판매하기
         </Link>
       </div>
       <SellerFeedOwnerQuickMenu sellerId={sellerId} />
