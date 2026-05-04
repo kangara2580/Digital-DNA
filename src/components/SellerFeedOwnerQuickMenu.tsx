@@ -7,6 +7,7 @@ import {
   Heart,
   Menu,
   Save,
+  ShoppingBag,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
@@ -16,6 +17,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 const ITEM_DEFS = [
   { href: "/mypage?tab=wishlist", tabKey: "wishlist" as const, Icon: Bookmark },
   { href: "/mypage?tab=likes", tabKey: "likes" as const, Icon: Heart },
+  { href: "/mypage?tab=purchases", tabKey: "purchases" as const, Icon: ShoppingBag },
   { href: "/mypage?tab=drafts", tabKey: "drafts" as const, Icon: Save },
   { href: "/mypage?tab=listings", tabKey: "listingsShort" as const, Icon: Clapperboard },
   { href: "/mypage?tab=analytics", tabKey: "analytics" as const, Icon: BarChart3 },

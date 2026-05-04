@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
+import { MyPageAccountOverview } from "@/components/MyPageAccountOverview";
 import { MyPageMyListingsSection } from "@/components/MyPageMyListingsSection";
 import { MyPageSavedDraftsSection } from "@/components/MyPageSavedDraftsSection";
 import { MyPageSectionShell } from "@/components/MyPageSectionShell";
@@ -14,11 +15,12 @@ import { DocumentTitleI18n } from "@/components/DocumentTitleI18n";
 import { MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 import { useTranslation } from "@/hooks/useTranslation";
 
-type MyPageTab = "drafts" | "analytics" | "listings" | "wishlist" | "likes";
+type MyPageTab = "drafts" | "analytics" | "listings" | "wishlist" | "likes" | "purchases";
 
 const TAB_DEFS: { id: MyPageTab; href: string }[] = [
   { id: "wishlist", href: "/mypage?tab=wishlist" },
   { id: "likes", href: "/mypage?tab=likes" },
+  { id: "purchases", href: "/mypage?tab=purchases" },
   { id: "drafts", href: "/mypage?tab=drafts" },
   { id: "listings", href: "/mypage?tab=listings" },
   { id: "analytics", href: "/mypage?tab=analytics" },
@@ -54,7 +56,8 @@ function normalizeTab(input: string | null): MyPageTab {
     input === "analytics" ||
     input === "listings" ||
     input === "wishlist" ||
-    input === "likes"
+    input === "likes" ||
+    input === "purchases"
   ) {
     return input;
   }
@@ -126,6 +129,15 @@ export function MyPageDashboard() {
             {currentTab === "likes" && user ? (
               <MyPageSectionShell title={t("mypage.section.likes.title")} description={t("mypage.section.likes.desc")}>
                 <MyPageLikedVideosSection />
+              </MyPageSectionShell>
+            ) : null}
+
+            {currentTab === "purchases" && user ? (
+              <MyPageSectionShell
+                title={t("mypage.section.purchases.title")}
+                description={t("mypage.section.purchases.desc")}
+              >
+                <MyPageAccountOverview />
               </MyPageSectionShell>
             ) : null}
 

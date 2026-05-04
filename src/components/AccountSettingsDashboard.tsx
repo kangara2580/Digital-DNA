@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaceProfileUploadSection } from "@/components/FaceProfileUploadSection";
 import { LocalePreferenceSelect } from "@/components/LocalePreferenceSelect";
-import { MyPageAccountOverview } from "@/components/MyPageAccountOverview";
 import { MyPagePasswordSection } from "@/components/MyPagePasswordSection";
 import { MyPageProfileEditForm } from "@/components/MyPageProfileEditForm";
 import { ProfileAvatarPicker } from "@/components/ProfileAvatarPicker";
@@ -22,12 +21,11 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DocumentTitleI18n } from "@/components/DocumentTitleI18n";
 
-type SettingsTab = "basic" | "edit" | "purchases" | "profile" | "language";
+type SettingsTab = "basic" | "edit" | "profile" | "language";
 
 const SETTINGS_TAB_DEFS: { id: SettingsTab; href: string }[] = [
   { id: "basic", href: "/settings" },
   { id: "edit", href: "/settings?tab=edit" },
-  { id: "purchases", href: "/settings?tab=purchases" },
   { id: "profile", href: "/settings?tab=profile" },
   { id: "language", href: "/settings?tab=language" },
 ];
@@ -65,15 +63,22 @@ function LoginRequiredPanel({
 function normalizeSettingsTab(input: string | null): SettingsTab {
   if (input === "profile") return "profile";
   if (input === "edit") return "edit";
-  if (input === "purchases") return "purchases";
   if (input === "language") return "language";
   return "basic";
 }
 
 export function AccountSettingsDashboard() {
+  const router = useRouter();
   const params = useSearchParams();
   const { t } = useTranslation();
-  const currentTab = normalizeSettingsTab(params.get("tab"));
+  const tabParam = params.get("tab");
+  const redirectingFromPurchasesTab = tabParam === "purchases";
+  useEffect(() => {
+    if (tabParam === "purchases") {
+      router.replace("/mypage?tab=purchases");
+    }
+  }, [router, tabParam]);
+  const currentTab = normalizeSettingsTab(tabParam);
   const activeHref =
     SETTINGS_TAB_DEFS.find((item) => item.id === currentTab)?.href ?? SETTINGS_TAB_DEFS[0].href;
   const activeSectionLabel = t(`settings.tab.${currentTab}`);
@@ -152,6 +157,19 @@ export function AccountSettingsDashboard() {
     [user?.id],
   );
 
+  if (redirectingFromPurchasesTab) {
+    return (
+      <main className="min-h-[60vh] bg-zinc-950 text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
+        <DocumentTitleI18n titleKey="meta.settings" />
+        <div className="mx-auto max-w-[1500px] px-4 py-20 text-center sm:px-6">
+          <p className="text-[14px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+            {t("common.loading")}
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-[60vh] bg-zinc-950 text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
       <DocumentTitleI18n titleKey="meta.settings" />
@@ -220,20 +238,6 @@ export function AccountSettingsDashboard() {
               </div>
 
               <MyPagePasswordSection />
-            </div>
-          ) : null}
-
-          {currentTab === "purchases" && user ? (
-            <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
-              <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                {t("settings.tab.purchases")}
-              </h2>
-              <p className="mt-2 max-w-xl text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                {t("settings.purchases.lead")}
-              </p>
-              <div className="mt-8">
-                <MyPageAccountOverview />
-              </div>
             </div>
           ) : null}
 
