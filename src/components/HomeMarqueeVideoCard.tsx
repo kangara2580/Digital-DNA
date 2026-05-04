@@ -292,13 +292,11 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
           />
           {priceLabel ? (
             <div className="pointer-events-none absolute inset-x-0 top-0 z-[4] flex justify-center px-2 pb-8 pt-2.5 sm:px-3 sm:pb-10 sm:pt-3">
-              <div
-                className={`w-fit max-w-[min(100%,calc(100%-3.5rem))] rounded-lg bg-gradient-to-b from-black/55 via-black/35 to-transparent px-2 py-1.5 text-center sm:max-w-[min(100%,calc(100%-4rem))] sm:px-2.5 sm:py-2 ${hoverRevealPrice}`}
+              <span
+                className={`inline-block max-w-[min(100%,calc(100%-3.5rem))] truncate px-1 text-center text-[13px] font-bold tabular-nums text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.85)] sm:max-w-[min(100%,calc(100%-4rem))] sm:text-sm ${hoverRevealPrice}`}
               >
-                <span className="inline-block max-w-full truncate text-[13px] font-bold tabular-nums text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.85)] sm:text-sm">
-                  {priceLabel}
-                </span>
-              </div>
+                {priceLabel}
+              </span>
             </div>
           ) : null}
           <div className="pointer-events-none absolute inset-y-0 right-0 z-[4] flex items-center pr-2 sm:pr-2.5">
