@@ -74,22 +74,6 @@ function ShopBagOutline({
   );
 }
 
-/** 우향 정삼각형(▶) — 꼭짓점이 viewBox 외접원 r=49에 맞닿음 (−50…50 기준) */
-function RailHomeEquilateralPlay({
-  className,
-  ...props
-}: React.ComponentProps<"svg">) {
-  const R = 49;
-  const h = (R * Math.sqrt(3)) / 2;
-  const half = R / 2;
-  const d = `M ${R} 0 L ${-half} ${h} L ${-half} ${-h} Z`;
-  return (
-    <svg viewBox="-50 -50 100 100" className={className} aria-hidden {...props}>
-      <path d={d} fill="var(--reels-point)" />
-    </svg>
-  );
-}
-
 const RAIL_ITEMS: RailItem[] = [
   {
     href: "/explore",
@@ -252,10 +236,15 @@ export function ReelsLeftRail() {
         <div className="relative flex w-full shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
           <Link
             href="/"
-            className="mx-auto inline-flex size-10 items-center justify-center overflow-hidden rounded-full bg-white/[0.14] p-0 transition-[opacity,transform,background-color] duration-200 hover:bg-white/[0.19] hover:opacity-95 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:size-auto [html[data-theme='light']_&]:overflow-visible [html[data-theme='light']_&]:mx-0 [html[data-theme='light']_&]:flex [html[data-theme='light']_&]:min-h-[52px] [html[data-theme='light']_&]:w-full [html[data-theme='light']_&]:rounded-[0.85rem] [html[data-theme='light']_&]:bg-transparent [html[data-theme='light']_&]:p-0 [html[data-theme='light']_&]:py-2 [html[data-theme='light']_&]:hover:bg-zinc-900/[0.04] [html[data-theme='light']_&]:active:scale-[0.98]"
+            className="mx-auto inline-flex items-center justify-center rounded-full bg-white/[0.14] p-2.5 transition-[opacity,transform,background-color] duration-200 hover:bg-white/[0.19] hover:opacity-95 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:mx-0 [html[data-theme='light']_&]:flex [html[data-theme='light']_&]:min-h-[52px] [html[data-theme='light']_&]:w-full [html[data-theme='light']_&]:rounded-[0.85rem] [html[data-theme='light']_&]:bg-transparent [html[data-theme='light']_&]:p-0 [html[data-theme='light']_&]:py-2 [html[data-theme='light']_&]:hover:bg-zinc-900/[0.04] [html[data-theme='light']_&]:active:scale-[0.98]"
             aria-label="홈"
           >
-            <RailHomeEquilateralPlay className="h-full w-full shrink-0 select-none [html[data-theme='light']_&]:h-9 [html[data-theme='light']_&]:w-9" />
+            <img
+              src="/brand/rail-home-logo.png"
+              alt=""
+              className="h-9 w-9 max-w-full object-contain select-none"
+              draggable={false}
+            />
           </Link>
         </div>
         <div className="flex min-h-0 flex-1 flex-col items-stretch pt-1">
