@@ -22,8 +22,8 @@ const railIconBtn =
 const railIconActive =
   "border-0 shadow-none bg-white/[0.02] !text-[color:var(--reels-point)] [&_svg]:!text-[color:var(--reels-point)] hover:bg-white/[0.08] hover:!text-[color:var(--reels-point)] hover:[&_svg]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:border-0 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:[&_svg]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:hover:[&_svg]:!text-[color:var(--reels-point)]";
 
-const railTooltip =
-  "pointer-events-none absolute left-[calc(100%+0.6rem)] top-1/2 z-[9999] -translate-y-1/2 whitespace-nowrap rounded-full border border-zinc-600 bg-zinc-950 px-3.5 py-1.5 text-[13px] font-semibold text-white opacity-0 shadow-[0_6px_22px_rgba(0,0,0,0.55)] transition-none group-hover:opacity-100 [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_6px_22px_rgba(0,0,0,0.14)]";
+const railItemLabelBase =
+  "max-w-[3.75rem] text-center text-[10px] font-medium leading-[1.2] tracking-tight [html[data-theme='light']_&]:text-zinc-700";
 
 type RailItem = {
   href: string;
@@ -90,7 +90,7 @@ const RAIL_ITEMS: RailItem[] = [
   },
   {
     href: "/leaderboard",
-    label: "명예의 전당",
+    label: "순위",
     Icon: Trophy,
     isActive: (p) => p === "/leaderboard" || p.startsWith("/leaderboard/"),
   },
@@ -233,26 +233,26 @@ export function ReelsLeftRail() {
         className="fixed inset-y-0 left-0 z-[52] hidden w-[var(--reels-rail-w)] flex-col border-r border-white/[0.08] bg-reels-abyss/80 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[1px_0_0_rgba(0,0,0,0.04)] md:flex"
         aria-label="주요 메뉴"
       >
-        <div className="relative flex shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
+        <div className="relative flex w-full shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
           <Link
             href="/"
-            className="my-1.5 flex size-[44px] shrink-0 items-center justify-center rounded-[0.85rem] border border-white/35 bg-[#0a0c10] transition-colors hover:border-white/45 hover:bg-[#12151c] [html[data-theme='light']_&]:border-zinc-500/40 [html[data-theme='light']_&]:bg-[#0a0c10] [html[data-theme='light']_&]:hover:border-zinc-500/50 [html[data-theme='light']_&]:hover:bg-[#12151c]"
+            className="mx-auto inline-flex size-[2.625rem] items-center justify-center rounded-full bg-white/[0.14] p-[3px] transition-[opacity,transform,background-color] duration-200 hover:bg-white/[0.19] hover:opacity-95 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:size-auto [html[data-theme='light']_&]:mx-0 [html[data-theme='light']_&]:flex [html[data-theme='light']_&]:min-h-[52px] [html[data-theme='light']_&]:w-full [html[data-theme='light']_&]:rounded-[0.85rem] [html[data-theme='light']_&]:bg-transparent [html[data-theme='light']_&]:p-0 [html[data-theme='light']_&]:py-2 [html[data-theme='light']_&]:hover:bg-zinc-900/[0.04] [html[data-theme='light']_&]:active:scale-[0.98]"
+            aria-label="홈"
           >
-            <span
-              className="select-none whitespace-nowrap text-[13px] font-bold leading-none tracking-[-0.04em] text-white"
-              style={{ fontFamily: "var(--font-fredoka), ui-rounded, system-ui, sans-serif" }}
-            >
-              ARA
-            </span>
+            <img
+              src="/brand/rail-home-logo.png"
+              alt=""
+              className="h-9 w-9 max-w-full object-contain select-none"
+              draggable={false}
+            />
           </Link>
         </div>
         <div className="flex min-h-0 flex-1 flex-col items-stretch pt-1">
           <nav
-            className="flex shrink-0 flex-col items-center gap-1.5 overflow-visible py-2"
+            className="flex shrink-0 flex-col items-center gap-2 overflow-visible py-2"
             aria-label="빠른 이동"
           >
             <div
-              className="group relative"
               onMouseEnter={() => {
                 if (!searchHoverMode) return;
                 cancelSearchHoverClose();
@@ -285,7 +285,7 @@ export function ReelsLeftRail() {
             {RAIL_ITEMS.map(({ href, label, Icon, isActive }) => {
               const on = isActive(pathname);
               return (
-                <div key={href} className="group relative">
+                <div key={href} className="flex flex-col items-center gap-1">
                   <Link
                     href={href}
                     aria-label={label}
@@ -302,7 +302,13 @@ export function ReelsLeftRail() {
                       aria-hidden
                     />
                   </Link>
-                  <span className={railTooltip} role="tooltip">
+                  <span
+                    className={`${railItemLabelBase} ${
+                      on
+                        ? "text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-[color:var(--reels-point)]"
+                        : "text-white/88"
+                    }`}
+                  >
                     {label}
                   </span>
                 </div>
@@ -311,22 +317,17 @@ export function ReelsLeftRail() {
           </nav>
 
           <div className="flex shrink-0 flex-col items-center border-t border-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 px-0 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-            <div className="group relative">
-              <button
-                type="button"
-                onClick={() => setOpen(true)}
-                className={`${railIconBtn} text-zinc-400 hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-900`}
-                aria-expanded={open}
-                aria-haspopup="dialog"
-                aria-controls={drawerId}
-                aria-label="더보기 — 언어·화면 테마"
-              >
-                <MoreVertical className="h-[25px] w-[25px]" strokeWidth={stroke} aria-hidden />
-              </button>
-              <span className={railTooltip} role="tooltip">
-                더보기
-              </span>
-            </div>
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className={`${railIconBtn} text-zinc-400 hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-900`}
+              aria-expanded={open}
+              aria-haspopup="dialog"
+              aria-controls={drawerId}
+              aria-label="더보기 — 언어·화면 테마"
+            >
+              <MoreVertical className="h-[25px] w-[25px]" strokeWidth={stroke} aria-hidden />
+            </button>
           </div>
         </div>
       </aside>
