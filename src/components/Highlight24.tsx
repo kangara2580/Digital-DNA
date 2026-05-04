@@ -82,7 +82,7 @@ function HomeBestMarquee({ videos }: { videos: FeedVideo[] }) {
           <Link
             key={`${v.id}-${i}`}
             href={`/video/${v.id}`}
-            className="group relative aspect-[216/384] h-[clamp(288px,52vh,460px)] shrink-0 overflow-hidden rounded-2xl border border-white/12 bg-black/30 shadow-[0_16px_48px_-20px_rgba(0,0,0,0.55)] outline-none transition-[border-color,transform,box-shadow] hover:z-[2] hover:border-[color:rgba(228,41,128,0.45)] hover:shadow-[0_20px_56px_-18px_rgba(228,41,128,0.12)] focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070708] [html[data-theme='light']_&]:border-zinc-200/80 [html[data-theme='light']_&]:bg-zinc-100/80 [html[data-theme='light']_&]:focus-visible:ring-offset-white"
+            className="group relative aspect-[216/384] h-[clamp(288px,52vh,460px)] shrink-0 overflow-hidden rounded-2xl bg-black/30 shadow-[0_16px_48px_-20px_rgba(0,0,0,0.55)] outline-none transition-[transform,box-shadow] hover:z-[2] hover:shadow-[0_20px_56px_-18px_rgba(228,41,128,0.12)] focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070708] [html[data-theme='light']_&]:bg-zinc-100/80 [html[data-theme='light']_&]:focus-visible:ring-offset-white"
           >
             <div className="relative h-full w-full">
               <MarqueeCardPreview video={v} />
