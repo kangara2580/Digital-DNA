@@ -1,29 +1,31 @@
 "use client";
 
 import { useReducedMotion } from "framer-motion";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useStoredFaceProfile } from "@/hooks/useStoredFaceProfile";
+import { useTranslation } from "@/hooks/useTranslation";
+import { MYPAGE_OUTLINE_BTN_CORE } from "@/lib/mypageOutlineCta";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const MAX_SOURCE_BYTES = 20 * 1024 * 1024;
 
-const TRIPLE_LABELS = [
-  { key: "front" as const, title: "정면" },
-  { key: "left" as const, title: "좌측" },
-  { key: "right" as const, title: "우측" },
+const TRIPLE_SLOTS = [
+  { key: "front" as const, hintKey: "faceProfile.slotHintFront" },
+  { key: "left" as const, hintKey: "faceProfile.slotHintLeft" },
+  { key: "right" as const, hintKey: "faceProfile.slotHintRight" },
+] as const;
+
+const CROP_FRAMES: { labelKey: string; position: string }[] = [
+  { labelKey: "faceProfile.angle.front", position: "object-center" },
+  { labelKey: "faceProfile.angle.left", position: "object-[25%_center]" },
+  { labelKey: "faceProfile.angle.right", position: "object-[75%_center]" },
 ];
 
-const CROP_FRAMES: { label: string; position: string }[] = [
-  { label: "정면", position: "object-center" },
-  { label: "좌측", position: "object-[25%_center]" },
-  { label: "우측", position: "object-[75%_center]" },
-];
-
-const AI_STEPS = [
-  "얼굴 영역 검출 중…",
-  "정면·측면 각도 추정 중…",
-  "3면 뷰 합성 렌더링 중…",
-];
+const AI_STEP_KEYS = [
+  "faceProfile.aiStep1",
+  "faceProfile.aiStep2",
+  "faceProfile.aiStep3",
+] as const;
 
 function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -144,17 +146,17 @@ type TripleDraft = { front: string | null; left: string | null; right: string | 
 
 const emptyTriple = (): TripleDraft => ({ front: null, left: null, right: null });
 
-/** 짧은 강조 문구만 — 본문 대비 과하지 않게 포인트 컬러 */
-const ACCENT_TEXT =
-  "font-semibold text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-[#E42980]";
-
-function titleByKey(key: keyof TripleDraft): string {
-  if (key === "front") return "정면";
-  if (key === "left") return "좌측";
-  return "우측";
-}
+/** 찜 빈 화면·마이페이지와 동일: 알약형 · 핑크 테두리 · 투명 배경 */
+const outlineCtaMd = `${MYPAGE_OUTLINE_BTN_CORE} px-5 py-2.5 text-[13px]`;
+const outlineCtaSm = `${MYPAGE_OUTLINE_BTN_CORE} px-4 py-2 text-[12px]`;
+/** 정면·좌·우 슬롯 — 눈부심 줄이기 위해 핑크 라인 대신 흰 알약 */
+const slotPickBtn =
+  "mt-3 inline-flex w-full items-center justify-center rounded-full border border-white/20 bg-white px-3 py-2 text-[11px] font-semibold text-zinc-900 outline-none transition-[transform,background-color,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-zinc-100 active:translate-y-0 active:scale-[0.98] motion-reduce:transition-colors motion-reduce:hover:scale-100 motion-reduce:hover:translate-y-0 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-sm [html[data-theme='light']_&]:hover:bg-zinc-50";
+const outlineDisabled =
+  "disabled:pointer-events-none disabled:opacity-45 disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:hover:bg-transparent";
 
 export function FaceProfileUploadSection() {
+  const { t } = useTranslation();
   const { profile, setProfile, hydrated } = useStoredFaceProfile();
   const reduceMotion = useReducedMotion() ?? false;
 
@@ -170,7 +172,10 @@ export function FaceProfileUploadSection() {
     left: useRef<HTMLInputElement>(null),
     right: useRef<HTMLInputElement>(null),
   };
+  const tripleBatchInputRef = useRef<HTMLInputElement>(null);
   const singleInputRef = useRef<HTMLInputElement>(null);
+
+  const aiStepLabels = useMemo(() => AI_STEP_KEYS.map((k) => t(k)), [t]);
 
   useEffect(() => {
     if (profile?.kind === "triple") {
@@ -185,8 +190,14 @@ export function FaceProfileUploadSection() {
   }, [profile]);
 
   const slotSrc = useCallback(
-    (key: keyof TripleDraft) => tripleDraft[key] ?? (profile?.kind === "triple" ? profile[key] : null),
+    (key: keyof TripleDraft) =>
+      tripleDraft[key] ?? (profile?.kind === "triple" ? profile[key] : null),
     [tripleDraft, profile],
+  );
+
+  const angleLabel = useCallback(
+    (key: keyof TripleDraft) => t(`faceProfile.angle.${key}`),
+    [t],
   );
 
   const onTripleFile = useCallback(
@@ -195,48 +206,93 @@ export function FaceProfileUploadSection() {
       e.target.value = "";
       if (!file || !file.type.startsWith("image/")) return;
       if (file.size > MAX_SOURCE_BYTES) {
-        alert("원본 이미지가 너무 큽니다. 20MB 이하 파일을 선택해 주세요.");
+        alert(t("faceProfile.alertFileTooBig"));
         return;
       }
-      setUploadStatus(`${titleByKey(key)} 이미지 처리 중...`);
+      setUploadStatus(t("faceProfile.statusProcessing", { angle: angleLabel(key) }));
       void compressImageToDataUrl(file)
         .then((dataUrl) => {
           setTripleDraft((prev) => {
             const next = { ...prev, [key]: dataUrl };
             if (next.front && next.left && next.right) {
-              setProfile({ kind: "triple", front: next.front, left: next.left, right: next.right });
+              setProfile({
+                kind: "triple",
+                front: next.front,
+                left: next.left,
+                right: next.right,
+              });
               setSinglePending(null);
-              setUploadStatus("3면 이미지 등록이 완료되었습니다.");
+              setUploadStatus(t("faceProfile.statusTripleDone"));
             } else {
-              setUploadStatus(`${titleByKey(key)} 이미지가 업로드되었습니다.`);
+              setUploadStatus(t("faceProfile.statusSlotDone", { angle: angleLabel(key) }));
             }
             return next;
           });
         })
         .catch(() => {
-          setUploadStatus("이미지 업로드에 실패했습니다. 다른 파일로 다시 시도해 주세요.");
-          alert("이미지 처리 중 문제가 발생했어요. 다른 이미지를 선택해 주세요.");
+          setUploadStatus(t("faceProfile.statusUploadFail"));
+          alert(t("faceProfile.alertProcessFail"));
         });
     },
-    [setProfile],
+    [angleLabel, setProfile, t],
   );
 
-  const onSingleFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file || !file.type.startsWith("image/")) return;
-    if (file.size > MAX_SOURCE_BYTES) {
-      alert("원본 이미지가 너무 큽니다. 20MB 이하 파일을 선택해 주세요.");
-      return;
-    }
-    void compressImageToDataUrl(file)
-      .then((dataUrl) => {
-        setSinglePending(dataUrl);
-      })
-      .catch(() => {
-        alert("이미지 처리 중 문제가 발생했어요. 다른 이미지를 선택해 주세요.");
-      });
-  }, []);
+  const onTripleBatchFiles = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files ?? []).filter((f) =>
+        f.type.startsWith("image/"),
+      );
+      e.target.value = "";
+      if (files.length < 3) {
+        alert(t("faceProfile.alertBatchCount"));
+        return;
+      }
+      const ordered = files.slice(0, 3);
+      for (const f of ordered) {
+        if (f.size > MAX_SOURCE_BYTES) {
+          alert(t("faceProfile.alertFileTooBig"));
+          return;
+        }
+      }
+      setUploadStatus(t("faceProfile.statusBatchProcessing"));
+      void (async () => {
+        try {
+          const front = await compressImageToDataUrl(ordered[0]!);
+          const left = await compressImageToDataUrl(ordered[1]!);
+          const right = await compressImageToDataUrl(ordered[2]!);
+          const next = { front, left, right };
+          setTripleDraft(next);
+          setProfile({ kind: "triple", ...next });
+          setSinglePending(null);
+          setUploadStatus(t("faceProfile.statusTripleDone"));
+        } catch {
+          setUploadStatus(t("faceProfile.statusUploadFail"));
+          alert(t("faceProfile.alertProcessFail"));
+        }
+      })();
+    },
+    [setProfile, t],
+  );
+
+  const onSingleFile = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      e.target.value = "";
+      if (!file || !file.type.startsWith("image/")) return;
+      if (file.size > MAX_SOURCE_BYTES) {
+        alert(t("faceProfile.alertFileTooBig"));
+        return;
+      }
+      void compressImageToDataUrl(file)
+        .then((dataUrl) => {
+          setSinglePending(dataUrl);
+        })
+        .catch(() => {
+          alert(t("faceProfile.alertProcessFail"));
+        });
+    },
+    [t],
+  );
 
   const clearTripleSlot = useCallback(
     (key: keyof TripleDraft) => {
@@ -244,9 +300,9 @@ export function FaceProfileUploadSection() {
       if (profile?.kind === "triple") {
         setProfile(null);
       }
-      setUploadStatus(`${titleByKey(key)} 이미지 선택이 취소되었습니다.`);
+      setUploadStatus(t("faceProfile.statusCancelled", { angle: angleLabel(key) }));
     },
-    [profile, setProfile],
+    [angleLabel, profile, setProfile, t],
   );
 
   const runAiGeneration = useCallback(async () => {
@@ -254,7 +310,7 @@ export function FaceProfileUploadSection() {
     setAiRunning(true);
     setAiStepIndex(0);
     const stepMs = reduceMotion ? 0 : 850;
-    for (let i = 0; i < AI_STEPS.length; i++) {
+    for (let i = 0; i < AI_STEP_KEYS.length; i++) {
       setAiStepIndex(i);
       if (stepMs > 0) await new Promise((r) => setTimeout(r, stepMs));
     }
@@ -275,9 +331,6 @@ export function FaceProfileUploadSection() {
     setUploadStatus("");
   }, [setProfile]);
 
-  const tripleReady =
-    (tripleDraft.front && tripleDraft.left && tripleDraft.right) || profile?.kind === "triple";
-
   const showAiCrop = profile?.kind === "ai";
 
   const nothingStarted =
@@ -292,60 +345,196 @@ export function FaceProfileUploadSection() {
       className="rounded-2xl border border-white/10 bg-zinc-900/60 p-5 shadow-sm sm:p-6 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white"
       aria-labelledby="my-face-heading"
     >
-      <h2 id="my-face-heading" className="text-lg font-semibold tracking-tight text-zinc-50 sm:text-xl [html[data-theme='light']_&]:text-zinc-900">
-        프로필 · 3면
+      <h2
+        id="my-face-heading"
+        className="text-lg font-semibold tracking-tight text-zinc-50 sm:text-xl [html[data-theme='light']_&]:text-zinc-900"
+      >
+        {t("faceProfile.heading")}
       </h2>
 
-      <div className="mt-5 rounded-xl border border-white/10 bg-black/25 px-4 py-3.5 sm:px-5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-        <p className="text-[15px] font-semibold leading-snug tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-          <span className={ACCENT_TEXT}>3면 원본</span>
-          {` `}→ 가장 정확
+      <div className="mt-5 space-y-2 rounded-xl border border-white/10 bg-black/25 px-4 py-3.5 sm:px-5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+        <p className="text-[13px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
+          {t("faceProfile.bannerTipQuick")}
         </p>
-        <p className="mt-2 text-[13px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-          1장뿐이면 → <span className={ACCENT_TEXT}>AI로 3면 보완</span>
+        <p className="text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          {t("faceProfile.bannerTipQuality")}
         </p>
       </div>
 
+      {/* ① 빠른 등록 (AI) — 먼저 노출 */}
       <div className="mt-8 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-100">
         <h3 className="text-[13px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-          ① 3면 직접 <span className={ACCENT_TEXT}>(권장)</span>
+          {t("faceProfile.pathQuickTitle")}
         </h3>
-        <p className="mt-1 text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">정면 · 좌 · 우 각 1장 (원본 20MB까지 자동 압축)</p>
+        <p className="mt-1 text-[12px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+          {t("faceProfile.pathQuickHint")}
+        </p>
+
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <input
+            ref={singleInputRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={onSingleFile}
+            aria-label={t("faceProfile.singlePhotoAria")}
+          />
+          <button
+            type="button"
+            onClick={() => singleInputRef.current?.click()}
+            disabled={aiRunning}
+            className="rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-[13px] font-semibold text-zinc-100 transition hover:border-white/25 hover:bg-white/10 disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-50"
+          >
+            {t("faceProfile.pickOne")}
+          </button>
+          {singlePending && (
+            <button
+              type="button"
+              onClick={runAiGeneration}
+              disabled={aiRunning}
+              className={`${outlineCtaMd} ${outlineDisabled}`}
+            >
+              {aiRunning ? t("faceProfile.generating") : t("faceProfile.generateTriple")}
+            </button>
+          )}
+        </div>
+
+        {singlePending && !aiRunning ? (
+          <p className="mt-3 text-[11px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            {t("faceProfile.tapGenerateHint")}
+          </p>
+        ) : null}
+
+        {aiRunning ? (
+          <div
+            className="mt-5 rounded-xl border border-white/12 bg-black/30 px-4 py-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
+            role="status"
+            aria-live="polite"
+          >
+            <p className="font-mono text-[11px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+              {aiStepLabels[aiStepIndex] ?? aiStepLabels[0]}
+            </p>
+            <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/10 [html[data-theme='light']_&]:bg-zinc-200">
+              <div
+            className="h-full rounded-full bg-[color:var(--reels-point)]/40 transition-[width] duration-500 ease-out motion-reduce:transition-none [html[data-theme='light']_&]:bg-[color:var(--reels-point)]/35"
+                style={{
+                  width: `${((aiStepIndex + 1) / AI_STEP_KEYS.length) * 100}%`,
+                }}
+              />
+            </div>
+          </div>
+        ) : null}
+
+        {hydrated && showAiCrop ? (
+          <div className="mt-6">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              {t("faceProfile.aiPreviewLabel")}
+            </p>
+            <ul className="mt-2 grid grid-cols-3 gap-2 sm:gap-3" role="list">
+              {CROP_FRAMES.map(({ labelKey, position }) => (
+                <li key={labelKey} className="min-w-0">
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-xl border border-white/12 bg-black/35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={profile.source}
+                      alt=""
+                      className={`h-full w-full object-cover ${position}`}
+                    />
+                    <span className="absolute left-1.5 top-1.5 rounded bg-zinc-900/80 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+                      AI
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-center text-[11px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                    {t(labelKey)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-[10px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+              {new Date(profile.generatedAt).toLocaleString(
+                undefined,
+                { dateStyle: "short", timeStyle: "short" },
+              )}
+            </p>
+          </div>
+        ) : null}
+      </div>
+
+      {/* ② 원본 3장 */}
+      <div className="mt-10 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-100">
+        <h3 className="text-[13px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+          {t("faceProfile.pathTripleTitle")}
+        </h3>
+        <p className="mt-1 text-[12px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+          {t("faceProfile.pathTripleHint")}
+        </p>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <input
+            ref={tripleBatchInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="sr-only"
+            onChange={onTripleBatchFiles}
+            aria-label={t("faceProfile.pickThreeAria")}
+          />
+          <button
+            type="button"
+            onClick={() => tripleBatchInputRef.current?.click()}
+            className={outlineCtaSm}
+          >
+            {t("faceProfile.pickThreeAtOnce")}
+          </button>
+          <span className="text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            {t("faceProfile.pickThreeAtOnceHint")}
+          </span>
+        </div>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {TRIPLE_LABELS.map(({ key, title }) => (
-            <div key={key} className="rounded-xl border border-white/10 bg-white/[0.04] p-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+          {TRIPLE_SLOTS.map(({ key, hintKey }) => (
+            <div
+              key={key}
+              className="rounded-xl border border-white/10 bg-white/[0.04] p-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
+            >
               <input
                 ref={tripleInputRefs[key]}
                 type="file"
                 accept="image/*"
                 className="sr-only"
                 onChange={(e) => onTripleFile(key, e)}
-                aria-label={`${title} 프로필 사진 선택`}
+                aria-label={t("faceProfile.pickPhotoAria", {
+                  angle: angleLabel(key),
+                })}
               />
-              <p className="text-[13px] font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">{title}</p>
+              <p className="text-[13px] font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                {t(`faceProfile.angle.${key}`)}
+              </p>
+              <p className="mt-1 text-[10px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                {t(hintKey)}
+              </p>
               <button
                 type="button"
                 onClick={() => tripleInputRefs[key].current?.click()}
-                className="mt-3 w-full rounded-lg border border-white/15 bg-white/5 py-2 text-[11px] font-medium text-zinc-300 transition hover:border-white/25 hover:bg-white/10 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
+                className={slotPickBtn}
               >
-                {slotSrc(key) ? "다시 선택" : "선택"}
+                {slotSrc(key) ? t("faceProfile.repick") : t("faceProfile.choose")}
               </button>
               {slotSrc(key) ? (
                 <button
                   type="button"
                   onClick={() => clearTripleSlot(key)}
-                  className="mt-2 w-full rounded-lg border border-white/15 bg-transparent py-2 text-[11px] font-semibold text-[#F07AB0] transition hover:border-reels-crimson/35 hover:bg-reels-crimson/15 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-reels-crimson [html[data-theme='light']_&]:hover:bg-zinc-50"
+                  className="mt-2 w-full rounded-lg border border-white/15 bg-transparent py-2 text-[11px] font-semibold text-[color:var(--reels-point)] transition hover:border-[color:var(--reels-point)]/40 hover:bg-[color:var(--reels-point)]/10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[color:var(--reels-point)] [html[data-theme='light']_&]:hover:bg-zinc-50"
                 >
-                  취소
+                  {t("faceProfile.cancel")}
                 </button>
               ) : null}
               {slotSrc(key) ? (
-                <div className="mt-3 overflow-hidden rounded-lg border border-white/12 bg-black/35 aspect-[3/4] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
+                <div className="mt-3 aspect-[3/4] overflow-hidden rounded-lg border border-white/12 bg-black/35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={slotSrc(key)!}
-                    alt={`${title} 업로드 미리보기`}
+                    alt={t("faceProfile.previewAlt", { angle: angleLabel(key) })}
                     className="h-full w-full object-cover object-center"
                   />
                 </div>
@@ -358,115 +547,31 @@ export function FaceProfileUploadSection() {
             {uploadStatus}
           </p>
         ) : null}
-
-      </div>
-
-      <div className="mt-10 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-100">
-        <h3 className="text-[13px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-          ② 1장 + <span className={ACCENT_TEXT}>AI 3면</span>
-        </h3>
-        <p className="mt-1 text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">정면 1장 올리고 → 생성 (원본 20MB까지 자동 압축)</p>
-
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <input
-            ref={singleInputRef}
-            type="file"
-            accept="image/*"
-            className="sr-only"
-            onChange={onSingleFile}
-            aria-label="정면 사진 1장 선택"
-          />
-          <button
-            type="button"
-            onClick={() => singleInputRef.current?.click()}
-            disabled={aiRunning}
-            className="rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-[13px] font-semibold text-zinc-100 transition hover:border-white/25 hover:bg-white/10 disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-50"
-          >
-            사진 1장 선택
-          </button>
-          {singlePending && (
-            <button
-              type="button"
-              onClick={runAiGeneration}
-              disabled={aiRunning}
-              className="rounded-xl border border-[color:var(--reels-point)]/35 bg-[color:var(--reels-point)]/10 px-4 py-2.5 text-[13px] font-semibold text-zinc-100 transition hover:border-[color:var(--reels-point)]/55 hover:bg-[color:var(--reels-point)]/16 disabled:opacity-60 [html[data-theme='light']_&]:border-reels-crimson/30 [html[data-theme='light']_&]:bg-reels-crimson/10 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-reels-crimson/45 [html[data-theme='light']_&]:hover:bg-reels-crimson/15"
-            >
-              {aiRunning ? "처리 중…" : "AI로 3면 생성"}
-            </button>
-          )}
-        </div>
-
-        {singlePending && !aiRunning ? (
-          <p className="mt-3 text-[11px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">생성 버튼을 누르세요.</p>
-        ) : null}
-
-        {aiRunning ? (
-          <div
-            className="mt-5 rounded-xl border border-white/12 bg-black/30 px-4 py-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
-            role="status"
-            aria-live="polite"
-          >
-            <p className="font-mono text-[11px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-              {AI_STEPS[aiStepIndex]}
-            </p>
-            <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/10 [html[data-theme='light']_&]:bg-zinc-200">
-              <div
-                className="h-full rounded-full bg-[color:var(--reels-point)]/85 transition-[width] duration-500 ease-out motion-reduce:transition-none [html[data-theme='light']_&]:bg-reels-crimson/90"
-                style={{ width: `${((aiStepIndex + 1) / AI_STEPS.length) * 100}%` }}
-              />
-            </div>
-          </div>
-        ) : null}
-
-        {hydrated && showAiCrop ? (
-          <div className="mt-6">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">AI 보완 미리보기</p>
-            <ul className="mt-2 grid grid-cols-3 gap-2 sm:gap-3" role="list">
-              {CROP_FRAMES.map(({ label, position }) => (
-                <li key={label} className="min-w-0">
-                  <div className="relative overflow-hidden rounded-xl border border-white/12 bg-black/35 aspect-[3/4] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={profile.source}
-                      alt=""
-                      className={`h-full w-full object-cover ${position}`}
-                    />
-                    <span className="absolute left-1.5 top-1.5 rounded bg-zinc-900/80 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
-                      AI
-                    </span>
-                  </div>
-                  <p className="mt-1.5 text-center text-[11px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">{label}</p>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-2 text-[10px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-              {new Date(profile.generatedAt).toLocaleString("ko-KR")}
-            </p>
-          </div>
-        ) : null}
       </div>
 
       {hydrated && !nothingStarted ? (
         <div className="mt-8 flex justify-end gap-2 border-t border-white/10 pt-6 [html[data-theme='light']_&]:border-zinc-100">
           <p className="mr-auto self-center text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-            변경 사항은 자동 저장됩니다.
+            {t("faceProfile.autoSaved")}
           </p>
           <button
             type="button"
             onClick={clearAll}
             className="rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-[13px] font-medium text-zinc-300 transition hover:border-white/25 hover:bg-white/10 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
           >
-            전체 등록 해제
+            {t("faceProfile.clearAll")}
           </button>
         </div>
       ) : null}
 
       {!hydrated ? (
-        <p className="mt-6 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">불러오는 중…</p>
+        <p className="mt-6 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          {t("settings.loading")}
+        </p>
       ) : null}
       {hydrated && nothingStarted ? (
         <p className="mt-6 rounded-lg border border-dashed border-white/15 bg-white/[0.03] px-3 py-5 text-center text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-600">
-          ① 또는 ②로 등록
+          {t("faceProfile.emptyHint")}
         </p>
       ) : null}
     </section>
