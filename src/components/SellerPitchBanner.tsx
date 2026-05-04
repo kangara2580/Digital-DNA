@@ -189,7 +189,7 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
 
           <div className="hidden">
             <p className="text-center text-[clamp(1.3rem,2.8vw,1.95rem)] font-semibold tracking-tight text-zinc-100">
-              이렇게 이용해 보세요
+              {t("home.pitch.hidden.lead")}
             </p>
             <ol className="hidden">
               <li className="grid items-center gap-4 lg:grid-cols-[1fr_auto_1fr]">
@@ -198,11 +198,11 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                     className="pointer-events-none absolute -right-2 top-1/2 hidden h-3 w-3 -translate-y-1/2 rotate-45 border-r border-t border-white/30 bg-[#070f1f] lg:block"
                     aria-hidden
                   />
-                  <p className="flex items-center justify-center gap-1.5 font-semibold text-white lg:justify-start"><Link2 className="h-4 w-4" />1. 등록</p>
+                  <p className="flex items-center justify-center gap-1.5 font-semibold text-white lg:justify-start"><Link2 className="h-4 w-4" />{t("home.pitch.hidden.regTitle")}</p>
                   <p>
-                    플랫폼 URL을 불러오시거나
+                    {t("home.pitch.hidden.regBody.line1")}
                     <br />
-                    직접 영상을 올려 주세요.
+                    {t("home.pitch.hidden.regBody.line2")}
                   </p>
                 </div>
                 <div className="relative z-10 mx-auto flex h-14 w-14 items-center justify-center rounded-md border border-white/40 bg-[#0b1220] text-lg font-semibold text-zinc-100 shadow-[0_0_0_4px_rgba(7,15,31,0.95)]">
@@ -220,8 +220,8 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                     className="pointer-events-none absolute -left-2 top-1/2 hidden h-3 w-3 -translate-y-1/2 rotate-45 border-b border-l border-white/30 bg-[#070f1f] lg:block"
                     aria-hidden
                   />
-                  <p className="flex items-center justify-center gap-1.5 font-semibold text-white lg:justify-end"><WandSparkles className="h-4 w-4" />2. 재창작</p>
-                  <p>ARA AI로 배경, 얼굴, 몸을 자연스럽게 편집해 2차 창작까지 완성해 보세요.</p>
+                  <p className="flex items-center justify-center gap-1.5 font-semibold text-white lg:justify-end"><WandSparkles className="h-4 w-4" />{t("home.pitch.hidden.remixTitle")}</p>
+                  <p>{t("home.pitch.hidden.remixBody")}</p>
                 </div>
               </li>
               <li className="grid items-center gap-4 lg:grid-cols-[1fr_auto_1fr]">
@@ -230,8 +230,8 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                     className="pointer-events-none absolute -right-2 top-1/2 hidden h-3 w-3 -translate-y-1/2 rotate-45 border-r border-t border-white/30 bg-[#070f1f] lg:block"
                     aria-hidden
                   />
-                  <p className="flex items-center justify-center gap-1.5 font-semibold text-white lg:justify-start"><WandSparkles className="h-4 w-4" />3. 재창작</p>
-                  <p>ARA AI로 배경, 얼굴, 몸을 자연스럽게 편집해 2차 창작까지 완성해 보세요.</p>
+                  <p className="flex items-center justify-center gap-1.5 font-semibold text-white lg:justify-start"><WandSparkles className="h-4 w-4" />{t("home.pitch.hidden.step3Title")}</p>
+                  <p>{t("home.pitch.hidden.remixBody")}</p>
                 </div>
                 <div className="relative z-10 mx-auto flex h-14 w-14 items-center justify-center rounded-md border border-white/40 bg-[#0b1220] text-lg font-semibold text-zinc-100 shadow-[0_0_0_4px_rgba(7,15,31,0.95)]">
                   C
@@ -248,8 +248,8 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
               <div className="grid gap-5 lg:grid-cols-[1fr_auto_1fr] lg:gap-6">
                 <div className="relative border border-white/28 bg-white/[0.03] px-5 py-4 text-center lg:text-left">
                   <span className="pointer-events-none absolute -right-2 top-1/2 hidden h-3 w-3 -translate-y-1/2 rotate-45 border-r border-t border-white/30 bg-[#070f1f] lg:block" aria-hidden />
-                  <p className="font-semibold text-white">1. 등록</p>
-                  <p>플랫폼 URL을 불러오시거나 직접 영상을 올려 주세요.</p>
+                  <p className="font-semibold text-white">{t("home.pitch.hidden.regTitle")}</p>
+                  <p>{t("home.pitch.hidden.regBodyShort")}</p>
                 </div>
                 <div className="mx-auto flex h-16 w-14 items-center justify-center border border-white/35 bg-white/[0.04] text-xl font-semibold text-zinc-100">A</div>
                 <div className="hidden lg:block" />
@@ -257,13 +257,13 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                 <div className="mx-auto flex h-16 w-14 items-center justify-center border border-white/35 bg-white/[0.04] text-xl font-semibold text-zinc-100">B</div>
                 <div className="relative border border-white/28 bg-white/[0.03] px-5 py-4 text-center lg:text-right">
                   <span className="pointer-events-none absolute -left-2 top-1/2 hidden h-3 w-3 -translate-y-1/2 rotate-45 border-b border-l border-white/30 bg-[#070f1f] lg:block" aria-hidden />
-                  <p className="font-semibold text-white">2. 거래</p>
-                  <p>필요한 영상을 구매하시거나 내 영상을 판매하실 수 있어요.</p>
+                  <p className="font-semibold text-white">{t("home.pitch.hidden.tradeTitle")}</p>
+                  <p>{t("home.pitch.hidden.tradeBody")}</p>
                 </div>
                 <div className="relative border border-white/28 bg-white/[0.03] px-5 py-4 text-center lg:text-left">
                   <span className="pointer-events-none absolute -right-2 top-1/2 hidden h-3 w-3 -translate-y-1/2 rotate-45 border-r border-t border-white/30 bg-[#070f1f] lg:block" aria-hidden />
-                  <p className="font-semibold text-white">3. 재창작</p>
-                  <p>ARA AI로 배경, 얼굴, 몸을 자연스럽게 편집해 2차 창작까지 완성해 보세요.</p>
+                  <p className="font-semibold text-white">{t("home.pitch.hidden.step3Title")}</p>
+                  <p>{t("home.pitch.hidden.remixBody")}</p>
                 </div>
                 <div className="mx-auto flex h-16 w-14 items-center justify-center border border-white/35 bg-white/[0.04] text-xl font-semibold text-zinc-100">C</div>
                 <div className="hidden lg:block" />
@@ -278,9 +278,9 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
           </div>
 
           <div className="hidden">
-            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">1. 등록</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-cyan-300" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">플랫폼 URL을 불러오시거나 직접 영상을 올려 주세요.</p></div>
-            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">2. 거래</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-cyan-300" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">필요한 영상을 구매하시거나 내 영상을 판매하실 수 있어요.</p></div>
-            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">3. 재창작</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-cyan-300" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">ARA AI로 배경, 얼굴, 몸을 자연스럽게 편집해 2차 창작까지 완성해 보세요.</p></div>
+            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">{t("home.pitch.hidden.regTitle")}</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-cyan-300" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">{t("home.pitch.hidden.regBodyShort")}</p></div>
+            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">{t("home.pitch.hidden.tradeTitle")}</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-cyan-300" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">{t("home.pitch.hidden.tradeBody")}</p></div>
+            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">{t("home.pitch.hidden.step3Title")}</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-cyan-300" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">{t("home.pitch.hidden.remixBody")}</p></div>
           </div>
 
           <div className="relative mt-0 sm:mt-1">

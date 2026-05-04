@@ -40,33 +40,8 @@ import {
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
 import { getVideoContentSource } from "@/lib/videoSourcePlatform";
-
-function formatCompactWon(n: number): string {
-  if (n >= 100_000_000) return `${(n / 100_000_000).toFixed(1)}억`;
-  if (n >= 10_000) return `${Math.round(n / 10_000)}만`;
-  return `${n.toLocaleString("ko-KR")}원`;
-}
-
-function formatCompactCount(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 10_000) return `${(n / 10_000).toFixed(1)}만`;
-  if (n >= 1_000) return `${(n / 1000).toFixed(1)}k`;
-  return `${n}`;
-}
-
-/** 조회 레일 표기 — 1만 이상만 '만'(소수점 1자리), 미만은 콤마 */
-function formatViewCountRail(n: number): string {
-  const v = Math.max(0, Math.floor(n));
-  if (v >= 10_000) return `${(v / 10_000).toFixed(1).replace(/\.0$/, "")}만`;
-  return v.toLocaleString("ko-KR");
-}
-
-function formatLikeKoApprox(n: number): string {
-  const v = Math.max(0, Math.floor(n));
-  if (v >= 10_000) return `${(v / 10_000).toFixed(1).replace(/\.0$/, "")}만`;
-  if (v >= 1000) return `${(v / 1000).toFixed(1).replace(/\.0$/, "")}천`;
-  return v.toLocaleString("ko-KR");
-}
+import { getExploreFormatters } from "@/lib/exploreLocaleFormat";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type ReelSlideProps = {
   video: FeedVideo;
@@ -272,6 +247,9 @@ function ReelDesktopRail({
 
   const { rankMetrics, meta, displayedViews, externalLikeCount } = sidebarMetrics;
 
+  const { t, locale } = useTranslation();
+  const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
+
   const remaining = clonesRemaining(meta);
   const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
   const inCart = dopamine.isVideoInCart(video.id);
@@ -437,7 +415,7 @@ function ReelDesktopRail({
       setInternalLikeCount(prevCount);
       void loadInternalLikes();
       if (typeof window !== "undefined") {
-        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
+        window.alert(t("explore.likeFailed"));
       }
     } finally {
       likeInFlightRef.current = false;
@@ -449,16 +427,24 @@ function ReelDesktopRail({
     internalLikeCount,
     video.id,
     loadInternalLikes,
+    t,
   ]);
 
   const revenueUp = rankMetrics.growthPercent >= 0;
 
+  const revRounded = Math.round(Math.max(0, rankMetrics.cumulativeRevenueWon));
+  const revNums = revRounded.toLocaleString(fmt.numberLocale);
+  const revAriaVal = locale === "en" ? `₩${revNums}` : `${revNums}원`;
+  const viewsStr = fmt.formatViewCountRail(displayedViews);
+  const likesStr = fmt.formatLikeApprox(displayedLikeTotal);
+  const salesStr = meta.salesCount.toLocaleString(fmt.numberLocale);
+
   return (
     <aside
       className={`${railDeckClass} flex w-max max-w-[min(15rem,38vw)] shrink-0 flex-col items-center gap-5 px-2 [html[data-theme='light']_&]:text-zinc-900 ${className ?? ""}`}
-      aria-label="판매·반응 정보"
+      aria-label={t("explore.rail.metricsAside")}
     >
-      <div className="flex flex-col items-center pl-9 sm:pl-10" aria-label="집계 수치">
+      <div className="flex flex-col items-center pl-9 sm:pl-10" aria-label={t("explore.rail.statsGroup")}>
         <ReelExploreStatLine
           icon={<TrendingUp strokeWidth={2.25} className="shrink-0" />}
           iconAdornment={
@@ -471,15 +457,15 @@ function ReelDesktopRail({
               {revenueUp ? "▲" : "▼"}
             </span>
           }
-          value={Math.round(Math.max(0, rankMetrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}
+          value={revNums}
           valueClassName={railStatValueWhite}
-          aria-label={`수익 ${Math.round(Math.max(0, rankMetrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}원`}
+          aria-label={t("explore.rail.revenueAria", { v: revAriaVal })}
         />
         <ReelExploreStatLine
           icon={<Eye strokeWidth={2.25} className="shrink-0" />}
-          value={formatViewCountRail(displayedViews)}
+          value={viewsStr}
           valueClassName={railStatValueWhite}
-          aria-label={`조회수 ${formatViewCountRail(displayedViews)}`}
+          aria-label={t("explore.rail.viewsAria", { v: viewsStr })}
         />
         <ReelExploreStatLine
           icon={
@@ -493,15 +479,15 @@ function ReelDesktopRail({
               aria-hidden
             />
           }
-          value={formatLikeKoApprox(displayedLikeTotal)}
+          value={likesStr}
           valueClassName={railStatValueWhite}
-          aria-label={`좋아요 ${formatLikeKoApprox(displayedLikeTotal)}`}
+          aria-label={t("explore.rail.likesAria", { v: likesStr })}
         />
         <ReelExploreStatLine
           icon={<ShoppingBag strokeWidth={2.25} className="shrink-0" />}
-          value={`${meta.salesCount.toLocaleString("ko-KR")}명`}
+          value={locale === "ko" ? `${salesStr}명` : salesStr}
           valueClassName={railStatValueWhite}
-          aria-label={`구매 ${meta.salesCount.toLocaleString("ko-KR")}명`}
+          aria-label={t("explore.rail.purchasesAria", { n: salesStr })}
         />
       </div>
 
@@ -510,45 +496,51 @@ function ReelDesktopRail({
           <div className="flex w-full flex-col items-center gap-3 px-2 text-center">
             <div className="opacity-45">
               <span className="text-[clamp(1.5rem,3.8vw,2.35rem)] font-black tabular-nums tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
-                {video.priceWon.toLocaleString("ko-KR")}
-                <span className="text-[1.05em] font-bold"> 원</span>
+                {locale === "en" ? "₩" : null}
+                {video.priceWon.toLocaleString(fmt.numberLocale)}
+                {locale === "en" ? null : (
+                  <span className="text-[1.05em] font-bold"> 원</span>
+                )}
               </span>
             </div>
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">품절</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">{t("explore.rail.soldOut")}</span>
           </div>
         ) : (
           <div className="flex w-full flex-col items-stretch gap-3 px-2">
             <div className="text-center">
               <span className="text-[clamp(1.55rem,4vw,2.85rem)] font-black tabular-nums tracking-tighter text-white [html[data-theme='light']_&]:text-zinc-900">
-                {video.priceWon.toLocaleString("ko-KR")}
-                <span className="text-[0.92em] font-bold tracking-normal text-white/[0.95] sm:text-[1.05em] [html[data-theme='light']_&]:text-zinc-900">
-                  {" "}
-                  원
-                </span>
+                {locale === "en" ? "₩" : null}
+                {video.priceWon.toLocaleString(fmt.numberLocale)}
+                {locale === "en" ? null : (
+                  <span className="text-[0.92em] font-bold tracking-normal text-white/[0.95] sm:text-[1.05em] [html[data-theme='light']_&]:text-zinc-900">
+                    {" "}
+                    원
+                  </span>
+                )}
               </span>
             </div>
             <button
               type="button"
               onClick={onBuyClick}
               className={railExploreBuyButtonClass}
-              aria-label="구매 진행하기"
+              aria-label={t("explore.rail.buyAria")}
             >
-              구매
+              {t("explore.rail.buy")}
             </button>
           </div>
         )
       ) : (
-        <span className="font-mono text-sm font-semibold tabular-nums text-zinc-500">가격 미정</span>
+        <span className="font-mono text-sm font-semibold tabular-nums text-zinc-500">{t("explore.rail.priceTbd")}</span>
       )}
 
       <div
         role="group"
-        aria-label="작업"
+        aria-label={t("explore.rail.actions")}
         className="flex w-full flex-row flex-wrap items-center justify-center gap-3 px-2"
       >
         <button
           type="button"
-          title={inCart ? "장바구니에서 빼기" : "장바구니 담기"}
+          title={inCart ? t("explore.rail.cartRemove") : t("explore.rail.cartAdd")}
           onClick={(e) => {
             if (soldOut) return;
             if (!requireAuth()) return;
@@ -560,7 +552,7 @@ function ReelDesktopRail({
               : ""
           }`}
           disabled={soldOut}
-          aria-label={inCart ? "장바구니에서 빼기" : "장바구니 담기"}
+          aria-label={inCart ? t("explore.rail.cartRemove") : t("explore.rail.cartAdd")}
           aria-pressed={inCart}
         >
           <ShoppingCart
@@ -570,7 +562,7 @@ function ReelDesktopRail({
         </button>
         <button
           type="button"
-          title={likedByMe ? "좋아요 취소" : "좋아요"}
+          title={likedByMe ? t("explore.rail.likeUndo") : t("explore.rail.like")}
           onClick={(e) => {
             e.preventDefault();
             void toggleInternalLike();
@@ -580,7 +572,7 @@ function ReelDesktopRail({
               ? "!text-[var(--reels-point)] hover:brightness-110 [html[data-theme='light']_&]:!text-[var(--reels-point)]"
               : ""
           }`}
-          aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+          aria-label={likedByMe ? t("explore.rail.likeUndo") : t("explore.rail.like")}
           aria-pressed={likedByMe}
         >
           {likeBurst ? (
@@ -618,6 +610,8 @@ function ReelDesktopRail({
 
 /** 모바일: 하단 한 줄 요약 (쇼츠·릴스 하단 메타와 유사) */
 function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
+  const { t, locale } = useTranslation();
+  const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
   const metrics = useMemo(() => getMetricsForVideoDetail(video.id), [video.id]);
   const commerce = useMemo(() => getCommerceMeta(video.id), [video.id]);
   const revenueUp = metrics.growthPercent >= 0;
@@ -626,7 +620,7 @@ function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
     <div className="flex shrink-0 items-center justify-between gap-2 border-t border-white/10 bg-black/50 px-3 py-2.5 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/90">
       <div className="min-w-0 flex-1">
         <p className="truncate text-[11px] font-bold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-          수익{" "}
+          {t("explore.mobile.revenue")}{" "}
           <span
             className={`${revenueTrendDeltaGlyphClass} inline tabular-nums ${revenueUp ? revenueTrendUpClass : revenueTrendDownClass}`}
             aria-hidden
@@ -634,18 +628,19 @@ function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
             {revenueUp ? "▲" : "▼"}
           </span>{" "}
           <span className={`tabular-nums ${revenueAmountClass}`}>
-            {formatCompactWon(metrics.cumulativeRevenueWon)}
+            {fmt.formatCompactWon(metrics.cumulativeRevenueWon)}
           </span>
           {" "}
-          · 구매{" "}
-          {commerce.salesCount.toLocaleString("ko-KR")}
+          · {t("explore.mobile.sales")}{" "}
+          {commerce.salesCount.toLocaleString(fmt.numberLocale)}
         </p>
         <p className="truncate font-mono text-[10px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          조회 {formatCompactCount(metrics.totalViews)} · 반응 {formatCompactCount(metrics.totalLikes)}
+          {t("explore.mobile.views")} {fmt.formatCompactCount(metrics.totalViews)} · {t("explore.mobile.reactions")}{" "}
+          {fmt.formatCompactCount(metrics.totalLikes)}
         </p>
       </div>
       <span className="shrink-0 rounded-full border border-reels-cyan/30 bg-reels-cyan/10 px-3 py-1.5 text-[11px] font-bold text-reels-cyan">
-        재생 중
+        {t("explore.mobile.playing")}
       </span>
     </div>
   );
@@ -657,6 +652,7 @@ export function ExploreReelSlide({
   muted,
   onMutedChange,
 }: ReelSlideProps) {
+  const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const blockRef = useRef<HTMLDivElement>(null);
   const progressRailRef = useRef<HTMLDivElement>(null);
@@ -872,7 +868,7 @@ export function ExploreReelSlide({
               type="button"
               onClick={toggleMute}
               className="pointer-events-auto absolute right-3 top-3 z-[3] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition hover:bg-black/60"
-              aria-label={muted ? "소리 켜기" : "음소거"}
+              aria-label={muted ? t("explore.player.unmute") : t("explore.player.mute")}
             >
               {muted ? (
                 <VolumeX className="h-4 w-4" strokeWidth={2} aria-hidden />
@@ -890,7 +886,7 @@ export function ExploreReelSlide({
                   value={muted ? 0 : volume}
                   onChange={(e) => onVolumeChange(e.currentTarget.valueAsNumber)}
                   className="h-6 w-20 -rotate-90 cursor-pointer appearance-none bg-transparent [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-white/30 [&::-webkit-slider-thumb]:-mt-[5px] [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#9DB9FF] [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(157,185,255,0.85)] [&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-white/30 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-[#9DB9FF]"
-                  aria-label="볼륨 조절"
+                  aria-label={t("explore.player.volume")}
                 />
               </div>
             ) : null}
@@ -919,7 +915,7 @@ export function ExploreReelSlide({
                 setIsScrubbing(true);
                 seekByClientX(e.clientX);
               }}
-              aria-label="재생 구간 이동"
+              aria-label={t("explore.player.seek")}
               role="slider"
               aria-valuemin={0}
               aria-valuemax={100}

@@ -167,7 +167,7 @@ export function Highlight24() {
         >
           ARA
         </h1>
-        <p className="mx-auto mt-2 max-w-[46rem] px-2 text-center text-[16px] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
+        <p className="mx-auto mt-2 max-w-[min(100%,52rem)] px-2 text-center text-[clamp(12px,3.1vw,16px)] font-medium leading-tight tracking-[0.01em] text-white/60 whitespace-nowrap [html[data-theme='light']_&]:text-zinc-700/72 sm:text-[16px]">
           {t("home.hero.tagline")}
         </p>
 

@@ -31,7 +31,7 @@ type InnerProps = Props & {
 function LoggedInAccountHoverMenuInner({
   triggerClassName,
   children,
-  "aria-label": ariaLabel = "계정 메뉴",
+  "aria-label": ariaLabelProp,
   rootClassName,
   mypageQueryTab,
 }: InnerProps) {
@@ -39,6 +39,7 @@ function LoggedInAccountHoverMenuInner({
   const pathname = usePathname();
   const { user } = useAuthSession();
   const { t } = useTranslation();
+  const ariaLabel = ariaLabelProp ?? t("account.hoverMenu.aria");
   const [busy, setBusy] = useState(false);
 
   const onMyFeed =

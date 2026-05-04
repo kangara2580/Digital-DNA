@@ -9,6 +9,7 @@ import {
   authModalGlowBottom,
   authModalGlowTop,
 } from "@/lib/authModalTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Props = {
   open: boolean;
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export function AuthPromptModal({ open, onClose, onGoogleStart }: Props) {
+  const { t } = useTranslation();
   if (!open) return null;
 
   return createPortal(
@@ -24,7 +26,7 @@ export function AuthPromptModal({ open, onClose, onGoogleStart }: Props) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="로그인 또는 회원가입"
+        aria-label={t("auth.dialogAria")}
         className={`relative w-full rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
@@ -39,7 +41,7 @@ export function AuthPromptModal({ open, onClose, onGoogleStart }: Props) {
             onClose();
           }}
           className={authModalDismissButtonCls}
-          aria-label="닫기"
+          aria-label={t("a11y.close")}
         >
           ×
         </button>
@@ -47,7 +49,7 @@ export function AuthPromptModal({ open, onClose, onGoogleStart }: Props) {
           ARA
         </p>
         <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
-          로그인/회원가입
+          {t("auth.loginSignupTitle")}
         </p>
         <AuthModalGoogleStartButton onClick={onGoogleStart} />
       </div>
