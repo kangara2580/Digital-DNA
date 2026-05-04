@@ -33,17 +33,19 @@ function HomeBestMarquee({ videos }: { videos: FeedVideo[] }) {
       aria-label="베스트 릴스 미리보기"
     >
       <div
-        className="pointer-events-none absolute inset-y-4 left-0 z-[1] w-12 bg-gradient-to-r from-[#070708] to-transparent sm:inset-y-6 sm:w-20 [html[data-theme='light']_&]:from-[var(--background)]"
+        className="pointer-events-none absolute inset-y-4 left-0 z-[1] w-14 bg-gradient-to-r from-[#070708] to-transparent sm:inset-y-6 sm:w-24 md:w-28 [html[data-theme='light']_&]:from-[var(--background)]"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-y-4 right-0 z-[1] w-12 bg-gradient-to-l from-[#070708] to-transparent sm:inset-y-6 sm:w-20 [html[data-theme='light']_&]:from-[var(--background)]"
+        className="pointer-events-none absolute inset-y-4 right-0 z-[1] w-14 bg-gradient-to-l from-[#070708] to-transparent sm:inset-y-6 sm:w-24 md:w-28 [html[data-theme='light']_&]:from-[var(--background)]"
         aria-hidden
       />
-      <div className="home-best-marquee-track flex gap-1 sm:gap-1.5 md:gap-2">
-        {loop.map((v, i) => (
-          <HomeMarqueeVideoCard key={`${v.id}-${i}`} video={v} />
-        ))}
+      <div className="px-6 sm:px-10 md:px-16 lg:px-[4.5rem] xl:px-24">
+        <div className="home-best-marquee-track flex gap-1.5 sm:gap-2 md:gap-2.5">
+          {loop.map((v, i) => (
+            <HomeMarqueeVideoCard key={`${v.id}-${i}`} video={v} />
+          ))}
+        </div>
       </div>
     </div>
   );

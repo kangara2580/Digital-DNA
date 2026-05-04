@@ -282,7 +282,7 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
     <>
       <Link
         href={`/video/${video.id}`}
-        className="group relative aspect-[216/384] h-[clamp(288px,52vh,460px)] shrink-0  overflow-hidden rounded-2xl bg-black/30 shadow-[0_16px_48px_-20px_rgba(0,0,0,0.55)] outline-none transition-[transform,box-shadow,ring-width] duration-200 hover:z-[2] hover:shadow-[0_20px_56px_-18px_rgba(228,41,128,0.18)] focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070708] active:ring-2 active:ring-[color:var(--reels-point)] active:ring-offset-2 active:ring-offset-[#070708] motion-reduce:transition-none [html[data-theme='light']_&]:bg-zinc-100/80 [html[data-theme='light']_&]:focus-visible:ring-offset-white [html[data-theme='light']_&]:active:ring-offset-white"
+        className="group relative aspect-[216/384] h-[clamp(302px,54vh,490px)] shrink-0  overflow-hidden rounded-2xl bg-black/30 shadow-[0_16px_48px_-20px_rgba(0,0,0,0.55)] outline-none transition-[transform,box-shadow,ring-width] duration-200 hover:z-[2] hover:shadow-[0_20px_56px_-18px_rgba(228,41,128,0.18)] focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070708] active:ring-2 active:ring-[color:var(--reels-point)] active:ring-offset-2 active:ring-offset-[#070708] motion-reduce:transition-none [html[data-theme='light']_&]:bg-zinc-100/80 [html[data-theme='light']_&]:focus-visible:ring-offset-white [html[data-theme='light']_&]:active:ring-offset-white"
         aria-label={`${video.title} — 상세 보기`}
       >
         <div className={`${videoReelMediaContainer} relative h-full w-full`}>
