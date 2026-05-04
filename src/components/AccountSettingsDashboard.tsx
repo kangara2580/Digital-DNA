@@ -174,10 +174,16 @@ export function AccountSettingsDashboard() {
                     href={item.href}
                     className={
                       active
-                        ? "rounded-lg border-l-[3px] border-l-[#E42980] bg-white/[0.06] py-2.5 pl-[13px] pr-3 text-[14px] font-semibold text-zinc-50 transition-colors [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900"
-                        : "rounded-lg border-l-[3px] border-l-transparent py-2.5 pl-[13px] pr-3 text-[14px] font-medium text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
+                        ? "relative rounded-lg bg-white/[0.06] py-2.5 pl-3 pr-3 text-[14px] font-semibold text-zinc-50 transition-colors [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900"
+                        : "rounded-lg py-2.5 pl-3 pr-3 text-[14px] font-medium text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
                     }
                   >
+                    {active ? (
+                      <span
+                        className="pointer-events-none absolute left-1 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-[#E42980]"
+                        aria-hidden
+                      />
+                    ) : null}
                     {t(`settings.tab.${item.id}`)}
                   </Link>
                 );

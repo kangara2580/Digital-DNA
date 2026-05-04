@@ -144,6 +144,10 @@ type TripleDraft = { front: string | null; left: string | null; right: string | 
 
 const emptyTriple = (): TripleDraft => ({ front: null, left: null, right: null });
 
+/** 짧은 강조 문구만 — 본문 대비 과하지 않게 포인트 컬러 */
+const ACCENT_TEXT =
+  "font-semibold text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-[#E42980]";
+
 function titleByKey(key: keyof TripleDraft): string {
   if (key === "front") return "정면";
   if (key === "left") return "좌측";
@@ -294,17 +298,17 @@ export function FaceProfileUploadSection() {
 
       <div className="mt-5 rounded-xl border border-white/10 bg-black/25 px-4 py-3.5 sm:px-5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
         <p className="text-[15px] font-semibold leading-snug tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-          <span className="text-cyan-400 [html[data-theme='light']_&]:text-cyan-600">3면 원본</span>
+          <span className={ACCENT_TEXT}>3면 원본</span>
           {` `}→ 가장 정확
         </p>
         <p className="mt-2 text-[13px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-          1장뿐이면 → <span className="font-semibold text-cyan-400 [html[data-theme='light']_&]:text-cyan-600">AI로 3면 보완</span>
+          1장뿐이면 → <span className={ACCENT_TEXT}>AI로 3면 보완</span>
         </p>
       </div>
 
       <div className="mt-8 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-100">
         <h3 className="text-[13px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-          ① 3면 직접 <span className="text-cyan-400 [html[data-theme='light']_&]:text-cyan-600">(권장)</span>
+          ① 3면 직접 <span className={ACCENT_TEXT}>(권장)</span>
         </h3>
         <p className="mt-1 text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">정면 · 좌 · 우 각 1장 (원본 20MB까지 자동 압축)</p>
 
@@ -350,7 +354,7 @@ export function FaceProfileUploadSection() {
           ))}
         </div>
         {uploadStatus ? (
-          <p className="mt-3 text-[12px] font-semibold text-cyan-400 [html[data-theme='light']_&]:text-cyan-700">
+          <p className="mt-3 text-[12px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
             {uploadStatus}
           </p>
         ) : null}
@@ -359,7 +363,7 @@ export function FaceProfileUploadSection() {
 
       <div className="mt-10 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-100">
         <h3 className="text-[13px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-          ② 1장 + <span className="text-cyan-400 [html[data-theme='light']_&]:text-cyan-600">AI 3면</span>
+          ② 1장 + <span className={ACCENT_TEXT}>AI 3면</span>
         </h3>
         <p className="mt-1 text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">정면 1장 올리고 → 생성 (원본 20MB까지 자동 압축)</p>
 
@@ -385,7 +389,7 @@ export function FaceProfileUploadSection() {
               type="button"
               onClick={runAiGeneration}
               disabled={aiRunning}
-              className="rounded-xl border border-cyan-500/35 bg-cyan-950/40 px-4 py-2.5 text-[13px] font-semibold text-cyan-100 transition hover:border-cyan-400/55 hover:bg-cyan-950/70 disabled:opacity-60 [html[data-theme='light']_&]:border-cyan-200 [html[data-theme='light']_&]:bg-cyan-50 [html[data-theme='light']_&]:text-cyan-900 [html[data-theme='light']_&]:hover:border-cyan-300 [html[data-theme='light']_&]:hover:bg-cyan-100"
+              className="rounded-xl border border-[color:var(--reels-point)]/35 bg-[color:var(--reels-point)]/10 px-4 py-2.5 text-[13px] font-semibold text-zinc-100 transition hover:border-[color:var(--reels-point)]/55 hover:bg-[color:var(--reels-point)]/16 disabled:opacity-60 [html[data-theme='light']_&]:border-reels-crimson/30 [html[data-theme='light']_&]:bg-reels-crimson/10 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-reels-crimson/45 [html[data-theme='light']_&]:hover:bg-reels-crimson/15"
             >
               {aiRunning ? "처리 중…" : "AI로 3면 생성"}
             </button>
@@ -402,10 +406,12 @@ export function FaceProfileUploadSection() {
             role="status"
             aria-live="polite"
           >
-            <p className="font-mono text-[11px] font-semibold text-cyan-400 [html[data-theme='light']_&]:text-cyan-700">{AI_STEPS[aiStepIndex]}</p>
+            <p className="font-mono text-[11px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+              {AI_STEPS[aiStepIndex]}
+            </p>
             <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/10 [html[data-theme='light']_&]:bg-zinc-200">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-reels-crimson/80 to-reels-cyan/90 transition-[width] duration-500 ease-out motion-reduce:transition-none"
+                className="h-full rounded-full bg-[color:var(--reels-point)]/85 transition-[width] duration-500 ease-out motion-reduce:transition-none [html[data-theme='light']_&]:bg-reels-crimson/90"
                 style={{ width: `${((aiStepIndex + 1) / AI_STEPS.length) * 100}%` }}
               />
             </div>
