@@ -1,13 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { attachLocalePreferenceCookie } from "@/lib/localeCookieMiddleware";
+import { CANONICAL_SITE_ORIGIN } from "@/lib/siteMetadataBase";
 import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
 
 function canonicalHostFromEnv(): string | null {
   const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (!raw) return null;
-  const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  const candidate = raw || CANONICAL_SITE_ORIGIN;
   try {
+    const withProtocol = /^https?:\/\//i.test(candidate)
+      ? candidate
+      : `https://${candidate}`;
     return new URL(withProtocol).host;
   } catch {
     return null;

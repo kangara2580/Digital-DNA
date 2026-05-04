@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "ARA",
     description:
       "ARA — Buy the Motion, Own the Moment · 모션을 사고, 순간을 소유하세요",
-    start_url: base ? `${base.origin}/` : "/",
+    start_url: `${base.origin}/`,
     display: "standalone",
     icons: [
       {

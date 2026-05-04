@@ -58,7 +58,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const desc = translate(locale, "meta.rootDescription");
   const base = getSiteMetadataBase();
   return {
-    ...(base ? { metadataBase: base } : {}),
+    metadataBase: base,
     title: {
       default: titleDefault,
       template: `%s${suffix}`,

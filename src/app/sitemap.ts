@@ -38,8 +38,6 @@ const STATIC_PATHS = [
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = getSiteMetadataBase();
-  if (!base) return [];
-
   const origin = base.origin.replace(/\/$/, "");
   const now = new Date();
   const urls: MetadataRoute.Sitemap = STATIC_PATHS.map((path) => ({
