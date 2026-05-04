@@ -5,6 +5,12 @@ import {
   normalizeCharacterParts,
   type CharacterPartsV1,
 } from "@/lib/notionistsCharacter";
+import {
+  paletteForSeed,
+  variantIndexFromParts,
+  variantIndexFromSeed,
+  type PixelAvatarPalette,
+} from "@/lib/pixelAvatarSprite";
 import type { User } from "@supabase/supabase-js";
 import type { AppProfile } from "@/lib/supabaseProfiles";
 
@@ -16,6 +22,42 @@ export type ProfileAvatar =
   | { kind: "preset"; seed: string }
   | { kind: "upload"; dataUrl: string }
   | { kind: "custom"; parts: CharacterPartsV1 };
+
+export type ProfileAvatarPixelPreview =
+  | { type: "upload"; src: string }
+  | { type: "pixel"; palette: PixelAvatarPalette; variant: number };
+
+export function getProfileAvatarPixelPreview(
+  v: ProfileAvatar | null,
+  fallbackSeed: string,
+): ProfileAvatarPixelPreview {
+  const seedFallback = fallbackSeed.trim() || "reels-market";
+
+  if (v?.kind === "upload") {
+    return { type: "upload", src: v.dataUrl };
+  }
+  if (v?.kind === "preset" && v.seed.trim()) {
+    const seed = v.seed.trim();
+    return {
+      type: "pixel",
+      palette: paletteForSeed(seed),
+      variant: variantIndexFromSeed(seed),
+    };
+  }
+  if (v?.kind === "custom") {
+    const p = v.parts;
+    return {
+      type: "pixel",
+      palette: paletteForSeed(p.seed),
+      variant: variantIndexFromParts(p),
+    };
+  }
+  return {
+    type: "pixel",
+    palette: paletteForSeed(seedFallback),
+    variant: variantIndexFromSeed(seedFallback),
+  };
+}
 
 export function readProfileAvatar(): ProfileAvatar | null {
   if (typeof window === "undefined") return null;

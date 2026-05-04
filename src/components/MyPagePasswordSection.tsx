@@ -5,7 +5,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const INPUT =
-  "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none transition focus:border-reels-crimson/45 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
+  "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none transition focus:border-white/35 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
 
 function mapPasswordError(message: string, t: (key: string) => string): string {
   const normalized = message.toLowerCase();
@@ -238,14 +238,14 @@ export function MyPagePasswordSection() {
             }
             void onOpen();
           }}
-          className="rounded-full border border-reels-crimson/40 bg-reels-crimson/15 px-4 py-2 text-[13px] font-extrabold text-reels-crimson transition hover:bg-reels-crimson/25"
+          className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-[13px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-300"
         >
           {open ? t("password.closePanel") : t("password.openPanel")}
         </button>
       </div>
 
       {error ? (
-        <p className="mt-3 rounded-lg border border-reels-crimson/45 bg-reels-crimson/12 px-3 py-2 text-[12px] font-semibold text-[#F3C4D9] [html[data-theme='light']_&]:text-reels-crimson">          {error}
+        <p className="mt-3 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-[12px] font-semibold text-red-200 [html[data-theme='light']_&]:text-red-800">          {error}
         </p>
       ) : null}
       {message ? (
@@ -269,7 +269,7 @@ export function MyPagePasswordSection() {
                   type="button"
                   onClick={() => void sendSmsCode()}
                   disabled={sendingSms}
-                  className="rounded-full border border-white/20 bg-white/[0.06] px-3 py-1.5 text-[12px] font-bold text-zinc-100 transition hover:bg-white/[0.1] disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
+                  className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[12px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
                 >
                   {sendingSms ? t("password.sending") : smsSent ? t("password.resendCode") : t("password.getCode")}
                 </button>
@@ -285,7 +285,7 @@ export function MyPagePasswordSection() {
                   type="button"
                   onClick={() => void verifySmsCode()}
                   disabled={verifyingSms}
-                  className="rounded-full border border-reels-crimson/40 bg-reels-crimson/15 px-3 py-1.5 text-[12px] font-extrabold text-reels-crimson transition hover:bg-reels-crimson/25 disabled:opacity-50"
+                  className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[12px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
                 >
                   {verifyingSms ? t("password.verifying") : phoneVerified ? t("password.verified") : t("password.verifyCode")}
                 </button>
@@ -337,7 +337,7 @@ export function MyPagePasswordSection() {
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-full border border-reels-crimson/40 bg-reels-crimson/15 py-2.5 text-[14px] font-extrabold text-reels-crimson transition hover:bg-reels-crimson/25 disabled:opacity-50"
+          className="w-full rounded-full border border-white/15 bg-white/[0.06] py-2.5 text-[14px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
         >
           {busy ? t("password.saveBusy") : t("password.save")}
         </button>

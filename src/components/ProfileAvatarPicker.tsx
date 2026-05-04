@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { ChevronLeft, ChevronRight, Dices, ImagePlus } from "lucide-react";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { ProfileAvatarSprite } from "@/components/ProfileAvatarSprite";
 import { DEFAULT_BEST_REVIEW_AVATAR_SEED } from "@/data/reelsAvatarPresets";
 import {
   buildNotionistsCustomAvatarUrl,
@@ -20,9 +20,20 @@ import {
 } from "@/lib/notionistsCharacter";
 import type { ProfileAvatar } from "@/lib/profileAvatarStorage";
 import {
-  getProfileAvatarDisplayUrl,
+  getProfileAvatarPixelPreview,
   PROFILE_AVATAR_UPLOAD_MAX_CHARS,
 } from "@/lib/profileAvatarStorage";
+
+/** 미리보기 링 — 핑크 없이 글래스 톤 */
+const AVATAR_FRAME =
+  "border-2 border-white/30 shadow-lg ring-4 ring-white/10 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:ring-zinc-200/40";
+
+/** 피드·카테고리 등과 맞춘 중립 캡슐 버튼 */
+const PILL =
+  "inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.06] font-semibold text-zinc-200 transition hover:border-white/28 hover:bg-white/[0.1] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-zinc-200/70";
+
+const PANEL_SHELL =
+  "rounded-xl border border-white/12 bg-gradient-to-br from-black/40 to-black/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-100/90 [html[data-theme='light']_&]:to-white";
 
 function fileToSquareJpegDataUrl(file: File, maxSide: number): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -98,10 +109,15 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
     }
   }, [value]);
 
-  const previewUrl = useMemo(
-    () => getProfileAvatarDisplayUrl(value, DEFAULT_BEST_REVIEW_AVATAR_SEED),
+  const pixelPreview = useMemo(
+    () => getProfileAvatarPixelPreview(value, DEFAULT_BEST_REVIEW_AVATAR_SEED),
     [value],
   );
+
+  const pixelWellCls =
+    pixelPreview.type === "pixel" && pixelPreview.palette === "mono"
+      ? "absolute inset-0 flex items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-black/10 [html[data-theme='dark']_&]:bg-zinc-900 [html[data-theme='dark']_&]:ring-white/15"
+      : "absolute inset-0 flex items-center justify-center overflow-hidden rounded-full bg-[#96B877]/28 [html[data-theme='light']_&]:bg-[#96B877]/38 [html[data-theme='dark']_&]:bg-[#96B877]/22";
 
   const applyCustom = useCallback(
     (next: CharacterPartsV1) => {
@@ -159,27 +175,31 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
     return (
       <div className="grid h-full grid-cols-1 gap-4 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-x-6 sm:gap-y-4">
         <div className="relative mx-auto shrink-0 sm:mx-0">
-          <div className="relative h-32 w-32 overflow-hidden rounded-full border-2 border-reels-cyan/35 bg-black/30 shadow-lg ring-4 ring-reels-cyan/10 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:ring-reels-cyan/15 sm:h-36 sm:w-36">
+          <div className={`relative h-32 w-32 overflow-hidden rounded-full bg-black/30 [html[data-theme='light']_&]:bg-white sm:h-36 sm:w-36 ${AVATAR_FRAME}`}
+          >
             {!previewReady ? (
               <div
                 className="h-full w-full animate-pulse bg-zinc-600/35 [html[data-theme='light']_&]:bg-zinc-300/50"
                 aria-hidden
               />
-            ) : value?.kind === "upload" ? (
+            ) : pixelPreview.type === "upload" ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={previewUrl}
+                src={pixelPreview.src}
                 alt=""
                 className="h-full w-full object-cover"
               />
             ) : (
-              <Image
-                src={previewUrl}
-                alt=""
-                fill
-                unoptimized
-                className="object-cover"
-              />
+              <div className={pixelWellCls}>
+                <div className="h-[132%] w-[132%] min-h-[8rem] min-w-[8rem] shrink-0 sm:min-h-[9rem] sm:min-w-[9rem]">
+                  <ProfileAvatarSprite
+                    palette={pixelPreview.palette}
+                    variant={pixelPreview.variant}
+                    alt=""
+                    className="h-full w-full"
+                  />
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -197,9 +217,9 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[13px] font-bold text-zinc-200 transition hover:border-reels-cyan/40 hover:bg-reels-cyan/10 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+              className={`${PILL} px-3.5 py-2.5 text-[13px] font-bold`}
             >
-              <ImagePlus className="h-4 w-4 text-reels-cyan" aria-hidden />
+              <ImagePlus className="h-4 w-4 text-zinc-300 [html[data-theme='light']_&]:text-zinc-600" aria-hidden />
               이미지 올리기
             </button>
             <input
@@ -214,7 +234,7 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
         </div>
 
         <div
-          className={`mt-0 w-full rounded-xl border border-reels-cyan/20 bg-gradient-to-br from-black/40 to-black/20 p-3 sm:col-span-2 sm:p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-100/90 [html[data-theme='light']_&]:to-white ${
+          className={`mt-0 w-full ${PANEL_SHELL} p-3 sm:col-span-2 sm:p-4 ${
             customizerDisabled ? "opacity-50" : ""
           }`}
         >
@@ -227,7 +247,7 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
                 type="button"
                 disabled={customizerDisabled}
                 onClick={randomize}
-                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-reels-cyan/35 bg-reels-cyan/12 px-2.5 py-1 text-[11px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
+                className={`${PILL} shrink-0 gap-1 px-2.5 py-1 text-[11px] font-bold disabled:cursor-not-allowed disabled:opacity-40`}
               >
                 <Dices className="h-3.5 w-3.5" aria-hidden />
                 랜덤
@@ -304,28 +324,31 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
     >
       <div className="relative mx-auto shrink-0 sm:mx-0">
         <div
-          className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-reels-cyan/35 bg-black/30 shadow-lg ring-4 ring-reels-cyan/10 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:ring-reels-cyan/15 sm:h-28 sm:w-28"
+          className={`relative h-24 w-24 overflow-hidden rounded-full bg-black/30 [html[data-theme='light']_&]:bg-white sm:h-28 sm:w-28 ${AVATAR_FRAME}`}
         >
           {!previewReady ? (
             <div
               className="h-full w-full animate-pulse bg-zinc-600/35 [html[data-theme='light']_&]:bg-zinc-300/50"
               aria-hidden
             />
-          ) : value?.kind === "upload" ? (
+          ) : pixelPreview.type === "upload" ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={previewUrl}
+              src={pixelPreview.src}
               alt=""
               className="h-full w-full object-cover"
             />
           ) : (
-            <Image
-              src={previewUrl}
-              alt=""
-              fill
-              unoptimized
-              className="object-cover"
-            />
+            <div className={pixelWellCls}>
+              <div className="h-[130%] w-[130%] min-h-[7.5rem] min-w-[7.5rem] shrink-0 sm:min-h-[8.75rem] sm:min-w-[8.75rem]">
+                <ProfileAvatarSprite
+                  palette={pixelPreview.palette}
+                  variant={pixelPreview.variant}
+                  alt=""
+                  className="h-full w-full"
+                />
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -347,9 +370,9 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/[0.06] px-3 py-2 text-[12px] font-bold text-zinc-200 transition hover:border-reels-cyan/40 hover:bg-reels-cyan/10 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+            className={`${PILL} gap-1.5 px-3 py-2 text-[12px] font-bold`}
           >
-            <ImagePlus className="h-4 w-4 text-reels-cyan" aria-hidden />
+            <ImagePlus className="h-4 w-4 text-zinc-300 [html[data-theme='light']_&]:text-zinc-600" aria-hidden />
             이미지 올리기
           </button>
           <input
@@ -363,9 +386,7 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
         </div>
 
         <div
-          className={`mt-4 w-full rounded-xl border border-reels-cyan/20 bg-gradient-to-br from-black/40 to-black/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-100/90 [html[data-theme='light']_&]:to-white ${
-            "p-2.5 sm:p-3"
-          } ${customizerDisabled ? "opacity-50" : ""}`}
+          className={`mt-4 w-full ${PANEL_SHELL} p-2.5 sm:p-3 ${customizerDisabled ? "opacity-50" : ""}`}
         >
           <div className="flex min-h-[30px] items-center gap-2">
             <p className="shrink-0 text-[11px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
@@ -383,7 +404,7 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
               type="button"
               disabled={customizerDisabled}
               onClick={randomize}
-              className="inline-flex shrink-0 items-center gap-1 rounded-full border border-reels-cyan/35 bg-reels-cyan/12 px-2 py-0.5 text-[10px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
+              className={`${PILL} shrink-0 gap-1 px-2 py-0.5 text-[10px] font-bold disabled:cursor-not-allowed disabled:opacity-40`}
             >
               <Dices className="h-3 w-3" aria-hidden />
               랜덤
@@ -467,8 +488,8 @@ function CycleRow<T extends string>({
     <div
       className={
         isComfortable
-          ? "grid min-w-0 grid-cols-[2.25rem_minmax(0,1fr)_2.25rem] items-center gap-1 rounded-lg border border-white/10 bg-black/25 px-1.5 py-1.5 sm:grid-cols-[2.4rem_minmax(0,1fr)_2.4rem] sm:px-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
-          : "flex min-w-0 items-center gap-0.5 rounded-lg border border-white/10 bg-black/25 px-1 py-0.5 sm:gap-1 sm:px-1.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
+          ? "grid min-w-0 grid-cols-[2.25rem_minmax(0,1fr)_2.25rem] items-center gap-1 rounded-lg border border-white bg-black/25 px-1.5 py-1.5 sm:grid-cols-[2.4rem_minmax(0,1fr)_2.4rem] sm:px-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
+          : "flex min-w-0 items-center gap-0.5 rounded-lg border border-white bg-black/25 px-1 py-0.5 sm:gap-1 sm:px-1.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
       }
     >
       <button
@@ -476,8 +497,8 @@ function CycleRow<T extends string>({
         onClick={() => onChange(cycleInList(list, current, -1))}
         className={
           isComfortable
-            ? "flex h-8 w-full min-w-0 items-center justify-center rounded-md border border-white/10 text-zinc-300 transition hover:border-reels-cyan/40 hover:text-reels-cyan sm:h-9 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
-            : "flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-white/10 text-zinc-300 transition hover:border-reels-cyan/40 hover:text-reels-cyan sm:h-7 sm:w-7 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+            ? "flex h-8 w-full min-w-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/35 hover:bg-white/[0.08] hover:text-zinc-100 sm:h-9 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
+            : "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/35 hover:bg-white/[0.08] hover:text-zinc-100 sm:h-7 sm:w-7 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
         }
         aria-label={`${label} 이전`}
       >
@@ -509,8 +530,8 @@ function CycleRow<T extends string>({
         onClick={() => onChange(cycleInList(list, current, 1))}
         className={
           isComfortable
-            ? "flex h-8 w-full min-w-0 items-center justify-center rounded-md border border-white/10 text-zinc-300 transition hover:border-reels-cyan/40 hover:text-reels-cyan sm:h-9 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
-            : "flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-white/10 text-zinc-300 transition hover:border-reels-cyan/40 hover:text-reels-cyan sm:h-7 sm:w-7 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+            ? "flex h-8 w-full min-w-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/35 hover:bg-white/[0.08] hover:text-zinc-100 sm:h-9 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
+            : "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/35 hover:bg-white/[0.08] hover:text-zinc-100 sm:h-7 sm:w-7 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
         }
         aria-label={`${label} 다음`}
       >
@@ -543,8 +564,8 @@ function GenderHeaderToggle({
     <div
       className={
         isComfortable
-          ? "inline-flex max-w-full overflow-hidden rounded-lg border border-white/10 bg-black/25 p-1 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
-          : "inline-flex max-w-full overflow-hidden rounded-lg border border-white/10 bg-black/25 p-0.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
+          ? "inline-flex max-w-full gap-0.5 overflow-hidden rounded-full border border-white/12 bg-black/25 p-1 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
+          : "inline-flex max-w-full gap-0.5 overflow-hidden rounded-full border border-white/12 bg-black/25 p-0.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
       }
       role="group"
       aria-label="성별"
@@ -555,17 +576,17 @@ function GenderHeaderToggle({
           type="button"
           disabled={disabled}
           onClick={() => onChange(o.id)}
-          className={`rounded-md font-bold transition disabled:cursor-not-allowed disabled:opacity-40 ${
+          className={`rounded-full font-bold transition disabled:cursor-not-allowed disabled:opacity-40 ${
             isComfortable
               ? `min-w-[3rem] px-2.5 py-1.5 text-[11px] sm:min-w-[3.5rem] sm:text-[12px] ${
                   value === o.id
-                    ? "bg-reels-cyan/25 text-reels-cyan ring-1 ring-reels-cyan/40"
-                    : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
+                    ? "border border-white/20 bg-white/[0.14] text-zinc-100 ring-1 ring-white/20 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-200 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:ring-zinc-300/60"
+                    : "border border-transparent text-zinc-400 hover:bg-white/5 hover:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
                 }`
-              : `min-w-[2.75rem] px-2 py-1 text-[10px] sm:min-w-[3.25rem] ${
+              : `min-w-[2.75rem] border px-2 py-1 text-[10px] sm:min-w-[3.25rem] ${
                   value === o.id
-                    ? "bg-reels-cyan/25 text-reels-cyan ring-1 ring-reels-cyan/40"
-                    : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
+                    ? "border-white/20 bg-white/[0.14] text-zinc-100 ring-1 ring-white/20 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-200 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:ring-zinc-300/60"
+                    : "border-transparent text-zinc-400 hover:bg-white/5 hover:text-zinc-200 [html[data-theme='light']_&]:border-transparent [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
                 }`
           }`}
         >
