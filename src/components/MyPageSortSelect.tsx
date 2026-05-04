@@ -5,19 +5,22 @@ import { useEffect, useId, useRef, useState } from "react";
 
 export type MyPageSortOption = { readonly value: string; readonly label: string };
 
-const triggerClass =
-  "flex min-w-[11.5rem] w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-white/15 bg-reels-void/80 px-3 py-2 text-left text-[13px] font-medium text-zinc-100 outline-none transition-[border-color,background-color] hover:border-white/45 hover:bg-white/[0.08] focus-visible:border-white/50 focus-visible:outline-none [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:focus-visible:border-zinc-500";
+const TRIGGER_REST =
+  "flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-white/15 bg-reels-void/80 px-3 py-2 text-left text-[13px] font-medium text-zinc-100 outline-none transition-[border-color,background-color] hover:border-white/45 hover:bg-white/[0.08] focus-visible:border-white/50 focus-visible:outline-none [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:focus-visible:border-zinc-500";
 
 export function MyPageSortSelect({
   options,
   value,
   onChange,
   ariaLabel,
+  compact = false,
 }: {
   options: readonly MyPageSortOption[];
   value: string;
   onChange: (next: string) => void;
   ariaLabel: string;
+  /** 짧은 라벨(언어 선택 등) — 트리거·폭을 줄입니다 */
+  compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -25,6 +28,12 @@ export function MyPageSortSelect({
   const listId = useId();
 
   const selected = options.find((o) => o.value === value) ?? options[0];
+  const triggerMin = compact ? "min-w-[9rem]" : "min-w-[11.5rem]";
+  const wrapCls = compact
+    ? "relative w-fit min-w-[9rem]"
+    : "relative min-w-[11.5rem]";
+  const optionMin = compact ? "min-w-[8.75rem]" : "min-w-[11.25rem]";
+  const optionMax = compact ? "max-w-[13rem]" : "max-w-[20rem]";
 
   useEffect(() => {
     if (!open) return;
@@ -46,7 +55,7 @@ export function MyPageSortSelect({
   }, [open]);
 
   return (
-    <div className="relative min-w-[11.5rem]" ref={wrapRef}>
+    <div className={wrapCls} ref={wrapRef}>
       <button
         type="button"
         id={btnId}
@@ -55,7 +64,7 @@ export function MyPageSortSelect({
         aria-controls={open ? listId : undefined}
         aria-label={ariaLabel}
         onClick={() => setOpen((o) => !o)}
-        className={triggerClass}
+        className={`${TRIGGER_REST} ${triggerMin}`}
       >
         <span className="min-w-0 flex-1 truncate">{selected.label}</span>
         <ChevronDown
@@ -80,7 +89,7 @@ export function MyPageSortSelect({
                   type="button"
                   role="option"
                   aria-selected={isSel}
-                  className={`flex w-full min-w-[11.25rem] max-w-[20rem] items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--reels-point)]/40 [html[data-theme='light']_&]:focus-visible:ring-reels-crimson/35 ${
+                  className={`flex w-full ${optionMin} ${optionMax} items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--reels-point)]/40 [html[data-theme='light']_&]:focus-visible:ring-reels-crimson/35 ${
                     isSel
                       ? "font-semibold text-zinc-100 hover:bg-white/[0.06] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100"
                       : "text-zinc-300 hover:bg-white/[0.06] hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"

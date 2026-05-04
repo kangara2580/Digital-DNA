@@ -28,8 +28,9 @@ export function LocalePreferenceSelect({
   );
 
   return (
-    <div className={className ?? "min-w-[11.5rem] max-w-[20rem]"}>
+    <div className={className ?? "w-fit"}>
       <MyPageSortSelect
+        compact
         options={options}
         value={locale}
         onChange={(next) => setLocale(next as SiteLocale)}

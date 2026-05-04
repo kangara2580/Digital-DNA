@@ -254,7 +254,7 @@ export function AccountSettingsDashboard() {
                 </span>
                 <LocalePreferenceSelect
                   ariaLabel={t("settings.language.selectAria")}
-                  className="w-full min-w-0 sm:max-w-xs"
+                  className="shrink-0"
                 />
               </div>
             </div>
