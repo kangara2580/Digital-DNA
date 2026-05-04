@@ -66,15 +66,15 @@ function HomeBestMarquee({ videos }: { videos: FeedVideo[] }) {
 
   return (
     <div
-      className="relative w-full overflow-hidden py-6 sm:py-9"
+      className="relative w-full overflow-hidden py-4 sm:py-6"
       aria-label="베스트 릴스 미리보기"
     >
       <div
-        className="pointer-events-none absolute inset-y-6 left-0 z-[1] w-12 bg-gradient-to-r from-[#070708] to-transparent sm:inset-y-9 sm:w-20 [html[data-theme='light']_&]:from-[var(--background)]"
+        className="pointer-events-none absolute inset-y-4 left-0 z-[1] w-12 bg-gradient-to-r from-[#070708] to-transparent sm:inset-y-6 sm:w-20 [html[data-theme='light']_&]:from-[var(--background)]"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-y-6 right-0 z-[1] w-12 bg-gradient-to-l from-[#070708] to-transparent sm:inset-y-9 sm:w-20 [html[data-theme='light']_&]:from-[var(--background)]"
+        className="pointer-events-none absolute inset-y-4 right-0 z-[1] w-12 bg-gradient-to-l from-[#070708] to-transparent sm:inset-y-6 sm:w-20 [html[data-theme='light']_&]:from-[var(--background)]"
         aria-hidden
       />
       <div className="home-best-marquee-track flex gap-4 sm:gap-5 md:gap-6">
@@ -210,7 +210,7 @@ export function Highlight24() {
         <MainTopUserMenu />
       </div>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-4 pb-6 pt-[max(1rem,env(safe-area-inset-top)+4.5rem)] text-center sm:px-6 sm:pb-8 sm:pt-[max(1.25rem,env(safe-area-inset-top)+5rem)]">
+      <div className="relative z-10 mx-auto flex w-full max-w-3xl -translate-y-2 flex-col items-center px-4 pb-4 pt-[max(0.25rem,calc(env(safe-area-inset-top)+3rem))] text-center motion-reduce:translate-y-0 sm:-translate-y-3 sm:px-6 sm:pb-5 sm:pt-[max(0.5rem,calc(env(safe-area-inset-top)+3.25rem))] motion-reduce:sm:translate-y-0">
         <h1
           className="select-none text-[clamp(3.6rem,16.5vw,7.5rem)] font-semibold leading-none tracking-[0.02em] text-white"
           style={{
@@ -219,11 +219,11 @@ export function Highlight24() {
         >
           ARA
         </h1>
-        <p className="mt-3 max-w-[46rem] px-2 text-[clamp(13px,3.2vw,16px)] font-medium leading-snug tracking-[0.01em] text-white/75 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="mt-2 max-w-[46rem] px-2 text-[clamp(13px,3.2vw,16px)] font-medium leading-snug tracking-[0.01em] text-white/75 [html[data-theme='light']_&]:text-zinc-600">
           누구나 쉽고 빠르게 숏폼을 거래하는 글로벌 동영상 쇼핑몰입니다.
         </p>
 
-        <div className="mt-5 flex w-full max-w-xl flex-col items-center gap-4 sm:mt-6">
+        <div className="mt-4 flex w-full max-w-xl flex-col items-center gap-3 sm:mt-5 sm:gap-4">
           <div className="flex w-full flex-wrap items-center justify-center gap-x-6 gap-y-3">
             <HomeStartCtaButton
               compactSpacing
@@ -268,7 +268,7 @@ export function Highlight24() {
         </div>
       </div>
 
-      <div className="relative z-[5]">
+      <div className="relative z-[5] -translate-y-1 motion-reduce:translate-y-0 sm:-translate-y-2 motion-reduce:sm:translate-y-0">
         <HomeBestMarquee videos={bestVideos} />
       </div>
 
