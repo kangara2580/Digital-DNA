@@ -1,8 +1,16 @@
 import Link from "next/link";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { ArrowRight, Sparkles, Wand2, Zap, PlaySquare } from "lucide-react";
 import { MainBackgroundVideo } from "@/components/MainBackgroundVideo";
 import { VideoCard } from "@/components/VideoCard";
 import { LOCAL_TRENDING_FEED_VIDEOS } from "@/data/videos";
+
+export async function generateMetadata() {
+  return buildPageMetadata({
+    titleKey: "meta.landing",
+    descriptionKey: "meta.landingDescription",
+  });
+}
 
 export default function LandingPage() {
   const showcaseVideos = LOCAL_TRENDING_FEED_VIDEOS.slice(0, 4);

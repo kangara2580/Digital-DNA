@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { VideoDetailView } from "@/components/VideoDetailView";
 import { getMarketVideoById } from "@/data/videoCommerce";
@@ -5,6 +6,10 @@ import {
   getExternalRankDemoPriceWonByCanonical,
   getManualTikTokPriceWonByVideoId,
 } from "@/data/tiktokData";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
+import { translate } from "@/lib/i18n/dictionaries";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
+import { resolveVideoDetailSeoTitle } from "@/lib/seo/videoDetailSeo";
 import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
 import { prisma } from "@/lib/prisma";
 
@@ -24,6 +29,26 @@ async function withTimeout<T>(work: Promise<T>, timeoutMs: number): Promise<T> {
       setTimeout(() => reject(new Error("db_timeout")), timeoutMs);
     }),
   ]);
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const title = await resolveVideoDetailSeoTitle(id);
+  if (!title) {
+    return buildPageMetadata({
+      titleKey: "meta.videoDetail",
+      descriptionKey: "meta.rootDescription",
+    });
+  }
+  const locale = await getSiteLocale();
+  return {
+    title,
+    description: translate(locale, "meta.videoDetailDescription", { title }),
+  };
 }
 
 export default async function VideoDetailPage({

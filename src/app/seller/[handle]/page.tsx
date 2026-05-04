@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SellerFeedBioEditor } from "@/components/SellerFeedBioEditor";
 import {
@@ -20,6 +21,9 @@ import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
 import { prisma } from "@/lib/prisma";
 import { getSupabaseServiceRoleClient } from "@/lib/supabaseServiceRole";
 import { supabaseTables } from "@/lib/supabaseTableNames";
+import { translate } from "@/lib/i18n/dictionaries";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
+import { resolveSellerDisplayNameForSeo } from "@/lib/seo/sellerSeo";
 
 /** Supabase `auth.users` id style; used so “내 피드” (`/seller/{userId}`) never 404s when there are no listings yet. */
 function isProbablySellerUserId(key: string): boolean {
@@ -27,6 +31,26 @@ function isProbablySellerUserId(key: string): boolean {
 }
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ handle: string }>;
+}): Promise<Metadata> {
+  const { handle } = await params;
+  let sellerKey = handle.trim();
+  try {
+    sellerKey = decodeURIComponent(handle).trim();
+  } catch {
+    sellerKey = handle.trim();
+  }
+  const name = await resolveSellerDisplayNameForSeo(sellerKey);
+  const locale = await getSiteLocale();
+  return {
+    title: translate(locale, "meta.sellerTitle", { name }),
+    description: translate(locale, "meta.sellerDescription", { name }),
+  };
+}
 
 export default async function SellerPage({
   params,

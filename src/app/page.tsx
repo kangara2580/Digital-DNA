@@ -1,8 +1,16 @@
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { BestPurchaseReviewsSection } from "@/components/BestPurchaseReviewsSection";
 import { Highlight24 } from "@/components/Highlight24";
 import { TrendingRankSection } from "@/components/TrendingRankSection";
 import { SellerPitchBanner, SellerPitchBottomStartButton } from "@/components/SellerPitchBanner";
 import { DiscountDnaSection } from "@/components/DiscountDnaSection";
+
+export async function generateMetadata() {
+  return buildPageMetadata({
+    titleKey: "meta.home",
+    descriptionKey: "meta.homeDescription",
+  });
+}
 
 export default async function Home() {
   return (

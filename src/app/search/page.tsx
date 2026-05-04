@@ -1,5 +1,29 @@
+import type { Metadata } from "next";
 import { VideoCard } from "@/components/VideoCard";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
+import { translate } from "@/lib/i18n/dictionaries";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
 import { searchMarketVideos } from "@/lib/searchMarketVideos";
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}): Promise<Metadata> {
+  const { q: rawQ = "" } = await searchParams;
+  const query = rawQ.trim();
+  if (!query) {
+    return buildPageMetadata({
+      titleKey: "meta.search",
+      descriptionKey: "meta.searchDescription",
+    });
+  }
+  const locale = await getSiteLocale();
+  return {
+    title: translate(locale, "meta.searchResultsTitle", { query }),
+    description: translate(locale, "meta.searchResultsDescription", { query }),
+  };
+}
 
 export const dynamic = "force-dynamic";
 

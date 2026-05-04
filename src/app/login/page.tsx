@@ -3,7 +3,10 @@ import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { LoginPageClient } from "./LoginPageClient";
 
 export async function generateMetadata() {
-  return buildPageMetadata({ titleKey: "meta.login" });
+  return buildPageMetadata({
+    titleKey: "meta.login",
+    descriptionKey: "meta.loginDescription",
+  });
 }
 
 function LoginFallback() {
