@@ -223,7 +223,7 @@ export function MyPageProfileEditForm({
   }
 
   const input =
-    "mt-1 w-full rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-[14px] text-zinc-100 outline-none focus:border-reels-cyan/45 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900";
+    "mt-1 w-full rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-[14px] text-zinc-100 outline-none focus:border-reels-crimson/45 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900";
 
   return (
     <div className="mt-6 space-y-4 rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
@@ -300,7 +300,7 @@ export function MyPageProfileEditForm({
         ) : null}
       </div>
       {message ? (
-        <p className="text-[13px] font-medium text-reels-cyan [html[data-theme='light']_&]:text-teal-700" role="status">
+        <p className="text-[13px] font-medium text-reels-crimson [html[data-theme='light']_&]:text-reels-crimson" role="status">
           {message}
         </p>
       ) : null}
@@ -308,7 +308,7 @@ export function MyPageProfileEditForm({
         type="button"
         disabled={busy}
         onClick={() => void save()}
-        className="rounded-full bg-reels-cyan/20 px-5 py-2.5 text-[14px] font-extrabold text-reels-cyan transition hover:bg-reels-cyan/30 disabled:opacity-50 [html[data-theme='light']_&]:text-teal-800"
+        className="rounded-full bg-reels-crimson/15 px-5 py-2.5 text-[14px] font-extrabold text-reels-crimson transition hover:bg-reels-crimson/25 disabled:opacity-50 [html[data-theme='light']_&]:text-reels-crimson"
       >
         {busy ? t("profileForm.saveBusy") : t("profileForm.save")}
       </button>

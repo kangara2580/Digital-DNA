@@ -22,11 +22,12 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DocumentTitleI18n } from "@/components/DocumentTitleI18n";
 
-type SettingsTab = "basic" | "edit" | "profile" | "language";
+type SettingsTab = "basic" | "edit" | "purchases" | "profile" | "language";
 
 const SETTINGS_TAB_DEFS: { id: SettingsTab; href: string }[] = [
   { id: "basic", href: "/settings" },
   { id: "edit", href: "/settings?tab=edit" },
+  { id: "purchases", href: "/settings?tab=purchases" },
   { id: "profile", href: "/settings?tab=profile" },
   { id: "language", href: "/settings?tab=language" },
 ];
@@ -64,6 +65,7 @@ function LoginRequiredPanel({
 function normalizeSettingsTab(input: string | null): SettingsTab {
   if (input === "profile") return "profile";
   if (input === "edit") return "edit";
+  if (input === "purchases") return "purchases";
   if (input === "language") return "language";
   return "basic";
 }
@@ -205,8 +207,7 @@ export function AccountSettingsDashboard() {
 
           {currentTab === "basic" && user ? (
             <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
-              <MyPageAccountOverview />
-              <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-10 [html[data-theme='light']_&]:border-zinc-100">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
                   {t("settings.tab.basic")}
                 </h2>
@@ -220,9 +221,25 @@ export function AccountSettingsDashboard() {
                 ) : null}
               </div>
 
-              <MyPageProfileEditForm profileForForm={profileForForm} onSaved={setProfileRecord} />
+              <div className="mt-10">
+                <MyPageProfileEditForm profileForForm={profileForForm} onSaved={setProfileRecord} />
+              </div>
 
               <MyPagePasswordSection />
+            </div>
+          ) : null}
+
+          {currentTab === "purchases" && user ? (
+            <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
+              <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+                {t("settings.tab.purchases")}
+              </h2>
+              <p className="mt-2 max-w-xl text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                {t("settings.purchases.lead")}
+              </p>
+              <div className="mt-8">
+                <MyPageAccountOverview />
+              </div>
             </div>
           ) : null}
 

@@ -18,8 +18,10 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "settings.menu": "메뉴",
     "settings.tab.basic": "기본정보",
     "settings.tab.edit": "프로필 편집",
+    "settings.tab.purchases": "구매내역",
     "settings.tab.profile": "AI 프로필 설정",
     "settings.tab.language": "언어",
+    "settings.purchases.lead": "구독 상태와 구매한 동영상을 확인할 수 있어요.",
     "settings.language.heading": "표시 언어",
     "settings.edit.lead":
       "계정에 표시되는 프로필 이미지를 바꿀 수 있어요. 변경 내용은 계정에 저장됩니다.",
@@ -1012,8 +1014,10 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "settings.menu": "Menu",
     "settings.tab.basic": "Account",
     "settings.tab.edit": "Profile photo",
+    "settings.tab.purchases": "Purchase history",
     "settings.tab.profile": "AI face profile",
     "settings.tab.language": "Language",
+    "settings.purchases.lead": "View your subscription and purchased videos.",
     "settings.language.heading": "Display language",
     "settings.edit.lead":
       "Update the profile picture shown on your account. Changes are saved to your profile.",

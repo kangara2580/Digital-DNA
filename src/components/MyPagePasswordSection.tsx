@@ -5,7 +5,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const INPUT =
-  "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none transition focus:border-reels-cyan/45 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
+  "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none transition focus:border-reels-crimson/45 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
 
 function mapPasswordError(message: string, t: (key: string) => string): string {
   const normalized = message.toLowerCase();
@@ -238,7 +238,7 @@ export function MyPagePasswordSection() {
             }
             void onOpen();
           }}
-          className="rounded-full border border-reels-cyan/40 bg-reels-cyan/15 px-4 py-2 text-[13px] font-extrabold text-reels-cyan transition hover:bg-reels-cyan/25"
+          className="rounded-full border border-reels-crimson/40 bg-reels-crimson/15 px-4 py-2 text-[13px] font-extrabold text-reels-crimson transition hover:bg-reels-crimson/25"
         >
           {open ? t("password.closePanel") : t("password.openPanel")}
         </button>
@@ -285,7 +285,7 @@ export function MyPagePasswordSection() {
                   type="button"
                   onClick={() => void verifySmsCode()}
                   disabled={verifyingSms}
-                  className="rounded-full border border-reels-cyan/40 bg-reels-cyan/15 px-3 py-1.5 text-[12px] font-extrabold text-reels-cyan transition hover:bg-reels-cyan/25 disabled:opacity-50"
+                  className="rounded-full border border-reels-crimson/40 bg-reels-crimson/15 px-3 py-1.5 text-[12px] font-extrabold text-reels-crimson transition hover:bg-reels-crimson/25 disabled:opacity-50"
                 >
                   {verifyingSms ? t("password.verifying") : phoneVerified ? t("password.verified") : t("password.verifyCode")}
                 </button>
@@ -337,7 +337,7 @@ export function MyPagePasswordSection() {
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-full border border-reels-cyan/40 bg-reels-cyan/15 py-2.5 text-[14px] font-extrabold text-reels-cyan transition hover:bg-reels-cyan/25 disabled:opacity-50"
+          className="w-full rounded-full border border-reels-crimson/40 bg-reels-crimson/15 py-2.5 text-[14px] font-extrabold text-reels-crimson transition hover:bg-reels-crimson/25 disabled:opacity-50"
         >
           {busy ? t("password.saveBusy") : t("password.save")}
         </button>
