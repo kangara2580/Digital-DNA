@@ -11,12 +11,12 @@ const easeLayout =
 const searchIconMotion =
   "transition-colors duration-200 ease-out group-hover:text-[color:var(--reels-point)] group-focus-within:text-[color:var(--reels-point)]";
 
-/** 메인 히어로와 동일: 핑크 라운드 스퀘어 + 흰 돋보기 */
+/** compact 핑크 트레일(탐색 헤더 등): 작은 타일 */
 const pinkSubmitTileClass =
   "flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(228,41,128,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white";
 
-/** 탐색 풀시청: 로그인 플로팅 캡슐( h-11 w-11 )과 같은 슬롯 */
-const pinkSubmitTileWatchClass =
+/** 메인 히어로·탐색 풀시청 공통: 핑크 라운드 스퀘어(h-11) + 탐색과 동일 크기 */
+const pinkSubmitTileHeroClass =
   "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(228,41,128,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white";
 
 /** 풀시청 검색창 펼침 — 느리고 부드러운 감속 */
@@ -68,7 +68,7 @@ export function ReelsSearchField({
 
   let inputClassByMode =
     mode === "homeHero"
-      ? `mall-search min-h-[3rem] h-12 rounded-full border border-white/18 bg-white/[0.07] pl-4 ${showTrailingIcon ? "pr-14" : "pr-4"} text-[15px] font-medium leading-snug text-zinc-100 shadow-[0_10px_40px_-14px_rgba(0,0,0,0.48)] backdrop-blur-xl hover:border-white/30 hover:bg-white/[0.11] hover:shadow-[0_12px_44px_-14px_rgba(0,0,0,0.52)] focus:border-[color:rgba(255,45,141,0.5)] focus:bg-white/[0.13] focus:shadow-[0_0_0_2px_rgba(255,45,141,0.22),0_14px_48px_-16px_rgba(0,0,0,0.58)] focus:outline-none focus:ring-0 [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white/[0.72] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_4px_28px_-10px_rgba(0,0,0,0.1)] [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-white/[0.86] [html[data-theme='light']_&]:focus:border-[color:rgba(228,41,128,0.48)] [html[data-theme='light']_&]:focus:bg-white/[0.9] [html[data-theme='light']_&]:focus:shadow-[0_0_0_2px_rgba(255,45,141,0.18),0_8px_32px_-12px_rgba(0,0,0,0.08)]`
+      ? `mall-search min-h-[3rem] h-12 rounded-full border border-white/18 bg-white/[0.07] pl-4 ${showTrailingIcon ? "pr-[3.75rem]" : "pr-4"} text-[15px] font-medium leading-snug text-zinc-100 shadow-[0_10px_40px_-14px_rgba(0,0,0,0.48)] backdrop-blur-xl hover:border-white/30 hover:bg-white/[0.11] hover:shadow-[0_12px_44px_-14px_rgba(0,0,0,0.52)] focus:border-[color:rgba(255,45,141,0.5)] focus:bg-white/[0.13] focus:shadow-[0_0_0_2px_rgba(255,45,141,0.22),0_14px_48px_-16px_rgba(0,0,0,0.58)] focus:outline-none focus:ring-0 [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white/[0.72] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_4px_28px_-10px_rgba(0,0,0,0.1)] [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-white/[0.86] [html[data-theme='light']_&]:focus:border-[color:rgba(228,41,128,0.48)] [html[data-theme='light']_&]:focus:bg-white/[0.9] [html[data-theme='light']_&]:focus:shadow-[0_0_0_2px_rgba(255,45,141,0.18),0_8px_32px_-12px_rgba(0,0,0,0.08)]`
       : mode === "pill"
         ? `h-11 min-h-[2.75rem] rounded-full border border-white/40 bg-black/20 pl-3.5 ${showTrailingIcon ? "pr-11" : "pr-3.5"} text-[13px] text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-md hover:border-white/52 hover:bg-black/28 focus:bg-black/28 ${pinkBorder} [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/[0.6] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.05)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-white/[0.72] [html[data-theme='light']_&]:focus:bg-white/[0.72]`
         : mode === "compact"
@@ -103,7 +103,7 @@ export function ReelsSearchField({
         {showTrailingIcon ? (
           <button
             type="submit"
-            className={`${pinkSubmitTileWatchClass} shrink-0`}
+            className={`${pinkSubmitTileHeroClass} shrink-0`}
             aria-label="검색 실행"
           >
             <span className="block">
@@ -143,7 +143,7 @@ export function ReelsSearchField({
           type="submit"
           className={
             mode === "homeHero"
-              ? `absolute right-2 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(228,41,128,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white`
+              ? `absolute right-2 top-1/2 z-10 -translate-y-1/2 ${pinkSubmitTileHeroClass}`
               : mode === "compact" && pinkTrailingSubmit
                 ? `absolute right-1 top-1/2 z-10 -translate-y-1/2 ${pinkSubmitTileClass}`
                 : `absolute top-1/2 z-10 -translate-y-1/2 rounded-full p-1 text-zinc-500 transition-colors hover:text-[color:var(--reels-point)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:rgba(255,45,141,0.4)] [html[data-theme='dark']_&]:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 ${
@@ -162,7 +162,7 @@ export function ReelsSearchField({
             <Search
               className={`shrink-0 ${
                 mode === "homeHero"
-                  ? "h-[1.125rem] w-[1.125rem]"
+                  ? "h-6 w-6"
                   : mode === "compact" && pinkTrailingSubmit
                     ? "h-[1.125rem] w-[1.125rem]"
                     : mode === "pill"
