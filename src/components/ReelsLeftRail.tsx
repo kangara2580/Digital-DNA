@@ -28,13 +28,12 @@ const railIconActive =
 const railItemLabelBase =
   "max-w-[3.75rem] cursor-pointer text-center text-[10px] font-medium leading-[1.2] tracking-tight transition-colors duration-200 group-hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:group-hover:text-zinc-950";
 
-/** 홈 마크 — 원형 배경 없음; 실루엣 외곽선은 `railHomeLogoImg`의 drop-shadow */
+/** 홈 마크 — 원형 배경 없음; 균일 스트로크는 layout의 SVG filter(feMorphology 링) */
 const railHomeLogoLink =
   "mx-auto inline-flex shrink-0 items-center justify-center rounded-xl bg-transparent p-0 transition-[opacity,transform,background-color] duration-200 hover:opacity-90 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:mx-0 [html[data-theme='light']_&]:w-full [html[data-theme='light']_&]:justify-center [html[data-theme='light']_&]:rounded-xl [html[data-theme='light']_&]:py-1.5 [html[data-theme='light']_&]:hover:bg-zinc-900/[0.04]";
 
-/** PNG 알파 실루엣 외곽선은 globals.css `--rail-home-logo-filter`(등방향 12샘플) */
 const railHomeLogoImg =
-  "size-12 max-w-full object-contain object-center select-none [filter:var(--rail-home-logo-filter)] motion-reduce:filter-none";
+  "size-12 max-w-full object-contain object-center select-none [filter:url(#reelsRailLogoOutlineDark)] [html[data-theme='light']_&]:[filter:url(#reelsRailLogoOutlineLight)] motion-reduce:filter-none";
 
 type RailItem = {
   href: string;
