@@ -252,7 +252,7 @@ export function MyPageMyListingsSection() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-16 text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        <Loader2 className="h-8 w-8 animate-spin text-reels-cyan/80" aria-hidden />
+        <Loader2 className="h-8 w-8 animate-spin text-[color:var(--reels-point)]" aria-hidden />
         <p className="text-[14px]">등록한 영상을 불러오는 중…</p>
       </div>
     );
