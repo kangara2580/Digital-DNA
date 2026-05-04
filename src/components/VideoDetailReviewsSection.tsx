@@ -5,11 +5,13 @@ import { CheckCircle2, Star } from "lucide-react";
 import {
   getAverageRatingForVideo,
   getReviewsForVideo,
+  localizeVideoDetailReview,
 } from "@/data/videoDetailReviews";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { textHasHangul } from "@/lib/textHasHangul";
 
 /* ── 타입 ─────────────────────────────────────────── */
 type ReviewRow = {
@@ -153,7 +155,7 @@ function WriteReviewForm({
 /* ── 메인 컴포넌트 ──────────────────────────────────── */
 export function VideoDetailReviewsSection({ videoId }: { videoId: string }) {
   const { user } = useAuthSession();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { hasPurchased } = usePurchasedVideos();
   const canWrite = !!user && hasPurchased(videoId);
 
@@ -175,20 +177,24 @@ export function VideoDetailReviewsSection({ videoId }: { videoId: string }) {
 
   const staticReviews = useMemo(
     (): ReviewRow[] =>
-      getReviewsForVideo(videoId).map((r) => ({
-        id: r.id,
-        nickname: r.author,
-        rating: r.rating,
-        body: r.body,
-        created_at: r.dateLabel ?? "",
-        verifiedPurchase: r.verifiedPurchase,
-        dateLabel: r.dateLabel,
-      })),
-    [videoId],
+      getReviewsForVideo(videoId).map((r) => {
+        const loc = localizeVideoDetailReview(r, locale);
+        return {
+          id: r.id,
+          nickname: loc.author,
+          rating: r.rating,
+          body: loc.body,
+          created_at: loc.dateLabel ?? "",
+          verifiedPurchase: r.verifiedPurchase,
+          dateLabel: loc.dateLabel,
+        };
+      }),
+    [videoId, locale],
   );
 
   const [dbReviews, setDbReviews] = useState<ReviewRow[]>([]);
   const [dbLoading, setDbLoading] = useState(true);
+  const [ugcEnBodyById, setUgcEnBodyById] = useState<Record<string, string>>({});
 
   const fetchDbReviews = useCallback(async () => {
     setDbLoading(true);
@@ -214,6 +220,47 @@ export function VideoDetailReviewsSection({ videoId }: { videoId: string }) {
   useEffect(() => {
     void fetchDbReviews();
   }, [fetchDbReviews]);
+
+  const dbUgcTranslateKey = useMemo(
+    () => dbReviews.map((r) => `${r.id}\n${r.body}`).join("\n---\n"),
+    [dbReviews],
+  );
+
+  useEffect(() => {
+    if (locale !== "en" || dbLoading || dbReviews.length === 0) return;
+    const targets = dbReviews.filter((r) => textHasHangul(r.body));
+    if (targets.length === 0) return;
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch("/api/translate-ko-en", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: targets.map((r) => ({ id: r.id, text: r.body })),
+          }),
+        });
+        const data = (await res.json()) as {
+          ok?: boolean;
+          items?: { id: string; text: string }[];
+        };
+        if (cancelled || !data.ok || !Array.isArray(data.items)) return;
+        const next: Record<string, string> = {};
+        for (const it of data.items) {
+          if (it.id && it.text) next[it.id] = it.text;
+        }
+        setUgcEnBodyById((prev) => ({ ...prev, ...next }));
+      } catch {
+        /* ignore */
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- dbUgcTranslateKey로 본문 변경만 감지(dbReviews 참조는 매 fetch마다 새 객체)
+  }, [locale, dbLoading, dbUgcTranslateKey]);
 
   const allReviews = useMemo(() => {
     const dbIds = new Set(dbReviews.map((r) => r.user_id ?? r.id));
@@ -291,7 +338,7 @@ export function VideoDetailReviewsSection({ videoId }: { videoId: string }) {
                 </span>
               </div>
               <p className="text-[12px] leading-relaxed text-zinc-400 line-clamp-4 [html[data-theme='light']_&]:text-zinc-700">
-                {r.body}
+                {locale === "en" && ugcEnBodyById[r.id] ? ugcEnBodyById[r.id] : r.body}
               </p>
             </article>
           ))}

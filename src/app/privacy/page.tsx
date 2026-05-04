@@ -21,7 +21,7 @@ export default function PrivacyPage() {
             개인정보 처리방침
           </h1>
           <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            최종 업데이트: 2026년 4월 28일
+            최종 업데이트: 2026년 5월 4일
           </p>
         </header>
 
@@ -145,6 +145,15 @@ export default function PrivacyPage() {
             <li>• 서비스 이용 분석</li>
             <li>• 콘텐츠 업로드 기능 제공</li>
           </ul>
+          <p className="mt-3 text-[15px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600">
+            이용자가 화면 표시 언어를 English로 선택한 경우, 구매 후기 등{" "}
+            <span className="font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-800">
+              이용자가 작성한 텍스트
+            </span>
+            를 영어로 보여 드리기 위해 기계번역 처리를 할 수 있습니다. 이 과정에서 해당 텍스트(예: 후기 본문)가 기계번역
+            제공자(예: MyMemory 등 회사가 연동하는 외부 서비스)로 전송될 수 있으며, 닉네임·계정 식별 정보와 묶어 보내지
+            않도록 처리합니다. 기계번역 결과는 참고용이며 의미가 어긋날 수 있습니다.
+          </p>
           <p className="mt-3 text-[15px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600">
             회사는 외부 플랫폼 콘텐츠를 임의로 공개하거나 재배포하지 않습니다.
           </p>
