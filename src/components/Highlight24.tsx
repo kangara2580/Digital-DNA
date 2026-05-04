@@ -199,8 +199,14 @@ export function Highlight24() {
                   }}
                   className="group relative flex flex-col items-center gap-1 focus-visible:outline-none"
                 >
-                  <span className="whitespace-nowrap text-[15px] font-medium text-white/60 transition-colors duration-300 group-hover:text-white [html[data-theme='light']_&]:text-zinc-500 [html[data-theme='light']_&]:group-hover:text-zinc-900">
-                    {label}
+                  <span className="inline-flex items-center gap-1.5">
+                    <span
+                      className="h-1.5 w-1.5 shrink-0 rounded-full bg-[color:var(--reels-point)]"
+                      aria-hidden
+                    />
+                    <span className="whitespace-nowrap text-[15px] font-medium text-white/60 transition-colors duration-300 group-hover:text-white [html[data-theme='light']_&]:text-zinc-500 [html[data-theme='light']_&]:group-hover:text-zinc-900">
+                      {label}
+                    </span>
                   </span>
                   <span className="h-[1.5px] w-full origin-left scale-x-0 rounded-full bg-[color:var(--reels-point)] transition-transform duration-300 group-hover:scale-x-100" />
                 </button>
