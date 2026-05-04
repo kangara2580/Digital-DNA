@@ -149,20 +149,11 @@ export function SellerPitchBottomStartButton() {
 
   return (
     <>
-      <section className="home-ranked-strip relative bg-[color:var(--home-ranked-strip-bg)] pt-6 pb-28 sm:pb-32 sm:pt-8">
-        <div className="relative mx-auto max-w-[1800px] px-4 pb-20 pt-10 sm:px-6 sm:pb-24 lg:px-8">
+      <section className="home-ranked-strip relative bg-[color:var(--home-ranked-strip-bg)] pt-16 pb-28 sm:pt-24 sm:pb-32 lg:pt-28">
+        <div className="relative mx-auto max-w-[1800px] px-4 pb-20 pt-8 sm:px-6 sm:pb-24 sm:pt-10 lg:px-8">
           <div className="flex flex-col items-center gap-8 sm:gap-9">
-            <p className="max-w-[min(92vw,40rem)] text-center text-[clamp(1.35rem,4.6vw,2.25rem)] leading-snug tracking-[0.02em] text-zinc-100 sm:text-[clamp(1.45rem,3.8vw,2.4rem)] [html[data-theme='light']_&]:text-zinc-900">
-              <span className="block">
-                <span className="font-light">지금 </span>
-                <span className="font-semibold">ARA와 함께,</span>
-              </span>
-              <span className="block">
-                <span className="font-semibold">원하던 영상</span>
-                <span className="font-light">을 </span>
-                <span className="font-semibold">완성</span>
-                <span className="font-light">해 보세요.</span>
-              </span>
+            <p className="mx-auto w-full min-w-0 text-center whitespace-nowrap text-[clamp(1.35rem,4.6vw,2.25rem)] leading-snug tracking-[0.02em] text-zinc-100 sm:text-[clamp(1.45rem,3.8vw,2.4rem)] [html[data-theme='light']_&]:text-zinc-900">
+              ARA에서 영상을 사면, 바로 내 콘텐츠가 됩니다
             </p>
             <SellerPitchStartButton authLoading={authLoading} onStartClick={onStartClick} />
           </div>
