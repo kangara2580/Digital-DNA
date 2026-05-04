@@ -1,12 +1,8 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-import {
-  SEARCH_GUIDE_PHRASES,
-  shuffleSearchGuides,
-} from "@/data/searchGuidePhrases";
+import { useRouter } from "next/navigation";
+import { useCallback } from "react";
 
 const easeLayout =
   "duration-300 ease-out motion-reduce:duration-150 motion-reduce:ease-linear";
@@ -17,8 +13,6 @@ const searchEase =
 /** 호버·포커스: 브랜드 핑크(Pink Glo 계열 — --reels-point) */
 const searchIconMotion =
   "transition-colors duration-200 ease-out group-hover:text-[color:var(--reels-point)] group-focus-within:text-[color:var(--reels-point)]";
-
-const ROTATE_MS = 4500;
 
 export function ReelsSearchField({
   compact,
@@ -37,12 +31,6 @@ export function ReelsSearchField({
   onAfterSearch?: () => void;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
-  const [phrases, setPhrases] = useState<string[]>(() => [
-    ...SEARCH_GUIDE_PHRASES,
-  ]);
-  const [phraseIdx, setPhraseIdx] = useState(0);
-  const [focused, setFocused] = useState(false);
 
   const runSearch = useCallback(() => {
     const t = q.trim();
@@ -50,22 +38,6 @@ export function ReelsSearchField({
     router.push(`/search?q=${encodeURIComponent(t)}`);
     onAfterSearch?.();
   }, [q, router, onAfterSearch]);
-
-  useEffect(() => {
-    setPhrases(shuffleSearchGuides([...SEARCH_GUIDE_PHRASES]));
-    setPhraseIdx(0);
-  }, [pathname]);
-
-  useEffect(() => {
-    if (phrases.length === 0) return;
-    const id = window.setInterval(() => {
-      setPhraseIdx((i) => (i + 1) % phrases.length);
-    }, ROTATE_MS);
-    return () => window.clearInterval(id);
-  }, [phrases]);
-
-  const showGuide = q.trim() === "" && !focused;
-  const current = phrases[phraseIdx] ?? phrases[0] ?? "";
 
   const pinkBorder =
     "hover:border-[color:rgba(255,45,141,0.42)] focus:border-[color:rgba(255,45,141,0.55)] [html[data-theme='light']_&]:hover:border-[color:rgba(255,45,141,0.38)] [html[data-theme='light']_&]:focus:border-[color:rgba(255,45,141,0.48)]";
@@ -92,36 +64,12 @@ export function ReelsSearchField({
         name="q"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
         placeholder=""
         autoComplete="off"
         enterKeyHint="search"
         className={`mall-search w-full rounded-full border text-zinc-100 outline-none ring-0 transition-[height,padding,font-size,background-color,border-color,color] ${easeLayout} ${searchEase} placeholder:text-zinc-600 focus:ring-0 [html[data-theme='dark']_&]:placeholder:text-zinc-300 [html[data-theme='light']_&]:placeholder:text-zinc-500 ${inputClassByMode}`}
-        aria-label={`릴스 검색. 안내: ${current}`}
+        aria-label="릴스 검색"
       />
-      {showGuide ? (
-        <div
-          className={`pointer-events-none absolute inset-y-0 left-0 flex items-center overflow-hidden text-left text-zinc-500 [html[data-theme='dark']_&]:text-zinc-300 [html[data-theme='light']_&]:text-zinc-500 ${
-            mode === "pill"
-              ? `${showTrailingIcon ? "right-11" : "right-3.5"} pl-3.5 text-[13px]`
-              : mode === "compact"
-                ? `${showTrailingIcon ? "right-10" : "right-3"} pl-3 text-[13px]`
-                : `${showTrailingIcon ? "right-14" : "right-6"} pl-6 text-[15px]`
-          }`}
-          aria-hidden
-        >
-          <div className="relative w-full min-w-0">
-            <div
-              className={`overflow-hidden ${mode === "pill" || mode === "compact" ? "h-[18px]" : "h-[24px]"}`}
-            >
-              <span className="block truncate transition-opacity duration-200">
-                {current}
-              </span>
-            </div>
-          </div>
-        </div>
-      ) : null}
       {showTrailingIcon ? (
         <button
           type="submit"
