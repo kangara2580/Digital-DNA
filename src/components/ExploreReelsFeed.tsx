@@ -246,7 +246,11 @@ function ExploreWatchReels({
           aria-label="이전 영상"
           title="이전 영상"
         >
-          <ChevronUp className="h-6 w-6 text-reels-crimson transition-colors group-hover:text-[#F56BA5]" strokeWidth={2.85} aria-hidden />
+          <ChevronUp
+            className="h-6 w-6 text-white transition-colors group-hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:group-hover:text-zinc-950"
+            strokeWidth={2.85}
+            aria-hidden
+          />
         </button>
         <button
           type="button"
@@ -255,7 +259,11 @@ function ExploreWatchReels({
           aria-label="다음 영상"
           title="다음 영상"
         >
-          <ChevronDown className="h-6 w-6 text-reels-crimson transition-colors group-hover:text-[#F56BA5]" strokeWidth={2.85} aria-hidden />
+          <ChevronDown
+            className="h-6 w-6 text-white transition-colors group-hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:group-hover:text-zinc-950"
+            strokeWidth={2.85}
+            aria-hidden
+          />
         </button>
       </div>
     </div>
