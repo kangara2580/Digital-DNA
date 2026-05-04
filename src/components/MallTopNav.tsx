@@ -342,7 +342,7 @@ export function MallTopNav() {
                 />
               </div>
               <div className="pointer-events-auto shrink-0">
-                <MainTopUserMenu />
+                <MainTopUserMenu floatingExplore />
               </div>
             </div>
           </div>
