@@ -43,7 +43,7 @@ export function FloatingReelsSearch() {
       <div className="pointer-events-none fixed inset-y-0 right-0 left-0 z-[118] md:left-[var(--reels-rail-w)]">
         <div className="pointer-events-none w-full pl-4 pr-[max(9.5rem,env(safe-area-inset-right))] pt-4 sm:pl-6 sm:pr-[max(10.5rem,env(safe-area-inset-right))] sm:pt-5">
           <div className="pointer-events-auto mx-auto w-full min-w-0 max-w-3xl sm:max-w-4xl">
-            <ReelsSearchField compact={false} topNavPill q={q} setQ={setQ} />
+            <ReelsSearchField compact={false} homeHero q={q} setQ={setQ} />
           </div>
         </div>
       </div>
