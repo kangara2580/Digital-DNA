@@ -17,6 +17,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useRecentClips } from "@/context/RecentClipsContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { FeedVideo } from "@/data/videos";
 import {
   clonesRemaining,
@@ -88,6 +89,7 @@ export function VideoDetailView({
   const { isSaved, toggle: toggleWishlist } = useWishlist();
   const { hasPurchased, markPurchased } = usePurchasedVideos();
   const { recordView } = useRecentClips();
+  const { t, locale } = useTranslation();
   const owned = hasPurchased(video.id);
   const isOwner = Boolean(
     user?.id && video.listing?.sellerId && user.id === video.listing.sellerId,
@@ -296,11 +298,11 @@ export function VideoDetailView({
       return {
         tier: "active" as const,
         label: "",
-        subline: "판매자가 등록한 동영상 조각입니다.",
+        subline: t("video.detail.sellerListingSubline"),
       };
     }
     return getFreshnessForVideoId(video.id);
-  }, [video]);
+  }, [video, t]);
   const showFreshMeta = fresh.tier !== "archived";
   const price = video.priceWon ?? 0;
   const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
@@ -545,7 +547,7 @@ export function VideoDetailView({
       setInternalLikeCount(prevCount);
       void loadInternalLikes();
       if (typeof window !== "undefined") {
-        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
+        window.alert(t("explore.likeFailed"));
       }
     } finally {
       setLikeBusy(false);
@@ -558,6 +560,7 @@ export function VideoDetailView({
     internalLikeCount,
     video.id,
     loadInternalLikes,
+    t,
   ]);
 
   const toggleDetailVideoPlayback = useCallback(() => {
@@ -590,7 +593,7 @@ export function VideoDetailView({
                 {showPrevNav ? (
                   <button
                     type="button"
-                    aria-label="이전 영상"
+                    aria-label={t("explore.prevVideo")}
                     onClick={() => {
                       if (prioritizeSellerFeed && sellerPrevId) {
                         goToVideoId(sellerPrevId);
@@ -608,7 +611,7 @@ export function VideoDetailView({
                 {showNextNav ? (
                   <button
                     type="button"
-                    aria-label="다음 영상"
+                    aria-label={t("explore.nextVideo")}
                     onClick={() => {
                       if (prioritizeSellerFeed && sellerNextId) {
                         goToVideoId(sellerNextId);
@@ -697,7 +700,9 @@ export function VideoDetailView({
                             target="_blank"
                             rel="noreferrer noopener"
                             className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/[0.04] text-zinc-300 transition hover:border-reels-cyan/45 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
-                            aria-label={`${link.platform} 링크 열기`}
+                            aria-label={t("video.detail.openPlatformLink", {
+                              platform: link.platform,
+                            })}
                             title={link.url}
                           >
                             <SellerSocialPlatformIcon
@@ -721,7 +726,7 @@ export function VideoDetailView({
                     <p className="mt-2 text-[13px] leading-relaxed text-reels-cyan/95 [html[data-theme='light']_&]:text-[#6d28d9]">
                       {video.hashtags
                         .split(",")
-                        .map((t) => t.trim())
+                        .map((tag) => tag.trim())
                         .filter(Boolean)
                         .join(" ")}
                     </p>
@@ -732,7 +737,7 @@ export function VideoDetailView({
                     href={`/video/${encodeURIComponent(video.id)}/edit`}
                     className="shrink-0 rounded-full border border-white/20 bg-white/[0.08] px-3 py-1.5 text-[12px] font-extrabold text-zinc-100 transition hover:border-reels-cyan/45 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
                   >
-                    수정하기
+                    {t("video.detail.editListing")}
                   </Link>
                 ) : null}
               </div>
@@ -755,10 +760,16 @@ export function VideoDetailView({
             {price > 0 && (
               <div className="text-center">
                 <span className="font-black tabular-nums tracking-tight text-[length:calc(36px_+_5pt)] text-white [html[data-theme='light']_&]:text-zinc-900">
-                  {price.toLocaleString("ko-KR")}
-                  <span className="ml-1.5 font-extrabold text-[length:calc(22px_+_5pt)]">
-                    원
-                  </span>
+                  {locale === "en" ? (
+                    <>₩{price.toLocaleString("en-US")}</>
+                  ) : (
+                    <>
+                      {price.toLocaleString("ko-KR")}
+                      <span className="ml-1.5 font-extrabold text-[length:calc(22px_+_5pt)]">
+                        {t("video.detail.currencySuffix")}
+                      </span>
+                    </>
+                  )}
                 </span>
               </div>
             )}
@@ -776,7 +787,7 @@ export function VideoDetailView({
               }}
               className="relative w-full h-[60px] rounded-full border-[3px] border-white/40 bg-transparent text-[17px] font-extrabold tracking-widest text-white backdrop-blur-sm shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-300 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] hover:-translate-y-0.5 active:scale-[0.99] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900"
             >
-              {soldOut ? "품절" : "구매하기"}
+              {soldOut ? t("video.detail.soldOut") : t("video.detail.buyNow")}
             </button>
             </div>
 
@@ -784,7 +795,7 @@ export function VideoDetailView({
             <div className="flex items-center justify-center gap-4">
               <button
                 type="button"
-                title={inCart ? "장바구니에서 빼기" : "장바구니 담기"}
+                title={inCart ? t("explore.rail.cartRemove") : t("explore.rail.cartAdd")}
                 onClick={(e) => {
                   if (soldOut) return;
                   if (!requireAuth()) return;
@@ -796,14 +807,14 @@ export function VideoDetailView({
                     : "text-zinc-400 [html[data-theme='light']_&]:text-zinc-600"
                 }`}
                 disabled={soldOut}
-                aria-label={inCart ? "장바구니에서 빼기" : "장바구니 담기"}
+                aria-label={inCart ? t("explore.rail.cartRemove") : t("explore.rail.cartAdd")}
                 aria-pressed={inCart}
               >
                 <ShoppingCart className="h-[18px] w-[18px]" />
               </button>
               <button
                 type="button"
-                title={likedByMe ? "좋아요 취소" : "좋아요"}
+                title={likedByMe ? t("explore.rail.likeUndo") : t("explore.rail.like")}
                 onClick={(e) => {
                   e.preventDefault();
                   void toggleInternalLike();
@@ -813,7 +824,7 @@ export function VideoDetailView({
                     ? "border-[var(--reels-point)]/60 bg-[var(--reels-point)]/[0.14] text-[var(--reels-point)] [html[data-theme='light']_&]:border-[var(--reels-point)]/45 [html[data-theme='light']_&]:bg-[var(--reels-point)]/[0.10] [html[data-theme='light']_&]:text-[var(--reels-point)]"
                     : "border-white/10 bg-white/[0.04] text-zinc-400 hover:border-white/25 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600"
                 } ${likePulse ? "scale-110" : "scale-100"}`}
-                aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+                aria-label={likedByMe ? t("explore.rail.likeUndo") : t("explore.rail.like")}
                 aria-pressed={likedByMe}
                 disabled={likeBusy}
               >
@@ -828,7 +839,7 @@ export function VideoDetailView({
               </button>
               <button
                 type="button"
-                title={wishlisted ? "찜 해제" : "찜하기"}
+                title={wishlisted ? t("video.detail.wishlistRemove") : t("video.detail.wishlistAdd")}
                 onClick={(e) => {
                   e.preventDefault();
                   if (!requireAuth()) return;
@@ -841,7 +852,7 @@ export function VideoDetailView({
                     ? "border-reels-cyan/50 bg-reels-cyan/10 text-reels-cyan"
                     : "border-white/10 bg-white/[0.04] text-zinc-400 hover:border-white/25 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600"
                 } ${wishlistPulse ? "scale-110" : "scale-100"}`}
-                aria-label={wishlisted ? "찜 해제" : "찜하기"}
+                aria-label={wishlisted ? t("video.detail.wishlistRemove") : t("video.detail.wishlistAdd")}
                 aria-pressed={wishlisted}
               >
                 <Bookmark className={`h-[18px] w-[18px] ${wishlisted ? "fill-current" : ""}`} />

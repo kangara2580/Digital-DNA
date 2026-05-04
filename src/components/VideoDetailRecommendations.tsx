@@ -8,6 +8,7 @@ import {
   getShopRecommendations,
   normalizeSellerHandle,
 } from "@/data/videoCatalog";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { FeedVideo } from "@/data/videos";
 
 type Props = {
@@ -20,6 +21,7 @@ const BATCH_SIZE = 12;
 /** 상세 하단: 같은 판매자 영상 → DB 판매자 영상 → 추천 영상 순으로 항상 표시 */
 export function VideoDetailRecommendations({ video }: Props) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   // 1) 카탈로그 기반: 같은 크리에이터 핸들로 매칭
   const catalogPool = useMemo(() => {
@@ -94,7 +96,7 @@ export function VideoDetailRecommendations({ video }: Props) {
         id="video-reco-heading"
         className="text-center text-xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
       >
-        크리에이터의 다른 판매 동영상
+        {t("video.reco.heading")}
       </h2>
 
       <div className="mt-6 grid grid-cols-2 gap-2 border border-white/10 p-2 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">

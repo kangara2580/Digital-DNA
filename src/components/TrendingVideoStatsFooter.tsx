@@ -1,27 +1,16 @@
+"use client";
+
+import { useMemo } from "react";
 import { Eye, Heart, ShoppingBag, TrendingUp } from "lucide-react";
 import type { TrendingRankMetrics } from "@/data/trendingStats";
+import { useTranslation } from "@/hooks/useTranslation";
+import { getExploreFormatters } from "@/lib/exploreLocaleFormat";
 import {
   revenueAmountClass,
   revenueTrendDeltaGlyphClass,
   revenueTrendDownClass,
   revenueTrendUpClass,
 } from "@/lib/revenueDisplayTokens";
-
-function formatCountCompact(n: number): string {
-  if (n >= 100_000_000) {
-    const v = n / 100_000_000;
-    return `${v >= 10 ? Math.round(v) : v.toFixed(1)}억`;
-  }
-  if (n >= 10_000) {
-    const v = n / 10_000;
-    return `${v >= 100 ? Math.round(v) : v.toFixed(1)}만`;
-  }
-  if (n >= 1000) {
-    const v = n / 1000;
-    return `${v >= 10 ? Math.round(v) : v.toFixed(1)}천`;
-  }
-  return n.toLocaleString("ko-KR");
-}
 
 type Props = {
   metrics: TrendingRankMetrics;
@@ -33,8 +22,7 @@ type Props = {
   hideMetricLabels?: boolean;
 };
 
-const rowCls =
-  "flex items-center gap-8 py-1.5";
+const rowCls = "flex items-center gap-8 py-1.5";
 
 const labelCls =
   "w-[4.5rem] shrink-0 text-[14px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
@@ -52,6 +40,8 @@ export function TrendingVideoStatsFooter({
   stockRow,
   hideMetricLabels = false,
 }: Props) {
+  const { t, locale } = useTranslation();
+  const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
   const isUp = metrics.growthPercent >= 0;
   const metricRowCls = hideMetricLabels
     ? "flex w-full min-w-0 items-center gap-2 py-1.5"
@@ -73,11 +63,7 @@ export function TrendingVideoStatsFooter({
         <div className={metricRowCls}>
           <dt className={`${labelColCls} ${labelTone}`}>
             <TrendingUp className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            {hideMetricLabels ? (
-              <span className="sr-only">수익</span>
-            ) : (
-              "수익"
-            )}
+            {hideMetricLabels ? <span className="sr-only">{t("stats.revenue")}</span> : t("stats.revenue")}
             <span
               className={`${revenueTrendDeltaGlyphClass} text-[11px] leading-none ${isUp ? revenueTrendUpClass : revenueTrendDownClass}`}
               aria-hidden
@@ -88,51 +74,53 @@ export function TrendingVideoStatsFooter({
           <dd
             className={`min-w-0 font-extrabold tabular-nums ${metricValueSize} ${valueDdExtras} ${revenueAmountClass}`}
           >
-            {Math.max(0, Math.floor(metrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}
+            {fmt.formatCompactWon(metrics.cumulativeRevenueWon)}
           </dd>
         </div>
         <div className={metricRowCls}>
           <dt className={`${labelColCls} ${labelTone}`}>
             <Eye className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            {hideMetricLabels ? (
-              <span className="sr-only">조회수</span>
-            ) : (
-              "조회수"
-            )}
+            {hideMetricLabels ? <span className="sr-only">{t("stats.views")}</span> : t("stats.views")}
           </dt>
           <dd className={`${neutralMetricValueCls} min-w-0 ${valueDdExtras}`}>
-            {formatCountCompact(metrics.totalViews)}
+            {fmt.formatViewCountRail(metrics.totalViews)}
           </dd>
         </div>
         <div className={metricRowCls}>
           <dt className={`${labelColCls} ${labelTone}`}>
             <Heart className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            {hideMetricLabels ? (
-              <span className="sr-only">좋아요</span>
-            ) : (
-              "좋아요"
-            )}
+            {hideMetricLabels ? <span className="sr-only">{t("stats.likes")}</span> : t("stats.likes")}
           </dt>
-          <dd className={`${neutralMetricValueCls} min-w-0 ${valueDdExtras}`}>{formatCountCompact(metrics.totalLikes)}</dd>
+          <dd className={`${neutralMetricValueCls} min-w-0 ${valueDdExtras}`}>
+            {fmt.formatLikeApprox(metrics.totalLikes)}
+          </dd>
         </div>
         {typeof salesCount === "number" ? (
           <div className={rowCls}>
             <dt className={`${labelCls} inline-flex items-center gap-1.5`}>
               <ShoppingBag className="h-3.5 w-3.5 shrink-0" aria-hidden />
-              구매
+              {t("stats.purchases")}
             </dt>
-            <dd className={valueCls}>{salesCount.toLocaleString("ko-KR")}명</dd>
+            <dd className={valueCls}>
+              {t("stats.buyersCount", {
+                n: salesCount.toLocaleString(fmt.numberLocale),
+              })}
+            </dd>
           </div>
         ) : null}
         {stockRow ? (
           <div className={rowCls}>
-            <dt className={labelCls}>남은 수량</dt>
+            <dt className={labelCls}>{t("stats.remaining")}</dt>
             <dd className={valueCls}>
               {stockRow.soldOut ? (
-                <span className="text-reels-crimson">0개 — 품절</span>
+                <span className="text-reels-crimson">{t("stats.soldOutLine")}</span>
               ) : (
                 <span className="text-reels-cyan">
-                  {stockRow.remaining != null ? `${stockRow.remaining.toLocaleString("ko-KR")}개` : "—"}
+                  {stockRow.remaining != null
+                    ? t("stats.unitsLeft", {
+                        n: stockRow.remaining.toLocaleString(fmt.numberLocale),
+                      })
+                    : "—"}
                 </span>
               )}
             </dd>
