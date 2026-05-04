@@ -233,26 +233,31 @@ function ExploreWatchReels({
   }, []);
 
   const chevronRail = (
-    /* 틱톡 스타일: 위·아래 한 장씩 — transform 없이 뷰포트 고정(MallTopNav 플로팅과 동일 right-4/sm:right-6) */
-    <div className="pointer-events-none fixed inset-y-0 right-[max(1rem,env(safe-area-inset-right))] z-[101] flex flex-col justify-center gap-2 sm:right-[max(1.5rem,env(safe-area-inset-right))]">
-      <button
-        type="button"
-        onClick={goPrevReel}
-        className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
-        aria-label="이전 영상"
-        title="이전 영상"
-      >
-        <ChevronUp className="h-6 w-6 text-reels-crimson transition-colors group-hover:text-[#F56BA5]" strokeWidth={2.85} aria-hidden />
-      </button>
-      <button
-        type="button"
-        onClick={goNextReel}
-        className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
-        aria-label="다음 영상"
-        title="다음 영상"
-      >
-        <ChevronDown className="h-6 w-6 text-reels-crimson transition-colors group-hover:text-[#F56BA5]" strokeWidth={2.85} aria-hidden />
-      </button>
+    /* 뷰포트 오른쪽 끝(콘텐츠 영역 경계)에 붙임 — 일반 여백(pr-4) 제거, 노치만 env(safe-area) */
+    <div
+      className="pointer-events-none fixed inset-0 z-[101] box-border flex w-full items-center justify-end"
+      style={{ paddingRight: "env(safe-area-inset-right, 0px)" }}
+    >
+      <div className="pointer-events-none flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={goPrevReel}
+          className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
+          aria-label="이전 영상"
+          title="이전 영상"
+        >
+          <ChevronUp className="h-6 w-6 text-reels-crimson transition-colors group-hover:text-[#F56BA5]" strokeWidth={2.85} aria-hidden />
+        </button>
+        <button
+          type="button"
+          onClick={goNextReel}
+          className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
+          aria-label="다음 영상"
+          title="다음 영상"
+        >
+          <ChevronDown className="h-6 w-6 text-reels-crimson transition-colors group-hover:text-[#F56BA5]" strokeWidth={2.85} aria-hidden />
+        </button>
+      </div>
     </div>
   );
 
@@ -262,7 +267,7 @@ function ExploreWatchReels({
 
       <div
         ref={scrollRef}
-        className="fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[30] overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth snap-y snap-mandatory md:left-[var(--reels-rail-w)]"
+        className="explore-reels-feed no-scrollbar fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[30] overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth snap-y snap-mandatory md:left-[var(--reels-rail-w)]"
         style={{ WebkitOverflowScrolling: "touch" }}
         role="feed"
         aria-label="세로 탐색 릴스 피드 — 아래로 스크롤해 계속 보기"
