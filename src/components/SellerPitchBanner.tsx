@@ -191,18 +191,6 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
       >
         <div className="relative mx-auto max-w-[1800px] px-4 pb-[14px] pt-[44px] sm:px-6 sm:pb-[20px] sm:pt-[60px] lg:px-8 lg:pb-[24px] lg:pt-[76px]">
           <div className="relative mx-auto w-full max-w-[1600px] overflow-visible rounded-2xl bg-transparent px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
-          <div
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_55%_at_50%_50%,rgba(58,143,255,0.12)_0%,rgba(3,10,25,0)_72%)]"
-            aria-hidden
-          />
-          <div
-            className="pointer-events-none absolute left-[26%] top-[8%] h-72 w-72 rounded-full bg-white/18 blur-[110px]"
-            aria-hidden
-          />
-          <div
-            className="pointer-events-none absolute right-[8%] top-[64%] h-24 w-24 rounded-full bg-[#caeeff]/28 blur-3xl"
-            aria-hidden
-          />
 
           <div className="hidden">
             <p className="text-center text-[clamp(1.3rem,2.8vw,1.95rem)] font-semibold tracking-tight text-zinc-100">
@@ -311,7 +299,7 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                 </h2>
                 <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
                   {/* 사용자 카드 */}
-                  <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
+                  <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-black px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
                     <section className="flex flex-col items-center space-y-5 text-center">
                       <p className="pt-1 text-[22px] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]">사용자</p>
                       <p className="pb-1 text-[clamp(0.9rem,2vw,1.1rem)] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
@@ -350,7 +338,7 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                   </div>
 
                   {/* 크리에이터 카드 */}
-                  <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
+                  <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-black px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
                     <section className="flex flex-col items-center space-y-5 text-center">
                       <p className="pt-1 text-[22px] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]">크리에이터</p>
                       <p className="pb-1 text-[clamp(0.9rem,2vw,1.1rem)] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
