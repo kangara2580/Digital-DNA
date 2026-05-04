@@ -212,19 +212,22 @@ export function TrendingRankSection() {
 
   useEffect(() => {
     if (!pendingCollapseScroll || visibleRows !== 1) return;
-    const raf = window.requestAnimationFrame(() => {
-      const anchor = gridAnchorRef.current ?? sectionRef.current;
-      if (!anchor) {
+    let alive = true;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (!alive) return;
+        const el = gridAnchorRef.current;
+        if (!el) {
+          setPendingCollapseScroll(false);
+          return;
+        }
+        el.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
         setPendingCollapseScroll(false);
-        return;
-      }
-      const anchorTop = anchor.getBoundingClientRect().top + window.scrollY;
-      // 한 줄 카드가 뷰포트 중간쯤에 오도록 여유를 둡니다.
-      const targetTop = Math.max(0, anchorTop - window.innerHeight * 0.24);
-      window.scrollTo({ top: targetTop, behavior: "smooth" });
-      setPendingCollapseScroll(false);
+      });
     });
-    return () => window.cancelAnimationFrame(raf);
+    return () => {
+      alive = false;
+    };
   }, [pendingCollapseScroll, visibleRows]);
 
   const revealStartIndex = visibleRows > 1 ? ITEMS_PER_ROW : Number.POSITIVE_INFINITY;
@@ -255,7 +258,10 @@ export function TrendingRankSection() {
           </div>
         </div>
 
-        <div ref={gridAnchorRef} className="relative mt-0">
+        <div
+          ref={gridAnchorRef}
+          className="relative mt-0 scroll-mt-6 sm:scroll-mt-8 md:scroll-mt-10"
+        >
           {loading ? <SkeletonGrid /> : null}
 
           {!loading && rankedRows.length === 0 ? (
