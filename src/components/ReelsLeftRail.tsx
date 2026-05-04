@@ -28,6 +28,14 @@ const railIconActive =
 const railItemLabelBase =
   "max-w-[3.75rem] cursor-pointer text-center text-[10px] font-medium leading-[1.2] tracking-tight transition-colors duration-200 group-hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:group-hover:text-zinc-950";
 
+/** 홈 마크 — 원형 배경 없음; 실루엣 외곽선은 `railHomeLogoImg`의 drop-shadow */
+const railHomeLogoLink =
+  "mx-auto inline-flex shrink-0 items-center justify-center rounded-xl bg-transparent p-0 transition-[opacity,transform,background-color] duration-200 hover:opacity-90 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:mx-0 [html[data-theme='light']_&]:w-full [html[data-theme='light']_&]:justify-center [html[data-theme='light']_&]:rounded-xl [html[data-theme='light']_&]:py-1.5 [html[data-theme='light']_&]:hover:bg-zinc-900/[0.04]";
+
+/** PNG 알파 실루엣 외곽선은 globals.css `--rail-home-logo-filter`(등방향 12샘플) */
+const railHomeLogoImg =
+  "size-12 max-w-full object-contain object-center select-none [filter:var(--rail-home-logo-filter)] motion-reduce:filter-none";
+
 type RailItem = {
   href: string;
   label: string;
@@ -110,15 +118,11 @@ export function ReelsLeftRail() {
         aria-label="주요 메뉴"
       >
         <div className="pointer-events-auto relative flex w-full shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
-          <Link
-            href="/"
-            className="mx-auto inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-white/[0.14] p-1 transition-[opacity,transform,background-color] duration-200 hover:bg-white/[0.19] hover:opacity-95 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:size-auto [html[data-theme='light']_&]:shrink [html[data-theme='light']_&]:mx-0 [html[data-theme='light']_&]:flex [html[data-theme='light']_&]:min-h-[52px] [html[data-theme='light']_&]:w-full [html[data-theme='light']_&]:rounded-[0.85rem] [html[data-theme='light']_&]:bg-transparent [html[data-theme='light']_&]:p-0 [html[data-theme='light']_&]:py-2 [html[data-theme='light']_&]:hover:bg-zinc-900/[0.04] [html[data-theme='light']_&]:active:scale-[0.98]"
-            aria-label="홈"
-          >
+          <Link href="/" className={railHomeLogoLink} aria-label="홈">
             <img
               src="/brand/rail-home-logo.png"
               alt=""
-              className="h-7 w-7 max-w-full -translate-y-[3px] object-contain object-center select-none [html[data-theme='light']_&]:h-9 [html[data-theme='light']_&]:w-9 [html[data-theme='light']_&]:translate-y-0"
+              className={railHomeLogoImg}
               draggable={false}
             />
           </Link>
@@ -170,15 +174,11 @@ export function ReelsLeftRail() {
       aria-label="주요 메뉴"
     >
       <div className="relative flex w-full shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
-        <Link
-          href="/"
-          className="mx-auto inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-white/[0.14] p-1 transition-[opacity,transform,background-color] duration-200 hover:bg-white/[0.19] hover:opacity-95 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:size-auto [html[data-theme='light']_&]:shrink [html[data-theme='light']_&]:mx-0 [html[data-theme='light']_&]:flex [html[data-theme='light']_&]:min-h-[52px] [html[data-theme='light']_&]:w-full [html[data-theme='light']_&]:rounded-[0.85rem] [html[data-theme='light']_&]:bg-transparent [html[data-theme='light']_&]:p-0 [html[data-theme='light']_&]:py-2 [html[data-theme='light']_&]:hover:bg-zinc-900/[0.04] [html[data-theme='light']_&]:active:scale-[0.98]"
-          aria-label="홈"
-        >
+        <Link href="/" className={railHomeLogoLink} aria-label="홈">
           <img
             src="/brand/rail-home-logo.png"
             alt=""
-            className="h-7 w-7 max-w-full -translate-y-[3px] object-contain object-center select-none [html[data-theme='light']_&]:h-9 [html[data-theme='light']_&]:w-9 [html[data-theme='light']_&]:translate-y-0"
+            className={railHomeLogoImg}
             draggable={false}
           />
         </Link>

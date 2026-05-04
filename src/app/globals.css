@@ -135,10 +135,35 @@ html {
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+  /* ReelsLeftRail 홈 마크: 실루엣 등두께 외곽선(30° 간격·동일 반경) */
+  --rail-home-logo-filter: drop-shadow(0.45px 0px 0px rgba(255, 255, 255, 0.44))
+    drop-shadow(0.3897px 0.225px 0px rgba(255, 255, 255, 0.44))
+    drop-shadow(0.225px 0.3897px 0px rgba(255, 255, 255, 0.44))
+    drop-shadow(0px 0.45px 0px rgba(255, 255, 255, 0.44))
+    drop-shadow(-0.225px 0.3897px 0px rgba(255, 255, 255, 0.44))
+    drop-shadow(-0.3897px 0.225px 0px rgba(255, 255, 255, 0.44))
+    drop-shadow(-0.45px 0px 0px rgba(255, 255, 255, 0.44))
+    drop-shadow(-0.3897px -0.225px 0px rgba(255, 255, 255, 0.44))
+    drop-shadow(-0.225px -0.3897px 0px rgba(255, 255, 255, 0.44))
+    drop-shadow(0px -0.45px 0px rgba(255, 255, 255, 0.44))
+    drop-shadow(0.225px -0.3897px 0px rgba(255, 255, 255, 0.44))
+    drop-shadow(0.3897px -0.225px 0px rgba(255, 255, 255, 0.44));
 }
 
 html[data-theme="light"] {
   scrollbar-color: rgba(15, 23, 42, 0.22) transparent;
+  --rail-home-logo-filter: drop-shadow(0.45px 0px 0px rgba(15, 23, 42, 0.22))
+    drop-shadow(0.3897px 0.225px 0px rgba(15, 23, 42, 0.22))
+    drop-shadow(0.225px 0.3897px 0px rgba(15, 23, 42, 0.22))
+    drop-shadow(0px 0.45px 0px rgba(15, 23, 42, 0.22))
+    drop-shadow(-0.225px 0.3897px 0px rgba(15, 23, 42, 0.22))
+    drop-shadow(-0.3897px 0.225px 0px rgba(15, 23, 42, 0.22))
+    drop-shadow(-0.45px 0px 0px rgba(15, 23, 42, 0.22))
+    drop-shadow(-0.3897px -0.225px 0px rgba(15, 23, 42, 0.22))
+    drop-shadow(-0.225px -0.3897px 0px rgba(15, 23, 42, 0.22))
+    drop-shadow(0px -0.45px 0px rgba(15, 23, 42, 0.22))
+    drop-shadow(0.225px -0.3897px 0px rgba(15, 23, 42, 0.22))
+    drop-shadow(0.3897px -0.225px 0px rgba(15, 23, 42, 0.22));
 }
 
 html::-webkit-scrollbar {
