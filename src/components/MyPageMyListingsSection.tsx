@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Film, Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { MyListingEditDialog } from "@/components/MyListingEditDialog";
 import { VideoCard } from "@/components/VideoCard";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -278,8 +278,7 @@ export function MyPageMyListingsSection() {
   if (videos.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-white/15 bg-black/20 px-6 py-14 text-center [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-50">
-        <Film className="mx-auto h-10 w-10 text-zinc-500 [html[data-theme='light']_&]:text-zinc-400" aria-hidden />
-        <p className="mt-4 text-[17px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">
+        <p className="text-[17px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">
           {t("listings.empty")}
         </p>
         <Link
