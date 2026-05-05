@@ -113,7 +113,14 @@ export function MallTopNav() {
   /** 탐색/카테고리: 메인에서 스크롤 내린 것과 같은 컴팩트 헤더를 즉시 적용 */
   const compactEffective =
     pathname === "/explore" || isShopPage || isCategoryPage || isVideoDetailPage;
-  const [isExploreWatchMode, setIsExploreWatchMode] = useState(false);
+  /** /explore 는 페이지가 watch로 시작 — 첫 프레임 false면 스티키 헤더·검색이 한 박자 늦게 바뀌며 레이아웃이 튐 */
+  const [isExploreWatchMode, setIsExploreWatchMode] = useState(() => {
+    if (typeof window === "undefined") {
+      return isExplorePath;
+    }
+    if (!isExplorePath) return false;
+    return new URLSearchParams(window.location.search).get("view") !== "browse";
+  });
   const showCategoryNav = (isShopPage || isCategoryPage) && !isExploreWatchMode;
   const showAllCategoriesInline =
     (isShopPage || isCategoryPage) && !isExploreWatchMode;
@@ -208,26 +215,40 @@ export function MallTopNav() {
     setMounted(true);
   }, []);
 
+  useLayoutEffect(() => {
+    if (typeof document === "undefined") return;
+    if (!isExplorePath) {
+      setIsExploreWatchMode(false);
+      return;
+    }
+    let mode = document.documentElement.dataset.exploreMode;
+    if (mode !== "watch" && mode !== "browse") {
+      const wantWatch =
+        new URLSearchParams(window.location.search).get("view") !== "browse";
+      mode = wantWatch ? "watch" : "browse";
+      document.documentElement.dataset.exploreMode = mode;
+    }
+    setIsExploreWatchMode(mode === "watch");
+  }, [isExplorePath, pathname]);
+
   useEffect(() => {
     const syncExploreMode = () => {
       if (typeof document === "undefined") return;
       const isWatch = document.documentElement.dataset.exploreMode === "watch";
       setIsExploreWatchMode(isWatch);
-      if (isWatch) {
-        document.documentElement.style.setProperty("--header-height", "0px");
-      }
     };
-    syncExploreMode();
     window.addEventListener("reels:explore-mode", syncExploreMode);
     return () => {
       window.removeEventListener("reels:explore-mode", syncExploreMode);
     };
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (typeof document === "undefined") return;
     if (showFloatingChromeOnlyNav) {
       document.documentElement.style.setProperty("--header-height", "0px");
+    } else {
+      document.documentElement.style.removeProperty("--header-height");
     }
   }, [showFloatingChromeOnlyNav]);
 

@@ -406,14 +406,14 @@ export function ExploreReelsFeed({
     }
   }, [mode]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (typeof document === "undefined" || typeof window === "undefined") return;
     document.documentElement.dataset.exploreMode = mode;
     window.dispatchEvent(new Event("reels:explore-mode"));
     return () => {
       delete document.documentElement.dataset.exploreMode;
       window.dispatchEvent(new Event("reels:explore-mode"));
-    }
+    };
   }, [mode]);
 
   if (mode === "browse") {
