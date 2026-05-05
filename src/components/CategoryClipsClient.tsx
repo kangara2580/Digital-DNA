@@ -20,7 +20,6 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import {
   MALL_CATEGORY_TOOLBAR_END_ID,
-  MALL_CATEGORY_TOOLBAR_START_ID,
 } from "@/data/mallCategoryNav";
 import type { CategorySlug } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
@@ -111,10 +110,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   const [newestFilter, setNewestFilter] = useState<NewestFilter>("all");
   const [filterOpen, setFilterOpen] = useState(false);
   const filterWrapRef = useRef<HTMLDivElement | null>(null);
-  const [toolbarHosts, setToolbarHosts] = useState<{
-    start: HTMLElement | null;
-    end: HTMLElement | null;
-  }>({ start: null, end: null });
+  const [toolbarEndHost, setToolbarEndHost] = useState<HTMLElement | null>(null);
   const orientationCounts = useMemo(
     () => ({
       portrait: base.filter((v) => v.orientation === "portrait").length,
@@ -248,10 +244,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   );
 
   useLayoutEffect(() => {
-    setToolbarHosts({
-      start: document.getElementById(MALL_CATEGORY_TOOLBAR_START_ID),
-      end: document.getElementById(MALL_CATEGORY_TOOLBAR_END_ID),
-    });
+    setToolbarEndHost(document.getElementById(MALL_CATEGORY_TOOLBAR_END_ID));
   }, []);
 
   useEffect(() => {
@@ -271,12 +264,6 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [filterOpen]);
-
-  const categoryTitleToolbar = (
-    <h1 className="truncate text-xl font-extrabold tracking-tight text-zinc-100 sm:text-2xl [html[data-theme='light']_&]:text-zinc-900">
-      {label}
-    </h1>
-  );
 
   const categoryFilterToolbar = (
     <div ref={filterWrapRef} className="relative">
@@ -430,8 +417,8 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
       <div className="mx-auto max-w-[1800px]">
         <main className="min-w-0 pt-3 sm:pt-4 [html[data-theme='light']_&]:bg-white">
-          {toolbarHosts.start ? createPortal(categoryTitleToolbar, toolbarHosts.start) : null}
-          {toolbarHosts.end ? createPortal(categoryFilterToolbar, toolbarHosts.end) : null}
+          <h1 className="sr-only">{label}</h1>
+          {toolbarEndHost ? createPortal(categoryFilterToolbar, toolbarEndHost) : null}
 
           {sorted.length === 0 ? (
             <p className="px-4 py-16 text-center font-mono text-[12px] text-zinc-500 sm:px-6 [html[data-theme='light']_&]:text-zinc-600">

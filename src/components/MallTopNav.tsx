@@ -15,7 +15,6 @@ import { createPortal } from "react-dom";
 import {
   MALL_CATEGORY_NAV_ITEMS as ITEMS,
   MALL_CATEGORY_TOOLBAR_END_ID,
-  MALL_CATEGORY_TOOLBAR_START_ID,
 } from "@/data/mallCategoryNav";
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 import { MainTopUserMenu } from "@/components/MainTopUserMenu";
@@ -640,10 +639,6 @@ export function MallTopNav() {
                   </div>
                 </div>
                 <div className="flex w-full min-w-0 shrink-0 items-center gap-1.5 px-0.5 sm:gap-2">
-                  <div
-                    id={MALL_CATEGORY_TOOLBAR_START_ID}
-                    className="flex min-w-0 max-w-[38%] shrink translate-y-1 items-center sm:translate-y-1.5"
-                  />
                   <div className="min-w-0 flex-1">
                     <div className="mx-auto w-full min-w-0 max-w-2xl">
                       <ReelsSearchField compact q={mallSearchQ} setQ={setMallSearchQ} />
