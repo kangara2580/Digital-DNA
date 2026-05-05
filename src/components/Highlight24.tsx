@@ -22,6 +22,7 @@ import {
 } from "@/lib/authModalTheme";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
+import { MAIN_TOP_USER_FLOAT_BOX_CLASS } from "@/lib/topNavIconRing";
 import { useTranslation } from "@/hooks/useTranslation";
 
 function HomeBestMarquee({ videos }: { videos: FeedVideo[] }) {
@@ -151,7 +152,7 @@ export function Highlight24() {
         aria-hidden
       />
       <div
-        className={`fixed right-4 top-4 z-[120] flex flex-row items-center sm:right-6 sm:top-5 ${
+        className={`${MAIN_TOP_USER_FLOAT_BOX_CLASS} flex flex-row items-center ${
           authLoading ? "pointer-events-none opacity-50" : ""
         }`}
       >

@@ -16,6 +16,7 @@ import {
   MALL_CATEGORY_NAV_ITEMS as ITEMS,
   MALL_CATEGORY_TOOLBAR_END_ID,
 } from "@/data/mallCategoryNav";
+import { MAIN_TOP_USER_FLOAT_BOX_CLASS } from "@/lib/topNavIconRing";
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 import { MainTopUserMenu } from "@/components/MainTopUserMenu";
 import { ReelsSearchField } from "@/components/ReelsSearchField";
@@ -351,9 +352,11 @@ export function MallTopNav() {
                   setQ={setExploreSearchQ}
                 />
               </div>
-              <div className="pointer-events-auto shrink-0">
-                <MainTopUserMenu floatingExplore />
-              </div>
+            </div>
+          </div>
+          <div className={`pointer-events-none ${MAIN_TOP_USER_FLOAT_BOX_CLASS}`}>
+            <div className="pointer-events-auto flex flex-row items-center gap-2 sm:gap-2">
+              <MainTopUserMenu />
             </div>
           </div>
           <FixedSubscribeNavLink />
@@ -362,7 +365,7 @@ export function MallTopNav() {
     }
     return (
       <Fragment>
-        <div className="pointer-events-none fixed right-4 top-4 z-[120] sm:right-6 sm:top-5">
+        <div className={`pointer-events-none ${MAIN_TOP_USER_FLOAT_BOX_CLASS}`}>
           <div className="pointer-events-auto flex flex-row items-center gap-2 sm:gap-2">
             <MainTopUserMenu />
           </div>
@@ -375,10 +378,6 @@ export function MallTopNav() {
   const logoClass = `flex shrink-0 items-center gap-2 font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 ${easeNav} ${
     compactEffective ? "text-[12px]" : "text-sm"
   }`;
-
-  const compactTopUserChromeClass = `relative z-10 mr-1 flex min-w-0 shrink-0 items-center gap-1.5 sm:mr-2 sm:gap-2 lg:mr-2 ${easeLayout}`;
-  /** 카테고리 행: 필터 캡슐(h-11)과 세로 크기 맞춤 */
-  const compactTopUserChromeStretchClass = `relative z-10 mr-1 flex min-w-0 shrink-0 items-stretch gap-1.5 sm:mr-2 sm:gap-2 lg:mr-2 ${easeLayout}`;
 
   const categoryNavigation =
     !showCategoryNav ? null : showAllCategoriesInline ? (
@@ -605,9 +604,6 @@ export function MallTopNav() {
                   <Link href="/" className="sr-only">
                     {t("nav.homeLogo.aria")}
                   </Link>
-                  <div className="flex w-full min-w-0 flex-1 items-center justify-end gap-2 sm:ml-auto sm:w-auto sm:gap-3">
-                    <MainTopUserMenu />
-                  </div>
                 </div>
               </div>
             ) : null}
@@ -656,24 +652,19 @@ export function MallTopNav() {
               categoryNavigation
             )}
           </div>
-
-          {compactEffective && (
-            <div
-              className={
-                mallStackSearchUnderCategory
-                  ? compactTopUserChromeStretchClass
-                  : compactTopUserChromeClass
-              }
-            >
-              <MainTopUserMenu />
-              <div className="md:hidden">
-                <SitePreferencesMenu />
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </header>
+    <div className={`pointer-events-none ${MAIN_TOP_USER_FLOAT_BOX_CLASS}`}>
+      <div className="pointer-events-auto flex flex-row items-center gap-2 sm:gap-2">
+        <MainTopUserMenu />
+        {compactEffective ? (
+          <div className="md:hidden">
+            <SitePreferencesMenu />
+          </div>
+        ) : null}
+      </div>
+    </div>
     <FixedSubscribeNavLink />
     </Fragment>
   );

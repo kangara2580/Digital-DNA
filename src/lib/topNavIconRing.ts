@@ -13,6 +13,13 @@ export const TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE = "grid-cols-1";
 export const TOP_NAV_ACCOUNT_CART_DUAL_MIN_WIDTH =
   "min-w-[6.875rem] sm:min-w-[7rem]";
 
+/**
+ * 우상단 계정·장바구니 고정 위치(뷰포트·safe-area).
+ * 메인 히어로(Highlight24)와 MallTopNav 플로팅 크롬이 동일 오프셋을 쓰도록 통일.
+ */
+export const MAIN_TOP_USER_FLOAT_BOX_CLASS =
+  "fixed z-[120] right-[max(1rem,env(safe-area-inset-right))] top-[max(1rem,env(safe-area-inset-top))] sm:right-6 sm:top-5";
+
 /** 2칸 — grid로 절반 대칭 + 가운데 1px 구분선 (부모는 inline-grid) */
 export const TOP_NAV_ACCOUNT_CART_PILL_DUAL_LAYOUT =
   `${TOP_NAV_ACCOUNT_CART_DUAL_MIN_WIDTH} grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]`;

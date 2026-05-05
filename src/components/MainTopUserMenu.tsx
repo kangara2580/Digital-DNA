@@ -10,6 +10,7 @@ import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartBut
 import { LoggedInAccountHoverMenu } from "@/components/LoggedInAccountHoverMenu";
 import { AuthModalPortal } from "@/components/AuthModalPortal";
 import {
+  TOP_NAV_ACCOUNT_CART_DUAL_MIN_WIDTH,
   TOP_NAV_ACCOUNT_CART_PILL_OUTER,
   TOP_NAV_ACCOUNT_CART_PILL_CELL,
   TOP_NAV_ACCOUNT_CART_PILL_DIVIDER,
@@ -42,8 +43,6 @@ const capsuleGuestButtonClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-full 
 type Props = {
   /** false: 장바구니 없이 계정만 (푸터 등). true: 로그인 시 계정·장바구니 한 캡슐. */
   withCart?: boolean;
-  /** 탐색 풀시청 상단 좌측 검색과 동일 높이·슬롯에 맞춘 게스트 트리거(정사각 h-11) */
-  floatingExplore?: boolean;
 };
 
 function CapsuleUserGlyph() {
@@ -62,7 +61,7 @@ function CapsuleCartGlyph() {
   );
 }
 
-export function MainTopUserMenu({ withCart = true, floatingExplore = false }: Props) {
+export function MainTopUserMenu({ withCart = true }: Props) {
   const { user, loading } = useAuthSession();
   const [authOpen, setAuthOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -112,7 +111,28 @@ export function MainTopUserMenu({ withCart = true, floatingExplore = false }: Pr
     window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
   }, []);
 
-  if (loading) return null;
+  if (loading) {
+    if (!withCart) {
+      return (
+        <div
+          className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE} min-w-[2.75rem] pointer-events-none animate-pulse opacity-50`}
+          aria-hidden
+        >
+          <div className={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-full`} />
+        </div>
+      );
+    }
+    return (
+      <div
+        className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_DUAL_LAYOUT} pointer-events-none animate-pulse opacity-50`}
+        aria-hidden
+      >
+        <div className={TOP_NAV_ACCOUNT_CART_PILL_CELL} />
+        <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} />
+        <div className={TOP_NAV_ACCOUNT_CART_PILL_CELL} />
+      </div>
+    );
+  }
 
   const guestAuthButtonInner = (
     <span className="relative inline-flex size-8 shrink-0 items-center justify-center">
@@ -158,11 +178,7 @@ export function MainTopUserMenu({ withCart = true, floatingExplore = false }: Pr
     <button
       type="button"
       onClick={() => setAuthOpen(true)}
-      className={
-        floatingExplore
-          ? `${TOP_NAV_ACCOUNT_CART_PILL_CELL} flex h-11 w-11 shrink-0 items-center justify-center rounded-full p-0`
-          : capsuleGuestButtonClass
-      }
+      className={capsuleGuestButtonClass}
       aria-haspopup="dialog"
       aria-expanded={authOpen}
       aria-label="로그인/회원가입 시작하기"
@@ -175,9 +191,7 @@ export function MainTopUserMenu({ withCart = true, floatingExplore = false }: Pr
     return (
       <>
         <div
-          className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE} ${
-            floatingExplore ? "h-11 w-11 min-w-0" : "min-w-[2.75rem]"
-          }`}
+          className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE} ${TOP_NAV_ACCOUNT_CART_DUAL_MIN_WIDTH}`}
         >
           {guestCapsuleButton}
         </div>
