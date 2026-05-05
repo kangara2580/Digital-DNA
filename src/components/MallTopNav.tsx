@@ -624,7 +624,7 @@ export function MallTopNav() {
             }`}
           >
             {isExplorePath && !isExploreWatchMode ? (
-              <div className="relative z-20 mt-0 min-w-0 flex-1 pr-1 sm:pr-2">
+              <div className="relative z-20 mt-0 min-w-0 flex-1 basis-0 pr-1 sm:pr-2">
                 <ReelsSearchField
                   compact
                   pinkTrailingSubmit
@@ -635,13 +635,15 @@ export function MallTopNav() {
             ) : null}
             {mallStackSearchUnderCategory ? (
               <div className="relative z-20 flex w-full min-w-0 flex-row items-center gap-1 overflow-visible sm:gap-1.5">
-                {categoryNavigation}
-                {categoryInlineScrollNextButton}
-                <div
-                  id={MALL_CATEGORY_TOOLBAR_END_ID}
-                  className="flex shrink-0 items-center"
-                />
-                <div className="relative z-20 mt-0 min-w-0 flex-1 pr-1 sm:pr-2">
+                <div className="flex min-w-0 max-w-[min(52%,520px)] shrink gap-1 sm:max-w-[min(48%,560px)] sm:gap-1.5">
+                  {categoryNavigation}
+                  {categoryInlineScrollNextButton}
+                  <div
+                    id={MALL_CATEGORY_TOOLBAR_END_ID}
+                    className="flex shrink-0 items-center"
+                  />
+                </div>
+                <div className="relative z-20 mt-0 min-w-0 flex-1 basis-0 pr-1 sm:pr-2">
                   <ReelsSearchField
                     compact
                     pinkTrailingSubmit
@@ -649,20 +651,20 @@ export function MallTopNav() {
                     setQ={setMallSearchQ}
                   />
                 </div>
-                <div className={compactTopUserChromeStretchClass}>
-                  <MainTopUserMenu />
-                  <div className="md:hidden">
-                    <SitePreferencesMenu />
-                  </div>
-                </div>
               </div>
             ) : (
               categoryNavigation
             )}
           </div>
 
-          {compactEffective && !mallStackSearchUnderCategory && (
-            <div className={compactTopUserChromeClass}>
+          {compactEffective && (
+            <div
+              className={
+                mallStackSearchUnderCategory
+                  ? compactTopUserChromeStretchClass
+                  : compactTopUserChromeClass
+              }
+            >
               <MainTopUserMenu />
               <div className="md:hidden">
                 <SitePreferencesMenu />
