@@ -1,4 +1,4 @@
-/** MallTopNav 쇼핑 검색 행 왼쪽 — CategoryClipsClient가 필터 버튼 포털 */
+/** MallTopNav 쇼핑 행 — CategoryClipsClient 필터 포털(검색 왼쪽·계정 왼쪽) */
 export const MALL_CATEGORY_TOOLBAR_END_ID = "mall-category-toolbar-end";
 
 /** 상단 몰 네비·좌측 레일 드로어 공통 카테고리 링크 */

@@ -613,12 +613,12 @@ export function MallTopNav() {
             ) : null}
           </div>
 
-          {/* 탐색: 검색|카테고리 가로 / 쇼핑·카테고리: 1행 카테고리+계정 · 2행 검색 가운데 */}
+          {/* 탐색: 검색|카테고리 가로 / 쇼핑·카테고리: 카테고리·필터·검색·계정 한 행 */}
           <div
             className={`flex min-h-0 w-full min-w-0 ${easeLayout} ${
               compactEffective
                 ? mallStackSearchUnderCategory
-                  ? "flex-1 flex-col gap-1 overflow-visible"
+                  ? "flex-1 flex-row items-center overflow-visible"
                   : "flex-1 flex-row items-center gap-2 overflow-visible sm:gap-3"
                 : "flex flex-col"
             }`}
@@ -634,32 +634,28 @@ export function MallTopNav() {
               </div>
             ) : null}
             {mallStackSearchUnderCategory ? (
-              <>
-                <div className="relative z-20 flex w-full min-w-0 flex-row items-stretch gap-1 overflow-visible sm:gap-1.5">
-                  {categoryNavigation}
-                  {categoryInlineScrollNextButton}
-                  <div className={compactTopUserChromeStretchClass}>
-                    <MainTopUserMenu />
-                    <div className="md:hidden">
-                      <SitePreferencesMenu />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex w-full min-w-0 shrink-0 items-center gap-1.5 px-1 sm:gap-2 sm:px-2">
-                  <div
-                    id={MALL_CATEGORY_TOOLBAR_END_ID}
-                    className="flex shrink-0 items-center"
+              <div className="relative z-20 flex w-full min-w-0 flex-row items-center gap-1 overflow-visible sm:gap-1.5">
+                {categoryNavigation}
+                {categoryInlineScrollNextButton}
+                <div
+                  id={MALL_CATEGORY_TOOLBAR_END_ID}
+                  className="flex shrink-0 items-center"
+                />
+                <div className="relative z-20 mt-0 min-w-0 flex-1 pr-1 sm:pr-2">
+                  <ReelsSearchField
+                    compact
+                    pinkTrailingSubmit
+                    q={mallSearchQ}
+                    setQ={setMallSearchQ}
                   />
-                  <div className="min-w-0 flex-1 max-w-xl">
-                    <ReelsSearchField
-                      compact={false}
-                      homeHero
-                      q={mallSearchQ}
-                      setQ={setMallSearchQ}
-                    />
+                </div>
+                <div className={compactTopUserChromeStretchClass}>
+                  <MainTopUserMenu />
+                  <div className="md:hidden">
+                    <SitePreferencesMenu />
                   </div>
                 </div>
-              </>
+              </div>
             ) : (
               categoryNavigation
             )}
