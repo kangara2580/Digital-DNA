@@ -14,10 +14,7 @@ export function SellerFeedSellCta({ sellerId }: { sellerId: string }) {
 
   return (
     <div className="mb-3 flex flex-wrap items-center gap-3 sm:mb-4">
-      <span
-        className="h-9 w-[3px] shrink-0 rounded-full bg-[color:var(--reels-point)] shadow-[0_0_14px_-2px_rgba(228,41,128,0.55)]"
-        aria-hidden
-      />
+      <SellerFeedOwnerQuickMenu sellerId={sellerId} />
       <Link
         href="/sell"
         className="min-w-0 inline-flex items-center gap-1 text-[16px] font-semibold hover:underline"
@@ -32,7 +29,6 @@ export function SellerFeedSellCta({ sellerId }: { sellerId: string }) {
           {t("seller.feed.sellCta")}
         </span>
       </Link>
-      <SellerFeedOwnerQuickMenu sellerId={sellerId} />
     </div>
   );
 }
