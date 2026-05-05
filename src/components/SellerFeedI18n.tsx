@@ -41,15 +41,6 @@ export function SellerFeedListingCount({
   );
 }
 
-export function SellerFeedClipsHeading() {
-  const { t } = useTranslation();
-  return (
-    <h2 className="text-[clamp(1.05rem,2.6vw,1.2rem)] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
-      {t("seller.feed.sectionClips")}
-    </h2>
-  );
-}
-
 export function SellerFeedEmptyListings() {
   const { t } = useTranslation();
   return (

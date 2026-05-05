@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SellerFeedBioEditor } from "@/components/SellerFeedBioEditor";
 import {
-  SellerFeedClipsHeading,
   SellerFeedEmptyListings,
   SellerFeedListingCount,
 } from "@/components/SellerFeedI18n";
@@ -152,13 +151,6 @@ export default async function SellerPage({
         </section>
 
         <section className="mt-10 sm:mt-12">
-          <div className="mb-4 flex items-center gap-3">
-            <span
-              className="h-9 w-[3px] shrink-0 rounded-full bg-[color:var(--reels-point)] shadow-[0_0_14px_-2px_rgba(228,41,128,0.55)]"
-              aria-hidden
-            />
-            <SellerFeedClipsHeading />
-          </div>
           {videos.length > 0 ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3.5 lg:grid-cols-5 xl:gap-4">
               {videos.map((video) => (
