@@ -213,11 +213,6 @@ export function AccountSettingsDashboard() {
     };
   }, [user]);
 
-  const mySellerFeedHref = useMemo(
-    () => (user?.id ? `/seller/${encodeURIComponent(user.id)}` : null),
-    [user?.id],
-  );
-
   if (redirectingFromPurchasesTab) {
     return (
       <main className="min-h-[60vh] bg-zinc-950 text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
@@ -280,19 +275,9 @@ export function AccountSettingsDashboard() {
 
           {currentTab === "basic" && user ? (
             <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                  {t("settings.tab.basic")}
-                </h2>
-                {mySellerFeedHref ? (
-                  <Link
-                    href={mySellerFeedHref}
-                    className="inline-flex rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-zinc-100 transition hover:border-white/30 hover:bg-white/10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-300"
-                  >
-                    {t("account.feed")}
-                  </Link>
-                ) : null}
-              </div>
+              <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+                {t("settings.tab.basic")}
+              </h2>
 
               <div className="mt-10">
                 <MyPageProfileEditForm profileForForm={profileForForm} onSaved={setProfileRecord} />
