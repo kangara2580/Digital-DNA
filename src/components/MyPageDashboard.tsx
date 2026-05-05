@@ -121,28 +121,25 @@ export function MyPageDashboard() {
             {!authLoading && !user ? <LoginRequiredPanel tabId={activeDef.id} /> : null}
 
             {currentTab === "wishlist" && user ? (
-              <MyPageSectionShell title={t("mypage.section.wishlist.title")} description={t("mypage.section.wishlist.desc")}>
+              <MyPageSectionShell title={t("mypage.section.wishlist.title")}>
                 <MyPageWishlistSection />
               </MyPageSectionShell>
             ) : null}
 
             {currentTab === "likes" && user ? (
-              <MyPageSectionShell title={t("mypage.section.likes.title")} description={t("mypage.section.likes.desc")}>
+              <MyPageSectionShell title={t("mypage.section.likes.title")}>
                 <MyPageLikedVideosSection />
               </MyPageSectionShell>
             ) : null}
 
             {currentTab === "purchases" && user ? (
-              <MyPageSectionShell
-                title={t("mypage.section.purchases.title")}
-                description={t("mypage.section.purchases.desc")}
-              >
+              <MyPageSectionShell title={t("mypage.section.purchases.title")}>
                 <MyPageAccountOverview />
               </MyPageSectionShell>
             ) : null}
 
             {currentTab === "drafts" && user ? (
-              <MyPageSectionShell title={t("mypage.section.drafts.title")} description={t("mypage.section.drafts.desc")}>
+              <MyPageSectionShell title={t("mypage.section.drafts.title")}>
                 <MyPageSavedDraftsSection />
               </MyPageSectionShell>
             ) : null}
@@ -154,7 +151,7 @@ export function MyPageDashboard() {
             ) : null}
 
             {currentTab === "analytics" && user ? (
-              <MyPageSectionShell title={t("mypage.section.analytics.title")} description={t("mypage.section.analytics.desc")}>
+              <MyPageSectionShell title={t("mypage.section.analytics.title")}>
                 <MyPageSellerAnalyticsSection />
               </MyPageSectionShell>
             ) : null}
