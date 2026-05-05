@@ -25,11 +25,13 @@ const exploreWatchExpandTransition =
   "transition-[max-width,background-color,border-color,box-shadow,padding,border-radius] duration-[680ms] ease-[cubic-bezier(0.16,1,0.22,1)] motion-reduce:transition-none";
 
 /**
- * 풀시청 호버·포커스 시 검색 트랙 max-width.
- * 폼만 제한하므로 calc에서 레일 + 우측 계정·캡슐·여백(약 13–15rem)을 빼 동영상·액션 레일 쪽과 간격을 남김.
+ * 풀시청 호버·포커스 시 검색 트랙 max-width (뷰포트별).
+ * 창 모드(sm~md): 짧게 — 유저 이미지와 비슷한 정도.
+ * 큰 화면(lg~): 왼쪽으로 길게 — 전체화면에서 체감되도록 rem 상한을 크게 올림.
+ * calc(100vw - 레일 - 우측 여유)로 동영상·우측 레일과 간격 유지.
  */
 const exploreWatchExpandedWidthClasses =
-  "hover:max-w-[min(32rem,calc(100vw-var(--reels-rail-w,0px)-13.5rem))] sm:hover:max-w-[min(38rem,calc(100vw-var(--reels-rail-w,0px)-14.5rem))] lg:hover:max-w-[min(42rem,calc(100vw-var(--reels-rail-w,0px)-15.5rem))] focus-within:max-w-[min(32rem,calc(100vw-var(--reels-rail-w,0px)-13.5rem))] sm:focus-within:max-w-[min(38rem,calc(100vw-var(--reels-rail-w,0px)-14.5rem))] lg:focus-within:max-w-[min(42rem,calc(100vw-var(--reels-rail-w,0px)-15.5rem))] motion-reduce:max-w-[min(32rem,calc(100vw-var(--reels-rail-w,0px)-13.5rem))] sm:motion-reduce:max-w-[min(38rem,calc(100vw-var(--reels-rail-w,0px)-14.5rem))] lg:motion-reduce:max-w-[min(42rem,calc(100vw-var(--reels-rail-w,0px)-15.5rem))]";
+  "hover:max-w-[min(17rem,calc(100vw-var(--reels-rail-w,0px)-10rem))] sm:hover:max-w-[min(19.5rem,calc(100vw-var(--reels-rail-w,0px)-11rem))] md:hover:max-w-[min(24rem,calc(100vw-var(--reels-rail-w,0px)-12rem))] lg:hover:max-w-[min(36rem,calc(100vw-var(--reels-rail-w,0px)-13rem))] xl:hover:max-w-[min(50rem,calc(100vw-var(--reels-rail-w,0px)-14rem))] 2xl:hover:max-w-[min(60rem,calc(100vw-var(--reels-rail-w,0px)-15rem))] focus-within:max-w-[min(17rem,calc(100vw-var(--reels-rail-w,0px)-10rem))] sm:focus-within:max-w-[min(19.5rem,calc(100vw-var(--reels-rail-w,0px)-11rem))] md:focus-within:max-w-[min(24rem,calc(100vw-var(--reels-rail-w,0px)-12rem))] lg:focus-within:max-w-[min(36rem,calc(100vw-var(--reels-rail-w,0px)-13rem))] xl:focus-within:max-w-[min(50rem,calc(100vw-var(--reels-rail-w,0px)-14rem))] 2xl:focus-within:max-w-[min(60rem,calc(100vw-var(--reels-rail-w,0px)-15rem))] motion-reduce:max-w-[min(17rem,calc(100vw-var(--reels-rail-w,0px)-10rem))] sm:motion-reduce:max-w-[min(19.5rem,calc(100vw-var(--reels-rail-w,0px)-11rem))] md:motion-reduce:max-w-[min(24rem,calc(100vw-var(--reels-rail-w,0px)-12rem))] lg:motion-reduce:max-w-[min(36rem,calc(100vw-var(--reels-rail-w,0px)-13rem))] xl:motion-reduce:max-w-[min(50rem,calc(100vw-var(--reels-rail-w,0px)-14rem))] 2xl:motion-reduce:max-w-[min(60rem,calc(100vw-var(--reels-rail-w,0px)-15rem))]";
 
 export function ReelsSearchField({
   compact,
@@ -100,7 +102,7 @@ export function ReelsSearchField({
   if (exploreWatchExpand) {
     return (
       <form
-        className={`group relative ml-auto flex h-11 max-w-11 shrink-0 flex-row items-center justify-end overflow-visible rounded-none border border-transparent bg-transparent py-0 shadow-none backdrop-blur-0 ${exploreWatchExpandedWidthClasses} hover:overflow-hidden hover:rounded-full hover:border-white/15 hover:bg-white/[0.06] hover:pr-1 focus-within:overflow-hidden focus-within:rounded-full focus-within:border-white/15 focus-within:bg-white/[0.06] focus-within:pr-1 motion-reduce:overflow-hidden motion-reduce:rounded-full motion-reduce:border-white/15 motion-reduce:bg-white/[0.06] motion-reduce:pr-1 ${exploreWatchExpandTransition} [html[data-theme='dark']_&]:hover:border-white/20 [html[data-theme='dark']_&]:hover:bg-white/[0.1] [html[data-theme='dark']_&]:focus-within:border-white/20 [html[data-theme='dark']_&]:focus-within:bg-white/[0.1] [html[data-theme='light']_&]:hover:border-zinc-200 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:focus-within:border-zinc-200 [html[data-theme='light']_&]:focus-within:bg-zinc-50`}
+        className={`group relative ml-auto flex h-11 max-w-11 shrink-0 flex-row items-center justify-end self-center overflow-visible rounded-none border border-transparent bg-transparent py-0 shadow-none backdrop-blur-0 ${exploreWatchExpandedWidthClasses} hover:overflow-hidden hover:rounded-full hover:border-white/15 hover:bg-white/[0.06] hover:pr-1 focus-within:overflow-hidden focus-within:rounded-full focus-within:border-white/15 focus-within:bg-white/[0.06] focus-within:pr-1 motion-reduce:overflow-hidden motion-reduce:rounded-full motion-reduce:border-white/15 motion-reduce:bg-white/[0.06] motion-reduce:pr-1 ${exploreWatchExpandTransition} [html[data-theme='dark']_&]:hover:border-white/20 [html[data-theme='dark']_&]:hover:bg-white/[0.1] [html[data-theme='dark']_&]:focus-within:border-white/20 [html[data-theme='dark']_&]:focus-within:bg-white/[0.1] [html[data-theme='light']_&]:hover:border-zinc-200 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:focus-within:border-zinc-200 [html[data-theme='light']_&]:focus-within:bg-zinc-50`}
         onSubmit={(e) => {
           e.preventDefault();
           runSearch();
