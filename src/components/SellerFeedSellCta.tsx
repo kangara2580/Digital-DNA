@@ -13,7 +13,7 @@ export function SellerFeedSellCta({ sellerId }: { sellerId: string }) {
   if (authLoading || !user?.id || user.id !== sellerId) return null;
 
   return (
-    <div className="mb-3 flex flex-wrap items-center gap-2 sm:mb-4">
+    <div className="mb-3 flex flex-wrap items-center gap-1.5 sm:mb-4">
       <SellerFeedOwnerQuickMenu sellerId={sellerId} />
       <Link
         href="/sell"
