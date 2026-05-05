@@ -26,14 +26,15 @@ const ITEM_DEFS = [
 const triggerClass =
   "flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border-0 bg-transparent text-zinc-100 outline-none transition-[background-color,color] hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)]/35 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-200/50 [html[data-theme='light']_&]:focus-visible:ring-reels-crimson/25";
 
+/** 프로필 호버 메뉴(`LoggedInAccountHoverMenu`)와 동일 패널·항목 톤 */
 const panelClass =
-  "absolute left-0 right-auto top-full z-[100] mt-1 min-w-[15rem] max-w-[calc(100vw-2rem)] origin-top-left rounded-lg border border-white/12 bg-[#121214]/98 py-1 shadow-[0_14px_48px_-10px_rgba(0,0,0,0.85)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-lg";
+  "absolute left-0 top-full z-[100] mt-1 w-max max-w-[calc(100vw-2rem)] origin-top-left overflow-hidden rounded-xl border border-white/[0.16] bg-[rgba(5,8,14,0.96)] py-1 shadow-[0_14px_42px_-12px_rgba(0,0,0,0.75)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.12)]";
 
 const linkClass =
-  "flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-[13px] font-medium text-zinc-200 transition-colors hover:bg-white/[0.06] hover:text-zinc-50 [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-950";
+  "flex items-center gap-2 whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold text-zinc-100 transition-colors hover:bg-white/[0.08] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
 
 const iconClass =
-  "h-4 w-4 shrink-0 text-zinc-500 [html[data-theme='light']_&]:text-zinc-500";
+  "h-4 w-4 shrink-0 text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
 
 /** 내 피드 상단 — 마이페이지 주요 탭으로 바로가기(본인만) */
 export function SellerFeedOwnerQuickMenu({ sellerId }: { sellerId: string }) {
