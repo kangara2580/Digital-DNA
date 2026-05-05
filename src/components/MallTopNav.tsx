@@ -642,7 +642,7 @@ export function MallTopNav() {
                 <div className="flex w-full min-w-0 shrink-0 items-center gap-1.5 px-0.5 sm:gap-2">
                   <div
                     id={MALL_CATEGORY_TOOLBAR_START_ID}
-                    className="flex min-w-0 max-w-[38%] shrink items-center self-center"
+                    className="flex min-w-0 max-w-[38%] shrink translate-y-1 items-center sm:translate-y-1.5"
                   />
                   <div className="min-w-0 flex-1">
                     <div className="mx-auto w-full min-w-0 max-w-2xl">
@@ -651,7 +651,7 @@ export function MallTopNav() {
                   </div>
                   <div
                     id={MALL_CATEGORY_TOOLBAR_END_ID}
-                    className="flex shrink-0 items-center self-center"
+                    className="flex shrink-0 translate-y-1 items-center sm:translate-y-1.5"
                   />
                 </div>
               </>
