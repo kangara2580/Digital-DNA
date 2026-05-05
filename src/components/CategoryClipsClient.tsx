@@ -273,7 +273,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   }, [filterOpen]);
 
   const categoryTitleToolbar = (
-    <h1 className="truncate text-[15px] font-extrabold leading-tight tracking-tight text-zinc-100 sm:text-base [html[data-theme='light']_&]:text-zinc-900">
+    <h1 className="truncate text-xl font-extrabold tracking-tight text-zinc-100 sm:text-2xl [html[data-theme='light']_&]:text-zinc-900">
       {label}
     </h1>
   );
