@@ -1356,17 +1356,13 @@ export function PurchaseCustomizeStudio({
           <p>
             <span className="text-zinc-400">&gt;</span> AI 무료 체험{" "}
             <span className="font-extrabold text-reels-cyan/95">{localFacePreviewRemaining}회</span> 제공 후, 계속 사용하려면{" "}
-            <Link href="/subscribe" className="font-semibold text-reels-cyan/95 underline-offset-2 hover:underline">
-              구독
-            </Link>
+            <span className="font-extrabold text-reels-cyan/95">구독</span>
             이 필요합니다.
           </p>
         ) : (
           <p>
             <span className="text-zinc-400">&gt;</span> AI 무료 체험을 모두 사용했습니다.{" "}
-            <Link href="/subscribe" className="font-semibold text-reels-cyan/95 underline-offset-2 hover:underline">
-              구독
-            </Link>
+            <span className="font-extrabold text-reels-cyan/95">구독</span>
             후 AI 얼굴/배경 기능을 이용할 수 있습니다.
           </p>
         )}

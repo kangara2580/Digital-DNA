@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronLeft, ChevronRight, SlidersHorizontal, Wallet } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -66,30 +66,6 @@ const easeTitleCollapse =
   `transition-[max-height] ${easeLayout}`;
 
 const easeNav = `transition-[padding,margin,font-size,line-height,box-shadow,gap,border-color,width,max-width,flex] ${easeLayout}`;
-
-const subscribeNavClass =
-  "inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-reels-cyan/40 bg-reels-cyan/10 text-reels-cyan transition hover:bg-reels-cyan/15 sm:size-10 [html[data-theme='light']_&]:border-reels-cyan/35 [html[data-theme='light']_&]:bg-reels-cyan/10";
-
-/** md 미만: 좌측 레일이 없어서 우측 상단 고정 유지. md+: 레일의 구독 버튼만 사용 */
-const subscribeFixedWrap =
-  "pointer-events-auto fixed right-[max(0.75rem,env(safe-area-inset-right))] top-[max(0.5rem,env(safe-area-inset-top))] z-[45] md:right-6 md:hidden";
-
-function FixedSubscribeNavLink() {
-  const pathname = usePathname();
-  const { user } = useAuthSession();
-  const { t } = useTranslation();
-  if (!user || (!pathname.startsWith("/mypage") && !pathname.startsWith("/settings"))) return null;
-  return (
-    <Link
-      href="/subscribe"
-      className={`${subscribeNavClass} ${subscribeFixedWrap}`}
-      aria-label={t("nav.subscribe.aria")}
-      title={t("nav.subscribe.title")}
-    >
-      <Wallet className="h-4 w-4 shrink-0 sm:h-[18px] sm:w-[18px]" strokeWidth={2} aria-hidden />
-    </Link>
-  );
-}
 
 export function MallTopNav() {
   const headerRef = useRef<HTMLElement>(null);
@@ -373,11 +349,7 @@ export function MallTopNav() {
   }, [isHomePage]);
 
   if (isHomePage) {
-    return (
-      <Fragment>
-        <FixedSubscribeNavLink />
-      </Fragment>
-    );
+    return null;
   }
 
   if (showFloatingChromeOnlyNav) {
@@ -395,7 +367,6 @@ export function MallTopNav() {
               <MainTopUserMenu />
             </div>
           </div>
-          <FixedSubscribeNavLink />
         </Fragment>
       );
     }
@@ -406,7 +377,6 @@ export function MallTopNav() {
             <MainTopUserMenu />
           </div>
         </div>
-        <FixedSubscribeNavLink />
       </Fragment>
     );
   }
@@ -725,7 +695,6 @@ export function MallTopNav() {
         ) : null}
       </div>
     </div>
-    <FixedSubscribeNavLink />
     </Fragment>
   );
 }

@@ -20,8 +20,6 @@ const STATIC_PATHS = [
   "/notice",
   "/sell",
   "/create",
-  "/subscribe",
-  "/subscribe/checkout",
   "/upload/reels",
   "/leaderboard",
   "/cart",

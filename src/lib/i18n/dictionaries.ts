@@ -48,8 +48,6 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "nav.categoryPrev": "이전 카테고리",
     "nav.categoryNext": "다음 카테고리",
     "nav.categoryMore": "추가 카테고리",
-    "nav.subscribe.aria": "구독·결제 페이지로 이동",
-    "nav.subscribe.title": "구독",
     "search.aria.input": "동영상·키워드 검색",
     "search.aria.submit": "검색 실행",
     "nav.cat.best": "베스트",
@@ -275,11 +273,6 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "mypage.wishlist.empty": "아직 찜한 동영상이 없어요.",
     "mypage.wishlist.browse": "동영상 둘러보기",
     "mypage.selectItemAria": "선택",
-    "accountOverview.subscription": "나의 구독",
-    "accountOverview.nextRenewal": "다음 갱신 {date}",
-    "accountOverview.noSubscription": "이용 중인 구독이 없습니다.",
-    "accountOverview.managePlan": "구독 플랜 관리",
-    "accountOverview.startSub": "구독 시작하기",
     "accountOverview.purchasedVideos": "구매한 동영상",
     "accountOverview.noPurchases": "아직 구매한 영상이 없습니다.",
     "accountOverview.browse": "둘러보기",
@@ -484,8 +477,6 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "meta.create": "AI 창작",
     "meta.customize": "맞춤 리스킨",
     "meta.uploadReels": "동영상 링크 등록",
-    "meta.subscribe": "구독·결제",
-    "meta.checkout": "결제",
     "meta.generationResult": "생성 결과",
     "meta.videoInsight": "영상 인사이트",
     "meta.findId": "아이디 찾기",
@@ -513,9 +504,6 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "meta.customizeDescription":
       "구매한 동영상에 얼굴·배경·구간·텍스트를 지정합니다.",
     "meta.createDescription": "구매한 동영상을 Kling 3.0으로 리스킨합니다.",
-    "meta.subscribeDescription":
-      "구독 플랜과 카드 등록 후 이용 시점 결제를 한곳에서 안내합니다.",
-    "meta.checkoutDescription": "구독 결제 수단 등록과 결제 확인을 진행합니다.",
     "meta.aboutDescription":
       "숏폼 영상의 가치를 자산으로 연결하는 마켓플레이스를 소개합니다.",
     "meta.noticeListDescription":
@@ -1050,8 +1038,6 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "nav.categoryPrev": "Previous categories",
     "nav.categoryNext": "Next categories",
     "nav.categoryMore": "More categories",
-    "nav.subscribe.aria": "Subscriptions & billing",
-    "nav.subscribe.title": "Subscribe",
     "search.aria.input": "Search videos and keywords",
     "search.aria.submit": "Search",
     "nav.cat.best": "Best",
@@ -1278,11 +1264,6 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "mypage.wishlist.empty": "No wishlisted videos yet.",
     "mypage.wishlist.browse": "Browse videos",
     "mypage.selectItemAria": "Select",
-    "accountOverview.subscription": "My subscription",
-    "accountOverview.nextRenewal": "Next renewal {date}",
-    "accountOverview.noSubscription": "You do not have an active subscription.",
-    "accountOverview.managePlan": "Manage subscription",
-    "accountOverview.startSub": "Start a subscription",
     "accountOverview.purchasedVideos": "Purchased videos",
     "accountOverview.noPurchases": "No purchased videos yet.",
     "accountOverview.browse": "Browse",
@@ -1491,8 +1472,6 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "meta.create": "AI studio",
     "meta.customize": "Customize & edit",
     "meta.uploadReels": "Register a video link",
-    "meta.subscribe": "Subscription & billing",
-    "meta.checkout": "Checkout",
     "meta.generationResult": "Generation result",
     "meta.videoInsight": "Video insights",
     "meta.findId": "Find your email",
@@ -1520,9 +1499,6 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "meta.customizeDescription":
       "Pick face, background, trim, and text overlays for a purchased video.",
     "meta.createDescription": "Reskin purchased videos with Kling 3.0.",
-    "meta.subscribeDescription":
-      "Plans, saved cards, and pay-as-you-go billing in one place.",
-    "meta.checkoutDescription": "Complete subscription payment and confirmation.",
     "meta.aboutDescription":
       "Turn video value into assets — a short-form marketplace for creators and buyers.",
     "meta.noticeListDescription":
