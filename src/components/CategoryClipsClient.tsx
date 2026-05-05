@@ -27,7 +27,12 @@ import {
   getVideoCatalogMeta,
   getVideosForCategory,
 } from "@/data/videoCatalog";
-import { topNavHeroCapsuleGlyphIconClass } from "@/lib/topNavIconRing";
+import {
+  TOP_NAV_ACCOUNT_CART_PILL_CELL,
+  TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE,
+  TOP_NAV_ACCOUNT_CART_PILL_OUTER,
+  topNavHeroCapsuleGlyphIconClass,
+} from "@/lib/topNavIconRing";
 
 type OrientationFilter = "all" | "portrait" | "landscape";
 type PriceFilter = "all" | "high" | "low";
@@ -47,9 +52,8 @@ const chipDisabled =
 const filterGroupLabel =
   "mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-300 [html[data-theme='light']_&]:text-zinc-600";
 
-/** MainTopUserMenu 계정 캡슐과 동일 높이·테두리 톤 */
-const mallFilterTriggerClass =
-  "relative z-20 inline-flex h-11 min-h-[2.75rem] max-w-full shrink-0 items-center justify-center gap-1.5 overflow-hidden text-ellipsis rounded-full border border-white/40 bg-black/20 px-2.5 text-[12px] font-bold text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-md transition-[border-color,background-color,color] duration-200 ease-out hover:border-white/52 hover:bg-black/28 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50 sm:gap-2 sm:px-3 sm:text-[13px] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/[0.6] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.05)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-white/[0.72] [html[data-theme='light']_&]:focus-visible:outline-zinc-500/65";
+/** MainTopUserMenu 게스트 캡슐과 동일 셀 스타일 + 필터용 패딩 */
+const mallFilterCapsuleButtonClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} max-w-full min-w-0 gap-1.5 rounded-full px-2 text-[12px] font-bold leading-none sm:gap-2 sm:px-3 sm:text-[13px]`;
 
 export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   const router = useRouter();
@@ -271,13 +275,16 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   }, [filterOpen]);
 
   const categoryFilterToolbar = (
-    <div ref={filterWrapRef} className="relative min-w-0">
+    <div
+      ref={filterWrapRef}
+      className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE} relative min-w-0 shrink`}
+    >
       <button
         type="button"
         onClick={() => setFilterOpen((open) => !open)}
         aria-expanded={filterOpen}
         aria-controls="category-filter-popover"
-        className={mallFilterTriggerClass}
+        className={mallFilterCapsuleButtonClass}
       >
         <SlidersHorizontal className={`${topNavHeroCapsuleGlyphIconClass()} shrink-0`} aria-hidden />
         <span className="max-w-[4.5rem] truncate sm:max-w-none">{t("category.filter.button")}</span>

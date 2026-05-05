@@ -377,6 +377,8 @@ export function MallTopNav() {
   }`;
 
   const compactTopUserChromeClass = `relative z-10 mr-1 flex min-w-0 shrink-0 items-center gap-1.5 sm:mr-2 sm:gap-2 lg:mr-2 ${easeLayout}`;
+  /** 카테고리 행: 필터 캡슐(h-11)과 세로 크기 맞춤 */
+  const compactTopUserChromeStretchClass = `relative z-10 mr-1 flex min-w-0 shrink-0 items-stretch gap-1.5 sm:mr-2 sm:gap-2 lg:mr-2 ${easeLayout}`;
 
   const categoryNavigation =
     !showCategoryNav ? null : showAllCategoriesInline ? (
@@ -538,7 +540,7 @@ export function MallTopNav() {
         type="button"
         onClick={() => scrollCategoryRow(1)}
         disabled={!canScrollCategoryRight}
-        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white disabled:cursor-default disabled:opacity-35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
+        className="inline-flex h-7 w-7 shrink-0 items-center justify-center self-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white disabled:cursor-default disabled:opacity-35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
         aria-label={t("nav.categoryNext")}
       >
         <ChevronRight className="h-4 w-4" strokeWidth={2.2} aria-hidden />
@@ -633,14 +635,14 @@ export function MallTopNav() {
             ) : null}
             {mallStackSearchUnderCategory ? (
               <>
-                <div className="relative z-20 flex w-full min-w-0 flex-row items-center gap-1 overflow-visible sm:gap-1.5">
+                <div className="relative z-20 flex w-full min-w-0 flex-row items-stretch gap-1 overflow-visible sm:gap-1.5">
                   {categoryNavigation}
                   {categoryInlineScrollNextButton}
                   <div
                     id={MALL_CATEGORY_TOOLBAR_END_ID}
-                    className="flex shrink-0 items-center"
+                    className="flex shrink-0 items-stretch"
                   />
-                  <div className={compactTopUserChromeClass}>
+                  <div className={compactTopUserChromeStretchClass}>
                     <MainTopUserMenu />
                     <div className="md:hidden">
                       <SitePreferencesMenu />
