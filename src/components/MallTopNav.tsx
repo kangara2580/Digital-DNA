@@ -664,11 +664,11 @@ export function MallTopNav() {
                     className="flex min-h-[2.75rem] min-w-[5.75rem] shrink-0 items-center justify-center self-center sm:min-w-[6.25rem]"
                   />
                 ) : null}
-                <div className="flex min-h-[2.75rem] min-w-0 max-w-[min(48%,460px)] shrink items-center gap-1 self-center sm:max-w-[min(42%,500px)] sm:gap-1.5">
+                <div className="flex min-h-[2.75rem] min-w-0 flex-1 basis-0 max-w-[min(72%,840px)] shrink items-center gap-1 self-center sm:max-w-[min(74%,880px)] sm:gap-1.5 lg:max-w-[min(76%,920px)]">
                   {categoryNavigation}
                   {categoryInlineScrollNextButton}
                 </div>
-                <div className="relative z-20 mr-1.5 flex min-h-[2.75rem] min-w-0 flex-1 basis-0 items-center self-center pl-0.5 sm:mr-2 sm:pl-1">
+                <div className="relative z-20 mr-1.5 flex min-h-[2.75rem] min-w-[9rem] max-w-[min(36%,360px)] flex-1 basis-0 items-center self-center pl-0.5 sm:min-w-[10rem] sm:mr-2 sm:max-w-[min(30%,320px)] sm:pl-1 lg:max-w-[min(26%,280px)]">
                   <ReelsSearchField
                     compact
                     pinkTrailingSubmit
