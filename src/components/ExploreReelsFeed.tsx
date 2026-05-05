@@ -39,11 +39,13 @@ function ExploreBrowseGrid({
   visibleGridCount,
   setVisibleGridCount,
   onEnterWatch,
+  browseCardTarget,
 }: {
   pool: FeedVideo[];
   visibleGridCount: number;
   setVisibleGridCount: Dispatch<SetStateAction<number>>;
   onEnterWatch: (video: FeedVideo, gridIndex: number) => void;
+  browseCardTarget: "watch" | "purchase";
 }) {
   const { t } = useTranslation();
   const browseVideos = useMemo(() => {
@@ -77,7 +79,11 @@ function ExploreBrowseGrid({
   return (
     <div className="mx-auto max-w-[1800px] px-4 pb-20 pt-[max(3.75rem,1rem)] sm:px-6 md:pl-[calc(var(--reels-rail-w,0px)+1rem)] lg:px-8">
       <div
-        className="grid grid-cols-2 gap-3 border border-white/10 p-3 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
+        className={
+          browseCardTarget === "purchase"
+            ? "grid grid-cols-2 gap-3 p-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
+            : "grid grid-cols-2 gap-3 border border-white/10 p-3 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
+        }
         role="list"
         aria-label={t("explore.gridAria")}
       >
@@ -417,6 +423,7 @@ export function ExploreReelsFeed({
         visibleGridCount={visibleGridCount}
         setVisibleGridCount={setVisibleGridCount}
         onEnterWatch={enterWatch}
+        browseCardTarget={browseCardTarget}
       />
     );
   }
