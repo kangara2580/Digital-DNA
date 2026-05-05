@@ -19,7 +19,7 @@ import { VideoCard } from "@/components/VideoCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import {
-  MALL_CATEGORY_TOOLBAR_END_ID,
+  MALL_CATEGORY_TOOLBAR_FILTER_ID,
 } from "@/data/mallCategoryNav";
 import type { CategorySlug } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
@@ -253,7 +253,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   );
 
   useLayoutEffect(() => {
-    setToolbarEndHost(document.getElementById(MALL_CATEGORY_TOOLBAR_END_ID));
+    setToolbarEndHost(document.getElementById(MALL_CATEGORY_TOOLBAR_FILTER_ID));
   }, []);
 
   useEffect(() => {
@@ -277,7 +277,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   const categoryFilterToolbar = (
     <div
       ref={filterWrapRef}
-      className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE} relative min-w-0 shrink`}
+      className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE} relative min-w-0 shrink self-center`}
     >
       <button
         type="button"
@@ -298,7 +298,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
       {filterOpen ? (
         <section
           id="category-filter-popover"
-          className="absolute right-0 top-[calc(100%+0.45rem)] z-30 w-max min-w-[10.5rem] max-w-[calc(100vw-1.25rem)] rounded-xl border border-white/18 bg-[#03050c]/[0.97] px-2.5 py-2.5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.75)] backdrop-blur-sm [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-lg"
+          className="absolute left-0 top-[calc(100%+0.45rem)] z-30 w-max min-w-[10.5rem] max-w-[calc(100vw-1.25rem)] rounded-xl border border-white/18 bg-[#03050c]/[0.97] px-2.5 py-2.5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.75)] backdrop-blur-sm [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-lg"
           aria-label={t("category.filter.popoverAria")}
         >
           <div className="mb-2.5 flex items-center justify-between gap-3">

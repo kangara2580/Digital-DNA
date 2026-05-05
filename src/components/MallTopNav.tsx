@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronLeft, ChevronRight, Wallet } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, SlidersHorizontal, Wallet } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -14,9 +14,16 @@ import {
 import { createPortal } from "react-dom";
 import {
   MALL_CATEGORY_NAV_ITEMS as ITEMS,
-  MALL_CATEGORY_TOOLBAR_END_ID,
+  MALL_CATEGORY_TOOLBAR_FILTER_ID,
 } from "@/data/mallCategoryNav";
-import { MAIN_TOP_USER_FLOAT_BOX_CLASS } from "@/lib/topNavIconRing";
+import {
+  MAIN_TOP_USER_FLOAT_ALIGN_HEADER_PAD_CLASS,
+  MAIN_TOP_USER_FLOAT_BOX_CLASS,
+  TOP_NAV_ACCOUNT_CART_PILL_CELL,
+  TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE,
+  TOP_NAV_ACCOUNT_CART_PILL_OUTER,
+  topNavHeroCapsuleGlyphIconClass,
+} from "@/lib/topNavIconRing";
 import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
 import { MainTopUserMenu } from "@/components/MainTopUserMenu";
 import { ReelsSearchField } from "@/components/ReelsSearchField";
@@ -31,6 +38,17 @@ const categoryPillClass =
 /** 현재 카테고리(선택됨): 다크에서는 순백·더 굵게(! 로 베이스 zinc-400 무시), 라이트에서는 거의 검정·굵게 */
 const categoryPillActiveClass =
   "cursor-default border-white/22 bg-white/10 font-extrabold !text-[#ffffff] hover:border-white/25 hover:bg-white/14 hover:!text-[#ffffff] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:!text-zinc-950 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:!text-zinc-950";
+
+/** 쇼핑 헤더 필터 링크(/category) · CategoryClipsClient 필터 버튼과 동일 톤 */
+const mallHeaderFilterTriggerClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} max-w-full min-w-0 gap-1.5 rounded-full px-2 text-[12px] font-bold leading-none sm:gap-2 sm:px-3 sm:text-[13px]`;
+
+/** 고정 계정·장바구니 + 모바일 설정 — 검색란 우측 여백 */
+const mallToolbarReservedForFloatChromeClass =
+  "pr-[max(11rem,calc(env(safe-area-inset-right)+10rem))] sm:pr-[max(12rem,calc(env(safe-area-inset-right)+11rem))] md:pr-[max(10.5rem,calc(env(safe-area-inset-right)+9.5rem))]";
+
+/** 카테고리 스크롤 좌우 화살표 — 헤더 h-11 라인 정렬 */
+const categoryScrollChevronBtnClass =
+  "inline-flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white disabled:cursor-default disabled:opacity-35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700";
 
 /** 스크롤 컴팩트 시 상단에는 베스트·추천만 노출, 나머지는 「카테고리」 메뉴로 */
 const COMPACT_PRIMARY = ITEMS.slice(0, 2);
@@ -376,20 +394,20 @@ export function MallTopNav() {
   const categoryNavigation =
     !showCategoryNav ? null : showAllCategoriesInline ? (
       <div
-        className={`relative z-20 flex min-w-0 flex-1 items-center gap-1.5 pr-1 ${easeNav}`}
+        className={`relative z-20 flex min-h-[2.75rem] min-w-0 flex-1 items-center gap-1.5 pr-1 ${easeNav}`}
       >
         <button
           type="button"
           onClick={() => scrollCategoryRow(-1)}
           disabled={!canScrollCategoryLeft}
-          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white disabled:cursor-default disabled:opacity-35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
+          className={categoryScrollChevronBtnClass}
           aria-label={t("nav.categoryPrev")}
         >
-          <ChevronLeft className="h-4 w-4" strokeWidth={2.2} aria-hidden />
+          <ChevronLeft className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden />
         </button>
         <nav
           ref={categoryScrollRef}
-          className="no-scrollbar flex min-w-0 flex-1 items-center justify-start gap-1 overflow-x-auto px-0.5 py-0 sm:gap-1.5"
+          className="no-scrollbar flex min-h-[2.75rem] min-w-0 flex-1 items-center justify-start gap-1 overflow-x-auto px-0.5 py-0 sm:gap-1.5"
           aria-label={t("nav.category")}
         >
           {ITEMS.map((item) => {
@@ -533,10 +551,10 @@ export function MallTopNav() {
         type="button"
         onClick={() => scrollCategoryRow(1)}
         disabled={!canScrollCategoryRight}
-        className="inline-flex h-7 w-7 shrink-0 items-center justify-center self-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white disabled:cursor-default disabled:opacity-35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
+        className={categoryScrollChevronBtnClass}
         aria-label={t("nav.categoryNext")}
       >
-        <ChevronRight className="h-4 w-4" strokeWidth={2.2} aria-hidden />
+        <ChevronRight className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden />
       </button>
     ) : null;
 
@@ -556,13 +574,17 @@ export function MallTopNav() {
     >
       <div
         className={`mx-auto max-w-[1800px] pl-[max(0.35rem,env(safe-area-inset-left))] pr-[max(0.35rem,env(safe-area-inset-right))] sm:pl-[max(0.55rem,env(safe-area-inset-left))] sm:pr-[max(0.55rem,env(safe-area-inset-right))] lg:pl-[max(0.7rem,env(safe-area-inset-left))] lg:pr-[max(0.7rem,env(safe-area-inset-right))] ${easeNav} ${
-          compactEffective ? "pb-1.5 pt-1.5" : "pb-1.5 pt-2"
+          compactEffective && mallStackSearchUnderCategory
+            ? MAIN_TOP_USER_FLOAT_ALIGN_HEADER_PAD_CLASS
+            : compactEffective
+              ? "pb-1.5 pt-1.5"
+              : "pb-1.5 pt-2"
         }`}
       >
         <div
           className={`flex min-h-0 w-full [contain:layout] ${easeLayout} ${
             compactEffective
-              ? "relative flex-row flex-nowrap items-center gap-x-2 overflow-visible sm:gap-x-3"
+              ? "relative flex min-h-[2.75rem] flex-row flex-nowrap items-center gap-x-2 overflow-visible sm:gap-x-3"
               : "flex-col"
           }`}
         >
@@ -614,19 +636,40 @@ export function MallTopNav() {
             }`}
           >
             {mallStackSearchUnderCategory ? (
-              <div className="relative z-20 flex w-full min-w-0 flex-row items-center gap-1 overflow-visible sm:gap-1.5">
-                <div className="flex min-w-0 max-w-[min(52%,520px)] shrink gap-1 sm:max-w-[min(48%,560px)] sm:gap-1.5">
+              <div
+                className={`relative z-20 flex w-full min-w-0 flex-row items-center gap-1.5 self-center overflow-visible sm:gap-2 ${mallToolbarReservedForFloatChromeClass}`}
+              >
+                {isShopPage ? (
+                  <Link
+                    href="/category/best"
+                    aria-label={t("category.filter.button")}
+                    className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE} relative shrink-0 self-center`}
+                  >
+                    <span className={mallHeaderFilterTriggerClass}>
+                      <SlidersHorizontal
+                        className={`${topNavHeroCapsuleGlyphIconClass()} shrink-0`}
+                        aria-hidden
+                      />
+                      <span className="max-w-[4.5rem] truncate sm:max-w-none">
+                        {t("category.filter.button")}
+                      </span>
+                    </span>
+                  </Link>
+                ) : isCategoryPage ? (
+                  <div
+                    id={MALL_CATEGORY_TOOLBAR_FILTER_ID}
+                    className="flex shrink-0 items-center self-center"
+                  />
+                ) : null}
+                <div className="flex min-h-[2.75rem] min-w-0 max-w-[min(48%,460px)] shrink items-center gap-1 self-center sm:max-w-[min(42%,500px)] sm:gap-1.5">
                   {categoryNavigation}
                   {categoryInlineScrollNextButton}
-                  <div
-                    id={MALL_CATEGORY_TOOLBAR_END_ID}
-                    className="flex shrink-0 items-center"
-                  />
                 </div>
-                <div className="relative z-20 mt-0 min-w-0 flex-1 basis-0 pr-1 sm:pr-2">
+                <div className="relative z-20 flex min-h-[2.75rem] min-w-0 flex-1 basis-0 items-center self-center pl-0.5 sm:pl-1">
                   <ReelsSearchField
                     compact
                     pinkTrailingSubmit
+                    pinkTrailingTallFullWidth
                     q={mallSearchQ}
                     setQ={setMallSearchQ}
                   />

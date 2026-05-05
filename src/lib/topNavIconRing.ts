@@ -20,6 +20,10 @@ export const TOP_NAV_ACCOUNT_CART_DUAL_MIN_WIDTH =
 export const MAIN_TOP_USER_FLOAT_BOX_CLASS =
   "fixed z-[120] right-[max(1rem,env(safe-area-inset-right))] top-[max(1rem,env(safe-area-inset-top))] sm:right-6 sm:top-5";
 
+/** 스티키 몰·카테고리 헤더 패딩 — `MAIN_TOP_USER_FLOAT_BOX_CLASS` top 과 동일 오프셋으로 h-11 컨트롤 중심을 고정 캡슐과 맞춤 */
+export const MAIN_TOP_USER_FLOAT_ALIGN_HEADER_PAD_CLASS =
+  "pt-[max(1rem,env(safe-area-inset-top))] pb-4 sm:pt-5 sm:pb-5";
+
 /** 2칸 — grid로 절반 대칭 + 가운데 1px 구분선 (부모는 inline-grid) */
 export const TOP_NAV_ACCOUNT_CART_PILL_DUAL_LAYOUT =
   `${TOP_NAV_ACCOUNT_CART_DUAL_MIN_WIDTH} grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]`;
