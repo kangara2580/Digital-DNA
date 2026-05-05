@@ -342,20 +342,14 @@ export function MallTopNav() {
     if (isExplorePath && isExploreWatchMode) {
       return (
         <Fragment>
-          <div className="pointer-events-none fixed inset-x-0 top-0 z-[120] md:pl-[var(--reels-rail-w)]">
-            <div className="pointer-events-none flex w-full items-center justify-end gap-2 px-4 pt-[max(0.65rem,env(safe-area-inset-top))] pr-[max(1rem,env(safe-area-inset-right))] sm:gap-2.5 sm:px-6 sm:pt-[max(0.75rem,env(safe-area-inset-top))] sm:pr-6">
-              <div className="pointer-events-auto shrink-0">
-                <ReelsSearchField
-                  compact
-                  exploreWatchExpand
-                  q={exploreSearchQ}
-                  setQ={setExploreSearchQ}
-                />
-              </div>
-            </div>
-          </div>
           <div className={`pointer-events-none ${MAIN_TOP_USER_FLOAT_BOX_CLASS}`}>
             <div className="pointer-events-auto flex flex-row items-center gap-2 sm:gap-2">
+              <ReelsSearchField
+                compact
+                exploreWatchExpand
+                q={exploreSearchQ}
+                setQ={setExploreSearchQ}
+              />
               <MainTopUserMenu />
             </div>
           </div>
@@ -609,7 +603,7 @@ export function MallTopNav() {
             ) : null}
           </div>
 
-          {/* 탐색: 검색|카테고리 가로 / 쇼핑·카테고리: 카테고리·필터·검색 한 행 · 계정 헤더 오른쪽 */}
+          {/* 쇼핑·카테고리: 카테고리·필터·검색 한 행 / 탐색(/explore) 검색은 우상단 고정(계정 캡슐 왼쪽) */}
           <div
             className={`flex min-h-0 w-full min-w-0 ${easeLayout} ${
               compactEffective
@@ -619,16 +613,6 @@ export function MallTopNav() {
                 : "flex flex-col"
             }`}
           >
-            {isExplorePath && !isExploreWatchMode ? (
-              <div className="relative z-20 mt-0 min-w-0 flex-1 basis-0 pr-1 sm:pr-2">
-                <ReelsSearchField
-                  compact
-                  pinkTrailingSubmit
-                  q={exploreSearchQ}
-                  setQ={setExploreSearchQ}
-                />
-              </div>
-            ) : null}
             {mallStackSearchUnderCategory ? (
               <div className="relative z-20 flex w-full min-w-0 flex-row items-center gap-1 overflow-visible sm:gap-1.5">
                 <div className="flex min-w-0 max-w-[min(52%,520px)] shrink gap-1 sm:max-w-[min(48%,560px)] sm:gap-1.5">
@@ -657,6 +641,14 @@ export function MallTopNav() {
     </header>
     <div className={`pointer-events-none ${MAIN_TOP_USER_FLOAT_BOX_CLASS}`}>
       <div className="pointer-events-auto flex flex-row items-center gap-2 sm:gap-2">
+        {isExplorePath && !isExploreWatchMode ? (
+          <ReelsSearchField
+            compact
+            pinkTrailingSubmit
+            q={exploreSearchQ}
+            setQ={setExploreSearchQ}
+          />
+        ) : null}
         <MainTopUserMenu />
         {compactEffective ? (
           <div className="md:hidden">
