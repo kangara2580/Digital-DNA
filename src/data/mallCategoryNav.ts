@@ -1,3 +1,7 @@
+/** MallTopNav 쇼핑 검색 행 — CategoryClipsClient가 제목·필터를 여기로 포털 */
+export const MALL_CATEGORY_TOOLBAR_START_ID = "mall-category-toolbar-start";
+export const MALL_CATEGORY_TOOLBAR_END_ID = "mall-category-toolbar-end";
+
 /** 상단 몰 네비·좌측 레일 드로어 공통 카테고리 링크 */
 export const MALL_CATEGORY_NAV_ITEMS = [
   { href: "/category/best", label: "베스트" },
