@@ -17,7 +17,7 @@ export function SellerFeedSellCta({ sellerId }: { sellerId: string }) {
       <SellerFeedOwnerQuickMenu sellerId={sellerId} />
       <Link
         href="/sell"
-        className="min-w-0 inline-flex items-center gap-1 text-[16px] font-semibold hover:underline"
+        className="min-w-0 inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-[16px] font-semibold outline-none transition-[background-color] hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)]/35 [html[data-theme='light']_&]:hover:bg-zinc-200/50 [html[data-theme='light']_&]:focus-visible:ring-reels-crimson/25"
       >
         <span
           className="shrink-0 text-[22px] font-semibold leading-none text-[color:var(--reels-point)]"
