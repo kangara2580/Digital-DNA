@@ -906,7 +906,7 @@ export function VideoCard({
       </div>
 
       {hideInfoBar ? null : shopShelf ? (
-        <div className="space-y-2.5 bg-black px-3 py-3 [html[data-theme='light']_&]:bg-white">
+        <div className="space-y-2.5 rounded-b-xl border border-white/[0.12] border-t-white/[0.08] bg-black px-3 py-3 [html[data-theme='light']_&]:border-zinc-200/70 [html[data-theme='light']_&]:border-t-zinc-200/55 [html[data-theme='light']_&]:bg-white">
           <div className="flex items-start justify-between gap-2">
             <div className="flex min-w-0 flex-1 items-start gap-2">
               <Clapperboard
@@ -914,44 +914,54 @@ export function VideoCard({
                 strokeWidth={2}
                 aria-hidden
               />
-              <h3 className="line-clamp-2 min-w-0 text-left text-[13px] font-semibold leading-snug text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-sm">
+              <h3 className="line-clamp-2 min-w-0 text-left text-[13px] font-semibold leading-snug text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[14px]">
                 {displayTitle(video)}
               </h3>
             </div>
             {priceLabel ? (
-              <span className="shrink-0 text-right text-[13px] font-bold tabular-nums text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-sm">
+              <span className="shrink-0 text-right text-[14px] font-bold tabular-nums text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[15px]">
                 {priceLabel}
               </span>
             ) : null}
           </div>
-          <div className="flex items-center justify-between gap-2 text-[12px] font-medium text-white [html[data-theme='light']_&]:text-zinc-800">
-            <span className="flex items-center gap-1">
+          <div className="flex items-center justify-between gap-2 text-[13px] font-medium text-white [html[data-theme='light']_&]:text-zinc-800 sm:text-[15px]">
+            <span className="flex items-center gap-1.5">
               <TrendingUp
-                className="h-3.5 w-3.5 shrink-0 text-white [html[data-theme='light']_&]:text-zinc-800"
+                className="h-4 w-4 shrink-0 text-white [html[data-theme='light']_&]:text-zinc-800 sm:h-[1.125rem] sm:w-[1.125rem]"
                 strokeWidth={2}
                 aria-hidden
               />
-              <span className="text-[9px] leading-none text-[color:var(--reels-point)]" aria-hidden>
-                ▲
-              </span>
+              <svg
+                className="h-4 w-4 shrink-0 text-[color:var(--reels-point)] sm:h-[1.125rem] sm:w-[1.125rem]"
+                viewBox="0 0 24 24"
+                aria-hidden
+              >
+                <path fill="currentColor" d="M12 5 L20 20 H4 L12 5z" />
+              </svg>
             </span>
-            <span className="tabular-nums">{formatKrCompactCount(shopShelfStats.trend)}</span>
+            <span className="tabular-nums text-[14px] font-semibold text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-base">
+              {formatKrCompactCount(shopShelfStats.trend)}
+            </span>
           </div>
-          <div className="flex items-center justify-between gap-2 text-[12px] font-medium text-white [html[data-theme='light']_&]:text-zinc-800">
+          <div className="flex items-center justify-between gap-2 text-[13px] font-medium text-white [html[data-theme='light']_&]:text-zinc-800 sm:text-[15px]">
             <Eye
-              className="h-3.5 w-3.5 shrink-0 text-white [html[data-theme='light']_&]:text-zinc-800"
+              className="h-4 w-4 shrink-0 text-white [html[data-theme='light']_&]:text-zinc-800 sm:h-[1.125rem] sm:w-[1.125rem]"
               strokeWidth={2}
               aria-hidden
             />
-            <span className="tabular-nums">{formatKrCompactCount(shopShelfStats.views)}</span>
+            <span className="tabular-nums text-[14px] font-semibold text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-base">
+              {formatKrCompactCount(shopShelfStats.views)}
+            </span>
           </div>
-          <div className="flex items-center justify-between gap-2 text-[12px] font-medium text-white [html[data-theme='light']_&]:text-zinc-800">
+          <div className="flex items-center justify-between gap-2 text-[13px] font-medium text-white [html[data-theme='light']_&]:text-zinc-800 sm:text-[15px]">
             <Heart
-              className="h-3.5 w-3.5 shrink-0 text-white [html[data-theme='light']_&]:text-zinc-800"
+              className="h-4 w-4 shrink-0 text-white [html[data-theme='light']_&]:text-zinc-800 sm:h-[1.125rem] sm:w-[1.125rem]"
               strokeWidth={2}
               aria-hidden
             />
-            <span className="tabular-nums">{formatKrCompactCount(shopShelfStats.likes)}</span>
+            <span className="tabular-nums text-[14px] font-semibold text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-base">
+              {formatKrCompactCount(shopShelfStats.likes)}
+            </span>
           </div>
         </div>
       ) : (
