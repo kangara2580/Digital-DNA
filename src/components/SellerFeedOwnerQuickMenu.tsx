@@ -10,7 +10,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -28,7 +28,10 @@ const triggerClass =
 
 /** 프로필 호버 메뉴(`LoggedInAccountHoverMenu`)와 동일 패널·항목 톤 */
 const panelClass =
-  "absolute left-0 top-full z-[100] mt-1 w-max max-w-[calc(100vw-2rem)] origin-top-left overflow-hidden rounded-xl border border-white/[0.16] bg-[rgba(5,8,14,0.96)] py-1 shadow-[0_14px_42px_-12px_rgba(0,0,0,0.75)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.12)]";
+  "absolute left-0 top-full z-[100] -mt-2 w-max max-w-[calc(100vw-2rem)] origin-top-left overflow-hidden rounded-xl border border-white/[0.16] bg-[rgba(5,8,14,0.96)] pb-1 pt-2 shadow-[0_14px_42px_-12px_rgba(0,0,0,0.75)] backdrop-blur-md motion-reduce:transition-none [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.12)]";
+
+const panelVisibilityClass =
+  "invisible pointer-events-none opacity-0 transition-[opacity,visibility] duration-150 ease-out motion-reduce:transition-none group-hover/ownerquick:pointer-events-auto group-hover/ownerquick:visible group-hover/ownerquick:opacity-100 group-focus-within/ownerquick:pointer-events-auto group-focus-within/ownerquick:visible group-focus-within/ownerquick:opacity-100";
 
 const linkClass =
   "flex items-center gap-2 whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold text-zinc-100 transition-colors hover:bg-white/[0.08] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
@@ -40,7 +43,6 @@ const iconClass =
 export function SellerFeedOwnerQuickMenu({ sellerId }: { sellerId: string }) {
   const { user, loading } = useAuthSession();
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const btnId = useId();
   const menuId = useId();
@@ -55,62 +57,55 @@ export function SellerFeedOwnerQuickMenu({ sellerId }: { sellerId: string }) {
   );
 
   useEffect(() => {
-    if (!open) return;
-    const close = (e: PointerEvent) => {
+    const onPointerDown = (e: PointerEvent) => {
       if (wrapRef.current?.contains(e.target as Node)) return;
-      setOpen(false);
+      const el = document.activeElement;
+      if (el && wrapRef.current?.contains(el)) (el as HTMLElement).blur();
     };
-    document.addEventListener("pointerdown", close);
-    return () => document.removeEventListener("pointerdown", close);
-  }, [open]);
+    document.addEventListener("pointerdown", onPointerDown, true);
+    return () => document.removeEventListener("pointerdown", onPointerDown, true);
+  }, []);
 
   useEffect(() => {
-    if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key !== "Escape") return;
+      const el = document.activeElement;
+      if (el && wrapRef.current?.contains(el)) (el as HTMLElement).blur();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  }, []);
 
   if (loading || !user?.id || user.id !== sellerId) return null;
 
   return (
-    <div className="relative w-fit shrink-0" ref={wrapRef}>
+    <div className="group/ownerquick relative w-fit shrink-0" ref={wrapRef}>
       <button
         type="button"
         id={btnId}
         className={triggerClass}
         aria-label={t("seller.menu.aria")}
-        aria-expanded={open}
         aria-haspopup="menu"
-        aria-controls={open ? menuId : undefined}
-        onClick={() => setOpen((o) => !o)}
+        aria-controls={menuId}
+        onClick={(e) => e.currentTarget.focus()}
       >
         <Menu className="h-5 w-5" strokeWidth={2.25} aria-hidden />
       </button>
-      {open ? (
-        <ul
-          id={menuId}
-          role="menu"
-          aria-labelledby={btnId}
-          className={panelClass}
-        >
-          {items.map(({ href, label, Icon }) => (
-            <li key={href} role="none">
-              <Link
-                role="menuitem"
-                href={href}
-                className={linkClass}
-                onClick={() => setOpen(false)}
-              >
-                <Icon className={iconClass} strokeWidth={2} aria-hidden />
-                {label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      <ul
+        id={menuId}
+        role="menu"
+        aria-labelledby={btnId}
+        className={`${panelClass} ${panelVisibilityClass}`}
+      >
+        {items.map(({ href, label, Icon }) => (
+          <li key={href} role="none">
+            <Link role="menuitem" href={href} className={linkClass}>
+              <Icon className={iconClass} strokeWidth={2} aria-hidden />
+              {label}
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
