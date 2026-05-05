@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { VideoCard } from "@/components/VideoCard";
 import {
   getVideosBySellerHandle,
@@ -20,7 +19,6 @@ const BATCH_SIZE = 12;
 
 /** 상세 하단: 같은 판매자 영상 → DB 판매자 영상 → 추천 영상 순으로 항상 표시 */
 export function VideoDetailRecommendations({ video }: Props) {
-  const router = useRouter();
   const { t } = useTranslation();
 
   // 1) 카탈로그 기반: 같은 크리에이터 핸들로 매칭
@@ -88,10 +86,7 @@ export function VideoDetailRecommendations({ video }: Props) {
   }, [pool, visibleCount]);
 
   return (
-    <section
-      className="border-t border-white/10 pt-10 [html[data-theme='light']_&]:border-zinc-200"
-      aria-labelledby="video-reco-heading"
-    >
+    <section className="mt-10 sm:mt-12" aria-labelledby="video-reco-heading">
       <h2
         id="video-reco-heading"
         className="text-center text-xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
@@ -99,22 +94,20 @@ export function VideoDetailRecommendations({ video }: Props) {
         {t("video.reco.heading")}
       </h2>
 
-      <div className="mt-6 grid grid-cols-2 gap-2 border border-white/10 p-2 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-7 lg:grid-cols-4 xl:grid-cols-5">
         {visibleItems.map(({ video: item, key }) => (
-          <div
+          <VideoCard
             key={key}
-            className="min-w-0 cursor-pointer"
-            onClick={() => router.push(`/video/${encodeURIComponent(item.id)}`)}
-          >
-            <VideoCard
-              video={item}
-              reelLayout
-              hideInfoBar
-              disableHoverScale
-              compactHoverActions
-              className="min-w-0"
-            />
-          </div>
+            video={item}
+            reelLayout
+            reelStrip
+            dense
+            shopShelf
+            hideCreatorMeta
+            hideCloneStrip
+            disableHoverScale
+            className="min-w-0"
+          />
         ))}
       </div>
 
