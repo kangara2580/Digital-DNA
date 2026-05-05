@@ -44,7 +44,7 @@ export function SellerFeedListingCount({
 export function SellerFeedEmptyListings() {
   const { t } = useTranslation();
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-dashed border-white/[0.18] bg-white/[0.02] px-6 py-14 text-center [html[data-theme='light']_&]:border-zinc-300/65 [html[data-theme='light']_&]:bg-white">
+    <div className="relative overflow-hidden rounded-2xl border border-dashed border-white/[0.14] bg-white/[0.02] px-6 py-14 text-center [html[data-theme='light']_&]:border-zinc-300/65 [html[data-theme='light']_&]:bg-white">
       <p className="text-[15px] font-semibold text-white/[0.92] [html[data-theme='light']_&]:text-zinc-800">
         {t("seller.feed.emptyTitle")}
       </p>

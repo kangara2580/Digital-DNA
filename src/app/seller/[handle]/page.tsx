@@ -116,16 +116,16 @@ export default async function SellerPage({
     <div className="min-h-screen bg-transparent text-white [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
       <div className="mx-auto max-w-[1800px] px-4 pb-14 pt-6 sm:px-6 sm:pt-8 lg:px-8">
         <SellerFeedSellCta sellerId={sellerKey} />
-        <section className="relative overflow-hidden rounded-[1.35rem] border border-white/[0.09] bg-gradient-to-br from-white/[0.065] via-white/[0.02] to-transparent p-5 shadow-[0_0_0_1px_rgba(228,41,128,0.06),inset_0_1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-xl sm:rounded-[1.65rem] sm:p-7 [html[data-theme='light']_&]:border-zinc-200/70 [html[data-theme='light']_&]:from-white [html[data-theme='light']_&]:via-white [html[data-theme='light']_&]:to-zinc-50/90 [html[data-theme='light']_&]:shadow-[0_20px_50px_-28px_rgba(15,23,42,0.18),0_0_0_1px_rgba(228,41,128,0.07)]">
+        <section className="relative overflow-hidden rounded-[1.35rem] border border-white/[0.1] bg-[var(--background)] p-5 shadow-none sm:rounded-[1.65rem] sm:p-7 [html[data-theme='light']_&]:border-zinc-200/70 [html[data-theme='light']_&]:bg-gradient-to-br [html[data-theme='light']_&]:from-white [html[data-theme='light']_&]:via-white [html[data-theme='light']_&]:to-zinc-50/90 [html[data-theme='light']_&]:shadow-[0_20px_50px_-28px_rgba(15,23,42,0.18),0_0_0_1px_rgba(228,41,128,0.07)] [html[data-theme='light']_&]:backdrop-blur-xl">
           <div
-            className="pointer-events-none absolute -left-24 -top-24 h-48 w-48 rounded-full bg-[color:var(--reels-point)]/12 blur-[80px]"
+            className="pointer-events-none absolute -left-24 -top-24 hidden h-48 w-48 rounded-full bg-[color:var(--reels-point)]/12 blur-[80px] [html[data-theme='light']_&]:block"
             aria-hidden
           />
           <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,36rem)] lg:items-start lg:gap-8">
             <div className="flex min-w-0 gap-4 sm:items-center sm:gap-5">
               <div className="relative shrink-0">
                 <div
-                  className="absolute inset-0 rounded-full bg-[color:var(--reels-point)]/25 blur-lg [html[data-theme='light']_&]:bg-[color:var(--reels-point)]/15"
+                  className="absolute inset-0 hidden rounded-full bg-[color:var(--reels-point)]/15 blur-lg [html[data-theme='light']_&]:block"
                   aria-hidden
                 />
                 <Image
@@ -134,7 +134,7 @@ export default async function SellerPage({
                   height={72}
                   alt=""
                   unoptimized
-                  className="relative h-[4.25rem] w-[4.25rem] rounded-full object-cover ring-2 ring-white/20 ring-offset-2 ring-offset-[#070a12] sm:h-[4.75rem] sm:w-[4.75rem] [html[data-theme='light']_&]:ring-zinc-200/80 [html[data-theme='light']_&]:ring-offset-white"
+                  className="relative h-[4.25rem] w-[4.25rem] rounded-full object-cover ring-2 ring-white/20 ring-offset-2 ring-offset-[var(--background)] sm:h-[4.75rem] sm:w-[4.75rem] [html[data-theme='light']_&]:ring-zinc-200/80 [html[data-theme='light']_&]:ring-offset-white"
                 />
               </div>
               <div className="min-w-0 flex-1">
@@ -144,13 +144,13 @@ export default async function SellerPage({
                 <SellerFeedListingCount videoCount={videos.length} isDbSeller={isDbSeller} />
               </div>
             </div>
-            <div className="min-w-0 border-t border-white/[0.08] pt-5 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0 [html[data-theme='light']_&]:border-zinc-200/75">
+            <div className="min-w-0 border-t border-white/[0.1] pt-6 lg:border-t-0 lg:border-l lg:border-white/[0.1] lg:pl-8 lg:pt-0 [html[data-theme='light']_&]:border-zinc-200/75">
               <SellerFeedBioEditor sellerId={sellerKey} initialBio={profileBio} />
             </div>
           </div>
         </section>
 
-        <section className="mt-10 sm:mt-12">
+        <section className="mt-8 border-t border-white/[0.1] pt-8 sm:mt-10 sm:pt-10 [html[data-theme='light']_&]:border-zinc-200/75">
           {videos.length > 0 ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3.5 lg:grid-cols-5 xl:gap-4">
               {videos.map((video) => (
