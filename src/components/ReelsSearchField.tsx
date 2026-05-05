@@ -42,8 +42,10 @@ export function ReelsSearchField({
   exploreWatchExpand = false,
   /** compact: 트레일링 제출 버튼을 메인과 동일 핑크 타일로 */
   pinkTrailingSubmit = false,
-  /** compact+pinkTrailingSubmit: 입력·핑크 버튼을 계정 캡슐(h-11)과 같은 높이로 */
+  /** compact+pinkTrailingSubmit: 입력·핑크 버튼을 계정 캡슐(h-11)과 같은 높이로 (탐색 우상단 등 좁은 슬롯) */
   pinkTrailingMatchAccountPill = false,
+  /** compact+pinkTrailingSubmit: h-11 정렬 + 검색란은 가로 100% (몰 카테고리 헤더 한 줄) */
+  pinkTrailingTallFullWidth = false,
   q,
   setQ,
   showTrailingIcon = true,
@@ -55,6 +57,7 @@ export function ReelsSearchField({
   exploreWatchExpand?: boolean;
   pinkTrailingSubmit?: boolean;
   pinkTrailingMatchAccountPill?: boolean;
+  pinkTrailingTallFullWidth?: boolean;
   q: string;
   setQ: (v: string) => void;
   showTrailingIcon?: boolean;
@@ -77,6 +80,9 @@ export function ReelsSearchField({
 
   const navPairedPink =
     compact && pinkTrailingSubmit && pinkTrailingMatchAccountPill;
+  const mallRowTallPink =
+    compact && pinkTrailingSubmit && pinkTrailingTallFullWidth;
+  const tallPinkTrailCompact = navPairedPink || mallRowTallPink;
 
   const inputTransitionClass =
     mode === "homeHero"
@@ -89,7 +95,7 @@ export function ReelsSearchField({
       : mode === "pill"
         ? `h-11 min-h-[2.75rem] rounded-full border border-white/40 bg-black/20 pl-3.5 ${showTrailingIcon ? "pr-11" : "pr-3.5"} text-[13px] text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-md hover:border-white/52 hover:bg-black/28 focus:bg-black/28 ${pinkBorder} [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/[0.6] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.05)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-white/[0.72] [html[data-theme='light']_&]:focus:bg-white/[0.72]`
         : mode === "compact"
-          ? navPairedPink
+          ? tallPinkTrailCompact
             ? `h-11 min-h-[2.75rem] rounded-full border border-white/40 bg-black/20 pl-3.5 ${showTrailingIcon ? "pr-11" : "pr-3.5"} text-[13px] text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-md hover:border-white/52 hover:bg-black/28 focus:bg-black/28 ${pinkBorder} [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/[0.6] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.05)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-white/[0.72] [html[data-theme='light']_&]:focus:bg-white/[0.72]`
             : `h-9 border-white/15 bg-white/[0.06] pl-3 ${showTrailingIcon ? "pr-10" : "pr-3"} text-[13px] ${pinkBorder} hover:bg-white/10 focus:bg-white/[0.09] [html[data-theme='dark']_&]:border-white/20 [html[data-theme='dark']_&]:bg-white/[0.1] [html[data-theme='dark']_&]:hover:bg-white/[0.14] [html[data-theme='dark']_&]:focus:bg-white/[0.16] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:bg-white`
           : `h-[3.25rem] border-2 border-white/20 bg-white/[0.08] pl-6 ${showTrailingIcon ? "pr-14" : "pr-6"} text-[15px] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${pinkBorder} hover:bg-white/12 focus:bg-white/[0.1] [html[data-theme='dark']_&]:border-white/25 [html[data-theme='dark']_&]:bg-white/[0.12] [html[data-theme='dark']_&]:hover:bg-white/[0.16] [html[data-theme='dark']_&]:focus:bg-white/[0.18] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:focus:bg-white`;
@@ -141,9 +147,11 @@ export function ReelsSearchField({
   return (
     <form
       className={`group relative min-w-0 ${
-        navPairedPink
-          ? "h-11 w-[min(15rem,46vw)] shrink-0 sm:w-[min(18rem,40vw)]"
-          : "w-full"
+        mallRowTallPink
+          ? "h-11 w-full"
+          : navPairedPink
+            ? "h-11 w-[min(15rem,46vw)] shrink-0 sm:w-[min(18rem,40vw)]"
+            : "w-full"
       }`}
       onSubmit={(e) => {
         e.preventDefault();
@@ -168,8 +176,8 @@ export function ReelsSearchField({
             mode === "homeHero"
               ? `absolute right-2 top-1/2 z-10 -translate-y-1/2 ${pinkSubmitTileHeroClass}`
               : mode === "compact" && pinkTrailingSubmit
-                ? `absolute ${navPairedPink ? "right-1.5" : "right-1"} top-1/2 z-10 -translate-y-1/2 ${
-                    navPairedPink ? pinkSubmitTileHeroClass : pinkSubmitTileClass
+                ? `absolute ${navPairedPink || mallRowTallPink ? "right-1.5" : "right-1"} top-1/2 z-10 -translate-y-1/2 ${
+                    navPairedPink || mallRowTallPink ? pinkSubmitTileHeroClass : pinkSubmitTileClass
                   }`
                 : `absolute top-1/2 z-10 -translate-y-1/2 rounded-full p-1 text-zinc-500 transition-colors hover:text-[color:var(--reels-point)] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:rgba(255,45,141,0.4)] [html[data-theme='dark']_&]:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 ${
                     mode === "pill" ? "right-1.5" : mode === "compact" ? "right-1.5" : "right-3"
@@ -190,7 +198,7 @@ export function ReelsSearchField({
                 mode === "homeHero"
                   ? "h-[1.125rem] w-[1.125rem]"
                   : mode === "compact" && pinkTrailingSubmit
-                    ? navPairedPink
+                    ? navPairedPink || mallRowTallPink
                       ? "h-5 w-5"
                       : "h-[1.125rem] w-[1.125rem]"
                     : mode === "pill"
