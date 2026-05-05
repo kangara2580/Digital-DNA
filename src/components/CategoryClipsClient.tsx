@@ -27,6 +27,7 @@ import {
   getVideoCatalogMeta,
   getVideosForCategory,
 } from "@/data/videoCatalog";
+import { topNavHeroCapsuleGlyphIconClass } from "@/lib/topNavIconRing";
 
 type OrientationFilter = "all" | "portrait" | "landscape";
 type PriceFilter = "all" | "high" | "low";
@@ -45,6 +46,10 @@ const chipDisabled =
 
 const filterGroupLabel =
   "mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-300 [html[data-theme='light']_&]:text-zinc-600";
+
+/** MainTopUserMenu 계정 캡슐과 동일 높이·테두리 톤 */
+const mallFilterTriggerClass =
+  "relative z-20 inline-flex h-11 min-h-[2.75rem] max-w-full shrink-0 items-center justify-center gap-1.5 overflow-hidden text-ellipsis rounded-full border border-white/40 bg-black/20 px-2.5 text-[12px] font-bold text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-md transition-[border-color,background-color,color] duration-200 ease-out hover:border-white/52 hover:bg-black/28 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50 sm:gap-2 sm:px-3 sm:text-[13px] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/[0.6] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.05)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-white/[0.72] [html[data-theme='light']_&]:focus-visible:outline-zinc-500/65";
 
 export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   const router = useRouter();
@@ -266,18 +271,18 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   }, [filterOpen]);
 
   const categoryFilterToolbar = (
-    <div ref={filterWrapRef} className="relative">
+    <div ref={filterWrapRef} className="relative min-w-0">
       <button
         type="button"
         onClick={() => setFilterOpen((open) => !open)}
         aria-expanded={filterOpen}
         aria-controls="category-filter-popover"
-        className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-2.5 py-1.5 text-[11px] font-bold text-zinc-200 transition hover:border-white/25 hover:bg-white/[0.1] sm:gap-2 sm:px-3.5 sm:py-2 sm:text-[12px] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800"
+        className={mallFilterTriggerClass}
       >
-        <SlidersHorizontal className="h-4 w-4 shrink-0 sm:h-[18px] sm:w-[18px]" aria-hidden />
-        {t("category.filter.button")}
+        <SlidersHorizontal className={`${topNavHeroCapsuleGlyphIconClass()} shrink-0`} aria-hidden />
+        <span className="max-w-[4.5rem] truncate sm:max-w-none">{t("category.filter.button")}</span>
         {activeFilterCount > 0 ? (
-          <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-reels-crimson/85 px-1.5 py-0.5 text-[10px] font-extrabold text-white">
+          <span className="inline-flex min-w-[1.125rem] items-center justify-center rounded-full bg-reels-crimson/85 px-1 py-0.5 text-[10px] font-extrabold leading-none text-white">
             {activeFilterCount}
           </span>
         ) : null}

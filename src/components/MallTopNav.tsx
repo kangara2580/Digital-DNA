@@ -411,15 +411,6 @@ export function MallTopNav() {
             );
           })}
         </nav>
-        <button
-          type="button"
-          onClick={() => scrollCategoryRow(1)}
-          disabled={!canScrollCategoryRight}
-          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white disabled:cursor-default disabled:opacity-35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
-          aria-label={t("nav.categoryNext")}
-        >
-          <ChevronRight className="h-4 w-4" strokeWidth={2.2} aria-hidden />
-        </button>
       </div>
     ) : (
       <nav
@@ -541,6 +532,19 @@ export function MallTopNav() {
       </nav>
     );
 
+  const categoryInlineScrollNextButton =
+    showCategoryNav && showAllCategoriesInline ? (
+      <button
+        type="button"
+        onClick={() => scrollCategoryRow(1)}
+        disabled={!canScrollCategoryRight}
+        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white disabled:cursor-default disabled:opacity-35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
+        aria-label={t("nav.categoryNext")}
+      >
+        <ChevronRight className="h-4 w-4" strokeWidth={2.2} aria-hidden />
+      </button>
+    ) : null;
+
   return (
     <Fragment>
     <header
@@ -629,8 +633,13 @@ export function MallTopNav() {
             ) : null}
             {mallStackSearchUnderCategory ? (
               <>
-                <div className="relative z-20 flex w-full min-w-0 flex-row items-center gap-2 overflow-visible sm:gap-3">
+                <div className="relative z-20 flex w-full min-w-0 flex-row items-center gap-1 overflow-visible sm:gap-1.5">
                   {categoryNavigation}
+                  {categoryInlineScrollNextButton}
+                  <div
+                    id={MALL_CATEGORY_TOOLBAR_END_ID}
+                    className="flex shrink-0 items-center"
+                  />
                   <div className={compactTopUserChromeClass}>
                     <MainTopUserMenu />
                     <div className="md:hidden">
@@ -638,16 +647,10 @@ export function MallTopNav() {
                     </div>
                   </div>
                 </div>
-                <div className="flex w-full min-w-0 shrink-0 items-center gap-1.5 px-0.5 sm:gap-2">
-                  <div className="min-w-0 flex-1">
-                    <div className="mx-auto w-full min-w-0 max-w-2xl">
-                      <ReelsSearchField compact q={mallSearchQ} setQ={setMallSearchQ} />
-                    </div>
+                <div className="flex w-full min-w-0 shrink-0 justify-center px-0.5">
+                  <div className="w-full min-w-0 max-w-2xl">
+                    <ReelsSearchField compact q={mallSearchQ} setQ={setMallSearchQ} />
                   </div>
-                  <div
-                    id={MALL_CATEGORY_TOOLBAR_END_ID}
-                    className="flex shrink-0 translate-y-1 items-center sm:translate-y-1.5"
-                  />
                 </div>
               </>
             ) : (
