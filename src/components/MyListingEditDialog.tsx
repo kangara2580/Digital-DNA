@@ -9,6 +9,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { Loader2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
+import { SellCategorySelect } from "@/components/SellCategorySelect";
 import {
   useCallback,
   useEffect,
@@ -17,9 +18,8 @@ import {
   useState,
 } from "react";
 import {
-  isSellVideoCategory,
-  SELL_VIDEO_CATEGORY_OPTIONS,
-  type SellVideoCategory,
+  coerceSellCategoryForUserForm,
+  type SellVideoUserSelectableCategory,
 } from "@/lib/sellVideoCategory";
 
 const INPUT =
@@ -55,10 +55,8 @@ export function MyListingEditDialog({ video, open, onClose, onSaved }: Props) {
   const [title, setTitle] = useState(video.title);
   const [description, setDescription] = useState(video.description ?? "");
   const [hashtags, setHashtags] = useState(hashtagsForInput(video.hashtags));
-  const [category, setCategory] = useState<SellVideoCategory>(
-    typeof video.category === "string" && isSellVideoCategory(video.category)
-      ? video.category
-      : "daily",
+  const [category, setCategory] = useState<SellVideoUserSelectableCategory>(
+    coerceSellCategoryForUserForm(video.category),
   );
   const [thumbTimeSec, setThumbTimeSec] = useState(0);
   const [durationSec, setDurationSec] = useState<number | null>(
@@ -83,11 +81,7 @@ export function MyListingEditDialog({ video, open, onClose, onSaved }: Props) {
     setTitle(video.title);
     setDescription(video.description ?? "");
     setHashtags(hashtagsForInput(video.hashtags));
-    setCategory(
-      typeof video.category === "string" && isSellVideoCategory(video.category)
-        ? video.category
-        : "daily",
-    );
+    setCategory(coerceSellCategoryForUserForm(video.category));
     setThumbTimeSec(0);
     thumbTimeSecRef.current = 0;
     setDurationSec(video.durationSec ?? null);
@@ -480,22 +474,12 @@ export function MyListingEditDialog({ video, open, onClose, onSaved }: Props) {
             <label className={LABEL} htmlFor={`${hid}-category`}>
               카테고리
             </label>
-            <select
+            <SellCategorySelect
               id={`${hid}-category`}
-              className={INPUT}
+              listboxId={`${hid}-category-listbox`}
               value={category}
-              onChange={(e) => {
-                const next = e.target.value;
-                if (isSellVideoCategory(next)) setCategory(next);
-              }}
-              required
-            >
-              {SELL_VIDEO_CATEGORY_OPTIONS.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
+              onChange={setCategory}
+            />
           </div>
         </div>
 
