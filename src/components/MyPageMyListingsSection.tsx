@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, Trash2 } from "lucide-react";
 import { MyListingEditDialog } from "@/components/MyListingEditDialog";
+import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { VideoCard } from "@/components/VideoCard";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import {
@@ -13,6 +14,7 @@ import {
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 import type { FeedVideo } from "@/data/videos";
+import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export function MyPageMyListingsSection() {
@@ -395,7 +397,7 @@ export function MyPageMyListingsSection() {
         )}
       </div>
 
-      <ul className="grid list-none grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-7 md:grid-cols-4 lg:grid-cols-5">
+      <ul className="grid list-none grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
         {visibleVideos.map((v) => {
           const checked = selectedIds.includes(v.id);
           return (
@@ -412,15 +414,20 @@ export function MyPageMyListingsSection() {
               </label>
               <VideoCard
                 video={v}
-                className="min-w-0"
+                className="h-full min-w-0"
                 reelLayout
                 reelStrip
-                dense
-                shopShelf
-                hideCreatorMeta
-                hideCloneStrip
                 disableHoverScale
+                hideCreatorMeta
+                preloadMode="metadata"
+                trendingRankCardPrice
                 hideHoverActions
+                footerExtension={
+                  <TrendingVideoStatsFooter
+                    hideMetricLabels
+                    metrics={getMetricsForVideoDetail(v.id)}
+                  />
+                }
               />
               <div className="absolute right-1.5 top-1.5 z-[25] flex flex-col gap-1">
                 <button

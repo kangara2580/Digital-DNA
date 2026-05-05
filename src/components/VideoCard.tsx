@@ -1,18 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import {
-  AtSign,
-  Bookmark,
-  Camera,
-  Clapperboard,
-  Eye,
-  Heart,
-  Link as LinkIcon,
-  Music2,
-  Play,
-  TrendingUp,
-} from "lucide-react";
+import { AtSign, Bookmark, Camera, Heart, Link as LinkIcon, Music2, Play } from "lucide-react";
 import Link from "next/link";
 import {
   useCallback,
@@ -124,8 +113,6 @@ type Props = {
   hideCreatorMeta?: boolean;
   /** true면 하단 정보 바(아이디·제목·가격) 전체 숨김 */
   hideInfoBar?: boolean;
-  /** true면 썸네일 + 하단 제목·가격만 (쇼핑몰 상품 그리드형) */
-  shopShelf?: boolean;
   /** 홈 인기순위 그리드만 — 가격 글자 흰색·한 단계 크게 */
   trendingRankCardPrice?: boolean;
 };
@@ -234,23 +221,6 @@ function AuthRequiredModal({
   );
 }
 
-function formatKrCompactCount(n: number): string {
-  if (!Number.isFinite(n) || n <= 0) return "0";
-  if (n < 10_000) return n.toLocaleString("ko-KR");
-  const man = n / 10_000;
-  if (man >= 10_000) {
-    const eok = man / 10_000;
-    return `${trimDecShortForMan(eok)}억`;
-  }
-  return `${trimDecShortForMan(man)}만`;
-}
-
-function trimDecShortForMan(x: number): string {
-  if (x >= 100) return String(Math.round(x));
-  const rounded = Math.round(x * 10) / 10;
-  return Number.isInteger(rounded) ? String(rounded) : String(rounded);
-}
-
 export function VideoCard({
   video,
   className,
@@ -277,7 +247,6 @@ export function VideoCard({
   hideCreatorMeta = false,
   hideInfoBar = false,
   trendingRankCardPrice = false,
-  shopShelf = false,
 }: Props) {
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
@@ -295,14 +264,6 @@ export function VideoCard({
     [video],
   );
   const commerce = getCommerceMeta(video.id);
-  const shopShelfStats = useMemo(() => {
-    const views = video.listing?.views ?? 0;
-    const sales = video.listing?.salesCount ?? commerce.salesCount;
-    const trend = Math.max(sales, Math.round(views / 40));
-    const likes =
-      views > 0 ? Math.max(1, Math.round(views * 0.172)) : Math.round(sales * 12);
-    return { views, trend, likes };
-  }, [video.listing, commerce.salesCount]);
   const remaining = clonesRemaining(commerce);
   // 정책 변경: MICRO DNA 배지는 모든 화면에서 노출하지 않음.
   const showMicro = false;
@@ -574,8 +535,6 @@ export function VideoCard({
 
   const shell = flush
     ? "rounded-none border-0 bg-transparent shadow-none"
-    : shopShelf
-      ? "rounded-xl border-0 bg-black shadow-none overflow-hidden [html[data-theme='light']_&]:bg-white"
     : dense
       ? "rounded-lg border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-reels-cyan/25 hover:shadow-reels-cyan/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-reels-cyan/40"
       : "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-reels-crimson/20 hover:shadow-reels-crimson/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-reels-crimson/35";
@@ -663,7 +622,7 @@ export function VideoCard({
       onMouseMove={externalIframe ? playTikTok : undefined}
     >
       <div
-        className={`${videoReelMediaContainer} relative overflow-hidden bg-black/40 ${aspectClass}${shopShelf ? " rounded-t-xl" : ""}`}
+        className={`${videoReelMediaContainer} relative overflow-hidden bg-black/40 ${aspectClass}`}
       >
         {externalIframe ? (
           <div className="absolute inset-0 z-0 flex items-center justify-center">
@@ -905,66 +864,7 @@ export function VideoCard({
         ) : null}
       </div>
 
-      {hideInfoBar ? null : shopShelf ? (
-        <div className="space-y-2.5 rounded-b-xl border border-white/[0.12] border-t-white/[0.08] bg-black px-3 py-3 [html[data-theme='light']_&]:border-zinc-200/70 [html[data-theme='light']_&]:border-t-zinc-200/55 [html[data-theme='light']_&]:bg-white">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex min-w-0 flex-1 items-start gap-2">
-              <Clapperboard
-                className="mt-0.5 h-4 w-4 shrink-0 text-white [html[data-theme='light']_&]:text-zinc-900"
-                strokeWidth={2}
-                aria-hidden
-              />
-              <h3 className="line-clamp-2 min-w-0 text-left text-[13px] font-semibold leading-snug text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[14px]">
-                {displayTitle(video)}
-              </h3>
-            </div>
-            {priceLabel ? (
-              <span className="shrink-0 text-right text-[14px] font-bold tabular-nums text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[15px]">
-                {priceLabel}
-              </span>
-            ) : null}
-          </div>
-          <div className="flex items-center justify-between gap-2 text-[13px] font-medium text-white [html[data-theme='light']_&]:text-zinc-800 sm:text-[15px]">
-            <span className="flex items-center gap-1.5">
-              <TrendingUp
-                className="h-4 w-4 shrink-0 text-white [html[data-theme='light']_&]:text-zinc-800 sm:h-[1.125rem] sm:w-[1.125rem]"
-                strokeWidth={2}
-                aria-hidden
-              />
-              <svg
-                className="h-4 w-4 shrink-0 text-[color:var(--reels-point)] sm:h-[1.125rem] sm:w-[1.125rem]"
-                viewBox="0 0 24 24"
-                aria-hidden
-              >
-                <path fill="currentColor" d="M12 5 L20 20 H4 L12 5z" />
-              </svg>
-            </span>
-            <span className="tabular-nums text-[14px] font-semibold text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-base">
-              {formatKrCompactCount(shopShelfStats.trend)}
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-2 text-[13px] font-medium text-white [html[data-theme='light']_&]:text-zinc-800 sm:text-[15px]">
-            <Eye
-              className="h-4 w-4 shrink-0 text-white [html[data-theme='light']_&]:text-zinc-800 sm:h-[1.125rem] sm:w-[1.125rem]"
-              strokeWidth={2}
-              aria-hidden
-            />
-            <span className="tabular-nums text-[14px] font-semibold text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-base">
-              {formatKrCompactCount(shopShelfStats.views)}
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-2 text-[13px] font-medium text-white [html[data-theme='light']_&]:text-zinc-800 sm:text-[15px]">
-            <Heart
-              className="h-4 w-4 shrink-0 text-white [html[data-theme='light']_&]:text-zinc-800 sm:h-[1.125rem] sm:w-[1.125rem]"
-              strokeWidth={2}
-              aria-hidden
-            />
-            <span className="tabular-nums text-[14px] font-semibold text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-base">
-              {formatKrCompactCount(shopShelfStats.likes)}
-            </span>
-          </div>
-        </div>
-      ) : (
+      {hideInfoBar ? null : (
       <div
         className={`border-t border-white/10 bg-black/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 ${
           dense

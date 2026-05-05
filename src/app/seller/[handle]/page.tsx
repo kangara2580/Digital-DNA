@@ -7,6 +7,7 @@ import {
   SellerFeedListingCount,
 } from "@/components/SellerFeedI18n";
 import { SellerFeedSellCta } from "@/components/SellerFeedSellCta";
+import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { VideoCard } from "@/components/VideoCard";
 import type { FeedVideo } from "@/data/videos";
 import {
@@ -20,6 +21,7 @@ import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
 import { prisma } from "@/lib/prisma";
 import { getSupabaseServiceRoleClient } from "@/lib/supabaseServiceRole";
 import { supabaseTables } from "@/lib/supabaseTableNames";
+import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { translate } from "@/lib/i18n/dictionaries";
 import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
 import { getSiteLocale } from "@/lib/i18n/serverLocale";
@@ -152,20 +154,25 @@ export default async function SellerPage({
 
         <section className="mt-8 sm:mt-10">
           {videos.length > 0 ? (
-            <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-7 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
               {videos.map((video) => (
                 <VideoCard
                   key={`seller-${sellerKey}-${video.id}`}
                   video={video}
                   reelLayout
                   reelStrip
-                  dense
-                  shopShelf
-                  hideCreatorMeta
-                  hideCloneStrip
                   disableHoverScale
-                  className="min-w-0"
+                  hideCreatorMeta
+                  preloadMode="metadata"
+                  trendingRankCardPrice
+                  className="h-full min-w-0"
                   detailHref={`/video/${encodeURIComponent(video.id)}?fromSeller=${encodeURIComponent(sellerKey)}`}
+                  footerExtension={
+                    <TrendingVideoStatsFooter
+                      hideMetricLabels
+                      metrics={getMetricsForVideoDetail(video.id)}
+                    />
+                  }
                 />
               ))}
             </div>

@@ -2,11 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
+import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import {
   getVideosBySellerHandle,
   getShopRecommendations,
   normalizeSellerHandle,
 } from "@/data/videoCatalog";
+import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { FeedVideo } from "@/data/videos";
 
@@ -94,19 +96,24 @@ export function VideoDetailRecommendations({ video }: Props) {
         {t("video.reco.heading")}
       </h2>
 
-      <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-7 lg:grid-cols-4 xl:grid-cols-5">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
         {visibleItems.map(({ video: item, key }) => (
           <VideoCard
             key={key}
             video={item}
             reelLayout
             reelStrip
-            dense
-            shopShelf
-            hideCreatorMeta
-            hideCloneStrip
             disableHoverScale
-            className="min-w-0"
+            hideCreatorMeta
+            preloadMode="metadata"
+            trendingRankCardPrice
+            className="h-full min-w-0"
+            footerExtension={
+              <TrendingVideoStatsFooter
+                hideMetricLabels
+                metrics={getMetricsForVideoDetail(item.id)}
+              />
+            }
           />
         ))}
       </div>
