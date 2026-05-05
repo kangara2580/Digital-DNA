@@ -92,6 +92,9 @@ export function MallTopNav() {
   const showCategoryNav = (isShopPage || isCategoryPage) && !isExploreWatchMode;
   const showAllCategoriesInline =
     (isShopPage || isCategoryPage) && !isExploreWatchMode;
+  /** 쇼핑·카테고리: 컴팩트 헤더에서 검색을 카테고리 아래 줄로 (탐색 /explore 는 검색|카테고리 가로 유지) */
+  const mallStackSearchUnderCategory =
+    compactEffective && showCategoryNav;
   const [moreOpen, setMoreOpen] = useState(false);
   const showFloatingChromeOnlyNav =
     isExploreWatchMode ||
@@ -389,11 +392,6 @@ export function MallTopNav() {
           compactEffective ? "pb-1.5 pt-1.5" : "pb-1.5 pt-2"
         }`}
       >
-        {(isShopPage || isCategoryPage) && !isExploreWatchMode ? (
-          <div className="mb-1.5 w-full min-w-0">
-            <ReelsSearchField compact q={mallSearchQ} setQ={setMallSearchQ} />
-          </div>
-        ) : null}
         <div
           className={`flex min-h-0 w-full [contain:layout] ${easeLayout} ${
             compactEffective
@@ -441,11 +439,13 @@ export function MallTopNav() {
             ) : null}
           </div>
 
-          {/* 검색 + 카테고리: 펼침에서는 검색은 위 행에만 / 컴팩트는 검색+카테고리 */}
+          {/* 탐색: 검색|카테고리 가로 / 쇼핑·카테고리: 카테고리 위 · 검색 아래 */}
           <div
             className={`flex min-h-0 w-full min-w-0 ${easeLayout} ${
               compactEffective
-                ? "flex-1 flex-row items-center gap-2 overflow-visible sm:gap-3"
+                ? mallStackSearchUnderCategory
+                  ? "flex-1 flex-col gap-1 overflow-visible"
+                  : "flex-1 flex-row items-center gap-2 overflow-visible sm:gap-3"
                 : "flex flex-col"
             }`}
           >
@@ -461,7 +461,9 @@ export function MallTopNav() {
             ) : null}
             {showCategoryNav ? (
               showAllCategoriesInline ? (
-                <div className={`relative z-20 mt-0 flex min-w-0 flex-1 items-center gap-1.5 pr-1 ${easeNav}`}>
+                <div
+                  className={`relative z-20 mt-0 flex min-w-0 items-center gap-1.5 pr-1 ${mallStackSearchUnderCategory ? "w-full shrink-0" : "flex-1"} ${easeNav}`}
+                >
                   <button
                     type="button"
                     onClick={() => scrollCategoryRow(-1)}
@@ -619,6 +621,11 @@ export function MallTopNav() {
                   )}
                 </nav>
               )
+            ) : null}
+            {mallStackSearchUnderCategory ? (
+              <div className="w-full min-w-0 shrink-0">
+                <ReelsSearchField compact q={mallSearchQ} setQ={setMallSearchQ} />
+              </div>
             ) : null}
           </div>
 
