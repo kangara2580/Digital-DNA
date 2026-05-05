@@ -150,15 +150,19 @@ export default async function SellerPage({
           </div>
         </section>
 
-        <section className="mt-8 border-t border-white/[0.1] pt-8 sm:mt-10 sm:pt-10 [html[data-theme='light']_&]:border-zinc-200/75">
+        <section className="mt-8 sm:mt-10">
           {videos.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3.5 lg:grid-cols-5 xl:gap-4">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-7 lg:grid-cols-4 xl:grid-cols-5">
               {videos.map((video) => (
                 <VideoCard
                   key={`seller-${sellerKey}-${video.id}`}
                   video={video}
                   reelLayout
+                  reelStrip
                   dense
+                  shopShelf
+                  hideCreatorMeta
+                  hideCloneStrip
                   disableHoverScale
                   className="min-w-0"
                   detailHref={`/video/${encodeURIComponent(video.id)}?fromSeller=${encodeURIComponent(sellerKey)}`}

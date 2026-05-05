@@ -113,6 +113,8 @@ type Props = {
   hideCreatorMeta?: boolean;
   /** true면 하단 정보 바(아이디·제목·가격) 전체 숨김 */
   hideInfoBar?: boolean;
+  /** true면 썸네일 + 하단 제목·가격만 (쇼핑몰 상품 그리드형) */
+  shopShelf?: boolean;
   /** 홈 인기순위 그리드만 — 가격 글자 흰색·한 단계 크게 */
   trendingRankCardPrice?: boolean;
 };
@@ -247,6 +249,7 @@ export function VideoCard({
   hideCreatorMeta = false,
   hideInfoBar = false,
   trendingRankCardPrice = false,
+  shopShelf = false,
 }: Props) {
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
@@ -535,6 +538,8 @@ export function VideoCard({
 
   const shell = flush
     ? "rounded-none border-0 bg-transparent shadow-none"
+    : shopShelf
+      ? "rounded-xl border-0 bg-transparent shadow-none"
     : dense
       ? "rounded-lg border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-reels-cyan/25 hover:shadow-reels-cyan/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-reels-cyan/40"
       : "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-reels-crimson/20 hover:shadow-reels-crimson/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-reels-crimson/35";
@@ -622,7 +627,7 @@ export function VideoCard({
       onMouseMove={externalIframe ? playTikTok : undefined}
     >
       <div
-        className={`${videoReelMediaContainer} relative overflow-hidden bg-black/40 ${aspectClass}`}
+        className={`${videoReelMediaContainer} relative overflow-hidden bg-black/40 ${aspectClass}${shopShelf ? " rounded-xl" : ""}`}
       >
         {externalIframe ? (
           <div className="absolute inset-0 z-0 flex items-center justify-center">
@@ -864,7 +869,19 @@ export function VideoCard({
         ) : null}
       </div>
 
-      {hideInfoBar ? null : <div
+      {hideInfoBar ? null : shopShelf ? (
+        <div className="min-w-0 px-0 pt-2.5">
+          <h3 className="line-clamp-2 text-left text-[13px] font-semibold leading-snug text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-sm">
+            {displayTitle(video)}
+          </h3>
+          {priceLabel ? (
+            <p className="mt-1 text-left text-sm font-extrabold tabular-nums text-[#64E3FF] [html[data-theme='light']_&]:text-[#2A62D8]">
+              {priceLabel}
+            </p>
+          ) : null}
+        </div>
+      ) : (
+      <div
         className={`border-t border-white/10 bg-black/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 ${
           dense
             ? "min-h-[34px] px-1.5 py-1 sm:min-h-[36px]"
@@ -951,7 +968,8 @@ export function VideoCard({
             </div>
           ) : null}
         </div>
-      </div>}
+      </div>
+      )}
       {!hideInfoBar && footerExtension}
       {quilt}
     </article>
