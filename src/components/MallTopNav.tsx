@@ -649,9 +649,14 @@ export function MallTopNav() {
                     </div>
                   </div>
                 </div>
-                <div className="flex w-full min-w-0 shrink-0 justify-center px-0.5">
-                  <div className="w-full min-w-0 max-w-2xl">
-                    <ReelsSearchField compact q={mallSearchQ} setQ={setMallSearchQ} />
+                <div className="flex w-full min-w-0 shrink-0 justify-center px-1 sm:px-2">
+                  <div className="w-full min-w-0 max-w-xl">
+                    <ReelsSearchField
+                      compact={false}
+                      homeHero
+                      q={mallSearchQ}
+                      setQ={setMallSearchQ}
+                    />
                   </div>
                 </div>
               </>
