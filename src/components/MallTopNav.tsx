@@ -92,7 +92,7 @@ export function MallTopNav() {
   const showCategoryNav = (isShopPage || isCategoryPage) && !isExploreWatchMode;
   const showAllCategoriesInline =
     (isShopPage || isCategoryPage) && !isExploreWatchMode;
-  /** 쇼핑·카테고리: 컴팩트 헤더에서 검색을 카테고리 아래 줄로 (탐색 /explore 는 검색|카테고리 가로 유지) */
+  /** 쇼핑·카테고리: 1행 카테고리+계정, 2행 검색 가운데 (탐색 /explore 는 검색·카테고리 가로 유지) */
   const mallStackSearchUnderCategory =
     compactEffective && showCategoryNav;
   const [moreOpen, setMoreOpen] = useState(false);
@@ -373,6 +373,171 @@ export function MallTopNav() {
     compactEffective ? "text-[12px]" : "text-sm"
   }`;
 
+  const compactTopUserChromeClass = `relative z-10 mr-1 flex min-w-0 shrink-0 items-center gap-1.5 sm:mr-2 sm:gap-2 lg:mr-2 ${easeLayout}`;
+
+  const categoryNavigation =
+    !showCategoryNav ? null : showAllCategoriesInline ? (
+      <div
+        className={`relative z-20 flex min-w-0 flex-1 items-center gap-1.5 pr-1 ${easeNav}`}
+      >
+        <button
+          type="button"
+          onClick={() => scrollCategoryRow(-1)}
+          disabled={!canScrollCategoryLeft}
+          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white disabled:cursor-default disabled:opacity-35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
+          aria-label={t("nav.categoryPrev")}
+        >
+          <ChevronLeft className="h-4 w-4" strokeWidth={2.2} aria-hidden />
+        </button>
+        <nav
+          ref={categoryScrollRef}
+          className="no-scrollbar flex min-w-0 flex-1 items-center justify-start gap-1 overflow-x-auto px-0.5 py-0 sm:gap-1.5"
+          aria-label={t("nav.category")}
+        >
+          {ITEMS.map((item) => {
+            const active = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} shrink-0 whitespace-nowrap px-3 py-[9px] text-[13px] sm:px-3.5 sm:py-[9px] sm:text-[14px]`}
+              >
+                {t(categoryNavKey(item.href))}
+              </Link>
+            );
+          })}
+        </nav>
+        <button
+          type="button"
+          onClick={() => scrollCategoryRow(1)}
+          disabled={!canScrollCategoryRight}
+          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white disabled:cursor-default disabled:opacity-35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
+          aria-label={t("nav.categoryNext")}
+        >
+          <ChevronRight className="h-4 w-4" strokeWidth={2.2} aria-hidden />
+        </button>
+      </div>
+    ) : (
+      <nav
+        className={`flex min-w-0 items-center ${easeNav} ${
+          compactEffective
+            ? "mt-0 flex-1 justify-center gap-1 overflow-visible border-0 py-0 sm:gap-1.5"
+            : "no-scrollbar mt-3 justify-center gap-1 overflow-x-auto border-t border-white/10 pt-2 sm:gap-1.5 [html[data-theme='light']_&]:border-zinc-200"
+        }`}
+        aria-label={t("nav.category")}
+      >
+        {compactEffective ? (
+          <>
+            {COMPACT_PRIMARY.map((item) => {
+              const active = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} px-2.5 py-[7px] text-[12px] sm:px-3 sm:py-[7px] sm:text-[13px]`}
+                >
+                  {t(categoryNavKey(item.href))}
+                </Link>
+              );
+            })}
+            <div
+              ref={moreWrapRef}
+              className="relative shrink-0"
+              onMouseEnter={openCategoryMenu}
+              onMouseLeave={scheduleHoverClose}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  cancelHoverClose();
+                  setMoreOpen((o) => !o);
+                }}
+                aria-expanded={moreOpen}
+                aria-haspopup="true"
+                aria-controls="mall-category-more"
+                id="mall-category-trigger"
+                className={`inline-flex items-center gap-0.5 ${categoryPillClass} ${easeLayout} px-2.5 py-[7px] text-[12px] sm:px-3 sm:py-[7px] sm:text-[13px]`}
+              >
+                {t("nav.category")}
+                <ChevronDown
+                  className={`h-3.5 w-3.5 shrink-0 opacity-70 transition-transform duration-200 ${moreOpen ? "rotate-180" : ""}`}
+                  strokeWidth={2}
+                  aria-hidden
+                />
+              </button>
+              {mounted &&
+                moreOpen &&
+                menuPlace &&
+                createPortal(
+                  <div
+                    ref={menuPortalRef}
+                    id="mall-category-more"
+                    role="region"
+                    aria-labelledby="mall-category-trigger"
+                    className="rounded-xl border border-white/15 bg-reels-void/98 shadow-lg transition-[opacity,transform] duration-200 ease-out [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_12px_32px_-16px_rgba(0,0,0,0.12)]"
+                    style={{
+                      position: "fixed",
+                      top: menuPlace.top,
+                      left: menuPlace.left,
+                      width: menuPlace.width,
+                      zIndex: 9999,
+                    }}
+                    onMouseEnter={openCategoryMenu}
+                    onMouseLeave={scheduleHoverClose}
+                  >
+                    <div className="no-scrollbar flex justify-center overflow-x-auto px-2 py-1 sm:px-2.5 sm:py-1.5">
+                      <nav
+                        className="inline-flex min-w-0 flex-nowrap items-center justify-center gap-1 sm:gap-1.5"
+                        aria-label={t("nav.categoryMore")}
+                      >
+                        {COMPACT_MORE.map((item) => {
+                          const active = pathname === item.href;
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              aria-current={active ? "page" : undefined}
+                              onClick={() => {
+                                cancelHoverClose();
+                                setMoreOpen(false);
+                              }}
+                              className={`inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 py-[7px] text-[12px] font-semibold leading-none text-zinc-300 transition-colors duration-200 first:pl-2.5 last:pr-2.5 sm:px-2.5 sm:py-[7px] sm:text-[13px] sm:first:pl-3 sm:last:pr-3 ${easeLayout} hover:bg-white/10 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black ${
+                                active
+                                  ? "border border-white/22 bg-white/10 font-extrabold !text-[#ffffff] hover:!text-[#ffffff] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:font-extrabold [html[data-theme='light']_&]:!text-zinc-950 [html[data-theme='light']_&]:hover:!text-zinc-950"
+                                  : "border border-transparent"
+                              }`}
+                            >
+                              {t(categoryNavKey(item.href))}
+                            </Link>
+                          );
+                        })}
+                      </nav>
+                    </div>
+                  </div>,
+                  document.body,
+                )}
+            </div>
+          </>
+        ) : (
+          ITEMS.map((item) => {
+            const active = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} px-2.5 py-[7px] text-[12px] sm:px-3 sm:py-[7px] sm:text-[13px]`}
+              >
+                {t(categoryNavKey(item.href))}
+              </Link>
+            );
+          })
+        )}
+      </nav>
+    );
+
   return (
     <Fragment>
     <header
@@ -439,7 +604,7 @@ export function MallTopNav() {
             ) : null}
           </div>
 
-          {/* 탐색: 검색|카테고리 가로 / 쇼핑·카테고리: 카테고리 위 · 검색 아래 */}
+          {/* 탐색: 검색|카테고리 가로 / 쇼핑·카테고리: 1행 카테고리+계정 · 2행 검색 가운데 */}
           <div
             className={`flex min-h-0 w-full min-w-0 ${easeLayout} ${
               compactEffective
@@ -459,180 +624,30 @@ export function MallTopNav() {
                 />
               </div>
             ) : null}
-            {showCategoryNav ? (
-              showAllCategoriesInline ? (
-                <div
-                  className={`relative z-20 mt-0 flex min-w-0 items-center gap-1.5 pr-1 ${mallStackSearchUnderCategory ? "w-full shrink-0" : "flex-1"} ${easeNav}`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => scrollCategoryRow(-1)}
-                    disabled={!canScrollCategoryLeft}
-                    className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white disabled:cursor-default disabled:opacity-35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
-                    aria-label={t("nav.categoryPrev")}
-                  >
-                    <ChevronLeft className="h-4 w-4" strokeWidth={2.2} aria-hidden />
-                  </button>
-                  <nav
-                    ref={categoryScrollRef}
-                    className="no-scrollbar flex min-w-0 flex-1 items-center justify-start gap-1 overflow-x-auto px-0.5 py-0 sm:gap-1.5"
-                    aria-label={t("nav.category")}
-                  >
-                    {ITEMS.map((item) => {
-                      const active = pathname === item.href;
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          aria-current={active ? "page" : undefined}
-                          className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} shrink-0 whitespace-nowrap px-3 py-[9px] text-[13px] sm:px-3.5 sm:py-[9px] sm:text-[14px]`}
-                        >
-                          {t(categoryNavKey(item.href))}
-                        </Link>
-                      );
-                    })}
-                  </nav>
-                  <button
-                    type="button"
-                    onClick={() => scrollCategoryRow(1)}
-                    disabled={!canScrollCategoryRight}
-                    className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white disabled:cursor-default disabled:opacity-35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
-                    aria-label={t("nav.categoryNext")}
-                  >
-                    <ChevronRight className="h-4 w-4" strokeWidth={2.2} aria-hidden />
-                  </button>
-                </div>
-              ) : (
-                <nav
-                  className={`flex min-w-0 items-center ${easeNav} ${
-                    compactEffective
-                      ? "mt-0 flex-1 justify-center gap-1 overflow-visible border-0 py-0 sm:gap-1.5"
-                      : "no-scrollbar mt-3 justify-center gap-1 overflow-x-auto border-t border-white/10 pt-2 sm:gap-1.5 [html[data-theme='light']_&]:border-zinc-200"
-                  }`}
-                  aria-label={t("nav.category")}
-                >
-                  {compactEffective ? (
-                    <>
-                      {COMPACT_PRIMARY.map((item) => {
-                        const active = pathname === item.href;
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            aria-current={active ? "page" : undefined}
-                            className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} px-2.5 py-[7px] text-[12px] sm:px-3 sm:py-[7px] sm:text-[13px]`}
-                          >
-                            {t(categoryNavKey(item.href))}
-                          </Link>
-                        );
-                      })}
-                      <div
-                        ref={moreWrapRef}
-                        className="relative shrink-0"
-                        onMouseEnter={openCategoryMenu}
-                        onMouseLeave={scheduleHoverClose}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => {
-                            cancelHoverClose();
-                            setMoreOpen((o) => !o);
-                          }}
-                          aria-expanded={moreOpen}
-                          aria-haspopup="true"
-                          aria-controls="mall-category-more"
-                          id="mall-category-trigger"
-                          className={`inline-flex items-center gap-0.5 ${categoryPillClass} ${easeLayout} px-2.5 py-[7px] text-[12px] sm:px-3 sm:py-[7px] sm:text-[13px]`}
-                        >
-                          {t("nav.category")}
-                          <ChevronDown
-                            className={`h-3.5 w-3.5 shrink-0 opacity-70 transition-transform duration-200 ${moreOpen ? "rotate-180" : ""}`}
-                            strokeWidth={2}
-                            aria-hidden
-                          />
-                        </button>
-                        {mounted &&
-                          moreOpen &&
-                          menuPlace &&
-                          createPortal(
-                            <div
-                              ref={menuPortalRef}
-                              id="mall-category-more"
-                              role="region"
-                              aria-labelledby="mall-category-trigger"
-                              className="rounded-xl border border-white/15 bg-reels-void/98 shadow-lg transition-[opacity,transform] duration-200 ease-out [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_12px_32px_-16px_rgba(0,0,0,0.12)]"
-                              style={{
-                                position: "fixed",
-                                top: menuPlace.top,
-                                left: menuPlace.left,
-                                width: menuPlace.width,
-                                zIndex: 9999,
-                              }}
-                              onMouseEnter={openCategoryMenu}
-                              onMouseLeave={scheduleHoverClose}
-                            >
-                              <div className="no-scrollbar flex justify-center overflow-x-auto px-2 py-1 sm:px-2.5 sm:py-1.5">
-                                <nav
-                                  className="inline-flex min-w-0 flex-nowrap items-center justify-center gap-1 sm:gap-1.5"
-                                  aria-label={t("nav.categoryMore")}
-                                >
-                                  {COMPACT_MORE.map((item) => {
-                                    const active = pathname === item.href;
-                                    return (
-                                      <Link
-                                        key={item.href}
-                                        href={item.href}
-                                        aria-current={active ? "page" : undefined}
-                                        onClick={() => {
-                                          cancelHoverClose();
-                                          setMoreOpen(false);
-                                        }}
-                                        className={`inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 py-[7px] text-[12px] font-semibold leading-none text-zinc-300 transition-colors duration-200 first:pl-2.5 last:pr-2.5 sm:px-2.5 sm:py-[7px] sm:text-[13px] sm:first:pl-3 sm:last:pr-3 ${easeLayout} hover:bg-white/10 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black ${
-                                          active
-                                            ? "border border-white/22 bg-white/10 font-extrabold !text-[#ffffff] hover:!text-[#ffffff] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:font-extrabold [html[data-theme='light']_&]:!text-zinc-950 [html[data-theme='light']_&]:hover:!text-zinc-950"
-                                            : "border border-transparent"
-                                        }`}
-                                      >
-                                        {t(categoryNavKey(item.href))}
-                                      </Link>
-                                    );
-                                  })}
-                                </nav>
-                              </div>
-                            </div>,
-                            document.body,
-                          )}
-                      </div>
-                    </>
-                  ) : (
-                    ITEMS.map((item) => {
-                      const active = pathname === item.href;
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          aria-current={active ? "page" : undefined}
-                          className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} px-2.5 py-[7px] text-[12px] sm:px-3 sm:py-[7px] sm:text-[13px]`}
-                        >
-                          {t(categoryNavKey(item.href))}
-                        </Link>
-                      );
-                    })
-                  )}
-                </nav>
-              )
-            ) : null}
             {mallStackSearchUnderCategory ? (
-              <div className="w-full min-w-0 shrink-0">
-                <ReelsSearchField compact q={mallSearchQ} setQ={setMallSearchQ} />
-              </div>
-            ) : null}
+              <>
+                <div className="relative z-20 flex w-full min-w-0 flex-row items-center gap-2 overflow-visible sm:gap-3">
+                  {categoryNavigation}
+                  <div className={compactTopUserChromeClass}>
+                    <MainTopUserMenu />
+                    <div className="md:hidden">
+                      <SitePreferencesMenu />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex w-full shrink-0 justify-center px-1">
+                  <div className="w-full min-w-0 max-w-2xl">
+                    <ReelsSearchField compact q={mallSearchQ} setQ={setMallSearchQ} />
+                  </div>
+                </div>
+              </>
+            ) : (
+              categoryNavigation
+            )}
           </div>
 
-          {compactEffective && (
-            <div
-              className={`relative z-10 mr-1 flex min-w-0 shrink-0 items-center gap-1.5 sm:mr-2 sm:gap-2 lg:mr-2 ${easeLayout}`}
-            >
+          {compactEffective && !mallStackSearchUnderCategory && (
+            <div className={compactTopUserChromeClass}>
               <MainTopUserMenu />
               <div className="md:hidden">
                 <SitePreferencesMenu />
