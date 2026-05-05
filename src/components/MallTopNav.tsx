@@ -645,6 +645,7 @@ export function MallTopNav() {
           <ReelsSearchField
             compact
             pinkTrailingSubmit
+            pinkTrailingMatchAccountPill
             q={exploreSearchQ}
             setQ={setExploreSearchQ}
           />
