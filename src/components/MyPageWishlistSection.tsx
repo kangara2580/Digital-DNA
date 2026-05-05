@@ -65,7 +65,7 @@ function sortRows(rows: Row[], sort: Sort, locale: SiteLocale): Row[] {
 }
 
 const selectBtn =
-  "min-w-[11.5rem] cursor-pointer rounded-lg border border-white/15 bg-reels-void/80 px-3 py-2 text-[13px] font-medium text-zinc-100 outline-none transition-[border-color,background-color] hover:border-white/45 hover:bg-white/[0.08] focus-visible:border-white/50 focus-visible:outline-none [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:focus-visible:border-zinc-500";
+  "min-w-[11.5rem] cursor-pointer rounded-lg border border-white/15 bg-reels-void/80 px-3 py-2 text-[15px] font-medium text-zinc-100 outline-none transition-[border-color,background-color] hover:border-white/45 hover:bg-white/[0.08] focus-visible:border-white/50 focus-visible:outline-none [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:focus-visible:border-zinc-500";
 
 const LOGIN_REDIRECT = encodeURIComponent("/mypage?tab=wishlist");
 
@@ -144,7 +144,7 @@ export function MyPageWishlistSection() {
     <div className="min-h-[120px]">
         {!authLoading && showLoginGateWishlistOnly ? (
           <div className="rounded-2xl border border-dashed border-white/15 bg-black/20 px-6 py-14 text-center [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white">
-            <p className="text-[14px] text-white/65 [html[data-theme='light']_&]:text-zinc-600">
+            <p className="text-[16px] text-white/65 [html[data-theme='light']_&]:text-zinc-600">
               {t("mypage.wishlist.loginHint")}
             </p>
             <Link
@@ -156,7 +156,7 @@ export function MyPageWishlistSection() {
           </div>
         ) : !hydrated ? (
           <p
-            className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600"
+            className="text-[16px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600"
             aria-live="polite"
           >
             {t("common.loading")}
@@ -164,7 +164,7 @@ export function MyPageWishlistSection() {
         ) : (
           <>
             <div className="mb-6 flex flex-wrap items-center gap-2">
-              <label className="flex items-center gap-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              <label className="flex items-center gap-2 text-[15px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                 <span className="hidden font-medium sm:inline">{t("mypage.sort.label")}</span>
                 <MyPageSortSelect
                   options={[...sortOptions]}
@@ -178,7 +178,7 @@ export function MyPageWishlistSection() {
                   <button
                     type="button"
                     onClick={() => setSelected(new Set(allEntryIds))}
-                    className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
+                    className="rounded-lg border border-white/15 px-3 py-2 text-[15px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
                   >
                     {t("mypage.wishlist.selectAll")}
                   </button>
@@ -186,7 +186,7 @@ export function MyPageWishlistSection() {
                     type="button"
                     onClick={() => setSelected(new Set())}
                     disabled={selected.size === 0}
-                    className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-white/25 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+                    className="rounded-lg border border-white/15 px-3 py-2 text-[15px] font-medium text-zinc-400 transition-colors hover:border-white/25 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
                   >
                     {t("mypage.wishlist.deselect")}
                   </button>
@@ -194,7 +194,7 @@ export function MyPageWishlistSection() {
                     type="button"
                     onClick={deleteSelectedWishlist}
                     disabled={selected.size === 0}
-                    className="rounded-lg border border-reels-crimson/38 px-3 py-2 text-[13px] font-medium text-[#F3C4D9] transition-colors hover:bg-reels-crimson/12 disabled:opacity-40 [html[data-theme='light']_&]:text-reels-crimson"                  >
+                    className="rounded-lg border border-reels-crimson/38 px-3 py-2 text-[15px] font-medium text-[#F3C4D9] transition-colors hover:bg-reels-crimson/12 disabled:opacity-40 [html[data-theme='light']_&]:text-reels-crimson"                  >
                     {t("mypage.wishlist.deleteSelected")}
                   </button>
                   <button
@@ -210,7 +210,7 @@ export function MyPageWishlistSection() {
                         }
                       })();
                     }}
-                    className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
+                    className="rounded-lg border border-white/15 px-3 py-2 text-[15px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
                   >
                     {t("mypage.wishlist.deleteAll")}
                   </button>
@@ -220,7 +220,7 @@ export function MyPageWishlistSection() {
 
             {rows.length === 0 ? (
               <div className="py-12 text-center">
-                <p className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                <p className="text-[16px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                   {t("mypage.wishlist.empty")}
                 </p>
                 <Link

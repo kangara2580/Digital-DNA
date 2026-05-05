@@ -202,7 +202,7 @@ export function MyPageLikedVideosSection() {
     <div className="min-h-[120px]">
       {showLoginGate ? (
         <div className="rounded-2xl border border-dashed border-white/15 bg-black/20 px-6 py-14 text-center [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white">
-          <p className="text-[14px] text-white/65 [html[data-theme='light']_&]:text-zinc-600">
+          <p className="text-[16px] text-white/65 [html[data-theme='light']_&]:text-zinc-600">
             {t("mypage.likes.loginHint")}
           </p>
           <Link href={`/login?redirect=${LOGIN_REDIRECT}`} className={`mt-6 ${MYPAGE_OUTLINE_BTN_SM}`}>
@@ -210,13 +210,13 @@ export function MyPageLikedVideosSection() {
           </Link>
         </div>
       ) : !hydrated || loading ? (
-        <p className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600" aria-live="polite">
+        <p className="text-[16px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600" aria-live="polite">
           {t("common.loading")}
         </p>
       ) : (
         <>
           <div className="mb-6 flex flex-wrap items-center gap-2">
-            <label className="flex items-center gap-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            <label className="flex items-center gap-2 text-[15px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
               <span className="hidden font-medium sm:inline">{t("mypage.sort.label")}</span>
               <MyPageSortSelect
                 options={[...sortOptions]}
@@ -230,7 +230,7 @@ export function MyPageLikedVideosSection() {
                 <button
                   type="button"
                   onClick={() => setSelected(new Set(allEntryIds))}
-                  className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
+                  className="rounded-lg border border-white/15 px-3 py-2 text-[15px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
                 >
                   {t("mypage.wishlist.selectAll")}
                 </button>
@@ -238,7 +238,7 @@ export function MyPageLikedVideosSection() {
                   type="button"
                   onClick={() => setSelected(new Set())}
                   disabled={selected.size === 0}
-                  className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-white/25 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+                  className="rounded-lg border border-white/15 px-3 py-2 text-[15px] font-medium text-zinc-400 transition-colors hover:border-white/25 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
                 >
                   {t("mypage.wishlist.deselect")}
                 </button>
@@ -246,7 +246,7 @@ export function MyPageLikedVideosSection() {
                   type="button"
                   onClick={() => void unlikeSelected()}
                   disabled={selected.size === 0}
-                  className="rounded-lg border border-reels-crimson/38 px-3 py-2 text-[13px] font-medium text-[#F3C4D9] transition-colors hover:bg-reels-crimson/12 disabled:opacity-40 [html[data-theme='light']_&]:text-reels-crimson"
+                  className="rounded-lg border border-reels-crimson/38 px-3 py-2 text-[15px] font-medium text-[#F3C4D9] transition-colors hover:bg-reels-crimson/12 disabled:opacity-40 [html[data-theme='light']_&]:text-reels-crimson"
                 >
                   {t("mypage.likes.unlikeSelected")}
                 </button>
@@ -256,7 +256,7 @@ export function MyPageLikedVideosSection() {
 
           {rows.length === 0 ? (
             <div className="py-12 text-center">
-              <p className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              <p className="text-[16px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                 {t("mypage.likes.empty")}
               </p>
               <Link href="/explore" className={`mt-5 inline-flex ${MYPAGE_OUTLINE_BTN_MD}`}>

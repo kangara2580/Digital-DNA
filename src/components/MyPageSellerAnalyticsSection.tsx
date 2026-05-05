@@ -111,16 +111,16 @@ function KpiCard({
       className={`rounded-2xl border bg-black/30 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white ${ring}`}
     >
       <div className="flex items-start justify-between gap-2">
-        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[12px]">
+        <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[14px]">
           {label}
         </p>
         <Icon className="h-4 w-4 shrink-0 text-reels-crimson [html[data-theme='light']_&]:text-reels-crimson" aria-hidden />
       </div>
-      <div className="mt-2 text-[22px] font-extrabold tabular-nums leading-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]">
+      <div className="mt-2 text-[24px] font-extrabold tabular-nums leading-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[26px]">
         {value}
       </div>
       {sub ? (
-        <p className="mt-1.5 text-[12px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="mt-1.5 text-[14px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           {sub}
         </p>
       ) : null}
@@ -151,7 +151,7 @@ function RevenueBars({
                 title={formatWon(d.revenueWon, locale)}
               />
             </div>
-            <span className="text-[10px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[11px]">
+            <span className="text-[12px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[13px]">
               {d.label}
             </span>
           </div>
@@ -252,7 +252,7 @@ export function MyPageSellerAnalyticsSection() {
   if (loading && !snapshot) {
     return (
       <div aria-busy aria-live="polite">
-        <p className="text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="text-[15px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           {t("analytics.loading")}
         </p>
       </div>
@@ -262,7 +262,7 @@ export function MyPageSellerAnalyticsSection() {
   if (!snapshot || !displaySnapshot) {
     return (
       <div>
-        <p className="text-[13px] text-[#F3C4D9] [html[data-theme='light']_&]:text-reels-crimson">
+        <p className="text-[15px] text-[#F3C4D9] [html[data-theme='light']_&]:text-reels-crimson">
           {loadError ?? t("analytics.noData")}
         </p>
       </div>
@@ -280,7 +280,7 @@ export function MyPageSellerAnalyticsSection() {
       <div className="space-y-2 border-b border-white/10 pb-5 [html[data-theme='light']_&]:border-zinc-200">
         <div className="flex flex-col gap-3 min-[520px]:flex-row min-[520px]:items-center min-[520px]:justify-between min-[520px]:gap-3 lg:gap-4">
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 sm:gap-x-3">
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-reels-crimson/40 bg-reels-crimson/12 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#FAD4E8] [html[data-theme='light']_&]:text-reels-crimson sm:px-2 sm:text-[10px]">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-reels-crimson/40 bg-reels-crimson/12 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-[#FAD4E8] [html[data-theme='light']_&]:text-reels-crimson sm:px-2 sm:text-[12px]">
               <Radio className="h-2.5 w-2.5 animate-pulse sm:h-3 sm:w-3" aria-hidden />
               {loading ? t("analytics.syncing") : t("analytics.refresh60s")}
             </span>
@@ -298,7 +298,7 @@ export function MyPageSellerAnalyticsSection() {
                   key={d}
                   type="button"
                   onClick={() => setPeriod({ kind: "preset", days: d })}
-                  className={`rounded-lg border px-2 py-1 text-[10px] font-bold transition sm:px-2.5 sm:py-1.5 sm:text-[11px] ${
+                  className={`rounded-lg border px-2 py-1 text-[12px] font-bold transition sm:px-2.5 sm:py-1.5 sm:text-[13px] ${
                     period.kind === "preset" && period.days === d
                       ? "border-[color:var(--reels-point)]/50 bg-[color:var(--reels-point)]/14 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
                       : "border-white/10 bg-black/20 text-zinc-400 hover:border-[color:var(--reels-point)]/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-600"
@@ -317,19 +317,19 @@ export function MyPageSellerAnalyticsSection() {
                 value={rangeDraft.start}
                 onChange={(e) => setRangeDraft((r) => ({ ...r, start: e.target.value }))}
                 aria-label={t("analytics.startDateAria")}
-                className="min-w-0 max-w-[42vw] shrink rounded border border-white/15 bg-black/40 px-1 py-0.5 text-[10px] leading-tight text-zinc-200 sm:max-w-none sm:px-1.5 sm:text-[11px] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+                className="min-w-0 max-w-[42vw] shrink rounded border border-white/15 bg-black/40 px-1 py-0.5 text-[12px] leading-tight text-zinc-200 sm:max-w-none sm:px-1.5 sm:text-[13px] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
               />
               <input
                 type="date"
                 value={rangeDraft.end}
                 onChange={(e) => setRangeDraft((r) => ({ ...r, end: e.target.value }))}
                 aria-label={t("analytics.endDateAria")}
-                className="min-w-0 max-w-[42vw] shrink rounded border border-white/15 bg-black/40 px-1 py-0.5 text-[10px] leading-tight text-zinc-200 sm:max-w-none sm:px-1.5 sm:text-[11px] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+                className="min-w-0 max-w-[42vw] shrink rounded border border-white/15 bg-black/40 px-1 py-0.5 text-[12px] leading-tight text-zinc-200 sm:max-w-none sm:px-1.5 sm:text-[13px] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
               />
               <button
                 type="button"
                 onClick={applyCustomRange}
-                className="shrink-0 rounded border border-[color:var(--reels-point)]/45 bg-[color:var(--reels-point)]/12 px-2 py-0.5 text-[10px] font-bold text-[color:var(--reels-point)] hover:bg-[color:var(--reels-point)]/18 sm:px-2.5 sm:py-1 sm:text-[11px]"
+                className="shrink-0 rounded border border-[color:var(--reels-point)]/45 bg-[color:var(--reels-point)]/12 px-2 py-0.5 text-[12px] font-bold text-[color:var(--reels-point)] hover:bg-[color:var(--reels-point)]/18 sm:px-2.5 sm:py-1 sm:text-[13px]"
               >
                 {t("analytics.apply")}
               </button>
@@ -337,7 +337,7 @@ export function MyPageSellerAnalyticsSection() {
           </div>
         </div>
         {period.kind === "custom" ? (
-          <p className="text-right text-[10px] text-[color:var(--reels-point)]/95 [html[data-theme='light']_&]:text-reels-crimson">
+          <p className="text-right text-[12px] text-[color:var(--reels-point)]/95 [html[data-theme='light']_&]:text-reels-crimson">
             {t("analytics.customRangeSummary", {
               start: period.start,
               end: period.end,
@@ -346,7 +346,7 @@ export function MyPageSellerAnalyticsSection() {
           </p>
         ) : null}
         {loadError && displaySnapshot ? (
-          <p className="text-right text-[10px] text-amber-300/95 [html[data-theme='light']_&]:text-amber-900">
+          <p className="text-right text-[12px] text-amber-300/95 [html[data-theme='light']_&]:text-amber-900">
             {loadError}
           </p>
         ) : null}
@@ -414,10 +414,10 @@ export function MyPageSellerAnalyticsSection() {
         {/* 수익 추이 */}
         <div className="rounded-2xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:p-5">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-[14px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[15px]">
+            <h3 className="text-[16px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[17px]">
               {t("analytics.revenueTrend")}
             </h3>
-            <span className="text-[11px] font-medium text-zinc-500">
+            <span className="text-[13px] font-medium text-zinc-500">
               {t("analytics.revenueTrendMeta", {
                 bars: displaySnapshot.revenueByDay.length,
                 days: displaySnapshot.periodDays,
@@ -433,16 +433,16 @@ export function MyPageSellerAnalyticsSection() {
 
         {/* 퍼널 */}
         <div className="rounded-2xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:p-5">
-          <h3 className="text-[14px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[15px]">
+          <h3 className="text-[16px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[17px]">
             {t("analytics.funnel")}
           </h3>
-          <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          <p className="mt-1 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             {t("analytics.funnelHint")}
           </p>
           <ul className="mt-4 space-y-3">
             {displaySnapshot.funnel.map((stage, i) => (
               <li key={stage.label}>
-                <div className="flex items-center justify-between gap-2 text-[12px] sm:text-[13px]">
+                <div className="flex items-center justify-between gap-2 text-[14px] sm:text-[15px]">
                   <span className="font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
                     {i + 1}. {stage.label}
                   </span>
@@ -470,17 +470,17 @@ export function MyPageSellerAnalyticsSection() {
         <div className="rounded-2xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:p-5">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-reels-crimson" aria-hidden />
-            <h3 className="text-[14px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[15px]">
+            <h3 className="text-[16px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[17px]">
               {t("analytics.channels")}
             </h3>
           </div>
-          <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          <p className="mt-1 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             {t("analytics.channelsHint")}
           </p>
           <ul className="mt-4 space-y-3">
             {displaySnapshot.channels.map((ch) => (
               <li key={ch.id}>
-                <div className="flex items-center justify-between gap-2 text-[12px] sm:text-[13px]">
+                <div className="flex items-center justify-between gap-2 text-[14px] sm:text-[15px]">
                   <span className="font-medium text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
                     {ch.label}
                   </span>
@@ -513,17 +513,17 @@ export function MyPageSellerAnalyticsSection() {
         <div className="rounded-2xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:p-5">
           <div className="flex items-center gap-2">
             <Eye className="h-4 w-4 text-reels-crimson" aria-hidden />
-            <h3 className="text-[14px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[15px]">
+            <h3 className="text-[16px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[17px]">
               {t("analytics.retention")}
             </h3>
           </div>
-          <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          <p className="mt-1 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             {t("analytics.retentionHint")}
           </p>
           <ul className="mt-4 space-y-2.5">
             {displaySnapshot.retention.map((r) => (
               <li key={r.label}>
-                <div className="flex items-center justify-between text-[12px] sm:text-[13px]">
+                <div className="flex items-center justify-between text-[14px] sm:text-[15px]">
                   <span className="text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
                     {r.label}
                   </span>
@@ -546,26 +546,26 @@ export function MyPageSellerAnalyticsSection() {
       {/* 집계 요약 바 */}
       <div className="mt-6 grid gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white sm:grid-cols-3 sm:px-5 sm:py-4">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+          <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-500">
             {t("analytics.totals.impressions")}
           </p>
-          <p className="mt-1 text-[18px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+          <p className="mt-1 text-[20px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
             {formatCompact(snapTotals.totalImpressions, locale)}
           </p>
         </div>
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+          <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-500">
             {t("analytics.totals.detailViews")}
           </p>
-          <p className="mt-1 text-[18px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+          <p className="mt-1 text-[20px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
             {formatCompact(snapTotals.totalDetailViews, locale)}
           </p>
         </div>
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+          <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-500">
             {t("analytics.totals.videos")}
           </p>
-          <p className="mt-1 text-[18px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+          <p className="mt-1 text-[20px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
             {t("analytics.totals.videoCount", { n: displaySnapshot.videos.length })}
           </p>
         </div>
@@ -573,15 +573,15 @@ export function MyPageSellerAnalyticsSection() {
 
       {/* 영상별 상세 */}
       <div className="mt-8">
-        <h3 className="text-[15px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[16px]">
+        <h3 className="text-[17px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[18px]">
           {t("analytics.tableTitle")}
         </h3>
-        <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="mt-1 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           {t("analytics.tableHint")}
         </p>
 
         <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 [html[data-theme='light']_&]:border-zinc-200">
-          <table className="w-full min-w-[920px] border-collapse text-left text-[12px] sm:text-[13px]">
+          <table className="w-full min-w-[920px] border-collapse text-left text-[14px] sm:text-[15px]">
             <thead>
               <tr className="border-b border-white/10 bg-black/35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
                 <th className="px-3 py-3 font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600 sm:px-4">

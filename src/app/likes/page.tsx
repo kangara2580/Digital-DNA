@@ -190,12 +190,12 @@ export default function LikesPage() {
   return (
     <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12 lg:px-8">
       <header className="flex flex-col gap-4 border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-end sm:justify-between">
-        <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+        <h1 className="text-[1.625rem] font-semibold tracking-tight text-zinc-50 sm:text-[1.875rem] [html[data-theme='light']_&]:text-zinc-900">
           좋아요한 동영상
         </h1>
         {!showLoginGate ? (
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-            <label className="flex items-center gap-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            <label className="flex items-center gap-2 text-[15px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
               <span className="hidden font-medium text-zinc-400 sm:inline [html[data-theme='light']_&]:text-zinc-700">
                 정렬
               </span>
@@ -211,7 +211,7 @@ export default function LikesPage() {
                 <button
                   type="button"
                   onClick={() => setSelected(new Set(allEntryIds))}
-                  className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
+                  className="rounded-lg border border-white/15 px-3 py-2 text-[15px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
                 >
                   전체 선택
                 </button>
@@ -219,7 +219,7 @@ export default function LikesPage() {
                   type="button"
                   onClick={() => setSelected(new Set())}
                   disabled={selected.size === 0}
-                  className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-white/25 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+                  className="rounded-lg border border-white/15 px-3 py-2 text-[15px] font-medium text-zinc-400 transition-colors hover:border-white/25 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
                 >
                   선택 해제
                 </button>
@@ -227,7 +227,7 @@ export default function LikesPage() {
                   type="button"
                   onClick={() => void unlikeSelected()}
                   disabled={selected.size === 0}
-                  className="rounded-lg border border-reels-crimson/38 px-3 py-2 text-[13px] font-medium text-[#F3C4D9] transition-colors hover:bg-reels-crimson/12 disabled:opacity-40 [html[data-theme='light']_&]:text-reels-crimson"                >
+                  className="rounded-lg border border-reels-crimson/38 px-3 py-2 text-[15px] font-medium text-[#F3C4D9] transition-colors hover:bg-reels-crimson/12 disabled:opacity-40 [html[data-theme='light']_&]:text-reels-crimson"                >
                   선택한 좋아요 해제
                 </button>
               </>
@@ -238,12 +238,12 @@ export default function LikesPage() {
 
       {showLoginGate ? (
         <div className="mx-auto mt-16 max-w-md text-center">
-          <p className="text-[15px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          <p className="text-[17px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             로그인 후 좋아요한 동영상을 찾아볼 수 있어요.
           </p>
           <Link
             href={`/login?redirect=${encodeURIComponent("/likes")}`}
-            className={`mt-6 inline-flex items-center justify-center rounded-full border border-white/20 bg-[linear-gradient(135deg,#0b1327_0%,#122247_50%,#1e3a8a_100%)] px-7 py-2.5 text-[14px] font-bold text-white ring-1 ring-white/10 shadow-[0_12px_28px_-14px_rgba(30,58,138,0.82)] transition-all duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:brightness-110 hover:shadow-[0_18px_38px_-16px_rgba(37,99,235,0.8)] ${
+            className={`mt-6 inline-flex items-center justify-center rounded-full border border-white/20 bg-[linear-gradient(135deg,#0b1327_0%,#122247_50%,#1e3a8a_100%)] px-7 py-2.5 text-[16px] font-bold text-white ring-1 ring-white/10 shadow-[0_12px_28px_-14px_rgba(30,58,138,0.82)] transition-all duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:brightness-110 hover:shadow-[0_18px_38px_-16px_rgba(37,99,235,0.8)] ${
               loginCtaVisible
                 ? "translate-y-0 opacity-100"
                 : "translate-y-1.5 opacity-0"
@@ -253,17 +253,17 @@ export default function LikesPage() {
           </Link>
         </div>
       ) : !hydrated || loading ? (
-        <p className="mt-10 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600" aria-live="polite">
+        <p className="mt-10 text-[16px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600" aria-live="polite">
           불러오는 중…
         </p>
       ) : rows.length === 0 ? (
         <div className="mx-auto mt-16 max-w-md text-center">
-          <p className="text-[15px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          <p className="text-[17px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             아직 좋아요한 동영상이 없어요.
           </p>
           <Link
             href="/"
-            className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
+            className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[16px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
           >
             동영상 둘러보기
           </Link>

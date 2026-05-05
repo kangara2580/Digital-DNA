@@ -84,7 +84,7 @@ export function MyPageSavedDraftsSection() {
 
   if (!user) {
     return (
-      <p className="text-[13px] text-white/60 [html[data-theme='light']_&]:text-zinc-600">
+      <p className="text-[15px] text-white/60 [html[data-theme='light']_&]:text-zinc-600">
         {t("drafts.loginHint")}
       </p>
     );
@@ -93,7 +93,7 @@ export function MyPageSavedDraftsSection() {
   return (
     <>
       {cards.length === 0 ? (
-        <p className="w-full text-center text-[13px] text-white/60 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="w-full text-center text-[15px] text-white/60 [html[data-theme='light']_&]:text-zinc-600">
           {t("drafts.empty")}
         </p>
       ) : (
@@ -162,15 +162,15 @@ function DraftRowView({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={poster} alt="" className="h-20 w-20 rounded-lg object-cover sm:h-[88px] sm:w-[88px]" />
           ) : (
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg border border-dashed border-white/20 bg-black/30 text-[10px] text-zinc-500 sm:h-[88px] sm:w-[88px] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg border border-dashed border-white/20 bg-black/30 text-[12px] text-zinc-500 sm:h-[88px] sm:w-[88px] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100">
               {t("drafts.noPoster")}
             </div>
           )}
           <div className="min-w-0 flex-1 sm:hidden">
-            <p className="line-clamp-2 text-[14px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+            <p className="line-clamp-2 text-[16px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
               {title}
             </p>
-            <p className="text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            <p className="text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
               {t("drafts.savedAt", { when })}
             </p>
           </div>
@@ -178,16 +178,16 @@ function DraftRowView({
 
         <div className="min-w-0 flex-1 space-y-2">
           <div className="hidden sm:block">
-            <p className="line-clamp-2 text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+            <p className="line-clamp-2 text-[17px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
               {title}
             </p>
             {creator ? (
-              <p className="mt-0.5 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">{creator}</p>
+              <p className="mt-0.5 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">{creator}</p>
             ) : null}
-            <p className="mt-1 text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            <p className="mt-1 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
               {t("drafts.savedAt", { when })}
               {!video ? (
-                <span className="ml-2 rounded border border-amber-500/35 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-200 [html[data-theme='light']_&]:text-amber-900">
+                <span className="ml-2 rounded border border-amber-500/35 bg-amber-500/10 px-1.5 py-0.5 text-[12px] font-semibold text-amber-200 [html[data-theme='light']_&]:text-amber-900">
                   {t("drafts.unknownCatalog")}
                 </span>
               ) : null}
@@ -195,7 +195,7 @@ function DraftRowView({
           </div>
 
           {summary ? (
-            <ul className="space-y-1 rounded-lg border border-white/8 bg-black/20 px-3 py-2 text-[12px] leading-snug text-zinc-300 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700">
+            <ul className="space-y-1 rounded-lg border border-white/8 bg-black/20 px-3 py-2 text-[14px] leading-snug text-zinc-300 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700">
               <li>
                 <span className="font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
                   {t("drafts.summary.background")}
@@ -231,7 +231,7 @@ function DraftRowView({
               </li>
             </ul>
           ) : (
-            <p className="text-[12px] text-amber-300/90 [html[data-theme='light']_&]:text-amber-800">
+            <p className="text-[14px] text-amber-300/90 [html[data-theme='light']_&]:text-amber-800">
               {t("drafts.parseError")}
             </p>
           )}
@@ -241,14 +241,14 @@ function DraftRowView({
               <button
                 type="button"
                 onClick={onPurchaseDemo}
-                className="rounded-lg border border-reels-crimson/40 bg-reels-crimson/15 px-3 py-1.5 text-[11px] font-semibold text-reels-crimson hover:bg-reels-crimson/22"
+                className="rounded-lg border border-reels-crimson/40 bg-reels-crimson/15 px-3 py-1.5 text-[13px] font-semibold text-reels-crimson hover:bg-reels-crimson/22"
               >
                 {t("drafts.buyNow")}
               </button>
             ) : null}
             <Link
               href={`/video/${videoId}/customize`}
-              className="rounded-lg border border-reels-cyan/40 bg-reels-cyan/12 px-3 py-1.5 text-[11px] font-semibold text-reels-cyan hover:bg-reels-cyan/18"
+              className="rounded-lg border border-reels-cyan/40 bg-reels-cyan/12 px-3 py-1.5 text-[13px] font-semibold text-reels-cyan hover:bg-reels-cyan/18"
             >
               {t("drafts.resume")}
             </Link>
@@ -258,7 +258,7 @@ function DraftRowView({
                 if (typeof window !== "undefined" && !window.confirm(t("drafts.deleteConfirm"))) return;
                 onRemove();
               }}
-              className="inline-flex items-center gap-1 rounded-lg border border-white/12 bg-white/5 px-2.5 py-1.5 text-[11px] font-semibold text-zinc-400 transition hover:border-reels-crimson/38 hover:bg-reels-crimson/12 hover:text-[#F3C4D9] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-reels-crimson"
+              className="inline-flex items-center gap-1 rounded-lg border border-white/12 bg-white/5 px-2.5 py-1.5 text-[13px] font-semibold text-zinc-400 transition hover:border-reels-crimson/38 hover:bg-reels-crimson/12 hover:text-[#F3C4D9] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-reels-crimson"
               aria-label={t("drafts.deleteAria")}
             >
               <Trash2 className="h-3.5 w-3.5" aria-hidden />

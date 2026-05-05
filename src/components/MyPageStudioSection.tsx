@@ -42,29 +42,29 @@ export function MyPageStudioSection() {
           <div>
             <h2
               id="my-studio-heading"
-              className="text-[15px] font-extrabold tracking-tight [html[data-theme='light']_&]:text-zinc-900"
+              className="text-[17px] font-extrabold tracking-tight [html[data-theme='light']_&]:text-zinc-900"
             >
               {t("studioSection.heading")}
             </h2>
-            <p className="mt-0.5 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            <p className="mt-0.5 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
               {t("studioSection.lead")}
             </p>
           </div>
         </div>
         <Link
           href="/explore"
-          className="text-[12px] font-semibold text-reels-cyan/90 hover:underline"
+          className="text-[14px] font-semibold text-reels-cyan/90 hover:underline"
         >
           {t("studioSection.findVideo")}
         </Link>
       </div>
 
       {!hydrated && user ? (
-        <p className="mt-6 rounded-xl border border-white/10 bg-black/20 px-4 py-10 text-center text-[13px] text-zinc-500 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-600">
+        <p className="mt-6 rounded-xl border border-white/10 bg-black/20 px-4 py-10 text-center text-[15px] text-zinc-500 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-600">
           {t("studioSection.loading")}
         </p>
       ) : items.length === 0 ? (
-        <p className="mt-6 rounded-xl border border-dashed border-white/15 bg-black/20 px-4 py-10 text-center text-[13px] text-zinc-500 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-600">
+        <p className="mt-6 rounded-xl border border-dashed border-white/15 bg-black/20 px-4 py-10 text-center text-[15px] text-zinc-500 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-600">
           {user ? t("studioSection.emptyAuthed") : t("studioSection.emptyGuest")}
         </p>
       ) : (
@@ -88,20 +88,20 @@ export function MyPageStudioSection() {
                       className="h-full w-full object-cover opacity-95"
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-[11px] text-zinc-500">
+                    <div className="flex h-full items-center justify-center text-[13px] text-zinc-500">
                       {t("studioSection.noThumb")}
                     </div>
                   )}
-                  <span className="absolute left-2 top-2 rounded-md bg-black/65 px-2 py-0.5 text-[10px] font-semibold text-zinc-200 backdrop-blur-sm">
+                  <span className="absolute left-2 top-2 rounded-md bg-black/65 px-2 py-0.5 text-[12px] font-semibold text-zinc-200 backdrop-blur-sm">
                     {formatWhen(row.createdAtIso, locale)}
                   </span>
                 </div>
                 <div className="flex flex-1 flex-col gap-2 p-3">
-                  <p className="line-clamp-2 text-[13px] font-bold leading-snug text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                  <p className="line-clamp-2 text-[15px] font-bold leading-snug text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
                     {title}
                   </p>
                   {row.normalizedBackgroundPrompt ? (
-                    <p className="line-clamp-2 text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                    <p className="line-clamp-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                       {t("studioSection.background")} {row.normalizedBackgroundPrompt}
                     </p>
                   ) : null}
@@ -111,14 +111,14 @@ export function MyPageStudioSection() {
                       download
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex flex-1 min-w-[8rem] items-center justify-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2 text-[12px] font-bold text-zinc-200 transition hover:border-reels-cyan/40 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
+                      className="inline-flex flex-1 min-w-[8rem] items-center justify-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2 text-[14px] font-bold text-zinc-200 transition hover:border-reels-cyan/40 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
                     >
                       <Download className="h-3.5 w-3.5 shrink-0" aria-hidden />
                       {t("studioSection.downloadAgain")}
                     </a>
                     <Link
                       href={`/video/${row.videoId}/customize`}
-                      className="inline-flex flex-1 min-w-[8rem] items-center justify-center gap-1.5 rounded-lg border border-reels-cyan/35 bg-reels-cyan/12 px-3 py-2 text-[12px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20"
+                      className="inline-flex flex-1 min-w-[8rem] items-center justify-center gap-1.5 rounded-lg border border-reels-cyan/35 bg-reels-cyan/12 px-3 py-2 text-[14px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20"
                     >
                       <Pencil className="h-3.5 w-3.5 shrink-0" aria-hidden />
                       {t("studioSection.reedit")}
@@ -126,7 +126,7 @@ export function MyPageStudioSection() {
                   </div>
                   <Link
                     href={`/generation/result/${encodeURIComponent(row.jobId)}`}
-                    className="text-center text-[11px] font-medium text-zinc-500 hover:text-reels-cyan [html[data-theme='light']_&]:text-zinc-600"
+                    className="text-center text-[13px] font-medium text-zinc-500 hover:text-reels-cyan [html[data-theme='light']_&]:text-zinc-600"
                   >
                     {t("studioSection.openResult")}
                   </Link>

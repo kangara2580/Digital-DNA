@@ -6,7 +6,7 @@ import { useEffect, useId, useRef, useState } from "react";
 export type MyPageSortOption = { readonly value: string; readonly label: string };
 
 const TRIGGER_REST =
-  "flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-white/15 bg-reels-void/80 px-3 py-2 text-left text-[13px] font-medium text-zinc-100 outline-none transition-[border-color,background-color] hover:border-white/45 hover:bg-white/[0.08] focus-visible:border-white/50 focus-visible:outline-none [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:focus-visible:border-zinc-500";
+  "flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-white/15 bg-reels-void/80 px-3 py-2 text-left text-[15px] font-medium text-zinc-100 outline-none transition-[border-color,background-color] hover:border-white/45 hover:bg-white/[0.08] focus-visible:border-white/50 focus-visible:outline-none [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:focus-visible:border-zinc-500";
 
 export function MyPageSortSelect({
   options,
@@ -89,7 +89,7 @@ export function MyPageSortSelect({
                   type="button"
                   role="option"
                   aria-selected={isSel}
-                  className={`flex w-full ${optionMin} ${optionMax} items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--reels-point)]/40 [html[data-theme='light']_&]:focus-visible:ring-reels-crimson/35 ${
+                  className={`flex w-full ${optionMin} ${optionMax} items-center gap-2 px-3 py-2 text-left text-[15px] transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--reels-point)]/40 [html[data-theme='light']_&]:focus-visible:ring-reels-crimson/35 ${
                     isSel
                       ? "font-semibold text-zinc-100 hover:bg-white/[0.06] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100"
                       : "text-zinc-300 hover:bg-white/[0.06] hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"

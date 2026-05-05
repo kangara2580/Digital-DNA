@@ -43,16 +43,16 @@ function LoginRequiredPanel({
 
   return (
     <div className="rounded-2xl border border-white/10 bg-zinc-900/50 p-6 sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm">
-      <h2 className="text-lg font-semibold tracking-tight text-zinc-50 sm:text-xl [html[data-theme='light']_&]:text-zinc-900">
+      <h2 className="text-xl font-semibold tracking-tight text-zinc-50 sm:text-[1.375rem] [html[data-theme='light']_&]:text-zinc-900">
         {sectionLabel}
       </h2>
       <div className="mt-8 rounded-xl border border-dashed border-white/15 bg-black/25 p-8 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/80">
-        <p className="text-[14px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="text-[16px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
           {t("settings.loginPrompt", { section: sectionLabel })}
         </p>
         <Link
           href={`/login?redirect=${redirect}`}
-          className="mt-5 inline-flex items-center justify-center rounded-full border border-white/20 bg-white/[0.08] px-5 py-2.5 text-[14px] font-semibold text-zinc-100 shadow-sm transition hover:border-white/35 hover:bg-white/[0.12] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-300"
+          className="mt-5 inline-flex items-center justify-center rounded-full border border-white/20 bg-white/[0.08] px-5 py-2.5 text-[16px] font-semibold text-zinc-100 shadow-sm transition hover:border-white/35 hover:bg-white/[0.12] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-300"
         >
           {t("settings.loginCta")}
         </Link>
@@ -218,7 +218,7 @@ export function AccountSettingsDashboard() {
       <main className="min-h-[60vh] bg-zinc-950 text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
         <DocumentTitleI18n titleKey="meta.settings" />
         <div className="mx-auto max-w-[1500px] px-4 py-20 text-center sm:px-6">
-          <p className="text-[14px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+          <p className="text-[16px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
             {t("common.loading")}
           </p>
         </div>
@@ -231,14 +231,14 @@ export function AccountSettingsDashboard() {
       <DocumentTitleI18n titleKey="meta.settings" />
       <div className="mx-auto max-w-[1500px] px-4 py-10 sm:px-6 sm:py-12 lg:px-10">
         <header className="border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-100">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-50 sm:text-[1.75rem] [html[data-theme='light']_&]:text-zinc-900">
+          <h1 className="text-[1.625rem] font-semibold tracking-tight text-zinc-50 sm:text-[1.875rem] [html[data-theme='light']_&]:text-zinc-900">
             {t("settings.title")}
           </h1>
         </header>
 
         <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,13.5rem)_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[15rem_minmax(0,1fr)]">
           <aside className="lg:sticky lg:top-24 lg:self-start">
-            <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
+            <p className="mb-3 text-[13px] font-medium uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
               {t("settings.menu")}
             </p>
             <nav aria-label={t("settings.menu")} className="flex flex-col gap-0.5">
@@ -250,8 +250,8 @@ export function AccountSettingsDashboard() {
                     href={item.href}
                     className={
                       active
-                        ? "rounded-lg border-l-[3px] border-l-[#E42980] bg-white/[0.06] py-2.5 pl-[13px] pr-3 text-[14px] font-semibold text-zinc-50 transition-colors [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900"
-                        : "rounded-lg border-l-[3px] border-l-transparent py-2.5 pl-[13px] pr-3 text-[14px] font-medium text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
+                        ? "rounded-lg border-l-[3px] border-l-[#E42980] bg-white/[0.06] py-2.5 pl-[13px] pr-3 text-[16px] font-semibold text-zinc-50 transition-colors [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900"
+                        : "rounded-lg border-l-[3px] border-l-transparent py-2.5 pl-[13px] pr-3 text-[16px] font-medium text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
                     }
                   >
                     {t(`settings.tab.${item.id}`)}
@@ -264,7 +264,7 @@ export function AccountSettingsDashboard() {
           <section className="min-w-0">
           {authLoading && !user ? (
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-12 text-center [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/50">
-              <p className="text-[14px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+              <p className="text-[16px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
                 {t("settings.loading")}
               </p>
             </div>
@@ -275,7 +275,7 @@ export function AccountSettingsDashboard() {
 
           {currentTab === "basic" && user ? (
             <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
-              <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+              <h2 className="text-xl font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
                 {t("settings.tab.basic")}
               </h2>
 
@@ -289,10 +289,10 @@ export function AccountSettingsDashboard() {
 
           {currentTab === "edit" && user ? (
             <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
-              <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+              <h2 className="text-xl font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
                 {t("settings.tab.edit")}
               </h2>
-              <p className="mt-2 max-w-xl text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+              <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
                 {t("settings.edit.lead")}
               </p>
               <div className="mt-8 max-w-[420px]">
@@ -312,11 +312,11 @@ export function AccountSettingsDashboard() {
 
           {currentTab === "language" && user ? (
             <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
-              <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+              <h2 className="text-xl font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
                 {t("settings.language.heading")}
               </h2>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-8">
-                <span className="shrink-0 text-[14px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                <span className="shrink-0 text-[16px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
                   {t("settings.language.fieldLabel")}
                 </span>
                 <LocalePreferenceSelect

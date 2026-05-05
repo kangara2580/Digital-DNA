@@ -228,7 +228,7 @@ export function MyPageMyListingsSection() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center gap-2 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+      <div className="flex items-center gap-2 text-[16px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
         <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
         <span>{t("listings.checkingAccount")}</span>
       </div>
@@ -238,7 +238,7 @@ export function MyPageMyListingsSection() {
   if (!supabaseConfigured || !user) {
     return (
       <div className="rounded-2xl border border-white/10 bg-black/20 p-8 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-        <p className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="text-[16px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           {t("listings.loginGate")}
         </p>
         <Link
@@ -255,14 +255,14 @@ export function MyPageMyListingsSection() {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-16 text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
         <Loader2 className="h-8 w-8 animate-spin text-[color:var(--reels-point)]" aria-hidden />
-        <p className="text-[14px]">{t("listings.loading")}</p>
+        <p className="text-[16px]">{t("listings.loading")}</p>
       </div>
     );
   }
 
   if (error && videos.length === 0) {
     return (
-      <div className="rounded-2xl border border-reels-crimson/38 bg-reels-crimson/12 px-3 py-4 text-[14px] text-[#F3C4D9] [html[data-theme='light']_&]:text-zinc-900">
+      <div className="rounded-2xl border border-reels-crimson/38 bg-reels-crimson/12 px-3 py-4 text-[16px] text-[#F3C4D9] [html[data-theme='light']_&]:text-zinc-900">
         {error}
         <button
           type="button"
@@ -279,7 +279,7 @@ export function MyPageMyListingsSection() {
     return (
       <div className="rounded-2xl border border-dashed border-white/15 bg-black/20 px-6 py-14 text-center [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-50">
         <Film className="mx-auto h-10 w-10 text-zinc-500 [html[data-theme='light']_&]:text-zinc-400" aria-hidden />
-        <p className="mt-4 text-[15px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">
+        <p className="mt-4 text-[17px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">
           {t("listings.empty")}
         </p>
         <Link
@@ -295,23 +295,23 @@ export function MyPageMyListingsSection() {
   return (
     <div>
       {error ? (
-        <p className="mb-3 rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-[13px] text-amber-100 [html[data-theme='light']_&]:text-amber-950">
+        <p className="mb-3 rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-[15px] text-amber-100 [html[data-theme='light']_&]:text-amber-950">
           {error}
         </p>
       ) : null}
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="text-[15px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           {t("listings.totalCountVisible", { n: visibleVideos.length })}
           {activeCategory !== "all" ? (
-            <span className="ml-1 text-[12px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
+            <span className="ml-1 text-[14px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
               {t("listings.totalWithFilter", { all: videos.length })}
             </span>
           ) : null}
         </p>
         <Link
           href="/sell"
-          className="text-[12px] font-semibold text-reels-cyan hover:underline"
+          className="text-[14px] font-semibold text-reels-cyan hover:underline"
         >
           {t("listings.newListing")}
         </Link>
@@ -321,7 +321,7 @@ export function MyPageMyListingsSection() {
         <button
           type="button"
           onClick={() => setActiveCategory("all")}
-          className={`rounded-full border px-3 py-1.5 text-[12px] font-bold transition ${
+          className={`rounded-full border px-3 py-1.5 text-[14px] font-bold transition ${
             activeCategory === "all"
               ? "border-reels-cyan/50 bg-reels-cyan/15 text-reels-cyan"
               : "border-white/15 bg-black/25 text-zinc-400 hover:border-white/25 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
@@ -338,7 +338,7 @@ export function MyPageMyListingsSection() {
               key={item.value}
               type="button"
               onClick={() => setActiveCategory(item.value)}
-              className={`rounded-full border px-3 py-1.5 text-[12px] font-bold transition ${
+              className={`rounded-full border px-3 py-1.5 text-[14px] font-bold transition ${
                 activeCategory === item.value
                   ? "border-reels-cyan/50 bg-reels-cyan/15 text-reels-cyan"
                   : "border-white/15 bg-black/25 text-zinc-400 hover:border-white/25 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
@@ -351,7 +351,7 @@ export function MyPageMyListingsSection() {
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80">
-        <label className="inline-flex cursor-pointer select-none items-center gap-2 text-[13px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
+        <label className="inline-flex cursor-pointer select-none items-center gap-2 text-[15px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
           <input
             ref={selectAllRef}
             type="checkbox"
@@ -368,7 +368,7 @@ export function MyPageMyListingsSection() {
           type="button"
           disabled={deleteBusy || selectedIds.length === 0}
           onClick={confirmDeleteSelected}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-reels-crimson/42 bg-reels-crimson/14 px-3 py-1.5 text-[12px] font-bold text-[#F9ECF3] transition hover:bg-reels-crimson/24 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:text-zinc-900"        >
+          className="inline-flex items-center gap-1.5 rounded-lg border border-reels-crimson/42 bg-reels-crimson/14 px-3 py-1.5 text-[14px] font-bold text-[#F9ECF3] transition hover:bg-reels-crimson/24 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:text-zinc-900"        >
           {deleteBusy ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
           ) : (
@@ -378,11 +378,11 @@ export function MyPageMyListingsSection() {
           {selectedIds.length > 0 ? ` (${selectedIds.length})` : ""}
         </button>
         {selectedIds.length > 0 ? (
-          <span className="text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          <span className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             {t("listings.selectedCount", { n: selectedIds.length })}
           </span>
         ) : (
-          <span className="text-[12px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
+          <span className="text-[14px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
             {t("listings.selectHint")}
           </span>
         )}
@@ -409,7 +409,7 @@ export function MyPageMyListingsSection() {
                   type="button"
                   onClick={() => setEditing(v)}
                   disabled={deleteBusy}
-                  className="rounded-lg border border-white/20 bg-black/60 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-md backdrop-blur-sm transition hover:bg-black/75 sm:px-2.5 sm:py-1.5 sm:text-[11px]"
+                  className="rounded-lg border border-white/20 bg-black/60 px-2 py-1 text-[12px] font-extrabold uppercase tracking-wide text-white shadow-md backdrop-blur-sm transition hover:bg-black/75 sm:px-2.5 sm:py-1.5 sm:text-[13px]"
                 >
                   {t("listings.edit")}
                 </button>

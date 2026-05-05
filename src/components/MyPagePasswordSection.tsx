@@ -5,7 +5,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const INPUT =
-  "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none transition focus:border-white/35 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
+  "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[16px] text-zinc-100 outline-none transition focus:border-white/35 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
 
 function mapPasswordError(message: string, t: (key: string) => string): string {
   const normalized = message.toLowerCase();
@@ -219,10 +219,10 @@ export function MyPagePasswordSection() {
     <div className="mt-6 rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+          <h3 className="text-[17px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
             {t("password.sectionTitle")}
           </h3>
-          <p className="mt-1 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          <p className="mt-1 text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             {t("password.sectionLead")}
           </p>
         </div>
@@ -238,18 +238,18 @@ export function MyPagePasswordSection() {
             }
             void onOpen();
           }}
-          className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-[13px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-300"
+          className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-[15px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-300"
         >
           {open ? t("password.closePanel") : t("password.openPanel")}
         </button>
       </div>
 
       {error ? (
-        <p className="mt-3 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-[12px] font-semibold text-red-200 [html[data-theme='light']_&]:text-red-800">          {error}
+        <p className="mt-3 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-[14px] font-semibold text-red-200 [html[data-theme='light']_&]:text-red-800">          {error}
         </p>
       ) : null}
       {message ? (
-        <p className="mt-3 rounded-lg border border-emerald-500/45 bg-emerald-500/10 px-3 py-2 text-[12px] font-semibold text-emerald-200 [html[data-theme='light']_&]:text-emerald-900">
+        <p className="mt-3 rounded-lg border border-emerald-500/45 bg-emerald-500/10 px-3 py-2 text-[14px] font-semibold text-emerald-200 [html[data-theme='light']_&]:text-emerald-900">
           {message}
         </p>
       ) : null}
@@ -258,10 +258,10 @@ export function MyPagePasswordSection() {
         <form className="mt-4 space-y-3" onSubmit={onSubmit}>
           {phone ? (
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
-              <p className="text-[12px] font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
+              <p className="text-[14px] font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
                 {t("password.phoneVerifyTitle")}
               </p>
-              <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              <p className="mt-1 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                 {t("password.phoneVerifyLead", { phone: maskedPhone })}
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -269,7 +269,7 @@ export function MyPagePasswordSection() {
                   type="button"
                   onClick={() => void sendSmsCode()}
                   disabled={sendingSms}
-                  className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[12px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
+                  className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[14px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
                 >
                   {sendingSms ? t("password.sending") : smsSent ? t("password.resendCode") : t("password.getCode")}
                 </button>
@@ -285,20 +285,20 @@ export function MyPagePasswordSection() {
                   type="button"
                   onClick={() => void verifySmsCode()}
                   disabled={verifyingSms}
-                  className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[12px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
+                  className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[14px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
                 >
                   {verifyingSms ? t("password.verifying") : phoneVerified ? t("password.verified") : t("password.verifyCode")}
                 </button>
               </div>
             </div>
           ) : (
-            <p className="rounded-xl border border-amber-500/45 bg-amber-500/10 px-3 py-2 text-[12px] font-semibold text-amber-200 [html[data-theme='light']_&]:text-amber-900">
+            <p className="rounded-xl border border-amber-500/45 bg-amber-500/10 px-3 py-2 text-[14px] font-semibold text-amber-200 [html[data-theme='light']_&]:text-amber-900">
               {t("password.skipSmsHint")}
             </p>
           )}
 
         <div>
-          <label className="mb-1 block text-[12px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+          <label className="mb-1 block text-[14px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
             {t("password.currentLabel")}
           </label>
           <input
@@ -311,7 +311,7 @@ export function MyPagePasswordSection() {
           />
         </div>
         <div>
-          <label className="mb-1 block text-[12px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+          <label className="mb-1 block text-[14px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
             {t("password.newLabel")}
           </label>
           <input
@@ -323,7 +323,7 @@ export function MyPagePasswordSection() {
           />
         </div>
         <div>
-          <label className="mb-1 block text-[12px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+          <label className="mb-1 block text-[14px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
             {t("password.confirmLabel")}
           </label>
           <input
@@ -337,7 +337,7 @@ export function MyPagePasswordSection() {
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-full border border-white/15 bg-white/[0.06] py-2.5 text-[14px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
+          className="w-full rounded-full border border-white/15 bg-white/[0.06] py-2.5 text-[16px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
         >
           {busy ? t("password.saveBusy") : t("password.save")}
         </button>

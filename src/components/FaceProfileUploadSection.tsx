@@ -147,9 +147,9 @@ type TripleDraft = { front: string | null; left: string | null; right: string | 
 const emptyTriple = (): TripleDraft => ({ front: null, left: null, right: null });
 
 /** 찜 빈 화면·마이페이지와 동일: 알약형 · 핑크 테두리 · 투명 배경 */
-const outlineCtaMd = `${MYPAGE_OUTLINE_BTN_CORE} px-5 py-2.5 text-[13px]`;
+const outlineCtaMd = `${MYPAGE_OUTLINE_BTN_CORE} px-5 py-2.5 text-[15px]`;
 /** 사진 1장 / 3장 한 번에 — 터치 영역 넓힌 동일 단계 */
-const outlineCtaComfortable = `${MYPAGE_OUTLINE_BTN_CORE} px-6 py-3.5 text-[15px]`;
+const outlineCtaComfortable = `${MYPAGE_OUTLINE_BTN_CORE} px-6 py-3.5 text-[17px]`;
 /** 보조 픽 버튼 공통 스타일(테두리·배경·호버) — 크기는 각 버튼에서 지정 */
 const faceProfileNeutralPickBtn =
   "inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 text-zinc-100 transition hover:border-white/25 hover:bg-white/10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-50";
@@ -348,26 +348,26 @@ export function FaceProfileUploadSection() {
     >
       <h2
         id="my-face-heading"
-        className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900"
+        className="text-xl font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900"
       >
         {t("faceProfile.heading")}
       </h2>
 
       <div className="mt-5 space-y-2 rounded-xl border border-white/10 bg-black/25 px-4 py-3.5 sm:px-5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-        <p className="text-[13px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
+        <p className="text-[15px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
           {t("faceProfile.bannerTipQuick")}
         </p>
-        <p className="text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           {t("faceProfile.bannerTipQuality")}
         </p>
       </div>
 
       {/* ① 빠른 등록 (AI) — 먼저 노출 */}
       <div className="mt-8 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-100">
-        <h3 className="text-[13px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+        <h3 className="text-[15px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
           {t("faceProfile.pathQuickTitle")}
         </h3>
-        <p className="mt-1 text-[12px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="mt-1 text-[14px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
           {t("faceProfile.pathQuickHint")}
         </p>
 
@@ -384,7 +384,7 @@ export function FaceProfileUploadSection() {
             type="button"
             onClick={() => singleInputRef.current?.click()}
             disabled={aiRunning}
-            className={`${faceProfileNeutralPickBtn} px-6 py-3.5 text-[15px] font-semibold disabled:opacity-50`}
+            className={`${faceProfileNeutralPickBtn} px-6 py-3.5 text-[17px] font-semibold disabled:opacity-50`}
           >
             {t("faceProfile.pickOne")}
           </button>
@@ -401,7 +401,7 @@ export function FaceProfileUploadSection() {
         </div>
 
         {singlePending && !aiRunning ? (
-          <p className="mt-3 text-[11px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          <p className="mt-3 text-[13px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             {t("faceProfile.tapGenerateHint")}
           </p>
         ) : null}
@@ -412,7 +412,7 @@ export function FaceProfileUploadSection() {
             role="status"
             aria-live="polite"
           >
-            <p className="font-mono text-[11px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+            <p className="font-mono text-[13px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
               {aiStepLabels[aiStepIndex] ?? aiStepLabels[0]}
             </p>
             <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/10 [html[data-theme='light']_&]:bg-zinc-200">
@@ -428,7 +428,7 @@ export function FaceProfileUploadSection() {
 
         {hydrated && showAiCrop ? (
           <div className="mt-6">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            <p className="text-[13px] font-bold uppercase tracking-wide text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
               {t("faceProfile.aiPreviewLabel")}
             </p>
             <ul className="mt-2 grid grid-cols-3 gap-2 sm:gap-3" role="list">
@@ -441,17 +441,17 @@ export function FaceProfileUploadSection() {
                       alt=""
                       className={`h-full w-full object-cover ${position}`}
                     />
-                    <span className="absolute left-1.5 top-1.5 rounded bg-zinc-900/80 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+                    <span className="absolute left-1.5 top-1.5 rounded bg-zinc-900/80 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
                       AI
                     </span>
                   </div>
-                  <p className="mt-1.5 text-center text-[11px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                  <p className="mt-1.5 text-center text-[13px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
                     {t(labelKey)}
                   </p>
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-[10px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+            <p className="mt-2 text-[12px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
               {new Date(profile.generatedAt).toLocaleString(
                 undefined,
                 { dateStyle: "short", timeStyle: "short" },
@@ -463,10 +463,10 @@ export function FaceProfileUploadSection() {
 
       {/* ② 원본 3장 */}
       <div className="mt-10 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-100">
-        <h3 className="text-[13px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+        <h3 className="text-[15px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
           {t("faceProfile.pathTripleTitle")}
         </h3>
-        <p className="mt-1 text-[12px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="mt-1 text-[14px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
           {t("faceProfile.pathTripleHint")}
         </p>
 
@@ -487,7 +487,7 @@ export function FaceProfileUploadSection() {
           >
             {t("faceProfile.pickThreeAtOnce")}
           </button>
-          <span className="text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          <span className="text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             {t("faceProfile.pickThreeAtOnceHint")}
           </span>
         </div>
@@ -508,16 +508,16 @@ export function FaceProfileUploadSection() {
                   angle: angleLabel(key),
                 })}
               />
-              <p className="text-[13px] font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+              <p className="text-[15px] font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
                 {t(`faceProfile.angle.${key}`)}
               </p>
-              <p className="mt-1 text-[10px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              <p className="mt-1 text-[12px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                 {t(hintKey)}
               </p>
               <button
                 type="button"
                 onClick={() => tripleInputRefs[key].current?.click()}
-                className={`${faceProfileNeutralPickBtn} mt-3 w-full px-3 py-2 text-[11px] font-medium`}
+                className={`${faceProfileNeutralPickBtn} mt-3 w-full px-3 py-2 text-[13px] font-medium`}
               >
                 {slotSrc(key) ? t("faceProfile.repick") : t("faceProfile.choose")}
               </button>
@@ -525,7 +525,7 @@ export function FaceProfileUploadSection() {
                 <button
                   type="button"
                   onClick={() => clearTripleSlot(key)}
-                  className="mt-2 w-full rounded-lg border border-white/15 bg-transparent py-2 text-[11px] font-semibold text-[color:var(--reels-point)] transition hover:border-[color:var(--reels-point)]/40 hover:bg-[color:var(--reels-point)]/10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[color:var(--reels-point)] [html[data-theme='light']_&]:hover:bg-zinc-50"
+                  className="mt-2 w-full rounded-lg border border-white/15 bg-transparent py-2 text-[13px] font-semibold text-[color:var(--reels-point)] transition hover:border-[color:var(--reels-point)]/40 hover:bg-[color:var(--reels-point)]/10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[color:var(--reels-point)] [html[data-theme='light']_&]:hover:bg-zinc-50"
                 >
                   {t("faceProfile.cancel")}
                 </button>
@@ -544,7 +544,7 @@ export function FaceProfileUploadSection() {
           ))}
         </div>
         {uploadStatus ? (
-          <p className="mt-3 text-[12px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+          <p className="mt-3 text-[14px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
             {uploadStatus}
           </p>
         ) : null}
@@ -552,13 +552,13 @@ export function FaceProfileUploadSection() {
 
       {hydrated && !nothingStarted ? (
         <div className="mt-8 flex justify-end gap-2 border-t border-white/10 pt-6 [html[data-theme='light']_&]:border-zinc-100">
-          <p className="mr-auto self-center text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+          <p className="mr-auto self-center text-[14px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
             {t("faceProfile.autoSaved")}
           </p>
           <button
             type="button"
             onClick={clearAll}
-            className="rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-[13px] font-medium text-zinc-300 transition hover:border-white/25 hover:bg-white/10 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
+            className="rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-[15px] font-medium text-zinc-300 transition hover:border-white/25 hover:bg-white/10 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
           >
             {t("faceProfile.clearAll")}
           </button>
@@ -566,7 +566,7 @@ export function FaceProfileUploadSection() {
       ) : null}
 
       {!hydrated ? (
-        <p className="mt-6 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="mt-6 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           {t("settings.loading")}
         </p>
       ) : null}

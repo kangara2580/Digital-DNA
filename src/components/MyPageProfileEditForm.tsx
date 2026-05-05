@@ -86,7 +86,7 @@ const cardShell =
   "rounded-2xl border border-white/10 bg-zinc-900/35 p-5 shadow-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white";
 
 const inputNickname =
-  "mt-2 w-full rounded-xl border border-white/15 bg-black/25 px-3.5 py-2.5 text-[15px] text-zinc-100 outline-none transition focus:border-white/35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900";
+  "mt-2 w-full rounded-xl border border-white/15 bg-black/25 px-3.5 py-2.5 text-[17px] text-zinc-100 outline-none transition focus:border-white/35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900";
 
 export function MyPageProfileEditForm({
   profileForForm,
@@ -235,7 +235,7 @@ export function MyPageProfileEditForm({
 
   if (!user) {
     return (
-      <p className="text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+      <p className="text-[15px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
         {t("profileForm.loginToEdit")}
       </p>
     );
@@ -248,7 +248,7 @@ export function MyPageProfileEditForm({
   return (
     <div className="space-y-5">
       <section className={cardShell} aria-label={t("profileForm.loginAccount")}>
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+        <p className="text-[12px] font-bold uppercase tracking-[0.14em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
           {t("profileForm.loginAccount")}
         </p>
         <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
@@ -262,7 +262,7 @@ export function MyPageProfileEditForm({
             />
           ) : (
             <div
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-xl font-bold text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100"
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-[1.375rem] font-bold text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100"
               aria-hidden
             >
               {displayName.slice(0, 1).toUpperCase()}
@@ -271,7 +271,7 @@ export function MyPageProfileEditForm({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               {google ? (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-2.5 py-0.5 text-[12px] font-semibold text-zinc-200 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-2.5 py-0.5 text-[14px] font-semibold text-zinc-200 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800">
                   <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" aria-hidden>
                     <path
                       fill="#4285F4"
@@ -293,18 +293,18 @@ export function MyPageProfileEditForm({
                   {t("profileForm.googleLogin")}
                 </span>
               ) : (
-                <span className="text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                <span className="text-[14px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
                   {String(user.app_metadata?.provider ?? "—")}
                 </span>
               )}
             </div>
-            <p className="mt-2 truncate text-[18px] font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+            <p className="mt-2 truncate text-[20px] font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
               {displayName}
             </p>
-            <p className="mt-0.5 truncate text-[14px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+            <p className="mt-0.5 truncate text-[16px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
               {user.email ?? ""}
             </p>
-            <p className="mt-2 text-[12px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            <p className="mt-2 text-[14px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
               {google ? t("profileForm.googleLoginHint") : t("profileForm.otherLoginHint")}
             </p>
           </div>
@@ -314,14 +314,14 @@ export function MyPageProfileEditForm({
       <section className={cardShell} aria-labelledby="profile-display-name">
         <h3
           id="profile-display-name"
-          className="text-[15px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
+          className="text-[17px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
         >
           {t("profileForm.displayNameTitle")}
         </h3>
-        <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="mt-1 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           {t("profileForm.nicknameDashboardHint")}
         </p>
-        <label className="mt-3 block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
+        <label className="mt-3 block text-[14px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
           {t("profileForm.nickname")}
           <input
             className={inputNickname}
@@ -332,7 +332,7 @@ export function MyPageProfileEditForm({
         </label>
         {message ? (
           <p
-            className="mt-3 text-[13px] font-medium text-red-400 [html[data-theme='light']_&]:text-red-600"
+            className="mt-3 text-[15px] font-medium text-red-400 [html[data-theme='light']_&]:text-red-600"
             role="status"
           >
             {message}
@@ -342,7 +342,7 @@ export function MyPageProfileEditForm({
           type="button"
           disabled={busy}
           onClick={() => void save()}
-          className="mt-4 inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-5 py-2.5 text-[13px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-300"
+          className="mt-4 inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-5 py-2.5 text-[15px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-300"
         >
           {busy ? t("profileForm.saveBusy") : t("profileForm.save")}
         </button>
@@ -351,19 +351,19 @@ export function MyPageProfileEditForm({
       <section className={cardShell} aria-labelledby="profile-sns-dashboard">
         <h3
           id="profile-sns-dashboard"
-          className="text-[15px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
+          className="text-[17px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
         >
           {t("profileForm.snsDashboardTitle")}
         </h3>
-        <p className="mt-1 text-[12px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        <p className="mt-1 text-[14px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           {t("profileForm.snsHint")}
         </p>
 
         <div className="mt-5">
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+          <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
             {t("profileForm.snsQuickTitle")}
           </p>
-          <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          <p className="mt-1 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             {t("profileForm.snsQuickHint")}
           </p>
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -372,7 +372,7 @@ export function MyPageProfileEditForm({
                 key={prefix}
                 type="button"
                 onClick={() => setSocialLinks((prev) => appendLinkWithPrefix(prev, prefix))}
-                className="rounded-xl border border-white/15 bg-white/[0.05] px-3 py-2.5 text-left text-[13px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.09] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-300"
+                className="rounded-xl border border-white/15 bg-white/[0.05] px-3 py-2.5 text-left text-[15px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.09] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-300"
               >
                 {label}
               </button>
@@ -381,7 +381,7 @@ export function MyPageProfileEditForm({
         </div>
 
         <div className="mt-6">
-          <p className="text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
+          <p className="text-[14px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
             {t("profileForm.snsHeading")}
           </p>
           <div className="mt-2">
@@ -392,17 +392,17 @@ export function MyPageProfileEditForm({
             />
           </div>
           {socialBusy ? (
-            <p className="mt-2 text-[12px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+            <p className="mt-2 text-[14px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
               {t("profileForm.snsSaving")}
             </p>
           ) : null}
         </div>
 
         <div className="mt-6 rounded-xl border border-dashed border-white/15 bg-black/15 px-4 py-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/80">
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+          <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
             {t("profileForm.snsConnectComing")}
           </p>
-          <p className="mt-1 text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          <p className="mt-1 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             {t("profileForm.snsConnectSoon")}
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -411,7 +411,7 @@ export function MyPageProfileEditForm({
                 key={`oauth-${label}`}
                 type="button"
                 disabled
-                className="inline-flex cursor-not-allowed items-center rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[12px] font-semibold text-zinc-500 opacity-60 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-500"
+                className="inline-flex cursor-not-allowed items-center rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[14px] font-semibold text-zinc-500 opacity-60 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-500"
                 aria-label={`${label} — ${t("profileForm.snsConnectSoon")}`}
               >
                 {label}
