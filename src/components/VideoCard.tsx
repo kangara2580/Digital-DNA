@@ -1,7 +1,18 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { AtSign, Bookmark, Camera, Heart, Link as LinkIcon, Music2, Play } from "lucide-react";
+import {
+  AtSign,
+  Bookmark,
+  Camera,
+  Clapperboard,
+  Eye,
+  Heart,
+  Link as LinkIcon,
+  Music2,
+  Play,
+  TrendingUp,
+} from "lucide-react";
 import Link from "next/link";
 import {
   useCallback,
@@ -223,6 +234,23 @@ function AuthRequiredModal({
   );
 }
 
+function formatKrCompactCount(n: number): string {
+  if (!Number.isFinite(n) || n <= 0) return "0";
+  if (n < 10_000) return n.toLocaleString("ko-KR");
+  const man = n / 10_000;
+  if (man >= 10_000) {
+    const eok = man / 10_000;
+    return `${trimDecShortForMan(eok)}억`;
+  }
+  return `${trimDecShortForMan(man)}만`;
+}
+
+function trimDecShortForMan(x: number): string {
+  if (x >= 100) return String(Math.round(x));
+  const rounded = Math.round(x * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+}
+
 export function VideoCard({
   video,
   className,
@@ -267,6 +295,14 @@ export function VideoCard({
     [video],
   );
   const commerce = getCommerceMeta(video.id);
+  const shopShelfStats = useMemo(() => {
+    const views = video.listing?.views ?? 0;
+    const sales = video.listing?.salesCount ?? commerce.salesCount;
+    const trend = Math.max(sales, Math.round(views / 40));
+    const likes =
+      views > 0 ? Math.max(1, Math.round(views * 0.172)) : Math.round(sales * 12);
+    return { views, trend, likes };
+  }, [video.listing, commerce.salesCount]);
   const remaining = clonesRemaining(commerce);
   // 정책 변경: MICRO DNA 배지는 모든 화면에서 노출하지 않음.
   const showMicro = false;
@@ -539,7 +575,7 @@ export function VideoCard({
   const shell = flush
     ? "rounded-none border-0 bg-transparent shadow-none"
     : shopShelf
-      ? "rounded-xl border-0 bg-transparent shadow-none"
+      ? "rounded-xl border-0 bg-black shadow-none overflow-hidden [html[data-theme='light']_&]:bg-white"
     : dense
       ? "rounded-lg border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-reels-cyan/25 hover:shadow-reels-cyan/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-reels-cyan/40"
       : "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-reels-crimson/20 hover:shadow-reels-crimson/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-reels-crimson/35";
@@ -627,7 +663,7 @@ export function VideoCard({
       onMouseMove={externalIframe ? playTikTok : undefined}
     >
       <div
-        className={`${videoReelMediaContainer} relative overflow-hidden bg-black/40 ${aspectClass}${shopShelf ? " rounded-xl" : ""}`}
+        className={`${videoReelMediaContainer} relative overflow-hidden bg-black/40 ${aspectClass}${shopShelf ? " rounded-t-xl" : ""}`}
       >
         {externalIframe ? (
           <div className="absolute inset-0 z-0 flex items-center justify-center">
@@ -870,15 +906,53 @@ export function VideoCard({
       </div>
 
       {hideInfoBar ? null : shopShelf ? (
-        <div className="min-w-0 px-0 pt-2.5">
-          <h3 className="line-clamp-2 text-left text-[13px] font-semibold leading-snug text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-sm">
-            {displayTitle(video)}
-          </h3>
-          {priceLabel ? (
-            <p className="mt-1 text-left text-sm font-extrabold tabular-nums text-[#64E3FF] [html[data-theme='light']_&]:text-[#2A62D8]">
-              {priceLabel}
-            </p>
-          ) : null}
+        <div className="space-y-2.5 bg-black px-3 py-3 [html[data-theme='light']_&]:bg-white">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex min-w-0 flex-1 items-start gap-2">
+              <Clapperboard
+                className="mt-0.5 h-4 w-4 shrink-0 text-white [html[data-theme='light']_&]:text-zinc-900"
+                strokeWidth={2}
+                aria-hidden
+              />
+              <h3 className="line-clamp-2 min-w-0 text-left text-[13px] font-semibold leading-snug text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-sm">
+                {displayTitle(video)}
+              </h3>
+            </div>
+            {priceLabel ? (
+              <span className="shrink-0 text-right text-[13px] font-bold tabular-nums text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-sm">
+                {priceLabel}
+              </span>
+            ) : null}
+          </div>
+          <div className="flex items-center justify-between gap-2 text-[12px] font-medium text-white [html[data-theme='light']_&]:text-zinc-800">
+            <span className="flex items-center gap-1">
+              <TrendingUp
+                className="h-3.5 w-3.5 shrink-0 text-white [html[data-theme='light']_&]:text-zinc-800"
+                strokeWidth={2}
+                aria-hidden
+              />
+              <span className="text-[9px] leading-none text-[color:var(--reels-point)]" aria-hidden>
+                ▲
+              </span>
+            </span>
+            <span className="tabular-nums">{formatKrCompactCount(shopShelfStats.trend)}</span>
+          </div>
+          <div className="flex items-center justify-between gap-2 text-[12px] font-medium text-white [html[data-theme='light']_&]:text-zinc-800">
+            <Eye
+              className="h-3.5 w-3.5 shrink-0 text-white [html[data-theme='light']_&]:text-zinc-800"
+              strokeWidth={2}
+              aria-hidden
+            />
+            <span className="tabular-nums">{formatKrCompactCount(shopShelfStats.views)}</span>
+          </div>
+          <div className="flex items-center justify-between gap-2 text-[12px] font-medium text-white [html[data-theme='light']_&]:text-zinc-800">
+            <Heart
+              className="h-3.5 w-3.5 shrink-0 text-white [html[data-theme='light']_&]:text-zinc-800"
+              strokeWidth={2}
+              aria-hidden
+            />
+            <span className="tabular-nums">{formatKrCompactCount(shopShelfStats.likes)}</span>
+          </div>
         </div>
       ) : (
       <div

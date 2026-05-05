@@ -395,7 +395,7 @@ export function MyPageMyListingsSection() {
         )}
       </div>
 
-      <ul className="grid list-none grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
+      <ul className="grid list-none grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-7 md:grid-cols-4 lg:grid-cols-5">
         {visibleVideos.map((v) => {
           const checked = selectedIds.includes(v.id);
           return (
@@ -410,7 +410,18 @@ export function MyPageMyListingsSection() {
                   aria-label={t("listings.selectVideoAria", { title: v.title })}
                 />
               </label>
-              <VideoCard video={v} className="min-w-0" hideHoverActions />
+              <VideoCard
+                video={v}
+                className="min-w-0"
+                reelLayout
+                reelStrip
+                dense
+                shopShelf
+                hideCreatorMeta
+                hideCloneStrip
+                disableHoverScale
+                hideHoverActions
+              />
               <div className="absolute right-1.5 top-1.5 z-[25] flex flex-col gap-1">
                 <button
                   type="button"
