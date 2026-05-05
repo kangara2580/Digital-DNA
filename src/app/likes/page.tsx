@@ -9,6 +9,7 @@ import { resolveManualTikTokVideoForStudio } from "@/data/tiktokData";
 import { buildWishlistVideoLookup } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useTranslation } from "@/hooks/useTranslation";
 import { videoDisplayTitle } from "@/lib/videoDisplayTitle";
 import type { SiteLocale } from "@/lib/sitePreferences";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
@@ -18,18 +19,15 @@ import {
 } from "@/lib/supabaseFavorites";
 import { waitForSupabaseAccessToken } from "@/lib/waitSupabaseSessionReady";
 
-const SORT_OPTIONS = [
-  { value: "recent", label: "최근 좋아요 순" },
-  { value: "oldest", label: "오래된 순" },
-  { value: "price-asc", label: "가격 낮은 순" },
-  { value: "price-desc", label: "가격 높은 순" },
-  { value: "title-asc", label: "제목 가나다순" },
-  { value: "title-desc", label: "제목 역순" },
-  { value: "duration-asc", label: "재생 짧은 순" },
-  { value: "duration-desc", label: "재생 긴 순" },
-] as const;
-
-type SortValue = (typeof SORT_OPTIONS)[number]["value"];
+type SortValue =
+  | "recent"
+  | "oldest"
+  | "price-asc"
+  | "price-desc"
+  | "title-asc"
+  | "title-desc"
+  | "duration-asc"
+  | "duration-desc";
 type LikeEntry = { id: string; likedAt: number };
 type Row = { entryId: string; video: FeedVideo; likedAt: number };
 
@@ -83,6 +81,28 @@ function rowsToLikeEntries(rows: { video_id: string; created_at: string }[]): Li
 export default function LikesPage() {
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const { locale } = useSitePreferences();
+  const { t } = useTranslation();
+  const loc = locale as SiteLocale;
+  const sortOptions = useMemo(
+    () =>
+      [
+        { value: "recent" as const, label: t("mypage.sort.recentLiked") },
+        { value: "oldest" as const, label: t("mypage.sort.oldestSaved") },
+        { value: "price-asc" as const, label: t("mypage.sort.priceAsc") },
+        { value: "price-desc" as const, label: t("mypage.sort.priceDesc") },
+        {
+          value: "title-asc" as const,
+          label: loc === "en" ? t("mypage.sort.titleAscEn") : t("mypage.sort.titleAsc"),
+        },
+        {
+          value: "title-desc" as const,
+          label: loc === "en" ? t("mypage.sort.titleDescEn") : t("mypage.sort.titleDesc"),
+        },
+        { value: "duration-asc" as const, label: t("mypage.sort.durationAsc") },
+        { value: "duration-desc" as const, label: t("mypage.sort.durationDesc") },
+      ] as const,
+    [t, loc],
+  );
   const [entries, setEntries] = useState<LikeEntry[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -136,8 +156,8 @@ export default function LikesPage() {
         fromCatalog ?? resolveManualTikTokVideoForStudio(e.id) ?? undefined;
       if (video) list.push({ entryId: e.id, video, likedAt: e.likedAt });
     }
-    return sortRows(list, sort, locale as SiteLocale);
-  }, [entries, videoByStoredId, sort, locale]);
+    return sortRows(list, sort, loc);
+  }, [entries, videoByStoredId, sort, loc]);
 
   const allEntryIds = useMemo(() => rows.map((r) => r.entryId), [rows]);
   const showLoginGate = supabaseConfigured && !authLoading && hydrated && !user;
@@ -166,7 +186,7 @@ export default function LikesPage() {
     if (!user || selected.size === 0) return;
     if (
       typeof window !== "undefined" &&
-      !window.confirm(`선택한 ${selected.size}개를 좋아요 목록에서 뺄까요?`)
+      !window.confirm(t("mypage.likes.confirmUnlike", { n: selected.size }))
     ) {
       return;
     }
@@ -180,30 +200,30 @@ export default function LikesPage() {
     );
     if (results.some((r) => !r.ok)) {
       if (typeof window !== "undefined") {
-        window.alert("일부 좋아요 해제에 실패했어요. 다시 시도해 주세요.");
+        window.alert(t("mypage.likes.unlikeFailed"));
       }
     }
     await loadLikes();
     setSelected(new Set());
-  }, [selected, user, loadLikes]);
+  }, [selected, user, loadLikes, t]);
 
   return (
     <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12 lg:px-8">
       <header className="flex flex-col gap-4 border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-end sm:justify-between">
         <h1 className="text-[1.625rem] font-semibold tracking-tight text-zinc-50 sm:text-[1.875rem] [html[data-theme='light']_&]:text-zinc-900">
-          좋아요한 동영상
+          {t("mypage.section.likes.title")}
         </h1>
         {!showLoginGate ? (
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
             <label className="flex items-center gap-2 text-[15px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
               <span className="hidden font-medium text-zinc-400 sm:inline [html[data-theme='light']_&]:text-zinc-700">
-                정렬
+                {t("mypage.sort.label")}
               </span>
               <MyPageSortSelect
-                options={SORT_OPTIONS}
+                options={[...sortOptions]}
                 value={sort}
                 onChange={(v) => setSort(v as SortValue)}
-                ariaLabel="좋아요한 동영상 정렬"
+                ariaLabel={t("mypage.likes.sortAria")}
               />
             </label>
             {hydrated && entries.length > 0 ? (
@@ -213,7 +233,7 @@ export default function LikesPage() {
                   onClick={() => setSelected(new Set(allEntryIds))}
                   className="rounded-lg border border-white/15 px-3 py-2 text-[15px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
                 >
-                  전체 선택
+                  {t("mypage.wishlist.selectAll")}
                 </button>
                 <button
                   type="button"
@@ -221,14 +241,14 @@ export default function LikesPage() {
                   disabled={selected.size === 0}
                   className="rounded-lg border border-white/15 px-3 py-2 text-[15px] font-medium text-zinc-400 transition-colors hover:border-white/25 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
                 >
-                  선택 해제
+                  {t("mypage.wishlist.deselect")}
                 </button>
                 <button
                   type="button"
                   onClick={() => void unlikeSelected()}
                   disabled={selected.size === 0}
                   className="rounded-lg border border-reels-crimson/38 px-3 py-2 text-[15px] font-medium text-[#F3C4D9] transition-colors hover:bg-reels-crimson/12 disabled:opacity-40 [html[data-theme='light']_&]:text-reels-crimson"                >
-                  선택한 좋아요 해제
+                  {t("mypage.likes.unlikeSelected")}
                 </button>
               </>
             ) : null}
@@ -239,7 +259,7 @@ export default function LikesPage() {
       {showLoginGate ? (
         <div className="mx-auto mt-16 max-w-md text-center">
           <p className="text-[17px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            로그인 후 좋아요한 동영상을 찾아볼 수 있어요.
+            {t("mypage.likes.loginHint")}
           </p>
           <Link
             href={`/login?redirect=${encodeURIComponent("/likes")}`}
@@ -249,23 +269,23 @@ export default function LikesPage() {
                 : "translate-y-1.5 opacity-0"
             }`}
           >
-            로그인
+            {t("mypage.loginCta")}
           </Link>
         </div>
       ) : !hydrated || loading ? (
         <p className="mt-10 text-[16px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600" aria-live="polite">
-          불러오는 중…
+          {t("common.loading")}
         </p>
       ) : rows.length === 0 ? (
         <div className="mx-auto mt-16 max-w-md text-center">
           <p className="text-[17px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            아직 좋아요한 동영상이 없어요.
+            {t("mypage.likes.empty")}
           </p>
           <Link
             href="/"
             className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[16px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
           >
-            동영상 둘러보기
+            {t("mypage.wishlist.browse")}
           </Link>
         </div>
       ) : (
@@ -279,7 +299,7 @@ export default function LikesPage() {
                   onChange={() => toggleSelect(entryId)}
                   className="h-4 w-4 rounded border-white/30 accent-reels-cyan"
                 />
-                <span className="sr-only">선택</span>
+                <span className="sr-only">{t("mypage.selectItemAria")}</span>
               </label>
               <VideoCard
                 video={video}
