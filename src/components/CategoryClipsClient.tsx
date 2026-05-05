@@ -253,8 +253,27 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   );
 
   useLayoutEffect(() => {
-    setToolbarEndHost(document.getElementById(MALL_CATEGORY_TOOLBAR_FILTER_ID));
-  }, []);
+    let cancelled = false;
+    const connect = () => {
+      if (cancelled) return;
+      const el = document.getElementById(MALL_CATEGORY_TOOLBAR_FILTER_ID);
+      if (el) setToolbarEndHost(el);
+    };
+    connect();
+    const t = window.setTimeout(connect, 0);
+    let raf1 = 0;
+    let raf2 = 0;
+    raf1 = window.requestAnimationFrame(() => {
+      connect();
+      raf2 = window.requestAnimationFrame(connect);
+    });
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+      window.cancelAnimationFrame(raf1);
+      window.cancelAnimationFrame(raf2);
+    };
+  }, [slug]);
 
   useEffect(() => {
     if (!filterOpen) return;

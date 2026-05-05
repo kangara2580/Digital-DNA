@@ -42,9 +42,12 @@ const categoryPillActiveClass =
 /** 쇼핑 헤더 필터 링크(/category) · CategoryClipsClient 필터 버튼과 동일 톤 */
 const mallHeaderFilterTriggerClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} max-w-full min-w-0 gap-1.5 rounded-full px-2 text-[12px] font-bold leading-none sm:gap-2 sm:px-3 sm:text-[13px]`;
 
-/** 고정 계정·장바구니 + 모바일 설정 — 검색란 우측 여백 */
+/**
+ * 고정 계정·장바구니 — 툴바 행 우측 패딩.
+ * 검색란에 `mr-2`(좌측 flex gap-2와 동일)를 두었으므로, 캡슐 폭+safe-area + 그 한 칸만큼 예약.
+ */
 const mallToolbarReservedForFloatChromeClass =
-  "pr-[max(11rem,calc(env(safe-area-inset-right)+10rem))] sm:pr-[max(12rem,calc(env(safe-area-inset-right)+11rem))] md:pr-[max(10.5rem,calc(env(safe-area-inset-right)+9.5rem))]";
+  "pr-[max(8.5rem,calc(env(safe-area-inset-right)+7.5rem))] sm:pr-[max(9.25rem,calc(env(safe-area-inset-right)+8.25rem))] md:pr-[max(8rem,calc(env(safe-area-inset-right)+7rem))]";
 
 /** 카테고리 스크롤 좌우 화살표 — 헤더 h-11 라인 정렬 */
 const categoryScrollChevronBtnClass =
@@ -394,7 +397,7 @@ export function MallTopNav() {
   const categoryNavigation =
     !showCategoryNav ? null : showAllCategoriesInline ? (
       <div
-        className={`relative z-20 flex min-h-[2.75rem] min-w-0 flex-1 items-center gap-1.5 pr-1 ${easeNav}`}
+        className={`relative z-20 flex min-h-[2.75rem] min-w-0 flex-1 items-center gap-1.5 pr-0 ${easeNav}`}
       >
         <button
           type="button"
@@ -573,7 +576,7 @@ export function MallTopNav() {
       }`}
     >
       <div
-        className={`mx-auto max-w-[1800px] pl-[max(0.35rem,env(safe-area-inset-left))] pr-[max(0.35rem,env(safe-area-inset-right))] sm:pl-[max(0.55rem,env(safe-area-inset-left))] sm:pr-[max(0.55rem,env(safe-area-inset-right))] lg:pl-[max(0.7rem,env(safe-area-inset-left))] lg:pr-[max(0.7rem,env(safe-area-inset-right))] ${easeNav} ${
+        className={`mx-auto max-w-[1800px] pl-[max(0.2rem,env(safe-area-inset-left))] pr-[max(0.2rem,env(safe-area-inset-right))] sm:pl-[max(0.4rem,env(safe-area-inset-left))] sm:pr-[max(0.4rem,env(safe-area-inset-right))] lg:pl-[max(0.5rem,env(safe-area-inset-left))] lg:pr-[max(0.5rem,env(safe-area-inset-right))] ${easeNav} ${
           compactEffective && mallStackSearchUnderCategory
             ? MAIN_TOP_USER_FLOAT_ALIGN_HEADER_PAD_CLASS
             : compactEffective
@@ -584,7 +587,7 @@ export function MallTopNav() {
         <div
           className={`flex min-h-0 w-full [contain:layout] ${easeLayout} ${
             compactEffective
-              ? "relative flex min-h-[2.75rem] flex-row flex-nowrap items-center gap-x-2 overflow-visible sm:gap-x-3"
+              ? "relative flex min-h-[2.75rem] flex-row flex-nowrap items-center gap-x-1.5 overflow-visible sm:gap-x-2"
               : "flex-col"
           }`}
         >
@@ -658,14 +661,14 @@ export function MallTopNav() {
                 ) : isCategoryPage ? (
                   <div
                     id={MALL_CATEGORY_TOOLBAR_FILTER_ID}
-                    className="flex shrink-0 items-center self-center"
+                    className="flex min-h-[2.75rem] min-w-[5.75rem] shrink-0 items-center justify-center self-center sm:min-w-[6.25rem]"
                   />
                 ) : null}
                 <div className="flex min-h-[2.75rem] min-w-0 max-w-[min(48%,460px)] shrink items-center gap-1 self-center sm:max-w-[min(42%,500px)] sm:gap-1.5">
                   {categoryNavigation}
                   {categoryInlineScrollNextButton}
                 </div>
-                <div className="relative z-20 flex min-h-[2.75rem] min-w-0 flex-1 basis-0 items-center self-center pl-0.5 sm:pl-1">
+                <div className="relative z-20 mr-1.5 flex min-h-[2.75rem] min-w-0 flex-1 basis-0 items-center self-center pl-0.5 sm:mr-2 sm:pl-1">
                   <ReelsSearchField
                     compact
                     pinkTrailingSubmit
