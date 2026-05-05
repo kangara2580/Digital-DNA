@@ -638,10 +638,6 @@ export function MallTopNav() {
                 <div className="relative z-20 flex w-full min-w-0 flex-row items-stretch gap-1 overflow-visible sm:gap-1.5">
                   {categoryNavigation}
                   {categoryInlineScrollNextButton}
-                  <div
-                    id={MALL_CATEGORY_TOOLBAR_END_ID}
-                    className="flex shrink-0 items-stretch"
-                  />
                   <div className={compactTopUserChromeStretchClass}>
                     <MainTopUserMenu />
                     <div className="md:hidden">
@@ -649,8 +645,12 @@ export function MallTopNav() {
                     </div>
                   </div>
                 </div>
-                <div className="flex w-full min-w-0 shrink-0 justify-center px-1 sm:px-2">
-                  <div className="w-full min-w-0 max-w-xl">
+                <div className="flex w-full min-w-0 shrink-0 items-center gap-1.5 px-1 sm:gap-2 sm:px-2">
+                  <div
+                    id={MALL_CATEGORY_TOOLBAR_END_ID}
+                    className="flex shrink-0 items-center"
+                  />
+                  <div className="min-w-0 flex-1 max-w-xl">
                     <ReelsSearchField
                       compact={false}
                       homeHero
