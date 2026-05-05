@@ -1,11 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Upload } from "lucide-react";
 import { SellerFeedOwnerQuickMenu } from "@/components/SellerFeedOwnerQuickMenu";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
-import { MYPAGE_OUTLINE_BTN_MD } from "@/lib/mypageOutlineCta";
 
 /** 내 피드(`/seller/{내 user id}`)에서만 — 프로필 카드 테두리 바깥 상단 */
 export function SellerFeedSellCta({ sellerId }: { sellerId: string }) {
@@ -20,9 +18,19 @@ export function SellerFeedSellCta({ sellerId }: { sellerId: string }) {
         className="h-9 w-[3px] shrink-0 rounded-full bg-[color:var(--reels-point)] shadow-[0_0_14px_-2px_rgba(228,41,128,0.55)]"
         aria-hidden
       />
-      <Link href="/sell" className={`${MYPAGE_OUTLINE_BTN_MD} min-w-0 gap-2`}>
-        <Upload className="h-[1.05rem] w-[1.05rem] shrink-0" strokeWidth={2.5} aria-hidden />
-        {t("seller.feed.sellCta")}
+      <Link
+        href="/sell"
+        className="min-w-0 inline-flex items-center gap-1 text-[16px] font-semibold hover:underline"
+      >
+        <span
+          className="shrink-0 text-[22px] font-semibold leading-none text-[color:var(--reels-point)]"
+          aria-hidden
+        >
+          +
+        </span>
+        <span className="text-white [html[data-theme='light']_&]:text-zinc-900">
+          {t("seller.feed.sellCta")}
+        </span>
       </Link>
       <SellerFeedOwnerQuickMenu sellerId={sellerId} />
     </div>

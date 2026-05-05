@@ -11,7 +11,7 @@ import {
   type SellVideoCategory,
 } from "@/lib/sellVideoCategory";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import { MYPAGE_OUTLINE_BTN_MD, MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
+import { MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 import type { FeedVideo } from "@/data/videos";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -283,9 +283,17 @@ export function MyPageMyListingsSection() {
         </p>
         <Link
           href="/sell"
-          className={`mt-6 inline-flex ${MYPAGE_OUTLINE_BTN_MD}`}
+          className="mt-6 inline-flex items-center justify-center gap-1 text-[16px] font-semibold hover:underline"
         >
-          {t("listings.sellCta")}
+          <span
+            className="shrink-0 text-[22px] font-semibold leading-none text-[color:var(--reels-point)]"
+            aria-hidden
+          >
+            +
+          </span>
+          <span className="text-white [html[data-theme='light']_&]:text-zinc-900">
+            {t("listings.sellCta")}
+          </span>
         </Link>
       </div>
     );
