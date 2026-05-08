@@ -6,6 +6,9 @@ export type SocialVideoEmbed = {
   iframeSrc: string;
   provider: "youtube" | "tiktok" | "instagram";
   aspect: SocialEmbedAspect;
+  /** YouTube만 — 미리보기 썸네일·쇼츠 분기 */
+  youtubeVideoId?: string;
+  youtubeIsShorts?: boolean;
 };
 
 /** YouTube 표준 길이(11)·Shorts 등에 흔한 길이(11 또는 그 이상 문자열) 허용 */
@@ -14,7 +17,13 @@ const YOUTUBE_ID = /^[a-zA-Z0-9_-]{11}$/;
 function extractYouTubeId(u: URL): string | null {
   const host = u.hostname.replace(/^www\./, "");
   if (host === "youtu.be") {
-    const id = u.pathname.replace(/^\//, "").split("/")[0]?.split("?")[0] ?? "";
+    const parts = u.pathname.replace(/^\//, "").split("/").filter(Boolean);
+    /** `youtu.be/VIDEO_ID` 또는 `youtu.be/shorts/VIDEO_ID` */
+    if (parts[0] === "shorts" && parts[1]) {
+      const id = parts[1].split("?")[0] ?? "";
+      return YOUTUBE_ID.test(id) ? id : null;
+    }
+    const id = parts[0]?.split("?")[0] ?? "";
     return YOUTUBE_ID.test(id) ? id : null;
   }
   if (
@@ -33,6 +42,28 @@ function extractYouTubeId(u: URL): string | null {
     if (live?.[1]) return live[1];
   }
   return null;
+}
+
+function youtubePathLooksShorts(u: URL): boolean {
+  return /\/shorts\/[a-zA-Z0-9_-]{11}/.test(u.pathname);
+}
+
+/**
+ * 공유용 복사 URL이 shorts/ 형식이면 watch?v= 로 통일 (백엔드·표시 일관성).
+ * ID를 뽑을 수 없으면 원문 반환.
+ */
+export function normalizeYouTubeUrlToWatch(raw: string): string {
+  const t = raw.trim();
+  if (!t) return t;
+  let parsed: URL;
+  try {
+    parsed = new URL(t.startsWith("http") ? t : `https://${t}`);
+  } catch {
+    return t;
+  }
+  const id = extractYouTubeId(parsed);
+  if (!id) return t;
+  return `https://www.youtube.com/watch?v=${id}`;
 }
 
 /**
@@ -83,12 +114,15 @@ export function parseSocialVideoEmbed(rawUrl: string): SocialVideoEmbed | null {
 
   const ytId = extractYouTubeId(parsed);
   if (ytId) {
+    const isShorts = youtubePathLooksShorts(parsed);
     return {
       provider: "youtube",
-      iframeSrc: `https://www.youtube-nocookie.com/embed/${encodeURIComponent(
+      iframeSrc: `https://www.youtube.com/embed/${encodeURIComponent(
         ytId,
       )}?rel=0&modestbranding=1`,
-      aspect: "16:9",
+      aspect: isShorts ? "9:16" : "16:9",
+      youtubeVideoId: ytId,
+      youtubeIsShorts: isShorts,
     };
   }
 
@@ -96,7 +130,8 @@ export function parseSocialVideoEmbed(rawUrl: string): SocialVideoEmbed | null {
   if (tikId) {
     return {
       provider: "tiktok",
-      iframeSrc: `https://www.tiktok.com/embed/v2/${encodeURIComponent(tikId)}`,
+      // /player/v1 임베드는 /embed/v2 대비 불필요한 하단 확장 영역이 적어 폼 내 미리보기에 더 안정적입니다.
+      iframeSrc: `https://www.tiktok.com/player/v1/${encodeURIComponent(tikId)}`,
       aspect: "9:16",
     };
   }

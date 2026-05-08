@@ -200,6 +200,7 @@ export async function PATCH(
   const descriptionRaw = fd.get("description");
   const hashtagsRaw = fd.get("hashtags");
   const categoryRaw = fd.get("category");
+  const priceRaw = fd.get("price");
   const poster = fd.get("poster");
 
   const title =
@@ -220,6 +221,15 @@ export async function PATCH(
   if (!isSellVideoCategory(category)) {
     return NextResponse.json(
       { ok: false, error: "카테고리를 선택해 주세요." },
+      { status: 400 },
+    );
+  }
+  const priceValue =
+    typeof priceRaw === "string" ? priceRaw.trim() : String(priceRaw ?? "").trim();
+  const price = Number.parseInt(priceValue.replace(/,/g, ""), 10);
+  if (!Number.isFinite(price) || price < 100) {
+    return NextResponse.json(
+      { ok: false, error: "금액은 100원 이상으로 입력해 주세요." },
       { status: 400 },
     );
   }
@@ -300,6 +310,7 @@ export async function PATCH(
           description: description || null,
           hashtags: hashtagsNormalized,
           category,
+          price,
           ...(posterUrl ? { poster: posterUrl } : {}),
         },
       });
@@ -312,6 +323,7 @@ export async function PATCH(
           title,
           description: description || null,
           hashtags: hashtagsNormalized,
+          price,
           ...(posterUrl ? { poster: posterUrl } : {}),
         },
       });

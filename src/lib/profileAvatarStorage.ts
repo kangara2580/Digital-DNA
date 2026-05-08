@@ -139,6 +139,11 @@ function profileAvatarFromMetadata(
   userId: string,
 ): ProfileAvatar | null {
   if (!meta) return null;
+  const avatarKind = typeof meta.avatar_kind === "string" ? meta.avatar_kind : "";
+  const avatarCustom = typeof meta.avatar_custom === "string" ? meta.avatar_custom : "";
+  if (avatarKind === "upload" && avatarCustom.startsWith("data:image/")) {
+    return { kind: "upload", dataUrl: avatarCustom };
+  }
   const customRaw = meta.avatar_custom;
   if (typeof customRaw === "string" && customRaw.trim()) {
     try {

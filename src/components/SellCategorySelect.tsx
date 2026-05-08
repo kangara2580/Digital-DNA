@@ -14,6 +14,7 @@ type Props = {
   onChange: (next: SellVideoUserSelectableCategory) => void;
   /** e.g. "판매 카테고리 선택" */
   ariaLabel?: string;
+  triggerClassName?: string;
 };
 
 const OPTION_ROW =
@@ -25,6 +26,7 @@ export function SellCategorySelect({
   value,
   onChange,
   ariaLabel = "카테고리 선택",
+  triggerClassName,
 }: Props) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -71,7 +73,7 @@ export function SellCategorySelect({
             open
               ? "rounded-t-xl border-b border-white/[0.1] [html[data-theme='light']_&]:border-zinc-200/90"
               : "rounded-xl"
-          }`}
+          } ${triggerClassName ?? ""}`}
         >
           <span className="min-w-0 truncate">{currentLabel}</span>
           <ChevronDown
@@ -88,8 +90,9 @@ export function SellCategorySelect({
             id={listboxId}
             role="listbox"
             tabIndex={-1}
-            className="max-h-[min(18rem,50vh)] overflow-y-auto overflow-x-hidden rounded-b-xl py-1"
+            className="max-h-[min(18rem,50vh)] overflow-y-auto overflow-x-hidden overscroll-contain rounded-b-xl py-1"
             aria-label={ariaLabel}
+            onWheel={(e) => e.stopPropagation()}
           >
             {SELL_VIDEO_CATEGORY_USER_OPTIONS.map((item) => {
               const selected = item.value === value;

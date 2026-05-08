@@ -17,7 +17,8 @@
   --reels-void: #040916;
   --reels-lift: #070f1f;
   --reels-crimson: #ff2d8d;
-  --reels-cyan: #00f2ea;
+  /** 시안 대신 포인트 핑크로 통일 (링크·포커스 등 토큰 호환) */
+  --reels-cyan: #ff2d8d;
   /** 브랜드 포인트 핑크 (Pink Glo 계열) */
   --reels-point: #ff2d8d;
   --reels-surface-card: rgba(255, 255, 255, 0.08);
@@ -37,7 +38,7 @@
   /** md+ 틱톡형 좌측 레일 — 본문·헤더 패딩과 동기화 */
   --reels-rail-w: 0px;
   /** ARA 라이트 서피스 / 시안 포인트 (홈 영감 섹션 등) */
-  --primary-color: #00f0ff;
+  --primary-color: #ff2d8d;
   --bg-color: #ffffff;
   --surface-color: #f8f9fa;
   --text-main: #121212;
@@ -46,7 +47,7 @@
 
 :root[data-theme="light"] {
   --reels-crimson: #ff2d8d;
-  --reels-cyan: #00f2ea;
+  --reels-cyan: #ff2d8d;
   /** 홈 스트립·푸터 — 라이트에서 본문과 동일한 밝은 캔버스 */
   --home-ranked-strip-bg: #ffffff;
   --reels-abyss: #ffffff;
@@ -105,7 +106,7 @@
 
 :root[data-theme="dark"] {
   --reels-crimson: #E42980;
-  --reels-cyan: #00f2ea;
+  --reels-cyan: #ff2d8d;
   --background: #02040a;
   --foreground: #fafafa;
 }
@@ -179,9 +180,14 @@ html[data-theme="light"]::-webkit-scrollbar-thumb {
   }
 }
 
-::selection {
-  background-color: rgba(0, 242, 234, 0.26);
-  color: #fff;
+*::selection {
+  background-color: rgba(255, 45, 141, 0.42);
+  color: #ffffff;
+}
+
+*::-moz-selection {
+  background-color: rgba(255, 45, 141, 0.42);
+  color: #ffffff;
 }
 
 /**

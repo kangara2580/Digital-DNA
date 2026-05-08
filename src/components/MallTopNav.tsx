@@ -43,11 +43,15 @@ const categoryPillActiveClass =
 const mallHeaderFilterTriggerClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} max-w-full min-w-0 gap-1.5 rounded-full px-2 text-[12px] font-bold leading-none sm:gap-2 sm:px-3 sm:text-[13px]`;
 
 /**
- * 고정 계정·장바구니 — 툴바 행 우측 패딩.
- * 검색란에 `mr-2`(좌측 flex gap-2와 동일)를 두었으므로, 캡슐 폭+safe-area + 그 한 칸만큼 예약.
+ * 고정 플로팅 묶음(검색 + 결제·계정·카트) — 헤더 카테고리 행이 그 아래로 들어가지 않도록 우측 여백.
+ * collapsed 검색(~2.75rem) + gap + 3칸 캡슐 + 펼침(×1.5) 대비 여유.
  */
 const mallToolbarReservedForFloatChromeClass =
-  "pr-[max(8.5rem,calc(env(safe-area-inset-right)+7.5rem))] sm:pr-[max(9.25rem,calc(env(safe-area-inset-right)+8.25rem))] md:pr-[max(8rem,calc(env(safe-area-inset-right)+7rem))]";
+  "pr-[max(16.75rem,calc(env(safe-area-inset-right)+15.5rem))] sm:pr-[max(17.25rem,calc(env(safe-area-inset-right)+16rem))] md:pr-[max(16.5rem,calc(env(safe-area-inset-right)+15.25rem))]";
+
+/** 몰 헤더: 플로팅 검색 펼침과 동기화되는 카테고리 슬라이드 */
+const mallCategorySearchPeerShift =
+  "transition-transform duration-[680ms] ease-[cubic-bezier(0.16,1,0.22,1)] motion-reduce:transition-none";
 
 /** 카테고리 스크롤 좌우 화살표 — 헤더 h-11 라인 정렬 */
 const categoryScrollChevronBtnClass =
@@ -100,7 +104,7 @@ export function MallTopNav() {
   const showCategoryNav = (isShopPage || isCategoryPage) && !isExploreWatchMode;
   const showAllCategoriesInline =
     (isShopPage || isCategoryPage) && !isExploreWatchMode;
-  /** 쇼핑·카테고리: 1행 카테고리+계정, 2행 검색 가운데 (탐색 /explore 는 검색·카테고리 가로 유지) */
+  /** 쇼핑·카테고리: 필터·카테고리 한 행 — 검색은 우상단 플로팅(결제 캡슐 옆)으로 통일 */
   const mallStackSearchUnderCategory =
     compactEffective && showCategoryNav;
   const [moreOpen, setMoreOpen] = useState(false);
@@ -111,8 +115,8 @@ export function MallTopNav() {
     isMypagePath ||
     isCartPage ||
     isSellPage;
-  const [mallSearchQ, setMallSearchQ] = useState("");
-  const [exploreSearchQ, setExploreSearchQ] = useState("");
+  const [topNavSearchQ, setTopNavSearchQ] = useState("");
+  const [mallSearchTrayOpen, setMallSearchTrayOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const moreWrapRef = useRef<HTMLDivElement>(null);
   const menuPortalRef = useRef<HTMLDivElement>(null);
@@ -227,6 +231,12 @@ export function MallTopNav() {
       document.documentElement.style.removeProperty("--header-height");
     }
   }, [showFloatingChromeOnlyNav]);
+
+  useEffect(() => {
+    if (!mallStackSearchUnderCategory) {
+      setMallSearchTrayOpen(false);
+    }
+  }, [mallStackSearchUnderCategory]);
 
   useEffect(() => {
     if (!compactEffective) setMoreOpen(false);
@@ -353,28 +363,22 @@ export function MallTopNav() {
   }
 
   if (showFloatingChromeOnlyNav) {
-    if (isExplorePath && isExploreWatchMode) {
-      return (
-        <Fragment>
-          <div className={`pointer-events-none ${MAIN_TOP_USER_FLOAT_BOX_CLASS}`}>
-            <div className="pointer-events-auto flex flex-row items-center gap-2 sm:gap-2">
-              <ReelsSearchField
-                compact
-                exploreWatchExpand
-                q={exploreSearchQ}
-                setQ={setExploreSearchQ}
-              />
-              <MainTopUserMenu />
-            </div>
-          </div>
-        </Fragment>
-      );
-    }
     return (
       <Fragment>
         <div className={`pointer-events-none ${MAIN_TOP_USER_FLOAT_BOX_CLASS}`}>
           <div className="pointer-events-auto flex flex-row items-center gap-2 sm:gap-2">
+            <ReelsSearchField
+              compact
+              exploreWatchExpand
+              q={topNavSearchQ}
+              setQ={setTopNavSearchQ}
+            />
             <MainTopUserMenu />
+            {compactEffective ? (
+              <div className="md:hidden">
+                <SitePreferencesMenu />
+              </div>
+            ) : null}
           </div>
         </div>
       </Fragment>
@@ -619,7 +623,7 @@ export function MallTopNav() {
             ) : null}
           </div>
 
-          {/* 쇼핑·카테고리: 카테고리·필터·검색 한 행 / 탐색(/explore) 검색은 우상단 고정(계정 캡슐 왼쪽) */}
+          {/* 쇼핑·카테고리: 카테고리 헤더 / 검색·결제는 우상단 플로팅으로 통일 */}
           <div
             className={`flex min-h-0 w-full min-w-0 ${easeLayout} ${
               compactEffective
@@ -655,18 +659,19 @@ export function MallTopNav() {
                     className="flex min-h-[2.75rem] min-w-[5.75rem] shrink-0 items-center justify-center self-center sm:min-w-[6.25rem]"
                   />
                 ) : null}
-                <div className="flex min-h-[2.75rem] min-w-0 flex-1 basis-0 max-w-[min(72%,840px)] shrink items-center gap-1 self-center sm:max-w-[min(74%,880px)] sm:gap-1.5 lg:max-w-[min(76%,920px)]">
-                  {categoryNavigation}
-                  {categoryInlineScrollNextButton}
-                </div>
-                <div className="relative z-20 mr-1.5 flex min-h-[2.75rem] min-w-[9rem] max-w-[min(36%,360px)] flex-1 basis-0 items-center self-center pl-0.5 sm:min-w-[10rem] sm:mr-2 sm:max-w-[min(30%,320px)] sm:pl-1 lg:max-w-[min(26%,280px)]">
-                  <ReelsSearchField
-                    compact
-                    pinkTrailingSubmit
-                    pinkTrailingTallFullWidth
-                    q={mallSearchQ}
-                    setQ={setMallSearchQ}
-                  />
+                <div className={`flex min-h-[2.75rem] min-w-0 flex-1 basis-0 items-center self-center gap-2 sm:gap-3 ${easeNav}`}>
+                  <div
+                    className={`min-h-[2.75rem] min-w-0 flex-1 overflow-x-auto overflow-y-visible ${mallCategorySearchPeerShift} ${
+                      mallSearchTrayOpen
+                        ? "-translate-x-4 sm:-translate-x-6 md:-translate-x-9"
+                        : "translate-x-0"
+                    }`}
+                  >
+                    {categoryNavigation}
+                  </div>
+                  <div className="flex shrink-0 items-center pl-2 sm:pl-3 md:pl-4">
+                    {categoryInlineScrollNextButton}
+                  </div>
                 </div>
               </div>
             ) : (
@@ -678,15 +683,15 @@ export function MallTopNav() {
     </header>
     <div className={`pointer-events-none ${MAIN_TOP_USER_FLOAT_BOX_CLASS}`}>
       <div className="pointer-events-auto flex flex-row items-center gap-2 sm:gap-2">
-        {isExplorePath && !isExploreWatchMode ? (
-          <ReelsSearchField
-            compact
-            pinkTrailingSubmit
-            pinkTrailingMatchAccountPill
-            q={exploreSearchQ}
-            setQ={setExploreSearchQ}
-          />
-        ) : null}
+        <ReelsSearchField
+          compact
+          exploreWatchExpand
+          q={topNavSearchQ}
+          setQ={setTopNavSearchQ}
+          onExpandTrayOpenChange={
+            mallStackSearchUnderCategory ? setMallSearchTrayOpen : undefined
+          }
+        />
         <MainTopUserMenu />
         {compactEffective ? (
           <div className="md:hidden">

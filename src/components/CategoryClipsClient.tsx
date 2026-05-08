@@ -211,16 +211,13 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
     return () => io.disconnect();
   }, [sorted.length]);
 
-  // 순환 아이템 목록 — pool을 필요한 만큼 반복해 채움
+  // 실제 목록 기준으로만 노출 (중복 반복 없음)
   const visibleItems = useMemo(() => {
     if (sorted.length === 0) return [];
-    const items: Array<{ video: FeedVideo; key: string }> = [];
-    for (let i = 0; i < visibleCount; i++) {
-      const video = sorted[i % sorted.length];
-      items.push({ video, key: `${video.id}-${Math.floor(i / sorted.length)}-${i}` });
-    }
-    return items;
+    const limit = Math.min(visibleCount, sorted.length);
+    return sorted.slice(0, limit).map((video, idx) => ({ video, key: `${video.id}-${idx}` }));
   }, [sorted, visibleCount]);
+  const hasMore = visibleItems.length < sorted.length;
 
   const renderMosaicGrid = (items: Array<{ video: FeedVideo; key: string }>) => (
     <div
@@ -459,13 +456,15 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
             <>
               {renderMosaicGrid(visibleItems)}
               {/* 무한 스크롤 sentinel */}
-              <div
-                ref={sentinelRef}
-                className="flex items-center justify-center py-8"
-                aria-hidden
-              >
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white/20 [html[data-theme='light']_&]:bg-zinc-300" />
-              </div>
+              {hasMore ? (
+                <div
+                  ref={sentinelRef}
+                  className="flex items-center justify-center py-8"
+                  aria-hidden
+                >
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white/20 [html[data-theme='light']_&]:bg-zinc-300" />
+                </div>
+              ) : null}
             </>
           )}
         </main>

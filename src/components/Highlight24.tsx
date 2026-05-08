@@ -152,10 +152,11 @@ export function Highlight24() {
         aria-hidden
       />
       <div
-        className={`${MAIN_TOP_USER_FLOAT_BOX_CLASS} flex flex-row items-center ${
+        className={`${MAIN_TOP_USER_FLOAT_BOX_CLASS} flex flex-row items-center gap-2 sm:gap-2 ${
           authLoading ? "pointer-events-none opacity-50" : ""
         }`}
       >
+        <ReelsSearchField compact exploreWatchExpand q={searchQ} setQ={setSearchQ} />
         <MainTopUserMenu />
       </div>
 
@@ -168,7 +169,7 @@ export function Highlight24() {
         >
           ARA
         </h1>
-        <p className="mx-auto mt-2 max-w-[min(100%,52rem)] px-2 text-center text-[clamp(12px,3.1vw,16px)] font-medium leading-tight tracking-[0.01em] text-white/60 whitespace-nowrap [html[data-theme='light']_&]:text-zinc-700/72 sm:text-[16px]">
+        <p className="mx-auto mt-2 max-w-[min(100%,52rem)] px-2 text-center text-[clamp(10px,2.8vw,14px)] font-medium leading-tight tracking-[0.01em] text-white/60 whitespace-nowrap [html[data-theme='light']_&]:text-zinc-700/72 sm:text-[14px]">
           {t("home.hero.tagline")}
         </p>
 
@@ -204,15 +205,6 @@ export function Highlight24() {
                 </button>
               ))}
             </div>
-          </div>
-
-          <div className="w-full px-1 sm:max-w-xl sm:px-2">
-            <ReelsSearchField
-              compact={false}
-              homeHero
-              q={searchQ}
-              setQ={setSearchQ}
-            />
           </div>
         </div>
       </div>

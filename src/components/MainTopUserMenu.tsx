@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, ShoppingCart, UserRound } from "lucide-react";
+import { ShoppingCart, UserRound } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -10,12 +10,11 @@ import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartBut
 import { LoggedInAccountHoverMenu } from "@/components/LoggedInAccountHoverMenu";
 import { AuthModalPortal } from "@/components/AuthModalPortal";
 import {
-  TOP_NAV_ACCOUNT_CART_DUAL_MIN_WIDTH,
-  TOP_NAV_ACCOUNT_CART_PILL_OUTER,
   TOP_NAV_ACCOUNT_CART_PILL_CELL,
+  TOP_NAV_ACCOUNT_CART_PILL_DIAMOND_USER_LAYOUT,
   TOP_NAV_ACCOUNT_CART_PILL_DIVIDER,
-  TOP_NAV_ACCOUNT_CART_PILL_DUAL_LAYOUT,
-  TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE,
+  TOP_NAV_ACCOUNT_CART_PILL_OUTER,
+  TOP_NAV_ACCOUNT_CART_PILL_TRIPLE_LAYOUT,
   topNavHeroCapsuleGlyphIconClass,
 } from "@/lib/topNavIconRing";
 import {
@@ -24,24 +23,35 @@ import {
   authModalGlowBottom,
   authModalGlowTop,
 } from "@/lib/authModalTheme";
+import { PaymentDiamondIcon } from "@/components/PaymentDiamondIcon";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { useTranslation } from "@/hooks/useTranslation";
 
-/** 계정+장바구니 쌍: 드롭다운 루트는 가로 패딩 없음(호버가 캡슐 끝까지 닿게). */
-const accountHoverRootDualClass =
-  "group/acctmenu relative flex h-full min-h-0 w-full min-w-0 flex-col items-stretch overflow-visible rounded-l-full";
+/** 추후 결제 백엔드 연동 시 이 경로에 페이지 연결 */
+const PAYMENT_PLACEHOLDER_HREF = "/payment";
 
-/** 푸터 등 계정만 */
-const accountHoverRootSoloClass =
-  "group/acctmenu relative flex h-full min-h-0 w-full min-w-0 flex-col items-stretch overflow-visible rounded-full";
+function CapsulePaymentDiamondGlyph() {
+  return (
+    <PaymentDiamondIcon
+      className={`${topNavHeroCapsuleGlyphIconClass()} text-[color:var(--reels-point)]`}
+    />
+  );
+}
 
-/** 양 칸 같은 px 패딩; 가로폭은 grid 1fr|1fr 로 대칭 */
-const capsuleSegmentLeftLoggedClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-l-full px-2.5`;
+/** 3칸: 결제 | 계정 | 장바구니 — 가운데 호버 메뉴 루트 */
+const accountHoverRootTripleMidClass =
+  "group/acctmenu relative flex h-full min-h-0 w-full min-w-0 flex-col items-stretch overflow-visible rounded-none";
+
+/** 2칸: 결제 | 계정 — 우측만 둥근 모서리 */
+const accountHoverRootDiamondUserRightClass =
+  "group/acctmenu relative flex h-full min-h-0 w-full min-w-0 flex-col items-stretch overflow-visible rounded-r-full";
+
+const capsuleSegmentDiamondClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-l-full px-2.5`;
+const capsuleSegmentUserMidClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} px-2.5`;
 const capsuleSegmentCartClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-r-full px-2.5`;
 
-const capsuleGuestButtonClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-full px-3.5`;
-
 type Props = {
-  /** false: 장바구니 없이 계정만 (푸터 등). true: 로그인 시 계정·장바구니 한 캡슐. */
+  /** false: 장바구니 없이 결제 다이아 + 계정만 (히어로 등). true: 결제 | 계정 | 장바구니. */
   withCart?: boolean;
 };
 
@@ -62,6 +72,7 @@ function CapsuleCartGlyph() {
 }
 
 export function MainTopUserMenu({ withCart = true }: Props) {
+  const { t } = useTranslation();
   const { user, loading } = useAuthSession();
   const [authOpen, setAuthOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -111,35 +122,42 @@ export function MainTopUserMenu({ withCart = true }: Props) {
     window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
   }, []);
 
+  const paymentLink = (
+    <Link
+      href={PAYMENT_PLACEHOLDER_HREF}
+      className={capsuleSegmentDiamondClass}
+      aria-label={t("topNav.paymentAria")}
+    >
+      <CapsulePaymentDiamondGlyph />
+    </Link>
+  );
+
   if (loading) {
     if (!withCart) {
       return (
         <div
-          className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE} min-w-[2.75rem] pointer-events-none animate-pulse opacity-50`}
+          className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_DIAMOND_USER_LAYOUT} pointer-events-none animate-pulse opacity-50`}
           aria-hidden
         >
-          <div className={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-full`} />
+          <div className={TOP_NAV_ACCOUNT_CART_PILL_CELL} />
+          <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} />
+          <div className={TOP_NAV_ACCOUNT_CART_PILL_CELL} />
         </div>
       );
     }
     return (
       <div
-        className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_DUAL_LAYOUT} pointer-events-none animate-pulse opacity-50`}
+        className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_TRIPLE_LAYOUT} pointer-events-none animate-pulse opacity-50`}
         aria-hidden
       >
+        <div className={TOP_NAV_ACCOUNT_CART_PILL_CELL} />
+        <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} />
         <div className={TOP_NAV_ACCOUNT_CART_PILL_CELL} />
         <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} />
         <div className={TOP_NAV_ACCOUNT_CART_PILL_CELL} />
       </div>
     );
   }
-
-  const guestAuthButtonInner = (
-    <span className="relative inline-flex size-8 shrink-0 items-center justify-center">
-      <CapsuleUserGlyph />
-      <Plus className="absolute -right-[2px] -top-[2px] size-3" strokeWidth={2.35} aria-hidden />
-    </span>
-  );
 
   const guestModal =
     mounted && authOpen
@@ -174,60 +192,83 @@ export function MainTopUserMenu({ withCart = true }: Props) {
         )
       : null;
 
-  const guestCapsuleButton = (
-    <button
-      type="button"
-      onClick={() => setAuthOpen(true)}
-      className={capsuleGuestButtonClass}
-      aria-haspopup="dialog"
-      aria-expanded={authOpen}
-      aria-label="로그인/회원가입 시작하기"
-    >
-      {guestAuthButtonInner}
-    </button>
-  );
-
   if (!user) {
+    if (!withCart) {
+      return (
+        <>
+          <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_DIAMOND_USER_LAYOUT}`}>
+            {paymentLink}
+            <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} aria-hidden />
+            <button
+              type="button"
+              onClick={() => setAuthOpen(true)}
+              className={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-r-full px-2.5`}
+              aria-haspopup="dialog"
+              aria-expanded={authOpen}
+              aria-label="로그인/회원가입 시작하기"
+            >
+              <CapsuleUserGlyph />
+            </button>
+          </div>
+          {guestModal}
+        </>
+      );
+    }
+
     return (
       <>
-        <div
-          className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE} ${TOP_NAV_ACCOUNT_CART_DUAL_MIN_WIDTH}`}
-        >
-          {guestCapsuleButton}
+        <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_TRIPLE_LAYOUT}`}>
+          {paymentLink}
+          <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} aria-hidden />
+          <button
+            type="button"
+            onClick={() => setAuthOpen(true)}
+            className={capsuleSegmentUserMidClass}
+            aria-haspopup="dialog"
+            aria-expanded={authOpen}
+            aria-label="로그인/회원가입 시작하기"
+          >
+            <CapsuleUserGlyph />
+          </button>
+          <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} aria-hidden />
+          <Link href="/cart" className={capsuleSegmentCartClass} aria-label="장바구니">
+            <CapsuleCartGlyph />
+          </Link>
         </div>
         {guestModal}
       </>
     );
   }
 
-  const loggedRow =
-    withCart ? (
-      <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_DUAL_LAYOUT}`}>
-        <LoggedInAccountHoverMenu
-          rootClassName={accountHoverRootDualClass}
-          triggerClassName={capsuleSegmentLeftLoggedClass}
-        >
-          <CapsuleUserGlyph />
-        </LoggedInAccountHoverMenu>
+  if (!withCart) {
+    return (
+      <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_DIAMOND_USER_LAYOUT}`}>
+        {paymentLink}
         <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} aria-hidden />
-        <Link
-          href="/cart"
-          className={capsuleSegmentCartClass}
-          aria-label="장바구니"
-        >
-          <CapsuleCartGlyph />
-        </Link>
-      </div>
-    ) : (
-      <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE} min-w-[2.75rem]`}>
         <LoggedInAccountHoverMenu
-          rootClassName={accountHoverRootSoloClass}
-          triggerClassName={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-full px-2.5`}
+          rootClassName={accountHoverRootDiamondUserRightClass}
+          triggerClassName={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-r-full px-2.5`}
         >
           <CapsuleUserGlyph />
         </LoggedInAccountHoverMenu>
       </div>
     );
+  }
 
-  return loggedRow;
+  return (
+    <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_TRIPLE_LAYOUT}`}>
+      {paymentLink}
+      <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} aria-hidden />
+      <LoggedInAccountHoverMenu
+        rootClassName={accountHoverRootTripleMidClass}
+        triggerClassName={capsuleSegmentUserMidClass}
+      >
+        <CapsuleUserGlyph />
+      </LoggedInAccountHoverMenu>
+      <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} aria-hidden />
+      <Link href="/cart" className={capsuleSegmentCartClass} aria-label="장바구니">
+        <CapsuleCartGlyph />
+      </Link>
+    </div>
+  );
 }

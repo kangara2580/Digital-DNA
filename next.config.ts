@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { withSentryConfig } from "@sentry/nextjs";
 
 /** 상위 디렉터리에 다른 lockfile이 있어도 이 프로젝트를 트레이싱 루트로 고정 */
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
@@ -36,6 +37,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
       { protocol: "https", hostname: "api.dicebear.com", pathname: "/**" },
       { protocol: "https", hostname: "picsum.photos", pathname: "/**" },
+      { protocol: "https", hostname: "img.youtube.com", pathname: "/**" },
+      { protocol: "https", hostname: "i.ytimg.com", pathname: "/**" },
     ],
   },
   /** 브라우저 기본 요청 `/favicon.ico` → public에 ico 없을 때 404 방지 */
@@ -50,4 +53,8 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: true,
+});

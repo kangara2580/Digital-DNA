@@ -7,9 +7,12 @@ import {
 } from "@/lib/parseMultipartSellUpload";
 import { getNeutralPosterBuffer, NEUTRAL_POSTER_DATA_URL } from "@/lib/neutralPoster";
 import { ensureVideoCategoryColumn } from "@/lib/ensureVideoCategoryColumn";
+import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
 import { isSellVideoCategory } from "@/lib/sellVideoCategory";
 import { normalizeSellHashtags } from "@/lib/sellHashtags";
 import { prisma } from "@/lib/prisma";
+import { normalizeYouTubeUrlToWatch } from "@/lib/socialVideoEmbed";
+import { getInitialProcessedFieldsForSell } from "@/lib/sellProcessedVideoDefaults";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -274,7 +277,7 @@ export async function POST(request: Request) {
         if (!(u.protocol === "http:" || u.protocol === "https:")) {
           throw new Error("bad protocol");
         }
-        normalizedVideoUrl = u.toString();
+        normalizedVideoUrl = normalizeYouTubeUrlToWatch(u.toString());
       } catch {
         return NextResponse.json(
           { ok: false, error: "동영상 URL 형식이 올바르지 않습니다." },
@@ -442,6 +445,11 @@ export async function POST(request: Request) {
   const creator = displayNameFromUser(user);
   await ensureVideoCategoryColumn();
 
+  const processedFields = getInitialProcessedFieldsForSell({
+    publicSrc,
+    fromFile: hasFile,
+  });
+
   let created;
   try {
     created = await prisma.video.create({
@@ -460,6 +468,7 @@ export async function POST(request: Request) {
         hashtags: hashtagsNormalized,
         isAiGenerated: isAi,
         category: categoryRaw,
+        ...processedFields,
       },
     });
   } catch (e) {
@@ -480,6 +489,7 @@ export async function POST(request: Request) {
         description: description || null,
         hashtags: hashtagsNormalized,
         isAiGenerated: isAi,
+        ...processedFields,
       },
     });
     const dbUrl = process.env.DATABASE_URL?.trim() ?? "";
@@ -496,11 +506,16 @@ export async function POST(request: Request) {
         created.id,
       );
     }
+    created = {
+      ...created,
+      category: categoryRaw,
+    };
   }
 
   return NextResponse.json({
     ok: true,
     videoId: created.id,
+    video: videoRowToFeedVideo(created),
     message:
       "등록이 접수되었습니다. 심사 후 마켓에 노출될 수 있어요(데모: 즉시 DB 반영).",
   });

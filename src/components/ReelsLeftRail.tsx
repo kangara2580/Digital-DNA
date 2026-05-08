@@ -1,8 +1,10 @@
 "use client";
 
-import { Compass, Trophy } from "lucide-react";
+import { Compass, Plus, Trophy } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { SellRegistrationModal } from "@/components/SellRegistrationModal";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const stroke = 1.75;
@@ -34,7 +36,7 @@ const railHomeLogoLink =
   "mx-auto inline-flex shrink-0 items-center justify-center overflow-visible rounded-xl bg-transparent p-1.5 transition-[opacity,transform,background-color] duration-200 hover:opacity-90 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:mx-0 [html[data-theme='light']_&]:w-full [html[data-theme='light']_&]:justify-center [html[data-theme='light']_&]:rounded-xl [html[data-theme='light']_&]:py-2 [html[data-theme='light']_&]:hover:bg-zinc-900/[0.04]";
 
 const railHomeLogoImg =
-  "block h-10 w-10 max-w-full object-contain object-center select-none [filter:url(#reelsRailLogoOutlineDark)] [html[data-theme='light']_&]:[filter:url(#reelsRailLogoOutlineLight)] motion-reduce:filter-none";
+  "block h-8 w-8 max-w-full object-contain object-center select-none [filter:url(#reelsRailLogoOutlineDark)] [html[data-theme='light']_&]:[filter:url(#reelsRailLogoOutlineLight)] motion-reduce:filter-none";
 
 type RailItem = {
   href: string;
@@ -107,18 +109,122 @@ const RAIL_ITEMS: RailItem[] = [
   },
 ];
 
+function RailSellButton({
+  onClick,
+  sellActive,
+  isHomeRail,
+}: {
+  onClick: () => void;
+  sellActive: boolean;
+  isHomeRail: boolean;
+}) {
+  const { t } = useTranslation();
+  const widthCls = isHomeRail ? "pointer-events-auto w-full max-w-full" : "w-full max-w-full";
+
+  return (
+    <div className={widthCls}>
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={t("rail.sellAria")}
+        className={`${railNavItemLink} ${sellActive ? railNavItemLinkCurrent : ""}`}
+      >
+        <span className={`${railIconBtn} ${sellActive ? railIconActive : ""}`}>
+          <Plus className="h-[38px] w-[38px]" strokeWidth={2} aria-hidden />
+        </span>
+        <span
+          className={`${railItemLabelBase} ${
+            sellActive
+              ? "text-[color:var(--reels-point)] group-hover:text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-[color:var(--reels-point)] [html[data-theme='light']_&]:group-hover:text-[color:var(--reels-point)]"
+              : "text-white/88"
+          }`}
+        >
+          {t("rail.sell")}
+        </span>
+      </button>
+    </div>
+  );
+}
+
 export function ReelsLeftRail() {
   const pathname = usePathname();
   const { t } = useTranslation();
   const isHome = pathname === "/";
+  const [sellModalOpen, setSellModalOpen] = useState(false);
+  const sellActive = pathname === "/sell" || pathname.startsWith("/sell/");
 
   if (isHome) {
     return (
+      <>
+        <aside
+          className="pointer-events-none fixed inset-y-0 left-0 z-[52] hidden w-[var(--reels-rail-w)] flex-col bg-transparent md:flex"
+          aria-label={t("rail.aria.main")}
+        >
+          <div className="pointer-events-auto relative flex w-full shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
+            <Link href="/" className={railHomeLogoLink} aria-label={t("rail.aria.home")}>
+              <img
+                src="/brand/rail-home-logo.png"
+                alt=""
+                className={railHomeLogoImg}
+                draggable={false}
+              />
+            </Link>
+          </div>
+          <div className="pointer-events-none flex min-h-0 flex-1 flex-col items-stretch pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            <nav
+              className="pointer-events-auto flex shrink-0 flex-col items-center gap-2 overflow-visible py-2"
+              aria-label={t("rail.quickNav")}
+            >
+              {RAIL_ITEMS.map(({ href, labelKey, Icon, isActive }) => {
+                const on = isActive(pathname);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    aria-current={on ? "page" : undefined}
+                    className={`${railNavItemLink} ${on ? railNavItemLinkCurrent : ""}`}
+                  >
+                    <span
+                      className={`${railIconBtn} ${on ? railIconActive : ""}`}
+                    >
+                      <Icon
+                        className={railNavIconClass(href)}
+                        strokeWidth={stroke}
+                        aria-hidden
+                      />
+                    </span>
+                    <span
+                      className={`${railItemLabelBase} ${
+                        on
+                          ? "text-[color:var(--reels-point)] group-hover:text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-[color:var(--reels-point)] [html[data-theme='light']_&]:group-hover:text-[color:var(--reels-point)]"
+                          : "text-white/88"
+                      }`}
+                    >
+                      {t(labelKey)}
+                    </span>
+                  </Link>
+                );
+              })}
+              <RailSellButton
+                isHomeRail
+                sellActive={sellActive}
+                onClick={() => setSellModalOpen(true)}
+              />
+            </nav>
+          </div>
+        </aside>
+        <SellRegistrationModal open={sellModalOpen} onClose={() => setSellModalOpen(false)} />
+      </>
+    );
+  }
+
+  return (
+    <>
       <aside
-        className="pointer-events-none fixed inset-y-0 left-0 z-[52] hidden w-[var(--reels-rail-w)] flex-col bg-transparent md:flex"
+        className="fixed inset-y-0 left-0 z-[52] hidden w-[var(--reels-rail-w)] flex-col border-r border-white/[0.08] bg-reels-abyss/80 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[1px_0_0_rgba(0,0,0,0.04)] md:flex"
         aria-label={t("rail.aria.main")}
       >
-        <div className="pointer-events-auto relative flex w-full shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
+        <div className="relative flex w-full shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
           <Link href="/" className={railHomeLogoLink} aria-label={t("rail.aria.home")}>
             <img
               src="/brand/rail-home-logo.png"
@@ -128,9 +234,9 @@ export function ReelsLeftRail() {
             />
           </Link>
         </div>
-        <div className="pointer-events-none flex min-h-0 flex-1 flex-col items-stretch pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="flex min-h-0 flex-1 flex-col items-stretch pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <nav
-            className="pointer-events-auto flex shrink-0 flex-col items-center gap-2 overflow-visible py-2"
+            className="flex shrink-0 flex-col items-center gap-2 overflow-visible py-2"
             aria-label={t("rail.quickNav")}
           >
             {RAIL_ITEMS.map(({ href, labelKey, Icon, isActive }) => {
@@ -163,64 +269,15 @@ export function ReelsLeftRail() {
                 </Link>
               );
             })}
+            <RailSellButton
+              isHomeRail={false}
+              sellActive={sellActive}
+              onClick={() => setSellModalOpen(true)}
+            />
           </nav>
         </div>
       </aside>
-    );
-  }
-
-  return (
-    <aside
-      className="fixed inset-y-0 left-0 z-[52] hidden w-[var(--reels-rail-w)] flex-col border-r border-white/[0.08] bg-reels-abyss/80 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[1px_0_0_rgba(0,0,0,0.04)] md:flex"
-      aria-label={t("rail.aria.main")}
-    >
-      <div className="relative flex w-full shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
-        <Link href="/" className={railHomeLogoLink} aria-label={t("rail.aria.home")}>
-          <img
-            src="/brand/rail-home-logo.png"
-            alt=""
-            className={railHomeLogoImg}
-            draggable={false}
-          />
-        </Link>
-      </div>
-      <div className="flex min-h-0 flex-1 flex-col items-stretch pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-        <nav
-          className="flex shrink-0 flex-col items-center gap-2 overflow-visible py-2"
-          aria-label={t("rail.quickNav")}
-        >
-          {RAIL_ITEMS.map(({ href, labelKey, Icon, isActive }) => {
-            const on = isActive(pathname);
-            return (
-              <Link
-                key={href}
-                href={href}
-                aria-current={on ? "page" : undefined}
-                className={`${railNavItemLink} ${on ? railNavItemLinkCurrent : ""}`}
-              >
-                <span
-                  className={`${railIconBtn} ${on ? railIconActive : ""}`}
-                >
-                  <Icon
-                    className={railNavIconClass(href)}
-                    strokeWidth={stroke}
-                    aria-hidden
-                  />
-                </span>
-                <span
-                  className={`${railItemLabelBase} ${
-                    on
-                      ? "text-[color:var(--reels-point)] group-hover:text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-[color:var(--reels-point)] [html[data-theme='light']_&]:group-hover:text-[color:var(--reels-point)]"
-                      : "text-white/88"
-                  }`}
-                >
-                  {t(labelKey)}
-                </span>
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-    </aside>
+      <SellRegistrationModal open={sellModalOpen} onClose={() => setSellModalOpen(false)} />
+    </>
   );
 }

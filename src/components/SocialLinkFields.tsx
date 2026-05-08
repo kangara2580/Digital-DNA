@@ -1,6 +1,6 @@
 "use client";
 
-import { Link2, Plus, Trash2 } from "lucide-react";
+import { Link2, Trash2 } from "lucide-react";
 import { SellerSocialPlatformIcon } from "@/components/SellerSocialPlatformIcon";
 import {
   getSellerSocialPlatformFromInput,
@@ -10,8 +10,6 @@ import { useTranslation } from "@/hooks/useTranslation";
 
 const INPUT_CLS =
   "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none transition focus:border-white/35 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
-
-const MAX_LINKS = 20;
 
 function usePlatformLabel() {
   const { t } = useTranslation();
@@ -53,11 +51,6 @@ export function SocialLinkFields({
     const next = [...links];
     next[index] = value;
     onChange(next);
-  };
-
-  const add = () => {
-    if (links.length >= MAX_LINKS) return;
-    onChange([...links, ""]);
   };
 
   const remove = (index: number) => {
@@ -124,19 +117,6 @@ export function SocialLinkFields({
           </div>
         );
       })}
-
-      <button
-        type="button"
-        onClick={add}
-        disabled={links.length >= MAX_LINKS}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-dashed border-white/20 bg-white/[0.04] px-4 py-3 text-[13px] font-semibold text-zinc-200 transition hover:border-white/35 hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800"
-      >
-        <Plus className="h-4 w-4" strokeWidth={2.5} />
-        {t("socialLinks.add")}
-        <span className="text-[11px] font-medium text-zinc-500">
-          ({links.length}/{MAX_LINKS})
-        </span>
-      </button>
     </div>
   );
 }

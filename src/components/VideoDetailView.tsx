@@ -13,12 +13,14 @@ import { VideoDetailReviewsSection } from "@/components/VideoDetailReviewsSectio
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
-import { useWishlist } from "@/context/WishlistContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useRecentClips } from "@/context/RecentClipsContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useVideoCartAction } from "@/hooks/useVideoCartAction";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
+import { useVideoLike } from "@/hooks/useVideoLike";
+import { useVideoWishlistAction } from "@/hooks/useVideoWishlistAction";
 import type { FeedVideo } from "@/data/videos";
 import {
   clonesRemaining,
@@ -31,9 +33,12 @@ import {
   getExternalIframeForDetail,
   getExternalLiveStatsPageUrl,
 } from "@/lib/externalEmbed/playerUrls";
+import {
+  EXTERNAL_EMBED_IFRAME_ALLOW,
+  EXTERNAL_EMBED_IFRAME_SANDBOX,
+} from "@/lib/externalEmbed/iframeSandbox";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
-import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import type { SellerSocialLink } from "@/lib/sellerSocialLinks";
 import { getVideoContentSource } from "@/lib/videoSourcePlatform";
@@ -87,7 +92,6 @@ export function VideoDetailView({
   const authPromptScrollYRef = useRef(0);
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const dopamine = useDopamineBasket();
-  const { isSaved, toggle: toggleWishlist } = useWishlist();
   const { hasPurchased, markPurchased } = usePurchasedVideos();
   const { recordView } = useRecentClips();
   const { t, locale } = useTranslation();
@@ -159,22 +163,52 @@ export function VideoDetailView({
 
   const sellerHandle = useMemo(() => (fromSeller ?? "").trim(), [fromSeller]);
 
+  /** 판매자 페이지(fromSeller) 또는 검색·직링크 등: 같은 판매자 DB 영상 순서로 이전/다음 */
   useEffect(() => {
     const key = sellerHandle;
-    if (!key) {
+    if (key) {
+      let cancelled = false;
+      setSellerFeedIds(null);
+      void fetch(`/api/seller/clips?handle=${encodeURIComponent(key)}`, { cache: "no-store" })
+        .then(async (res) => {
+          const body = (await res.json().catch(() => ({}))) as {
+            ok?: boolean;
+            videoIds?: string[];
+          };
+          if (!res.ok || !body.ok || !Array.isArray(body.videoIds)) return;
+          if (!cancelled) setSellerFeedIds(body.videoIds);
+        })
+        .catch(() => {
+          if (!cancelled) setSellerFeedIds([]);
+        });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    if (fromCategory) {
       setSellerFeedIds(null);
       return;
     }
+
+    const sellerId = video.listing?.sellerId?.trim();
+    if (!sellerId) {
+      setSellerFeedIds(null);
+      return;
+    }
+
     let cancelled = false;
     setSellerFeedIds(null);
-    void fetch(`/api/seller/clips?handle=${encodeURIComponent(key)}`, { cache: "no-store" })
+    void fetch(`/api/seller/videos?sellerId=${encodeURIComponent(sellerId)}`, {
+      cache: "no-store",
+    })
       .then(async (res) => {
         const body = (await res.json().catch(() => ({}))) as {
           ok?: boolean;
-          videoIds?: string[];
+          videos?: { id: string }[];
         };
-        if (!res.ok || !body.ok || !Array.isArray(body.videoIds)) return;
-        if (!cancelled) setSellerFeedIds(body.videoIds);
+        if (!res.ok || !body.ok || !Array.isArray(body.videos)) return;
+        if (!cancelled) setSellerFeedIds(body.videos.map((v) => v.id));
       })
       .catch(() => {
         if (!cancelled) setSellerFeedIds([]);
@@ -182,7 +216,7 @@ export function VideoDetailView({
     return () => {
       cancelled = true;
     };
-  }, [sellerHandle]);
+  }, [sellerHandle, fromCategory, video.listing?.sellerId]);
 
   const detailQuerySuffix = useMemo(() => {
     const params = new URLSearchParams();
@@ -242,14 +276,16 @@ export function VideoDetailView({
       ? (sellerFeedIds[sellerIndex + 1] ?? null)
       : null;
 
+  /** 카테고리 진입(from)이 아니면 같은 판매자 목록으로 좌우 이동 (검색·홈 등 포함) */
+  const prioritizeSellerFeed =
+    sellerHandle.length > 0 ||
+    (!fromCategory && Boolean(video.listing?.sellerId?.trim()));
+
   const useSellerFeedNav =
-    sellerHandle.length > 0 &&
+    prioritizeSellerFeed &&
     sellerFeedIds !== null &&
     sellerFeedIds.length > 1 &&
     sellerIndex >= 0;
-
-  /** 판매자 피드에서 들어왔으면 카테고리 순환 폴백 없음 */
-  const prioritizeSellerFeed = sellerHandle.length > 0;
 
   const showPrevNav = prioritizeSellerFeed
     ? Boolean(useSellerFeedNav && sellerPrevId)
@@ -308,14 +344,20 @@ export function VideoDetailView({
   const showFreshMeta = fresh.tier !== "archived";
   const price = video.priceWon ?? 0;
   const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
-  const wishlisted = isSaved(video.id);
-  const inCart = dopamine.isVideoInCart(video.id);
+  const { wishlisted, toggleWishlist } = useVideoWishlistAction(video, requireAuth);
+  const { inCart, toggleCartFromButton } = useVideoCartAction(video, dopamine, requireAuth);
   const [wishlistPulse, setWishlistPulse] = useState(false);
   const [likePulse, setLikePulse] = useState(false);
-  const [internalLikeCount, setInternalLikeCount] = useState(0);
-  const [likedByMe, setLikedByMe] = useState(false);
-  const [likeBusy, setLikeBusy] = useState(false);
   const [likeBurst, setLikeBurst] = useState(false);
+  const { internalLikeCount, likedByMe, likeBusy, toggleLike } = useVideoLike({
+    videoId: video.id,
+    requireAuth,
+    onError: () => {
+      if (typeof window !== "undefined") {
+        window.alert(t("explore.likeFailed"));
+      }
+    },
+  });
 
   const rankMetrics = useMemo(() => {
     if (video.listing) {
@@ -467,102 +509,18 @@ export function VideoDetailView({
     };
   }, [video.listing?.sellerId]);
 
-  const loadInternalLikes = useCallback(async () => {
-    try {
-      const supabase = getSupabaseBrowserClient();
-      const session = supabase ? await supabase.auth.getSession() : null;
-      const token = session?.data.session?.access_token;
-      const headers = token
-        ? { Authorization: `Bearer ${token}` }
-        : undefined;
-      const res = await fetch(
-        `/api/video/likes?videoId=${encodeURIComponent(canonicalFavoriteVideoId(video.id))}`,
-        {
-          cache: "no-store",
-          headers,
-        },
-      );
-      if (!res.ok) return;
-      const body = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        internalLikes?: number;
-        likedByMe?: boolean;
-      };
-      if (!body.ok) return;
-      setInternalLikeCount(
-        typeof body.internalLikes === "number" ? Math.max(0, body.internalLikes) : 0,
-      );
-      setLikedByMe(Boolean(body.likedByMe));
-    } catch {
-      /* ignore */
-    }
-  }, [video.id]);
-
-  useEffect(() => {
-    setInternalLikeCount(0);
-    setLikedByMe(false);
-    void loadInternalLikes();
-  }, [video.id, loadInternalLikes]);
-
   const toggleInternalLike = useCallback(async () => {
-    if (likeBusy || authLoading) return;
-    if (!requireAuth()) return;
-
     const nextLiked = !likedByMe;
-    const prevLiked = likedByMe;
-    const prevCount = internalLikeCount;
-    setLikedByMe(nextLiked);
-    setInternalLikeCount((prev) => Math.max(0, prev + (nextLiked ? 1 : -1)));
     setLikePulse(true);
     if (nextLiked) {
       setLikeBurst(true);
       window.setTimeout(() => setLikeBurst(false), 420);
     }
     window.setTimeout(() => setLikePulse(false), 170);
-    setLikeBusy(true);
-
-    try {
-      const supabase = getSupabaseBrowserClient();
-      const session = supabase ? await supabase.auth.getSession() : null;
-      const token = session?.data.session?.access_token;
-      if (!token) throw new Error("no_token");
-      const res = await fetch("/api/video/likes", {
-        method: nextLiked ? "POST" : "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ videoId: canonicalFavoriteVideoId(video.id) }),
-      });
-      const body = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        internalLikes?: number;
-        likedByMe?: boolean;
-      };
-      if (!res.ok || !body.ok) throw new Error("like_toggle_failed");
-      if (typeof body.internalLikes === "number") {
-        setInternalLikeCount(Math.max(0, body.internalLikes));
-      }
-      setLikedByMe(Boolean(body.likedByMe));
-    } catch {
-      setLikedByMe(prevLiked);
-      setInternalLikeCount(prevCount);
-      void loadInternalLikes();
-      if (typeof window !== "undefined") {
-        window.alert(t("explore.likeFailed"));
-      }
-    } finally {
-      setLikeBusy(false);
-    }
+    await toggleLike();
   }, [
-    likeBusy,
-    authLoading,
-    requireAuth,
     likedByMe,
-    internalLikeCount,
-    video.id,
-    loadInternalLikes,
-    t,
+    toggleLike,
   ]);
 
   const toggleDetailVideoPlayback = useCallback(() => {
@@ -638,12 +596,19 @@ export function VideoDetailView({
               }`}
             >
               {externalEmbed ? (
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 overflow-hidden">
                   <iframe
                     title={displayTitle(video)}
                     src={externalEmbed.src}
-                    className="h-full w-full border-0"
-                    allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                    sandbox={EXTERNAL_EMBED_IFRAME_SANDBOX}
+                    className={`border-0 ${
+                      externalEmbed.kind === "instagram"
+                        ? "absolute left-1/2 top-[2%] h-[118%] w-[112%] max-w-none -translate-x-1/2"
+                        : externalEmbed.kind === "youtube"
+                          ? "absolute left-1/2 top-1/2 h-[110%] w-[110%] max-w-none -translate-x-1/2 -translate-y-1/2"
+                          : "absolute inset-0 h-full w-full"
+                    }`}
+                    allow={EXTERNAL_EMBED_IFRAME_ALLOW}
                     allowFullScreen
                     loading="eager"
                     scrolling="no"
@@ -725,7 +690,7 @@ export function VideoDetailView({
                     </p>
                   ) : null}
                   {video.hashtags ? (
-                    <p className="mt-2 text-[13px] leading-relaxed text-reels-cyan/95 [html[data-theme='light']_&]:text-[#6d28d9]">
+                    <p className="mt-2 text-[13px] leading-relaxed text-reels-cyan/95 [html[data-theme='light']_&]:text-[color:var(--reels-point)]">
                       {video.hashtags
                         .split(",")
                         .map((tag) => tag.trim())
@@ -801,7 +766,7 @@ export function VideoDetailView({
                 onClick={(e) => {
                   if (soldOut) return;
                   if (!requireAuth()) return;
-                  dopamine.launchFromCartButton(e.currentTarget, video, posterSrc);
+                  toggleCartFromButton(e.currentTarget, posterSrc ?? undefined);
                 }}
                 className={`inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border border-white/10 bg-white/[0.04] transition-colors hover:border-white/25 hover:text-zinc-100 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 ${
                   inCart
@@ -847,7 +812,7 @@ export function VideoDetailView({
                   if (!requireAuth()) return;
                   setWishlistPulse(true);
                   window.setTimeout(() => setWishlistPulse(false), 170);
-                  toggleWishlist(video);
+                  toggleWishlist();
                 }}
                 className={`inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border transition-all duration-200 [html[data-theme='light']_&]:bg-zinc-100 ${
                   wishlisted

@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Link2, PencilRuler, PlayCircle, Tag, WandSparkles } from "lucide-react";
+import { Link2, WandSparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -18,6 +18,14 @@ import {
 } from "@/lib/authModalTheme";
 import { homeSectionHeadingH2ClassName } from "@/lib/homeSectionHeadingTypography";
 import { useTranslation } from "@/hooks/useTranslation";
+import {
+  PitchIllustCreatorPrice,
+  PitchIllustCreatorSell,
+  PitchIllustCreatorUpload,
+  PitchIllustUserBrowse,
+  PitchIllustUserCustomize,
+  PitchIllustUserDownload,
+} from "@/components/HomePitchStepIllustrations";
 
 type AuthModalProps = {
   authOpen: boolean;
@@ -128,6 +136,14 @@ function SellerPitchAuthModal({
       )
     : null;
 }
+
+const pitchRoleHeadingClassName =
+  "pt-0.5 text-[22px] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]";
+/** 단계 제목(1. … / 2. …): 역할 헤더(사용자·크리에이터)와 동일 크기·웨이트 */
+const pitchStepTitleClassName =
+  "text-[22px] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]";
+const pitchStepBodyClassName =
+  "text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]";
 
 type SellerPitchBannerProps = {
   showStartButton?: boolean;
@@ -278,9 +294,9 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
           </div>
 
           <div className="hidden">
-            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">{t("home.pitch.hidden.regTitle")}</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-cyan-300" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">{t("home.pitch.hidden.regBodyShort")}</p></div>
-            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">{t("home.pitch.hidden.tradeTitle")}</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-cyan-300" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">{t("home.pitch.hidden.tradeBody")}</p></div>
-            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">{t("home.pitch.hidden.step3Title")}</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-cyan-300" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">{t("home.pitch.hidden.remixBody")}</p></div>
+            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">{t("home.pitch.hidden.regTitle")}</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-[color:var(--reels-point)]" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">{t("home.pitch.hidden.regBodyShort")}</p></div>
+            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">{t("home.pitch.hidden.tradeTitle")}</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-[color:var(--reels-point)]" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">{t("home.pitch.hidden.tradeBody")}</p></div>
+            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">{t("home.pitch.hidden.step3Title")}</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-[color:var(--reels-point)]" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">{t("home.pitch.hidden.remixBody")}</p></div>
           </div>
 
           <div className="relative mt-0 sm:mt-1">
@@ -298,36 +314,30 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                   {/* 사용자 카드 */}
                   <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-black px-6 py-8 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-7 sm:py-9 lg:px-9 lg:py-10">
                     <section className="flex flex-col items-center space-y-7 text-center sm:space-y-8">
-                      <p className="pt-0.5 text-[22px] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]">{t("home.pitch.roleUser")}</p>
-                      <p className="max-w-md text-[clamp(0.9rem,2vw,1.1rem)] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
+                      <p className={pitchRoleHeadingClassName}>{t("home.pitch.roleUser")}</p>
+                      <p className={`max-w-md ${pitchStepBodyClassName}`}>
                         {t("home.pitch.userIntro")}
                       </p>
                       <ol className="w-full space-y-14 sm:space-y-16 lg:space-y-[4.5rem]">
                         <li className="flex flex-col items-center gap-6 sm:gap-8">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
-                            <img src="/steps/user-step1-browse.png" alt={t("home.pitch.user.step1Alt")} className="h-[220px] w-full object-cover object-top" />
-                          </div>
+                          <PitchIllustUserBrowse aria-label={t("home.pitch.user.step1Alt")} />
                           <div className="space-y-2.5">
-                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">{t("home.pitch.user.step1Title")}</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">{t("home.pitch.user.step1Body")}</p>
+                            <p className={pitchStepTitleClassName}>{t("home.pitch.user.step1Title")}</p>
+                            <p className={pitchStepBodyClassName}>{t("home.pitch.user.step1Body")}</p>
                           </div>
                         </li>
                         <li className="flex flex-col items-center gap-6 sm:gap-8">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
-                            <img src="/steps/user-step2-customize.png" alt={t("home.pitch.user.step2Alt")} className="h-[220px] w-full object-cover object-top" />
-                          </div>
+                          <PitchIllustUserCustomize aria-label={t("home.pitch.user.step2Alt")} />
                           <div className="space-y-2.5">
-                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">{t("home.pitch.user.step2Title")}</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">{t("home.pitch.user.step2Body")}</p>
+                            <p className={pitchStepTitleClassName}>{t("home.pitch.user.step2Title")}</p>
+                            <p className={pitchStepBodyClassName}>{t("home.pitch.user.step2Body")}</p>
                           </div>
                         </li>
                         <li className="flex flex-col items-center gap-6 sm:gap-8">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
-                            <img src="/steps/user-step3-download.png" alt={t("home.pitch.user.step3Alt")} className="h-[220px] w-full object-cover object-top" />
-                          </div>
+                          <PitchIllustUserDownload aria-label={t("home.pitch.user.step3Alt")} />
                           <div className="space-y-2.5">
-                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">{t("home.pitch.user.step3Title")}</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">{t("home.pitch.user.step3Body")}</p>
+                            <p className={pitchStepTitleClassName}>{t("home.pitch.user.step3Title")}</p>
+                            <p className={pitchStepBodyClassName}>{t("home.pitch.user.step3Body")}</p>
                           </div>
                         </li>
                       </ol>
@@ -337,36 +347,30 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                   {/* 크리에이터 카드 */}
                   <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-black px-6 py-8 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-7 sm:py-9 lg:px-9 lg:py-10">
                     <section className="flex flex-col items-center space-y-7 text-center sm:space-y-8">
-                      <p className="pt-0.5 text-[22px] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]">{t("home.pitch.roleCreator")}</p>
-                      <p className="max-w-md text-[clamp(0.9rem,2vw,1.1rem)] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
+                      <p className={pitchRoleHeadingClassName}>{t("home.pitch.roleCreator")}</p>
+                      <p className={`max-w-md ${pitchStepBodyClassName}`}>
                         {t("home.pitch.creatorIntro")}
                       </p>
                       <ol className="w-full space-y-14 sm:space-y-16 lg:space-y-[4.5rem]">
                         <li className="flex flex-col items-center gap-6 sm:gap-8">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
-                            <img src="/steps/creator-step1-upload.png" alt={t("home.pitch.creator.step1Alt")} className="h-[220px] w-full object-cover object-top" />
-                          </div>
+                          <PitchIllustCreatorUpload aria-label={t("home.pitch.creator.step1Alt")} />
                           <div className="space-y-2.5">
-                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">{t("home.pitch.creator.step1Title")}</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">{t("home.pitch.creator.step1Body")}</p>
+                            <p className={pitchStepTitleClassName}>{t("home.pitch.creator.step1Title")}</p>
+                            <p className={pitchStepBodyClassName}>{t("home.pitch.creator.step1Body")}</p>
                           </div>
                         </li>
                         <li className="flex flex-col items-center gap-6 sm:gap-8">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
-                            <img src="/steps/creator-step2-price.png" alt={t("home.pitch.creator.step2Alt")} className="h-[220px] w-full object-cover object-top" />
-                          </div>
+                          <PitchIllustCreatorPrice aria-label={t("home.pitch.creator.step2Alt")} />
                           <div className="space-y-2.5">
-                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">{t("home.pitch.creator.step2Title")}</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">{t("home.pitch.creator.step2Body")}</p>
+                            <p className={pitchStepTitleClassName}>{t("home.pitch.creator.step2Title")}</p>
+                            <p className={pitchStepBodyClassName}>{t("home.pitch.creator.step2Body")}</p>
                           </div>
                         </li>
                         <li className="flex flex-col items-center gap-6 sm:gap-8">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg [html[data-theme='light']_&]:border-zinc-200/80">
-                            <img src="/steps/creator-step3-sell.png" alt={t("home.pitch.creator.step3Alt")} className="h-[220px] w-full object-cover object-top" />
-                          </div>
+                          <PitchIllustCreatorSell aria-label={t("home.pitch.creator.step3Alt")} />
                           <div className="space-y-2.5">
-                            <p className="text-[16px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">{t("home.pitch.creator.step3Title")}</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">{t("home.pitch.creator.step3Body")}</p>
+                            <p className={pitchStepTitleClassName}>{t("home.pitch.creator.step3Title")}</p>
+                            <p className={pitchStepBodyClassName}>{t("home.pitch.creator.step3Body")}</p>
                           </div>
                         </li>
                       </ol>

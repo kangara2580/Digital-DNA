@@ -2,12 +2,20 @@
 export const TOP_NAV_ICON_RING_BASE =
   "inline-flex shrink-0 items-center justify-center rounded-full border border-white/40 bg-black/24 text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-md transition-[border-color,background-color,color] duration-200 ease-out hover:border-white/52 hover:bg-black/36 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/[0.68] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.05)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-white/80";
 
-/** 메인 h-11 기준 — 계정(+선택 시 장바구니) 공용 캡슐. overflow-visible 로 계정 드롭다운이 바깥으로 나옴 (hidden이면 호버 메뉴가 잘림). */
+/** 메인 h-11 기준 — 계정(+선택 시 장바구니) 공용 캡슐. overflow-visible 로 계정 드롭다운이 바깥으로 나옴 (hidden이면 호버 메뉴가 잘림). 테두리 없음(요청: 흰 테두리 제거). */
 export const TOP_NAV_ACCOUNT_CART_PILL_OUTER =
-  "relative z-[130] inline-grid h-11 min-h-[2.75rem] shrink-0 items-stretch overflow-visible rounded-full border border-white/40 bg-black/20 text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-md transition-[border-color,background-color] duration-200 ease-out hover:border-white/52 hover:bg-black/28 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/[0.6] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.05)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-white/[0.72]";
+  "relative z-[130] inline-grid h-11 min-h-[2.75rem] shrink-0 items-stretch overflow-visible rounded-full bg-black/20 text-zinc-100 backdrop-blur-md transition-[background-color] duration-200 ease-out hover:bg-black/28 [html[data-theme='light']_&]:bg-white/[0.6] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-white/[0.72]";
 
 /** 한 칸 캡슐(게스트·푸터) — grid 한 열 */
 export const TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE = "grid-cols-1";
+
+/** 계정·결제 다이아·장바구니 묶음 최소 가로 */
+export const TOP_NAV_ACCOUNT_CART_TRIPLE_MIN_WIDTH =
+  "min-w-[10.25rem] sm:min-w-[10.75rem]";
+
+/** 3칸 — 결제(다이아) | 계정 | 장바구니 + 구분선 2개 */
+export const TOP_NAV_ACCOUNT_CART_PILL_TRIPLE_LAYOUT =
+  `${TOP_NAV_ACCOUNT_CART_TRIPLE_MIN_WIDTH} grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)]`;
 
 /** 계정·장바구니 묶음 최소 가로(아이콘 24px + 양칸 동일 패딩 기준) */
 export const TOP_NAV_ACCOUNT_CART_DUAL_MIN_WIDTH =
@@ -24,9 +32,12 @@ export const MAIN_TOP_USER_FLOAT_BOX_CLASS =
 export const MAIN_TOP_USER_FLOAT_ALIGN_HEADER_PAD_CLASS =
   "pt-[max(1rem,env(safe-area-inset-top))] pb-4 sm:pt-5 sm:pb-5";
 
-/** 2칸 — grid로 절반 대칭 + 가운데 1px 구분선 (부모는 inline-grid) */
-export const TOP_NAV_ACCOUNT_CART_PILL_DUAL_LAYOUT =
-  `${TOP_NAV_ACCOUNT_CART_DUAL_MIN_WIDTH} grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]`;
+/** 결제(다이아) | 계정 — 장바구니 없을 때(히어로 등) */
+export const TOP_NAV_ACCOUNT_CART_DIAMOND_USER_MIN_WIDTH =
+  "min-w-[8rem] sm:min-w-[8.5rem]";
+
+export const TOP_NAV_ACCOUNT_CART_PILL_DIAMOND_USER_LAYOUT =
+  `${TOP_NAV_ACCOUNT_CART_DIAMOND_USER_MIN_WIDTH} grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]`;
 
 /** 캡슐 내부 셀 — grid/flex 공통, flex-1 대신 w-full(그리드 칸 채움) */
 export const TOP_NAV_ACCOUNT_CART_PILL_CELL =

@@ -31,7 +31,8 @@ const config: Config = {
           lift: "#121212",
           muted: "#a1a1aa",
           crimson: "#E42980",
-          cyan: "#00F2EA",
+          /** 레거시 이름 유지 — 실제 색은 브랜드 핑크(#FF2D8D) */
+          cyan: "#FF2D8D",
         },
         market: {
           canvas: "#faf7f8",
@@ -45,7 +46,7 @@ const config: Config = {
       },
       boxShadow: {
         "reels-crimson": "0 0 26px -4px rgba(228, 41, 128, 0.48)",
-        "reels-cyan": "0 0 28px -6px rgba(0, 242, 234, 0.4)",
+        "reels-cyan": "0 0 28px -6px rgba(255, 45, 141, 0.42)",
       },
       transitionDuration: {
         page: "400ms",

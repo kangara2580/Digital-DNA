@@ -1,14 +1,9 @@
 "use client";
 
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
-import { ProfileAvatarSprite } from "@/components/ProfileAvatarSprite";
 import {
-  ARA_DOT_PROFILE_PRESETS,
   DEFAULT_ARA_DOT_PRESET_SEED,
-  getAraDotPresetByStorageSeed,
-  type AraDotProfilePreset,
-  type PixelAvatarPalette,
 } from "@/lib/pixelAvatarSprite";
 import type { ProfileAvatar } from "@/lib/profileAvatarStorage";
 import {
@@ -17,29 +12,10 @@ import {
 } from "@/lib/profileAvatarStorage";
 
 const AVATAR_FRAME =
-  "border-2 border-white/30 shadow-lg ring-4 ring-white/10 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:ring-zinc-200/40";
-
-/** 그리드용 — 큰 메인 미리보기보다 얇게 해서 타일 사이 간격을 살림 */
-const PRESET_TILE_FRAME =
-  "border border-white/35 shadow-md [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:shadow-sm";
+  "border border-zinc-300/75 [html[data-theme='light']_&]:border-zinc-400";
 
 const PILL =
   "inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.06] font-semibold text-zinc-200 transition hover:border-white/28 hover:bg-white/[0.1] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-zinc-200/70";
-
-const PANEL_SHELL =
-  "rounded-xl border border-white/12 bg-gradient-to-br from-black/40 to-black/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-100/90 [html[data-theme='light']_&]:to-white";
-
-function wellShellCls(palette: PixelAvatarPalette): string {
-  return palette === "stardust"
-    ? "flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[#e8ecf7] ring-1 ring-[#3d4558]/18 [html[data-theme='dark']_&]:bg-[#1a1f2e] [html[data-theme='dark']_&]:ring-white/12"
-    : "flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[#f3e8f0] ring-1 ring-[#4a3f55]/15 [html[data-theme='dark']_&]:bg-[#241c2a] [html[data-theme='dark']_&]:ring-white/10";
-}
-
-function previewWellCls(palette: PixelAvatarPalette): string {
-  return palette === "stardust"
-    ? "absolute inset-0 flex items-center justify-center overflow-hidden rounded-full bg-[#e8ecf7] ring-1 ring-[#3d4558]/18 [html[data-theme='dark']_&]:bg-[#1a1f2e] [html[data-theme='dark']_&]:ring-white/12"
-    : "absolute inset-0 flex items-center justify-center overflow-hidden rounded-full bg-[#f3e8f0] ring-1 ring-[#4a3f55]/15 [html[data-theme='dark']_&]:bg-[#241c2a] [html[data-theme='dark']_&]:ring-white/10";
-}
 
 function fileToSquareJpegDataUrl(file: File, maxSide: number): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -100,13 +76,6 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
 
   const presetLocked = value?.kind === "upload";
 
-  const selectedPresetSeed =
-    value?.kind === "preset" && value.seed.trim()
-      ? getAraDotPresetByStorageSeed(value.seed.trim())
-        ? value.seed.trim()
-        : undefined
-      : undefined;
-
   const onFile = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -127,75 +96,9 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
     [onChange],
   );
 
-  const pickPreset = useCallback(
-    (p: AraDotProfilePreset) => {
-      onChange({ kind: "preset", seed: p.storageSeed });
-    },
-    [onChange],
-  );
-
   const isComfortable = density === "comfortable";
 
-  const presetGridCls = isComfortable
-    ? "mt-4 grid grid-cols-4 gap-x-5 gap-y-4 sm:gap-x-6 sm:gap-y-5"
-    : "mt-3 grid grid-cols-4 gap-x-4 gap-y-3.5";
-
-  const presetTileCls = isComfortable ? "h-[3.25rem] w-[3.25rem] sm:h-16 sm:w-16" : "h-[2.875rem] w-[2.875rem] sm:h-[3.25rem] sm:w-[3.25rem]";
-
-  /** 원 안 여백 — 확대·오버플로로 이웃 타일과 겹쳐 보이던 것 완화 */
-  const presetSpriteWrapCls = isComfortable
-    ? "flex h-[92%] w-[92%] items-center justify-center"
-    : "flex h-[90%] w-[90%] items-center justify-center";
-
-  const presetPanel = (
-    <div className={`w-full ${PANEL_SHELL} p-4 sm:p-5 ${presetLocked ? "opacity-45" : ""}`}>
-      <p className="text-[13px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[14px]">
-        기본 도트에서 선택
-      </p>
-      <p className="mt-1 text-[12px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[13px]">
-        {presetLocked
-          ? "지금은 내 사진이 적용되어 있어요. 아래는 잠시 볼 수만 있어요 — 도트를 쓰려면 「기본 도트로 바꾸기」를 눌러 주세요."
-          : "마음에 드는 캐릭터 하나를 고르면 프로필에 바로 반영돼요."}
-      </p>
-      <div className={presetGridCls} role="listbox" aria-label="기본 도트 프로필">
-        {ARA_DOT_PROFILE_PRESETS.map((p) => {
-          const on = selectedPresetSeed === p.storageSeed;
-          return (
-            <button
-              key={p.storageSeed}
-              type="button"
-              role="option"
-              aria-selected={on}
-              disabled={presetLocked}
-              onClick={() => pickPreset(p)}
-              className={`relative isolate shrink-0 rounded-full p-1 outline-none ring-offset-2 ring-offset-transparent transition focus-visible:ring-2 focus-visible:ring-white/40 [html[data-theme='light']_&]:focus-visible:ring-zinc-400 ${
-                on && !presetLocked
-                  ? "ring-[3px] ring-[#6366f1]/90 ring-offset-[3px] ring-offset-black/25 [html[data-theme='light']_&]:ring-[#818cf8] [html[data-theme='light']_&]:ring-offset-white"
-                  : "hover:opacity-92"
-              } ${presetLocked ? "cursor-not-allowed" : "cursor-pointer"}`}
-              title={p.label}
-            >
-              <div className={`relative aspect-square overflow-hidden rounded-full ${presetTileCls} ${PRESET_TILE_FRAME}`}>
-                <div className={`${wellShellCls(p.palette)} absolute inset-0`}>
-                  <div className={`${presetSpriteWrapCls} absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2`}>
-                    <ProfileAvatarSprite
-                      entropy={p.entropy}
-                      variant={p.variant}
-                      palette={p.palette}
-                      alt=""
-                      className="h-full w-full"
-                    />
-                  </div>
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-
-  const previewBlock = (sizeCls: string, innerMin: string) => (
+  const previewBlock = (sizeCls: string) => (
     <div className={`relative mx-auto shrink-0 sm:mx-0 ${sizeCls}`}>
       <div className={`relative overflow-hidden rounded-full bg-black/30 [html[data-theme='light']_&]:bg-white ${AVATAR_FRAME} aspect-square ${sizeCls}`}>
         {!previewReady ? (
@@ -207,17 +110,7 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
           // eslint-disable-next-line @next/next/no-img-element
           <img src={pixelPreview.src} alt="" className="h-full w-full object-cover" />
         ) : (
-          <div className={previewWellCls(pixelPreview.palette)}>
-            <div className={`h-[132%] w-[132%] ${innerMin} shrink-0`}>
-              <ProfileAvatarSprite
-                entropy={pixelPreview.entropy}
-                palette={pixelPreview.palette}
-                variant={pixelPreview.variant}
-                alt=""
-                className="h-full w-full"
-              />
-            </div>
-          </div>
+          <div className="h-full w-full rounded-full bg-black" />
         )}
       </div>
     </div>
@@ -248,8 +141,8 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
       <div
         className={
           isComfortable
-            ? "mt-3 flex flex-wrap justify-center gap-2.5 sm:justify-start"
-            : "mt-3 flex flex-wrap justify-center gap-2 sm:justify-start"
+            ? "mt-7 flex flex-wrap items-center justify-center gap-2.5 sm:justify-start"
+            : "mt-7 flex flex-wrap items-center justify-center gap-2 sm:justify-start"
         }
       >
         <button
@@ -265,15 +158,15 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
           이미지 올리기
         </button>
         <input ref={fileRef} id={inputId} type="file" accept="image/*" className="sr-only" onChange={onFile} />
-        {presetLocked ? (
-          <button
-            type="button"
-            className={`${PILL} px-3 py-2 text-[14px] font-semibold`}
-            onClick={() => onChange({ kind: "preset", seed: DEFAULT_ARA_DOT_PRESET_SEED })}
-          >
-            기본 도트로 바꾸기
-          </button>
-        ) : null}
+        <button
+          type="button"
+          aria-label="기본 이미지로 되돌리기"
+          disabled={!presetLocked}
+          className={`${PILL} h-[42px] w-[42px] p-0 disabled:pointer-events-none disabled:opacity-40`}
+          onClick={() => onChange({ kind: "preset", seed: DEFAULT_ARA_DOT_PRESET_SEED })}
+        >
+          <Trash2 className="h-4 w-4" aria-hidden />
+        </button>
       </div>
     </div>
   );
@@ -281,22 +174,17 @@ export function ProfileAvatarPicker({ value, onChange, hint, density = "compact"
   if (isComfortable) {
     return (
       <div className="grid h-full grid-cols-1 gap-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-x-7 sm:gap-y-5">
-        {previewBlock("h-32 w-32 sm:h-36 sm:w-36", "min-h-[8rem] min-w-[8rem] sm:min-h-[9rem] sm:min-w-[9rem]")}
+        {previewBlock("h-32 w-32 sm:h-36 sm:w-36")}
         {actionsBlock}
-        <div className="sm:col-span-2">{presetPanel}</div>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-      {previewBlock(
-        "h-24 w-24 sm:h-28 sm:w-28",
-        "min-h-[7.5rem] min-w-[7.5rem] shrink-0 sm:min-h-[8.75rem] sm:min-w-[8.75rem]",
-      )}
+      {previewBlock("h-24 w-24 sm:h-28 sm:w-28")}
       <div className="min-w-0 w-full flex-1">
         {actionsBlock}
-        {presetPanel}
       </div>
     </div>
   );

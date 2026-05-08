@@ -62,7 +62,7 @@ export function SellerFeedBioEditor({ sellerId, initialBio }: Props) {
           <button
             type="button"
             onClick={() => setEditing((v) => !v)}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/18 bg-white/[0.06] text-white/75 transition hover:border-[color:var(--reels-point)]/45 hover:bg-[color:var(--reels-point)]/10 hover:text-[color:var(--reels-point)] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-[color:var(--reels-point)]/40"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/18 bg-transparent text-white/75 transition hover:border-[color:var(--reels-point)]/45 hover:bg-[color:var(--reels-point)]/10 hover:text-[color:var(--reels-point)] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-[color:var(--reels-point)]/40"
             aria-label={t("seller.bio.editLabel")}
             title={t("seller.bio.editLabel")}
           >

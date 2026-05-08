@@ -24,8 +24,9 @@ import {
 } from "@/data/videoCommerce";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useVideoCartAction } from "@/hooks/useVideoCartAction";
+import { useVideoLike } from "@/hooks/useVideoLike";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
-import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sellerProfileHrefFromVideo } from "@/lib/sellerProfile";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
@@ -253,19 +254,13 @@ function ReelDesktopRail({
 
   const remaining = clonesRemaining(meta);
   const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
-  const inCart = dopamine.isVideoInCart(video.id);
   const posterSrc = sanitizePosterSrc(video.poster);
 
   const authPromptScrollYRef = useRef(0);
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [internalLikeCount, setInternalLikeCount] = useState(0);
-  const [likedByMe, setLikedByMe] = useState(false);
-  const likeInFlightRef = useRef(false);
   const [likePulse, setLikePulse] = useState(false);
   const [likeBurst, setLikeBurst] = useState(false);
-
-  const displayedLikeTotal = Math.max(0, externalLikeCount + internalLikeCount);
 
   const requireAuth = useCallback(() => {
     if (authLoading) return false;
@@ -277,6 +272,17 @@ function ReelDesktopRail({
     }
     return true;
   }, [authLoading, supabaseConfigured, user]);
+  const { inCart, toggleCartFromButton } = useVideoCartAction(video, dopamine, requireAuth);
+  const { internalLikeCount, likedByMe, likeBusy, toggleLike } = useVideoLike({
+    videoId: video.id,
+    requireAuth,
+    onError: () => {
+      if (typeof window !== "undefined") {
+        window.alert(t("explore.likeFailed"));
+      }
+    },
+  });
+  const displayedLikeTotal = Math.max(0, externalLikeCount + internalLikeCount);
 
   const onBuyClick = useCallback(() => {
     if (soldOut || authLoading) return;
@@ -336,99 +342,18 @@ function ReelDesktopRail({
     };
   }, [authPromptOpen]);
 
-  const loadInternalLikes = useCallback(async () => {
-    try {
-      const supabase = getSupabaseBrowserClient();
-      const session = supabase ? await supabase.auth.getSession() : null;
-      const token = session?.data.session?.access_token;
-      const headers = token
-        ? { Authorization: `Bearer ${token}` }
-        : undefined;
-      const res = await fetch(
-        `/api/video/likes?videoId=${encodeURIComponent(canonicalFavoriteVideoId(video.id))}`,
-        { cache: "no-store", headers },
-      );
-      if (!res.ok) return;
-      const body = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        internalLikes?: number;
-        likedByMe?: boolean;
-      };
-      if (!body.ok) return;
-      setInternalLikeCount(
-        typeof body.internalLikes === "number" ? Math.max(0, body.internalLikes) : 0,
-      );
-      setLikedByMe(Boolean(body.likedByMe));
-    } catch {
-      /* ignore */
-    }
-  }, [video.id]);
-
-  useEffect(() => {
-    setInternalLikeCount(0);
-    setLikedByMe(false);
-    void loadInternalLikes();
-  }, [video.id, loadInternalLikes]);
-
   const toggleInternalLike = useCallback(async () => {
-    if (authLoading) return;
-    if (!requireAuth()) return;
-    if (likeInFlightRef.current) return;
-
     const nextLiked = !likedByMe;
-    const prevLiked = likedByMe;
-    const prevCount = internalLikeCount;
-    setLikedByMe(nextLiked);
-    setInternalLikeCount((prev) => Math.max(0, prev + (nextLiked ? 1 : -1)));
     setLikePulse(true);
     if (nextLiked) {
       setLikeBurst(true);
       window.setTimeout(() => setLikeBurst(false), 420);
     }
     window.setTimeout(() => setLikePulse(false), 170);
-
-    likeInFlightRef.current = true;
-    try {
-      const supabase = getSupabaseBrowserClient();
-      const session = supabase ? await supabase.auth.getSession() : null;
-      const token = session?.data.session?.access_token;
-      if (!token) throw new Error("no_token");
-      const res = await fetch("/api/video/likes", {
-        method: nextLiked ? "POST" : "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ videoId: canonicalFavoriteVideoId(video.id) }),
-      });
-      const body = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        internalLikes?: number;
-        likedByMe?: boolean;
-      };
-      if (!res.ok || !body.ok) throw new Error("like_toggle_failed");
-      if (typeof body.internalLikes === "number") {
-        setInternalLikeCount(Math.max(0, body.internalLikes));
-      }
-      setLikedByMe(Boolean(body.likedByMe));
-    } catch {
-      setLikedByMe(prevLiked);
-      setInternalLikeCount(prevCount);
-      void loadInternalLikes();
-      if (typeof window !== "undefined") {
-        window.alert(t("explore.likeFailed"));
-      }
-    } finally {
-      likeInFlightRef.current = false;
-    }
+    await toggleLike();
   }, [
-    authLoading,
-    requireAuth,
     likedByMe,
-    internalLikeCount,
-    video.id,
-    loadInternalLikes,
-    t,
+    toggleLike,
   ]);
 
   const revenueUp = rankMetrics.growthPercent >= 0;
@@ -545,7 +470,7 @@ function ReelDesktopRail({
           onClick={(e) => {
             if (soldOut) return;
             if (!requireAuth()) return;
-            dopamine.launchFromCartButton(e.currentTarget, video, posterSrc ?? undefined);
+            toggleCartFromButton(e.currentTarget, posterSrc ?? undefined);
           }}
           className={`${railActionPlainBtn} disabled:cursor-not-allowed disabled:opacity-40 ${
             inCart

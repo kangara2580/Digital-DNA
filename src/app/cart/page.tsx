@@ -55,6 +55,8 @@ export default function CartPage() {
   const showLoginGate = supabaseConfigured && !authLoading && !user;
   const { hasPurchased } = usePurchasedVideos();
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [checkoutBusy, setCheckoutBusy] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   useEffect(() => {
     const valid = new Set(builderItems.map((b) => b.key));
@@ -106,6 +108,66 @@ export default function CartPage() {
     removeBuilderItemsByKeys([...selected]);
     setSelected(new Set());
   }, [selected, removeBuilderItemsByKeys]);
+
+  const selectedItems = useMemo(
+    () => builderItems.filter(({ key }) => selected.has(key)),
+    [builderItems, selected],
+  );
+
+  const onCheckoutPreflight = useCallback(async () => {
+    if (selectedItems.length === 0 || checkoutBusy) return;
+    setCheckoutError(null);
+    setCheckoutBusy(true);
+    try {
+      const res = await fetch("/api/cart/validate-pricing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: selectedItems.map(({ video }) => ({
+            videoId: video.id,
+            expectedPriceWon: video.priceWon ?? 0,
+          })),
+        }),
+      });
+      const body = (await res.json().catch(() => null)) as
+        | {
+            ok?: boolean;
+            canCheckout?: boolean;
+            mismatches?: Array<{
+              videoId: string;
+              expectedPriceWon: number;
+              actualPriceWon: number | null;
+            }>;
+          }
+        | null;
+      if (!res.ok || !body?.ok) {
+        setCheckoutError("결제 전 가격 검증에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
+      if (!body.canCheckout) {
+        const first = body.mismatches?.[0];
+        if (first) {
+          const actual =
+            typeof first.actualPriceWon === "number"
+              ? `${first.actualPriceWon.toLocaleString(numLocale)}${t("cart.currencySuffix")}`
+              : t("cart.priceInquire");
+          setCheckoutError(
+            `가격이 변경된 항목이 있어요. 다시 확인해 주세요. (기존 ${first.expectedPriceWon.toLocaleString(numLocale)}${t("cart.currencySuffix")} → 현재 ${actual})`,
+          );
+        } else {
+          setCheckoutError("가격이 변경된 항목이 있어 결제를 진행할 수 없어요.");
+        }
+        return;
+      }
+      setCheckoutError(
+        "가격 검증 완료. 결제 백엔드 연동 시 이 지점에서 결제 생성 API를 호출하면 됩니다.",
+      );
+    } catch {
+      setCheckoutError("네트워크 오류로 결제 전 검증에 실패했습니다.");
+    } finally {
+      setCheckoutBusy(false);
+    }
+  }, [checkoutBusy, numLocale, selectedItems, t]);
 
   const confirmClearCart = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -298,13 +360,21 @@ export default function CartPage() {
               </p>
             </div>
             <div className="mt-6 flex justify-end">
-              <button
-                type="button"
-                disabled
-                className="inline-flex shrink-0 rounded-full border border-white/15 bg-white/[0.06] px-10 py-3 text-[17px] font-bold text-zinc-500 opacity-90 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-600"
-              >
-                {t("cart.checkout")}
-              </button>
+              <div className="flex max-w-[min(100%,32rem)] flex-col items-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => void onCheckoutPreflight()}
+                  disabled={selected.size === 0 || checkoutBusy}
+                  className="inline-flex shrink-0 rounded-full border border-white/15 bg-white/[0.06] px-10 py-3 text-[17px] font-bold text-zinc-200 transition hover:bg-white/[0.1] disabled:cursor-not-allowed disabled:text-zinc-500 disabled:opacity-90 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:bg-zinc-200 [html[data-theme='light']_&]:disabled:text-zinc-600"
+                >
+                  {checkoutBusy ? `${t("cart.checkout")}...` : t("cart.checkout")}
+                </button>
+                {checkoutError ? (
+                  <p className="text-right text-[12px] font-medium leading-relaxed text-[color:var(--reels-point)]">
+                    {checkoutError}
+                  </p>
+                ) : null}
+              </div>
             </div>
           </footer>
         </>

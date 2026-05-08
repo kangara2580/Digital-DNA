@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import {
   getAverageRatingForVideo,
   getReviewsForVideo,
@@ -321,12 +321,6 @@ export function VideoDetailReviewsSection({ videoId }: { videoId: string }) {
                     <span className="truncate text-[12px] font-bold text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
                       {r.nickname}
                     </span>
-                    {r.verifiedPurchase && (
-                      <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-500/15 px-1.5 py-0.5 text-[9px] font-bold text-blue-300 ring-1 ring-blue-500/25 [html[data-theme='light']_&]:text-blue-700">
-                        <CheckCircle2 className="h-2.5 w-2.5" aria-hidden />
-                        {t("video.reviews.verified")}
-                      </span>
-                    )}
                   </div>
                   <Stars rating={r.rating} />
                 </div>

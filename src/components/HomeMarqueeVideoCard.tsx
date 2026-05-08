@@ -15,12 +15,14 @@ import { CartIcon } from "@/components/CartIcon";
 import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
 import { AuthModalPortal } from "@/components/AuthModalPortal";
 import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
-import { useWishlist } from "@/context/WishlistContext";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
 import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
+import { useVideoCartAction } from "@/hooks/useVideoCartAction";
+import { useVideoLike } from "@/hooks/useVideoLike";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
+import { useVideoWishlistAction } from "@/hooks/useVideoWishlistAction";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import {
   authModalDialogSurface,
@@ -28,7 +30,6 @@ import {
   authModalGlowBottom,
   authModalGlowTop,
 } from "@/lib/authModalTheme";
-import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
@@ -125,15 +126,9 @@ function MarqueeCardPreview({ video }: { video: FeedVideo }) {
 export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
-  const wishlist = useWishlist();
   const displayTitle = useVideoDisplayTitle();
   const reduceMotion = useReducedMotion() ?? false;
   const cartBtnRef = useRef<HTMLButtonElement>(null);
-  const wishlisted = wishlist.isSaved(video.id);
-  const inCart = dopamine?.isVideoInCart(video.id) ?? false;
-
-  const [likedByMe, setLikedByMe] = useState(false);
-  const [likeBusy, setLikeBusy] = useState(false);
   const [likePulse, setLikePulse] = useState(false);
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -154,6 +149,22 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
     }
     return true;
   }, [authLoading, supabaseConfigured, user]);
+  const { wishlisted, toggleWishlist } = useVideoWishlistAction(video, requireAuth);
+  const { inCart, toggleCartFromButton } = useVideoCartAction(
+    video,
+    dopamine ?? undefined,
+    requireAuth,
+  );
+
+  const { likedByMe, likeBusy, toggleLike } = useVideoLike({
+    videoId: video.id,
+    requireAuth,
+    onError: () => {
+      if (typeof window !== "undefined") {
+        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
+      }
+    },
+  });
 
   const startGoogleAuth = useCallback(async () => {
     const next =
@@ -198,75 +209,12 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
     };
   }, [authPromptOpen]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLikedByMe(false);
-    if (authLoading || !user || !supabaseConfigured) return;
-    void (async () => {
-      try {
-        const supabase = getSupabaseBrowserClient();
-        const session = supabase ? await supabase.auth.getSession() : null;
-        const token = session?.data.session?.access_token;
-        const headers = token
-          ? { Authorization: `Bearer ${token}` }
-          : undefined;
-        const res = await fetch(
-          `/api/video/likes?videoId=${encodeURIComponent(canonicalFavoriteVideoId(video.id))}`,
-          { cache: "no-store", headers },
-        );
-        if (!res.ok || cancelled) return;
-        const body = (await res.json().catch(() => ({}))) as {
-          ok?: boolean;
-          likedByMe?: boolean;
-        };
-        if (!body.ok || cancelled) return;
-        setLikedByMe(Boolean(body.likedByMe));
-      } catch {
-        /* ignore */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [video.id, user?.id, authLoading, supabaseConfigured, user]);
-
   const toggleInternalLike = useCallback(async () => {
-    if (likeBusy || authLoading) return;
-    if (!requireAuth()) return;
     const nextLiked = !likedByMe;
-    const prevLiked = likedByMe;
-    setLikedByMe(nextLiked);
     setLikePulse(true);
     window.setTimeout(() => setLikePulse(false), 170);
-    setLikeBusy(true);
-    try {
-      const supabase = getSupabaseBrowserClient();
-      const session = supabase ? await supabase.auth.getSession() : null;
-      const token = session?.data.session?.access_token;
-      if (!token) throw new Error("no_token");
-      const res = await fetch("/api/video/likes", {
-        method: nextLiked ? "POST" : "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ videoId: canonicalFavoriteVideoId(video.id) }),
-      });
-      const body = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        likedByMe?: boolean;
-      };
-      if (!res.ok || !body.ok) throw new Error("toggle_failed");
-      setLikedByMe(Boolean(body.likedByMe));
-    } catch {
-      setLikedByMe(prevLiked);
-      if (typeof window !== "undefined") {
-        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
-      }
-    } finally {
-      setLikeBusy(false);
-    }
-  }, [likeBusy, authLoading, requireAuth, likedByMe, video.id]);
+    await toggleLike();
+  }, [likedByMe, toggleLike]);
 
   const authModal: ReactNode =
     mounted ? (
@@ -284,7 +232,7 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
     <>
       <Link
         href={`/video/${video.id}`}
-        className="group relative aspect-[216/384] h-[clamp(302px,54vh,490px)] shrink-0  overflow-hidden rounded-2xl bg-black/30 shadow-[0_16px_48px_-20px_rgba(0,0,0,0.55)] outline-none transition-[transform,box-shadow,ring-width] duration-200 hover:z-[2] hover:shadow-[0_20px_56px_-18px_rgba(228,41,128,0.18)] focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070708] active:ring-2 active:ring-[color:var(--reels-point)] active:ring-offset-2 active:ring-offset-[#070708] motion-reduce:transition-none [html[data-theme='light']_&]:bg-zinc-100/80 [html[data-theme='light']_&]:focus-visible:ring-offset-white [html[data-theme='light']_&]:active:ring-offset-white"
+        className="group relative aspect-[216/384] h-[clamp(352px,62vh,580px)] shrink-0 overflow-hidden rounded-2xl bg-black/30 shadow-[0_16px_48px_-20px_rgba(0,0,0,0.55)] outline-none transition-[transform,box-shadow,ring-width] duration-200 hover:z-[2] focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070708] active:ring-2 active:ring-[color:var(--reels-point)] active:ring-offset-2 active:ring-offset-[#070708] motion-reduce:transition-none [html[data-theme='light']_&]:bg-zinc-100/80 [html[data-theme='light']_&]:focus-visible:ring-offset-white [html[data-theme='light']_&]:active:ring-offset-white"
         aria-label={`${displayTitle(video)} — 상세 보기`}
       >
         <div className={`${videoReelMediaContainer} relative h-full w-full`}>
@@ -316,8 +264,8 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
                   e.stopPropagation();
                   if (!requireAuth()) return;
                   const el = cartBtnRef.current;
-                  if (el && dopamine) {
-                    dopamine.launchFromCartButton(el, video, thumbnailSrc);
+                  if (el) {
+                    toggleCartFromButton(el, thumbnailSrc);
                   }
                 }}
               >
@@ -351,7 +299,7 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
                   e.preventDefault();
                   e.stopPropagation();
                   if (!requireAuth()) return;
-                  wishlist.toggle(video);
+                  toggleWishlist();
                 }}
               >
                 <span className={`relative isolate block ${reelActionIcon}`}>

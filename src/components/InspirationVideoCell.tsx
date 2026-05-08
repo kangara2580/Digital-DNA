@@ -6,13 +6,10 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CartIcon } from "@/components/CartIcon";
 import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
-import { useWishlist } from "@/context/WishlistContext";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
-import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import {
   reelActionBtn,
   reelActionBtnActive,
@@ -22,6 +19,9 @@ import {
   videoReelMediaContainer,
 } from "@/lib/videoReelActionStyles";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
+import { useVideoLike } from "@/hooks/useVideoLike";
+import { useVideoWishlistAction } from "@/hooks/useVideoWishlistAction";
+import { useVideoCartAction } from "@/hooks/useVideoCartAction";
 
 function formatPrice(v: FeedVideo): string {
   if (v.priceWon != null) {
@@ -34,21 +34,39 @@ function formatPrice(v: FeedVideo): string {
 export function InspirationVideoCell({ video }: { video: FeedVideo }) {
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
-  const wishlist = useWishlist();
   const displayTitle = useVideoDisplayTitle();
   const reduceMotion = useReducedMotion() ?? false;
   const cartBtnRef = useRef<HTMLButtonElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const inView = useInView(wrapRef, { amount: 0.2, margin: "0px 0px -8% 0px", once: false });
-  const wishlisted = wishlist.isSaved(video.id);
-  const inCart = dopamine?.isVideoInCart(video.id) ?? false;
-  const [likedByMe, setLikedByMe] = useState(false);
-  const [likeBusy, setLikeBusy] = useState(false);
+  const requireAuth = useCallback(() => {
+    if (authLoading) return false;
+    if (!supabaseConfigured || !user) {
+      redirectToLoginStart();
+      return false;
+    }
+    return true;
+  }, [authLoading, supabaseConfigured, user]);
+  const { wishlisted, toggleWishlist } = useVideoWishlistAction(video, requireAuth);
+  const { inCart, toggleCartFromButton } = useVideoCartAction(
+    video,
+    dopamine ?? undefined,
+    requireAuth,
+  );
+  const { likedByMe, likeBusy, toggleLike } = useVideoLike({
+    videoId: video.id,
+    requireAuth,
+    onError: () => {
+      if (typeof window !== "undefined") {
+        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
+      }
+    },
+  });
   const [likePulse, setLikePulse] = useState(false);
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(video.src);
   const fallbackPoster = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
-    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#E42980'/><stop offset='100%' stop-color='#00f2ea'/></linearGradient></defs><rect width='600' height='600' fill='#050505'/><rect x='20' y='20' width='560' height='560' rx='36' fill='url(#g)' opacity='0.86'/></svg>",
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#E42980'/><stop offset='100%' stop-color='#FF2D8D'/></linearGradient></defs><rect width='600' height='600' fill='#050505'/><rect x='20' y='20' width='560' height='560' rx='36' fill='url(#g)' opacity='0.86'/></svg>",
   )}`;
   const normalizedPoster = video.poster?.trim()
     ? /^\/videos\/.+\.jpg$/i.test(video.poster)
@@ -74,77 +92,12 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
     }
   }, [inView, reduceMotion, isPexelsBlockedVideo]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLikedByMe(false);
-    void (async () => {
-      try {
-        const supabase = getSupabaseBrowserClient();
-        const session = supabase ? await supabase.auth.getSession() : null;
-        const token = session?.data.session?.access_token;
-        const headers = token
-          ? { Authorization: `Bearer ${token}` }
-          : undefined;
-        const res = await fetch(
-          `/api/video/likes?videoId=${encodeURIComponent(canonicalFavoriteVideoId(video.id))}`,
-          { cache: "no-store", headers },
-        );
-        if (!res.ok || cancelled) return;
-        const body = (await res.json().catch(() => ({}))) as {
-          ok?: boolean;
-          likedByMe?: boolean;
-        };
-        if (!body.ok || cancelled) return;
-        setLikedByMe(Boolean(body.likedByMe));
-      } catch {
-        /* ignore */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [video.id, user?.id]);
-
   const toggleInternalLike = useCallback(async () => {
-    if (likeBusy || authLoading) return;
-    if (!supabaseConfigured || !user) {
-      redirectToLoginStart();
-      return;
-    }
     const nextLiked = !likedByMe;
-    const prevLiked = likedByMe;
-    setLikedByMe(nextLiked);
     setLikePulse(true);
     window.setTimeout(() => setLikePulse(false), 170);
-    setLikeBusy(true);
-    try {
-      const supabase = getSupabaseBrowserClient();
-      const session = supabase ? await supabase.auth.getSession() : null;
-      const token = session?.data.session?.access_token;
-      if (!token) throw new Error("no_token");
-      const res = await fetch("/api/video/likes", {
-        method: nextLiked ? "POST" : "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ videoId: canonicalFavoriteVideoId(video.id) }),
-      });
-      const body = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        likedByMe?: boolean;
-      };
-      if (!res.ok || !body.ok) throw new Error("toggle_failed");
-      setLikedByMe(Boolean(body.likedByMe));
-    } catch {
-      setLikedByMe(prevLiked);
-      if (typeof window !== "undefined") {
-        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
-      }
-    } finally {
-      setLikeBusy(false);
-    }
-  }, [likeBusy, authLoading, supabaseConfigured, user, likedByMe, video.id]);
+    await toggleLike();
+  }, [likedByMe, toggleLike]);
 
   return (
     <div className="inspiration-cell group flex min-w-0 flex-col gap-1.5">
@@ -185,8 +138,8 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
                 e.preventDefault();
                 e.stopPropagation();
                 const el = cartBtnRef.current;
-                if (el && dopamine) {
-                  dopamine.launchFromCartButton(el, video, normalizedPoster);
+                if (el) {
+                  toggleCartFromButton(el, normalizedPoster);
                 }
               }}
             >
@@ -219,7 +172,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                wishlist.toggle(video);
+                toggleWishlist();
               }}
             >
               <span className={`relative isolate block ${reelActionIcon}`}>

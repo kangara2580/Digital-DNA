@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useState, type ReactNode } from "react";
+import { LayoutGrid, LogOut, Settings, UserRound } from "lucide-react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
@@ -19,10 +20,12 @@ const menuPanelInner =
   "w-max overflow-hidden rounded-xl border border-white/[0.16] bg-[rgba(5,8,14,0.96)] py-1 shadow-[0_14px_42px_-12px_rgba(0,0,0,0.75)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.12)]";
 
 const menuItemLink =
-  "block whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold text-zinc-100 transition-colors hover:bg-white/[0.08] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
+  "flex items-center gap-2.5 whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold text-zinc-100 transition-colors hover:bg-white/[0.08] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
 
 const menuItemLogout =
-  "flex w-full whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold text-zinc-100 transition-colors hover:bg-white/[0.08] disabled:opacity-50 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
+  "flex w-full items-center gap-2.5 whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold text-zinc-100 transition-colors hover:bg-white/[0.08] disabled:opacity-50 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
+
+const menuIconClass = "h-[15px] w-[15px] shrink-0 opacity-70";
 type InnerProps = Props & {
   /** `/mypage?tab=` 값 — Next 15에서 `useSearchParams`는 Suspense 경계 안에서만 씀 */
   mypageQueryTab: string;
@@ -95,6 +98,7 @@ function LoggedInAccountHoverMenuInner({
             className={menuItemLink}
             aria-current={onMyFeed ? "page" : undefined}
           >
+            <UserRound className={menuIconClass} strokeWidth={2} aria-hidden />
             {t("account.feed")}
           </Link>
           <Link
@@ -103,6 +107,7 @@ function LoggedInAccountHoverMenuInner({
             className={menuItemLink}
             aria-current={onMypageHub ? "page" : undefined}
           >
+            <LayoutGrid className={menuIconClass} strokeWidth={2} aria-hidden />
             {t("account.mypage")}
           </Link>
           <Link
@@ -111,6 +116,7 @@ function LoggedInAccountHoverMenuInner({
             className={menuItemLink}
             aria-current={onSettings ? "page" : undefined}
           >
+            <Settings className={menuIconClass} strokeWidth={2} aria-hidden />
             {t("account.settings")}
           </Link>
           <button
@@ -120,6 +126,7 @@ function LoggedInAccountHoverMenuInner({
             disabled={busy}
             className={menuItemLogout}
           >
+            <LogOut className={menuIconClass} strokeWidth={2} aria-hidden />
             {busy ? t("account.logoutBusy") : t("account.logout")}
           </button>
         </div>

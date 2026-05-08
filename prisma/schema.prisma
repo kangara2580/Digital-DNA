@@ -36,6 +36,11 @@ model Video {
   /// 판매자가 선택한 노출 카테고리(업로드/수정에서 필수 검증)
   category       String?
 
+  /// URL·직접업로드 원본(페이지 URL 또는 MP4). Kling·재처리용 MP4는 processedVideoUrl
+  processedVideoUrl   String? @map("processed_video_url")
+  processedVideoStatus String  @default("pending") @map("processed_video_status")
+  processedVideoError  String? @map("processed_video_error")
+
   notifications Notification[]
 
   @@index([sellerId])

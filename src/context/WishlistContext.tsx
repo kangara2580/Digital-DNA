@@ -18,9 +18,11 @@ import {
   removeAllWishlistForUser,
   removeFavorite,
   type FavoriteRow,
+  type MutateFavoriteResult,
 } from "@/lib/supabaseFavorites";
 import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
 import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
+import { captureActionError, logActionEvent } from "@/lib/observability";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { waitForSupabaseAccessToken } from "@/lib/waitSupabaseSessionReady";
 
@@ -29,6 +31,27 @@ async function wishlistMutationAwaitSession(supabase: SupabaseClient): Promise<b
   if (await waitForSupabaseAccessToken(supabase, 22)) return true;
   await new Promise((r) => setTimeout(r, 380));
   return waitForSupabaseAccessToken(supabase, 18);
+}
+
+async function mutateFavoriteWithRetry(
+  action: () => Promise<MutateFavoriteResult>,
+  maxAttempts = 3,
+): Promise<MutateFavoriteResult> {
+  let last: MutateFavoriteResult | null = null;
+  for (let i = 0; i < maxAttempts; i++) {
+    const result = await action();
+    if (result.ok) return result;
+    last = result;
+    if (i < maxAttempts - 1) {
+      await new Promise((r) => setTimeout(r, 180 * (i + 1)));
+    }
+  }
+  return (
+    last ?? {
+      ok: false,
+      errorMessage: "unknown_wishlist_mutation_error",
+    }
+  );
 }
 
 export type WishlistEntry = {
@@ -340,12 +363,34 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
               }
               return;
             }
-            const r = await removeFavorite(supabase, userId, vid, "wishlist");
+            const r = await mutateFavoriteWithRetry(() =>
+              removeFavorite(supabase, userId, vid, "wishlist"),
+            );
             if (!r.ok && removed) {
+              captureActionError(new Error(r.errorMessage), {
+                domain: "wishlist",
+                action: "remove",
+                result: "fail",
+                videoId: vid,
+                userId,
+                component: "WishlistContext",
+                stage: "write",
+                errorCode: r.errorCode,
+              });
               setEntries((p) =>
                 p.some((e) => canonicalFavoriteVideoId(e.id) === vid) ? p : [removed, ...p],
               );
               void reloadFromServer();
+            } else {
+              logActionEvent({
+                domain: "wishlist",
+                action: "remove",
+                result: "ok",
+                videoId: vid,
+                userId,
+                component: "WishlistContext",
+                stage: "write",
+              });
             }
           })();
           return prevN.filter((e) => e.id !== vid);
@@ -364,8 +409,20 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             }
             return;
           }
-          const r = await addFavorite(supabase, userId, vid, "wishlist", now);
+          const r = await mutateFavoriteWithRetry(() =>
+            addFavorite(supabase, userId, vid, "wishlist", now),
+          );
           if (!r.ok) {
+            captureActionError(new Error(r.errorMessage), {
+              domain: "wishlist",
+              action: "add",
+              result: "fail",
+              videoId: vid,
+              userId,
+              component: "WishlistContext",
+              stage: "write",
+              errorCode: r.errorCode,
+            });
             if (process.env.NODE_ENV === "development") {
               console.warn("[wishlist] addFavorite failed", r.errorMessage, r.errorCode);
             }
@@ -373,6 +430,16 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             bumpPersistingWishlist();
             setEntries((p) => p.filter((e) => canonicalFavoriteVideoId(e.id) !== vid));
             void reloadFromServer();
+          } else {
+            logActionEvent({
+              domain: "wishlist",
+              action: "add",
+              result: "ok",
+              videoId: vid,
+              userId,
+              component: "WishlistContext",
+              stage: "write",
+            });
           }
         })();
         return [optimistic, ...prevN.filter((e) => e.id !== vid)];

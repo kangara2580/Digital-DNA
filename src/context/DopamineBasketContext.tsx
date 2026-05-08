@@ -18,6 +18,7 @@ import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { captureActionError, logActionEvent } from "@/lib/observability";
 import {
   fetchUserCartVideos,
   replaceUserCart,
@@ -147,6 +148,15 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
         const key = `b-${video.id}-${++builderSeq.current}`;
         return [...items, { key, video }];
       });
+      logActionEvent({
+        domain: "cart",
+        action: didAdd ? "add" : "remove",
+        result: "ok",
+        videoId: video.id,
+        userId,
+        component: "DopamineBasketContext",
+        stage: "state",
+      });
 
       if (!didAdd) return;
 
@@ -247,6 +257,16 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
         /** 서버가 비어 있으면 로컬 담기를 덮어쓰지 않음(초기 레이스 방지) */
         setBuilderItems((prev) => (items.length > 0 ? items : prev));
       } else {
+        captureActionError(new Error(result.errorMessage ?? "cart_fetch_failed"), {
+          domain: "cart",
+          action: "sync_read",
+          result: "fail",
+          userId,
+          component: "DopamineBasketContext",
+          stage: "read",
+          errorCode: result.errorCode,
+          message: result.errorMessage,
+        });
         if (process.env.NODE_ENV === "development") {
           console.warn("[cart] fetch failed — keeping previous items", result.errorMessage);
           if (/could not find the table|schema cache/i.test(result.errorMessage ?? "")) {
@@ -289,7 +309,30 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
       void (async () => {
         const ok = await waitForSupabaseAccessToken(supabase);
         if (!ok) return;
-        await replaceUserCart(supabase, userId, videos);
+        const writeOk = await replaceUserCart(supabase, userId, videos);
+        if (!writeOk) {
+          captureActionError(new Error("cart_sync_write_failed"), {
+            domain: "cart",
+            action: "sync_write",
+            result: "fail",
+            userId,
+            component: "DopamineBasketContext",
+            stage: "write",
+            errorCode: "replace_user_cart_failed",
+            message: "replaceUserCart returned false",
+            extra: { count: videos.length },
+          });
+        } else {
+          logActionEvent({
+            domain: "cart",
+            action: "sync_write",
+            result: "ok",
+            userId,
+            component: "DopamineBasketContext",
+            stage: "write",
+            extra: { count: videos.length },
+          });
+        }
       })();
     }, 420);
     return () => window.clearTimeout(handle);

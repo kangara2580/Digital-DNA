@@ -14,16 +14,22 @@ import {
 import { createPortal } from "react-dom";
 import { RelatedDnaQuilt } from "@/components/RelatedDnaQuilt";
 import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
-import { useWishlist } from "@/context/WishlistContext";
 import type { FeedVideo } from "@/data/videos";
+import { useVideoCartAction } from "@/hooks/useVideoCartAction";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
+import { useVideoLike } from "@/hooks/useVideoLike";
 import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
+import { useVideoWishlistAction } from "@/hooks/useVideoWishlistAction";
 import {
   clonesRemaining,
   getCommerceMeta,
 } from "@/data/videoCommerce";
 import { getExternalIframeForCard } from "@/lib/externalEmbed/playerUrls";
+import {
+  EXTERNAL_EMBED_IFRAME_ALLOW,
+  EXTERNAL_EMBED_IFRAME_SANDBOX,
+} from "@/lib/externalEmbed/iframeSandbox";
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { CartIcon } from "@/components/CartIcon";
 import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
@@ -36,7 +42,6 @@ import { getVideoContentSource } from "@/lib/videoSourcePlatform";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
-import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
 import { AuthModalPortal } from "@/components/AuthModalPortal";
 import {
@@ -250,7 +255,6 @@ export function VideoCard({
 }: Props) {
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
-  const wishlist = useWishlist();
   const reduceMotion = useReducedMotion() ?? false;
   const externalIframe = useMemo(
     () => {
@@ -269,10 +273,6 @@ export function VideoCard({
   const showMicro = false;
   const showAiBadge = false;
   const cartBtnRef = useRef<HTMLButtonElement>(null);
-  const wishlisted = wishlist.isSaved(video.id);
-  const inCart = dopamine?.isVideoInCart(video.id) ?? false;
-  const [likedByMe, setLikedByMe] = useState(false);
-  const [likeBusy, setLikeBusy] = useState(false);
   const [likePulse, setLikePulse] = useState(false);
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -342,6 +342,21 @@ export function VideoCard({
     }
     return true;
   }, [authLoading, supabaseConfigured, user]);
+  const { wishlisted, toggleWishlist } = useVideoWishlistAction(video, requireAuth);
+  const { inCart, toggleCartFromButton } = useVideoCartAction(
+    video,
+    dopamine ?? undefined,
+    requireAuth,
+  );
+  const { likedByMe, likeBusy, toggleLike } = useVideoLike({
+    videoId: video.id,
+    requireAuth,
+    onError: () => {
+      if (typeof window !== "undefined") {
+        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
+      }
+    },
+  });
 
   const startGoogleAuth = useCallback(async () => {
     const next =
@@ -423,75 +438,12 @@ export function VideoCard({
     };
   }, [video.listing?.sellerId]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLikedByMe(false);
-    if (authLoading || !user || !supabaseConfigured) return;
-    void (async () => {
-      try {
-        const supabase = getSupabaseBrowserClient();
-        const session = supabase ? await supabase.auth.getSession() : null;
-        const token = session?.data.session?.access_token;
-        const headers = token
-          ? { Authorization: `Bearer ${token}` }
-          : undefined;
-        const res = await fetch(
-          `/api/video/likes?videoId=${encodeURIComponent(canonicalFavoriteVideoId(video.id))}`,
-          { cache: "no-store", headers },
-        );
-        if (!res.ok || cancelled) return;
-        const body = (await res.json().catch(() => ({}))) as {
-          ok?: boolean;
-          likedByMe?: boolean;
-        };
-        if (!body.ok || cancelled) return;
-        setLikedByMe(Boolean(body.likedByMe));
-      } catch {
-        /* ignore */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [video.id, user?.id, authLoading, supabaseConfigured, user]);
-
   const toggleInternalLike = useCallback(async () => {
-    if (likeBusy || authLoading) return;
-    if (!requireAuth()) return;
     const nextLiked = !likedByMe;
-    const prevLiked = likedByMe;
-    setLikedByMe(nextLiked);
     setLikePulse(true);
     window.setTimeout(() => setLikePulse(false), 170);
-    setLikeBusy(true);
-    try {
-      const supabase = getSupabaseBrowserClient();
-      const session = supabase ? await supabase.auth.getSession() : null;
-      const token = session?.data.session?.access_token;
-      if (!token) throw new Error("no_token");
-      const res = await fetch("/api/video/likes", {
-        method: nextLiked ? "POST" : "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ videoId: canonicalFavoriteVideoId(video.id) }),
-      });
-      const body = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        likedByMe?: boolean;
-      };
-      if (!res.ok || !body.ok) throw new Error("toggle_failed");
-      setLikedByMe(Boolean(body.likedByMe));
-    } catch {
-      setLikedByMe(prevLiked);
-      if (typeof window !== "undefined") {
-        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
-      }
-    } finally {
-      setLikeBusy(false);
-    }
-  }, [likeBusy, authLoading, requireAuth, likedByMe, video.id]);
+    await toggleLike();
+  }, [likedByMe, toggleLike]);
 
   const segmentPreviewEffective = segmentPreview && !externalIframe;
   const isLocal = canLoadPreviewVideo && isLocalPublicVideo(previewSrc);
@@ -536,8 +488,8 @@ export function VideoCard({
   const shell = flush
     ? "rounded-none border-0 bg-transparent shadow-none"
     : dense
-      ? "rounded-lg border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-reels-cyan/25 hover:shadow-reels-cyan/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-reels-cyan/40"
-      : "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-reels-crimson/20 hover:shadow-reels-crimson/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-reels-crimson/35";
+      ? "rounded-lg border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-white/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-zinc-300"
+      : "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-white/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-zinc-300";
 
   const priceLabel =
     video.priceWon != null
@@ -625,12 +577,19 @@ export function VideoCard({
         className={`${videoReelMediaContainer} relative overflow-hidden bg-black/40 ${aspectClass}`}
       >
         {externalIframe ? (
-          <div className="absolute inset-0 z-0 flex items-center justify-center">
+          <div className="absolute inset-0 z-0 overflow-hidden">
             <iframe
               title={`${displayTitle(video)}-${externalIframe.kind}`}
               src={externalIframe.src}
-              className="pointer-events-none h-full w-full border-0"
-              allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+              sandbox={EXTERNAL_EMBED_IFRAME_SANDBOX}
+              className={`pointer-events-none border-0 ${
+                externalIframe.kind === "instagram"
+                  ? "absolute left-1/2 top-[2%] h-[118%] w-[112%] max-w-none -translate-x-1/2"
+                  : externalIframe.kind === "youtube"
+                    ? "absolute left-1/2 top-1/2 h-[110%] w-[110%] max-w-none -translate-x-1/2 -translate-y-1/2"
+                    : "absolute inset-0 h-full w-full"
+              }`}
+              allow={EXTERNAL_EMBED_IFRAME_ALLOW}
               allowFullScreen
               loading="eager"
               scrolling="no"
@@ -785,8 +744,8 @@ export function VideoCard({
                   e.stopPropagation();
                   if (!requireAuth()) return;
                   const el = cartBtnRef.current;
-                  if (el && dopamine) {
-                    dopamine.launchFromCartButton(el, video, thumbnailSrc);
+                  if (el) {
+                    toggleCartFromButton(el, thumbnailSrc);
                   }
                 }}
               >
@@ -824,7 +783,7 @@ export function VideoCard({
                   e.preventDefault();
                   e.stopPropagation();
                   if (!requireAuth()) return;
-                  wishlist.toggle(video);
+                  toggleWishlist();
                 }}
               >
                 <span className={`relative isolate block ${reelIconCls}`}>

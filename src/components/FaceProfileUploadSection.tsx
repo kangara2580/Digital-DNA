@@ -2,6 +2,7 @@
 
 import { useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { CheckCircle2 } from "lucide-react";
 import { useStoredFaceProfile } from "@/hooks/useStoredFaceProfile";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MYPAGE_OUTLINE_BTN_CORE } from "@/lib/mypageOutlineCta";
@@ -10,8 +11,8 @@ const MAX_BYTES = 5 * 1024 * 1024;
 const MAX_SOURCE_BYTES = 20 * 1024 * 1024;
 
 const TRIPLE_SLOTS = [
-  { key: "front" as const, hintKey: "faceProfile.slotHintFront" },
   { key: "left" as const, hintKey: "faceProfile.slotHintLeft" },
+  { key: "front" as const, hintKey: "faceProfile.slotHintFront" },
   { key: "right" as const, hintKey: "faceProfile.slotHintRight" },
 ] as const;
 
@@ -166,14 +167,12 @@ export function FaceProfileUploadSection() {
   const [singlePending, setSinglePending] = useState<string | null>(null);
   const [aiRunning, setAiRunning] = useState(false);
   const [aiStepIndex, setAiStepIndex] = useState(0);
-  const [uploadStatus, setUploadStatus] = useState<string>("");
 
   const tripleInputRefs = {
     front: useRef<HTMLInputElement>(null),
     left: useRef<HTMLInputElement>(null),
     right: useRef<HTMLInputElement>(null),
   };
-  const tripleBatchInputRef = useRef<HTMLInputElement>(null);
   const singleInputRef = useRef<HTMLInputElement>(null);
 
   const aiStepLabels = useMemo(() => AI_STEP_KEYS.map((k) => t(k)), [t]);
@@ -210,7 +209,6 @@ export function FaceProfileUploadSection() {
         alert(t("faceProfile.alertFileTooBig"));
         return;
       }
-      setUploadStatus(t("faceProfile.statusProcessing", { angle: angleLabel(key) }));
       void compressImageToDataUrl(file)
         .then((dataUrl) => {
           setTripleDraft((prev) => {
@@ -223,56 +221,15 @@ export function FaceProfileUploadSection() {
                 right: next.right,
               });
               setSinglePending(null);
-              setUploadStatus(t("faceProfile.statusTripleDone"));
-            } else {
-              setUploadStatus(t("faceProfile.statusSlotDone", { angle: angleLabel(key) }));
             }
             return next;
           });
         })
         .catch(() => {
-          setUploadStatus(t("faceProfile.statusUploadFail"));
           alert(t("faceProfile.alertProcessFail"));
         });
     },
     [angleLabel, setProfile, t],
-  );
-
-  const onTripleBatchFiles = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = Array.from(e.target.files ?? []).filter((f) =>
-        f.type.startsWith("image/"),
-      );
-      e.target.value = "";
-      if (files.length < 3) {
-        alert(t("faceProfile.alertBatchCount"));
-        return;
-      }
-      const ordered = files.slice(0, 3);
-      for (const f of ordered) {
-        if (f.size > MAX_SOURCE_BYTES) {
-          alert(t("faceProfile.alertFileTooBig"));
-          return;
-        }
-      }
-      setUploadStatus(t("faceProfile.statusBatchProcessing"));
-      void (async () => {
-        try {
-          const front = await compressImageToDataUrl(ordered[0]!);
-          const left = await compressImageToDataUrl(ordered[1]!);
-          const right = await compressImageToDataUrl(ordered[2]!);
-          const next = { front, left, right };
-          setTripleDraft(next);
-          setProfile({ kind: "triple", ...next });
-          setSinglePending(null);
-          setUploadStatus(t("faceProfile.statusTripleDone"));
-        } catch {
-          setUploadStatus(t("faceProfile.statusUploadFail"));
-          alert(t("faceProfile.alertProcessFail"));
-        }
-      })();
-    },
-    [setProfile, t],
   );
 
   const onSingleFile = useCallback(
@@ -301,9 +258,8 @@ export function FaceProfileUploadSection() {
       if (profile?.kind === "triple") {
         setProfile(null);
       }
-      setUploadStatus(t("faceProfile.statusCancelled", { angle: angleLabel(key) }));
     },
-    [angleLabel, profile, setProfile, t],
+    [profile, setProfile],
   );
 
   const runAiGeneration = useCallback(async () => {
@@ -329,7 +285,6 @@ export function FaceProfileUploadSection() {
     setTripleDraft(emptyTriple());
     setSinglePending(null);
     setAiRunning(false);
-    setUploadStatus("");
   }, [setProfile]);
 
   const showAiCrop = profile?.kind === "ai";
@@ -353,22 +308,16 @@ export function FaceProfileUploadSection() {
         {t("faceProfile.heading")}
       </h2>
 
-      <div className="mt-5 space-y-2 rounded-xl border border-white/10 bg-black/25 px-4 py-3.5 sm:px-5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-        <p className="text-[15px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-          {t("faceProfile.bannerTipQuick")}
-        </p>
-        <p className="text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          {t("faceProfile.bannerTipQuality")}
-        </p>
-      </div>
-
       {/* ① 빠른 등록 (AI) — 먼저 노출 */}
       <div className="mt-8 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-100">
-        <h3 className="text-[15px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-          {t("faceProfile.pathQuickTitle")}
+        <h3 className="text-[17px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+          빠른 생성
         </h3>
         <p className="mt-1 text-[14px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-          {t("faceProfile.pathQuickHint")}
+          정면 사진 1장으로 빠르게 시작합니다.
+        </p>
+        <p className="mt-1 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          ※ 사진 1장만 사용할 경우 정확도가 낮아질 수 있습니다.
         </p>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -386,7 +335,7 @@ export function FaceProfileUploadSection() {
             disabled={aiRunning}
             className={`${faceProfileNeutralPickBtn} px-6 py-3.5 text-[17px] font-semibold disabled:opacity-50`}
           >
-            {t("faceProfile.pickOne")}
+            정면 사진 1장 업로드
           </button>
           {singlePending && (
             <button
@@ -463,34 +412,16 @@ export function FaceProfileUploadSection() {
 
       {/* ② 원본 3장 */}
       <div className="mt-10 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-100">
-        <h3 className="text-[15px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-          {t("faceProfile.pathTripleTitle")}
+        <h3 className="inline-flex items-center gap-2 text-[17px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+          <CheckCircle2 className="h-4.5 w-4.5 text-[color:var(--reels-point)]" aria-hidden />
+          정확한 생성 (추천)
         </h3>
         <p className="mt-1 text-[14px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-          {t("faceProfile.pathTripleHint")}
+          정면 · 좌측 · 우측 사진 3장을 업로드하세요.
         </p>
-
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <input
-            ref={tripleBatchInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="sr-only"
-            onChange={onTripleBatchFiles}
-            aria-label={t("faceProfile.pickThreeAria")}
-          />
-          <button
-            type="button"
-            onClick={() => tripleBatchInputRef.current?.click()}
-            className={outlineCtaComfortable}
-          >
-            {t("faceProfile.pickThreeAtOnce")}
-          </button>
-          <span className="text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            {t("faceProfile.pickThreeAtOnceHint")}
-          </span>
-        </div>
+        <p className="mt-1 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          더 자연스럽고 정확한 결과를 생성합니다.
+        </p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           {TRIPLE_SLOTS.map(({ key, hintKey }) => (
@@ -511,13 +442,10 @@ export function FaceProfileUploadSection() {
               <p className="text-[15px] font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
                 {t(`faceProfile.angle.${key}`)}
               </p>
-              <p className="mt-1 text-[12px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                {t(hintKey)}
-              </p>
               <button
                 type="button"
                 onClick={() => tripleInputRefs[key].current?.click()}
-                className={`${faceProfileNeutralPickBtn} mt-3 w-full px-3 py-2 text-[13px] font-medium`}
+                className={`${faceProfileNeutralPickBtn} mt-3 w-full justify-center px-6 py-3.5 text-[17px] font-semibold`}
               >
                 {slotSrc(key) ? t("faceProfile.repick") : t("faceProfile.choose")}
               </button>
@@ -543,11 +471,6 @@ export function FaceProfileUploadSection() {
             </div>
           ))}
         </div>
-        {uploadStatus ? (
-          <p className="mt-3 text-[14px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-            {uploadStatus}
-          </p>
-        ) : null}
       </div>
 
       {hydrated && !nothingStarted ? (

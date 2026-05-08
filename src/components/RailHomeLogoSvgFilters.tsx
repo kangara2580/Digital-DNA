@@ -16,16 +16,15 @@ export function RailHomeLogoSvgFilters() {
         <filter
           id="reelsRailLogoOutlineDark"
           colorInterpolationFilters="sRGB"
-          x="-100%"
-          y="-100%"
-          width="300%"
-          height="300%"
-          primitiveUnits="userSpaceOnUse"
+          x="-50%"
+          y="-50%"
+          width="200%"
+          height="200%"
         >
           <feMorphology
             in="SourceAlpha"
             operator="dilate"
-            radius="1.1"
+            radius="2.2"
             result="spread"
           />
           <feComposite
@@ -34,7 +33,7 @@ export function RailHomeLogoSvgFilters() {
             operator="out"
             result="outline"
           />
-          <feFlood floodColor="#ffffff" floodOpacity="0.38" result="flood" />
+          <feFlood floodColor="#ffffff" floodOpacity="0.82" result="flood" />
           <feComposite
             in="flood"
             in2="outline"
@@ -49,16 +48,15 @@ export function RailHomeLogoSvgFilters() {
         <filter
           id="reelsRailLogoOutlineLight"
           colorInterpolationFilters="sRGB"
-          x="-100%"
-          y="-100%"
-          width="300%"
-          height="300%"
-          primitiveUnits="userSpaceOnUse"
+          x="-50%"
+          y="-50%"
+          width="200%"
+          height="200%"
         >
           <feMorphology
             in="SourceAlpha"
             operator="dilate"
-            radius="1.1"
+            radius="2.2"
             result="spread"
           />
           <feComposite
@@ -67,7 +65,7 @@ export function RailHomeLogoSvgFilters() {
             operator="out"
             result="outline"
           />
-          <feFlood floodColor="#0f172a" floodOpacity="0.24" result="flood" />
+          <feFlood floodColor="#0f172a" floodOpacity="0.72" result="flood" />
           <feComposite
             in="flood"
             in2="outline"

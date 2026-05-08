@@ -195,7 +195,7 @@ function ExploreWatchReels({
     if (!el) return;
     const h = el.clientHeight;
     if (h <= 0) return;
-    el.scrollBy({ top: dir * h, behavior: "smooth" });
+    el.scrollBy({ top: dir * h, behavior: "auto" });
   }, []);
 
   const goNextReel = useCallback(() => scrollByOneSlide(1), [scrollByOneSlide]);
@@ -242,10 +242,10 @@ function ExploreWatchReels({
   }, []);
 
   const chevronRail = (
-    /* 뷰포트 오른쪽 끝(콘텐츠 영역 경계)에 붙임 — 일반 여백(pr-4) 제거, 노치만 env(safe-area) */
+    /* 오른쪽 고정 레일 버튼을 화면 안쪽으로 이동 */
     <div
       className="pointer-events-none fixed inset-0 z-[101] box-border flex w-full items-center justify-end"
-      style={{ paddingRight: "env(safe-area-inset-right, 0px)" }}
+      style={{ paddingRight: "calc(env(safe-area-inset-right, 0px) + 88px)" }}
     >
       <div className="pointer-events-none flex flex-col gap-2">
         <button
@@ -284,7 +284,7 @@ function ExploreWatchReels({
 
       <div
         ref={scrollRef}
-        className="explore-reels-feed no-scrollbar fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[30] overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth snap-y snap-mandatory"
+        className="explore-reels-feed no-scrollbar fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[30] overflow-y-auto overflow-x-hidden overscroll-y-contain snap-y snap-mandatory"
         style={{ WebkitOverflowScrolling: "touch" }}
         role="feed"
         aria-label={t("explore.feedAria")}

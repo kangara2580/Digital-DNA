@@ -57,6 +57,13 @@ export type FeedVideo = {
    * 원본 공유 페이지 URL — `/api/embed/poster`, 실시간 지표, 상세 복원용
    */
   sourcePageUrl?: string;
+  /**
+   * 서버(yt-dlp 등)로 뽑아 Storage에 올린 MP4 — Kling `source_video_url` 등에 사용
+   */
+  processedVideoUrl?: string | null;
+  /** pending | processing | ready | failed | skipped */
+  processedVideoStatus?: string | null;
+  processedVideoError?: string | null;
 };
 
 const PEXELS_VIDEO_RE = /^https?:\/\/videos\.pexels\.com\//i;

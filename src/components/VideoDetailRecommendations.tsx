@@ -68,23 +68,26 @@ export function VideoDetailRecommendations({ video }: Props) {
 
   useEffect(() => {
     const node = sentinelRef.current;
-    if (!node || pool.length === 0) return;
+    if (!node || pool.length === 0 || visibleCount >= pool.length) return;
     const io = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting) setVisibleCount((n) => n + BATCH_SIZE);
+        if (entries[0]?.isIntersecting) {
+          setVisibleCount((n) => Math.min(n + BATCH_SIZE, pool.length));
+        }
       },
       { rootMargin: "0px 0px 60% 0px", threshold: 0 },
     );
     io.observe(node);
     return () => io.disconnect();
-  }, [pool.length]);
+  }, [pool.length, visibleCount]);
 
   const visibleItems = useMemo(() => {
     if (pool.length === 0) return [];
-    return Array.from({ length: visibleCount }, (_, i) => {
-      const v = pool[i % pool.length];
-      return { video: v, key: `reco-${v.id}-${Math.floor(i / pool.length)}-${i}` };
-    });
+    const n = Math.min(visibleCount, pool.length);
+    return pool.slice(0, n).map((v, i) => ({
+      video: v,
+      key: `reco-${v.id}-${i}`,
+    }));
   }, [pool, visibleCount]);
 
   return (

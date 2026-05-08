@@ -1,15 +1,18 @@
 import type { Video } from "@prisma/client";
 import type { FeedVideo } from "../data/videos";
+import { parseExternalMediaUrl } from "@/lib/externalEmbed/parseUrl";
 import { prisma } from "./prisma";
 
 export function videoRowToFeedVideo(v: Video): FeedVideo {
-  return {
+  const baseOrientation =
+    v.orientation === "landscape" ? "landscape" : "portrait";
+  const base: FeedVideo = {
     id: v.id,
     title: v.title,
     creator: v.creator,
     src: v.src,
     poster: v.poster,
-    orientation: v.orientation === "landscape" ? "landscape" : "portrait",
+    orientation: baseOrientation,
     priceWon: v.price,
     durationSec: v.durationSec ?? undefined,
     isAiGenerated: v.isAiGenerated,
@@ -23,7 +26,34 @@ export function videoRowToFeedVideo(v: Video): FeedVideo {
       createdAtMs: v.createdAt.getTime(),
       category: v.category ?? undefined,
     },
+    processedVideoUrl: v.processedVideoUrl ?? undefined,
+    processedVideoStatus: v.processedVideoStatus ?? undefined,
+    processedVideoError: v.processedVideoError ?? undefined,
   };
+
+  const ext = parseExternalMediaUrl(v.src);
+  if (!ext) return base;
+
+  const key = ext.canonicalKey;
+  const merged: FeedVideo = {
+    ...base,
+    sourcePageUrl: ext.pageUrl,
+    ...(ext.provider === "tiktok"
+      ? { tiktokEmbedId: key }
+      : ext.provider === "youtube"
+        ? { youtubeVideoId: key }
+        : { instagramShortcode: key }),
+  };
+
+  if (ext.provider === "youtube") {
+    merged.poster = `https://img.youtube.com/vi/${key}/maxresdefault.jpg`;
+    if (/\/shorts\//i.test(v.src)) merged.orientation = "portrait";
+  } else {
+    merged.poster = `/api/embed/poster?url=${encodeURIComponent(ext.pageUrl)}`;
+    merged.orientation = "portrait";
+  }
+
+  return merged;
 }
 
 /** 수락 후 끌올·플래시 세일 노출 중인 조각 */

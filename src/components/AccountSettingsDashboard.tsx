@@ -6,9 +6,7 @@ import { flushSync } from "react-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaceProfileUploadSection } from "@/components/FaceProfileUploadSection";
 import { LocalePreferenceSelect } from "@/components/LocalePreferenceSelect";
-import { MyPagePasswordSection } from "@/components/MyPagePasswordSection";
 import { MyPageProfileEditForm } from "@/components/MyPageProfileEditForm";
-import { ProfileAvatarPicker } from "@/components/ProfileAvatarPicker";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import type { ProfileAvatar } from "@/lib/profileAvatarStorage";
 import { resolveProfileAvatar } from "@/lib/profileAvatarStorage";
@@ -22,11 +20,10 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DocumentTitleI18n } from "@/components/DocumentTitleI18n";
 
-type SettingsTab = "basic" | "edit" | "profile" | "language";
+type SettingsTab = "basic" | "profile" | "language";
 
 const SETTINGS_TAB_DEFS: { id: SettingsTab; href: string }[] = [
   { id: "basic", href: "/settings" },
-  { id: "edit", href: "/settings?tab=edit" },
   { id: "profile", href: "/settings?tab=profile" },
   { id: "language", href: "/settings?tab=language" },
 ];
@@ -63,7 +60,6 @@ function LoginRequiredPanel({
 
 function normalizeSettingsTab(input: string | null): SettingsTab {
   if (input === "profile") return "profile";
-  if (input === "edit") return "edit";
   if (input === "language") return "language";
   return "basic";
 }
@@ -280,31 +276,11 @@ export function AccountSettingsDashboard() {
               </h2>
 
               <div className="mt-10">
-                <MyPageProfileEditForm profileForForm={profileForForm} onSaved={setProfileRecord} />
-              </div>
-
-              <MyPagePasswordSection />
-            </div>
-          ) : null}
-
-          {currentTab === "edit" && user ? (
-            <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
-              <h2 className="text-xl font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                {t("settings.tab.edit")}
-              </h2>
-              <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                {t("settings.edit.lead")}
-              </p>
-              <div className="mt-8 max-w-[420px]">
-                <ProfileAvatarPicker
-                  density="comfortable"
-                  value={profileAvatar}
-                  onChange={onProfileAvatarPick}
-                  hint={
-                    user
-                      ? t("settings.avatar.hintSaved")
-                      : t("settings.avatar.hintGuest")
-                  }
+                <MyPageProfileEditForm
+                  profileForForm={profileForForm}
+                  onSaved={setProfileRecord}
+                  profileAvatar={profileAvatar}
+                  onProfileAvatarChange={onProfileAvatarPick}
                 />
               </div>
             </div>
@@ -328,6 +304,7 @@ export function AccountSettingsDashboard() {
           ) : null}
 
           {currentTab === "profile" && user ? <FaceProfileUploadSection /> : null}
+
           </section>
         </div>
       </div>

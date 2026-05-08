@@ -26,11 +26,13 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
+    "@sentry/nextjs": "^10.52.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.103.3",
     "busboy": "^1.6.0",
     "framer-motion": "^12.38.0",
     "jsonwebtoken": "^9.0.3",
+    "lenis": "^1.3.23",
     "lucide-react": "^1.7.0",
     "next": "^15.1.0",
     "react": "^19.0.0",
