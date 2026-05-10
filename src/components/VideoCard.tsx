@@ -14,24 +14,58 @@ import {
 import { createPortal } from "react-dom";
 import { RelatedDnaQuilt } from "@/components/RelatedDnaQuilt";
 import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
-import { useWishlist } from "@/context/WishlistContext";
 import type { FeedVideo } from "@/data/videos";
+import { useVideoCartAction } from "@/hooks/useVideoCartAction";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
+import { useVideoLike } from "@/hooks/useVideoLike";
 import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
+import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
+import { useVideoWishlistAction } from "@/hooks/useVideoWishlistAction";
 import {
   clonesRemaining,
   getCommerceMeta,
 } from "@/data/videoCommerce";
 import { getExternalIframeForCard } from "@/lib/externalEmbed/playerUrls";
+import {
+  EXTERNAL_EMBED_IFRAME_ALLOW,
+  EXTERNAL_EMBED_IFRAME_SANDBOX,
+} from "@/lib/externalEmbed/iframeSandbox";
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { CartIcon } from "@/components/CartIcon";
+import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
 import type { SellerSocialLink } from "@/lib/sellerSocialLinks";
 import {
   sellerDisplayNameFromVideo,
   sellerProfileHrefFromVideo,
 } from "@/lib/sellerProfile";
+import { getVideoContentSource } from "@/lib/videoSourcePlatform";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
+import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
+import { AuthModalPortal } from "@/components/AuthModalPortal";
+import {
+  araAuthDialogWordmarkClassName,
+  araWordmarkFontStyle,
+} from "@/lib/araBrandTypography";
+import {
+  authModalDialogSurface,
+  authModalDismissButtonCls,
+  authModalGlowBottom,
+  authModalGlowTop,
+} from "@/lib/authModalTheme";
+import {
+  reelActionBtn,
+  reelActionBtnActive,
+  reelActionBtnCompact,
+  reelActionBtnDense,
+  reelActionIcon,
+  reelActionIconCompact,
+  reelActionIconDense,
+  reelActionRailColumn,
+  reelActionRailOuter,
+  videoReelMediaContainer,
+} from "@/lib/videoReelActionStyles";
 
 type Props = {
   video: FeedVideo;
@@ -43,7 +77,7 @@ type Props = {
   overlapOnHover?: boolean;
   /** 썸네일 좌상단 배지 문구(다른 배지와 겹치면 우측으로 이동) */
   topBadge?: string;
-  /** 앵커 링크용 (연관 릴스에서 스크롤) */
+  /** 앵커 링크용 (연관 동영상에서 스크롤) */
   domId?: string;
   /** 같은 무드 연관 조각 퀼트 */
   showRelatedQuilt?: boolean;
@@ -57,7 +91,7 @@ type Props = {
    */
   instantPreview?: boolean;
   /**
-   * 홈 인기순위·실패 섹션 등 — 세로 9:16·여백·타이포를 릴스 마켓형으로
+   * 홈 인기순위·실패 섹션 등 — 세로 9:16·여백·타이포를 동영상 마켓형으로
    */
   reelLayout?: boolean;
   /**
@@ -78,7 +112,7 @@ type Props = {
   onPick?: () => void;
   /** 비디오 preload 전략 제어 (기본 metadata) */
   preloadMode?: "none" | "metadata" | "auto";
-  /** 카드 폭이 작은 구간(연관 릴스 등)에서 hover 액션 아이콘만 축소 */
+  /** 카드 폭이 작은 구간(연관 동영상 등)에서 hover 액션 아이콘만 축소 */
   compactHoverActions?: boolean;
   /** true면 호버 액션에서 좋아요(하트) 아이콘 숨김 */
   hideLikeAction?: boolean;
@@ -88,8 +122,8 @@ type Props = {
   hideCreatorMeta?: boolean;
   /** true면 하단 정보 바(아이디·제목·가격) 전체 숨김 */
   hideInfoBar?: boolean;
-  /** 인기순위 TOP3 제목(1금·2은·3동 그라데이션) */
-  rankTitleMedal?: 1 | 2 | 3;
+  /** 홈 인기순위 그리드만 — 가격 글자 흰색·한 단계 크게 */
+  trendingRankCardPrice?: boolean;
 };
 
 function formatDuration(seconds: number): string {
@@ -160,29 +194,17 @@ function AuthRequiredModal({
   if (!open) return null;
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-[220] flex items-center justify-center bg-black/70 px-4 backdrop-blur-[6px]"
-      onClick={(e) => e.stopPropagation()}
-      onPointerDown={(e) => e.stopPropagation()}
-    >
-      <button
-        type="button"
-        className="absolute inset-0"
-        aria-label="로그인 모달 닫기"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onClose();
-        }}
-      />
+    <AuthModalPortal onDismiss={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-label="로그인 또는 회원가입"
-        className="relative z-10 w-full max-w-[560px] rounded-[24px] border border-white/20 bg-[radial-gradient(120%_120%_at_0%_0%,rgba(0,51,255,0.34)_0%,rgba(8,14,30,0.94)_52%,rgba(2,6,16,0.98)_100%)] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10"
+        className={`relative w-full rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >
+        <div className={authModalGlowTop} aria-hidden />
+        <div className={authModalGlowBottom} aria-hidden />
         <button
           type="button"
           onClick={(e) => {
@@ -190,44 +212,20 @@ function AuthRequiredModal({
             e.stopPropagation();
             onClose();
           }}
-          className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/10 text-zinc-200 transition hover:bg-white/20"
+          className={authModalDismissButtonCls}
           aria-label="닫기"
         >
           ×
         </button>
-        <p className="relative text-center text-[clamp(1.85rem,6vw,2.65rem)] font-black tracking-tight text-white">
+        <p className={araAuthDialogWordmarkClassName} style={araWordmarkFontStyle}>
           ARA
         </p>
         <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
           로그인/회원가입
         </p>
-        <button
-          type="button"
-          onClick={onGoogleStart}
-          className="relative mx-auto mt-9 flex w-full max-w-[360px] items-center justify-center gap-3 rounded-full bg-white px-4 py-3 text-[clamp(1.0625rem,3.9vw,1.3125rem)] font-extrabold text-[#1a1a1a] shadow-[0_16px_34px_-18px_rgba(255,255,255,0.95)] transition hover:brightness-95 sm:px-6 sm:py-4"
-        >
-          <svg className="h-5 w-5 shrink-0 sm:h-6 sm:w-6" viewBox="0 0 24 24" aria-hidden>
-            <path
-              fill="#EA4335"
-              d="M12 10.2v3.9h5.4c-.2 1.2-.9 2.3-1.9 3l3 2.3c1.7-1.6 2.7-3.9 2.7-6.7 0-.6-.1-1.2-.2-1.8H12z"
-            />
-            <path
-              fill="#34A853"
-              d="M12 22c2.4 0 4.4-.8 5.9-2.2l-3-2.3c-.8.6-1.8 1-2.9 1-2.2 0-4.1-1.5-4.7-3.5l-3.1 2.4C5.6 20.3 8.6 22 12 22z"
-            />
-            <path
-              fill="#4A90E2"
-              d="M7.3 15c-.2-.6-.4-1.3-.4-2s.1-1.4.4-2L4.2 8.6C3.4 10.1 3 11.5 3 13s.4 2.9 1.2 4.4L7.3 15z"
-            />
-            <path
-              fill="#FBBC05"
-              d="M12 7.5c1.3 0 2.5.4 3.4 1.3l2.6-2.6C16.4 4.7 14.4 4 12 4 8.6 4 5.6 5.7 4.2 8.6L7.3 11c.6-2 2.5-3.5 4.7-3.5z"
-            />
-          </svg>
-          Google로 바로 시작
-        </button>
+        <AuthModalGoogleStartButton onClick={onGoogleStart} />
       </div>
-    </div>,
+    </AuthModalPortal>,
     document.body,
   );
 }
@@ -257,11 +255,10 @@ export function VideoCard({
   hideHoverActions = false,
   hideCreatorMeta = false,
   hideInfoBar = false,
-  rankTitleMedal,
+  trendingRankCardPrice = false,
 }: Props) {
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
-  const wishlist = useWishlist();
   const reduceMotion = useReducedMotion() ?? false;
   const externalIframe = useMemo(
     () => {
@@ -280,22 +277,11 @@ export function VideoCard({
   const showMicro = false;
   const showAiBadge = false;
   const cartBtnRef = useRef<HTMLButtonElement>(null);
-  const wishlisted = wishlist.isSaved(video.id);
-  const [likedByMe, setLikedByMe] = useState(false);
-  const [likeBusy, setLikeBusy] = useState(false);
   const [likePulse, setLikePulse] = useState(false);
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const authPromptScrollYRef = useRef(0);
-  const medalTitleCls =
-    rankTitleMedal === 1
-      ? "bg-gradient-to-b from-[#fffbeb] via-[#fbbf24] to-[#92400e] bg-clip-text font-extrabold text-transparent [text-shadow:none] [-webkit-background-clip:text]"
-      : rankTitleMedal === 2
-      ? "bg-gradient-to-b from-[#f8fafc] via-[#94a3b8] to-[#475569] bg-clip-text font-extrabold text-transparent [-webkit-background-clip:text]"
-      : rankTitleMedal === 3
-      ? "bg-gradient-to-b from-[#fcd9a8] via-[#b87333] to-[#5c3317] bg-clip-text font-extrabold text-transparent [-webkit-background-clip:text]"
-      : "";
-
+  const displayTitle = useVideoDisplayTitle();
   const reelAspectPortrait =
     reelLayout && reelStrip ? "aspect-[3/4] w-full" : "aspect-[9/16] w-full";
   const reelAspectLandscape =
@@ -360,12 +346,42 @@ export function VideoCard({
     }
     return true;
   }, [authLoading, supabaseConfigured, user]);
+  const { wishlisted, toggleWishlist } = useVideoWishlistAction(video, requireAuth);
+  const { inCart, toggleCartFromButton } = useVideoCartAction(
+    video,
+    dopamine ?? undefined,
+    requireAuth,
+  );
+  const { likedByMe, likeBusy, toggleLike } = useVideoLike({
+    videoId: video.id,
+    requireAuth,
+    onError: () => {
+      if (typeof window !== "undefined") {
+        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
+      }
+    },
+  });
 
-  const startGoogleAuth = useCallback(() => {
+  const startGoogleAuth = useCallback(async () => {
     const next =
       typeof window !== "undefined"
         ? `${window.location.pathname}${window.location.search}${window.location.hash}`
         : "/";
+    const redirectTo = buildAuthCallbackRedirectTo(next);
+    const supabase = getSupabaseBrowserClient();
+    if (supabase && redirectTo) {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          queryParams: { prompt: "select_account" },
+        },
+      });
+      if (!error && data.url) {
+        window.location.assign(data.url);
+        return;
+      }
+    }
     window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
   }, []);
 
@@ -426,75 +442,12 @@ export function VideoCard({
     };
   }, [video.listing?.sellerId]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLikedByMe(false);
-    if (authLoading || !user || !supabaseConfigured) return;
-    void (async () => {
-      try {
-        const supabase = getSupabaseBrowserClient();
-        const session = supabase ? await supabase.auth.getSession() : null;
-        const token = session?.data.session?.access_token;
-        const headers = token
-          ? { Authorization: `Bearer ${token}` }
-          : undefined;
-        const res = await fetch(
-          `/api/video/likes?videoId=${encodeURIComponent(video.id)}`,
-          { cache: "no-store", headers },
-        );
-        if (!res.ok || cancelled) return;
-        const body = (await res.json().catch(() => ({}))) as {
-          ok?: boolean;
-          likedByMe?: boolean;
-        };
-        if (!body.ok || cancelled) return;
-        setLikedByMe(Boolean(body.likedByMe));
-      } catch {
-        /* ignore */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [video.id, user?.id, authLoading, supabaseConfigured, user]);
-
   const toggleInternalLike = useCallback(async () => {
-    if (likeBusy || authLoading) return;
-    if (!requireAuth()) return;
     const nextLiked = !likedByMe;
-    const prevLiked = likedByMe;
-    setLikedByMe(nextLiked);
     setLikePulse(true);
     window.setTimeout(() => setLikePulse(false), 170);
-    setLikeBusy(true);
-    try {
-      const supabase = getSupabaseBrowserClient();
-      const session = supabase ? await supabase.auth.getSession() : null;
-      const token = session?.data.session?.access_token;
-      if (!token) throw new Error("no_token");
-      const res = await fetch("/api/video/likes", {
-        method: nextLiked ? "POST" : "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ videoId: video.id }),
-      });
-      const body = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        likedByMe?: boolean;
-      };
-      if (!res.ok || !body.ok) throw new Error("toggle_failed");
-      setLikedByMe(Boolean(body.likedByMe));
-    } catch {
-      setLikedByMe(prevLiked);
-      if (typeof window !== "undefined") {
-        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
-      }
-    } finally {
-      setLikeBusy(false);
-    }
-  }, [likeBusy, authLoading, requireAuth, likedByMe, video.id]);
+    await toggleLike();
+  }, [likedByMe, toggleLike]);
 
   const segmentPreviewEffective = segmentPreview && !externalIframe;
   const isLocal = canLoadPreviewVideo && isLocalPublicVideo(previewSrc);
@@ -539,8 +492,8 @@ export function VideoCard({
   const shell = flush
     ? "rounded-none border-0 bg-transparent shadow-none"
     : dense
-      ? "rounded-lg border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-reels-cyan/25 hover:shadow-reels-cyan/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-reels-cyan/40"
-      : "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-reels-crimson/20 hover:shadow-reels-crimson/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-reels-crimson/35";
+      ? "rounded-lg border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-white/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-zinc-300"
+      : "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-white/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-zinc-300";
 
   const priceLabel =
     video.priceWon != null
@@ -550,6 +503,7 @@ export function VideoCard({
     (video.sellerSocialLinks?.length ?? 0) > 0 ? video.sellerSocialLinks! : sellerSocialLinks;
   const sellerHref = useMemo(() => sellerProfileHrefFromVideo(video), [video]);
   const sellerName = useMemo(() => sellerDisplayNameFromVideo(video), [video]);
+  const videoContentSource = useMemo(() => getVideoContentSource(video), [video]);
 
   const quilt =
     showRelatedQuilt && !dense ? <RelatedDnaQuilt video={video} /> : null;
@@ -577,40 +531,16 @@ export function VideoCard({
         ? "origin-top hover:z-[2] hover:scale-[1.02] motion-reduce:hover:scale-100"
         : "hover:z-[2] hover:scale-[1.05] motion-reduce:hover:scale-100";
   const compactActions = compactHoverActions && !dense;
-  const actionOverlayPadding = "p-0";
-  const actionStackGap = dense
-    ? "gap-1"
+  const reelBtnShell = dense
+    ? reelActionBtnDense
     : compactActions
-      ? "gap-1"
-      : reelStrip
-        ? "gap-1.5"
-        : reelLayout
-          ? "gap-2"
-          : "gap-1.5";
-  const actionButtonSize = dense
-    ? "h-7 w-7"
+      ? reelActionBtnCompact
+      : reelActionBtn;
+  const reelIconCls = dense
+    ? reelActionIconDense
     : compactActions
-      ? "h-8 w-8 sm:h-9 sm:w-9"
-    : reelStrip
-      ? "h-8 w-8 sm:h-9 sm:w-9"
-      : reelLayout
-        ? "h-9 w-9 sm:h-10 sm:w-10"
-        : "h-8 w-8 sm:h-9 sm:w-9";
-  const actionIconSize = dense
-    ? "h-[22px] w-[22px]"
-    : compactActions
-      ? "h-[22px] w-[22px] sm:h-6 sm:w-6"
-    : reelStrip
-      ? "h-6 w-6 sm:h-[26px] sm:w-[26px]"
-      : reelLayout
-        ? "h-[26px] w-[26px] sm:h-7 sm:w-7"
-        : "h-6 w-6 sm:h-[26px] sm:w-[26px]";
-  const actionHoverScale = compactActions ? "hover:scale-100" : "hover:scale-110";
-  const actionStackPos = showMicro
-    ? "left-1.5 top-9 sm:left-2 sm:top-10"
-    : !showMicro && (showAiBadge || topBadge)
-      ? "left-1.5 top-12 sm:left-2 sm:top-[3.2rem]"
-      : "left-1.5 top-[2.2rem] sm:left-2 sm:top-[2.35rem]";
+      ? reelActionIconCompact
+      : reelActionIcon;
 
   return (
     <>
@@ -647,14 +577,23 @@ export function VideoCard({
       }
       onMouseMove={externalIframe ? playTikTok : undefined}
     >
-      <div className={`relative overflow-hidden bg-black/40 ${aspectClass}`}>
+      <div
+        className={`${videoReelMediaContainer} relative overflow-hidden bg-black/40 ${aspectClass}`}
+      >
         {externalIframe ? (
-          <div className="absolute inset-0 z-0 flex items-center justify-center">
+          <div className="absolute inset-0 z-0 overflow-hidden">
             <iframe
-              title={`${video.title}-${externalIframe.kind}`}
+              title={`${displayTitle(video)}-${externalIframe.kind}`}
               src={externalIframe.src}
-              className="pointer-events-none h-full w-full border-0"
-              allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+              sandbox={EXTERNAL_EMBED_IFRAME_SANDBOX}
+              className={`pointer-events-none border-0 ${
+                externalIframe.kind === "instagram"
+                  ? "absolute left-1/2 top-[2%] h-[118%] w-[112%] max-w-none -translate-x-1/2"
+                  : externalIframe.kind === "youtube"
+                    ? "absolute left-1/2 top-1/2 h-[110%] w-[110%] max-w-none -translate-x-1/2 -translate-y-1/2"
+                    : "absolute inset-0 h-full w-full"
+              }`}
+              allow={EXTERNAL_EMBED_IFRAME_ALLOW}
               allowFullScreen
               loading="eager"
               scrolling="no"
@@ -709,7 +648,7 @@ export function VideoCard({
             type="button"
             onClick={onPick}
             className="absolute inset-0 z-[3] cursor-pointer border-0 bg-transparent p-0"
-            aria-label={`${video.title} — 세로 릴로 보기`}
+            aria-label={`${displayTitle(video)} — 세로 릴로 보기`}
           />
         ) : (
           <Link
@@ -717,8 +656,8 @@ export function VideoCard({
             className="absolute inset-0 z-[3]"
             aria-label={
               detailHref?.endsWith("/customize")
-                ? `${video.title} 맞춤 리스킨 스튜디오`
-                : `${video.title} 상세 페이지`
+                ? `${displayTitle(video)} 맞춤 리스킨 스튜디오`
+                : `${displayTitle(video)} 상세 페이지`
             }
           />
         )}
@@ -795,105 +734,101 @@ export function VideoCard({
           </div>
         ) : null}
         {!hideHoverActions ? (
-          <div
-            className={`pointer-events-none absolute z-[7] ${actionStackPos} ${actionOverlayPadding}`}
-          >
-            <div
-              className={`flex flex-col items-center justify-center opacity-100 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-200 max-lg:translate-y-0 max-lg:opacity-100 translate-y-1 lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 ${actionStackGap}`}
-            >
-            <button
-              ref={cartBtnRef}
-              type="button"
-              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full border border-white/20 bg-black/35 text-white opacity-90 backdrop-blur-[1px] transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
-              aria-label="장바구니에 담기"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (!requireAuth()) return;
-                const el = cartBtnRef.current;
-                if (el && dopamine) {
-                  dopamine.launchFromCartButton(el, video, thumbnailSrc);
-                }
-              }}
-            >
-              <CartIcon
-                className={`shrink-0 drop-shadow-md ${actionIconSize}`}
-              />
-            </button>
-            {!hideLikeAction ? (
+          <div className={reelActionRailOuter}>
+            <div className={reelActionRailColumn}>
               <button
+                ref={cartBtnRef}
                 type="button"
-                className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full border border-white/20 bg-black/35 text-white opacity-90 backdrop-blur-[1px] transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
-                aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
-                aria-pressed={likedByMe}
+                className={`${reelBtnShell} ${inCart ? reelActionBtnActive : ""}`}
+                aria-label={inCart ? "장바구니에서 빼기" : "장바구니에 담기"}
+                aria-pressed={inCart}
+                title={inCart ? "장바구니에서 빼기" : "장바구니 담기"}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  void toggleInternalLike();
+                  if (!requireAuth()) return;
+                  const el = cartBtnRef.current;
+                  if (el) {
+                    toggleCartFromButton(el, thumbnailSrc);
+                  }
                 }}
-                disabled={likeBusy}
               >
-                <Heart
-                  className={`shrink-0 drop-shadow-md transition-all duration-200 ${actionIconSize} ${likedByMe ? "fill-current text-reels-crimson" : "text-white"} ${
-                    likePulse ? "scale-110" : "scale-100"
-                  }`}
+                <CartIcon
+                  className={`${reelIconCls} ${inCart ? "text-[var(--reels-point)]" : "text-white"}`}
                 />
               </button>
-            ) : null}
-            <button
-              type="button"
-              className={`pointer-events-auto relative z-[8] inline-flex items-center justify-center rounded-full border border-white/20 bg-black/35 text-white opacity-90 backdrop-blur-[1px] transition-transform duration-300 ease-out ${actionHoverScale} ${actionButtonSize}`}
-              aria-label={wishlisted ? "찜 해제" : "찜하기"}
-              aria-pressed={wishlisted}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (!requireAuth()) return;
-                wishlist.toggle(video);
-              }}
-            >
-              <span
-                className={`relative isolate block shrink-0 ${
-                  actionIconSize
-                }`}
-              >
-                {/* 찜(북마크) 클릭 시에만 아래→위 채움 */}
-                <motion.span
-                  className="absolute inset-0 overflow-hidden"
-                  initial={false}
-                  animate={{
-                    clipPath: wishlisted
-                      ? "inset(0% 0% 0% 0%)"
-                      : "inset(0% 0% 100% 0%)",
+              {!hideLikeAction ? (
+                <button
+                  type="button"
+                  className={reelBtnShell}
+                  aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+                  aria-pressed={likedByMe}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    void toggleInternalLike();
                   }}
-                  transition={{
-                    duration: reduceMotion ? 0 : 0.52,
-                    ease: [0.22, 0.99, 0.36, 1],
-                  }}
+                  disabled={likeBusy}
                 >
+                  <Heart
+                    strokeWidth={1.5}
+                    className={`${reelIconCls} transition-transform duration-200 ${likedByMe ? "fill-current text-[var(--reels-point)]" : "text-white"} ${
+                      likePulse ? "scale-110" : "scale-100"
+                    }`}
+                  />
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className={`${reelBtnShell} ${wishlisted ? reelActionBtnActive : ""}`}
+                aria-label={wishlisted ? "찜 해제" : "찜하기"}
+                aria-pressed={wishlisted}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!requireAuth()) return;
+                  toggleWishlist();
+                }}
+              >
+                <span className={`relative isolate block ${reelIconCls}`}>
+                  {/* 찜(북마크) 클릭 시에만 아래→위 채움 */}
+                  <motion.span
+                    className="absolute inset-0 overflow-hidden"
+                    initial={false}
+                    animate={{
+                      clipPath: wishlisted
+                        ? "inset(0% 0% 0% 0%)"
+                        : "inset(0% 0% 100% 0%)",
+                    }}
+                    transition={{
+                      duration: reduceMotion ? 0 : 0.52,
+                      ease: [0.22, 0.99, 0.36, 1],
+                    }}
+                  >
+                    <Bookmark
+                      className="block h-full w-full text-[var(--reels-point)]"
+                      fill="currentColor"
+                      stroke="none"
+                      strokeWidth={0}
+                      aria-hidden
+                    />
+                  </motion.span>
                   <Bookmark
-                    className="block h-full w-full"
-                    fill="white"
-                    stroke="none"
-                    strokeWidth={0}
+                    className={`pointer-events-none absolute inset-0 z-[1] block h-full w-full ${wishlisted ? "text-[var(--reels-point)]" : "text-white"}`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
                     aria-hidden
                   />
-                </motion.span>
-                <Bookmark
-                  className="pointer-events-none absolute inset-0 z-[1] block h-full w-full drop-shadow-md"
-                  fill="none"
-                  stroke="white"
-                  strokeWidth={1.75}
-                  aria-hidden
-                />
-              </span>
-            </button>
+                </span>
+              </button>
             </div>
           </div>
         ) : null}
       </div>
 
-      {hideInfoBar ? null : <div
+      {hideInfoBar ? null : (
+      <div
         className={`border-t border-white/10 bg-black/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 ${
           dense
             ? "min-h-[34px] px-1.5 py-1 sm:min-h-[36px]"
@@ -919,11 +854,14 @@ export function VideoCard({
             </Link>
           ) : null}
           <div className={`flex min-w-0 items-center ${dense ? "gap-1" : "gap-2"}`}>
+            <VideoSourcePlatformIcon
+              source={videoContentSource}
+              className={`shrink-0 text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 ${
+                dense ? "h-3 w-3" : "h-3.5 w-3.5"
+              }`}
+            />
             <h3
-              className={`line-clamp-2 min-w-0 flex-1 text-left leading-snug ${
-                medalTitleCls ||
-                `font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900`
-              } ${
+              className={`line-clamp-2 min-w-0 flex-1 text-left font-semibold leading-snug text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 ${
                 dense
                   ? "text-[10px] sm:text-[10px]"
                   : reelStrip
@@ -933,19 +871,23 @@ export function VideoCard({
                       : "text-[11px] sm:text-[12px]"
               }`}
             >
-              {video.title}
+              {displayTitle(video)}
             </h3>
             {priceLabel ? (
               <span
-                className={`shrink-0 rounded-md px-1.5 py-0.5 text-right font-extrabold tabular-nums text-[#64E3FF] transition-[transform,background-color,color,box-shadow,font-weight] duration-[300ms] ease-out motion-reduce:transition-none group-hover:scale-[1.03] group-hover:bg-[#2348A8]/35 group-hover:text-[#BFE0FF] group-hover:shadow-[0_0_14px_-4px_rgba(79,140,255,0.7)] motion-reduce:group-hover:scale-100 motion-reduce:group-hover:bg-transparent motion-reduce:group-hover:font-extrabold motion-reduce:group-hover:text-[#64E3FF] motion-reduce:group-hover:shadow-none [html[data-theme='light']_&]:text-[#2A62D8] ${
-                  dense
-                    ? "text-[10px]"
-                    : reelStrip
-                      ? "text-[12px] sm:text-[13px]"
-                      : reelLayout
-                        ? "text-[12px] sm:text-[13px]"
-                        : "text-[11px] sm:text-[12px]"
-                }`}
+                className={
+                  trendingRankCardPrice
+                    ? "shrink-0 rounded-md px-2 py-0.5 text-right text-[13px] font-extrabold tabular-nums text-zinc-50 transition-colors duration-200 motion-reduce:transition-none [html[data-theme='light']_&]:text-zinc-950 sm:text-[15px] group-hover:bg-white/[0.08] group-hover:text-white motion-reduce:group-hover:bg-transparent"
+                    : `shrink-0 rounded-md px-1.5 py-0.5 text-right font-extrabold tabular-nums text-[#64E3FF] transition-[transform,background-color,color,box-shadow,font-weight] duration-[300ms] ease-out motion-reduce:transition-none group-hover:scale-[1.03] group-hover:bg-[#2348A8]/35 group-hover:text-[#BFE0FF] group-hover:shadow-[0_0_14px_-4px_rgba(79,140,255,0.7)] motion-reduce:group-hover:scale-100 motion-reduce:group-hover:bg-transparent motion-reduce:group-hover:font-extrabold motion-reduce:group-hover:text-[#64E3FF] motion-reduce:group-hover:shadow-none [html[data-theme='light']_&]:text-[#2A62D8] ${
+                        dense
+                          ? "text-[10px]"
+                          : reelStrip
+                            ? "text-[12px] sm:text-[13px]"
+                            : reelLayout
+                              ? "text-[12px] sm:text-[13px]"
+                              : "text-[11px] sm:text-[12px]"
+                      }`
+                }
               >
                 {priceLabel}
               </span>
@@ -973,7 +915,8 @@ export function VideoCard({
             </div>
           ) : null}
         </div>
-      </div>}
+      </div>
+      )}
       {!hideInfoBar && footerExtension}
       {quilt}
     </article>

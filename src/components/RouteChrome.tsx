@@ -10,11 +10,33 @@ import { ReelsLeftRail } from "@/components/ReelsLeftRail";
 
 const immersiveRoutes = new Set(["/through-sliding-doors"]);
 
+const chromeExcludedPrefixes = [
+  "/admin",
+  "/auth",
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+  "/payments",
+];
+
+const chromeExcludedRoutes = new Set([
+  "/credits",
+  "/billing",
+  "/billing/success",
+  "/account-suspended",
+]);
+
 export function RouteChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const immersive = immersiveRoutes.has(pathname);
+  const chromeExcluded =
+    chromeExcludedRoutes.has(pathname) ||
+    chromeExcludedPrefixes.some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+    );
 
-  if (immersive) {
+  if (immersive || chromeExcluded) {
     return <>{children}</>;
   }
 

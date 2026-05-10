@@ -4,6 +4,7 @@ import { useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import type { FeedVideo } from "@/data/videos";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
+import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 type Props = {
@@ -14,6 +15,7 @@ type Props = {
 
 export function EditorCurationClipThumb({ video, className }: Props) {
   const reduceMotion = useReducedMotion() ?? false;
+  const displayTitle = useVideoDisplayTitle();
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(
     video.previewSrc ?? video.src,
   );
@@ -53,7 +55,7 @@ export function EditorCurationClipThumb({ video, className }: Props) {
         </video>
       </div>
       <p className="mt-2 line-clamp-2 text-left text-[12px] font-bold leading-snug text-zinc-200 sm:text-[13px]">
-        {video.title}
+        {displayTitle(video)}
       </p>
       {video.priceWon != null ? (
         <p className="mt-0.5 text-left text-[11px] font-semibold tabular-nums text-reels-cyan sm:text-[12px]">

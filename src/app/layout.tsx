@@ -10,12 +10,17 @@ import {
   Song_Myung,
 } from "next/font/google";
 import { AppProviders } from "@/components/AppProviders";
+import { GlobalLenis } from "@/components/GlobalLenis";
 import { NavigationRecovery } from "@/components/NavigationRecovery";
+import { RailHomeLogoSvgFilters } from "@/components/RailHomeLogoSvgFilters";
 import { RouteChrome } from "@/components/RouteChrome";
+import { translate } from "@/lib/i18n/dictionaries";
+import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
+import { getSiteMetadataBase } from "@/lib/siteMetadataBase";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-/** 히어로 등 브랜드 워드마크용 — 동글동글 레터링 */
 const fredoka = Fredoka({
   subsets: ["latin"],
   weight: ["600"],
@@ -41,21 +46,36 @@ const songMyung = Song_Myung({
   variable: "--font-song-myung",
 });
 
-export const metadata: Metadata = {
-  title: "ARA — Buy the Motion, Own the Moment",
-  description:
-    "모션 권리를 사고 Kling 3.0으로 리스킨하세요. 베스트·플래시 세일·상황 큐레이션 릴스 마켓.",
-  icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getSiteLocale();
+  const suffix = translate(locale, "meta.brandSuffix");
+  const titleDefault = translate(locale, "meta.rootTitle");
+  const desc = translate(locale, "meta.rootDescription");
+  const base = getSiteMetadataBase();
 
-export default function RootLayout({
+  return {
+    metadataBase: base,
+    title: {
+      default: titleDefault,
+      template: `%s${suffix}`,
+    },
+    description: desc,
+    icons: {
+      icon: "/favicon.svg",
+      shortcut: "/favicon.svg",
+    },
+    ...socialMetadataFields(locale, titleDefault, desc),
+  };
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
+  const locale = await getSiteLocale();
+  const htmlLang = locale === "en" ? "en" : "ko";
+
   const themeBootScript = `
     (function () {
       try {
@@ -66,8 +86,30 @@ export default function RootLayout({
         document.documentElement.dataset.theme = "dark";
       }
       try {
-        var loc = localStorage.getItem("reels-locale");
+        var cookieMatch = document.cookie.match(/(?:^|;\\s)reels-locale=([^;]+)/);
+        var cookieLoc = cookieMatch ? decodeURIComponent(cookieMatch[1].trim()) : null;
+        var storedLoc = localStorage.getItem("reels-locale");
+        var loc =
+          storedLoc === "en" || storedLoc === "ko"
+            ? storedLoc
+            : cookieLoc === "en" || cookieLoc === "ko"
+              ? cookieLoc
+              : "ko";
         document.documentElement.lang = loc === "en" ? "en" : "ko";
+        try {
+          if (storedLoc !== loc) localStorage.setItem("reels-locale", loc);
+          if (cookieLoc !== loc) {
+            var secure =
+              typeof window !== "undefined" &&
+              window.location &&
+              window.location.protocol === "https:";
+            document.cookie =
+              "reels-locale=" +
+              encodeURIComponent(loc) +
+              ";path=/;max-age=31536000;samesite=lax" +
+              (secure ? ";secure" : "");
+          }
+        } catch (e3) {}
       } catch (e2) {
         document.documentElement.lang = "ko";
       }
@@ -76,7 +118,7 @@ export default function RootLayout({
 
   return (
     <html
-      lang="ko"
+      lang={htmlLang}
       data-theme="dark"
       suppressHydrationWarning
       className={`${inter.variable} ${fredoka.variable} ${montserrat.variable} ${blackHanSans.variable} ${nanumGothic.variable} ${songMyung.variable}`}
@@ -94,7 +136,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-[var(--background,#02040a)] font-sans text-[var(--foreground,#fafafa)] antialiased">
         <AppProviders>
+          <RailHomeLogoSvgFilters />
           <NavigationRecovery />
+          <GlobalLenis />
           <RouteChrome>{children}</RouteChrome>
         </AppProviders>
       </body>

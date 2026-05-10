@@ -5,10 +5,12 @@ import type { SellerSocialLink } from "@/lib/sellerSocialLinks";
 export type FeedVideo = {
   id: string;
   title: string;
+  /** English catalog title when UI locale is `en` */
+  titleEn?: string;
   creator: string;
   src: string;
   poster: string;
-  /** 세로(릴스) / 가로(와이드) 피드 구분 */
+  /** 세로형(숏폼) / 가로(와이드) 피드 구분 */
   orientation: "portrait" | "landscape";
   /** 원 단위 가격(데모). 없으면 표시 안 함 */
   priceWon?: number;
@@ -55,6 +57,13 @@ export type FeedVideo = {
    * 원본 공유 페이지 URL — `/api/embed/poster`, 실시간 지표, 상세 복원용
    */
   sourcePageUrl?: string;
+  /**
+   * 서버(yt-dlp 등)로 뽑아 Storage에 올린 MP4 — Kling `source_video_url` 등에 사용
+   */
+  processedVideoUrl?: string | null;
+  /** pending | processing | ready | failed | skipped */
+  processedVideoStatus?: string | null;
+  processedVideoError?: string | null;
 };
 
 const PEXELS_VIDEO_RE = /^https?:\/\/videos\.pexels\.com\//i;
@@ -283,7 +292,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   /** 100·300·500원대 — DNA 조합기·연관 무드 데모용 마이크로 조각 */
   {
     id: "dna-100-asphalt",
-    title: "젖은 아스팔트 릴스",
+    title: "젖은 아스팔트 동영상",
     creator: "@vibe_micro",
     src: "https://videos.pexels.com/video-files/3045163/3045163-hd_1920_1080_25fps.mp4",
     poster:
@@ -294,7 +303,7 @@ export const SAMPLE_VIDEOS: FeedVideo[] = [
   },
   {
     id: "dna-300-rain-asmr",
-    title: "빗소리 ASMR 릴스",
+    title: "빗소리 ASMR 동영상",
     creator: "@vibe_micro",
     src: "https://videos.pexels.com/video-files/2491284/2491284-hd_1920_1080_30fps.mp4",
     poster:
@@ -464,6 +473,7 @@ export const LOCAL_TRENDING_FEED_VIDEOS: FeedVideo[] = MOCK_VIDEOS.map(
   (m, i) => ({
     id: m.id,
     title: m.title,
+    titleEn: m.titleEn,
     creator: "@reels_local",
     src: m.video_url,
     poster: posterForLocalTrendingClip(m.video_url, m.thumbnail_url),

@@ -1,7 +1,9 @@
 "use client";
 
+import type { User } from "@supabase/supabase-js";
 import { useCallback, useEffect, useState } from "react";
 import { SocialLinkFields } from "@/components/SocialLinkFields";
+import { ProfileAvatarPicker } from "@/components/ProfileAvatarPicker";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import {
   fetchUserDataBlob,
@@ -13,63 +15,91 @@ import {
 } from "@/lib/sellerSocialLinks";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import {
-  buildInternationalPhone,
-  derivePhoneFieldsForForm,
   fetchUserProfile,
   mergeProfileRowWithAuthUser,
   upsertUserProfile,
   type AppProfile,
 } from "@/lib/supabaseProfiles";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { ProfileAvatar } from "@/lib/profileAvatarStorage";
+
+const SOCIAL_LINKS_BLOB_KEY = "social_links";
+
+const MAX_SOCIAL_LINK_ROWS = 20;
+
+const SNS_URL_PRESETS = [
+  { prefix: "https://www.tiktok.com/", label: "TikTok" },
+  { prefix: "https://www.instagram.com/", label: "Instagram" },
+  { prefix: "https://www.youtube.com/", label: "YouTube" },
+] as const;
 
 function nz(s: string): string | null {
   const t = s.trim();
   return t.length > 0 ? t : null;
 }
 
-const SOCIAL_LINKS_BLOB_KEY = "social_links";
+function readGoogleLikeName(user: User): string {
+  const m = (user.user_metadata ?? {}) as Record<string, unknown>;
+  if (typeof m.full_name === "string" && m.full_name.trim()) return m.full_name.trim();
+  if (typeof m.name === "string" && m.name.trim()) return m.name.trim();
+  const g = m.given_name;
+  const f = m.family_name;
+  const parts = [typeof g === "string" ? g : "", typeof f === "string" ? f : ""]
+    .join(" ")
+    .trim();
+  if (parts) return parts;
+  const emailLocal = user.email?.split("@")[0]?.trim();
+  return emailLocal || "—";
+}
+
+function appendLinkWithPrefix(links: string[], prefix: string): string[] {
+  const emptyIdx = links.findIndex((s) => !s.trim());
+  if (emptyIdx >= 0) {
+    const next = [...links];
+    next[emptyIdx] = prefix;
+    return next;
+  }
+  if (links.length >= MAX_SOCIAL_LINK_ROWS) return links;
+  return [...links, prefix];
+}
+
+const cardShell =
+  "rounded-2xl border border-white/10 bg-zinc-900/35 p-5 shadow-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white";
+
+const inputNickname =
+  "mt-2 w-full rounded-xl border border-white/15 bg-black/25 px-3.5 py-2.5 text-[17px] text-zinc-100 outline-none transition focus:border-white/35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900";
 
 export function MyPageProfileEditForm({
   profileForForm,
   onSaved,
+  profileAvatar,
+  onProfileAvatarChange,
 }: {
   /** DB 행 + 로그인 메타 병합 결과 (부모에서 mergeProfileRowWithAuthUser 로 생성) */
   profileForForm: AppProfile | null;
   onSaved: (p: AppProfile) => void;
+  profileAvatar: ProfileAvatar | null;
+  onProfileAvatarChange: (next: ProfileAvatar | null) => void;
 }) {
+  const { t } = useTranslation();
   const { user, supabaseConfigured } = useAuthSession();
   const [nickname, setNickname] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [phoneCountryCode, setPhoneCountryCode] = useState("");
-  const [country, setCountry] = useState("");
   const [socialLinks, setSocialLinks] = useState<string[]>([""]);
   const [socialLinksReady, setSocialLinksReady] = useState(false);
-  const [socialBusy, setSocialBusy] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [, setSocialBusy] = useState(false);
+  const [nicknameBusy, setNicknameBusy] = useState(false);
+  /** 닉네임 저장 실패 등 — 닉네임 필드 전용 */
+  const [nicknameMessage, setNicknameMessage] = useState<string | null>(null);
+  /** SNS blob 저장 실패(화면 미표시, 로그성 상태) */
+  const [, setSocialMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!profileForForm) {
       setNickname("");
-      setFirstName("");
-      setLastName("");
-      setPhone("");
-      setPhoneCountryCode("+82");
-      setCountry("");
       return;
     }
     setNickname(profileForForm.nickname ?? "");
-    setFirstName(profileForForm.first_name ?? "");
-    setLastName(profileForForm.last_name ?? "");
-    const { phoneCountryCode: code, phoneNational } = derivePhoneFieldsForForm(
-      profileForForm,
-      user?.phone,
-    );
-    setPhoneCountryCode(code || "+82");
-    setPhone(phoneNational);
-    setCountry(profileForForm.country ?? "");
-  }, [profileForForm, user?.phone]);
+  }, [profileForForm]);
 
   useEffect(() => {
     let cancelled = false;
@@ -107,42 +137,40 @@ export function MyPageProfileEditForm({
     };
   }, [user, supabaseConfigured]);
 
-  const save = useCallback(async () => {
-    setMessage(null);
+  const saveNickname = useCallback(async () => {
+    setNicknameMessage(null);
     if (!user || !supabaseConfigured) {
-      setMessage("로그인 후 저장할 수 있습니다.");
+      setNicknameMessage(t("profileForm.saveLoginRequired"));
       return;
     }
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
-      setMessage("Supabase 연결을 확인해 주세요.");
+      setNicknameMessage(t("profileForm.supabaseCheck"));
       return;
     }
-    setBusy(true);
+    const preserved = {
+      first_name: profileForForm?.first_name ?? null,
+      last_name: profileForForm?.last_name ?? null,
+      phone: profileForForm?.phone ?? null,
+      phone_country_code: profileForForm?.phone_country_code ?? null,
+      country: profileForForm?.country ?? null,
+      timezone: profileForForm?.timezone ?? null,
+    };
+    const nextNick = nz(nickname);
+    const prevNick = nz(profileForForm?.nickname ?? "");
+    if (nextNick === prevNick) return;
+
+    setNicknameBusy(true);
     try {
-      const phoneIntl = buildInternationalPhone(phoneCountryCode, phone);
       const patch = {
-        nickname: nz(nickname),
-        first_name: nz(firstName),
-        last_name: nz(lastName),
-        phone: phoneIntl,
-        phone_country_code: nz(phoneCountryCode),
-        country: nz(country),
-        timezone: null,
+        nickname: nextNick,
+        ...preserved,
       };
       const { error: authErr } = await supabase.auth.updateUser({
-        data: {
-          nickname: patch.nickname,
-          first_name: patch.first_name,
-          last_name: patch.last_name,
-          phone: patch.phone,
-          phone_country_code: patch.phone_country_code,
-          country: patch.country,
-          timezone: null,
-        },
+        data: { nickname: patch.nickname },
       });
       if (authErr) {
-        setMessage("계정 메타데이터 갱신에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+        setNicknameMessage(t("profileForm.authMetaFailed"));
         return;
       }
       const updated = await upsertUserProfile(supabase, user.id, {
@@ -151,35 +179,26 @@ export function MyPageProfileEditForm({
       });
       if (updated) {
         onSaved(updated);
-        setMessage(null);
+        setNicknameMessage(null);
         return;
       }
-      /* profiles upsert가 null이어도 위에서 auth.updateUser는 이미 반영됨.
-         새로고침 시 merge는 메타데이터를 쓰므로, 최신 Auth 유저로 병합해 UI만 맞춤 */
       const { data: authFresh, error: refreshErr } = await supabase.auth.getUser();
       const freshUser = authFresh.user;
       if (refreshErr || !freshUser) {
-        setMessage("저장 상태를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        setNicknameMessage(t("profileForm.saveStateUnknown"));
         return;
       }
       const row = await fetchUserProfile(supabase, user.id);
       onSaved(mergeProfileRowWithAuthUser(row, freshUser));
-      setMessage(null);
+      setNicknameMessage(null);
     } finally {
-      setBusy(false);
+      setNicknameBusy(false);
     }
-  }, [
-    user,
-    supabaseConfigured,
-    nickname,
-    firstName,
-    lastName,
-    phone,
-    phoneCountryCode,
-    country,
-    profileForForm?.email,
-    onSaved,
-  ]);
+  }, [user, supabaseConfigured, nickname, profileForForm, onSaved, t]);
+
+  const handleNicknameBlur = useCallback(() => {
+    void saveNickname();
+  }, [saveNickname]);
 
   useEffect(() => {
     if (!user || !supabaseConfigured || !socialLinksReady) return;
@@ -197,10 +216,10 @@ export function MyPageProfileEditForm({
       );
       setSocialBusy(false);
       if (!ok) {
-        setMessage("SNS 링크 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+        setSocialMessage(t("profileForm.socialSaveFailed"));
         return;
       }
-      // 동일 브라우저 세션에서 판매 카드 아이콘을 즉시 갱신합니다.
+      setSocialMessage(null);
       window.dispatchEvent(
         new CustomEvent("seller-social-links-updated", {
           detail: { sellerId: user.id, links: normalized },
@@ -209,106 +228,133 @@ export function MyPageProfileEditForm({
     }, 450);
 
     return () => window.clearTimeout(timer);
-  }, [socialLinks, socialLinksReady, supabaseConfigured, user]);
+  }, [socialLinks, socialLinksReady, supabaseConfigured, user, t]);
 
   if (!user) {
     return (
-      <p className="text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        로그인하면 프로필 정보를 수정할 수 있습니다.
+      <p className="text-[15px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        {t("profileForm.loginToEdit")}
       </p>
     );
   }
 
-  const input =
-    "mt-1 w-full rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-[14px] text-zinc-100 outline-none focus:border-reels-cyan/45 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900";
+  const displayName = readGoogleLikeName(user);
+  const providerLabel =
+    user.app_metadata?.provider === "google" ? "Google 계정" : "연결 계정";
+  const hasVisibleSocialLinks = socialLinks.some((link) => link.trim().length > 0);
 
   return (
-    <div className="mt-6 space-y-4 rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-      <h3 className="text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-        프로필 정보 수정
-      </h3>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          닉네임
-          <input className={input} value={nickname} onChange={(e) => setNickname(e.target.value)} autoComplete="nickname" />
-        </label>
-        <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          이메일 (읽기 전용)
-          <input className={`${input} opacity-70`} value={user.email ?? ""} readOnly />
-        </label>
-        <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          First name
-          <input
-            className={input}
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            autoComplete="given-name"
-            placeholder="e.g. Ara"
-          />
-        </label>
-        <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          Last name
-          <input
-            className={input}
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            autoComplete="family-name"
-            placeholder="e.g. Kang"
-          />
-        </label>
-        <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          전화 국가번호
-          <input className={input} value={phoneCountryCode} onChange={(e) => setPhoneCountryCode(e.target.value)} placeholder="+82" />
-        </label>
-        <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          전화번호
-          <input className={input} value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
-        </label>
-        <label className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          국가 (ISO 코드, 예: KR)
-          <input
-            className={input}
-            value={country}
-            onChange={(e) => setCountry(e.target.value.toUpperCase())}
-            placeholder="KR"
-            maxLength={2}
-            autoComplete="country"
-          />
-        </label>
-      </div>
-      <div>
-        <p className="text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-          SNS 링크 (TikTok / Instagram / YouTube / X)
-        </p>
-        <p className="mt-1 text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          입력 후 잠시 기다리면 자동 저장되고, 판매 영상 카드 아이콘에 바로 반영됩니다.
-        </p>
-        <div className="mt-2">
-          <SocialLinkFields
-            links={socialLinks}
-            onChange={setSocialLinks}
-            placeholder="ex. tiktok.com/@yourid"
-          />
+    <div className="space-y-5">
+      <section className={cardShell} aria-label={t("profileForm.loginAccount")}>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
+          <div className="w-full max-w-[24rem] shrink-0">
+            <ProfileAvatarPicker
+              density="compact"
+              value={profileAvatar}
+              onChange={onProfileAvatarChange}
+            />
+          </div>
+          <div className="min-w-0 flex-1 lg:-ml-16">
+            <div className="flex items-center gap-2">
+              <p className="text-[14px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                {providerLabel}
+              </p>
+              <p className="text-[19px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                {displayName}
+              </p>
+            </div>
+            {user.email ? (
+              <p className="mt-1 truncate text-[15px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                {user.email}
+              </p>
+            ) : null}
+          </div>
         </div>
-        {socialBusy ? (
-          <p className="mt-2 text-[12px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-            SNS 링크 저장 중...
+      </section>
+
+      <section className={cardShell}>
+        <label className="block text-[17px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+          {t("profileForm.nickname")}
+          <input
+            className={inputNickname}
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            onBlur={handleNicknameBlur}
+            autoComplete="nickname"
+          />
+        </label>
+        {nicknameBusy ? (
+          <p className="mt-2 text-[13px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            {t("profileForm.saveBusy")}
           </p>
         ) : null}
-      </div>
-      {message ? (
-        <p className="text-[13px] font-medium text-reels-cyan [html[data-theme='light']_&]:text-teal-700" role="status">
-          {message}
-        </p>
-      ) : null}
-      <button
-        type="button"
-        disabled={busy}
-        onClick={() => void save()}
-        className="rounded-full bg-reels-cyan/20 px-5 py-2.5 text-[14px] font-extrabold text-reels-cyan transition hover:bg-reels-cyan/30 disabled:opacity-50 [html[data-theme='light']_&]:text-teal-800"
-      >
-        {busy ? "저장 중…" : "변경 사항 저장"}
-      </button>
+        {nicknameMessage ? (
+          <p
+            className="mt-3 text-[15px] font-medium text-red-400 [html[data-theme='light']_&]:text-red-600"
+            role="status"
+          >
+            {nicknameMessage}
+          </p>
+        ) : null}
+      </section>
+
+      <section className={cardShell} aria-labelledby="profile-sns-dashboard">
+        <h3
+          id="profile-sns-dashboard"
+          className="text-[17px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
+        >
+          {t("profileForm.snsDashboardTitle")}
+        </h3>
+        <div className="mt-5">
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {SNS_URL_PRESETS.map(({ prefix, label }) => (
+              <button
+                key={prefix}
+                type="button"
+                onClick={() => setSocialLinks((prev) => appendLinkWithPrefix(prev, prefix))}
+                className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-white/15 bg-white/[0.05] px-3 py-2.5 text-[15px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.09] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-300"
+              >
+                <span className="text-[22px] leading-none font-bold text-[color:var(--reels-point)]">+</span>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {hasVisibleSocialLinks ? (
+          <div className="mt-6">
+            <div>
+              <SocialLinkFields
+                links={socialLinks}
+                onChange={setSocialLinks}
+                placeholder={t("profileForm.snsPlaceholder")}
+              />
+            </div>
+          </div>
+        ) : null}
+
+        <div className="mt-6 rounded-xl border border-dashed border-white/15 bg-black/15 px-4 py-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/80">
+          <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+            {t("profileForm.snsConnectComing")}
+          </p>
+          <p className="mt-1 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            {t("profileForm.snsConnectSoon")}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {SNS_URL_PRESETS.map(({ label }) => (
+              <button
+                key={`oauth-${label}`}
+                type="button"
+                disabled
+                className="inline-flex cursor-not-allowed items-center rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[14px] font-semibold text-zinc-500 opacity-60 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-500"
+                aria-label={`${label} — ${t("profileForm.snsConnectSoon")}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

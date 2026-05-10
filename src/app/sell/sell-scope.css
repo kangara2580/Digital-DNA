@@ -1,0 +1,50 @@
+/** /sell 트리 — 전역(selection 시안)·브라우저 기본(캐럿·레인지) 블루 성격을 줄이고 핑크 톤에 맞춤 */
+[data-page="sell"] *::selection {
+  background-color: rgba(255, 45, 141, 0.42);
+  color: #ffffff;
+}
+
+[data-page="sell"] *::-moz-selection {
+  background-color: rgba(255, 45, 141, 0.42);
+  color: #ffffff;
+}
+
+[data-page="sell"] textarea,
+[data-page="sell"] select,
+[data-page="sell"]
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(
+    [type="range"]
+  ):not([type="submit"]):not([type="button"]):not([type="hidden"]) {
+  caret-color: var(--reels-crimson);
+}
+
+[data-page="sell"] input[type="range"] {
+  accent-color: var(--reels-crimson);
+}
+
+/** 제목·설명 등 — WebKit 등 기본 파란 포커스 링 제거(Tailwind outline과 병행) */
+[data-page="sell"] textarea:focus,
+[data-page="sell"] textarea:focus-visible,
+[data-page="sell"] select:focus,
+[data-page="sell"] select:focus-visible {
+  outline: none;
+}
+
+[data-page="sell"]
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not(
+    [type="submit"]
+  ):not([type="button"]):not([type="hidden"]):focus,
+[data-page="sell"]
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not(
+    [type="submit"]
+  ):not([type="button"]):not([type="hidden"]):focus-visible {
+  outline: none;
+}
+
+/** 미리보기 video 기본 컨트롤 — ⋮ 오버플로 메뉴(WebKit·Chromium; attrs와 함께 사용) */
+[data-page="sell"] video.sell-video-preview::-webkit-media-controls-overflow-button {
+  display: none !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  opacity: 0 !important;
+}

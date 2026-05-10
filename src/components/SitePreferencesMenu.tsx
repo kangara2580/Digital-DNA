@@ -35,7 +35,7 @@ export function SitePreferencesMenu({
         onClick={() => setLocale("ko")}
         className={`${localeSegClass} ${
           locale === "ko"
-            ? "bg-reels-cyan/25 text-reels-cyan"
+            ? "bg-reels-crimson/18 text-reels-crimson [html[data-theme='light']_&]:bg-reels-crimson/12"
             : "text-zinc-500 hover:text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900"
         }`}
         aria-pressed={locale === "ko"}
@@ -48,7 +48,7 @@ export function SitePreferencesMenu({
         onClick={() => setLocale("en")}
         className={`${localeSegClass} ${
           locale === "en"
-            ? "bg-reels-cyan/25 text-reels-cyan"
+            ? "bg-reels-crimson/18 text-reels-crimson [html[data-theme='light']_&]:bg-reels-crimson/12"
             : "text-zinc-500 hover:text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900"
         }`}
         aria-pressed={locale === "en"}
@@ -85,7 +85,7 @@ export function SitePreferencesMenu({
         value={locale}
         onChange={(e) => setLocale(e.target.value as SiteLocale)}
         aria-label="언어 선택"
-        className="w-full cursor-pointer appearance-none rounded-xl border border-white/15 bg-zinc-950/90 py-2.5 pl-3 pr-10 text-[14px] font-semibold text-zinc-100 outline-none transition-[border-color,box-shadow] hover:border-white/25 focus:border-blue-500/70 focus:ring-2 focus:ring-blue-500/35 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-400"
+        className="w-full cursor-pointer appearance-none rounded-xl border border-white/15 bg-zinc-950/90 py-2.5 pl-3 pr-10 text-[14px] font-semibold text-zinc-100 caret-reels-crimson outline-none transition-[border-color,box-shadow] hover:border-white/25 focus:border-reels-crimson/45 focus:ring-2 focus:ring-reels-crimson/28 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-400"
       >
         <option value="ko">한국어 (KO)</option>
         <option value="en">English (EN)</option>

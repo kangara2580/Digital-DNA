@@ -24,7 +24,13 @@ export function tryExtractYoutubeVideoId(raw: string): string | null {
   if (!u) return null;
   const host = u.hostname.toLowerCase();
   if (host === "youtu.be") {
-    const id = u.pathname.replace(/^\//, "").split("/")[0] ?? "";
+    const parts = u.pathname.replace(/^\//, "").split("/").filter(Boolean);
+    /** `youtu.be/VIDEO_ID` · `youtu.be/shorts/VIDEO_ID` */
+    if (parts[0] === "shorts" && parts[1]) {
+      const sid = (parts[1].split("?")[0] ?? "").trim();
+      return YT_ID_RE.test(sid) ? sid : null;
+    }
+    const id = (parts[0]?.split("?")[0] ?? "").trim();
     return YT_ID_RE.test(id) ? id : null;
   }
   if (
@@ -50,14 +56,14 @@ export function tryExtractInstagramShortcode(raw: string): string | null {
   if (!host.endsWith("instagram.com") && !host.endsWith("instagr.am")) {
     return null;
   }
-  const m = u.pathname.match(/\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/);
+  const m = u.pathname.match(/\/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
   const code = m?.[1];
   if (!code || code.length < 5) return null;
   return code;
 }
 
 /**
- * 지원: TikTok 영상 페이지, YouTube watch/shorts, Instagram 릴스·게시물.
+ * 지원: TikTok 영상 페이지, YouTube watch/shorts, Instagram 동영상·게시물.
  * 단축 URL(vm.tiktok 등)은 id 추출 전 리다이렉트가 필요해 여기서는 제외됩니다.
  */
 export function parseExternalMediaUrl(raw: string): ParsedExternalMediaUrl | null {

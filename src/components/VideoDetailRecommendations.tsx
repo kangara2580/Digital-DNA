@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { VideoCard } from "@/components/VideoCard";
+import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import {
   getVideosBySellerHandle,
   getShopRecommendations,
   normalizeSellerHandle,
 } from "@/data/videoCatalog";
+import { getMetricsForVideoDetail } from "@/data/trendingStats";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { FeedVideo } from "@/data/videos";
 
 type Props = {
@@ -19,7 +21,7 @@ const BATCH_SIZE = 12;
 
 /** 상세 하단: 같은 판매자 영상 → DB 판매자 영상 → 추천 영상 순으로 항상 표시 */
 export function VideoDetailRecommendations({ video }: Props) {
-  const router = useRouter();
+  const { t } = useTranslation();
 
   // 1) 카탈로그 기반: 같은 크리에이터 핸들로 매칭
   const catalogPool = useMemo(() => {
@@ -66,53 +68,56 @@ export function VideoDetailRecommendations({ video }: Props) {
 
   useEffect(() => {
     const node = sentinelRef.current;
-    if (!node || pool.length === 0) return;
+    if (!node || pool.length === 0 || visibleCount >= pool.length) return;
     const io = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting) setVisibleCount((n) => n + BATCH_SIZE);
+        if (entries[0]?.isIntersecting) {
+          setVisibleCount((n) => Math.min(n + BATCH_SIZE, pool.length));
+        }
       },
       { rootMargin: "0px 0px 60% 0px", threshold: 0 },
     );
     io.observe(node);
     return () => io.disconnect();
-  }, [pool.length]);
+  }, [pool.length, visibleCount]);
 
   const visibleItems = useMemo(() => {
     if (pool.length === 0) return [];
-    return Array.from({ length: visibleCount }, (_, i) => {
-      const v = pool[i % pool.length];
-      return { video: v, key: `reco-${v.id}-${Math.floor(i / pool.length)}-${i}` };
-    });
+    const n = Math.min(visibleCount, pool.length);
+    return pool.slice(0, n).map((v, i) => ({
+      video: v,
+      key: `reco-${v.id}-${i}`,
+    }));
   }, [pool, visibleCount]);
 
   return (
-    <section
-      className="border-t border-white/10 pt-10 [html[data-theme='light']_&]:border-zinc-200"
-      aria-labelledby="video-reco-heading"
-    >
+    <section className="mt-10 sm:mt-12" aria-labelledby="video-reco-heading">
       <h2
         id="video-reco-heading"
         className="text-center text-xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
       >
-        크리에이터의 다른 판매 동영상
+        {t("video.reco.heading")}
       </h2>
 
-      <div className="mt-6 grid grid-cols-2 gap-2 border border-white/10 p-2 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
         {visibleItems.map(({ video: item, key }) => (
-          <div
+          <VideoCard
             key={key}
-            className="min-w-0 cursor-pointer"
-            onClick={() => router.push(`/video/${encodeURIComponent(item.id)}`)}
-          >
-            <VideoCard
-              video={item}
-              reelLayout
-              hideInfoBar
-              disableHoverScale
-              compactHoverActions
-              className="min-w-0"
-            />
-          </div>
+            video={item}
+            reelLayout
+            reelStrip
+            disableHoverScale
+            hideCreatorMeta
+            preloadMode="metadata"
+            trendingRankCardPrice
+            className="h-full min-w-0"
+            footerExtension={
+              <TrendingVideoStatsFooter
+                hideMetricLabels
+                metrics={getMetricsForVideoDetail(item.id)}
+              />
+            }
+          />
         ))}
       </div>
 

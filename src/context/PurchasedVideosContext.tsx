@@ -69,19 +69,7 @@ export function PurchasedVideosProvider({ children }: { children: ReactNode }) {
       });
       const supabase = getSupabaseBrowserClient();
       if (supabase) {
-        void addUserPurchasedVideo(supabase, user.id, videoId).then(async (ok) => {
-          const session = (await supabase.auth.getSession()).data.session;
-          const token = session?.access_token;
-          if (token) {
-            await fetch("/api/purchases/demo", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({ videoId }),
-            }).catch(() => null);
-          }
+        void addUserPurchasedVideo(supabase, user.id, videoId).then((ok) => {
           if (!ok && !restoreGuardRef.current) {
             void fetchUserPurchasedIds(supabase, user.id).then((remote) => {
               setIds(new Set(remote));

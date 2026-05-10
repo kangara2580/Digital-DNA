@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import type { User } from "@supabase/supabase-js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
@@ -22,6 +21,12 @@ import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { useVideoStartPoster } from "@/hooks/useVideoStartPoster";
 import { InputSection } from "@/components/InputSection";
 import { VideoBackgroundComposite } from "@/components/VideoBackgroundComposite";
+import { MYPAGE_OUTLINE_BTN_MD } from "@/lib/mypageOutlineCta";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import {
+  needsServerMp4Extraction,
+  resolveKlingMotionVideoUrl,
+} from "@/lib/klingMotionVideoUrl";
 
 const FONT_PRETENDARD = "var(--font-pretendard)";
 const FONT_MONTSERRAT = "var(--font-montserrat), Arial, sans-serif";
@@ -91,36 +96,6 @@ function parsePersistedPreview(raw: unknown): PersistedPreviewV1 | null {
     previewCandidateIndex: idx,
     textPreviewEnabled: o.textPreviewEnabled === true,
   };
-}
-
-function boolish(value: unknown): boolean {
-  if (value === true) return true;
-  if (typeof value !== "string") return false;
-  const v = value.trim().toLowerCase();
-  return v === "true" || v === "1" || v === "yes" || v === "active";
-}
-
-/**
- * Supabase 메타데이터의 여러 필드명을 허용해 구독 활성 여부를 판정.
- * 실제 빌링 연동 시 단일 필드로 정리 예정.
- */
-function hasAiSubscription(user: User | null): boolean {
-  if (!user) return false;
-  const metas: Array<Record<string, unknown> | undefined> = [
-    user.user_metadata as Record<string, unknown> | undefined,
-    user.app_metadata as Record<string, unknown> | undefined,
-  ];
-
-  for (const meta of metas) {
-    if (!meta) continue;
-    if (boolish(meta.aiSubscriptionActive) || boolish(meta.subscriptionActive)) return true;
-    if (boolish(meta.isSubscribed) || boolish(meta.subscribed)) return true;
-    const status = String(meta.subscriptionStatus ?? "").toLowerCase();
-    if (status === "active" || status === "trialing") return true;
-    const plan = String(meta.plan ?? meta.subscriptionPlan ?? "").toLowerCase();
-    if (plan.includes("pro") || plan.includes("premium") || plan.includes("plus")) return true;
-  }
-  return false;
 }
 
 const defaultOverlays = (): TextOverlay[] => [
@@ -410,7 +385,7 @@ function ServerGenerationStatusCard({ job }: { job: RemoteJobBanner }) {
             >
               탐색 탭
             </Link>
-            릴스를 구경해 보세요.
+            동영상을 구경해 보세요.
           </p>
         </div>
       ) : null}
@@ -438,7 +413,7 @@ function ServerGenerationStatusCard({ job }: { job: RemoteJobBanner }) {
 function previewToneFromPrompt(prompt: string): string {
   const p = prompt.toLowerCase();
   if (p.includes("neon") || p.includes("네온")) {
-    return "linear-gradient(140deg, rgba(0,242,234,0.2), rgba(255,0,85,0.18))";
+    return "linear-gradient(140deg, rgba(255,45,141,0.2), rgba(228,41,128,0.18))";
   }
   if (p.includes("sunset") || p.includes("노을") || p.includes("orange")) {
     return "linear-gradient(140deg, rgba(255,158,44,0.22), rgba(255,76,76,0.14))";
@@ -452,21 +427,25 @@ function previewToneFromPrompt(prompt: string): string {
   return "linear-gradient(140deg, rgba(255,255,255,0.12), rgba(0,0,0,0.14))";
 }
 
-const quickBuyButtonClass =
-  "inline-flex shrink-0 items-center justify-center rounded-full border border-reels-crimson/45 bg-reels-crimson/15 px-4 py-2.5 text-[12px] font-extrabold text-reels-crimson shadow-[0_0_20px_-8px_rgba(255,0,85,0.4)] transition hover:bg-reels-crimson/25 md:self-auto";
+/** 마이페이지 섹션 카드와 동일한 서피스 */
+const STUDIO_SECTION_SURFACE =
+  "rounded-2xl border border-white/10 bg-zinc-900/40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm";
 
 export function PurchaseCustomizeStudio({
-  video,
+  video: initialVideo,
   heroTitle,
 }: {
   video: FeedVideo;
-  /** 창작 스튜디오 등 상단 제목 — 있으면 제목 행 오른쪽에 바로구매 버튼 배치 */
+  /** 창작 스튜디오 등 상단 제목 — 있으면 제목 행 오른쪽에 빠른 생성 버튼 배치 */
   heroTitle?: string;
 }) {
+  const [video, setVideo] = useState(initialVideo);
+  useEffect(() => {
+    setVideo(initialVideo);
+  }, [initialVideo]);
   const { hasPurchased } = usePurchasedVideos();
   const { user } = useAuthSession();
-  const subscriptionActive = useMemo(() => hasAiSubscription(user), [user]);
-  const aiPreviewQuotaActive = false; // !subscriptionActive; (오류 우회를 위해 전면 무료 해제)
+  const aiPreviewQuotaActive = false; // 구독 게이트 비활성화 시 항상 false
   const isLocalFaceSwapDemo = LOCAL_FACE_SWAP_VIDEO_IDS.includes(video.id);
   const owned = hasPurchased(video.id) || isLocalFaceSwapDemo;
 
@@ -645,7 +624,11 @@ export function PurchaseCustomizeStudio({
   const trimEnd = draft?.trimEnd ?? 0;
   const bgPreviewOn = Boolean(previewBgPrompt);
   const backgroundMode = draft?.backgroundMode ?? "image";
-  const previewVideoSrc = previewBgVideoUrl ?? video.src;
+  const motionReferenceUrl = useMemo(
+    () => resolveKlingMotionVideoUrl(video, previewBgVideoUrl),
+    [video, previewBgVideoUrl],
+  );
+  const previewVideoSrc = motionReferenceUrl;
   /** 이미지 모드: Flux 결과가 있으면 우선, 없으면 캐러셀에서 고른 이미지 URL */
   const previewBgDisplayImageUrl = useMemo(() => {
     if (!bgPreviewOn) return null;
@@ -666,6 +649,76 @@ export function PurchaseCustomizeStudio({
     : (startFramePoster ?? sanitizePosterSrc(video.poster));
   const preloadCacheRef = useRef<Set<string>>(new Set());
   const incomingCommitRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!needsServerMp4Extraction(video)) return;
+    if (!video.listing?.sellerId) return;
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    let cancelled = false;
+    void (async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token || cancelled) return;
+      try {
+        const res = await fetch("/api/video/ensure-processed-mp4", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ videoId: video.id }),
+        });
+        const data = (await res.json()) as { ok?: boolean; video?: FeedVideo };
+        if (cancelled || !data.video) return;
+        setVideo(data.video);
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    video.id,
+    video.listing?.sellerId,
+    video.processedVideoUrl,
+    video.processedVideoStatus,
+    video.src,
+  ]);
+
+  useEffect(() => {
+    if (video.processedVideoStatus !== "processing") return;
+    if (!video.listing?.sellerId) return;
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    const timer = window.setInterval(() => {
+      void (async () => {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        if (!token) return;
+        try {
+          const res = await fetch("/api/video/ensure-processed-mp4", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ videoId: video.id }),
+          });
+          const data = (await res.json()) as { video?: FeedVideo };
+          if (data.video) setVideo(data.video);
+        } catch {
+          /* ignore */
+        }
+      })();
+    }, 8000);
+    return () => window.clearInterval(timer);
+  }, [video.id, video.listing?.sellerId, video.processedVideoStatus]);
 
   const handleNavEnlarged = useCallback((dir: 1 | -1, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -920,7 +973,7 @@ export function PurchaseCustomizeStudio({
     setFacePreviewApplying(true);
     setPreviewTransitionLoading(true);
     try {
-      const targetVideoUrl = previewBgVideoUrl ?? video.src;
+      const targetVideoUrl = motionReferenceUrl;
       const res = await fetch("/api/transform", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -970,7 +1023,7 @@ export function PurchaseCustomizeStudio({
     selectedFace,
     selectedFaceSourceUrl,
     trackBehavior,
-    video.src,
+    motionReferenceUrl,
   ]);
 
   /** 배경 미리보기만 — 이미지: Flux만, 동영상: 스톡 검색만 (얼굴 스왑 없음) */
@@ -1058,7 +1111,7 @@ export function PurchaseCustomizeStudio({
         setPreviewTransitionLoading(false);
         return;
       }
-      const subjectVideoUrl = previewBgVideoUrl ?? video.src;
+      const subjectVideoUrl = motionReferenceUrl;
       const imageUrl = (selectedFace?.src ?? selectedFaceSourceUrl)?.trim() || "";
       
       if (!imageUrl) {
@@ -1115,7 +1168,7 @@ export function PurchaseCustomizeStudio({
     preloadVideoUrl,
     previewBgVideoUrl,
     trackBehavior,
-    video.src,
+    motionReferenceUrl,
   ]);
 
   // 키워드 입력 중 미리 후보를 받아와 백그라운드 preload
@@ -1303,12 +1356,12 @@ export function PurchaseCustomizeStudio({
   //   return (
   //     <div className="mx-auto max-w-lg rounded-2xl border border-white/10 bg-black/30 px-6 py-14 text-center">
   //       <p className="text-[15px] font-semibold text-zinc-200">모션 권한 구매 후 이용할 수 있어요.</p>
-  //       <p className="mt-2 text-[13px] text-zinc-500">릴스 구매 후 얼굴·배경·편집 설정을 저장할 수 있습니다.</p>
+  //       <p className="mt-2 text-[13px] text-zinc-500">동영상 구매 후 얼굴·배경·편집 설정을 저장할 수 있습니다.</p>
   //       <Link
   //         href={`/video/${video.id}`}
   //         className="mt-6 inline-flex rounded-full border border-reels-cyan/40 bg-reels-cyan/10 px-6 py-3 text-[14px] font-extrabold text-reels-cyan hover:bg-reels-cyan/18"
   //       >
-  //         릴스 상세로 돌아가기
+  //         동영상 상세로 돌아가기
   //       </Link>
   //     </div>
   //   );
@@ -1327,69 +1380,73 @@ export function PurchaseCustomizeStudio({
   return (
     <div className="space-y-10">
       {heroTitle ? (
-        <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-8">
-          <div className="min-w-0 flex-1 pr-0 md:max-w-[min(100%,42rem)] md:pr-4">
-            <h1 className="text-[clamp(1.35rem,4vw,1.875rem)] font-extrabold leading-tight tracking-tight text-zinc-100 sm:text-3xl">
-              {heroTitle}
-            </h1>
-            <p className="mt-2 max-w-xl text-[12px] leading-relaxed text-zinc-500 sm:text-[13px]">
-              커스텀 편집으로 얼굴·배경을 만져 본 뒤, 생성만 이어가려면 오른쪽 <span className="font-semibold text-zinc-400">바로구매</span>를 누르세요.
-            </p>
+        <header className="border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-100">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-10">
+            <div className="min-w-0 flex-1 md:max-w-[min(100%,42rem)]">
+              <h1 className="text-[1.625rem] font-semibold tracking-tight text-zinc-50 sm:text-[1.875rem] [html[data-theme='light']_&]:text-zinc-900">
+                {heroTitle}
+              </h1>
+              <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">
+                커스텀 편집으로 얼굴·배경을 조정한 뒤, 아래에서 생성을 이어가면 됩니다.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setUseAdvancedStep(false)}
+              className={`${MYPAGE_OUTLINE_BTN_MD} w-full max-w-xs shrink-0 md:w-auto`}
+            >
+              빠른 생성
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setUseAdvancedStep(false)}
-            className={`${quickBuyButtonClass} w-full max-w-xs self-stretch md:w-auto md:max-w-none md:flex-none md:self-start`}
-          >
-            바로구매
-          </button>
         </header>
       ) : null}
 
-      <div className="rounded-xl border border-reels-cyan/25 bg-reels-cyan/10 px-4 py-3 text-[13px] leading-relaxed text-zinc-200">
-        {subscriptionActive ? (
-          <p>
-            <span className="text-zinc-400">&gt;</span> 구독 활성 상태: AI 얼굴/배경 기능을 사용할 수 있어요.{" "}
-            <span className="text-zinc-400">(등록한 얼굴은 목록 최상단에 노출됩니다.)</span>
-          </p>
-        ) : localFacePreviewRemaining > 0 ? (
-          <p>
-            <span className="text-zinc-400">&gt;</span> AI 무료 체험{" "}
-            <span className="font-extrabold text-reels-cyan/95">{localFacePreviewRemaining}회</span> 제공 후, 계속 사용하려면{" "}
-            <Link href="/subscribe" className="font-semibold text-reels-cyan/95 underline-offset-2 hover:underline">
-              구독
-            </Link>
-            이 필요합니다.
-          </p>
-        ) : (
-          <p>
-            <span className="text-zinc-400">&gt;</span> AI 무료 체험을 모두 사용했습니다.{" "}
-            <Link href="/subscribe" className="font-semibold text-reels-cyan/95 underline-offset-2 hover:underline">
-              구독
-            </Link>
-            후 AI 얼굴/배경 기능을 이용할 수 있습니다.
-          </p>
-        )}
-      </div>
       {!heroTitle ? (
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-6">
-          <p className="min-w-0 max-w-xl flex-1 text-[12px] leading-relaxed text-zinc-500 sm:text-[13px]">
-            먼저 커스텀 편집으로 얼굴·배경을 만져 보세요. 바로 생성만 이어가려면 오른쪽{" "}
-            <span className="font-semibold text-zinc-400">바로구매</span>를 누르면 됩니다.
+        <div className="flex flex-col gap-4 border-b border-white/10 pb-8 md:flex-row md:items-center md:justify-between md:gap-6 [html[data-theme='light']_&]:border-zinc-100">
+          <p className="min-w-0 max-w-xl flex-1 text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">
+            먼저 커스텀 편집으로 얼굴·배경을 만져 보세요. 편집 없이 바로 생성만 진행하려면 오른쪽 버튼을 누르세요.
           </p>
           <button
             type="button"
             onClick={() => setUseAdvancedStep(false)}
-            className={`${quickBuyButtonClass} w-full max-w-xs self-stretch md:w-auto md:max-w-none md:flex-none md:self-auto`}
+            className={`${MYPAGE_OUTLINE_BTN_MD} w-full max-w-xs shrink-0 md:w-auto`}
           >
-            바로구매
+            빠른 생성
           </button>
+        </div>
+      ) : null}
+
+      {video.listing?.sellerId &&
+      (video.processedVideoStatus === "processing" ||
+        needsServerMp4Extraction(video)) ? (
+        <div
+          role="status"
+          className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-[13px] leading-relaxed text-amber-100 [html[data-theme='light']_&]:border-amber-400/40 [html[data-theme='light']_&]:bg-amber-50 [html[data-theme='light']_&]:text-amber-950"
+        >
+          <p className="font-semibold">참조 영상(MP4) 준비 중</p>
+          <p className="mt-1 opacity-90">
+            유튜브·틱톡·인스타 링크는 서버에서 MP4로 변환해 저장한 뒤 Kling·미리보기에 씁니다. 로그인한 상태에서만 자동 변환이 진행됩니다.
+          </p>
+        </div>
+      ) : null}
+
+      {video.processedVideoStatus === "failed" && video.processedVideoError ? (
+        <div
+          role="alert"
+          className="rounded-xl border border-red-500/35 bg-red-500/10 px-4 py-3 text-[13px] leading-relaxed text-red-100 break-words [html[data-theme='light']_&]:border-red-300 [html[data-theme='light']_&]:bg-red-50 [html[data-theme='light']_&]:text-red-950"
+        >
+          <p className="font-semibold">참조 영상 변환에 실패했습니다</p>
+          <p className="mt-1 font-mono text-[12px] opacity-90">
+            {video.processedVideoError}
+          </p>
         </div>
       ) : null}
 
       <div className="grid gap-10 lg:grid-cols-[minmax(0,340px)_1fr] lg:gap-12">
         <div className="min-w-0 lg:sticky lg:top-[calc(var(--header-height,220px)+0.75rem)] lg:self-start">
-          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-zinc-500">미리보기</p>
+          <p className="text-[13px] font-medium uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
+            미리보기
+          </p>
           <div className="relative mx-auto mt-3 max-w-[280px]">
             <div
               className={`relative overflow-hidden rounded-xl border border-white/10 ${
@@ -1604,17 +1661,19 @@ export function PurchaseCustomizeStudio({
 
         <div className="min-w-0 space-y-8">
           {useAdvancedStep ? (
-          <section className="reels-glass-card rounded-xl p-4 sm:p-5 relative overflow-hidden">
+          <section className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5 relative overflow-hidden`}>
             <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-zinc-100">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-reels-cyan text-[11px] font-black text-black">1</span>
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-[11px] font-black text-white">1</span>
               아바타 선택 (변환할 얼굴 소스)
             </h2>
             
             {isAvatarConfirmed ? (
               <div className="mt-4 flex flex-col items-center gap-3">
-                <div className="relative group rounded-xl overflow-hidden shadow-lg border-2 border-reels-cyan">
+                <div className="relative group rounded-xl overflow-hidden shadow-lg border-2 border-[color:var(--reels-point)]">
                   <img src={selectedFaceSourceUrl ?? ""} alt="Confirmed Avatar" className="w-[120px] h-[120px] object-cover" />
-                  <div className="absolute top-1 right-1 bg-reels-cyan text-black px-1.5 py-0.5 rounded text-[10px] font-bold">확정됨</div>
+                  <div className="absolute top-1 right-1 bg-[color:var(--reels-point)] px-1.5 py-0.5 text-[10px] font-bold text-white rounded">
+                    확정됨
+                  </div>
                   
                   {/* Hover Edit Overlay */}
                   <div className="absolute inset-x-0 bottom-0 top-1/2 bg-gradient-to-t from-black/80 to-transparent flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1626,12 +1685,15 @@ export function PurchaseCustomizeStudio({
                     </button>
                   </div>
                 </div>
-                <p className="text-[12px] font-medium text-reels-cyan">아바타가 선택되었습니다.</p>
+                <p className="text-[12px] font-medium text-[color:var(--reels-point)]">아바타가 선택되었습니다.</p>
               </div>
             ) : (
             <>
               <p className="mt-1 text-[12px] text-zinc-500">
-                <Link href="/mypage" className="text-reels-cyan/90 underline-offset-2 hover:underline">
+                <Link
+                  href="/mypage"
+                  className="font-semibold text-[color:var(--reels-point)] underline-offset-2 hover:underline"
+                >
                   마이페이지
                 </Link>
                 에서 등록한 프로필이 있으면 맨 앞에 표시됩니다.
@@ -1648,7 +1710,7 @@ export function PurchaseCustomizeStudio({
                         updateDraft({ faceOptionId: o.id });
                       }}
                       className={`relative rounded-full p-0.5 ring-2 transition-shadow ${
-                        on ? "ring-reels-cyan shadow-[0_0_14px_-4px_rgba(0,242,234,0.45)]" : "ring-transparent hover:ring-white/15"
+                        on ? "ring-[color:var(--reels-point)] shadow-[0_0_14px_-4px_rgba(255,45,141,0.35)]" : "ring-transparent hover:ring-white/15"
                       }`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1712,7 +1774,7 @@ export function PurchaseCustomizeStudio({
                        onClick={() => {
                           setIsAvatarConfirmed(true);
                        }}
-                       className="bg-reels-cyan text-black px-4 py-2 rounded-lg text-[12px] font-bold hover:bg-reels-cyan/90 transition-colors shadow-[0_0_15px_-3px_rgba(0,242,234,0.4)]"
+                       className="bg-reels-cyan text-black px-4 py-2 rounded-lg text-[12px] font-bold hover:bg-reels-cyan/90 transition-colors shadow-[0_0_15px_-3px_rgba(255,45,141,0.4)]"
                     >
                        이 아바타로 확정
                     </button>
@@ -1728,9 +1790,9 @@ export function PurchaseCustomizeStudio({
 
           {useAdvancedStep ? (
             <>
-              <section className="reels-glass-card rounded-xl p-4 sm:p-5 relative overflow-hidden">
+              <section className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5 relative overflow-hidden`}>
             <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-zinc-100">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-reels-cyan text-[11px] font-black text-black">2</span>
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-[11px] font-black text-white">2</span>
               시공간 이동 (배경 변경)
             </h2>
             
@@ -1742,13 +1804,15 @@ export function PurchaseCustomizeStudio({
                     alt="Confirmed Background" 
                     className="w-[100px] h-[140px] sm:w-[140px] sm:h-[196px] object-cover" 
                   />
-                  <div className="absolute top-1 right-1 bg-reels-cyan text-black px-1.5 py-0.5 rounded text-[10px] font-bold">확정됨</div>
+                  <div className="absolute top-1 right-1 bg-[color:var(--reels-point)] px-1.5 py-0.5 text-[10px] font-bold text-white rounded">
+                    확정됨
+                  </div>
                   
                   {/* Hover Edit Overlay */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
                       onClick={() => setEnlargedImage({ url: bgPreviewOn ? (previewBgImageUrl ?? previewBgVideoUrl ?? previewVideoSrc) : (startFramePoster ?? sanitizePosterSrc(video.poster) ?? ""), index: 0, type: 'full' })}
-                      className="bg-reels-cyan/90 hover:bg-reels-cyan text-black text-[12px] font-bold px-4 py-2 rounded-full shadow-[0_0_15px_-3px_rgba(0,242,234,0.5)] transition-colors w-[80%]"
+                      className="bg-reels-cyan/90 hover:bg-reels-cyan text-black text-[12px] font-bold px-4 py-2 rounded-full shadow-[0_0_15px_-3px_rgba(255,45,141,0.5)] transition-colors w-[80%]"
                     >
                       🔍 크게보기
                     </button>
@@ -1889,7 +1953,7 @@ export function PurchaseCustomizeStudio({
                            setPreviewBgImageUrl(imgUrl);
                            setPreviewBgPrompt(draft?.backgroundPrompt || "선택된 시공간");
                         }}>
-                          <div className={`w-[80px] h-[110px] rounded-lg overflow-hidden border-2 relative transition ${isSelected ? 'border-reels-cyan shadow-[0_0_12px_rgba(0,242,234,0.3)]' : 'border-transparent hover:border-white/20'}`}>
+                          <div className={`w-[80px] h-[110px] rounded-lg overflow-hidden border-2 relative transition ${isSelected ? 'border-reels-cyan shadow-[0_0_12px_rgba(255,45,141,0.3)]' : 'border-transparent hover:border-white/20'}`}>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={imgUrl} className="absolute inset-0 w-full h-full object-cover" alt="generated" />
                             
@@ -1916,7 +1980,7 @@ export function PurchaseCustomizeStudio({
             <div className="mt-4 flex justify-end w-full border-t border-white/5 pt-4">
                <button
                   onClick={() => setIsBackgroundConfirmed(true)}
-                  className="bg-reels-cyan text-black px-4 py-2 rounded-lg text-[12px] font-bold hover:bg-reels-cyan/90 transition-colors shadow-[0_0_15px_-3px_rgba(0,242,234,0.4)]"
+                  className="bg-reels-cyan text-black px-4 py-2 rounded-lg text-[12px] font-bold hover:bg-reels-cyan/90 transition-colors shadow-[0_0_15px_-3px_rgba(255,45,141,0.4)]"
                >
                   이 시공간으로 확정
                </button>
@@ -1925,10 +1989,10 @@ export function PurchaseCustomizeStudio({
             )}
               </section>
 
-              <section className={`reels-glass-card rounded-xl p-4 sm:p-5 relative overflow-hidden transition-all duration-500 ${isAvatarConfirmed && isBackgroundConfirmed && !fusionResultUrl ? 'border-reels-cyan shadow-[0_0_20px_rgba(0,242,234,0.15)] ring-1 ring-reels-cyan' : 'border-white/10'}`}>
+              <section className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5 relative overflow-hidden transition-all duration-500 ${isAvatarConfirmed && isBackgroundConfirmed && !fusionResultUrl ? 'border-[color:var(--reels-point)]/35 shadow-[0_0_20px_rgba(255,45,141,0.12)] ring-1 ring-[color:var(--reels-point)]/40' : 'border-white/10'}`}>
                 <div className="absolute inset-0 bg-gradient-to-br from-reels-cyan/5 to-transparent pointer-events-none" />
                 <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-zinc-100 mb-3">
-                  <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-black transition-colors ${isAvatarConfirmed && isBackgroundConfirmed ? 'bg-reels-cyan text-black' : 'bg-white/10 text-zinc-500'}`}>3</span>
+                  <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-black transition-colors ${isAvatarConfirmed && isBackgroundConfirmed ? 'bg-[color:var(--reels-point)] text-white' : 'bg-white/10 text-zinc-500'}`}>3</span>
                   <span className={isAvatarConfirmed && isBackgroundConfirmed ? 'text-zinc-100' : 'text-zinc-500'}>DNA & 의상 융합 (최종 스타트 프레임 생성)</span>
                 </h2>
                 
@@ -1955,7 +2019,7 @@ export function PurchaseCustomizeStudio({
 
                             {/* Input 2: Background */}
                             <div className="flex flex-col items-center gap-2 z-10 w-1/3">
-                               <div className="relative w-[60px] h-[80px] rounded-lg p-0.5 bg-gradient-to-br from-reels-cyan to-blue-500 shadow-lg shrink-0">
+                               <div className="relative w-[60px] h-[80px] rounded-lg p-0.5 bg-gradient-to-br from-reels-cyan to-reels-crimson shadow-lg shrink-0">
                                   {/* eslint-disable-next-line @next/next/no-img-element */}
                                   <img src={bgPreviewOn ? (previewBgImageUrl ?? previewVideoSrc) : (startFramePoster ?? sanitizePosterSrc(video.poster) ?? "")} className="w-full h-full object-cover rounded-md bg-black" alt="Confirm Background" />
                                </div>
@@ -2043,7 +2107,7 @@ export function PurchaseCustomizeStudio({
                               }
                            }}
                            disabled={isFusionApplying}
-                           className="w-full sm:w-[90%] mx-auto py-3.5 bg-gradient-to-r from-reels-cyan to-[#0a84ff] rounded-xl font-extrabold text-black text-[14px] shadow-[0_0_24px_rgba(0,242,234,0.35)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2 z-10 relative"
+                           className="w-full sm:w-[90%] mx-auto py-3.5 bg-gradient-to-r from-reels-cyan to-[#ff2d8d] rounded-xl font-extrabold text-black text-[14px] shadow-[0_0_24px_rgba(255,45,141,0.35)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2 z-10 relative"
                          >
                             {isFusionApplying ? (
                                <>
@@ -2058,7 +2122,7 @@ export function PurchaseCustomizeStudio({
                        </>
                     ) : (
                        <div className="w-full flex justify-center py-2 animate-fade-in">
-                          <div className="relative group rounded-xl overflow-hidden shadow-[0_0_40px_rgba(0,242,234,0.3)] border-2 border-reels-cyan">
+                          <div className="relative group rounded-xl overflow-hidden shadow-[0_0_40px_rgba(255,45,141,0.3)] border-2 border-reels-cyan">
                              {/* eslint-disable-next-line @next/next/no-img-element */}
                              <img src={fusionResultUrl} alt="Fusion Result" className="w-[140px] sm:w-[200px] aspect-[9/16] object-cover bg-black" />
                              
@@ -2088,9 +2152,9 @@ export function PurchaseCustomizeStudio({
                 )}
               </section>
 
-              <section className="reels-glass-card rounded-xl p-4 sm:p-5 relative overflow-hidden">
+              <section className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5 relative overflow-hidden`}>
                 <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-zinc-100 mb-5">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-reels-cyan text-[11px] font-black text-black">4</span>
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-[11px] font-black text-white">4</span>
                   KLING AI 모션 렌더링
                 </h2>
                 
@@ -2099,7 +2163,7 @@ export function PurchaseCustomizeStudio({
                   <div className="rounded-xl border border-white/10 bg-[#1A1A1A] overflow-hidden flex flex-col relative w-[150px] sm:w-[200px] shrink-0 aspect-[9/16] shadow-2xl">
                      <div className="absolute inset-0 z-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <video src={video.src} autoPlay loop muted playsInline className="w-full h-full object-cover opacity-90" />
+                        <video src={motionReferenceUrl} autoPlay loop muted playsInline className="w-full h-full object-cover opacity-90" />
                         <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/90 via-black/40 to-transparent p-3 pt-4">
                            <p className="text-[10px] sm:text-[11px] font-bold tracking-wide text-zinc-300 drop-shadow-md leading-tight">Original Motion<br/><span className="text-zinc-500 font-medium">(Mimic Reference)</span></p>
                         </div>
@@ -2182,6 +2246,12 @@ export function PurchaseCustomizeStudio({
                            alert("Step 3에서 먼저 DNA 융합 마법을 시작하여 이미지를 생성해주세요.");
                            return;
                         }
+                        if (needsServerMp4Extraction(video)) {
+                          alert(
+                            "참조 영상을 MP4로 준비하는 중입니다. 상단 안내 배너가 사라진 뒤 다시 시도해 주세요.",
+                          );
+                          return;
+                        }
                         setIsKlingGenerating(true);
                         try {
                            const res = await fetch("/api/kling/motion-control", {
@@ -2189,7 +2259,7 @@ export function PurchaseCustomizeStudio({
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({
                                  imageUrl: fusionResultUrl,
-                                 videoUrl: video.src,
+                                 videoUrl: motionReferenceUrl,
                                  prompt: klingPromptText + ", one person only, solo dancer, exactly one character",
                                  characterOrientation: characterOrientation
                               })
@@ -2238,7 +2308,7 @@ export function PurchaseCustomizeStudio({
                            setIsKlingGenerating(false);
                         }
                      }}
-                     disabled={!fusionResultUrl || isKlingGenerating}
+                     disabled={!fusionResultUrl || isKlingGenerating || needsServerMp4Extraction(video)}
                      className="mt-4 w-full py-3.5 bg-white text-black rounded-lg font-bold text-[15px] hover:bg-zinc-200 transition-colors shadow-lg shadow-white/10 relative z-10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                    >
                       {isKlingGenerating ? (
@@ -2255,10 +2325,10 @@ export function PurchaseCustomizeStudio({
 
               {/* Step 5: Final Result UI */}
               {(klingJob || isKlingGenerating) && (
-                  <section className="reels-glass-card rounded-xl p-4 sm:p-5 relative overflow-hidden ring-2 ring-reels-cyan shadow-[0_0_30px_rgba(0,242,234,0.15)] animate-fade-in-up mt-6">
+                  <section className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5 relative overflow-hidden ring-2 ring-[color:var(--reels-point)]/45 shadow-[0_0_30px_rgba(255,45,141,0.12)] animate-fade-in-up mt-6`}>
                     <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-zinc-100 mb-5">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-reels-cyan text-[11px] font-black text-black shadow-[0_0_10px_rgba(0,242,234,0.5)]">5</span>
-                      최종 릴스 완성 및 다운로드
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-[11px] font-black text-white shadow-[0_0_10px_rgba(255,45,141,0.45)]">5</span>
+                      최종 동영상 완성 및 다운로드
                     </h2>
 
                     {klingJob && klingJob.status !== "succeeded" && klingJob.status !== "failed" && (
@@ -2278,7 +2348,7 @@ export function PurchaseCustomizeStudio({
                            </div>
                            
                            <div className="h-3 w-full bg-[#111] rounded-full overflow-hidden border border-white/10 relative shadow-inner">
-                             <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#0a84ff] via-reels-cyan to-[#0a84ff] bg-[length:200%_100%] transition-all duration-1000 ease-in-out origin-left animate-[gradient_2s_linear_infinite]" style={{ transform: `scaleX(${klingJob.progress / 100})` }}>
+                             <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#ff2d8d] via-reels-cyan to-[#ff2d8d] bg-[length:200%_100%] transition-all duration-1000 ease-in-out origin-left animate-[gradient_2s_linear_infinite]" style={{ transform: `scaleX(${klingJob.progress / 100})` }}>
                              </div>
                            </div>
                          </div>
@@ -2289,7 +2359,7 @@ export function PurchaseCustomizeStudio({
                             <div className="w-full flex justify-between items-end mb-4 px-1">
                                 <div>
                                     <h3 className="text-[16px] font-extrabold text-reels-cyan">✨ 영상 생성의 마법이 끝났습니다!</h3>
-                                    <p className="text-[11px] text-zinc-400 mt-1">생성된 릴스는 마이페이지 생명연구소에 자동 저장됩니다.</p>
+                                    <p className="text-[11px] text-zinc-400 mt-1">생성된 동영상은 마이페이지 생명연구소에 자동 저장됩니다.</p>
                                 </div>
                                 <span className="px-2 py-1 bg-green-500/20 text-green-400 text-[10px] font-bold rounded flex items-center gap-1 border border-green-500/30 shadow-[0_0_10px_rgba(34,197,94,0.2)]">
                                     <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
@@ -2305,7 +2375,7 @@ export function PurchaseCustomizeStudio({
                             </div>
                             
                             <div className="w-[80%] max-w-[280px] mt-5 space-y-3">
-                                <a href={klingJob.outputVideoUrl} download target="_blank" rel="noreferrer" className="w-full py-4 bg-gradient-to-r from-reels-cyan to-[#0a84ff] text-black rounded-xl text-[14px] font-extrabold shadow-[0_0_20px_rgba(0,242,234,0.4)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2">
+                                <a href={klingJob.outputVideoUrl} download target="_blank" rel="noreferrer" className="w-full py-4 bg-gradient-to-r from-reels-cyan to-[#ff2d8d] text-black rounded-xl text-[14px] font-extrabold shadow-[0_0_20px_rgba(255,45,141,0.4)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2">
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                                     MP4 원본 다운로드
                                 </a>
@@ -2342,13 +2412,13 @@ export function PurchaseCustomizeStudio({
 
               {/* Step 6: History Gallery (Black Box) */}
               {klingHistory.length > 0 && (
-                  <section className="reels-glass-card rounded-xl p-4 sm:p-5 relative overflow-hidden mt-6 border border-reels-cyan/30 shadow-[0_0_30px_rgba(0,242,234,0.1)]">
+                  <section className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5 relative overflow-hidden mt-6 border border-[color:var(--reels-point)]/25 shadow-[0_0_30px_rgba(255,45,141,0.08)]`}>
                     <div className="absolute -top-10 -right-10 w-32 h-32 bg-reels-cyan rounded-full mix-blend-screen filter blur-[50px] opacity-20"></div>
                     <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-reels-crimson rounded-full mix-blend-screen filter blur-[50px] opacity-10"></div>
                     
                     <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-zinc-100 mb-5 relative z-10">
                       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-zinc-800 text-[10px] font-black text-white border border-zinc-600">📜</span>
-                      이전 렌더링 완성본 목록 (내 릴스 보관함)
+                      이전 렌더링 완성본 목록 (내 동영상 보관함)
                     </h2>
                     
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 relative z-10">
@@ -2380,7 +2450,7 @@ export function PurchaseCustomizeStudio({
                   </section>
               )}
 
-              <section className="reels-glass-card rounded-xl p-4 sm:p-5">
+              <section className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5`}>
             <h2 className="text-[13px] font-extrabold text-zinc-100">구간 자르기</h2>
             <p className="mt-1 text-[12px] text-zinc-500">
               재생 구간을 지정하면 미리보기에서 그 범위만 반복됩니다.
@@ -2418,7 +2488,7 @@ export function PurchaseCustomizeStudio({
             </div>
               </section>
 
-              <section className="reels-glass-card rounded-xl p-4 sm:p-5">
+              <section className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5`}>
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-[13px] font-extrabold text-zinc-100">텍스트 오버레이</h2>
               <div className="flex items-center gap-2">
@@ -2591,7 +2661,7 @@ export function PurchaseCustomizeStudio({
                         <div className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-center text-[12px] text-zinc-400">←</div>
                         <div className="absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-center text-[12px] text-zinc-400">→</div>
                         <div
-                          className="absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-reels-cyan/70 bg-reels-cyan/35 shadow-[0_0_10px_rgba(0,242,234,0.45)]"
+                          className="absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-reels-cyan/70 bg-reels-cyan/35 shadow-[0_0_10px_rgba(255,45,141,0.45)]"
                           style={{
                             left: `${o.leftPct ?? 50}%`,
                             top: `${o.topPct ?? 50}%`,
@@ -2631,10 +2701,10 @@ export function PurchaseCustomizeStudio({
               </section>
             </>
           ) : (
-            <div className="reels-glass-card rounded-xl p-4 sm:p-5">
+            <div className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5`}>
               <p className="text-[13px] font-extrabold text-zinc-100">커스텀 편집</p>
-              <p className="mt-1 text-[12px] leading-relaxed text-zinc-500">
-                AI로 얼굴·배경을 바꾸고, 원하는 톤으로 다듬을 수 있어요. 생성만 빠르게 하려면 상단의 바로구매를 쓰면 됩니다.
+              <p className="mt-1 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                AI로 얼굴·배경을 바꾸고, 원하는 톤으로 다듬을 수 있어요. 빠른 생성만 이어가려면 상단의 「빠른 생성」을 누르세요.
               </p>
             </div>
           )}
@@ -2644,36 +2714,41 @@ export function PurchaseCustomizeStudio({
               type="button"
               onClick={persist}
               disabled={saveStatus === "saving"}
-              className="rounded-full bg-reels-cyan/20 px-6 py-3 text-[14px] font-extrabold text-reels-cyan ring-1 ring-reels-cyan/40 hover:bg-reels-cyan/28 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-full border border-white/15 bg-transparent px-6 py-3 text-[14px] font-semibold text-zinc-200 transition hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-60 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:bg-zinc-100"
             >
               임시 저장
             </button>
             {saveStatus === "saving" ? (
-              <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-reels-cyan">
+              <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                 <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
                 저장 중…
               </span>
             ) : saveStatus === "saved" ? (
-              <span className="text-[12px] font-semibold text-reels-cyan">마이페이지에 임시 저장됨</span>
+              <span className="text-[12px] font-semibold text-[color:var(--reels-point)]">
+                마이페이지에 임시 저장됨
+              </span>
             ) : null}
             <button
               type="button"
               disabled={submitRemote || !selectedFace}
               onClick={submitServerGeneration}
-              className="rounded-full border border-reels-crimson/40 bg-reels-crimson/15 px-5 py-3 text-[13px] font-extrabold text-reels-crimson hover:bg-reels-crimson/25 disabled:opacity-50"
+              className={`${MYPAGE_OUTLINE_BTN_MD} disabled:pointer-events-none disabled:opacity-45`}
             >
               {submitRemote ? "요청 중…" : "서버 생성 요청"}
             </button>
-            <span className="text-[12px] font-semibold text-zinc-500">
+            <span className="text-[12px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
               {useAdvancedStep
                 ? "커스텀 편집 후 서버 생성 요청을 누르세요."
-                : "바로구매 모드입니다. 바로 서버 생성 요청을 누르세요."}
+                : "빠른 생성 모드입니다. 서버 생성 요청을 누르세요."}
             </span>
           </div>
           {!remoteJob ? (
             <p className="mt-3 max-w-xl text-[11px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
               서버 생성은 백그라운드에서 진행돼요. 시작한 뒤에는 이 화면을 나가도 작업은 이어지며, 결과는{" "}
-              <Link href="/mypage?tab=drafts" className="font-semibold text-reels-cyan/90 underline-offset-2 hover:underline">
+              <Link
+                href="/mypage?tab=drafts"
+                className="font-semibold text-[color:var(--reels-point)] underline-offset-2 hover:underline"
+              >
                 마이페이지 → 임시 저장
               </Link>
               에서 다시 열어볼 수 있어요.

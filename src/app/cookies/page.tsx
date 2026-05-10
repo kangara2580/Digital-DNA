@@ -1,12 +1,18 @@
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
+import { translate } from "@/lib/i18n/dictionaries";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
 
-export const metadata = {
-  title: "쿠키 정책 — ARA",
-  description:
-    "Digital DNA 쿠키 정책 — Essential, Performance & Insights, Preferences.",
-};
+export async function generateMetadata() {
+  return buildPageMetadata({
+    titleKey: "meta.cookies",
+    descriptionKey: "meta.cookiesDescription",
+  });
+}
 
-export default function CookiesPage() {
+export default async function CookiesPage() {
+  const locale = await getSiteLocale();
+  const localeCookieHint = translate(locale, "cookies.prefs.localeCookieHint");
   return (
     <FooterLegalPageShell title="쿠키 정책" withCard={false} mainMaxClass="max-w-3xl">
       <div className="mt-10 space-y-12">
@@ -60,7 +66,7 @@ export default function CookiesPage() {
               <strong className="font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
                 Trend Analysis:
               </strong>{" "}
-              어떤 릴스 소스가 가장 인기 있는지 분석하여, 당신의 취향에 맞는 트렌디한 소스를 우선적으로
+              어떤 동영상 소스가 가장 인기 있는지 분석하여, 당신의 취향에 맞는 트렌디한 소스를 우선적으로
               추천합니다.
             </li>
             <li>
@@ -105,6 +111,8 @@ export default function CookiesPage() {
             </code>
             )를 저장해, 상단 메뉴·탐색 설정을 다음 방문 시에도 유지합니다. (UI 번역은 단계적으로 확대할 수
             있습니다.)
+            {" "}
+            {localeCookieHint}
           </p>
         </section>
       </div>

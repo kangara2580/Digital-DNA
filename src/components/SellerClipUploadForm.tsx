@@ -1,30 +1,185 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, Film, Loader2, Upload } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Film,
+  Loader2,
+  Upload,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useTranslation } from "@/hooks/useTranslation";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import {
-  isSellVideoCategory,
-  SELL_VIDEO_CATEGORY_OPTIONS,
-  type SellVideoCategory,
+  coerceSellCategoryForUserForm,
+  type SellVideoUserSelectableCategory,
 } from "@/lib/sellVideoCategory";
 import {
   captureFrameFromVideo,
   capturePosterFromFile,
 } from "@/lib/captureVideoFrame";
+import { MYPAGE_OUTLINE_BTN_MD } from "@/lib/mypageOutlineCta";
 import {
   deleteSellerUploadDraft,
   fetchSellerUploadDraft,
   upsertSellerUploadDraft,
   type SellerUploadDraftPayload,
 } from "@/lib/supabaseSellerUploadDraft";
+import { SellCategorySelect } from "@/components/SellCategorySelect";
+import {
+  parseSocialVideoEmbed,
+  normalizeYouTubeUrlToWatch,
+  type SocialVideoEmbed,
+} from "@/lib/socialVideoEmbed";
+import {
+  EXTERNAL_EMBED_IFRAME_ALLOW,
+  EXTERNAL_EMBED_IFRAME_SANDBOX,
+} from "@/lib/externalEmbed/iframeSandbox";
+import type { FeedVideo } from "@/data/videos";
+
+const PENDING_UPLOADED_VIDEO_KEY = "sell:pending-uploaded-video";
 
 const INPUT =
-  "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none transition focus:border-reels-cyan/45 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
+  "w-full rounded-xl border border-white/[0.14] bg-[#0c0c0e] px-4 py-3 text-[15px] leading-snug text-zinc-100 caret-reels-crimson outline-none transition-[border-color,box-shadow] placeholder:text-zinc-600 focus:border-white/[0.32] focus:shadow-[0_0_0_1px_rgba(255,255,255,0.35)] focus:outline-none focus-visible:outline-none [html[data-theme='light']_&]:border-zinc-200/75 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:placeholder:text-zinc-400 [html[data-theme='light']_&]:focus:border-zinc-400/85 [html[data-theme='light']_&]:focus:shadow-[0_0_0_1px_rgba(0,0,0,0.12)]";
 
-const LABEL = "mb-1.5 block text-[12px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600";
+const LABEL =
+  "mb-2 block text-[15px] font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900";
+
+const SOURCE_PANEL =
+  "px-0 py-0";
+
+/** 마이페이지 고스트 CTA와 동일 호버 — 비활성일 때 리프트·스케일 제거 */
+const BTN_DISABLED_GHOST =
+  "disabled:pointer-events-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:scale-100";
+
+/** 본문 액션: 탭 선택과 구분되는 얇은 아웃라인 (핑크 채우기·글로우 없음) */
+const SOURCE_SECONDARY_BTN =
+  "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg border border-white/20 bg-transparent px-4 py-2.5 text-[13px] font-medium text-zinc-100 shadow-none transition-colors hover:border-white/[0.32] hover:bg-white/[0.06] active:bg-white/[0.04] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-50";
+
+const EMBED_9_16_SHELL =
+  "relative mx-auto w-full max-w-[300px] aspect-[9/16] overflow-hidden rounded-xl border border-white/12 bg-zinc-950 shadow-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100";
+
+const EMBED_16_9_SHELL =
+  "relative w-full aspect-video overflow-hidden rounded-xl border border-white/12 bg-zinc-950 shadow-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100";
+
+function YouTubeSellPreview({
+  videoId,
+  iframeSrc,
+  aspect,
+}: {
+  videoId: string;
+  iframeSrc: string;
+  aspect: "16:9" | "9:16";
+}) {
+  const [thumbTier, setThumbTier] = useState<"max" | "hq">("max");
+  const [iframeReady, setIframeReady] = useState(false);
+  const thumbUrl =
+    thumbTier === "max"
+      ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+      : `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+
+  const shell = aspect === "9:16" ? EMBED_9_16_SHELL : EMBED_16_9_SHELL;
+
+  useEffect(() => {
+    setIframeReady(false);
+    setThumbTier("max");
+    const t = window.setTimeout(() => setIframeReady(true), 5000);
+    return () => window.clearTimeout(t);
+  }, [videoId, iframeSrc]);
+
+  return (
+    <div className={shell}>
+      {!iframeReady ? (
+        <img
+          src={thumbUrl}
+          alt=""
+          className="absolute inset-0 z-0 h-full w-full object-cover"
+          onError={() => setThumbTier("hq")}
+        />
+      ) : null}
+      <iframe
+        src={iframeSrc}
+        title="YouTube preview"
+        loading="lazy"
+        sandbox={EXTERNAL_EMBED_IFRAME_SANDBOX}
+        allow={EXTERNAL_EMBED_IFRAME_ALLOW}
+        allowFullScreen
+        onLoad={() => setIframeReady(true)}
+        className={
+          aspect === "9:16"
+            ? "absolute inset-0 z-10 h-full w-full border-0 bg-black"
+            : "absolute left-1/2 top-1/2 z-10 h-[108%] w-[108%] max-w-none -translate-x-1/2 -translate-y-1/2 border-0 bg-black"
+        }
+      />
+    </div>
+  );
+}
+
+function SocialSellEmbedPreview({ embed }: { embed: SocialVideoEmbed }) {
+  if (embed.provider === "youtube" && embed.youtubeVideoId) {
+    return (
+      <YouTubeSellPreview
+        videoId={embed.youtubeVideoId}
+        iframeSrc={embed.iframeSrc}
+        aspect={embed.aspect}
+      />
+    );
+  }
+
+  const shell = embed.aspect === "9:16" ? EMBED_9_16_SHELL : EMBED_16_9_SHELL;
+
+  if (embed.provider === "instagram") {
+    return (
+      <div className={`${shell} !overflow-hidden`}>
+        <iframe
+          src={embed.iframeSrc}
+          title="Instagram preview"
+          loading="lazy"
+          sandbox={EXTERNAL_EMBED_IFRAME_SANDBOX}
+          allow={EXTERNAL_EMBED_IFRAME_ALLOW}
+          allowFullScreen
+          scrolling="no"
+          className="absolute left-1/2 top-[2%] h-[118%] w-[112%] max-w-none -translate-x-1/2 border-0"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={shell}>
+      <iframe
+        src={embed.iframeSrc}
+        title="TikTok preview"
+        loading="lazy"
+        sandbox={EXTERNAL_EMBED_IFRAME_SANDBOX}
+        allow={EXTERNAL_EMBED_IFRAME_ALLOW}
+        allowFullScreen
+        scrolling="no"
+        className="absolute inset-0 h-full w-full border-0"
+      />
+    </div>
+  );
+}
+
+/** 등록 포스터 캡처 시점(sec) 안전 클램프 */
+function clampThumbSec(t: number, durationSec: number | null): number {
+  const x = Number.isFinite(t) ? Math.max(0, t) : 0;
+  if (durationSec != null && Number.isFinite(durationSec) && durationSec > 0) {
+    const cap = Math.max(0, durationSec - 0.05);
+    return Math.min(x, cap);
+  }
+  return x;
+}
 
 function normalizeVideoUrl(raw: string): string {
   const t = raw.trim();
@@ -34,8 +189,13 @@ function normalizeVideoUrl(raw: string): string {
   return `https://${t}`;
 }
 
-export function SellerClipUploadForm() {
+export function SellerClipUploadForm({
+  initialSourceType,
+}: {
+  initialSourceType: "file" | "url";
+}) {
   const router = useRouter();
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
   const hid = useId();
@@ -43,39 +203,67 @@ export function SellerClipUploadForm() {
   const [sellerDraftReady, setSellerDraftReady] = useState(false);
 
   const [file, setFile] = useState<File | null>(null);
-  const [sourceType, setSourceType] = useState<"file" | "url">("file");
+  const [sourceType] = useState<"file" | "url">(initialSourceType);
   const [videoUrl, setVideoUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [durationSec, setDurationSec] = useState<number | null>(null);
-  /** 썸네일로 쓸 프레임 시점(초) — 기본 0(첫 화면) */
-  const [thumbTimeSec, setThumbTimeSec] = useState(0);
+  /** 슬라이더·영상 미리보기 동기 시점(초) */
+  const [thumbDraftSec, setThumbDraftSec] = useState(0);
+  /** 등록 시 포스터 캡처에 쓸 확정 시점(초) —「썸네일로 적용」으로 갱신 */
+  const [thumbCommittedSec, setThumbCommittedSec] = useState(0);
+  /** 「썸네일로 적용」 직후 하단에 보여줄 적용 썸네일 미리보기 */
+  const [appliedThumbPreviewUrl, setAppliedThumbPreviewUrl] = useState<string | null>(null);
+  /** true일 때 슬라이더·적용 UI 표시; 적용 후 접어서 미리보기만 */
+  const [thumbPickerOpen, setThumbPickerOpen] = useState(true);
   const [orientation, setOrientation] = useState<"portrait" | "landscape">(
     "portrait",
   );
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [hashtags, setHashtags] = useState("");
-  const [category, setCategory] = useState<SellVideoCategory>("daily");
+  const [category, setCategory] = useState<SellVideoUserSelectableCategory>("daily");
   const [price, setPrice] = useState("1000");
   const [isAi, setIsAi] = useState(false);
-  const [rights, setRights] = useState(false);
-  const [confirmOriginal, setConfirmOriginal] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
     null,
   );
 
+  /** YouTube·TikTok·Instagram 공유 주소 등 — `<video src>` 불가 시 iframe 미리보기 */
+  const socialEmbedPreview = useMemo(() => {
+    if (sourceType !== "url" || !previewUrl) return null;
+    return parseSocialVideoEmbed(previewUrl);
+  }, [sourceType, previewUrl]);
+
   const resetPreview = useCallback(() => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
+    if (previewUrl?.startsWith("blob:")) {
+      try {
+        URL.revokeObjectURL(previewUrl);
+      } catch {
+        /* noop */
+      }
+    }
+    if (appliedThumbPreviewUrl?.startsWith("blob:")) {
+      try {
+        URL.revokeObjectURL(appliedThumbPreviewUrl);
+      } catch {
+        /* noop */
+      }
     }
     setPreviewUrl(null);
+    setAppliedThumbPreviewUrl(null);
     setFile(null);
     setDurationSec(null);
-    setThumbTimeSec(0);
-  }, [previewUrl]);
+    setThumbDraftSec(0);
+    setThumbCommittedSec(0);
+    setThumbPickerOpen(true);
+  }, [previewUrl, appliedThumbPreviewUrl]);
+
+  const clearUrlFieldAndPreview = useCallback(() => {
+    setVideoUrl("");
+    resetPreview();
+  }, [resetPreview]);
 
   useEffect(() => {
     if (!user || !supabaseConfigured) {
@@ -95,25 +283,18 @@ export function SellerClipUploadForm() {
         if (!cancelled) setSellerDraftReady(true);
         return;
       }
-      setSourceType(d.sourceType);
-      setVideoUrl(d.videoUrl);
+      setVideoUrl(normalizeYouTubeUrlToWatch(normalizeVideoUrl(d.videoUrl.trim())));
       setTitle(d.title);
       setDescription(d.description);
-      setHashtags(d.hashtags);
-      setCategory(
-        typeof d.category === "string" && isSellVideoCategory(d.category)
-          ? d.category
-          : "daily",
-      );
+      setCategory(coerceSellCategoryForUserForm(d.category));
       setPrice(d.price);
       setIsAi(d.isAi);
-      setRights(d.rights);
-      setConfirmOriginal(d.confirmOriginal);
       setDurationSec(d.durationSec);
       setOrientation(d.orientation);
-      if (d.sourceType === "url" && d.videoUrl.trim()) {
+      if (sourceType === "url" && d.videoUrl.trim()) {
         setFile(null);
-        setPreviewUrl(normalizeVideoUrl(d.videoUrl.trim()));
+        const vu = normalizeVideoUrl(d.videoUrl.trim());
+        setPreviewUrl(normalizeYouTubeUrlToWatch(vu));
       } else {
         setFile(null);
         setPreviewUrl(null);
@@ -122,7 +303,7 @@ export function SellerClipUploadForm() {
       if (d.hadLocalFile) {
         setMessage({
           ok: true,
-          text: "임시 저장된 양식을 불러왔어요. 동영상 파일은 보안상 서버에 남지 않으니 다시 선택해 주세요.",
+          text: t("sellForm.draftLoaded"),
         });
       }
       if (!cancelled) setSellerDraftReady(true);
@@ -130,7 +311,7 @@ export function SellerClipUploadForm() {
     return () => {
       cancelled = true;
     };
-  }, [user, supabaseConfigured]);
+  }, [user, supabaseConfigured, sourceType]);
 
   useEffect(() => {
     if (!sellerDraftReady || !user || !supabaseConfigured) return;
@@ -141,12 +322,13 @@ export function SellerClipUploadForm() {
       videoUrl,
       title,
       description,
-      hashtags,
+      hashtags: "",
       category,
       price,
       isAi,
-      rights,
-      confirmOriginal,
+      rights: true,
+      confirmOriginal: true,
+      confirmPromotionAndLiability: true,
       durationSec,
       orientation,
       hadLocalFile: Boolean(file),
@@ -163,26 +345,48 @@ export function SellerClipUploadForm() {
     videoUrl,
     title,
     description,
-    hashtags,
     category,
     price,
     isAi,
-    rights,
-    confirmOriginal,
     durationSec,
     orientation,
     file,
   ]);
 
-  /** 미리보기 비디오: 슬라이더(thumbTimeSec)와 동기 시 seek (훅은 항상 동일 순서로 유지) */
+  /** 미리보기 비디오: 피커가 열렸을 때 슬라이더(draft)와 seek 동기 */
   useEffect(() => {
+    if (!thumbPickerOpen) return;
     const el = videoPreviewRef.current;
     if (!el || !previewUrl) return;
     const d = el.duration;
     const cap = Number.isFinite(d) && d > 0 ? d - 0.04 : undefined;
-    const t = cap !== undefined ? Math.min(thumbTimeSec, cap) : thumbTimeSec;
+    const t = cap !== undefined ? Math.min(thumbDraftSec, cap) : thumbDraftSec;
     el.currentTime = Number.isFinite(t) ? t : 0;
-  }, [thumbTimeSec, previewUrl]);
+  }, [thumbDraftSec, previewUrl, thumbPickerOpen]);
+
+  /** 피커를 닫은 뒤엔 확정 시점 프레임에 고정 */
+  useEffect(() => {
+    if (thumbPickerOpen) return;
+    const el = videoPreviewRef.current;
+    if (!el || !previewUrl) return;
+    const raw = el.duration;
+    const cap = Number.isFinite(raw) && raw > 0 ? raw - 0.04 : undefined;
+    const next = clampThumbSec(thumbCommittedSec, durationSec);
+    const t = cap !== undefined ? Math.min(next, cap) : next;
+    el.currentTime = Number.isFinite(t) ? t : 0;
+  }, [thumbPickerOpen, thumbCommittedSec, previewUrl, durationSec]);
+
+  /** 공식 임베드(YouTube·TikTok·Instagram): duration·썸네일 시간 UI 제거 — 직접 URL은 resetPreview가 피커를 연다 */
+  useEffect(() => {
+    if (sourceType !== "url" || !previewUrl?.trim()) return;
+    const embed = parseSocialVideoEmbed(previewUrl);
+    if (!embed) return;
+    setDurationSec(null);
+    setThumbDraftSec(0);
+    setThumbCommittedSec(0);
+    setThumbPickerOpen(false);
+    setOrientation(embed.aspect === "9:16" ? "portrait" : "landscape");
+  }, [sourceType, previewUrl]);
 
   const onPickFile = (f: File | null) => {
     resetPreview();
@@ -195,11 +399,17 @@ export function SellerClipUploadForm() {
   const onApplyVideoUrl = () => {
     const raw = videoUrl.trim();
     if (!raw) return;
-    const normalized = raw.startsWith("http://") || raw.startsWith("https://")
-      ? raw
-      : raw.startsWith("/")
+    let normalized =
+      raw.startsWith("http://") || raw.startsWith("https://")
         ? raw
-        : `https://${raw}`;
+        : raw.startsWith("/")
+          ? raw
+          : `https://${raw}`;
+    const ytWatch = normalizeYouTubeUrlToWatch(normalized);
+    if (ytWatch !== normalized) {
+      setVideoUrl(ytWatch);
+      normalized = ytWatch;
+    }
     resetPreview();
     setPreviewUrl(normalized);
   };
@@ -210,9 +420,39 @@ export function SellerClipUploadForm() {
     const d = el.duration;
     if (Number.isFinite(d) && d > 0) {
       setDurationSec(Math.round(d));
-      setThumbTimeSec((prev) => (prev > d ? Math.max(0, d - 0.05) : prev));
+      setThumbDraftSec((prev) => clampThumbSec(prev, Math.round(d)));
+      setThumbCommittedSec((prev) => clampThumbSec(prev, Math.round(d)));
     }
     setOrientation(el.videoWidth >= el.videoHeight ? "landscape" : "portrait");
+  };
+
+  const onApplyThumbnailTime = async () => {
+    const d = durationSec != null ? durationSec : null;
+    const next = clampThumbSec(thumbDraftSec, d);
+    setThumbCommittedSec(next);
+    setThumbDraftSec(next);
+    if (previewUrl && videoPreviewRef.current) {
+      const posterBlob = await captureFrameFromVideo(
+        videoPreviewRef.current,
+        next,
+        "image/jpeg",
+        0.92,
+      );
+      if (posterBlob) {
+        const nextObjectUrl = URL.createObjectURL(posterBlob);
+        setAppliedThumbPreviewUrl((prev) => {
+          if (prev?.startsWith("blob:")) {
+            try {
+              URL.revokeObjectURL(prev);
+            } catch {
+              /* noop */
+            }
+          }
+          return nextObjectUrl;
+        });
+      }
+    }
+    setThumbPickerOpen(false);
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -220,22 +460,28 @@ export function SellerClipUploadForm() {
     setMessage(null);
 
     if (sourceType === "file" && !file) {
-      setMessage({ ok: false, text: "동영상 파일을 선택해 주세요." });
+      setMessage({ ok: false, text: t("sellForm.errNoFile") });
       return;
     }
     if (sourceType === "url" && !videoUrl.trim()) {
-      setMessage({ ok: false, text: "동영상 URL을 입력해 주세요." });
-      return;
-    }
-    if (!rights || !confirmOriginal) {
-      setMessage({
-        ok: false,
-        text: "권리·원본 확인 항목에 모두 동의해 주세요.",
-      });
+      setMessage({ ok: false, text: t("sellForm.errNoUrl") });
       return;
     }
     if (!category) {
-      setMessage({ ok: false, text: "카테고리를 선택해 주세요." });
+      setMessage({ ok: false, text: t("sellForm.errNoCategory") });
+      return;
+    }
+    if (
+      previewUrl &&
+      durationSec != null &&
+      durationSec > 0 &&
+      thumbPickerOpen &&
+      Math.abs(thumbDraftSec - thumbCommittedSec) > 0.035
+    ) {
+      setMessage({
+        ok: false,
+        text: t("sellForm.errNoThumbnail"),
+      });
       return;
     }
 
@@ -254,14 +500,15 @@ export function SellerClipUploadForm() {
       }
       fd.append("title", title.trim());
       fd.append("description", description.trim());
-      fd.append("hashtags", hashtags.trim());
+      fd.append("hashtags", "");
       fd.append("category", category);
       fd.append("price", price.trim());
       fd.append("orientation", orientation);
       fd.append("isAiGenerated", isAi ? "true" : "false");
       fd.append("editionKind", "open");
-      fd.append("rightsConfirmed", rights ? "true" : "false");
-      fd.append("confirmOriginal", confirmOriginal ? "true" : "false");
+      fd.append("rightsConfirmed", "true");
+      fd.append("confirmOriginal", "true");
+      fd.append("confirmPromotionAndLiability", "true");
       if (durationSec != null) {
         fd.append("durationSec", String(durationSec));
       }
@@ -271,19 +518,18 @@ export function SellerClipUploadForm() {
         if (previewUrl && videoPreviewRef.current) {
           posterBlob = await captureFrameFromVideo(
             videoPreviewRef.current,
-            thumbTimeSec,
+            thumbCommittedSec,
             "image/jpeg",
             0.92,
           );
         }
         if (!posterBlob) {
-          posterBlob = await capturePosterFromFile(file, thumbTimeSec);
+          posterBlob = await capturePosterFromFile(file, thumbCommittedSec);
         }
         if (!posterBlob) {
           setMessage({
             ok: false,
-            text:
-              "영상에서 썸네일을 만들 수 없습니다. MP4 등 지원 형식인지 확인하거나 잠시 후 다시 시도해 주세요.",
+            text: t("sellForm.errThumbFail"),
           });
           return;
         }
@@ -291,7 +537,7 @@ export function SellerClipUploadForm() {
       } else if (sourceType === "url" && previewUrl && videoPreviewRef.current) {
         const posterBlob = await captureFrameFromVideo(
           videoPreviewRef.current,
-          thumbTimeSec,
+          thumbCommittedSec,
           "image/jpeg",
           0.92,
         );
@@ -311,12 +557,13 @@ export function SellerClipUploadForm() {
         ok?: boolean;
         error?: string;
         message?: string;
+        video?: FeedVideo;
       };
 
       if (!res.ok || !data.ok) {
         setMessage({
           ok: false,
-          text: data.error ?? "업로드에 실패했습니다.",
+          text: data.error ?? t("sellForm.errUploadFail"),
         });
         return;
       }
@@ -327,24 +574,33 @@ export function SellerClipUploadForm() {
 
       setTitle("");
       setDescription("");
-      setHashtags("");
       setCategory("daily");
       setPrice("1000");
       setIsAi(false);
-      setRights(false);
-      setConfirmOriginal(false);
       setVideoUrl("");
-      setSourceType("file");
+      // 진입 전에 고른 등록 방식은 유지합니다.
       resetPreview();
       if (fileInputRef.current) fileInputRef.current.value = "";
       setMessage(null);
+      if (data.video) {
+        try {
+          window.sessionStorage.setItem(PENDING_UPLOADED_VIDEO_KEY, JSON.stringify(data.video));
+        } catch {
+          /* ignore storage write failures */
+        }
+      }
+
+      const sellerIdForRedirect = session?.user?.id ?? user?.id ?? null;
+      const sellerFeedHref = sellerIdForRedirect
+        ? `/seller/${encodeURIComponent(sellerIdForRedirect)}`
+        : "/mypage?tab=listings";
 
       // 상태 플러시·언마운트 후 이동 — refresh 병행 시 RSC/클라이언트 트리 불일치로 훅 오류가 날 수 있음
       queueMicrotask(() => {
-        router.replace("/mypage?tab=listings");
+        router.replace(sellerFeedHref);
       });
     } catch {
-      setMessage({ ok: false, text: "네트워크 오류가 발생했습니다." });
+      setMessage({ ok: false, text: t("sellForm.errNetwork") });
     } finally {
       setSubmitting(false);
     }
@@ -352,357 +608,312 @@ export function SellerClipUploadForm() {
 
   return (
     <form
-      className="reels-glass-card rounded-2xl p-5 sm:p-7"
+      className="rounded-2xl border border-white/10 bg-zinc-900/50 p-6 sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm"
       onSubmit={onSubmit}
     >
-      <div className="flex flex-wrap items-center gap-2">
-        <Film className="h-5 w-5 text-reels-cyan" strokeWidth={2} aria-hidden />
-        <h2 className="text-lg font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-xl">
-          릴스 등록 · 메타데이터
-        </h2>
-      </div>
-      <p className="mt-2 text-[13px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        파일은 서버에 저장되며 DB에 목록이 생성됩니다. 미리보기에서 썸네일로 쓸
-        장면(기본: 첫 화면)을 고를 수 있고, 심사·노출 단계에서 다시 조정될 수
-        있어요.
-      </p>
+      <header className="mb-6 border-b border-white/10 pb-4 [html[data-theme='light']_&]:border-zinc-100">
+        <div className="mb-4 flex min-w-0 items-center gap-2 sm:gap-2.5">
+          <Film
+            aria-hidden
+            color="#E42980"
+            className="h-6 w-6 shrink-0 sm:h-[1.625rem] sm:w-[1.625rem]"
+            strokeWidth={2}
+          />
+          <h2 className="whitespace-nowrap text-[clamp(1.05rem,2.6vw,1.4rem)] font-semibold leading-none tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+            {t("sellForm.title")}
+          </h2>
+        </div>
 
-      {message ? (
+        <fieldset className="w-full max-w-[40rem] text-left">
+          <legend className="sr-only">{t("sellForm.sourceLegend")}</legend>
+          <div className={SOURCE_PANEL}>
+            {sourceType === "file" ? (
+              <>
+                <input
+                  id={`${hid}-video`}
+                  ref={fileInputRef}
+                  type="file"
+                  accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
+                  tabIndex={-1}
+                  className="sr-only"
+                  aria-hidden
+                  onChange={(e) => {
+                    onPickFile(e.target.files?.[0] ?? null);
+                    e.target.value = "";
+                  }}
+                />
+                <div className="flex w-full min-w-0 flex-row flex-wrap items-center gap-x-3 gap-y-1.5">
+                  <button
+                    type="button"
+                    aria-label={t("sellForm.sourceFile")}
+                    className={`${SOURCE_SECONDARY_BTN} shrink-0 px-5 py-3 text-[15px] font-semibold sm:px-6 sm:py-3.5 sm:text-[16px]`}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {t("sellForm.chooseFile")}
+                  </button>
+                  <p className="min-w-0 flex-1 truncate text-left text-[13px] leading-snug text-zinc-500 sm:text-[14px] [html[data-theme='light']_&]:text-zinc-600">
+                    {file?.name ?? t("sellForm.noFileChosen")}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="w-full max-w-[40rem] space-y-2 text-left">
+                <label className={`${LABEL} mb-0`} htmlFor={`${hid}-video-url`}>
+                  {t("sellForm.sourceUrl")}
+                </label>
+                <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-stretch">
+                  <div className="relative min-h-[48px] min-w-0 flex-1">
+                    <input
+                      id={`${hid}-video-url`}
+                      className={`${INPUT} min-h-[48px] w-full py-3 pr-11`}
+                      value={videoUrl}
+                      onChange={(e) => setVideoUrl(e.target.value)}
+                      placeholder={t("sellForm.urlPlaceholder")}
+                    />
+                    {videoUrl.trim().length > 0 ? (
+                      <button
+                        type="button"
+                        aria-label={t("sellForm.clearUrl")}
+                        className="absolute right-2 top-1/2 z-[1] -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-white/[0.08] hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-500 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
+                        onClick={clearUrlFieldAndPreview}
+                      >
+                        <X className="h-4 w-4 shrink-0" aria-hidden strokeWidth={2} />
+                      </button>
+                    ) : null}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={onApplyVideoUrl}
+                    className={`${SOURCE_SECONDARY_BTN} min-h-[48px] shrink-0 whitespace-nowrap sm:min-w-[7.5rem]`}
+                  >
+                    {t("sellForm.preview")}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </fieldset>
+      </header>
+
+      {message?.ok ? (
         <div
-          className={`mt-4 flex items-start gap-2 rounded-xl border px-3 py-2.5 text-[13px] font-semibold ${
-            message.ok
-              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-200 [html[data-theme='light']_&]:text-emerald-800"
-              : "border-rose-500/45 bg-rose-500/10 text-rose-200 [html[data-theme='light']_&]:text-rose-800"
+          className={`mb-8 flex items-start gap-2 rounded-xl border px-3.5 py-3 text-[13px] font-medium ${
+            "border-emerald-500/35 bg-emerald-500/[0.08] text-emerald-200 [html[data-theme='light']_&]:text-emerald-900"
           }`}
           role="status"
         >
-          {message.ok ? (
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-          ) : (
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-          )}
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 opacity-90" aria-hidden />
           <span>{message.text}</span>
         </div>
       ) : null}
 
-      <div className="mt-6 space-y-6">
-        <div>
-          <span className={LABEL}>영상 소스 선택</span>
-          <div className="mb-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setSourceType("file")}
-              className={`rounded-xl border px-3 py-2 text-[13px] font-bold transition ${
-                sourceType === "file"
-                  ? "border-reels-cyan/50 bg-reels-cyan/15 text-zinc-100"
-                  : "border-white/12 bg-black/20 text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
-              }`}
-            >
-              직접 업로드
-            </button>
-            <button
-              type="button"
-              onClick={() => setSourceType("url")}
-              className={`rounded-xl border px-3 py-2 text-[13px] font-bold transition ${
-                sourceType === "url"
-                  ? "border-reels-cyan/50 bg-reels-cyan/15 text-zinc-100"
-                  : "border-white/12 bg-black/20 text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
-              }`}
-            >
-              동영상 URL 입력
-            </button>
+      <div className="space-y-4">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+          <div className="space-y-6">
+            <div>
+              <label className={LABEL} htmlFor={`${hid}-title`}>
+                {t("sellForm.titleLabel")}
+              </label>
+              <input
+                id={`${hid}-title`}
+                className={INPUT}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={t("sellForm.titlePlaceholder")}
+                maxLength={120}
+                required
+              />
+            </div>
+
+            <div>
+              <label className={LABEL} htmlFor={`${hid}-desc`}>
+                {t("sellForm.descLabel")}
+              </label>
+              <textarea
+                id={`${hid}-desc`}
+                className={`${INPUT} min-h-[120px] resize-y`}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder={t("sellForm.descPlaceholder")}
+                maxLength={2000}
+              />
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div>
+                <label className={LABEL} htmlFor={`${hid}-category`}>
+                  {t("sellForm.categoryLabel")}
+                </label>
+                <SellCategorySelect
+                  id={`${hid}-category`}
+                  listboxId={`${hid}-category-listbox`}
+                  value={category}
+                  onChange={setCategory}
+                  ariaLabel={t("sellForm.categoryAria")}
+                  triggerClassName="h-[52px] min-h-0 py-0 text-[15px]"
+                />
+              </div>
+
+              <div>
+                <label className={LABEL} htmlFor={`${hid}-price`}>
+                  {t("sellForm.priceLabel")}
+                </label>
+                <input
+                  id={`${hid}-price`}
+                  className={`${INPUT} h-[52px]`}
+                  inputMode="numeric"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value.replace(/[^\d]/g, ""))}
+                  required
+                />
+              </div>
+            </div>
           </div>
 
-          {sourceType === "file" ? (
-            <>
-              <span className={LABEL}>동영상 파일 (필수)</span>
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,520px)] lg:items-start lg:gap-6">
-                <div className="min-w-0 space-y-1.5">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <input
-                      id={`${hid}-video`}
-                      ref={fileInputRef}
-                      type="file"
-                      accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
-                      tabIndex={-1}
-                      className="sr-only"
-                      aria-hidden
-                      onChange={(e) => {
-                        onPickFile(e.target.files?.[0] ?? null);
-                        e.target.value = "";
-                      }}
-                    />
-                    <button
-                      type="button"
-                      className="inline-flex shrink-0 cursor-pointer rounded-lg bg-reels-crimson/90 px-3 py-2 text-[13px] font-bold text-white shadow-sm transition hover:brightness-110"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      파일 선택
-                    </button>
-                    <span className="pointer-events-none min-w-0 flex-1 truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                      {file?.name ?? "선택된 파일 없음"}
-                    </span>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-                    MP4·MOV·WebM 권장. 미리보기에서 재생 길이·가로/세로를 자동 추정합니다.
-                  </p>
-                </div>
-                {previewUrl ? (
-                  <div className="flex w-full min-w-0 justify-center overflow-hidden rounded-xl border border-white/15 bg-zinc-950/90 shadow-inner [html[data-theme='light']_&]:bg-zinc-900">
+          <aside
+            className="space-y-4 rounded-xl border border-white/10 bg-white/[0.02] p-4 lg:-mt-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/70"
+            aria-label={t("sellForm.videoPreviewAria")}
+          >
+            {previewUrl ? (
+              <>
+                {socialEmbedPreview ? (
+                  <SocialSellEmbedPreview embed={socialEmbedPreview} />
+                ) : (
+                  <div className="overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
                     <video
                       ref={videoPreviewRef}
-                      className="max-h-[min(52vh,480px)] w-full object-contain"
+                      className={
+                        orientation === "portrait"
+                          ? "sell-video-preview mx-auto w-full max-w-[300px] aspect-[9/16] object-cover"
+                          : "sell-video-preview w-full aspect-video object-contain"
+                      }
                       src={previewUrl}
                       crossOrigin="anonymous"
                       muted
                       playsInline
                       controls
+                      controlsList="nodownload noplaybackrate noremoteplayback nopictureinpicture"
+                      disablePictureInPicture
+                      disableRemotePlayback
                       onLoadedMetadata={onVideoMeta}
                     />
                   </div>
-                ) : null}
-              </div>
-            </>
-          ) : (
-            <>
-              <label className={LABEL} htmlFor={`${hid}-video-url`}>
-                동영상 URL (필수)
-              </label>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <input
-                  id={`${hid}-video-url`}
-                  className={`${INPUT} flex-1`}
-                  value={videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                  placeholder="https://... 또는 /videos/sample1.mp4"
+                )}
+
+                {!socialEmbedPreview ? (
+                  <>
+                    {thumbPickerOpen ? (
+                      <div className="rounded-xl border border-white/10 bg-black/20 p-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
+                        <div className="mb-2 flex items-end justify-between gap-2">
+                          <label
+                            htmlFor={`${hid}-thumb-range`}
+                            className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600"
+                          >
+                            {t("sellForm.thumbnailScene")}
+                          </label>
+                          <span className="font-mono text-[12px] tabular-nums text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
+                            {(durationSec != null && durationSec > 0
+                              ? Math.min(thumbDraftSec, durationSec)
+                              : thumbDraftSec
+                            ).toFixed(2)}
+                            {t("sellForm.sec")}
+                          </span>
+                        </div>
+                        <input
+                          id={`${hid}-thumb-range`}
+                          type="range"
+                          min={0}
+                          max={durationSec != null && durationSec > 0 ? durationSec : 1}
+                          step={0.05}
+                          value={
+                            durationSec != null && durationSec > 0
+                              ? Math.min(thumbDraftSec, durationSec)
+                              : thumbDraftSec
+                          }
+                          onChange={(e) => setThumbDraftSec(parseFloat(e.target.value))}
+                          className="w-full cursor-pointer accent-reels-crimson"
+                          aria-label={t("sellForm.thumbnailSeekAria")}
+                        />
+                        <button
+                          type="button"
+                          onClick={onApplyThumbnailTime}
+                          className={`mt-3 ${MYPAGE_OUTLINE_BTN_MD} w-full cursor-pointer ${BTN_DISABLED_GHOST}`}
+                          disabled={!(durationSec != null && durationSec > 0)}
+                        >
+                          {t("sellForm.applyThumbnail")}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setThumbPickerOpen(true)}
+                        className={`${SOURCE_SECONDARY_BTN} w-auto px-4 text-[15px]`}
+                      >
+                        {t("sellForm.changeThumbnail")}
+                      </button>
+                    )}
+
+                    {appliedThumbPreviewUrl ? (
+                      <div className="w-full max-w-[200px] overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
+                        <img
+                          src={appliedThumbPreviewUrl}
+                          alt={t("sellForm.thumbnailPreviewAlt")}
+                          className={
+                            orientation === "portrait"
+                              ? "w-full aspect-[9/16] object-cover"
+                              : "w-full aspect-video object-cover"
+                          }
+                        />
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <p className="text-[11px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                    {t("sellForm.platformPreviewNote")}
+                  </p>
+                )}
+              </>
+            ) : (
+              <div className="flex min-h-[220px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 bg-black/[0.12] px-4 py-8 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80">
+                <Film
+                  aria-hidden
+                  className="h-8 w-8 shrink-0 text-zinc-500/45"
+                  strokeWidth={1.5}
                 />
-                <button
-                  type="button"
-                  onClick={onApplyVideoUrl}
-                  className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/[0.08] px-4 py-2.5 text-[13px] font-bold text-zinc-200 hover:border-reels-cyan/40 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800"
-                >
-                  미리보기
-                </button>
+                <p className="max-w-[16rem] text-[13px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                  {t("sellForm.previewHint")}
+                </p>
               </div>
-              {previewUrl ? (
-                <div className="mt-3 flex w-full justify-center overflow-hidden rounded-xl border border-white/15 bg-zinc-950/90 shadow-inner [html[data-theme='light']_&]:bg-zinc-900">
-                  <video
-                    ref={videoPreviewRef}
-                    className="max-h-[min(52vh,480px)] w-full object-contain"
-                    src={previewUrl}
-                    crossOrigin="anonymous"
-                    muted
-                    playsInline
-                    controls
-                    onLoadedMetadata={onVideoMeta}
-                  />
-                </div>
-              ) : null}
-              <p className="mt-1.5 text-[11px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-                직접 업로드가 어렵다면 영상 URL로도 등록할 수 있습니다.
-              </p>
-            </>
-          )}
-
-          {previewUrl ? (
-            <div className="mt-4 rounded-xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-              <span className={LABEL}>썸네일 장면</span>
-              <p className="mb-3 text-[11px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                슬라이더로 장면을 맞추면 등록 시 그 화면이 썸네일로 저장됩니다.
-                일부 외부 URL은 보안 정책으로 썸네일 추출이 안 될 수 있어요(그때는
-                기본 이미지가 들어갑니다).
-              </p>
-              <input
-                type="range"
-                min={0}
-                max={
-                  durationSec != null && durationSec > 0
-                    ? durationSec
-                    : 1
-                }
-                step={0.05}
-                value={
-                  durationSec != null && durationSec > 0
-                    ? Math.min(thumbTimeSec, durationSec)
-                    : thumbTimeSec
-                }
-                onChange={(e) => setThumbTimeSec(parseFloat(e.target.value))}
-                className="w-full accent-reels-cyan"
-                aria-label="썸네일 시점(초)"
-              />
-              <div className="mt-1 flex justify-between text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                <span>0초</span>
-                <span className="font-mono">{thumbTimeSec.toFixed(2)}초</span>
-                <span>
-                  {durationSec != null && durationSec > 0
-                    ? `총 ${durationSec}초`
-                    : "길이 로딩…"}
-                </span>
-              </div>
-            </div>
-          ) : null}
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <label className={LABEL} htmlFor={`${hid}-title`}>
-              제목 (필수)
-            </label>
-            <input
-              id={`${hid}-title`}
-              className={INPUT}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="예: 비 오는 창가 브이로그 인트로"
-              maxLength={120}
-              required
-            />
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className={LABEL} htmlFor={`${hid}-desc`}>
-              설명
-            </label>
-            <textarea
-              id={`${hid}-desc`}
-              className={`${INPUT} min-h-[100px] resize-y`}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="어떤 상황에 쓰기 좋은지, 분위기, 촬영 정보 등을 적어 주세요."
-              maxLength={2000}
-            />
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className={LABEL} htmlFor={`${hid}-tags`}>
-              해시태그
-            </label>
-            <input
-              id={`${hid}-tags`}
-              className={INPUT}
-              value={hashtags}
-              onChange={(e) => setHashtags(e.target.value)}
-              placeholder="#일상 #브이로그 #카페 또는 쉼표로 구분"
-            />
-            <p className="mt-1 text-[11px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-              저장 시 #태그 형태로 정리됩니다.
-            </p>
-          </div>
-
-          <div>
-            <label className={LABEL} htmlFor={`${hid}-category`}>
-              카테고리 (필수)
-            </label>
-            <select
-              id={`${hid}-category`}
-              className={INPUT}
-              value={category}
-              onChange={(e) => {
-                const next = e.target.value;
-                if (isSellVideoCategory(next)) setCategory(next);
-              }}
-              required
-            >
-              {SELL_VIDEO_CATEGORY_OPTIONS.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className={LABEL} htmlFor={`${hid}-price`}>
-              판매 가격 (원, 최소 100)
-            </label>
-            <input
-              id={`${hid}-price`}
-              className={INPUT}
-              inputMode="numeric"
-              value={price}
-              onChange={(e) => setPrice(e.target.value.replace(/[^\d]/g, ""))}
-              required
-            />
-          </div>
-
-          <div>
-            <span className={LABEL}>영상 비율 (자동 추정)</span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setOrientation("portrait")}
-                className={`flex-1 rounded-xl border px-3 py-2 text-[13px] font-bold transition ${
-                  orientation === "portrait"
-                    ? "border-reels-cyan/50 bg-reels-cyan/15 text-zinc-100"
-                    : "border-white/12 bg-black/20 text-zinc-400 hover:border-white/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
-                }`}
-              >
-                세로 (릴스형)
-              </button>
-              <button
-                type="button"
-                onClick={() => setOrientation("landscape")}
-                className={`flex-1 rounded-xl border px-3 py-2 text-[13px] font-bold transition ${
-                  orientation === "landscape"
-                    ? "border-reels-cyan/50 bg-reels-cyan/15 text-zinc-100"
-                    : "border-white/12 bg-black/20 text-zinc-400 hover:border-white/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
-                }`}
-              >
-                가로 (와이드)
-              </button>
-            </div>
-          </div>
-
-
-          <div className="sm:col-span-2 space-y-3 rounded-xl border border-amber-500/25 bg-amber-500/[0.07] p-4 [html[data-theme='light']_&]:border-amber-400/35 [html[data-theme='light']_&]:bg-amber-50">
-            <label className="flex cursor-pointer items-start gap-3">
-              <input
-                type="checkbox"
-                className="mt-1 h-4 w-4 rounded border-amber-400/50 bg-black/30 text-amber-500"
-                checked={rights}
-                onChange={(e) => setRights(e.target.checked)}
-                required
-              />
-              <span className="text-[13px] font-semibold leading-snug text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
-                이 파일에 대한 재판매·배포 권한을 보유했거나, 권리자의 동의를
-                받았습니다.
-              </span>
-            </label>
-            <label className="flex cursor-pointer items-start gap-3">
-              <input
-                type="checkbox"
-                className="mt-1 h-4 w-4 rounded border-amber-400/50 bg-black/30 text-amber-500"
-                checked={confirmOriginal}
-                onChange={(e) => setConfirmOriginal(e.target.checked)}
-                required
-              />
-              <span className="text-[13px] font-semibold leading-snug text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
-                타인의 초상·음원·상표 등 제3자 권리를 침해하지 않습니다.
-              </span>
-            </label>
-          </div>
+            )}
+          </aside>
         </div>
       </div>
 
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-[11px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-          제출 시{" "}
-          <span className="font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-700">
-            심사·노출 정책
-          </span>
-          에 동의한 것으로 간주됩니다.
+      <div className="mt-10 flex flex-col-reverse gap-4 border-t border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between [html[data-theme='light']_&]:border-zinc-100">
+        {!message?.ok && message ? (
+          <div
+            className="flex items-start gap-2 rounded-xl border border-reels-crimson/35 bg-reels-crimson/[0.08] px-3.5 py-2.5 text-[13px] font-medium text-[#F9ECF3] [html[data-theme='light']_&]:text-reels-crimson"
+            role="status"
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 opacity-90" aria-hidden />
+            <span>{message.text}</span>
+          </div>
+        ) : (
+        <p className="text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+          {t("sellForm.termsNotice")}
         </p>
+        )}
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-reels-crimson px-7 py-3 text-[14px] font-extrabold text-white shadow-reels-crimson transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+          className={`inline-flex w-full cursor-pointer items-center justify-center gap-2 ${MYPAGE_OUTLINE_BTN_MD} sm:w-auto sm:min-w-[10rem] ${BTN_DISABLED_GHOST}`}
         >
           {submitting ? (
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
           ) : (
             <Upload className="h-4 w-4" aria-hidden />
           )}
-          등록하기
+          {t("sellForm.submit")}
         </button>
       </div>
     </form>

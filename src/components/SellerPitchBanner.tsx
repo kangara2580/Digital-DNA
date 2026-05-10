@@ -1,16 +1,41 @@
 "use client";
 
-import { Download, Link2, PencilRuler, PlayCircle, Tag, WandSparkles } from "lucide-react";
+import { Link2, WandSparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { HomeStartCtaButton } from "@/components/HomeStartCtaButton";
+import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
+import { AuthModalPortal } from "@/components/AuthModalPortal";
+import {
+  authModalDialogSurface,
+  authModalDismissButtonCls,
+  authModalGlowBottom,
+  authModalGlowTop,
+} from "@/lib/authModalTheme";
+import { homeSectionHeadingH2ClassName } from "@/lib/homeSectionHeadingTypography";
+import { useTranslation } from "@/hooks/useTranslation";
+import {
+  araAuthDialogWordmarkClassName,
+  araWordmarkFontStyle,
+} from "@/lib/araBrandTypography";
+import {
+  PitchIllustCreatorPrice,
+  PitchIllustCreatorSell,
+  PitchIllustCreatorUpload,
+  PitchIllustUserBrowse,
+  PitchIllustUserCustomize,
+  PitchIllustUserDownload,
+} from "@/components/HomePitchStepIllustrations";
 
 type AuthModalProps = {
   authOpen: boolean;
   mounted: boolean;
   setAuthOpen: Dispatch<SetStateAction<boolean>>;
-  startGoogleAuth: () => void;
+  startGoogleAuth: () => Promise<void>;
 };
 
 function useSellerPitchStart() {
@@ -19,11 +44,26 @@ function useSellerPitchStart() {
   const [authOpen, setAuthOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  const startGoogleAuth = useCallback(() => {
+  const startGoogleAuth = useCallback(async () => {
     const next =
       typeof window !== "undefined"
         ? `${window.location.pathname}${window.location.search}${window.location.hash}`
         : "/";
+    const redirectTo = buildAuthCallbackRedirectTo(next);
+    const supabase = getSupabaseBrowserClient();
+    if (supabase && redirectTo) {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          queryParams: { prompt: "select_account" },
+        },
+      });
+      if (!error && data.url) {
+        window.location.assign(data.url);
+        return;
+      }
+    }
     window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
   }, []);
 
@@ -67,66 +107,47 @@ function SellerPitchAuthModal({
   setAuthOpen,
   startGoogleAuth,
 }: AuthModalProps) {
+  const { t } = useTranslation();
   return mounted && authOpen
     ? createPortal(
-        <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/70 px-4 backdrop-blur-[4px]">
-          <button
-            type="button"
-            className="absolute inset-0"
-            aria-label="로그인 모달 닫기"
-            onClick={() => setAuthOpen(false)}
-          />
+        <AuthModalPortal onDismiss={() => setAuthOpen(false)}>
           <div
             role="dialog"
             aria-modal="true"
-            aria-label="로그인 또는 회원가입"
-            className="relative z-10 w-full max-w-[560px] max-h-[min(92vh,760px)] overflow-y-auto rounded-[24px] border border-white/20 bg-[radial-gradient(120%_120%_at_0%_0%,rgba(0,51,255,0.34)_0%,rgba(8,14,30,0.94)_52%,rgba(2,6,16,0.98)_100%)] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10"
+            aria-label={t("auth.dialogAria")}
+            className={`relative w-full max-h-[min(92vh,760px)] overflow-y-auto rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
           >
+            <div className={authModalGlowTop} aria-hidden />
+            <div className={authModalGlowBottom} aria-hidden />
             <button
               type="button"
               onClick={() => setAuthOpen(false)}
-              className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/10 text-zinc-200 transition hover:bg-white/20"
-              aria-label="닫기"
+              className={authModalDismissButtonCls}
+              aria-label={t("a11y.close")}
             >
               ×
             </button>
-            <p className="relative text-center text-[clamp(1.85rem,6vw,2.65rem)] font-black tracking-tight text-white">
+            <p className={araAuthDialogWordmarkClassName} style={araWordmarkFontStyle}>
               ARA
             </p>
             <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
-              로그인/회원가입
+              {t("auth.loginSignupTitle")}
             </p>
-            <button
-              type="button"
-              onClick={startGoogleAuth}
-              className="relative mx-auto mt-9 flex w-full max-w-[360px] items-center justify-center gap-3 rounded-full bg-white px-4 py-3 text-[clamp(1.0625rem,3.9vw,1.3125rem)] font-extrabold text-[#1a1a1a] shadow-[0_16px_34px_-18px_rgba(255,255,255,0.95)] transition hover:brightness-95 sm:px-6 sm:py-4"
-            >
-              <svg className="h-5 w-5 shrink-0 sm:h-6 sm:w-6" viewBox="0 0 24 24" aria-hidden>
-                <path
-                  fill="#EA4335"
-                  d="M12 10.2v3.9h5.4c-.2 1.2-.9 2.3-1.9 3l3 2.3c1.7-1.6 2.7-3.9 2.7-6.7 0-.6-.1-1.2-.2-1.8H12z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 22c2.4 0 4.4-.8 5.9-2.2l-3-2.3c-.8.6-1.8 1-2.9 1-2.2 0-4.1-1.5-4.7-3.5l-3.1 2.4C5.6 20.3 8.6 22 12 22z"
-                />
-                <path
-                  fill="#4A90E2"
-                  d="M7.3 15c-.2-.6-.4-1.3-.4-2s.1-1.4.4-2L4.2 8.6C3.4 10.1 3 11.5 3 13s.4 2.9 1.2 4.4L7.3 15z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M12 7.5c1.3 0 2.5.4 3.4 1.3l2.6-2.6C16.4 4.7 14.4 4 12 4 8.6 4 5.6 5.7 4.2 8.6L7.3 11c.6-2 2.5-3.5 4.7-3.5z"
-                />
-              </svg>
-              Google로 바로 시작
-            </button>
+            <AuthModalGoogleStartButton onClick={() => void startGoogleAuth()} />
           </div>
-        </div>,
+        </AuthModalPortal>,
         document.body,
       )
     : null;
 }
+
+const pitchRoleHeadingClassName =
+  "pt-0.5 text-[22px] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]";
+/** 단계 제목(1. … / 2. …): 역할 헤더(사용자·크리에이터)와 동일 크기·웨이트 */
+const pitchStepTitleClassName =
+  "text-[22px] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]";
+const pitchStepBodyClassName =
+  "text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]";
 
 type SellerPitchBannerProps = {
   showStartButton?: boolean;
@@ -140,38 +161,23 @@ function SellerPitchStartButton({
   onStartClick: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onStartClick}
-      disabled={authLoading}
-      className="group pointer-events-auto relative inline-flex min-w-[188px] items-center justify-center overflow-hidden rounded-full border border-white/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.04)_18%,rgba(9,12,18,0.86)_58%,rgba(10,12,17,0.96)_100%)] px-7 py-2.5 text-[1.65rem] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-1px_0_rgba(255,255,255,0.12),0_10px_28px_rgba(0,0,0,0.45)] backdrop-blur-xl transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#fca5cf]/90 hover:text-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.42),inset_0_-1px_0_rgba(236,72,153,0.35),0_0_38px_-4px_rgba(233,30,99,0.55),0_14px_36px_rgba(0,0,0,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e91e63]/80 disabled:hover:translate-y-0"
-    >
-      <span
-        className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-br from-[#f43f82] via-[#e91e63] to-[#db2777] opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100"
-        aria-hidden
-      />
-      <span
-        className="pointer-events-none absolute inset-x-8 top-0 z-[1] h-px bg-gradient-to-r from-transparent via-white/75 to-transparent opacity-95 transition-opacity group-hover:via-white/50"
-        aria-hidden
-      />
-      <span
-        className="pointer-events-none absolute inset-x-10 bottom-0 z-[1] h-px bg-gradient-to-r from-transparent via-white/45 to-transparent opacity-90 transition-opacity group-hover:opacity-60"
-        aria-hidden
-      />
-      <span className="relative z-10 drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">시작하기</span>
-    </button>
+    <HomeStartCtaButton onClick={onStartClick} disabled={authLoading} />
   );
 }
 
 export function SellerPitchBottomStartButton() {
+  const { t } = useTranslation();
   const { authLoading, authOpen, mounted, onStartClick, setAuthOpen, startGoogleAuth } =
     useSellerPitchStart();
 
   return (
     <>
-      <section className="home-ranked-strip relative bg-[color:var(--home-ranked-strip-bg)]">
-        <div className="relative mx-auto max-w-[1800px] px-4 pb-20 pt-10 sm:px-6 sm:pb-24 lg:px-8">
-          <div className="flex justify-center">
+      <section className="home-ranked-strip relative bg-[color:var(--home-ranked-strip-bg)] pt-16 pb-28 sm:pt-24 sm:pb-32 lg:pt-28">
+        <div className="relative mx-auto max-w-[1800px] px-4 pb-20 pt-8 sm:px-6 sm:pb-24 sm:pt-10 lg:px-8">
+          <div className="flex flex-col items-center gap-8 sm:gap-9">
+            <p className="mx-auto w-full min-w-0 text-center whitespace-nowrap text-[clamp(1.35rem,4.6vw,2.25rem)] leading-snug tracking-[0.02em] text-zinc-100 sm:text-[clamp(1.45rem,3.8vw,2.4rem)] [html[data-theme='light']_&]:text-zinc-900">
+              {t("home.pitch.bottomTagline")}
+            </p>
             <SellerPitchStartButton authLoading={authLoading} onStartClick={onStartClick} />
           </div>
         </div>
@@ -187,6 +193,7 @@ export function SellerPitchBottomStartButton() {
 }
 
 export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerProps) {
+  const { t } = useTranslation();
   const { authLoading, authOpen, mounted, onStartClick, setAuthOpen, startGoogleAuth } =
     useSellerPitchStart();
 
@@ -194,27 +201,15 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
     <>
       <section
         id="seller-pitch"
-        className="home-ranked-strip relative border-t border-white/10 bg-[color:var(--home-ranked-strip-bg)]"
+        className="home-ranked-strip relative bg-[color:var(--home-ranked-strip-bg)]"
         aria-labelledby="seller-pitch-heading"
       >
-        <div className="relative mx-auto max-w-[1800px] px-4 pb-[14px] pt-[44px] sm:px-6 sm:pb-[20px] sm:pt-[60px] lg:px-8 lg:pb-[24px] lg:pt-[76px]">
-          <div className="relative mx-auto w-full max-w-[1600px] overflow-visible rounded-2xl bg-transparent px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
-          <div
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_55%_at_50%_50%,rgba(58,143,255,0.12)_0%,rgba(3,10,25,0)_72%)]"
-            aria-hidden
-          />
-          <div
-            className="pointer-events-none absolute left-[26%] top-[8%] h-72 w-72 rounded-full bg-white/18 blur-[110px]"
-            aria-hidden
-          />
-          <div
-            className="pointer-events-none absolute right-[8%] top-[64%] h-24 w-24 rounded-full bg-[#caeeff]/28 blur-3xl"
-            aria-hidden
-          />
+        <div className="relative mx-auto max-w-[1800px] px-4 pb-8 pt-12 sm:px-6 sm:pb-10 sm:pt-16 lg:px-8 lg:pb-12 lg:pt-20">
+          <div className="relative mx-auto w-full max-w-[1600px] overflow-visible rounded-2xl bg-transparent px-5 py-10 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
 
           <div className="hidden">
             <p className="text-center text-[clamp(1.3rem,2.8vw,1.95rem)] font-semibold tracking-tight text-zinc-100">
-              이렇게 이용해 보세요
+              {t("home.pitch.hidden.lead")}
             </p>
             <ol className="hidden">
               <li className="grid items-center gap-4 lg:grid-cols-[1fr_auto_1fr]">
@@ -223,11 +218,11 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                     className="pointer-events-none absolute -right-2 top-1/2 hidden h-3 w-3 -translate-y-1/2 rotate-45 border-r border-t border-white/30 bg-[#070f1f] lg:block"
                     aria-hidden
                   />
-                  <p className="flex items-center justify-center gap-1.5 font-semibold text-white lg:justify-start"><Link2 className="h-4 w-4" />1. 등록</p>
+                  <p className="flex items-center justify-center gap-1.5 font-semibold text-white lg:justify-start"><Link2 className="h-4 w-4" />{t("home.pitch.hidden.regTitle")}</p>
                   <p>
-                    플랫폼 URL을 불러오시거나
+                    {t("home.pitch.hidden.regBody.line1")}
                     <br />
-                    직접 영상을 올려 주세요.
+                    {t("home.pitch.hidden.regBody.line2")}
                   </p>
                 </div>
                 <div className="relative z-10 mx-auto flex h-14 w-14 items-center justify-center rounded-md border border-white/40 bg-[#0b1220] text-lg font-semibold text-zinc-100 shadow-[0_0_0_4px_rgba(7,15,31,0.95)]">
@@ -245,8 +240,8 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                     className="pointer-events-none absolute -left-2 top-1/2 hidden h-3 w-3 -translate-y-1/2 rotate-45 border-b border-l border-white/30 bg-[#070f1f] lg:block"
                     aria-hidden
                   />
-                  <p className="flex items-center justify-center gap-1.5 font-semibold text-white lg:justify-end"><WandSparkles className="h-4 w-4" />2. 재창작</p>
-                  <p>ARA AI로 배경, 얼굴, 몸을 자연스럽게 편집해 2차 창작까지 완성해 보세요.</p>
+                  <p className="flex items-center justify-center gap-1.5 font-semibold text-white lg:justify-end"><WandSparkles className="h-4 w-4" />{t("home.pitch.hidden.remixTitle")}</p>
+                  <p>{t("home.pitch.hidden.remixBody")}</p>
                 </div>
               </li>
               <li className="grid items-center gap-4 lg:grid-cols-[1fr_auto_1fr]">
@@ -255,8 +250,8 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                     className="pointer-events-none absolute -right-2 top-1/2 hidden h-3 w-3 -translate-y-1/2 rotate-45 border-r border-t border-white/30 bg-[#070f1f] lg:block"
                     aria-hidden
                   />
-                  <p className="flex items-center justify-center gap-1.5 font-semibold text-white lg:justify-start"><WandSparkles className="h-4 w-4" />3. 재창작</p>
-                  <p>ARA AI로 배경, 얼굴, 몸을 자연스럽게 편집해 2차 창작까지 완성해 보세요.</p>
+                  <p className="flex items-center justify-center gap-1.5 font-semibold text-white lg:justify-start"><WandSparkles className="h-4 w-4" />{t("home.pitch.hidden.step3Title")}</p>
+                  <p>{t("home.pitch.hidden.remixBody")}</p>
                 </div>
                 <div className="relative z-10 mx-auto flex h-14 w-14 items-center justify-center rounded-md border border-white/40 bg-[#0b1220] text-lg font-semibold text-zinc-100 shadow-[0_0_0_4px_rgba(7,15,31,0.95)]">
                   C
@@ -273,8 +268,8 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
               <div className="grid gap-5 lg:grid-cols-[1fr_auto_1fr] lg:gap-6">
                 <div className="relative border border-white/28 bg-white/[0.03] px-5 py-4 text-center lg:text-left">
                   <span className="pointer-events-none absolute -right-2 top-1/2 hidden h-3 w-3 -translate-y-1/2 rotate-45 border-r border-t border-white/30 bg-[#070f1f] lg:block" aria-hidden />
-                  <p className="font-semibold text-white">1. 등록</p>
-                  <p>플랫폼 URL을 불러오시거나 직접 영상을 올려 주세요.</p>
+                  <p className="font-semibold text-white">{t("home.pitch.hidden.regTitle")}</p>
+                  <p>{t("home.pitch.hidden.regBodyShort")}</p>
                 </div>
                 <div className="mx-auto flex h-16 w-14 items-center justify-center border border-white/35 bg-white/[0.04] text-xl font-semibold text-zinc-100">A</div>
                 <div className="hidden lg:block" />
@@ -282,13 +277,13 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                 <div className="mx-auto flex h-16 w-14 items-center justify-center border border-white/35 bg-white/[0.04] text-xl font-semibold text-zinc-100">B</div>
                 <div className="relative border border-white/28 bg-white/[0.03] px-5 py-4 text-center lg:text-right">
                   <span className="pointer-events-none absolute -left-2 top-1/2 hidden h-3 w-3 -translate-y-1/2 rotate-45 border-b border-l border-white/30 bg-[#070f1f] lg:block" aria-hidden />
-                  <p className="font-semibold text-white">2. 거래</p>
-                  <p>필요한 영상을 구매하시거나 내 영상을 판매하실 수 있어요.</p>
+                  <p className="font-semibold text-white">{t("home.pitch.hidden.tradeTitle")}</p>
+                  <p>{t("home.pitch.hidden.tradeBody")}</p>
                 </div>
                 <div className="relative border border-white/28 bg-white/[0.03] px-5 py-4 text-center lg:text-left">
                   <span className="pointer-events-none absolute -right-2 top-1/2 hidden h-3 w-3 -translate-y-1/2 rotate-45 border-r border-t border-white/30 bg-[#070f1f] lg:block" aria-hidden />
-                  <p className="font-semibold text-white">3. 재창작</p>
-                  <p>ARA AI로 배경, 얼굴, 몸을 자연스럽게 편집해 2차 창작까지 완성해 보세요.</p>
+                  <p className="font-semibold text-white">{t("home.pitch.hidden.step3Title")}</p>
+                  <p>{t("home.pitch.hidden.remixBody")}</p>
                 </div>
                 <div className="mx-auto flex h-16 w-14 items-center justify-center border border-white/35 bg-white/[0.04] text-xl font-semibold text-zinc-100">C</div>
                 <div className="hidden lg:block" />
@@ -296,58 +291,60 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
             </div>
 
             <div className="mt-14 text-center sm:mt-16">
-              <p className="mt-3 text-[clamp(2.1rem,5.6vw,4rem)] font-black tracking-[0.1em] text-white [text-shadow:0_0_22px_rgba(143,208,255,0.22)]">
+              <p
+                className="mt-3 text-[clamp(2.1rem,5.6vw,4rem)] font-semibold leading-none tracking-[0.02em] text-white [text-shadow:0_0_22px_rgba(143,208,255,0.22)] [html[data-theme='light']_&]:text-zinc-950 [html[data-theme='light']_&]:[text-shadow:none]"
+                style={araWordmarkFontStyle}
+              >
                 ARA
               </p>
             </div>
           </div>
 
           <div className="hidden">
-            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">1. 등록</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-cyan-300" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">플랫폼 URL을 불러오시거나 직접 영상을 올려 주세요.</p></div>
-            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">2. 거래</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-cyan-300" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">필요한 영상을 구매하시거나 내 영상을 판매하실 수 있어요.</p></div>
-            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">3. 재창작</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-cyan-300" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">ARA AI로 배경, 얼굴, 몸을 자연스럽게 편집해 2차 창작까지 완성해 보세요.</p></div>
+            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">{t("home.pitch.hidden.regTitle")}</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-[color:var(--reels-point)]" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">{t("home.pitch.hidden.regBodyShort")}</p></div>
+            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">{t("home.pitch.hidden.tradeTitle")}</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-[color:var(--reels-point)]" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">{t("home.pitch.hidden.tradeBody")}</p></div>
+            <div className="rounded-xl border border-zinc-200/80 bg-white px-4 py-5 text-center sm:min-h-[170px]"><p className="text-sm font-semibold text-zinc-900 sm:text-base">{t("home.pitch.hidden.step3Title")}</p><div className="mx-auto mt-2 h-1 w-10 rounded-full bg-[color:var(--reels-point)]" /><p className="mt-3 text-[13px] leading-relaxed text-zinc-600 sm:text-[14px]">{t("home.pitch.hidden.remixBody")}</p></div>
           </div>
 
           <div className="relative mt-0 sm:mt-1">
-            <div className="mx-auto mt-3 w-full max-w-[1120px] sm:mt-4">
-              <div className="space-y-5 sm:space-y-6">
-                <p className="mb-6 text-center text-[clamp(1.9rem,4vw,2.9rem)] font-semibold tracking-tight text-zinc-100 sm:mb-8">
-                  단 3단계
-                </p>
-                <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
+            <div className="mx-auto w-full max-w-[1120px]">
+              <div className="space-y-10 sm:space-y-12 lg:space-y-14">
+                <h2
+                  id="seller-pitch-heading"
+                  className={`${homeSectionHeadingH2ClassName}`}
+                >
+                  {t("home.pitch.headingLead")}
+                  <span className="font-bold">3</span>
+                  {t("home.pitch.headingTrail")}
+                </h2>
+                <div className="grid gap-7 lg:grid-cols-2 lg:gap-10 xl:gap-12">
                   {/* 사용자 카드 */}
-                  <div className="relative overflow-hidden rounded-[22px] border border-white/28 bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
-                    <section className="flex flex-col items-center space-y-5 text-center">
-                      <p className="pt-1 text-[22px] font-extrabold tracking-tight text-white sm:text-[24px]">사용자</p>
-                      <p className="pb-1 text-[clamp(0.9rem,2vw,1.1rem)] font-medium tracking-tight text-zinc-300">
-                        원하는 영상 AI로 재창작해서 사용하기
+                  <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-black px-7 py-9 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-9 sm:py-11 lg:px-11 lg:py-12">
+                    <section className="flex flex-col items-center space-y-7 text-center sm:space-y-8">
+                      <p className={pitchRoleHeadingClassName}>{t("home.pitch.roleUser")}</p>
+                      <p className={`max-w-md ${pitchStepBodyClassName}`}>
+                        {t("home.pitch.userIntro")}
                       </p>
-                      <ol className="w-full space-y-12">
-                        <li className="flex flex-col items-center gap-4">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
-                            <img src="/steps/user-step1-browse.png" alt="마켓 영상 탐색 화면" className="h-[220px] w-full object-cover object-top" />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-[16px] font-bold text-white">1. 영상 선택</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">마켓에서 원하는 영상을 찾아보세요.</p>
+                      <ol className="w-full space-y-14 sm:space-y-16 lg:space-y-[4.5rem]">
+                        <li className="flex flex-col items-center gap-6 sm:gap-8">
+                          <PitchIllustUserBrowse aria-label={t("home.pitch.user.step1Alt")} />
+                          <div className="space-y-2.5">
+                            <p className={pitchStepTitleClassName}>{t("home.pitch.user.step1Title")}</p>
+                            <p className={pitchStepBodyClassName}>{t("home.pitch.user.step1Body")}</p>
                           </div>
                         </li>
-                        <li className="flex flex-col items-center gap-4">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
-                            <img src="/steps/user-step2-customize.png" alt="영상 구매 및 커스터마이징 화면" className="h-[220px] w-full object-cover object-top" />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-[16px] font-bold text-white">2. AI로 커스터마이징</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">배경, 얼굴, 스타일을 자유롭게 변경하세요.</p>
+                        <li className="flex flex-col items-center gap-6 sm:gap-8">
+                          <PitchIllustUserCustomize aria-label={t("home.pitch.user.step2Alt")} />
+                          <div className="space-y-2.5">
+                            <p className={pitchStepTitleClassName}>{t("home.pitch.user.step2Title")}</p>
+                            <p className={pitchStepBodyClassName}>{t("home.pitch.user.step2Body")}</p>
                           </div>
                         </li>
-                        <li className="flex flex-col items-center gap-4">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
-                            <img src="/steps/user-step3-download.png" alt="인기 영상 다운로드 화면" className="h-[220px] w-full object-cover object-top" />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-[16px] font-bold text-white">3. 다운로드 &amp; 활용</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">완성된 영상을 다운로드해 바로 활용하세요.</p>
+                        <li className="flex flex-col items-center gap-6 sm:gap-8">
+                          <PitchIllustUserDownload aria-label={t("home.pitch.user.step3Alt")} />
+                          <div className="space-y-2.5">
+                            <p className={pitchStepTitleClassName}>{t("home.pitch.user.step3Title")}</p>
+                            <p className={pitchStepBodyClassName}>{t("home.pitch.user.step3Body")}</p>
                           </div>
                         </li>
                       </ol>
@@ -355,38 +352,32 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                   </div>
 
                   {/* 크리에이터 카드 */}
-                  <div className="relative overflow-hidden rounded-[22px] border border-white/28 bg-white/[0.03] px-5 py-6 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
-                    <section className="flex flex-col items-center space-y-5 text-center">
-                      <p className="pt-1 text-[22px] font-extrabold tracking-tight text-white sm:text-[24px]">크리에이터</p>
-                      <p className="pb-1 text-[clamp(0.9rem,2vw,1.1rem)] font-medium tracking-tight text-zinc-300">
-                        원하는 영상 판매해서 수익 만들기
+                  <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-black px-7 py-9 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-9 sm:py-11 lg:px-11 lg:py-12">
+                    <section className="flex flex-col items-center space-y-7 text-center sm:space-y-8">
+                      <p className={pitchRoleHeadingClassName}>{t("home.pitch.roleCreator")}</p>
+                      <p className={`max-w-md ${pitchStepBodyClassName}`}>
+                        {t("home.pitch.creatorIntro")}
                       </p>
-                      <ol className="w-full space-y-12">
-                        <li className="flex flex-col items-center gap-4">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
-                            <img src="/steps/creator-step1-upload.png" alt="영상 URL 등록 화면" className="h-[220px] w-full object-cover object-top" />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-[16px] font-bold text-white">1. 영상 등록</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">직접 업로드 또는 URL을 붙여넣어 영상을 등록하세요.</p>
+                      <ol className="w-full space-y-14 sm:space-y-16 lg:space-y-[4.5rem]">
+                        <li className="flex flex-col items-center gap-6 sm:gap-8">
+                          <PitchIllustCreatorUpload aria-label={t("home.pitch.creator.step1Alt")} />
+                          <div className="space-y-2.5">
+                            <p className={pitchStepTitleClassName}>{t("home.pitch.creator.step1Title")}</p>
+                            <p className={pitchStepBodyClassName}>{t("home.pitch.creator.step1Body")}</p>
                           </div>
                         </li>
-                        <li className="flex flex-col items-center gap-4">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
-                            <img src="/steps/creator-step2-price.png" alt="가격 설정 화면" className="h-[220px] w-full object-cover object-top" />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-[16px] font-bold text-white">2. 가격 설정</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">원하는 가격을 설정하세요.</p>
+                        <li className="flex flex-col items-center gap-6 sm:gap-8">
+                          <PitchIllustCreatorPrice aria-label={t("home.pitch.creator.step2Alt")} />
+                          <div className="-translate-y-2 space-y-2.5">
+                            <p className={pitchStepTitleClassName}>{t("home.pitch.creator.step2Title")}</p>
+                            <p className={pitchStepBodyClassName}>{t("home.pitch.creator.step2Body")}</p>
                           </div>
                         </li>
-                        <li className="flex flex-col items-center gap-4">
-                          <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
-                            <img src="/steps/creator-step3-sell.png" alt="마켓에 공개된 판매 영상 화면" className="h-[220px] w-full object-cover object-top" />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-[16px] font-bold text-white">3. 판매 시작</p>
-                            <p className="text-[14px] leading-relaxed text-zinc-300 sm:text-[15px]">플랫폼에 공개하면 누구나 구매할 수 있습니다.</p>
+                        <li className="flex flex-col items-center gap-6 sm:gap-8">
+                          <PitchIllustCreatorSell aria-label={t("home.pitch.creator.step3Alt")} />
+                          <div className="space-y-2.5">
+                            <p className={pitchStepTitleClassName}>{t("home.pitch.creator.step3Title")}</p>
+                            <p className={pitchStepBodyClassName}>{t("home.pitch.creator.step3Body")}</p>
                           </div>
                         </li>
                       </ol>

@@ -4,10 +4,13 @@ import { Bell } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { DEMO_SELLER_ID } from "@/lib/demoSeller";
+import { videoDisplayTitle } from "@/lib/videoDisplayTitle";
+import type { SiteLocale } from "@/lib/sitePreferences";
 import {
   PriceSuggestionModal,
   type PriceSuggestionPayload,
 } from "@/components/PriceSuggestionModal";
+import { useSitePreferences } from "@/context/SitePreferencesContext";
 
 const navActionClass =
   "inline-flex items-center justify-center rounded-full bg-transparent px-2.5 py-1.5 text-white/80 transition-[background-color,color] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/10 hover:text-white motion-reduce:duration-250 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black";
@@ -26,6 +29,7 @@ type ApiNotification = {
 };
 
 export function SellerNotificationBell({ compact }: { compact?: boolean }) {
+  const { locale } = useSitePreferences();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [items, setItems] = useState<ApiNotification[]>([]);
@@ -80,7 +84,10 @@ export function SellerNotificationBell({ compact }: { compact?: boolean }) {
       body: n.body,
       oldPrice: n.oldPrice,
       newPrice: n.newPrice,
-      videoTitle: n.video.title,
+      videoTitle: videoDisplayTitle(
+        { id: n.video.id, title: n.video.title },
+        locale as SiteLocale,
+      ),
       poster: n.video.poster,
     });
     setOpen(false);

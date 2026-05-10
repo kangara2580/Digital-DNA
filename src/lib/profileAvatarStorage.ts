@@ -5,6 +5,14 @@ import {
   normalizeCharacterParts,
   type CharacterPartsV1,
 } from "@/lib/notionistsCharacter";
+import {
+  paletteForSeed,
+  variantIndexFromParts,
+  variantIndexFromSeed,
+  getAraDotPresetByStorageSeed,
+  DEFAULT_ARA_DOT_PRESET_SEED,
+  type PixelAvatarPalette,
+} from "@/lib/pixelAvatarSprite";
 import type { User } from "@supabase/supabase-js";
 import type { AppProfile } from "@/lib/supabaseProfiles";
 
@@ -16,6 +24,62 @@ export type ProfileAvatar =
   | { kind: "preset"; seed: string }
   | { kind: "upload"; dataUrl: string }
   | { kind: "custom"; parts: CharacterPartsV1 };
+
+export type ProfileAvatarPixelPreview =
+  | { type: "upload"; src: string }
+  | { type: "pixel"; palette: PixelAvatarPalette; variant: number; entropy: string };
+
+export function getProfileAvatarPixelPreview(
+  v: ProfileAvatar | null,
+  fallbackSeed: string,
+): ProfileAvatarPixelPreview {
+  if (v?.kind === "upload") {
+    return { type: "upload", src: v.dataUrl };
+  }
+  if (v?.kind === "preset" && v.seed.trim()) {
+    const seed = v.seed.trim();
+    const pinned = getAraDotPresetByStorageSeed(seed);
+    if (pinned) {
+      return {
+        type: "pixel",
+        palette: pinned.palette,
+        variant: pinned.variant,
+        entropy: pinned.entropy,
+      };
+    }
+    return {
+      type: "pixel",
+      palette: paletteForSeed(seed),
+      variant: variantIndexFromSeed(seed),
+      entropy: seed,
+    };
+  }
+  if (v?.kind === "custom") {
+    const p = v.parts;
+    return {
+      type: "pixel",
+      palette: paletteForSeed(p.seed),
+      variant: variantIndexFromParts(p),
+      entropy: `${p.seed}|${p.gender}|${p.hair}|${p.eyes}|${p.lips}|${p.faceShape}`,
+    };
+  }
+  const seedFb = fallbackSeed.trim() || DEFAULT_ARA_DOT_PRESET_SEED;
+  const pinnedFb = getAraDotPresetByStorageSeed(seedFb);
+  if (pinnedFb) {
+    return {
+      type: "pixel",
+      palette: pinnedFb.palette,
+      variant: pinnedFb.variant,
+      entropy: pinnedFb.entropy,
+    };
+  }
+  return {
+    type: "pixel",
+    palette: paletteForSeed(seedFb),
+    variant: variantIndexFromSeed(seedFb),
+    entropy: seedFb,
+  };
+}
 
 export function readProfileAvatar(): ProfileAvatar | null {
   if (typeof window === "undefined") return null;
@@ -75,6 +139,11 @@ function profileAvatarFromMetadata(
   userId: string,
 ): ProfileAvatar | null {
   if (!meta) return null;
+  const avatarKind = typeof meta.avatar_kind === "string" ? meta.avatar_kind : "";
+  const avatarCustom = typeof meta.avatar_custom === "string" ? meta.avatar_custom : "";
+  if (avatarKind === "upload" && avatarCustom.startsWith("data:image/")) {
+    return { kind: "upload", dataUrl: avatarCustom };
+  }
   const customRaw = meta.avatar_custom;
   if (typeof customRaw === "string" && customRaw.trim()) {
     try {

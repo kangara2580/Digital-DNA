@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 function pad(n: number) {
   return n.toString().padStart(2, "0");
@@ -8,6 +9,7 @@ function pad(n: number) {
 
 /** 플래시 세일 느낌 — 고정 길이(15분) 윈도우로 데모 카운트다운 */
 export function FlashSaleCountdown() {
+  const { t } = useTranslation();
   const [left, setLeft] = useState(0);
 
   useEffect(() => {
@@ -31,7 +33,7 @@ export function FlashSaleCountdown() {
     <span
       className="inline-flex items-center gap-1.5 rounded-full border border-reels-crimson/35 bg-reels-crimson/10 px-2.5 py-1 font-mono text-[11px] font-bold tabular-nums text-reels-crimson shadow-reels-crimson/20"
       aria-live="polite"
-      aria-label={`플래시 세일 남은 시간 ${mm}분 ${ss}초`}
+      aria-label={t("home.flashSale.countdownAria", { mm: pad(mm), ss: pad(ss) })}
     >
       <span
         className="relative flex h-2 w-2 shrink-0"

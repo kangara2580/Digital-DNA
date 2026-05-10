@@ -1,0 +1,3 @@
+/** 탐색 세로 레일「구매」버튼과 동일 시각 (ExploreReelSlide `railExploreBuyButtonClass`) */
+export const explorePurchaseButtonClass =
+  "relative inline-flex min-h-[44px] w-full max-w-[15rem] shrink-0 items-center justify-center rounded-full border-2 border-white/38 bg-transparent px-4 py-2.5 text-[16px] font-extrabold tracking-[0.12em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-white/65 hover:bg-white/[0.06] hover:shadow-[0_0_20px_rgba(255,255,255,0.08)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/55 [html[data-theme='light']_&]:text-zinc-900";

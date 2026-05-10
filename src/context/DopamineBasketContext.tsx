@@ -18,10 +18,12 @@ import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { captureActionError, logActionEvent } from "@/lib/observability";
 import {
   fetchUserCartVideos,
   replaceUserCart,
 } from "@/lib/supabaseUserSync";
+import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { waitForSupabaseAccessToken } from "@/lib/waitSupabaseSessionReady";
 
@@ -44,6 +46,8 @@ type Ctx = {
     poster?: string,
   ) => void;
   builderItems: BuilderTimelineItem[];
+  /** 동일 영상(정규화 id)이 장바구니 타임라인에 있는지 — UI 토글 라벨용 */
+  isVideoInCart: (videoId: string) => boolean;
   removeBuilderItem: (key: string) => void;
   removeBuilderItemsByKeys: (keys: string[]) => void;
   clearBuilder: () => void;
@@ -63,8 +67,21 @@ export function useDopamineBasketOptional() {
   return useContext(DopamineBasketContext);
 }
 
+function dedupeCartVideosByCanonicalId(videos: FeedVideo[]): FeedVideo[] {
+  const seen = new Set<string>();
+  const out: FeedVideo[] = [];
+  for (const v of videos) {
+    const id = canonicalFavoriteVideoId(v.id);
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(v);
+  }
+  return out;
+}
+
 function videosToBuilderItems(videos: FeedVideo[]): BuilderTimelineItem[] {
-  return videos.map((video, i) => ({
+  const uniq = dedupeCartVideosByCanonicalId(videos);
+  return uniq.map((video, i) => ({
     key: `b-load-${video.id}-${i}`,
     video,
   }));
@@ -100,6 +117,14 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
     setFlyItems((items) => items.filter((x) => x.id !== id));
   }, []);
 
+  const isVideoInCart = useCallback(
+    (videoId: string) => {
+      const vid = canonicalFavoriteVideoId(videoId);
+      return builderItems.some((b) => canonicalFavoriteVideoId(b.video.id) === vid);
+    },
+    [builderItems],
+  );
+
   const launchFromCartButton = useCallback(
     (buttonEl: HTMLElement, video: FeedVideo, poster?: string) => {
       if (typeof window === "undefined") return;
@@ -112,8 +137,28 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
         window.alert("장바구니를 불러오는 중입니다. 잠시 후 다시 눌러 주세요.");
         return;
       }
-      const key = `b-${video.id}-${++builderSeq.current}`;
-      setBuilderItems((items) => [...items, { key, video }]);
+      const vid = canonicalFavoriteVideoId(video.id);
+      let didAdd = false;
+      setBuilderItems((items) => {
+        const had = items.some((b) => canonicalFavoriteVideoId(b.video.id) === vid);
+        if (had) {
+          return items.filter((b) => canonicalFavoriteVideoId(b.video.id) !== vid);
+        }
+        didAdd = true;
+        const key = `b-${video.id}-${++builderSeq.current}`;
+        return [...items, { key, video }];
+      });
+      logActionEvent({
+        domain: "cart",
+        action: didAdd ? "add" : "remove",
+        result: "ok",
+        videoId: video.id,
+        userId,
+        component: "DopamineBasketContext",
+        stage: "state",
+      });
+
+      if (!didAdd) return;
 
       const cartEl = cartAnchorRef.current;
       if (!cartEl) return;
@@ -212,6 +257,16 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
         /** 서버가 비어 있으면 로컬 담기를 덮어쓰지 않음(초기 레이스 방지) */
         setBuilderItems((prev) => (items.length > 0 ? items : prev));
       } else {
+        captureActionError(new Error(result.errorMessage ?? "cart_fetch_failed"), {
+          domain: "cart",
+          action: "sync_read",
+          result: "fail",
+          userId,
+          component: "DopamineBasketContext",
+          stage: "read",
+          errorCode: result.errorCode,
+          message: result.errorMessage,
+        });
         if (process.env.NODE_ENV === "development") {
           console.warn("[cart] fetch failed — keeping previous items", result.errorMessage);
           if (/could not find the table|schema cache/i.test(result.errorMessage ?? "")) {
@@ -249,12 +304,35 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
     if (!supabaseConfigured || !userId) return;
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
-    const videos = builderItems.map((b) => b.video);
+    const videos = dedupeCartVideosByCanonicalId(builderItems.map((b) => b.video));
     const handle = window.setTimeout(() => {
       void (async () => {
         const ok = await waitForSupabaseAccessToken(supabase);
         if (!ok) return;
-        await replaceUserCart(supabase, userId, videos);
+        const writeOk = await replaceUserCart(supabase, userId, videos);
+        if (!writeOk) {
+          captureActionError(new Error("cart_sync_write_failed"), {
+            domain: "cart",
+            action: "sync_write",
+            result: "fail",
+            userId,
+            component: "DopamineBasketContext",
+            stage: "write",
+            errorCode: "replace_user_cart_failed",
+            message: "replaceUserCart returned false",
+            extra: { count: videos.length },
+          });
+        } else {
+          logActionEvent({
+            domain: "cart",
+            action: "sync_write",
+            result: "ok",
+            userId,
+            component: "DopamineBasketContext",
+            stage: "write",
+            extra: { count: videos.length },
+          });
+        }
       })();
     }, 420);
     return () => window.clearTimeout(handle);
@@ -269,6 +347,7 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
       cartSyncReady,
       launchFromCartButton,
       builderItems,
+      isVideoInCart,
       removeBuilderItem,
       removeBuilderItemsByKeys,
       clearBuilder,
@@ -278,6 +357,7 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
       cartSyncReady,
       launchFromCartButton,
       builderItems,
+      isVideoInCart,
       removeBuilderItem,
       removeBuilderItemsByKeys,
       clearBuilder,

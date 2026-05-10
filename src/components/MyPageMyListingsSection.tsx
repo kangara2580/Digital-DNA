@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Film, Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { MyListingEditDialog } from "@/components/MyListingEditDialog";
+import { SellRegistrationModal } from "@/components/SellRegistrationModal";
+import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { VideoCard } from "@/components/VideoCard";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import {
@@ -11,9 +13,15 @@ import {
   type SellVideoCategory,
 } from "@/lib/sellVideoCategory";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { MYPAGE_OUTLINE_BTN_MD, MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 import type { FeedVideo } from "@/data/videos";
+import { getMetricsForVideoDetail } from "@/data/trendingStats";
+import { useTranslation } from "@/hooks/useTranslation";
+
+const PENDING_UPLOADED_VIDEO_KEY = "sell:pending-uploaded-video";
 
 export function MyPageMyListingsSection() {
+  const { t } = useTranslation();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const [videos, setVideos] = useState<FeedVideo[]>([]);
   const [editing, setEditing] = useState<FeedVideo | null>(null);
@@ -21,6 +29,7 @@ export function MyPageMyListingsSection() {
   const [error, setError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleteBusy, setDeleteBusy] = useState(false);
+  const [sellModalOpen, setSellModalOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<"all" | SellVideoCategory>(
     "all",
   );
@@ -61,14 +70,14 @@ export function MyPageMyListingsSection() {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
       setLoading(false);
-      setError("Supabase 클라이언트를 초기화할 수 없습니다.");
+      setError(t("listings.errClient"));
       return;
     }
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData.session?.access_token;
     if (!token) {
       setLoading(false);
-      setError("세션이 없습니다. 다시 로그인해 주세요.");
+      setError(t("listings.errNoSession"));
       return;
     }
 
@@ -78,35 +87,64 @@ export function MyPageMyListingsSection() {
       const res = await fetch("/api/sell/my-videos", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const body = (await res.json()) as {
+      let body: {
         ok?: boolean;
         videos?: FeedVideo[];
         error?: string;
-      };
+      } = {};
+      try {
+        body = (await res.json()) as typeof body;
+      } catch {
+        setVideos([]);
+        setError(t("listings.errNetwork"));
+        return;
+      }
       if (!res.ok || !body.ok || !Array.isArray(body.videos)) {
         setVideos([]);
+        const code = body.error;
         setError(
-          body.error === "login_required"
-            ? "로그인이 필요합니다."
-            : body.error === "invalid_session"
-              ? "세션이 만료되었습니다. 다시 로그인해 주세요."
-              : "목록을 불러오지 못했습니다.",
+          code === "login_required"
+            ? t("listings.errLoginRequired")
+            : code === "invalid_session"
+              ? t("listings.errSessionExpired")
+              : code === "not_configured"
+                ? t("listings.errNotConfigured")
+                : code === "db_error"
+                  ? t("listings.errDb")
+                  : t("listings.errLoadFailed"),
         );
         return;
       }
       setVideos(body.videos);
     } catch {
       setVideos([]);
-      setError("네트워크 오류가 발생했습니다.");
+      setError(t("listings.errNetwork"));
     } finally {
       setLoading(false);
     }
-  }, [user, supabaseConfigured]);
+  }, [user, supabaseConfigured, t]);
 
   useEffect(() => {
     if (authLoading) return;
     void load();
   }, [authLoading, load]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.sessionStorage.getItem(PENDING_UPLOADED_VIDEO_KEY);
+      if (!raw) return;
+      window.sessionStorage.removeItem(PENDING_UPLOADED_VIDEO_KEY);
+      const pending = JSON.parse(raw) as FeedVideo;
+      if (!pending?.id) return;
+      setVideos((prev) => {
+        if (prev.some((v) => v.id === pending.id)) return prev;
+        return [pending, ...prev];
+      });
+    } catch {
+      window.sessionStorage.removeItem(PENDING_UPLOADED_VIDEO_KEY);
+    }
+  }, []);
 
   const visibleIds = useMemo(() => visibleVideos.map((v) => v.id), [visibleVideos]);
   const selectedVisibleCount = useMemo(
@@ -165,7 +203,7 @@ export function MyPageMyListingsSection() {
       if (ids.length === 0) return;
       const token = await getToken();
       if (!token) {
-        setError("세션이 없습니다. 다시 로그인해 주세요.");
+        setError(t("listings.errNoSession"));
         return;
       }
       setDeleteBusy(true);
@@ -197,17 +235,17 @@ export function MyPageMyListingsSection() {
         if (failed.length) {
           setError(
             failed.length === ids.length
-              ? "삭제하지 못했습니다. 다시 시도해 주세요."
-              : `${removed.length}개 삭제됨 · ${failed.length}개 실패`,
+              ? t("listings.deleteFail")
+              : t("listings.deletePartial", { ok: removed.length, fail: failed.length }),
           );
         }
       } catch {
-        setError("네트워크 오류가 발생했습니다.");
+        setError(t("listings.errNetwork"));
       } finally {
         setDeleteBusy(false);
       }
     },
-    [getToken, removeFromSelection],
+    [getToken, removeFromSelection, t],
   );
 
   const confirmDeleteSelected = useCallback(() => {
@@ -215,19 +253,19 @@ export function MyPageMyListingsSection() {
     const n = selectedIds.length;
     if (
       !window.confirm(
-        `선택한 영상 ${n}개를 삭제할까요?\n삭제 후에는 복구할 수 없습니다.`,
+        t("listings.deleteConfirm", { n }),
       )
     ) {
       return;
     }
     void deleteByIds([...selectedIds]);
-  }, [deleteBusy, selectedIds, deleteByIds]);
+  }, [deleteBusy, selectedIds, deleteByIds, t]);
 
   if (authLoading) {
     return (
-      <div className="flex items-center gap-2 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+      <div className="flex items-center gap-2 text-[16px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
         <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-        <span>계정 확인 중…</span>
+        <span>{t("listings.checkingAccount")}</span>
       </div>
     );
   }
@@ -235,14 +273,14 @@ export function MyPageMyListingsSection() {
   if (!supabaseConfigured || !user) {
     return (
       <div className="rounded-2xl border border-white/10 bg-black/20 p-8 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-        <p className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          로그인하면 여기에서 판매로 등록한 영상을 모아 볼 수 있어요.
+        <p className="text-[16px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          {t("listings.loginGate")}
         </p>
         <Link
           href="/login?redirect=%2Fmypage%3Ftab%3Dlistings"
-          className="mt-4 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
+          className={`mt-4 inline-flex ${MYPAGE_OUTLINE_BTN_SM}`}
         >
-          로그인
+          {t("listings.loginCta")}
         </Link>
       </div>
     );
@@ -251,22 +289,22 @@ export function MyPageMyListingsSection() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-16 text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        <Loader2 className="h-8 w-8 animate-spin text-reels-cyan/80" aria-hidden />
-        <p className="text-[14px]">등록한 영상을 불러오는 중…</p>
+        <Loader2 className="h-8 w-8 animate-spin text-[color:var(--reels-point)]" aria-hidden />
+        <p className="text-[16px]">{t("listings.loading")}</p>
       </div>
     );
   }
 
   if (error && videos.length === 0) {
     return (
-      <div className="rounded-2xl border border-rose-500/35 bg-rose-500/10 px-3 py-4 text-[14px] text-rose-200 [html[data-theme='light']_&]:text-rose-900">
+      <div className="rounded-2xl border border-reels-crimson/38 bg-reels-crimson/12 px-3 py-4 text-[16px] text-[#F3C4D9] [html[data-theme='light']_&]:text-zinc-900">
         {error}
         <button
           type="button"
           onClick={() => void load()}
-          className="ml-3 font-semibold text-reels-cyan underline underline-offset-2 hover:text-reels-cyan/90"
+          className="ml-3 font-semibold text-[color:var(--reels-point)] underline underline-offset-2 hover:opacity-90"
         >
-          다시 시도
+          {t("listings.retry")}
         </button>
       </div>
     );
@@ -275,63 +313,70 @@ export function MyPageMyListingsSection() {
   if (videos.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-white/15 bg-black/20 px-6 py-14 text-center [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-50">
-        <Film className="mx-auto h-10 w-10 text-zinc-500 [html[data-theme='light']_&]:text-zinc-400" aria-hidden />
-        <p className="mt-4 text-[15px] font-bold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
-          아직 등록한 영상이 없어요
+        <p className="text-[17px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">
+          {t("listings.empty")}
         </p>
-        <p className="mt-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          판매 등록 페이지에서 릴스를 올리면 여기에 표시됩니다.
-        </p>
-        <Link
-          href="/sell"
-          className="mt-6 inline-flex rounded-full bg-reels-crimson px-6 py-3 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
+        <button
+          type="button"
+          onClick={() => setSellModalOpen(true)}
+          className="mt-6 inline-flex items-center justify-center gap-1 text-[16px] font-semibold hover:underline"
         >
-          판매 등록하기
-        </Link>
+          <span
+            className="shrink-0 text-[22px] font-semibold leading-none text-[color:var(--reels-point)]"
+            aria-hidden
+          >
+            +
+          </span>
+          <span className="text-white [html[data-theme='light']_&]:text-zinc-900">
+            {t("listings.sellCta")}
+          </span>
+        </button>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="space-y-4">
       {error ? (
-        <p className="mb-3 rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-[13px] text-amber-100 [html[data-theme='light']_&]:text-amber-950">
+        <p className="mb-3 rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-[15px] text-amber-100 [html[data-theme='light']_&]:text-amber-950">
           {error}
         </p>
       ) : null}
 
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          총{" "}
-          <strong className="text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
-            {visibleVideos.length}
-          </strong>
-          개
-          {activeCategory !== "all" ? (
-            <span className="ml-1 text-[12px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-              (전체 {videos.length}개)
-            </span>
-          ) : null}
-        </p>
-        <Link
-          href="/sell"
-          className="text-[12px] font-semibold text-reels-cyan hover:underline"
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            {t("listings.totalCountVisible", { n: visibleVideos.length })}
+            {activeCategory !== "all" ? (
+              <span className="ml-1 text-[13px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
+                {t("listings.totalWithFilter", { all: videos.length })}
+              </span>
+            ) : null}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setSellModalOpen(true)}
+          className={`inline-flex ${MYPAGE_OUTLINE_BTN_MD}`}
         >
-          새로 등록하기 →
-        </Link>
+          <span className="text-[22px] leading-none text-[color:var(--reels-point)]">+</span>
+          <span className="ml-1.5 text-white [html[data-theme='light']_&]:text-zinc-900">
+            {t("listings.newListing").replace(/\s*[→➜➡]+$/u, "")}
+          </span>
+        </button>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={() => setActiveCategory("all")}
-          className={`rounded-full border px-3 py-1.5 text-[12px] font-bold transition ${
+          className={`rounded-full border px-3 py-1.5 text-[14px] font-bold transition ${
             activeCategory === "all"
-              ? "border-reels-cyan/50 bg-reels-cyan/15 text-reels-cyan"
+              ? "border-[color:var(--reels-point)]/45 bg-[color:var(--reels-point)]/14 text-white"
               : "border-white/15 bg-black/25 text-zinc-400 hover:border-white/25 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
           }`}
         >
-          전체 ({videos.length})
+          {t("listings.selectAllTab", { n: videos.length })}
         </button>
         {SELL_VIDEO_CATEGORY_OPTIONS.filter(
           (item) => (categoryCounts.get(item.value) ?? 0) > 0,
@@ -342,55 +387,51 @@ export function MyPageMyListingsSection() {
               key={item.value}
               type="button"
               onClick={() => setActiveCategory(item.value)}
-              className={`rounded-full border px-3 py-1.5 text-[12px] font-bold transition ${
+              className={`rounded-full border px-3 py-1.5 text-[14px] font-bold transition ${
                 activeCategory === item.value
-                  ? "border-reels-cyan/50 bg-reels-cyan/15 text-reels-cyan"
+                  ? "border-[color:var(--reels-point)]/45 bg-[color:var(--reels-point)]/14 text-white"
                   : "border-white/15 bg-black/25 text-zinc-400 hover:border-white/25 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
               }`}
             >
-              {item.label} ({count})
+              {t(`nav.cat.${item.value}`)} ({count})
             </button>
           );
         })}
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80">
-        <label className="inline-flex cursor-pointer select-none items-center gap-2 text-[13px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80">
+        <label className="inline-flex cursor-pointer select-none items-center gap-2 text-[15px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
           <input
             ref={selectAllRef}
             type="checkbox"
             checked={allSelected}
             onChange={toggleSelectAll}
             disabled={deleteBusy || videos.length === 0}
-            className="h-4 w-4 rounded border-white/30 bg-black/40 text-reels-cyan focus:ring-reels-cyan/40 [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-white"
-            aria-label="전체 선택"
+            className="h-4 w-4 rounded border-white/30 bg-black/40 text-[color:var(--reels-point)] accent-[color:var(--reels-point)] focus:ring-[color:var(--reels-point)]/35 [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-white"
+            aria-label={t("listings.selectAllAria")}
           />
-          전체 선택
+          {t("listings.selectAllAria")}
         </label>
         <span className="hidden h-4 w-px bg-white/15 sm:block [html[data-theme='light']_&]:bg-zinc-300" aria-hidden />
         <button
           type="button"
           disabled={deleteBusy || selectedIds.length === 0}
           onClick={confirmDeleteSelected}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/40 bg-rose-500/15 px-3 py-1.5 text-[12px] font-bold text-rose-200 transition hover:bg-rose-500/25 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:text-rose-900"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-[color:var(--reels-point)]/42 bg-[color:var(--reels-point)]/12 px-3 py-1.5 text-[14px] font-bold text-[#F9ECF3] transition hover:bg-[color:var(--reels-point)]/24 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:text-zinc-900"
+          aria-label={t("listings.delete")}
         >
           {deleteBusy ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
           ) : (
             <Trash2 className="h-3.5 w-3.5" aria-hidden />
           )}
-          삭제
-          {selectedIds.length > 0 ? ` (${selectedIds.length})` : ""}
+          <span className="sr-only">{t("listings.delete")}</span>
         </button>
         {selectedIds.length > 0 ? (
-          <span className="text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            {selectedIds.length}개 선택됨
+          <span className="text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            {t("listings.selectedCount", { n: selectedIds.length })}
           </span>
-        ) : (
-          <span className="text-[12px] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500">
-            카드 왼쪽 체크로 고른 뒤 삭제할 수 있어요.
-          </span>
-        )}
+        ) : null}
       </div>
 
       <ul className="grid list-none grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
@@ -404,19 +445,35 @@ export function MyPageMyListingsSection() {
                   checked={checked}
                   onChange={() => toggleSelect(v.id)}
                   disabled={deleteBusy}
-                  className="h-3.5 w-3.5 rounded border-white/35 text-reels-cyan focus:ring-reels-cyan/40 [html[data-theme='light']_&]:border-zinc-400"
-                  aria-label={`${v.title} 선택`}
+                  className="h-3.5 w-3.5 rounded border-white/35 text-[color:var(--reels-point)] accent-[color:var(--reels-point)] focus:ring-[color:var(--reels-point)]/35 [html[data-theme='light']_&]:border-zinc-400"
+                  aria-label={t("listings.selectVideoAria", { title: v.title })}
                 />
               </label>
-              <VideoCard video={v} className="min-w-0" hideHoverActions />
+              <VideoCard
+                video={v}
+                className="h-full min-w-0"
+                reelLayout
+                reelStrip
+                disableHoverScale
+                hideCreatorMeta
+                preloadMode="metadata"
+                trendingRankCardPrice
+                hideHoverActions
+                footerExtension={
+                  <TrendingVideoStatsFooter
+                    hideMetricLabels
+                    metrics={getMetricsForVideoDetail(v.id)}
+                  />
+                }
+              />
               <div className="absolute right-1.5 top-1.5 z-[25] flex flex-col gap-1">
                 <button
                   type="button"
                   onClick={() => setEditing(v)}
                   disabled={deleteBusy}
-                  className="rounded-lg border border-white/20 bg-black/60 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-md backdrop-blur-sm transition hover:bg-black/75 sm:px-2.5 sm:py-1.5 sm:text-[11px]"
+                  className="rounded-lg border border-white/20 bg-black/60 px-2 py-1 text-[12px] font-extrabold uppercase tracking-wide text-white shadow-md backdrop-blur-sm transition hover:bg-black/75 sm:px-2.5 sm:py-1.5 sm:text-[13px]"
                 >
-                  편집
+                  {t("listings.edit")}
                 </button>
               </div>
             </li>
@@ -435,6 +492,7 @@ export function MyPageMyListingsSection() {
           }}
         />
       ) : null}
+      <SellRegistrationModal open={sellModalOpen} onClose={() => setSellModalOpen(false)} />
     </div>
   );
 }

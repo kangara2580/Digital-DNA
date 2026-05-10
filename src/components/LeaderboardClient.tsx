@@ -1,8 +1,11 @@
 "use client";
 
-import { Crown, Medal, TrendingUp, Trophy } from "lucide-react";
+import { TrendingUp, Trophy } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { getExploreFormatters } from "@/lib/exploreLocaleFormat";
+import { revenueAmountClass } from "@/lib/revenueDisplayTokens";
 
 type Metric = "sales" | "revenue";
 type Period = "today" | "7d" | "30d";
@@ -26,83 +29,82 @@ type LeaderboardResponse = {
   error?: string;
 };
 
-const TOP_THEME: Record<
-  number,
-  { border: string; badge: string; icon: ReactNode; title: string }
-> = {
-  1: {
-    border:
-      "border-[#FFD700]/70 bg-gradient-to-br from-[#FFD700]/25 via-[#8d6f00]/15 to-black/40 shadow-[0_12px_38px_-18px_rgba(255,215,0,0.55)]",
-    badge: "bg-[#FFD700]/18 text-[#FFD700] border-[#FFD700]/40",
-    icon: <Crown className="h-4 w-4" aria-hidden />,
-    title: "왕",
-  },
-  2: {
-    border:
-      "border-[#C0C0C0]/70 bg-gradient-to-br from-[#C0C0C0]/20 via-[#707070]/12 to-black/40 shadow-[0_12px_38px_-18px_rgba(192,192,192,0.45)]",
-    badge: "bg-[#C0C0C0]/16 text-[#E6E6E6] border-[#C0C0C0]/40",
-    icon: <Medal className="h-4 w-4" aria-hidden />,
-    title: "2위",
-  },
-  3: {
-    border:
-      "border-[#CD7F32]/75 bg-gradient-to-br from-[#CD7F32]/22 via-[#7b4a1a]/14 to-black/40 shadow-[0_12px_38px_-18px_rgba(205,127,50,0.42)]",
-    badge: "bg-[#CD7F32]/18 text-[#E8BC8A] border-[#CD7F32]/40",
-    icon: <Trophy className="h-4 w-4" aria-hidden />,
-    title: "3위",
-  },
-};
+/** 상위 카드: 1위만 브랜드 핑크 포인트, 나머지는 중립 톤 */
+const topCardShell = (rank: number) =>
+  rank === 1
+    ? "border border-[color:rgba(255,45,141,0.4)] bg-[color:rgba(255,45,141,0.07)] [html[data-theme='light']_&]:border-[color:rgba(255,45,141,0.35)] [html[data-theme='light']_&]:bg-[color:rgba(255,45,141,0.06)]"
+    : "border border-white/[0.08] bg-white/[0.03] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white";
 
-function formatRevenue(value: number): string {
-  return `${Math.max(0, value).toLocaleString("ko-KR")}원`;
-}
+const rankChipClass = (rank: number) =>
+  rank === 1
+    ? "bg-[color:var(--reels-point)] text-white shadow-sm"
+    : "bg-white/[0.1] text-zinc-100 [html[data-theme='light']_&]:bg-zinc-200 [html[data-theme='light']_&]:text-zinc-900";
 
-function formatSales(value: number): string {
-  return `${Math.max(0, value).toLocaleString("ko-KR")}개`;
-}
+function Avatar({ item, profileAlt }: { item: LeaderboardItem; profileAlt: string }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const letter = item.nickname.slice(0, 1).toUpperCase();
 
-function metricValue(item: LeaderboardItem, metric: Metric): string {
-  return metric === "revenue" ? formatRevenue(item.totalRevenue) : formatSales(item.totalSales);
-}
-
-function metricLabel(metric: Metric): string {
-  return metric === "revenue" ? "매출 순위" : "판매 순위";
-}
-
-function periodLabel(period: Period): string {
-  if (period === "7d") return "7일";
-  if (period === "30d") return "한달";
-  return "오늘";
-}
-
-function metricKoreanLabel(metric: Metric): string {
-  return metric === "revenue" ? "수익액" : "판매 수량";
-}
-
-function rankEmoji(rank: number): string {
-  if (rank === 1) return "👑";
-  if (rank === 2) return "🥈";
-  return "🥉";
-}
-
-function Avatar({ item }: { item: LeaderboardItem }) {
-  if (item.avatarUrl) {
+  useEffect(() => {
+    setImgFailed(false);
+  }, [item.avatarUrl]);
+  if (item.avatarUrl && !imgFailed) {
     return (
       <img
         src={item.avatarUrl}
-        alt={`${item.nickname} 프로필`}
-        className="h-12 w-12 rounded-full border border-white/20 object-cover [html[data-theme='light']_&]:border-zinc-200"
+        alt={profileAlt}
+        onError={() => setImgFailed(true)}
+        className="h-12 w-12 shrink-0 rounded-2xl object-cover ring-2 ring-white/15 [html[data-theme='light']_&]:ring-zinc-200"
       />
     );
   }
   return (
-    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-      {item.nickname.slice(0, 1).toUpperCase()}
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-[17px] font-bold text-zinc-100 ring-2 ring-white/10 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:ring-zinc-200">
+      {letter}
+    </div>
+  );
+}
+
+function ListAvatar({ item }: { item: LeaderboardItem }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const letter = item.nickname.slice(0, 1).toUpperCase();
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [item.avatarUrl]);
+  if (item.avatarUrl && !imgFailed) {
+    return (
+      <img
+        src={item.avatarUrl}
+        alt=""
+        onError={() => setImgFailed(true)}
+        className="h-10 w-10 shrink-0 rounded-xl object-cover ring-1 ring-white/15 [html[data-theme='light']_&]:ring-zinc-200"
+      />
+    );
+  }
+  return (
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[15px] font-bold text-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700">
+      {letter}
     </div>
   );
 }
 
 export function LeaderboardClient() {
+  const { t, locale } = useTranslation();
+  const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
+
+  const formatRevenueValue = (value: number) =>
+    locale === "en"
+      ? `₩${Math.max(0, value).toLocaleString("en-US")}`
+      : `${Math.max(0, value).toLocaleString("ko-KR")}원`;
+
+  const formatSalesValue = (value: number) =>
+    t("leaderboard.salesCount", {
+      n: Math.max(0, value).toLocaleString(fmt.numberLocale),
+    });
+
+  const metricValue = (item: LeaderboardItem, m: Metric): string =>
+    m === "revenue" ? formatRevenueValue(item.totalRevenue) : formatSalesValue(item.totalSales);
+
   const [metric, setMetric] = useState<Metric>("sales");
   const [period, setPeriod] = useState<Period>("today");
   const [loading, setLoading] = useState(true);
@@ -118,8 +120,8 @@ export function LeaderboardClient() {
         const res = await fetch(
           `/api/leaderboard?metric=${encodeURIComponent(metric)}&period=${encodeURIComponent(period)}`,
           {
-          cache: "no-store",
-          signal: controller.signal,
+            cache: "no-store",
+            signal: controller.signal,
           },
         );
         const body = (await res.json()) as LeaderboardResponse;
@@ -139,146 +141,185 @@ export function LeaderboardClient() {
   }, [metric, period]);
 
   const hasData = items.length > 0;
-  const rankedItems: LeaderboardItem[] = hasData
-    ? items
-    : Array.from({ length: 10 }, (_, idx) => ({
-        rank: idx + 1,
-        videoId: `empty-${idx + 1}`,
-        title: "아직 데이터가 없어요",
-        sellerId: `empty-${idx + 1}`,
-        nickname: "대기중",
-        avatarUrl: null,
-        totalSales: 0,
-        totalRevenue: 0,
-      }));
+  const rankedItems: LeaderboardItem[] = useMemo(() => {
+    if (hasData) return items;
+    return Array.from({ length: 10 }, (_, idx) => ({
+      rank: idx + 1,
+      videoId: `empty-${idx + 1}`,
+      title: t("leaderboard.placeholderTitle"),
+      sellerId: `empty-${idx + 1}`,
+      nickname: t("leaderboard.placeholderNickname"),
+      avatarUrl: null,
+      totalSales: 0,
+      totalRevenue: 0,
+    }));
+  }, [hasData, items, t]);
+
   const topThree = rankedItems.slice(0, 3);
   const others = rankedItems.slice(3);
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
-      <section className="reels-glass-card overflow-hidden rounded-2xl border border-white/10 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-2xl">
-            명예의 전당
+    <div className="mx-auto w-full max-w-lg px-4 pb-24 pt-8 sm:max-w-xl sm:px-5 md:max-w-2xl md:pt-10">
+      <div
+        className="pointer-events-none fixed inset-x-0 top-[var(--header-height,4.5rem)] z-0 h-44 max-h-[38vh] bg-[radial-gradient(ellipse_90%_85%_at_50%_-5%,rgba(255,45,141,0.11),transparent_62%)] [html[data-theme='light']_&]:bg-[radial-gradient(ellipse_90%_85%_at_50%_-5%,rgba(255,45,141,0.14),transparent_62%)]"
+        aria-hidden
+      />
+
+      <div className="relative z-10 space-y-8">
+        <header className="text-center">
+          <h1 className="text-[1.6rem] font-extrabold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900 sm:text-[1.85rem]">
+            {t("leaderboard.title")}
           </h1>
-        </div>
-        <p className="mt-2 text-sm text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-          판매량과 매출 기준으로 릴스 Top 10을 실시간으로 확인하세요.
-        </p>
+          <p className="mx-auto mt-2.5 max-w-md text-[15px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+            {t("leaderboard.subtitle.lead")}
+            <span className="font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
+              {t("leaderboard.subtitle.salesWord")}
+            </span>
+            {t("leaderboard.subtitle.mid")}
+            <span className="font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
+              {t("leaderboard.subtitle.revenueWord")}
+            </span>
+            {t("leaderboard.subtitle.trail")}
+          </p>
+        </header>
 
-        <div className="mt-5 flex flex-wrap gap-2">
-          {(["sales", "revenue"] as const).map((tab) => {
-            const active = metric === tab;
-            return (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMetric(tab)}
-                className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-bold transition ${
-                  active
-                    ? "border-reels-cyan/45 bg-reels-cyan/15 text-reels-cyan"
-                    : "border-white/15 bg-black/20 text-zinc-300 hover:border-white/30 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:text-zinc-900"
-                }`}
-              >
-                {tab === "sales" ? <Trophy className="h-4 w-4" aria-hidden /> : <TrendingUp className="h-4 w-4" aria-hidden />}
-                {metricLabel(tab)}
-              </button>
-            );
-          })}
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {(["today", "7d", "30d"] as const).map((tab) => {
-            const active = period === tab;
-            return (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setPeriod(tab)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-                  active
-                    ? "border-white/20 bg-[linear-gradient(135deg,#0b1327_0%,#122247_50%,#1e3a8a_100%)] text-white ring-1 ring-white/10 shadow-[0_12px_28px_-14px_rgba(30,58,138,0.82)] hover:-translate-y-0.5 hover:border-white/30 hover:brightness-110 hover:shadow-[0_18px_38px_-16px_rgba(37,99,235,0.8)]"
-                    : "border-white/15 bg-black/20 text-zinc-300 hover:border-white/30 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:text-zinc-900"
-                }`}
-              >
-                {periodLabel(tab)}
-              </button>
-            );
-          })}
+        <div className="rounded-2xl border border-[color:rgba(255,45,141,0.32)] bg-white/[0.03] p-1 [html[data-theme='light']_&]:border-[color:rgba(255,45,141,0.28)] [html[data-theme='light']_&]:bg-zinc-100/80">
+          <div className="grid grid-cols-2 gap-1">
+            {(["sales", "revenue"] as const).map((tab) => {
+              const active = metric === tab;
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setMetric(tab)}
+                  className={`inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl px-3 py-3 text-[15px] font-semibold transition-colors ${
+                    active
+                      ? "bg-[color:rgba(255,45,141,0.3)] text-white shadow-[0_6px_22px_-10px_rgba(255,45,141,0.55)] [html[data-theme='light']_&]:bg-[color:rgba(255,45,141,0.28)] [html[data-theme='light']_&]:text-white"
+                      : "text-zinc-500 hover:bg-white/[0.08] hover:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:hover:text-zinc-900"
+                  }`}
+                >
+                  {tab === "sales" ? (
+                    <Trophy
+                      className={`h-[18px] w-[18px] shrink-0 ${active ? "text-white" : "text-[color:var(--reels-point)]"}`}
+                      strokeWidth={2}
+                      aria-hidden
+                    />
+                  ) : (
+                    <TrendingUp
+                      className={`h-[18px] w-[18px] shrink-0 ${active ? "text-white" : "text-[color:var(--reels-point)]"}`}
+                      strokeWidth={2}
+                      aria-hidden
+                    />
+                  )}
+                  {t(`leaderboard.tab.${tab}`)}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-      </section>
+        <div>
+          <p className="mb-2 px-0.5 text-[13px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+            {t("leaderboard.period.section")}
+          </p>
+          <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
+            {(["today", "7d", "30d"] as const).map((tab) => {
+              const active = period === tab;
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setPeriod(tab)}
+                  className={`rounded-full px-4 py-2 text-[14px] font-semibold transition-all ${
+                    active
+                      ? "border border-[color:rgba(255,45,141,0.5)] bg-[color:rgba(255,45,141,0.14)] text-[color:var(--reels-point)] [html[data-theme='light']_&]:border-[color:rgba(255,45,141,0.45)] [html[data-theme='light']_&]:bg-[color:rgba(255,45,141,0.1)]"
+                      : "border border-transparent bg-white/[0.05] text-zinc-400 hover:bg-white/[0.1] hover:text-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-200/80 [html[data-theme='light']_&]:hover:text-zinc-900"
+                  }`}
+                >
+                  {t(`leaderboard.period.${tab}`)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-      <section className="mt-5">
         {loading ? (
-          <div className="reels-glass-card rounded-2xl border border-white/10 p-6 text-sm text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600">
-            데이터를 불러오는 중...
+          <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] px-6 py-14 text-center text-[16px] text-zinc-500 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-600">
+            <span className="inline-block animate-pulse">{t("leaderboard.loading")}</span>
           </div>
         ) : error ? (
-          <div className="reels-glass-card rounded-2xl border border-red-500/35 bg-red-500/8 p-6 text-sm text-red-200 [html[data-theme='light']_&]:text-red-700">
-            랭킹 데이터를 불러오지 못했어요. 잠시 후 다시 시도해주세요.
+          <div className="rounded-3xl border border-reels-crimson/25 bg-reels-crimson/[0.08] px-5 py-6 text-center text-[15px] font-medium text-[#F9ECF3] [html[data-theme='light']_&]:border-[#F9C6D4] [html[data-theme='light']_&]:bg-[#FCEEF6] [html[data-theme='light']_&]:text-reels-crimson">
+            {t("leaderboard.error")}
           </div>
         ) : (
-          <div className="space-y-5">
-            <div className="grid gap-3 md:grid-cols-3">
+          <div className="space-y-6">
+            <div className="grid gap-4 sm:grid-cols-3 sm:gap-3">
               {topThree.map((item) => {
-                const theme = TOP_THEME[item.rank] ?? TOP_THEME[3];
                 const empty = !hasData;
-                const kingWord =
-                  item.rank === 1
-                    ? metric === "revenue"
-                      ? "수익왕"
-                      : "판매왕"
-                    : theme.title;
+                const shell = topCardShell(item.rank);
+                const chip = rankChipClass(item.rank);
+                const badge = t("leaderboard.rankShort", { n: item.rank });
+                const profileAlt = t("leaderboard.avatarAlt", { name: item.nickname });
+                const sellerFeedAria = t("leaderboard.sellerFeedAria", { name: item.nickname });
                 return (
                   <article
                     key={item.videoId}
-                    className={`rounded-2xl border p-4 ${theme.border}`}
+                    className={`flex flex-col rounded-2xl p-4 sm:min-h-[272px] ${shell}`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold ${theme.badge}`}>
-                        {rankEmoji(item.rank)} {kingWord}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-sm font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                        {theme.icon} #{item.rank}
+                    <div className="flex items-start justify-between gap-2">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[13px] font-bold ${chip}`}
+                      >
+                        {badge}
                       </span>
                     </div>
 
                     {hasData ? (
                       <Link
                         href={`/seller/${encodeURIComponent(item.sellerId)}`}
-                        className="mt-4 flex items-center gap-3 rounded-xl p-1 -m-1 transition-colors hover:bg-white/5 [html[data-theme='light']_&]:hover:bg-zinc-100"
-                        aria-label={`${item.nickname} 판매자 피드`}
+                        className="mt-4 flex flex-1 flex-col gap-3 rounded-xl transition-opacity hover:opacity-90"
+                        aria-label={sellerFeedAria}
                       >
-                        <Avatar item={item} />
-                        <div className="min-w-0">
-                          <p className="truncate text-base font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                            {item.nickname}
-                          </p>
-                          <p className="truncate text-xs text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                            릴스: {item.title}
-                          </p>
+                        <div className="flex items-center gap-3">
+                          <Avatar item={item} profileAlt={profileAlt} />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-[17px] font-bold text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+                              {item.nickname}
+                            </p>
+                            <p className="mt-0.5 line-clamp-2 text-[14px] leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                              {item.title}
+                            </p>
+                          </div>
                         </div>
                       </Link>
                     ) : (
-                      <div className="mt-4 flex items-center gap-3 rounded-xl p-1 -m-1">
-                        <Avatar item={item} />
-                        <div className="min-w-0">
-                          <p className="truncate text-base font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                            {item.nickname}
-                          </p>
-                          <p className="truncate text-xs text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                            아직 순위 데이터 없음
-                          </p>
+                      <div className="mt-4 flex flex-1 flex-col gap-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar item={item} profileAlt={profileAlt} />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-[17px] font-bold text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+                              {item.nickname}
+                            </p>
+                            <p className="mt-0.5 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+                              {t("leaderboard.aggregating")}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     )}
 
-                    <div className="mt-4 rounded-xl border border-white/15 bg-black/30 px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                        {metricKoreanLabel(metric)}
+                    <div className="mt-auto rounded-xl border border-white/[0.06] bg-black/15 px-3.5 py-3 [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-zinc-50/90">
+                      <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+                        {t(`leaderboard.metric.${metric}`)}
                       </p>
-                      <p className="mt-1 text-lg font-extrabold text-reels-cyan">
-                        {empty ? "-" : metricValue(item, metric)}
+                      <p
+                        className={`mt-1 text-xl font-extrabold tabular-nums tracking-tight ${
+                          metric === "revenue"
+                            ? revenueAmountClass
+                            : "text-zinc-50 [html[data-theme='light']_&]:text-zinc-900"
+                        }`}
+                      >
+                        {empty ? "—" : metricValue(item, metric)}
                       </p>
                     </div>
                   </article>
@@ -287,58 +328,73 @@ export function LeaderboardClient() {
             </div>
 
             {others.length > 0 ? (
-              <div className="reels-glass-card overflow-hidden rounded-2xl border border-white/10 [html[data-theme='light']_&]:border-zinc-200">
-                <ul>
-                  {others.map((item) => (
-                    <li
-                      key={item.videoId}
-                      className="flex items-center justify-between gap-3 border-t border-white/10 px-4 py-3 first:border-t-0 [html[data-theme='light']_&]:border-zinc-200"
-                    >
-                      <div className="flex min-w-0 items-center gap-3">
-                        <span className="w-8 text-center text-base font-extrabold text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
-                          {item.rank}
-                        </span>
-                        {hasData ? (
-                          <Link
-                            href={`/seller/${encodeURIComponent(item.sellerId)}`}
-                            className="flex min-w-0 items-center gap-3 rounded-xl p-1 -m-1 transition-colors hover:bg-white/5 [html[data-theme='light']_&]:hover:bg-zinc-100"
-                            aria-label={`${item.nickname} 판매자 피드`}
+              <div>
+                <p className="mb-3 px-0.5 text-[13px] font-semibold uppercase tracking-[0.1em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+                  {t("leaderboard.listFromRank4")}
+                </p>
+                <ul className="space-y-2">
+                  {others.map((item) => {
+                    const sellerFeedAria = t("leaderboard.sellerFeedAria", { name: item.nickname });
+                    return (
+                      <li
+                        key={item.videoId}
+                        className="rounded-2xl border border-white/[0.07] bg-white/[0.03] px-3 py-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.08] text-[15px] font-extrabold tabular-nums text-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700"
+                            aria-label={t("leaderboard.rankAria", { n: item.rank })}
                           >
-                            <Avatar item={item} />
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                                {item.nickname}
-                              </p>
-                              <p className="truncate text-xs text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                                {item.title}
-                              </p>
-                            </div>
-                          </Link>
-                        ) : (
-                          <div className="flex min-w-0 items-center gap-3 rounded-xl p-1 -m-1">
-                            <Avatar item={item} />
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                                {item.nickname}
-                              </p>
-                              <p className="truncate text-xs text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                                아직 순위 데이터 없음
-                              </p>
-                            </div>
+                            {item.rank}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            {hasData ? (
+                              <Link
+                                href={`/seller/${encodeURIComponent(item.sellerId)}`}
+                                className="flex min-w-0 items-center gap-3 rounded-xl py-0.5 transition-opacity hover:opacity-90"
+                                aria-label={sellerFeedAria}
+                              >
+                                <ListAvatar item={item} />
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                                    {item.nickname}
+                                  </p>
+                                  <p className="truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+                                    {item.title}
+                                  </p>
+                                </div>
+                              </Link>
+                            ) : (
+                              <div className="flex min-w-0 items-center gap-3">
+                                <ListAvatar item={item} />
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                                    {item.nickname}
+                                  </p>
+                                  <p className="truncate text-[13px] text-zinc-500">{t("leaderboard.rowWaiting")}</p>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                      <span className="shrink-0 text-sm font-extrabold text-reels-cyan">
-                        {hasData ? metricValue(item, metric) : "-"}
-                      </span>
-                    </li>
-                  ))}
+                          <span
+                            className={`shrink-0 rounded-lg border border-white/12 bg-white/[0.06] px-2.5 py-1.5 text-right text-[14px] font-extrabold tabular-nums [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 ${
+                              metric === "revenue"
+                                ? revenueAmountClass
+                                : "text-zinc-50 [html[data-theme='light']_&]:text-zinc-950"
+                            }`}
+                          >
+                            {hasData ? metricValue(item, metric) : "—"}
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ) : null}
           </div>
         )}
-      </section>
+      </div>
     </div>
   );
 }

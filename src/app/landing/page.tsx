@@ -1,8 +1,16 @@
 import Link from "next/link";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { ArrowRight, Sparkles, Wand2, Zap, PlaySquare } from "lucide-react";
 import { MainBackgroundVideo } from "@/components/MainBackgroundVideo";
 import { VideoCard } from "@/components/VideoCard";
 import { LOCAL_TRENDING_FEED_VIDEOS } from "@/data/videos";
+
+export async function generateMetadata() {
+  return buildPageMetadata({
+    titleKey: "meta.landing",
+    descriptionKey: "meta.landingDescription",
+  });
+}
 
 export default function LandingPage() {
   const showcaseVideos = LOCAL_TRENDING_FEED_VIDEOS.slice(0, 4);
@@ -78,7 +86,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-bold text-white mb-3">2. 템플릿 선택 (Template)</h3>
               <p className="text-zinc-400 leading-relaxed">
-                이미 검증된 바이럴 포맷을 선택하세요. 릴스 마켓에서 가장 인기 있는 구도와 모션을 그대로 가져옵니다.
+                이미 검증된 바이럴 포맷을 선택하세요. 동영상 마켓에서 가장 인기 있는 구도와 모션을 그대로 가져옵니다.
               </p>
             </div>
 
@@ -89,7 +97,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-bold text-white mb-3">3. 합성 및 추출 (Export & Post)</h3>
               <p className="text-zinc-400 leading-relaxed">
-                원클릭으로 AI가 합성을 진행합니다. 완성된 스튜디오급 영상을 틱톡, 릴스, 쇼츠에 바로 업로드하세요.
+                원클릭으로 AI가 합성을 진행합니다. 완성된 스튜디오급 영상을 틱톡, 인스타그램, 유튜브 쇼츠에 바로 업로드하세요.
               </p>
             </div>
           </div>
@@ -110,7 +118,7 @@ export default function LandingPage() {
               <span className="text-sm md:text-base font-semibold text-zinc-400 uppercase tracking-widest">Followers Gained</span>
             </div>
             <div className="flex flex-col items-center col-span-2 md:col-span-1">
-              <span className="text-4xl md:text-6xl font-black text-reels-crimson mb-2 tracking-tighter drop-shadow-[0_0_15px_rgba(255,23,107,0.3)]">$500k+</span>
+              <span className="text-4xl md:text-6xl font-black text-reels-crimson mb-2 tracking-tighter drop-shadow-[0_0_15px_rgba(228,41,128,0.35)]">$500k+</span>
               <span className="text-sm md:text-base font-semibold text-zinc-400 uppercase tracking-widest">Earnings Generated</span>
             </div>
           </div>
@@ -124,7 +132,7 @@ export default function LandingPage() {
             <div className="max-w-2xl">
               <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-4">Stop guessing what goes viral.</h2>
               <p className="text-xl text-zinc-400">
-                수백만 개의 릴스를 분석하여 현재 가장 트렌디한 포맷과 훅(Hook)을 제공합니다. 마켓에서 템플릿을 고르고 바로 합성하세요.
+                수백만 개의 동영상을 분석하여 현재 가장 트렌디한 포맷과 훅(Hook)을 제공합니다. 마켓에서 템플릿을 고르고 바로 합성하세요.
               </p>
             </div>
             <Link

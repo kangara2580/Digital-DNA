@@ -141,10 +141,26 @@ function rankDemoPriceWon(rankId: number): number {
   return 900 + (rankId % 5) * 300;
 }
 
+/** 순위 숫자 대신 쇼핑몰 카드처럼 출처·핸들로 식별 가능한 제목 */
+function clipTitleFromRankItem(item: TikTokManualRankItem): string {
+  if (item.provider === "tiktok") {
+    const m = item.url.match(/tiktok\.com\/@([^/?#]+)/i);
+    if (m?.[1]) return `@${m[1]}`;
+    return "TikTok";
+  }
+  if (item.provider === "youtube") {
+    return "YouTube";
+  }
+  if (item.provider === "instagram") {
+    return "Instagram";
+  }
+  return "Clip";
+}
+
 function feedVideoFromRankItem(item: TikTokManualRankItem): FeedVideo {
   const poster = `/api/embed/poster?url=${encodeURIComponent(item.url)}`;
   const priceWon = rankDemoPriceWon(item.id);
-  const title = `${item.id}위`;
+  const title = clipTitleFromRankItem(item);
 
   switch (item.provider) {
     case "tiktok":

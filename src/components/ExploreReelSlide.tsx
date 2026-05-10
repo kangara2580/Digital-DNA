@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  Bookmark,
-  ChevronDown,
   Eye,
   Heart,
   ShoppingBag,
@@ -15,9 +13,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AuthPromptModal } from "@/components/AuthPromptModal";
+import { BookmarkButton } from "@/components/BookmarkButton";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
-import { useWishlist } from "@/context/WishlistContext";
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import {
   clonesRemaining,
@@ -26,38 +24,26 @@ import {
 } from "@/data/videoCommerce";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useVideoCartAction } from "@/hooks/useVideoCartAction";
+import { useVideoLike } from "@/hooks/useVideoLike";
+import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sellerProfileHrefFromVideo } from "@/lib/sellerProfile";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { getExternalLiveStatsPageUrl } from "@/lib/externalEmbed/playerUrls";
+import { explorePurchaseButtonClass } from "@/lib/explorePurchaseButtonClass";
+import {
+  revenueAmountClass,
+  revenueTrendDeltaGlyphClass,
+  revenueTrendDownClass,
+  revenueTrendUpClass,
+} from "@/lib/revenueDisplayTokens";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
-
-function formatCompactWon(n: number): string {
-  if (n >= 100_000_000) return `${(n / 100_000_000).toFixed(1)}억`;
-  if (n >= 10_000) return `${Math.round(n / 10_000)}만`;
-  return `${n.toLocaleString("ko-KR")}원`;
-}
-
-function formatCompactCount(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 10_000) return `${(n / 10_000).toFixed(1)}만`;
-  if (n >= 1_000) return `${(n / 1000).toFixed(1)}k`;
-  return `${n}`;
-}
-
-/** 조회 레일 표기 — 1만 이상만 '만'(소수점 1자리), 미만은 콤마 */
-function formatViewCountRail(n: number): string {
-  const v = Math.max(0, Math.floor(n));
-  if (v >= 10_000) return `${(v / 10_000).toFixed(1).replace(/\.0$/, "")}만`;
-  return v.toLocaleString("ko-KR");
-}
-
-function formatLikeKoApprox(n: number): string {
-  const v = Math.max(0, Math.floor(n));
-  if (v >= 10_000) return `${(v / 10_000).toFixed(1).replace(/\.0$/, "")}만`;
-  if (v >= 1000) return `${(v / 1000).toFixed(1).replace(/\.0$/, "")}천`;
-  return v.toLocaleString("ko-KR");
-}
+import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
+import { getVideoContentSource } from "@/lib/videoSourcePlatform";
+import { getExploreFormatters } from "@/lib/exploreLocaleFormat";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 
 type ReelSlideProps = {
   video: FeedVideo;
@@ -74,26 +60,26 @@ const railActionPlainBtn =
 const railActionIcon =
   "h-[21px] w-[21px] shrink-0 pointer-events-none stroke-[2.25] [html[data-theme='light']_&]:stroke-zinc-700";
 
+/** 담김·찜·좋아요 활성 — `railActionIcon`의 라이트 zinc 테두리가 브랜드색 가리지 않도록 고정 채색 */
+const railActionIconBrandFilled =
+  "h-[21px] w-[21px] shrink-0 pointer-events-none stroke-[2.25] stroke-[var(--reels-point)] fill-[var(--reels-point)] [html[data-theme='light']_&]:stroke-[var(--reels-point)] [html[data-theme='light']_&]:fill-[var(--reels-point)]";
+
 /** 레일 바깥 패딩만 (테두리 없음) */
 const railDeckClass = "shrink-0 pb-6 pt-4";
 
-/** 행: 모든 줄에서 메인 아이콘은 동일 32px 박스, 수익 줄 ▼는 옆 고정 칸(조회 등과 세로 정렬) */
+/** 행: 메인 아이콘 36px 박스 · 수익 줄 ▼는 옆 고정 칸(조회 등과 세로 정렬) */
 const railExploreRow =
-  "flex w-max max-w-full items-center gap-2 py-2 [html[data-theme='light']_&]:text-zinc-900";
+  "flex w-max max-w-full items-center gap-2 py-2.5 [html[data-theme='light']_&]:text-zinc-900";
 
 /** 수치: 고정폭 유지 + 왼쪽 정렬 */
 const railExploreStatValueCol =
-  "inline-flex min-h-[1.35em] w-[10.5rem] shrink-0 items-center justify-start tabular-nums text-left sm:w-[11.75rem]";
+  "inline-flex min-h-[1.4em] w-[11rem] shrink-0 items-center justify-start tabular-nums text-left sm:w-[12.25rem]";
 
-/** 탐색 레일 구매 버튼 (가격 블록과 분리) */
-const railExploreBuyButtonClass =
-  "relative inline-flex min-h-[44px] w-full max-w-[15rem] shrink-0 items-center justify-center rounded-full border-2 border-white/38 bg-transparent px-4 py-2.5 text-[16px] font-extrabold tracking-[0.12em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-white/65 hover:bg-white/[0.06] hover:shadow-[0_0_20px_rgba(255,255,255,0.08)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/55 [html[data-theme='light']_&]:text-zinc-900";
+/** 탐색 레일 구매 버튼 (가격 블록과 분리) — `explorePurchaseButtonClass` */
+const railExploreBuyButtonClass = explorePurchaseButtonClass;
 
 const railStatValueWhite =
-  "text-[13px] font-semibold tabular-nums text-white [html[data-theme='light']_&]:text-zinc-900";
-
-const railStatValueBlue =
-  "text-[13px] font-semibold tabular-nums text-[#9DB9FF] [html[data-theme='light']_&]:text-sky-600";
+  "text-[14px] font-semibold tabular-nums text-white [html[data-theme='light']_&]:text-zinc-900";
 
 function ReelExploreStatLine({
   icon,
@@ -117,11 +103,11 @@ function ReelExploreStatLine({
   const Body = (
     <>
       <span className="flex shrink-0 items-center gap-1">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center text-white/[0.78] [&_svg]:h-[18px] [&_svg]:w-[18px] [html[data-theme='light']_&]:text-zinc-600">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center text-white/[0.78] [&_svg]:h-[20px] [&_svg]:w-[20px] [html[data-theme='light']_&]:text-zinc-600">
           {icon}
         </span>
         <span
-          className="flex h-8 w-3 shrink-0 items-center justify-center"
+          className="flex h-9 w-3 shrink-0 items-center justify-center"
           aria-hidden={iconAdornment ? undefined : true}
         >
           {iconAdornment ?? <span className="block w-3" />}
@@ -257,29 +243,24 @@ function ReelDesktopRail({
 }) {
   const router = useRouter();
   const dopamine = useDopamineBasket();
-  const { isSaved, toggle: toggleWishlist } = useWishlist();
   const { hasPurchased, markPurchased } = usePurchasedVideos();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const owned = hasPurchased(video.id);
 
   const { rankMetrics, meta, displayedViews, externalLikeCount } = sidebarMetrics;
 
+  const { t, locale } = useTranslation();
+  const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
+
   const remaining = clonesRemaining(meta);
   const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
-  const wishlisted = isSaved(video.id);
   const posterSrc = sanitizePosterSrc(video.poster);
 
   const authPromptScrollYRef = useRef(0);
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [internalLikeCount, setInternalLikeCount] = useState(0);
-  const [likedByMe, setLikedByMe] = useState(false);
-  const likeInFlightRef = useRef(false);
   const [likePulse, setLikePulse] = useState(false);
   const [likeBurst, setLikeBurst] = useState(false);
-  const [wishlistPulse, setWishlistPulse] = useState(false);
-
-  const displayedLikeTotal = Math.max(0, externalLikeCount + internalLikeCount);
 
   const requireAuth = useCallback(() => {
     if (authLoading) return false;
@@ -291,6 +272,17 @@ function ReelDesktopRail({
     }
     return true;
   }, [authLoading, supabaseConfigured, user]);
+  const { inCart, toggleCartFromButton } = useVideoCartAction(video, dopamine, requireAuth);
+  const { internalLikeCount, likedByMe, likeBusy, toggleLike } = useVideoLike({
+    videoId: video.id,
+    requireAuth,
+    onError: () => {
+      if (typeof window !== "undefined") {
+        window.alert(t("explore.likeFailed"));
+      }
+    },
+  });
+  const displayedLikeTotal = Math.max(0, externalLikeCount + internalLikeCount);
 
   const onBuyClick = useCallback(() => {
     if (soldOut || authLoading) return;
@@ -307,11 +299,26 @@ function ReelDesktopRail({
     video.id,
   ]);
 
-  const startGoogleAuth = useCallback(() => {
+  const startGoogleAuth = useCallback(async () => {
     const next =
       typeof window !== "undefined"
         ? `${window.location.pathname}${window.location.search}${window.location.hash}`
         : "/";
+    const redirectTo = buildAuthCallbackRedirectTo(next);
+    const supabase = getSupabaseBrowserClient();
+    if (supabase && redirectTo) {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          queryParams: { prompt: "select_account" },
+        },
+      });
+      if (!error && data.url) {
+        window.location.assign(data.url);
+        return;
+      }
+    }
     window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
   }, []);
 
@@ -335,138 +342,78 @@ function ReelDesktopRail({
     };
   }, [authPromptOpen]);
 
-  const loadInternalLikes = useCallback(async () => {
-    try {
-      const supabase = getSupabaseBrowserClient();
-      const session = supabase ? await supabase.auth.getSession() : null;
-      const token = session?.data.session?.access_token;
-      const headers = token
-        ? { Authorization: `Bearer ${token}` }
-        : undefined;
-      const res = await fetch(
-        `/api/video/likes?videoId=${encodeURIComponent(video.id)}`,
-        { cache: "no-store", headers },
-      );
-      if (!res.ok) return;
-      const body = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        internalLikes?: number;
-        likedByMe?: boolean;
-      };
-      if (!body.ok) return;
-      setInternalLikeCount(
-        typeof body.internalLikes === "number" ? Math.max(0, body.internalLikes) : 0,
-      );
-      setLikedByMe(Boolean(body.likedByMe));
-    } catch {
-      /* ignore */
-    }
-  }, [video.id]);
-
-  useEffect(() => {
-    setInternalLikeCount(0);
-    setLikedByMe(false);
-    void loadInternalLikes();
-  }, [video.id, loadInternalLikes]);
-
   const toggleInternalLike = useCallback(async () => {
-    if (authLoading) return;
-    if (!requireAuth()) return;
-    if (likeInFlightRef.current) return;
-
     const nextLiked = !likedByMe;
-    const prevLiked = likedByMe;
-    const prevCount = internalLikeCount;
-    setLikedByMe(nextLiked);
-    setInternalLikeCount((prev) => Math.max(0, prev + (nextLiked ? 1 : -1)));
     setLikePulse(true);
     if (nextLiked) {
       setLikeBurst(true);
       window.setTimeout(() => setLikeBurst(false), 420);
     }
     window.setTimeout(() => setLikePulse(false), 170);
-
-    likeInFlightRef.current = true;
-    try {
-      const supabase = getSupabaseBrowserClient();
-      const session = supabase ? await supabase.auth.getSession() : null;
-      const token = session?.data.session?.access_token;
-      if (!token) throw new Error("no_token");
-      const res = await fetch("/api/video/likes", {
-        method: nextLiked ? "POST" : "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ videoId: video.id }),
-      });
-      const body = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        internalLikes?: number;
-        likedByMe?: boolean;
-      };
-      if (!res.ok || !body.ok) throw new Error("like_toggle_failed");
-      if (typeof body.internalLikes === "number") {
-        setInternalLikeCount(Math.max(0, body.internalLikes));
-      }
-      setLikedByMe(Boolean(body.likedByMe));
-    } catch {
-      setLikedByMe(prevLiked);
-      setInternalLikeCount(prevCount);
-      void loadInternalLikes();
-      if (typeof window !== "undefined") {
-        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
-      }
-    } finally {
-      likeInFlightRef.current = false;
-    }
+    await toggleLike();
   }, [
-    authLoading,
-    requireAuth,
     likedByMe,
-    internalLikeCount,
-    video.id,
-    loadInternalLikes,
+    toggleLike,
   ]);
+
+  const revenueUp = rankMetrics.growthPercent >= 0;
+
+  const revRounded = Math.round(Math.max(0, rankMetrics.cumulativeRevenueWon));
+  const revNums = revRounded.toLocaleString(fmt.numberLocale);
+  const revAriaVal = locale === "en" ? `₩${revNums}` : `${revNums}원`;
+  const viewsStr = fmt.formatViewCountRail(displayedViews);
+  const likesStr = fmt.formatLikeApprox(displayedLikeTotal);
+  const salesStr = meta.salesCount.toLocaleString(fmt.numberLocale);
 
   return (
     <aside
       className={`${railDeckClass} flex w-max max-w-[min(15rem,38vw)] shrink-0 flex-col items-center gap-5 px-2 [html[data-theme='light']_&]:text-zinc-900 ${className ?? ""}`}
-      aria-label="판매·반응 정보"
+      aria-label={t("explore.rail.metricsAside")}
     >
-      <div className="flex flex-col items-center pl-7 sm:pl-8" aria-label="집계 수치">
+      <div className="flex flex-col items-center pl-9 sm:pl-10" aria-label={t("explore.rail.statsGroup")}>
         <ReelExploreStatLine
           icon={<TrendingUp strokeWidth={2.25} className="shrink-0" />}
           iconAdornment={
-            <ChevronDown strokeWidth={2.75} className="h-[11px] w-[11px] shrink-0 text-[#9DB9FF]" aria-hidden />
+            <span
+              className={`${revenueTrendDeltaGlyphClass} flex h-[12px] min-w-[1.15rem] items-center justify-center text-[12px] font-semibold leading-none ${
+                revenueUp ? revenueTrendUpClass : revenueTrendDownClass
+              }`}
+              aria-hidden
+            >
+              {revenueUp ? "▲" : "▼"}
+            </span>
           }
-          value={Math.round(Math.max(0, rankMetrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}
-          valueClassName={railStatValueBlue}
-          aria-label={`수익 ${Math.round(Math.max(0, rankMetrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}원`}
+          value={revNums}
+          valueClassName={railStatValueWhite}
+          aria-label={t("explore.rail.revenueAria", { v: revAriaVal })}
         />
         <ReelExploreStatLine
           icon={<Eye strokeWidth={2.25} className="shrink-0" />}
-          value={formatViewCountRail(displayedViews)}
+          value={viewsStr}
           valueClassName={railStatValueWhite}
-          aria-label={`조회수 ${formatViewCountRail(displayedViews)}`}
+          aria-label={t("explore.rail.viewsAria", { v: viewsStr })}
         />
         <ReelExploreStatLine
           icon={
             <Heart
               strokeWidth={2.25}
-              className="shrink-0 stroke-white/[0.9] [html[data-theme='light']_&]:stroke-zinc-700"
+              className={
+                likedByMe
+                  ? "shrink-0 stroke-[var(--reels-point)] fill-[var(--reels-point)]"
+                  : "shrink-0 stroke-white/[0.9] [html[data-theme='light']_&]:stroke-zinc-700"
+              }
               aria-hidden
             />
           }
-          value={formatLikeKoApprox(displayedLikeTotal)}
+          value={likesStr}
           valueClassName={railStatValueWhite}
-          aria-label={`좋아요 ${formatLikeKoApprox(displayedLikeTotal)}`}
+          aria-label={t("explore.rail.likesAria", { v: likesStr })}
         />
         <ReelExploreStatLine
           icon={<ShoppingBag strokeWidth={2.25} className="shrink-0" />}
-          value={`${meta.salesCount.toLocaleString("ko-KR")}명`}
+          value={locale === "ko" ? `${salesStr}명` : salesStr}
           valueClassName={railStatValueWhite}
-          aria-label={`구매 ${meta.salesCount.toLocaleString("ko-KR")}명`}
+          aria-label={t("explore.rail.purchasesAria", { n: salesStr })}
         />
       </div>
 
@@ -475,102 +422,105 @@ function ReelDesktopRail({
           <div className="flex w-full flex-col items-center gap-3 px-2 text-center">
             <div className="opacity-45">
               <span className="text-[clamp(1.5rem,3.8vw,2.35rem)] font-black tabular-nums tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
-                {video.priceWon.toLocaleString("ko-KR")}
-                <span className="text-[1.05em] font-bold"> 원</span>
+                {locale === "en" ? "₩" : null}
+                {video.priceWon.toLocaleString(fmt.numberLocale)}
+                {locale === "en" ? null : (
+                  <span className="text-[1.05em] font-bold"> 원</span>
+                )}
               </span>
             </div>
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">품절</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">{t("explore.rail.soldOut")}</span>
           </div>
         ) : (
           <div className="flex w-full flex-col items-stretch gap-3 px-2">
             <div className="text-center">
               <span className="text-[clamp(1.55rem,4vw,2.85rem)] font-black tabular-nums tracking-tighter text-white [html[data-theme='light']_&]:text-zinc-900">
-                {video.priceWon.toLocaleString("ko-KR")}
-                <span className="text-[0.92em] font-bold tracking-normal text-white/[0.95] sm:text-[1.05em] [html[data-theme='light']_&]:text-zinc-900">
-                  {" "}
-                  원
-                </span>
+                {locale === "en" ? "₩" : null}
+                {video.priceWon.toLocaleString(fmt.numberLocale)}
+                {locale === "en" ? null : (
+                  <span className="text-[0.92em] font-bold tracking-normal text-white/[0.95] sm:text-[1.05em] [html[data-theme='light']_&]:text-zinc-900">
+                    {" "}
+                    원
+                  </span>
+                )}
               </span>
             </div>
             <button
               type="button"
               onClick={onBuyClick}
               className={railExploreBuyButtonClass}
-              aria-label="구매 진행하기"
+              aria-label={t("explore.rail.buyAria")}
             >
-              구매
+              {t("explore.rail.buy")}
             </button>
           </div>
         )
       ) : (
-        <span className="font-mono text-sm font-semibold tabular-nums text-zinc-500">가격 미정</span>
+        <span className="font-mono text-sm font-semibold tabular-nums text-zinc-500">{t("explore.rail.priceTbd")}</span>
       )}
 
       <div
         role="group"
-        aria-label="작업"
+        aria-label={t("explore.rail.actions")}
         className="flex w-full flex-row flex-wrap items-center justify-center gap-3 px-2"
       >
         <button
           type="button"
-          title="장바구니 담기"
+          title={inCart ? t("explore.rail.cartRemove") : t("explore.rail.cartAdd")}
           onClick={(e) => {
             if (soldOut) return;
             if (!requireAuth()) return;
-            dopamine.launchFromCartButton(e.currentTarget, video, posterSrc ?? undefined);
+            toggleCartFromButton(e.currentTarget, posterSrc ?? undefined);
           }}
-          className={`${railActionPlainBtn} disabled:cursor-not-allowed disabled:opacity-40`}
+          className={`${railActionPlainBtn} disabled:cursor-not-allowed disabled:opacity-40 ${
+            inCart
+              ? "!text-[var(--reels-point)] hover:brightness-110 [html[data-theme='light']_&]:!text-[var(--reels-point)]"
+              : ""
+          }`}
           disabled={soldOut}
-          aria-label="장바구니 담기"
+          aria-label={inCart ? t("explore.rail.cartRemove") : t("explore.rail.cartAdd")}
+          aria-pressed={inCart}
         >
-          <ShoppingCart strokeWidth={2.25} className={`${railActionIcon} stroke-current`} />
+          <ShoppingCart
+            strokeWidth={2.25}
+            className={inCart ? railActionIconBrandFilled : `${railActionIcon} stroke-current`}
+          />
         </button>
         <button
           type="button"
-          title={likedByMe ? "좋아요 취소" : "좋아요"}
+          title={likedByMe ? t("explore.rail.likeUndo") : t("explore.rail.like")}
           onClick={(e) => {
             e.preventDefault();
             void toggleInternalLike();
           }}
           className={`relative ${railActionPlainBtn} ${
-            likedByMe ? "text-[#a8c9ff] hover:text-[#c4d7ff] [html[data-theme='light']_&]:text-sky-600" : ""
+            likedByMe
+              ? "!text-[var(--reels-point)] hover:brightness-110 [html[data-theme='light']_&]:!text-[var(--reels-point)]"
+              : ""
           }`}
-          aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+          aria-label={likedByMe ? t("explore.rail.likeUndo") : t("explore.rail.like")}
           aria-pressed={likedByMe}
         >
           {likeBurst ? (
-            <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/28 animate-ping" />
+            <span className="pointer-events-none absolute inset-0 rounded-full bg-[var(--reels-point)]/28 animate-ping" />
           ) : null}
           <Heart
             strokeWidth={2.25}
-            className={`relative z-[1] ${railActionIcon} stroke-current transition-transform duration-150 ${
-              likedByMe
-                ? "fill-current"
-                : ""
+            className={`relative z-[1] transition-transform duration-150 ${
+              likedByMe ? railActionIconBrandFilled : `${railActionIcon} stroke-current`
             } ${likePulse || likeBurst ? "scale-110" : "scale-100"}`}
           />
         </button>
-        <button
-          type="button"
-          title={wishlisted ? "찜 해제" : "찜하기"}
-          onClick={(e) => {
-            e.preventDefault();
-            if (!requireAuth()) return;
-            setWishlistPulse(true);
-            window.setTimeout(() => setWishlistPulse(false), 170);
-            toggleWishlist(video);
-          }}
-          className={`${railActionPlainBtn} ${
-            wishlisted ? "!text-reels-cyan hover:!text-reels-cyan" : ""
-          } ${wishlistPulse ? "scale-[1.05]" : "scale-100"}`}
-          aria-label={wishlisted ? "찜 해제" : "찜하기"}
-          aria-pressed={wishlisted}
-        >
-          <Bookmark
-            strokeWidth={2.25}
-            className={`${railActionIcon} stroke-current ${wishlisted ? "fill-current" : ""}`}
-          />
-        </button>
+        <BookmarkButton
+          video={video}
+          beforeToggle={requireAuth}
+          buttonClassNameBase={railActionPlainBtn}
+          buttonClassWhenBookmarked={
+            "!text-[var(--reels-point)] hover:brightness-110 [html[data-theme='light']_&]:!text-[var(--reels-point)]"
+          }
+          iconClassWhenBookmarked={railActionIconBrandFilled}
+          iconClassWhenDefault={`${railActionIcon} stroke-current`}
+        />
       </div>
 
       {mounted ? (
@@ -584,24 +534,39 @@ function ReelDesktopRail({
   );
 }
 
-/** 모바일: 하단 한 줄 요약 (쇼츠·릴스 하단 메타와 유사) */
+/** 모바일: 하단 한 줄 요약 (쇼츠·동영상 하단 메타와 유사) */
 function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
+  const { t, locale } = useTranslation();
+  const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
   const metrics = useMemo(() => getMetricsForVideoDetail(video.id), [video.id]);
   const commerce = useMemo(() => getCommerceMeta(video.id), [video.id]);
+  const revenueUp = metrics.growthPercent >= 0;
 
   return (
     <div className="flex shrink-0 items-center justify-between gap-2 border-t border-white/10 bg-black/50 px-3 py-2.5 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/90">
       <div className="min-w-0 flex-1">
         <p className="truncate text-[11px] font-bold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-          수익 {formatCompactWon(metrics.cumulativeRevenueWon)} · 구매{" "}
-          {commerce.salesCount.toLocaleString("ko-KR")}
+          {t("explore.mobile.revenue")}{" "}
+          <span
+            className={`${revenueTrendDeltaGlyphClass} inline tabular-nums ${revenueUp ? revenueTrendUpClass : revenueTrendDownClass}`}
+            aria-hidden
+          >
+            {revenueUp ? "▲" : "▼"}
+          </span>{" "}
+          <span className={`tabular-nums ${revenueAmountClass}`}>
+            {fmt.formatCompactWon(metrics.cumulativeRevenueWon)}
+          </span>
+          {" "}
+          · {t("explore.mobile.sales")}{" "}
+          {commerce.salesCount.toLocaleString(fmt.numberLocale)}
         </p>
         <p className="truncate font-mono text-[10px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          조회 {formatCompactCount(metrics.totalViews)} · 반응 {formatCompactCount(metrics.totalLikes)}
+          {t("explore.mobile.views")} {fmt.formatCompactCount(metrics.totalViews)} · {t("explore.mobile.reactions")}{" "}
+          {fmt.formatCompactCount(metrics.totalLikes)}
         </p>
       </div>
       <span className="shrink-0 rounded-full border border-reels-cyan/30 bg-reels-cyan/10 px-3 py-1.5 text-[11px] font-bold text-reels-cyan">
-        재생 중
+        {t("explore.mobile.playing")}
       </span>
     </div>
   );
@@ -613,11 +578,16 @@ export function ExploreReelSlide({
   muted,
   onMutedChange,
 }: ReelSlideProps) {
+  const { t } = useTranslation();
+  const displayTitle = useVideoDisplayTitle();
   const videoRef = useRef<HTMLVideoElement>(null);
   const blockRef = useRef<HTMLDivElement>(null);
   const progressRailRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const [isScrubbing, setIsScrubbing] = useState(false);
+  useEffect(() => {
+    setProgress(0);
+  }, [video.id]);
   const [volume, setVolume] = useState(0.75);
   const [volumeUiVisible, setVolumeUiVisible] = useState(false);
   const previewSrc = video.previewSrc ?? video.src;
@@ -626,6 +596,7 @@ export function ExploreReelSlide({
   const posterFallback =
     posterSrc ?? (video.poster?.trim() || undefined);
   const sellerHref = useMemo(() => sellerProfileHrefFromVideo(video), [video]);
+  const videoContentSource = useMemo(() => getVideoContentSource(video), [video]);
 
   const sidebarMetrics = useExploreReelSidebarMetrics(video);
 
@@ -659,41 +630,62 @@ export function ExploreReelSlide({
   const onTimeUpdate = useCallback(() => {
     if (isScrubbing) return;
     const el = videoRef.current;
-    if (!el?.duration) return;
-    setProgress(el.currentTime / el.duration);
+    if (el == null) return;
+    const d = el.duration;
+    if (!Number.isFinite(d) || d <= 0) return;
+    setProgress(el.currentTime / d);
   }, [isScrubbing]);
+
+  const syncProgressFromVideo = useCallback(() => {
+    const el = videoRef.current;
+    if (el == null) return;
+    const d = el.duration;
+    if (!Number.isFinite(d) || d <= 0) return;
+    setProgress(Math.min(1, Math.max(0, el.currentTime / d)));
+  }, []);
 
   useEffect(() => {
     const el = videoRef.current;
     if (!el) return;
     let rafId = 0;
-    const sync = () => {
-      if (!isScrubbing && el.duration) {
-        setProgress(el.currentTime / el.duration);
+    const tick = () => {
+      if (!isScrubbing) {
+        const d = el.duration;
+        if (Number.isFinite(d) && d > 0) {
+          setProgress(Math.min(1, Math.max(0, el.currentTime / d)));
+        }
       }
       if (!el.paused && !el.ended) {
-        rafId = window.requestAnimationFrame(sync);
+        rafId = window.requestAnimationFrame(tick);
       }
     };
-    const onPlay = () => {
+    const startRaf = () => {
       if (rafId) window.cancelAnimationFrame(rafId);
-      rafId = window.requestAnimationFrame(sync);
+      rafId = window.requestAnimationFrame(tick);
     };
-    const onPauseLike = () => {
+    const stopRaf = () => {
       if (rafId) window.cancelAnimationFrame(rafId);
       rafId = 0;
     };
-    el.addEventListener("play", onPlay);
-    el.addEventListener("pause", onPauseLike);
-    el.addEventListener("ended", onPauseLike);
-    if (!el.paused && !el.ended) onPlay();
-    return () => {
-      el.removeEventListener("play", onPlay);
-      el.removeEventListener("pause", onPauseLike);
-      el.removeEventListener("ended", onPauseLike);
-      if (rafId) window.cancelAnimationFrame(rafId);
+    const onDurationChange = () => {
+      syncProgressFromVideo();
+      if (!el.paused && !el.ended) startRaf();
     };
-  }, [isScrubbing]);
+    el.addEventListener("play", startRaf);
+    el.addEventListener("playing", startRaf);
+    el.addEventListener("pause", stopRaf);
+    el.addEventListener("ended", stopRaf);
+    el.addEventListener("durationchange", onDurationChange);
+    if (!el.paused && !el.ended) startRaf();
+    return () => {
+      el.removeEventListener("play", startRaf);
+      el.removeEventListener("playing", startRaf);
+      el.removeEventListener("pause", stopRaf);
+      el.removeEventListener("ended", stopRaf);
+      el.removeEventListener("durationchange", onDurationChange);
+      stopRaf();
+    };
+  }, [isScrubbing, syncProgressFromVideo]);
 
   const toggleMute = useCallback(() => {
     setVolumeUiVisible(true);
@@ -724,12 +716,6 @@ export function ExploreReelSlide({
     }
   }, []);
 
-  const syncProgressFromVideo = useCallback(() => {
-    const el = videoRef.current;
-    if (!el?.duration) return;
-    setProgress(el.currentTime / el.duration);
-  }, []);
-
   useEffect(() => {
     const el = videoRef.current;
     if (!el) return;
@@ -740,12 +726,14 @@ export function ExploreReelSlide({
   const seekByClientX = useCallback((clientX: number) => {
     const rail = progressRailRef.current;
     const el = videoRef.current;
-    if (!rail || !el?.duration) return;
+    if (!rail || el == null) return;
+    const d = el.duration;
+    if (!Number.isFinite(d) || d <= 0) return;
     const rect = rail.getBoundingClientRect();
     if (rect.width <= 0) return;
     const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
     setProgress(ratio);
-    el.currentTime = ratio * el.duration;
+    el.currentTime = ratio * d;
   }, []);
 
   useEffect(() => {
@@ -777,11 +765,10 @@ export function ExploreReelSlide({
     >
       <div className="flex min-h-0 w-full flex-1 items-center justify-center px-2 pt-2 md:px-4 md:pt-0">
         {/*
-          영상 열에 명시적 max-width를 두어 aspect-[9/16] + w-full 이 0으로 무너지지 않게 함.
-          레일은 같은 flex 줄에서 영상 바로 옆에만 붙음(가운데 단독 정렬 방지).
+          부모(탐색 스크롤 루트)가 이미 레일 폭만큼 inset 되었으므로 여기서는 100vw에서 레일을 또 빼지 않음.
         */}
-        <div className="flex w-full max-w-[min(56rem,calc(100vw-var(--reels-rail-w,0px)-1.5rem))] flex-row items-center justify-center gap-1 md:gap-1.5 lg:gap-2">
-          <div className="relative w-[min(100%,min(420px,calc(100vw-var(--reels-rail-w,0px)-16rem)))] shrink-0">
+        <div className="flex w-full max-w-[min(56rem,100%)] flex-row items-center justify-center gap-1 md:gap-1.5 lg:gap-2">
+          <div className="relative w-[min(100%,min(420px,calc(100%-15rem)))] shrink-0">
             <div
               className="relative aspect-[9/16] w-full max-h-[min(78dvh,calc(100dvh-var(--header-height)-7rem))] overflow-hidden rounded-2xl border border-white/12 bg-black shadow-[0_24px_80px_-30px_rgba(0,0,0,0.85)] md:max-h-[min(92dvh,calc(100dvh-var(--header-height)-2rem))] [html[data-theme='light']_&]:border-zinc-200"
             >
@@ -808,7 +795,7 @@ export function ExploreReelSlide({
               type="button"
               onClick={toggleMute}
               className="pointer-events-auto absolute right-3 top-3 z-[3] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition hover:bg-black/60"
-              aria-label={muted ? "소리 켜기" : "음소거"}
+              aria-label={muted ? t("explore.player.unmute") : t("explore.player.mute")}
             >
               {muted ? (
                 <VolumeX className="h-4 w-4" strokeWidth={2} aria-hidden />
@@ -826,7 +813,7 @@ export function ExploreReelSlide({
                   value={muted ? 0 : volume}
                   onChange={(e) => onVolumeChange(e.currentTarget.valueAsNumber)}
                   className="h-6 w-20 -rotate-90 cursor-pointer appearance-none bg-transparent [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-white/30 [&::-webkit-slider-thumb]:-mt-[5px] [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#9DB9FF] [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(157,185,255,0.85)] [&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-white/30 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-[#9DB9FF]"
-                  aria-label="볼륨 조절"
+                  aria-label={t("explore.player.volume")}
                 />
               </div>
             ) : null}
@@ -834,37 +821,37 @@ export function ExploreReelSlide({
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] space-y-2 p-4 pb-5">
               <Link
                 href={sellerHref}
-                className="pointer-events-auto inline-flex text-[13px] font-semibold text-white/90 underline-offset-2 hover:text-reels-cyan hover:underline"
+                className="pointer-events-auto inline-flex items-center gap-1.5 text-[13px] font-semibold text-white/90 underline-offset-2 hover:text-reels-cyan hover:underline"
               >
+                <VideoSourcePlatformIcon
+                  source={videoContentSource}
+                  className="h-3.5 w-3.5 shrink-0 text-white/85"
+                />
                 {video.creator}
               </Link>
               <p className="line-clamp-3 text-left text-[15px] font-bold leading-snug text-white sm:text-[16px]">
-                {video.title}
+                {displayTitle(video)}
               </p>
             </div>
 
-            {/* 진행 바 (틱톡 스타일) */}
+            {/* 진행 바 — 단색 화이트(그라데이션·글로우 없음) */}
             <div
               ref={progressRailRef}
-              className="pointer-events-auto absolute inset-x-0 bottom-0 z-[4] h-[5px] cursor-ew-resize bg-transparent"
+              className="pointer-events-auto absolute inset-x-0 bottom-0 z-[4] h-[7px] cursor-ew-resize bg-white/25"
               onPointerDown={(e) => {
                 setIsScrubbing(true);
                 seekByClientX(e.clientX);
               }}
-              aria-label="재생 구간 이동"
+              aria-label={t("explore.player.seek")}
               role="slider"
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={Math.round((progress || 0) * 100)}
             >
               <div
-                className="h-full rounded-r-full"
+                className="h-full bg-white"
                 style={{
-                  width: `${progress > 0 ? Math.max(0.8, Math.min(100, progress * 100)) : 0}%`,
-                  background:
-                    "linear-gradient(90deg, #7F8FA8 0%, #F4F2E8 38%, #D6DFEE 66%, #8C9DB8 100%)",
-                  boxShadow: "0 0 10px rgba(214,223,238,0.45)",
-                  transition: isScrubbing ? "none" : "width 90ms linear",
+                  width: `${Math.min(100, Math.max(0, (progress || 0) * 100))}%`,
                 }}
               />
             </div>

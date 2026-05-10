@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getTikTokManualRanking,
@@ -11,19 +10,21 @@ import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { type FeedVideo } from "@/data/videos";
 import { liveStatsKeyFromFeedVideo } from "@/lib/externalEmbed/parseUrl";
 import { TrendingVideoStatsFooter } from "./TrendingVideoStatsFooter";
+import { homeSectionHeadingH2ClassName } from "@/lib/homeSectionHeadingTypography";
 import { VideoCard } from "./VideoCard";
+import { useTranslation } from "@/hooks/useTranslation";
 
-function SkeletonGrid() {
+function SkeletonGrid({ ariaLabel }: { ariaLabel: string }) {
   return (
     <div
       className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
       role="status"
       aria-live="polite"
-      aria-label="인기순위 영상 불러오는 중"
+      aria-label={ariaLabel}
     >
       {Array.from({ length: 10 }).map((_, i) => (
         <div key={`skeleton-${i}`} className="relative">
-          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/70">
             <div className="aspect-[3/4] animate-pulse bg-zinc-800/70 [html[data-theme='light']_&]:bg-zinc-200" />
             <div className="space-y-2 px-3 py-3">
               <div className="h-3 w-3/4 animate-pulse rounded bg-zinc-700/80 [html[data-theme='light']_&]:bg-zinc-300" />
@@ -37,12 +38,12 @@ function SkeletonGrid() {
 }
 
 export function TrendingRankSection() {
-  const router = useRouter();
+  const { t } = useTranslation();
   const sectionRef = useRef<HTMLElement | null>(null);
   const gridAnchorRef = useRef<HTMLDivElement | null>(null);
   const [trendingClips, setTrendingClips] = useState<FeedVideo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<"dev" | "fallback" | null>(null);
   const [liveStatsByKey, setLiveStatsByKey] = useState<
     Record<string, { playCount: number; diggCount: number }>
   >({});
@@ -82,7 +83,7 @@ export function TrendingRankSection() {
 
   const loadTrending = useCallback(() => {
     setLoading(true);
-    setErrorMessage(null);
+    setErrorKind(null);
     void (async () => {
       try {
         const response = await fetch("/api/trending/rank?limit=30", {
@@ -109,11 +110,9 @@ export function TrendingRankSection() {
         }));
         setTrendingClips(fallback);
         if (!fallback.length) {
-          setErrorMessage(
-            "표시할 영상이 없습니다. TikTok·YouTube·Instagram 공유 URL을 src/data/tiktokData.ts 의 FILE_RAW_MANUAL_TIKTOK_URLS 또는 Vercel NEXT_PUBLIC_TRENDING_TIKTOK_URLS 에 넣어 주세요.",
-          );
+          setErrorKind("dev");
         } else {
-          setErrorMessage("실시간 랭킹 연결에 실패해 샘플 랭킹을 표시합니다.");
+          setErrorKind("fallback");
         }
       } finally {
         setLoading(false);
@@ -211,19 +210,22 @@ export function TrendingRankSection() {
 
   useEffect(() => {
     if (!pendingCollapseScroll || visibleRows !== 1) return;
-    const raf = window.requestAnimationFrame(() => {
-      const anchor = gridAnchorRef.current ?? sectionRef.current;
-      if (!anchor) {
+    let alive = true;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (!alive) return;
+        const el = gridAnchorRef.current;
+        if (!el) {
+          setPendingCollapseScroll(false);
+          return;
+        }
+        el.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
         setPendingCollapseScroll(false);
-        return;
-      }
-      const anchorTop = anchor.getBoundingClientRect().top + window.scrollY;
-      // 한 줄 카드가 뷰포트 중간쯤에 오도록 여유를 둡니다.
-      const targetTop = Math.max(0, anchorTop - window.innerHeight * 0.24);
-      window.scrollTo({ top: targetTop, behavior: "smooth" });
-      setPendingCollapseScroll(false);
+      });
     });
-    return () => window.cancelAnimationFrame(raf);
+    return () => {
+      alive = false;
+    };
   }, [pendingCollapseScroll, visibleRows]);
 
   const revealStartIndex = visibleRows > 1 ? ITEMS_PER_ROW : Number.POSITIVE_INFINITY;
@@ -235,44 +237,43 @@ export function TrendingRankSection() {
     <section
       id="trending-rank"
       ref={sectionRef}
-      className="trending-rank-ocean-bg home-ranked-strip border-t border-white/10"
+      className="trending-rank-ocean-bg home-ranked-strip border-t border-white/10 [html[data-theme='light']_&]:border-zinc-200/85"
       aria-labelledby="trending-rank-heading"
     >
       <div className="mx-auto max-w-[1800px] px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-24 lg:px-8">
         <div className="flex flex-col items-center gap-3 py-9 sm:py-10">
           <div className="min-w-0 text-center">
-            <h2
-              id="trending-rank-heading"
-              className="flex flex-wrap items-center justify-center gap-2.5 text-[26px] font-extrabold leading-snug tracking-tight text-zinc-100 sm:gap-3 sm:text-[30px] md:text-[32px]"
-            >
-              인기순위 TOP 30
+            <h2 id="trending-rank-heading" className={homeSectionHeadingH2ClassName}>
+              {t("home.trending.title")}
             </h2>
-            <p className="mt-2 text-center text-[16px] font-medium leading-relaxed tracking-[0.01em] text-white/78">
-              전 세계 크리에이터들이 가장 많이 선택한 인기 영상
+            <p className="mt-2 text-center text-[16px] font-medium leading-relaxed tracking-[0.01em] text-white/60 [html[data-theme='light']_&]:text-zinc-700/72">
+              {t("home.trending.subtitle")}
             </p>
-            {errorMessage ? (
-              <p className="mt-1.5 text-[12px] font-medium text-rose-300 [html[data-theme='light']_&]:text-rose-600">
-                {errorMessage}
+            {errorKind ? (
+              <p className="mt-1.5 text-[12px] font-medium text-reels-crimson/90 [html[data-theme='light']_&]:text-reels-crimson">                {t(errorKind === "dev" ? "home.trending.errorDev" : "home.trending.errorFallback")}
               </p>
             ) : null}
           </div>
         </div>
 
-        <div ref={gridAnchorRef} className="relative mt-0">
-          {loading ? <SkeletonGrid /> : null}
+        <div
+          ref={gridAnchorRef}
+          className="relative mt-0 scroll-mt-6 sm:scroll-mt-8 md:scroll-mt-10"
+        >
+          {loading ? <SkeletonGrid ariaLabel={t("home.trending.loadingAria")} /> : null}
 
           {!loading && rankedRows.length === 0 ? (
             <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-6 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
               <p className="text-[14px] font-medium text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-                표시할 인기 영상이 없습니다.
+                {t("home.trending.empty")}
               </p>
               <div className="mt-3 flex items-center justify-center gap-2">
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-zinc-200 transition-colors hover:border-white/35 hover:bg-white/10"
+                  className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-zinc-200 transition-colors hover:border-white/35 hover:bg-white/10 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-200/80"
                   onClick={() => void loadTrending()}
                 >
-                  다시 불러오기
+                  {t("home.trending.retry")}
                 </button>
               </div>
             </div>
@@ -282,7 +283,7 @@ export function TrendingRankSection() {
             <div
               className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5"
               role="list"
-              aria-label="인기순위 영상 목록"
+              aria-label={t("home.trending.listAria")}
             >
               {visibleRowsData.map((entry, rankIndex) => (
                 <div
@@ -293,18 +294,12 @@ export function TrendingRankSection() {
                   role="listitem"
                 >
                   <VideoCard
-                    video={{
-                      ...entry.video,
-                      title: `${rankIndex + 1}위`,
-                    }}
+                    video={entry.video}
                     reelLayout
                     reelStrip
                     disableHoverScale
                     hideCreatorMeta
                     preloadMode="metadata"
-                    rankTitleMedal={
-                      rankIndex === 0 ? 1 : rankIndex === 1 ? 2 : rankIndex === 2 ? 3 : undefined
-                    }
                     detailHref={
                       entry.video.tiktokEmbedId
                         ? `/video/tiktok-${entry.video.tiktokEmbedId}`
@@ -315,8 +310,10 @@ export function TrendingRankSection() {
                             : `/video/${entry.video.id}`
                     }
                     className="h-full min-w-0"
+                    trendingRankCardPrice
                     footerExtension={
                       <TrendingVideoStatsFooter
+                        hideMetricLabels
                         metrics={entry.metrics}
                       />
                     }
@@ -333,14 +330,14 @@ export function TrendingRankSection() {
               type="button"
               onClick={showCollapse ? onCollapseToFirstRow : onExpandAllRows}
               disabled={showCollapse ? !canCollapse : !canExpand}
-              className="group inline-flex h-12 min-w-[280px] items-center justify-center bg-transparent px-0 text-white transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-40 sm:h-14 sm:min-w-[360px]"
-              aria-label={showCollapse ? "인기순위 접기" : "인기순위 펼치기"}
-              title={showCollapse ? "위로 접기" : "아래로 펼치기"}
+              className="group inline-flex h-12 min-w-[280px] items-center justify-center bg-transparent px-0 text-white transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:text-zinc-800 sm:h-14 sm:min-w-[360px]"
+              aria-label={showCollapse ? t("home.trending.collapseAria") : t("home.trending.expandAria")}
+              title={showCollapse ? t("home.trending.collapseTitle") : t("home.trending.expandTitle")}
             >
               <svg viewBox="0 0 220 48" fill="none" className="h-7 w-[190px] sm:h-8 sm:w-[220px]" aria-hidden>
                 {showCollapse ? (
                   <path
-                    d="M10 34L110 10L210 34"
+                    d="M10 34L110 7L210 34"
                     stroke="currentColor"
                     strokeWidth="7"
                     strokeLinecap="round"
@@ -348,7 +345,7 @@ export function TrendingRankSection() {
                   />
                 ) : (
                   <path
-                    d="M10 14L110 38L210 14"
+                    d="M10 14L110 41L210 14"
                     stroke="currentColor"
                     strokeWidth="7"
                     strokeLinecap="round"
@@ -360,9 +357,9 @@ export function TrendingRankSection() {
             {showCollapse ? (
               <Link
                 href="/category/best"
-                className="inline-flex min-w-[140px] items-center justify-center rounded-full border border-white/30 bg-white/[0.05] px-7 py-3 text-[16px] font-semibold text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_8px_22px_-14px_rgba(0,0,0,0.6)] backdrop-blur-md transition hover:border-white/50 hover:bg-white/[0.1]"
+                className="inline-flex min-w-[140px] items-center justify-center rounded-full border border-white/30 bg-white/[0.05] px-7 py-3 text-[16px] font-semibold text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_8px_22px_-14px_rgba(0,0,0,0.6)] backdrop-blur-md transition hover:border-white/50 hover:bg-white/[0.1] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_8px_22px_-14px_rgba(15,23,42,0.12)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-50"
               >
-                더보기
+                {t("home.trending.moreLink")}
               </Link>
             ) : null}
           </div>

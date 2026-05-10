@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 
 const INITIAL_VISIBLE = 20;
 const BATCH_SIZE = 20;
@@ -8,125 +16,49 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { VideoCard } from "@/components/VideoCard";
+import { useTranslation } from "@/hooks/useTranslation";
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
+import {
+  MALL_CATEGORY_TOOLBAR_FILTER_ID,
+} from "@/data/mallCategoryNav";
 import type { CategorySlug } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
 import {
-  CATEGORY_LABEL,
   getVideoCatalogMeta,
   getVideosForCategory,
 } from "@/data/videoCatalog";
+import {
+  TOP_NAV_ACCOUNT_CART_PILL_CELL,
+  TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE,
+  TOP_NAV_ACCOUNT_CART_PILL_OUTER,
+  topNavHeroCapsuleGlyphIconClass,
+} from "@/lib/topNavIconRing";
 
 type OrientationFilter = "all" | "portrait" | "landscape";
 type PriceFilter = "all" | "high" | "low";
 type NewestFilter = "all" | "newest" | "oldest";
 const CATEGORY_FEED_CACHE_TTL_MS = 120_000;
 
-/** 사이드 필터 버튼 — 다크 / 라이트 */
-const filterBtnActive =
-  "bg-white/10 text-zinc-100 [html[data-theme='light']_&]:bg-zinc-200 [html[data-theme='light']_&]:text-zinc-900";
-const filterBtnInactive =
-  "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900";
+/** 필터 칩 — 컴팩트(전체 너비 행 제거) */
+const chipBase =
+  "inline-flex shrink-0 items-center justify-center rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition-[background-color,color,opacity] tabular-nums";
+const chipOn =
+  "bg-white/22 text-white ring-2 ring-white/35 [html[data-theme='light']_&]:bg-zinc-900 [html[data-theme='light']_&]:text-white [html[data-theme='light']_&]:ring-zinc-700";
+const chipOff =
+  "text-zinc-200 hover:bg-white/14 hover:text-white [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-200 [html[data-theme='light']_&]:hover:text-zinc-950";
+const chipDisabled =
+  "cursor-not-allowed opacity-45 hover:bg-transparent hover:text-zinc-400 [html[data-theme='light']_&]:text-zinc-400 [html[data-theme='light']_&]:hover:bg-transparent [html[data-theme='light']_&]:hover:text-zinc-400";
 
-const filterSectionLabel =
-  "mb-3 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-600 [html[data-theme='light']_&]:text-zinc-500";
+const filterGroupLabel =
+  "mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-300 [html[data-theme='light']_&]:text-zinc-600";
 
-type EndlessFeedItem = {
-  instanceId: string;
-  video: FeedVideo;
-};
-
-function BestEndlessRankFeed({
-  videos,
-  onEnterWatch,
-}: {
-  videos: FeedVideo[];
-  onEnterWatch: (video: FeedVideo) => void;
-}) {
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const [items, setItems] = useState<EndlessFeedItem[]>([]);
-
-  const appendBatch = useCallback(() => {
-    if (videos.length === 0) return;
-    setItems((prev) => {
-      const start = prev.length;
-      const next: EndlessFeedItem[] = [];
-      for (let i = 0; i < 8; i++) {
-        const idx = (start + i) % videos.length;
-        const loop = Math.floor((start + i) / videos.length);
-        const v = videos[idx];
-        next.push({
-          instanceId: `${v.id}-loop-${loop}-slot-${i}`,
-          video: v,
-        });
-      }
-      return [...prev, ...next];
-    });
-  }, [videos]);
-
-  useEffect(() => {
-    setItems([]);
-  }, [videos]);
-
-  useEffect(() => {
-    if (videos.length === 0) return;
-    if (items.length === 0) appendBatch();
-  }, [appendBatch, items.length, videos.length]);
-
-  useEffect(() => {
-    const node = sentinelRef.current;
-    if (!node || videos.length === 0) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) appendBatch();
-      },
-      { rootMargin: "1400px 0px 1200px 0px" },
-    );
-    io.observe(node);
-    return () => io.disconnect();
-  }, [appendBatch, videos.length]);
-
-  return (
-    <section className="px-4 py-5 sm:px-6 lg:px-8">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {items.map((item, idx) => (
-          <article
-            key={item.instanceId}
-            className="reels-glass-card overflow-hidden rounded-xl"
-          >
-            <VideoCard
-              video={item.video}
-              reelLayout
-              reelStrip
-              hideCloneStrip
-              onPick={() => onEnterWatch(item.video)}
-              className="h-full min-w-0"
-              footerExtension={
-                <TrendingVideoStatsFooter
-                  metrics={getMetricsForVideoDetail(item.video.id)}
-                />
-              }
-            />
-            <div className="border-t border-white/10 bg-black/25 px-3 py-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-              <p className="text-[11px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                인기 피드 #{idx + 1}
-              </p>
-            </div>
-          </article>
-        ))}
-      </div>
-      <div ref={sentinelRef} className="h-10 w-full" aria-hidden />
-      <p className="mt-2 text-center text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        인기 영상을 계속 불러오는 중...
-      </p>
-    </section>
-  );
-}
+/** MainTopUserMenu 게스트 캡슐과 동일 셀 스타일 + 필터용 패딩 */
+const mallFilterCapsuleButtonClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} max-w-full min-w-0 gap-1.5 rounded-full px-2 text-[12px] font-bold leading-none sm:gap-2 sm:px-3 sm:text-[13px]`;
 
 export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   const router = useRouter();
-  const label = CATEGORY_LABEL[slug];
-  const categoryStory = null;
+  const { t } = useTranslation();
+  const label = t(`nav.cat.${slug}`);
   const staticBase = useMemo(() => getVideosForCategory(slug), [slug]);
   const [fetchedVideos, setFetchedVideos] = useState<FeedVideo[] | null>(null);
   useEffect(() => {
@@ -187,6 +119,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   const [newestFilter, setNewestFilter] = useState<NewestFilter>("all");
   const [filterOpen, setFilterOpen] = useState(false);
   const filterWrapRef = useRef<HTMLDivElement | null>(null);
+  const [toolbarEndHost, setToolbarEndHost] = useState<HTMLElement | null>(null);
   const orientationCounts = useMemo(
     () => ({
       portrait: base.filter((v) => v.orientation === "portrait").length,
@@ -278,37 +211,66 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
     return () => io.disconnect();
   }, [sorted.length]);
 
-  // 순환 아이템 목록 — pool을 필요한 만큼 반복해 채움
+  // 실제 목록 기준으로만 노출 (중복 반복 없음)
   const visibleItems = useMemo(() => {
     if (sorted.length === 0) return [];
-    const items: Array<{ video: FeedVideo; key: string }> = [];
-    for (let i = 0; i < visibleCount; i++) {
-      const video = sorted[i % sorted.length];
-      items.push({ video, key: `${video.id}-${Math.floor(i / sorted.length)}-${i}` });
-    }
-    return items;
+    const limit = Math.min(visibleCount, sorted.length);
+    return sorted.slice(0, limit).map((video, idx) => ({ video, key: `${video.id}-${idx}` }));
   }, [sorted, visibleCount]);
+  const hasMore = visibleItems.length < sorted.length;
 
   const renderMosaicGrid = (items: Array<{ video: FeedVideo; key: string }>) => (
-    <div className="grid grid-cols-2 gap-2 border border-white/10 p-2 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+    <div
+      className="grid grid-cols-2 gap-3 border border-white/10 p-3 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
+      role="list"
+      aria-label={t("category.listAria", { cat: label })}
+    >
       {items.map(({ video, key }) => (
-        <div
-          key={key}
-          className="overflow-hidden rounded-lg border border-white/10 bg-black/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50"
-        >
+        <div key={key} className="relative min-w-0" role="listitem">
           <VideoCard
             video={video}
-            flush
-            reelLayout={video.orientation === "portrait"}
-            hideInfoBar
+            reelLayout
+            reelStrip
+            hideCreatorMeta
+            preloadMode="metadata"
+            trendingRankCardPrice
             onPick={() => openExploreWatch(video)}
             domId={`clip-${key}`}
-            className="min-h-0 w-full"
+            className="h-full min-w-0"
+            footerExtension={
+              <TrendingVideoStatsFooter
+                hideMetricLabels
+                metrics={getMetricsForVideoDetail(video.id)}
+              />
+            }
           />
         </div>
       ))}
     </div>
   );
+
+  useLayoutEffect(() => {
+    let cancelled = false;
+    const connect = () => {
+      if (cancelled) return;
+      const el = document.getElementById(MALL_CATEGORY_TOOLBAR_FILTER_ID);
+      if (el) setToolbarEndHost(el);
+    };
+    connect();
+    const t = window.setTimeout(connect, 0);
+    let raf1 = 0;
+    let raf2 = 0;
+    raf1 = window.requestAnimationFrame(() => {
+      connect();
+      raf2 = window.requestAnimationFrame(connect);
+    });
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+      window.cancelAnimationFrame(raf1);
+      window.cancelAnimationFrame(raf2);
+    };
+  }, [slug]);
 
   useEffect(() => {
     if (!filterOpen) return;
@@ -328,194 +290,181 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
     };
   }, [filterOpen]);
 
+  const categoryFilterToolbar = (
+    <div
+      ref={filterWrapRef}
+      className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE} relative min-w-0 shrink self-center`}
+    >
+      <button
+        type="button"
+        onClick={() => setFilterOpen((open) => !open)}
+        aria-expanded={filterOpen}
+        aria-controls="category-filter-popover"
+        className={mallFilterCapsuleButtonClass}
+      >
+        <SlidersHorizontal className={`${topNavHeroCapsuleGlyphIconClass()} shrink-0`} aria-hidden />
+        <span className="max-w-[4.5rem] truncate sm:max-w-none">{t("category.filter.button")}</span>
+        {activeFilterCount > 0 ? (
+          <span className="inline-flex min-w-[1.125rem] items-center justify-center rounded-full bg-reels-crimson/85 px-1 py-0.5 text-[10px] font-extrabold leading-none text-white">
+            {activeFilterCount}
+          </span>
+        ) : null}
+      </button>
+
+      {filterOpen ? (
+        <section
+          id="category-filter-popover"
+          className="absolute left-0 top-[calc(100%+0.45rem)] z-30 w-max min-w-[10.5rem] max-w-[calc(100vw-1.25rem)] rounded-xl border border-white/18 bg-[#03050c]/[0.97] px-2.5 py-2.5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.75)] backdrop-blur-sm [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-lg"
+          aria-label={t("category.filter.popoverAria")}
+        >
+          <div className="mb-2.5 flex items-center justify-between gap-3">
+            <p className="text-[12px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">
+              {t("category.filter.title")}
+            </p>
+            <button
+              type="button"
+              onClick={() => setFilterOpen(false)}
+              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/12 hover:text-white [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-200 [html[data-theme='light']_&]:hover:text-zinc-950"
+              aria-label={t("category.filter.close")}
+            >
+              <X className="h-3.5 w-3.5" aria-hidden />
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <p className={filterGroupLabel}>{t("category.filter.orientation")}</p>
+              <div className="flex flex-wrap gap-1">
+                <button
+                  type="button"
+                  onClick={() => setOrientationFilter("all")}
+                  className={`${chipBase} ${
+                    orientationFilter === "all" ? chipOn : chipOff
+                  }`}
+                >
+                  {t("category.filter.all")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOrientationFilter("portrait")}
+                  className={`${chipBase} ${
+                    orientationFilter === "portrait" ? chipOn : chipOff
+                  }`}
+                >
+                  {t("category.orientation.portrait")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOrientationFilter("landscape")}
+                  disabled={orientationCounts.landscape === 0}
+                  className={`${chipBase} ${
+                    orientationCounts.landscape === 0
+                      ? chipDisabled
+                      : orientationFilter === "landscape"
+                        ? chipOn
+                        : chipOff
+                  }`}
+                >
+                  {t("category.orientation.landscape")}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <p className={filterGroupLabel}>{t("category.filter.price")}</p>
+              <div className="flex flex-wrap gap-1">
+                <button
+                  type="button"
+                  onClick={() => setPriceFilter("all")}
+                  className={`${chipBase} ${priceFilter === "all" ? chipOn : chipOff}`}
+                >
+                  {t("category.filter.all")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPriceFilter("high")}
+                  className={`${chipBase} ${priceFilter === "high" ? chipOn : chipOff}`}
+                >
+                  {t("category.price.highToLow")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPriceFilter("low")}
+                  className={`${chipBase} ${priceFilter === "low" ? chipOn : chipOff}`}
+                >
+                  {t("category.price.lowToHigh")}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <p className={filterGroupLabel}>{t("category.filter.newest")}</p>
+              <div className="flex flex-wrap gap-1">
+                <button
+                  type="button"
+                  onClick={() => setNewestFilter("all")}
+                  className={`${chipBase} ${newestFilter === "all" ? chipOn : chipOff}`}
+                >
+                  {t("category.filter.all")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewestFilter("newest")}
+                  className={`${chipBase} ${newestFilter === "newest" ? chipOn : chipOff}`}
+                >
+                  {t("category.sort.newest")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewestFilter("oldest")}
+                  className={`${chipBase} ${newestFilter === "oldest" ? chipOn : chipOff}`}
+                >
+                  {t("category.sort.oldest")}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setOrientationFilter("all");
+              setPriceFilter("all");
+              setNewestFilter("all");
+            }}
+            className="mt-3 w-full rounded-full border border-white/30 py-1.5 text-[11px] font-semibold text-zinc-100 transition hover:border-white/45 hover:bg-white/[0.08] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-500 [html[data-theme='light']_&]:hover:bg-zinc-100"
+          >
+            {t("category.filter.reset")}
+          </button>
+        </section>
+      ) : null}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
       <div className="mx-auto max-w-[1800px]">
-        <main className="min-w-0 [html[data-theme='light']_&]:bg-white">
-          <header className="border-b border-white/10 [border-bottom-width:0.5px] px-4 py-6 sm:px-6 lg:px-8 [html[data-theme='light']_&]:border-zinc-200">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <h1 className="text-xl font-extrabold tracking-tight text-zinc-100 sm:text-2xl [html[data-theme='light']_&]:text-zinc-900">
-                  {label}
-                </h1>
-                {categoryStory ? (
-                  <p className="mt-3 max-w-3xl text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-700 sm:text-[14px]">
-                    {categoryStory}
-                  </p>
-                ) : null}
-              </div>
-              <div ref={filterWrapRef} className="relative">
-                <button
-                  type="button"
-                  onClick={() => setFilterOpen((open) => !open)}
-                  aria-expanded={filterOpen}
-                  aria-controls="category-filter-popover"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-2 text-[12px] font-bold text-zinc-200 transition hover:border-white/25 hover:bg-white/[0.1] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800"
-                >
-                  <SlidersHorizontal className="h-[18px] w-[18px] shrink-0" aria-hidden />
-                  필터
-                  {activeFilterCount > 0 ? (
-                    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-reels-crimson/85 px-1.5 py-0.5 text-[10px] font-extrabold text-white">
-                      {activeFilterCount}
-                    </span>
-                  ) : null}
-                </button>
-
-                {filterOpen ? (
-                  <section
-                    id="category-filter-popover"
-                    className="absolute right-0 top-[calc(100%+0.6rem)] z-30 w-[min(21rem,calc(100vw-2rem))] rounded-2xl border border-white/10 bg-[#030816]/95 p-4 shadow-[0_18px_48px_-20px_rgba(0,0,0,0.55)] backdrop-blur-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white"
-                    aria-label="카테고리 필터"
-                  >
-                    <div className="mb-2 flex items-center justify-between">
-                      <p className="text-[13px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                        상세 필터
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => setFilterOpen(false)}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/15 text-zinc-400 transition hover:border-white/25 hover:text-zinc-200 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
-                        aria-label="필터 닫기"
-                      >
-                        <X className="h-4 w-4" aria-hidden />
-                      </button>
-                    </div>
-
-                    <p className={filterSectionLabel}>방향</p>
-                    <div className="space-y-1">
-                      <button
-                        type="button"
-                        onClick={() => setOrientationFilter("all")}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          orientationFilter === "all" ? filterBtnActive : filterBtnInactive
-                        }`}
-                      >
-                        전체
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setOrientationFilter("portrait")}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          orientationFilter === "portrait" ? filterBtnActive : filterBtnInactive
-                        }`}
-                      >
-                        세로
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setOrientationFilter("landscape")}
-                        disabled={orientationCounts.landscape === 0}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          orientationCounts.landscape === 0
-                            ? "cursor-not-allowed text-zinc-600 opacity-45 [html[data-theme='light']_&]:text-zinc-400"
-                            : orientationFilter === "landscape"
-                              ? filterBtnActive
-                              : filterBtnInactive
-                        }`}
-                      >
-                        가로
-                      </button>
-                    </div>
-                    {orientationCounts.landscape === 0 ? (
-                      <p className="mt-2 text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                        현재 이 카테고리에는 가로 영상이 없습니다.
-                      </p>
-                    ) : null}
-
-                    <p className={`mt-5 ${filterSectionLabel}`}>가격</p>
-                    <div className="space-y-1">
-                      <button
-                        type="button"
-                        onClick={() => setPriceFilter("all")}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          priceFilter === "all" ? filterBtnActive : filterBtnInactive
-                        }`}
-                      >
-                        전체
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setPriceFilter("high")}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          priceFilter === "high" ? filterBtnActive : filterBtnInactive
-                        }`}
-                      >
-                        높은순
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setPriceFilter("low")}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          priceFilter === "low" ? filterBtnActive : filterBtnInactive
-                        }`}
-                      >
-                        낮은순
-                      </button>
-                    </div>
-
-                    <p className={`mt-5 ${filterSectionLabel}`}>최신</p>
-                    <div className="space-y-1">
-                      <button
-                        type="button"
-                        onClick={() => setNewestFilter("all")}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          newestFilter === "all" ? filterBtnActive : filterBtnInactive
-                        }`}
-                      >
-                        전체
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setNewestFilter("newest")}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          newestFilter === "newest" ? filterBtnActive : filterBtnInactive
-                        }`}
-                      >
-                        최신순
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setNewestFilter("oldest")}
-                        className={`w-full rounded-md px-2.5 py-2 text-left font-mono text-[11px] transition-colors ${
-                          newestFilter === "oldest" ? filterBtnActive : filterBtnInactive
-                        }`}
-                      >
-                        오래된순
-                      </button>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setOrientationFilter("all");
-                        setPriceFilter("all");
-                        setNewestFilter("all");
-                      }}
-                      className="mt-5 w-full rounded-full border border-reels-cyan/35 bg-reels-cyan/12 py-2 text-[12px] font-bold text-reels-cyan transition hover:bg-reels-cyan/20"
-                    >
-                      필터 초기화
-                    </button>
-                  </section>
-                ) : null}
-              </div>
-            </div>
-          </header>
+        <main className="min-w-0 pt-3 sm:pt-4 [html[data-theme='light']_&]:bg-white">
+          <h1 className="sr-only">{label}</h1>
+          {toolbarEndHost ? createPortal(categoryFilterToolbar, toolbarEndHost) : null}
 
           {sorted.length === 0 ? (
             <p className="px-4 py-16 text-center font-mono text-[12px] text-zinc-500 sm:px-6 [html[data-theme='light']_&]:text-zinc-600">
-              이 조건에 맞는 릴스가 없어요.
+              {t("category.emptyFiltered")}
             </p>
           ) : (
             <>
               {renderMosaicGrid(visibleItems)}
               {/* 무한 스크롤 sentinel */}
-              <div
-                ref={sentinelRef}
-                className="flex items-center justify-center py-8"
-                aria-hidden
-              >
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white/20 [html[data-theme='light']_&]:bg-zinc-300" />
-              </div>
+              {hasMore ? (
+                <div
+                  ref={sentinelRef}
+                  className="flex items-center justify-center py-8"
+                  aria-hidden
+                >
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white/20 [html[data-theme='light']_&]:bg-zinc-300" />
+                </div>
+              ) : null}
             </>
           )}
         </main>

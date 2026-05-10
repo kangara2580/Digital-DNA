@@ -2,35 +2,33 @@
 
 import { useMemo, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const INPUT =
-  "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none transition focus:border-reels-cyan/45 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
-const SAME_PASSWORD_MESSAGE = "기존 비밀번호와 동일해요. 새로운 비밀번호로 변경해 주세요.";
-const PASSWORD_POLICY_MESSAGE =
-  "새 비밀번호는 영문 대문자 1개, 소문자 1개, 숫자 1개를 포함해 8자 이상으로 입력해 주세요.";
+  "w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[16px] text-zinc-100 outline-none transition focus:border-white/35 [html[data-theme='light']_&]:border-black/15 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-[#24163b]";
 
-function toKoreanPasswordError(message: string): string {
+function mapPasswordError(message: string, t: (key: string) => string): string {
   const normalized = message.toLowerCase();
   if (normalized.includes("current password required when setting new password")) {
-    return "비밀번호를 바꾸려면 저장 요청에 현재 비밀번호가 함께 전달되어야 합니다. 잠시 후 다시 시도하거나, 앱이 최신인지 확인해 주세요.";
+    return t("password.err.currentRequired");
   }
   if (normalized.includes("password should contain at least one character of each")) {
-    return PASSWORD_POLICY_MESSAGE;
+    return t("password.policy");
   }
   if (normalized.includes("new password should be different from the old password")) {
-    return "기존 비밀번호와 다른 새 비밀번호를 입력해 주세요.";
+    return t("password.err.differentFromOld");
   }
   if (normalized.includes("password should be at least")) {
-    return "새 비밀번호 길이가 부족합니다. 8자 이상으로 입력해 주세요.";
+    return t("password.err.tooShort");
   }
   if (normalized.includes("password") && normalized.includes("weak")) {
-    return "비밀번호 강도가 낮습니다. 더 복잡한 비밀번호로 다시 시도해 주세요.";
+    return t("password.err.weak");
   }
   if (normalized.includes("for security purposes") && normalized.includes("password")) {
-    return "보안 정책으로 인해 잠시 후 다시 시도해 주세요.";
+    return t("password.err.rateLimited");
   }
   if (normalized.includes("password")) {
-    return "비밀번호 변경에 실패했습니다. 입력한 현재 비밀번호와 새 비밀번호를 다시 확인해 주세요.";
+    return t("password.err.generic");
   }
   return message;
 }
@@ -41,6 +39,7 @@ function maskPhone(phone: string): string {
 }
 
 export function MyPagePasswordSection() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
@@ -85,11 +84,11 @@ export function MyPagePasswordSection() {
     setMessage("");
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
-      setError("Supabase 설정이 없습니다.");
+      setError(t("password.supabaseMissing"));
       return;
     }
     if (!phone) {
-      setError("계정에 등록된 휴대폰 번호가 없어 SMS 인증을 진행할 수 없습니다.");
+      setError(t("password.noPhoneForSms"));
       return;
     }
     setSendingSms(true);
@@ -99,13 +98,13 @@ export function MyPagePasswordSection() {
         options: { shouldCreateUser: false },
       });
       if (smsErr) {
-        setError(smsErr.message || "휴대폰 인증번호 발송에 실패했습니다.");
+        setError(smsErr.message || t("password.smsSendFail"));
         return;
       }
       setSmsSent(true);
-      setMessage("휴대폰으로 인증번호를 보냈습니다. 인증을 완료한 뒤 비밀번호를 저장해 주세요.");
+      setMessage(t("password.smsSent"));
     } catch {
-      setError("휴대폰 인증 요청 중 오류가 발생했습니다.");
+      setError(t("password.smsRequestError"));
     } finally {
       setSendingSms(false);
     }
@@ -116,15 +115,15 @@ export function MyPagePasswordSection() {
     setMessage("");
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
-      setError("Supabase 설정이 없습니다.");
+      setError(t("password.supabaseMissing"));
       return;
     }
     if (!phone) {
-      setError("계정에 등록된 휴대폰 번호가 없습니다.");
+      setError(t("password.noPhoneRegistered"));
       return;
     }
     if (!smsCode.trim()) {
-      setError("인증번호를 입력해 주세요.");
+      setError(t("password.enterCode"));
       return;
     }
     setVerifyingSms(true);
@@ -135,13 +134,13 @@ export function MyPagePasswordSection() {
         type: "sms",
       });
       if (verifyErr) {
-        setError(verifyErr.message || "인증번호 확인에 실패했습니다.");
+        setError(verifyErr.message || t("password.verifyFail"));
         return;
       }
       setPhoneVerified(true);
-      setMessage("휴대폰 인증이 완료되었습니다. 비밀번호를 저장해 주세요.");
+      setMessage(t("password.smsVerified"));
     } catch {
-      setError("휴대폰 인증 확인 중 오류가 발생했습니다.");
+      setError(t("password.verifyError"));
     } finally {
       setVerifyingSms(false);
     }
@@ -152,30 +151,30 @@ export function MyPagePasswordSection() {
     setError("");
     setMessage("");
     if (next.length < 8) {
-      setError("새 비밀번호는 8자 이상이어야 합니다.");
+      setError(t("password.newTooShort"));
       return;
     }
     if (next !== confirm) {
-      setError("새 비밀번호와 확인이 일치하지 않습니다.");
+      setError(t("password.mismatch"));
       return;
     }
     if (next === current) {
-      setError(SAME_PASSWORD_MESSAGE);
+      setError(t("password.sameAsOld"));
       return;
     }
 
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
-      setError("Supabase 설정이 없습니다.");
+      setError(t("password.supabaseMissing"));
       return;
     }
 
     if (!current.trim()) {
-      setError("보안을 위해 현재 비밀번호를 입력해 주세요.");
+      setError(t("password.enterCurrent"));
       return;
     }
     if (phone && !phoneVerified) {
-      setError("보안을 위해 휴대폰 인증을 먼저 완료해 주세요.");
+      setError(t("password.verifySmsFirst"));
       return;
     }
 
@@ -184,7 +183,7 @@ export function MyPagePasswordSection() {
       const { data: u } = await supabase.auth.getUser();
       const email = u.user?.email;
       if (!email) {
-        setError("이메일 정보를 찾을 수 없어 비밀번호를 바꿀 수 없습니다.");
+        setError(t("password.noEmail"));
         return;
       }
       const { error: reErr } = await supabase.auth.signInWithPassword({
@@ -192,7 +191,7 @@ export function MyPagePasswordSection() {
         password: current,
       });
       if (reErr) {
-        setError("현재 비밀번호가 올바르지 않거나, 이 계정은 이메일 비밀번호 로그인을 사용하지 않습니다.");
+        setError(t("password.wrongCurrent"));
         return;
       }
 
@@ -203,14 +202,14 @@ export function MyPagePasswordSection() {
         current_password: current,
       });
       if (upErr) {
-        setError(upErr.message ? toKoreanPasswordError(upErr.message) : "비밀번호 변경에 실패했습니다.");
+        setError(upErr.message ? mapPasswordError(upErr.message, t) : t("password.changeFail"));
         return;
       }
-      setMessage("비밀번호가 변경되었습니다. 다음 로그인부터 새 비밀번호를 사용하세요.");
+      setMessage(t("password.changed"));
       resetForm();
       setOpen(false);
     } catch {
-      setError("처리 중 오류가 발생했습니다.");
+      setError(t("password.processError"));
     } finally {
       setBusy(false);
     }
@@ -220,11 +219,11 @@ export function MyPagePasswordSection() {
     <div className="mt-6 rounded-xl border border-white/10 bg-black/20 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-            비밀번호 변경
+          <h3 className="text-[17px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+            {t("password.sectionTitle")}
           </h3>
-          <p className="mt-1 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            이메일·비밀번호로 가입한 계정만 변경할 수 있어요. Google 전용 로그인은 비밀번호가 없을 수 있습니다.
+          <p className="mt-1 text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            {t("password.sectionLead")}
           </p>
         </div>
         <button
@@ -239,19 +238,18 @@ export function MyPagePasswordSection() {
             }
             void onOpen();
           }}
-          className="rounded-full border border-reels-cyan/40 bg-reels-cyan/15 px-4 py-2 text-[13px] font-extrabold text-reels-cyan transition hover:bg-reels-cyan/25"
+          className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-[15px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-300"
         >
-          {open ? "창 닫기" : "비밀번호 변경"}
+          {open ? t("password.closePanel") : t("password.openPanel")}
         </button>
       </div>
 
       {error ? (
-        <p className="mt-3 rounded-lg border border-rose-500/45 bg-rose-500/10 px-3 py-2 text-[12px] font-semibold text-rose-300 [html[data-theme='light']_&]:text-rose-800">
-          {error}
+        <p className="mt-3 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-[14px] font-semibold text-red-200 [html[data-theme='light']_&]:text-red-800">          {error}
         </p>
       ) : null}
       {message ? (
-        <p className="mt-3 rounded-lg border border-emerald-500/45 bg-emerald-500/10 px-3 py-2 text-[12px] font-semibold text-emerald-200 [html[data-theme='light']_&]:text-emerald-900">
+        <p className="mt-3 rounded-lg border border-emerald-500/45 bg-emerald-500/10 px-3 py-2 text-[14px] font-semibold text-emerald-200 [html[data-theme='light']_&]:text-emerald-900">
           {message}
         </p>
       ) : null}
@@ -260,26 +258,26 @@ export function MyPagePasswordSection() {
         <form className="mt-4 space-y-3" onSubmit={onSubmit}>
           {phone ? (
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
-              <p className="text-[12px] font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-                휴대폰 인증
+              <p className="text-[14px] font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
+                {t("password.phoneVerifyTitle")}
               </p>
-              <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                등록된 번호 {maskedPhone}로 인증 후 비밀번호를 변경할 수 있어요.
+              <p className="mt-1 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                {t("password.phoneVerifyLead", { phone: maskedPhone })}
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => void sendSmsCode()}
                   disabled={sendingSms}
-                  className="rounded-full border border-white/20 bg-white/[0.06] px-3 py-1.5 text-[12px] font-bold text-zinc-100 transition hover:bg-white/[0.1] disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
+                  className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[14px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
                 >
-                  {sendingSms ? "발송 중…" : smsSent ? "인증번호 재발송" : "인증번호 받기"}
+                  {sendingSms ? t("password.sending") : smsSent ? t("password.resendCode") : t("password.getCode")}
                 </button>
                 <input
                   className={`${INPUT} max-w-[180px]`}
                   type="text"
                   inputMode="numeric"
-                  placeholder="6자리 코드"
+                  placeholder={t("password.codePlaceholder")}
                   value={smsCode}
                   onChange={(e) => setSmsCode(e.target.value)}
                 />
@@ -287,21 +285,21 @@ export function MyPagePasswordSection() {
                   type="button"
                   onClick={() => void verifySmsCode()}
                   disabled={verifyingSms}
-                  className="rounded-full border border-reels-cyan/40 bg-reels-cyan/15 px-3 py-1.5 text-[12px] font-extrabold text-reels-cyan transition hover:bg-reels-cyan/25 disabled:opacity-50"
+                  className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[14px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
                 >
-                  {verifyingSms ? "확인 중…" : phoneVerified ? "인증 완료" : "코드 확인"}
+                  {verifyingSms ? t("password.verifying") : phoneVerified ? t("password.verified") : t("password.verifyCode")}
                 </button>
               </div>
             </div>
           ) : (
-            <p className="rounded-xl border border-amber-500/45 bg-amber-500/10 px-3 py-2 text-[12px] font-semibold text-amber-200 [html[data-theme='light']_&]:text-amber-900">
-              계정에 등록된 휴대폰 번호가 없어 SMS 인증을 건너뜁니다. 번호를 연결하면 더 안전하게 변경할 수 있어요.
+            <p className="rounded-xl border border-amber-500/45 bg-amber-500/10 px-3 py-2 text-[14px] font-semibold text-amber-200 [html[data-theme='light']_&]:text-amber-900">
+              {t("password.skipSmsHint")}
             </p>
           )}
 
         <div>
-          <label className="mb-1 block text-[12px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-            현재 비밀번호 (확인용)
+          <label className="mb-1 block text-[14px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+            {t("password.currentLabel")}
           </label>
           <input
             className={INPUT}
@@ -309,12 +307,12 @@ export function MyPagePasswordSection() {
             autoComplete="current-password"
             value={current}
             onChange={(e) => setCurrent(e.target.value)}
-            placeholder="비밀번호를 바꾸려면 입력"
+            placeholder={t("password.currentPlaceholder")}
           />
         </div>
         <div>
-          <label className="mb-1 block text-[12px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-            새 비밀번호 (8자 이상)
+          <label className="mb-1 block text-[14px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+            {t("password.newLabel")}
           </label>
           <input
             className={INPUT}
@@ -325,8 +323,8 @@ export function MyPagePasswordSection() {
           />
         </div>
         <div>
-          <label className="mb-1 block text-[12px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-            새 비밀번호 확인
+          <label className="mb-1 block text-[14px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+            {t("password.confirmLabel")}
           </label>
           <input
             className={INPUT}
@@ -339,9 +337,9 @@ export function MyPagePasswordSection() {
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-full border border-reels-cyan/40 bg-reels-cyan/15 py-2.5 text-[14px] font-extrabold text-reels-cyan transition hover:bg-reels-cyan/25 disabled:opacity-50"
+          className="w-full rounded-full border border-white/15 bg-white/[0.06] py-2.5 text-[16px] font-semibold text-zinc-100 transition hover:border-white/28 hover:bg-white/[0.1] disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
         >
-          {busy ? "처리 중…" : "비밀번호 저장"}
+          {busy ? t("password.saveBusy") : t("password.save")}
         </button>
         </form>
       ) : null}

@@ -119,7 +119,7 @@ export function getFreshnessFromListedAt(listedAt: string): {
     return {
       tier: "fresh",
       label: "FRESH",
-      subline: "지금 막 올라온 따끈한 릴스",
+      subline: "지금 막 올라온 따끈한 동영상",
     };
   }
   if (days < 100) {

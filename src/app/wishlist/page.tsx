@@ -3,11 +3,15 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
+import { MyPageSortSelect } from "@/components/MyPageSortSelect";
+import { useSitePreferences } from "@/context/SitePreferencesContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { resolveManualTikTokVideoForStudio } from "@/data/tiktokData";
 import { buildWishlistVideoLookup } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { videoDisplayTitle } from "@/lib/videoDisplayTitle";
+import type { SiteLocale } from "@/lib/sitePreferences";
 
 const SORT_OPTIONS = [
   { value: "recent", label: "최근 찜한 순" },
@@ -24,7 +28,7 @@ type SortValue = (typeof SORT_OPTIONS)[number]["value"];
 
 type Row = { entryId: string; video: FeedVideo; savedAt: number };
 
-function sortRows(rows: Row[], sort: SortValue): Row[] {
+function sortRows(rows: Row[], sort: SortValue, locale: SiteLocale): Row[] {
   const copy = [...rows];
   const noPrice = 1e12;
   switch (sort) {
@@ -44,15 +48,19 @@ function sortRows(rows: Row[], sort: SortValue): Row[] {
       );
     case "title-asc":
       return copy.sort((a, b) =>
-        a.video.title.localeCompare(b.video.title, undefined, {
-          sensitivity: "base",
-        }),
+        videoDisplayTitle(a.video, locale).localeCompare(
+          videoDisplayTitle(b.video, locale),
+          locale === "en" ? "en" : "ko",
+          { sensitivity: "base" },
+        ),
       );
     case "title-desc":
       return copy.sort((a, b) =>
-        b.video.title.localeCompare(a.video.title, undefined, {
-          sensitivity: "base",
-        }),
+        videoDisplayTitle(b.video, locale).localeCompare(
+          videoDisplayTitle(a.video, locale),
+          locale === "en" ? "en" : "ko",
+          { sensitivity: "base" },
+        ),
       );
     case "duration-asc":
       return copy.sort(
@@ -72,6 +80,7 @@ function sortRows(rows: Row[], sort: SortValue): Row[] {
 export default function WishlistPage() {
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const { entries, hydrated, clear, removeMany } = useWishlist();
+  const { locale } = useSitePreferences();
   const [sort, setSort] = useState<SortValue>("recent");
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [loginCtaVisible, setLoginCtaVisible] = useState(false);
@@ -86,8 +95,8 @@ export default function WishlistPage() {
         fromCatalog ?? resolveManualTikTokVideoForStudio(e.id) ?? undefined;
       if (video) list.push({ entryId: e.id, video, savedAt: e.savedAt });
     }
-    return sortRows(list, sort);
-  }, [entries, videoByStoredId, sort]);
+    return sortRows(list, sort, locale as SiteLocale);
+  }, [entries, videoByStoredId, sort, locale]);
 
   const allEntryIds = useMemo(() => rows.map((r) => r.entryId), [rows]);
 
@@ -140,37 +149,31 @@ export default function WishlistPage() {
     <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12 lg:px-8">
       <header className="flex flex-col gap-4 border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+          <h1 className="text-[1.625rem] font-semibold tracking-tight text-zinc-50 sm:text-[1.875rem] [html[data-theme='light']_&]:text-zinc-900">
             찜한 목록
           </h1>
         </div>
 
         {!showLoginGate ? (
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-            <label className="flex items-center gap-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            <label className="flex items-center gap-2 text-[15px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
               <span className="sr-only">정렬 기준</span>
               <span className="hidden font-medium text-zinc-400 sm:inline [html[data-theme='light']_&]:text-zinc-700">
                 정렬
               </span>
-              <select
+              <MyPageSortSelect
+                options={SORT_OPTIONS}
                 value={sort}
-                onChange={(e) => setSort(e.target.value as SortValue)}
-                className="min-w-[11.5rem] cursor-pointer rounded-lg border border-white/15 bg-reels-void/80 px-3 py-2 text-[13px] font-medium text-zinc-100 outline-none transition-colors hover:border-reels-cyan/35 focus:border-reels-cyan/50 focus:ring-2 focus:ring-reels-cyan/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
-                aria-label="찜한 릴스 정렬"
-              >
-                {SORT_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => setSort(v as SortValue)}
+                ariaLabel="찜한 동영상 정렬"
+              />
             </label>
             {hydrated && entries.length > 0 ? (
               <>
                 <button
                   type="button"
                   onClick={selectAllWishlist}
-                  className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-reels-cyan/35 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+                  className="rounded-lg border border-white/15 px-3 py-2 text-[15px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
                 >
                   전체 선택
                 </button>
@@ -178,7 +181,7 @@ export default function WishlistPage() {
                   type="button"
                   onClick={clearWishlistSelection}
                   disabled={selected.size === 0}
-                  className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-white/25 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
+                  className="rounded-lg border border-white/15 px-3 py-2 text-[15px] font-medium text-zinc-400 transition-colors hover:border-white/25 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
                 >
                   선택 해제
                 </button>
@@ -186,8 +189,7 @@ export default function WishlistPage() {
                   type="button"
                   onClick={deleteSelectedWishlist}
                   disabled={selected.size === 0}
-                  className="rounded-lg border border-rose-500/35 px-3 py-2 text-[13px] font-medium text-rose-300 transition-colors hover:bg-rose-500/10 disabled:opacity-40 [html[data-theme='light']_&]:text-rose-800"
-                >
+                  className="rounded-lg border border-reels-crimson/38 px-3 py-2 text-[15px] font-medium text-[#F3C4D9] transition-colors hover:bg-reels-crimson/12 disabled:opacity-40 [html[data-theme='light']_&]:text-reels-crimson"                >
                   선택 삭제
                 </button>
                 <button
@@ -196,14 +198,14 @@ export default function WishlistPage() {
                     void (async () => {
                       if (
                         typeof window !== "undefined" &&
-                        window.confirm("찜한 릴스를 모두 목록에서 삭제할까요?")
+                        window.confirm("찜한 동영상을 모두 목록에서 삭제할까요?")
                       ) {
                         await clear();
                         setSelected(new Set());
                       }
                     })();
                   }}
-                  className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-reels-crimson/35 hover:bg-white/[0.06] hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
+                  className="rounded-lg border border-white/15 px-3 py-2 text-[15px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
                 >
                   전체 삭제
                 </button>
@@ -215,8 +217,8 @@ export default function WishlistPage() {
 
       {showLoginGate ? (
         <div className="mx-auto mt-16 max-w-md text-center">
-          <p className="text-[15px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            로그인하면 찜한 릴스를 볼 수 있어요!
+          <p className="text-[17px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            로그인하면 찜한 동영상을 볼 수 있어요!
           </p>
           <div
             className={`mt-6 transition-[opacity,transform] duration-300 ease-out ${
@@ -227,26 +229,26 @@ export default function WishlistPage() {
           >
             <Link
               href={`/login?redirect=${encodeURIComponent("/wishlist")}`}
-              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-[linear-gradient(135deg,#0b1327_0%,#122247_50%,#1e3a8a_100%)] px-7 py-2.5 text-[14px] font-bold text-white ring-1 ring-white/10 shadow-[0_12px_28px_-14px_rgba(30,58,138,0.82)] transition-all duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:brightness-110 hover:shadow-[0_18px_38px_-16px_rgba(37,99,235,0.8)]"
+              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-[linear-gradient(135deg,#0b1327_0%,#122247_50%,#1e3a8a_100%)] px-7 py-2.5 text-[16px] font-bold text-white ring-1 ring-white/10 shadow-[0_12px_28px_-14px_rgba(30,58,138,0.82)] transition-all duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:brightness-110 hover:shadow-[0_18px_38px_-16px_rgba(37,99,235,0.8)]"
             >
               로그인
             </Link>
           </div>
         </div>
       ) : !hydrated ? (
-        <p className="mt-10 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600" aria-live="polite">
+        <p className="mt-10 text-[16px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600" aria-live="polite">
           불러오는 중…
         </p>
       ) : rows.length === 0 ? (
         <div className="mx-auto mt-16 max-w-md text-center">
-          <p className="text-[15px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            아직 찜한 릴스가 없어요.
+          <p className="text-[17px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            아직 찜한 동영상이 없어요.
           </p>
           <Link
             href="/"
-            className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
+            className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[16px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
           >
-            릴스 둘러보기
+            동영상 둘러보기
           </Link>
         </div>
       ) : (

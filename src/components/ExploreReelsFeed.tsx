@@ -5,16 +5,21 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type Dispatch,
   type SetStateAction,
 } from "react";
+import { createPortal } from "react-dom";
 import { ExploreReelSlide } from "@/components/ExploreReelSlide";
+import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { VideoCard } from "@/components/VideoCard";
 import { buildWishlistVideoLookup } from "@/data/videoCatalog";
+import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import type { FeedVideo } from "@/data/videos";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const BATCH = 6;
 /** 세로 릴: 풀을 순환해 이 개수까지 슬라이드 추가 (과도한 DOM 방지로 상한 유지) */
@@ -34,12 +39,15 @@ function ExploreBrowseGrid({
   visibleGridCount,
   setVisibleGridCount,
   onEnterWatch,
+  browseCardTarget,
 }: {
   pool: FeedVideo[];
   visibleGridCount: number;
   setVisibleGridCount: Dispatch<SetStateAction<number>>;
   onEnterWatch: (video: FeedVideo, gridIndex: number) => void;
+  browseCardTarget: "watch" | "purchase";
 }) {
+  const { t } = useTranslation();
   const browseVideos = useMemo(() => {
     if (pool.length === 0) return [];
     const n = Math.min(visibleGridCount, MAX_GRID_ITEMS);
@@ -69,11 +77,15 @@ function ExploreBrowseGrid({
   }, [pool.length, setVisibleGridCount]);
 
   return (
-    <div className="mx-auto max-w-[1800px] px-4 pb-20 pt-4 sm:px-6 md:pl-[calc(var(--reels-rail-w,0px)+1rem)] lg:px-8">
+    <div className="mx-auto max-w-[1800px] px-4 pb-20 pt-[max(3.75rem,1rem)] sm:px-6 md:pl-[calc(var(--reels-rail-w,0px)+1rem)] lg:px-8">
       <div
-        className="grid grid-cols-2 gap-2 border border-white/10 p-2 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+        className={
+          browseCardTarget === "purchase"
+            ? "grid grid-cols-2 gap-3 p-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
+            : "grid grid-cols-2 gap-3 border border-white/10 p-3 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
+        }
         role="list"
-        aria-label="탐색 그리드"
+        aria-label={t("explore.gridAria")}
       >
         {browseVideos.map(({ video, rowKey }, gridIndex) => (
           <div key={rowKey} className="min-w-0" role="listitem">
@@ -82,8 +94,17 @@ function ExploreBrowseGrid({
               reelLayout
               reelStrip
               disableHoverScale
+              hideCreatorMeta
+              preloadMode="metadata"
+              trendingRankCardPrice
               onPick={() => onEnterWatch(video, gridIndex)}
               className="h-full min-w-0"
+              footerExtension={
+                <TrendingVideoStatsFooter
+                  hideMetricLabels
+                  metrics={getMetricsForVideoDetail(video.id)}
+                />
+              }
             />
           </div>
         ))}
@@ -107,6 +128,7 @@ function ExploreWatchReels({
   pool: FeedVideo[];
   watchOffset: number;
 }) {
+  const { t } = useTranslation();
   const [count, setCount] = useState(BATCH);
   const [reelMuted, setReelMutedState] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -173,11 +195,16 @@ function ExploreWatchReels({
     if (!el) return;
     const h = el.clientHeight;
     if (h <= 0) return;
-    el.scrollBy({ top: dir * h, behavior: "smooth" });
+    el.scrollBy({ top: dir * h, behavior: "auto" });
   }, []);
 
   const goNextReel = useCallback(() => scrollByOneSlide(1), [scrollByOneSlide]);
   const goPrevReel = useCallback(() => scrollByOneSlide(-1), [scrollByOneSlide]);
+
+  const [chevronPortal, setChevronPortal] = useState<HTMLElement | null>(null);
+  useLayoutEffect(() => {
+    setChevronPortal(document.body);
+  }, []);
 
   // 키보드 이동만 커스텀 처리(휠/트랙패드는 네이티브 스크롤로 버벅임 최소화)
   useEffect(() => {
@@ -201,51 +228,84 @@ function ExploreWatchReels({
     };
   }, [goNextReel, goPrevReel]);
 
-  return (
-    <>
-      {/* 틱톡 스타일: 위·아래로 한 영상씩 이동 */}
-      <div className="pointer-events-none fixed right-3 top-1/2 z-[101] flex -translate-y-1/2 flex-col gap-2 sm:right-5 md:right-6">
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overflow;
+    const prevBody = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = prevHtml;
+      body.style.overflow = prevBody;
+    };
+  }, []);
+
+  const chevronRail = (
+    /* 오른쪽 고정 레일 버튼을 화면 안쪽으로 이동 */
+    <div
+      className="pointer-events-none fixed inset-0 z-[101] box-border flex w-full items-center justify-end"
+      style={{ paddingRight: "calc(env(safe-area-inset-right, 0px) + 88px)" }}
+    >
+      <div className="pointer-events-none flex flex-col gap-2">
         <button
           type="button"
           onClick={goPrevReel}
-          className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
-          aria-label="이전 영상"
-          title="이전 영상"
+          className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
+          aria-label={t("explore.prevVideo")}
+          title={t("explore.prevVideo")}
         >
-          <ChevronUp className="h-6 w-6" strokeWidth={2.25} aria-hidden />
+          <ChevronUp
+            className="h-6 w-6 text-white transition-colors group-hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:group-hover:text-zinc-950"
+            strokeWidth={2.85}
+            aria-hidden
+          />
         </button>
         <button
           type="button"
           onClick={goNextReel}
-          className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
-          aria-label="다음 영상"
-          title="다음 영상"
+          className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
+          aria-label={t("explore.nextVideo")}
+          title={t("explore.nextVideo")}
         >
-          <ChevronDown className="h-6 w-6" strokeWidth={2.25} aria-hidden />
+          <ChevronDown
+            className="h-6 w-6 text-white transition-colors group-hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:group-hover:text-zinc-950"
+            strokeWidth={2.85}
+            aria-hidden
+          />
         </button>
       </div>
+    </div>
+  );
+
+  return (
+    <>
+      {chevronPortal ? createPortal(chevronRail, chevronPortal) : chevronRail}
 
       <div
         ref={scrollRef}
-        className="fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[30] overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth snap-y snap-mandatory md:left-[var(--reels-rail-w)]"
+        className="explore-reels-feed no-scrollbar fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[30] overflow-y-auto overflow-x-hidden overscroll-y-contain snap-y snap-mandatory"
         style={{ WebkitOverflowScrolling: "touch" }}
         role="feed"
-        aria-label="세로 탐색 릴스 피드 — 아래로 스크롤해 계속 보기"
+        aria-label={t("explore.feedAria")}
       >
-        {slides.map((video, i) => (
-          <ExploreReelSlide
-            key={`${video.id}-${watchOffset}-${i}`}
-            video={video}
-            scrollRootRef={scrollRef}
-            muted={reelMuted}
-            onMutedChange={setReelMuted}
+        {/* 스크롤 트랙은 뷰포트 전폭(스크롤바가 화면 맨 오른쪽), 콘텐츠만 레일 폭만큼 들여 레이아웃은 기존과 동일 */}
+        <div className="md:pl-[var(--reels-rail-w)]">
+          {slides.map((video, i) => (
+            <ExploreReelSlide
+              key={`${video.id}-${watchOffset}-${i}`}
+              video={video}
+              scrollRootRef={scrollRef}
+              muted={reelMuted}
+              onMutedChange={setReelMuted}
+            />
+          ))}
+          <div
+            ref={sentinelRef}
+            className="h-px w-full shrink-0 snap-none"
+            aria-hidden
           />
-        ))}
-        <div
-          ref={sentinelRef}
-          className="h-px w-full shrink-0 snap-none"
-          aria-hidden
-        />
+        </div>
       </div>
     </>
   );
@@ -346,14 +406,14 @@ export function ExploreReelsFeed({
     }
   }, [mode]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (typeof document === "undefined" || typeof window === "undefined") return;
     document.documentElement.dataset.exploreMode = mode;
     window.dispatchEvent(new Event("reels:explore-mode"));
     return () => {
       delete document.documentElement.dataset.exploreMode;
       window.dispatchEvent(new Event("reels:explore-mode"));
-    }
+    };
   }, [mode]);
 
   if (mode === "browse") {
@@ -363,6 +423,7 @@ export function ExploreReelsFeed({
         visibleGridCount={visibleGridCount}
         setVisibleGridCount={setVisibleGridCount}
         onEnterWatch={enterWatch}
+        browseCardTarget={browseCardTarget}
       />
     );
   }

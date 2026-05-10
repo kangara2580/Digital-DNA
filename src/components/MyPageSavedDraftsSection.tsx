@@ -18,6 +18,7 @@ import {
   type CustomizeDraftSummary,
 } from "@/lib/customizeDraftStorage";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
+import { useTranslation } from "@/hooks/useTranslation";
 
 function formatSec(s: number): string {
   const t = Math.max(0, s);
@@ -33,6 +34,7 @@ type DraftRow = {
 };
 
 export function MyPageSavedDraftsSection() {
+  const { t } = useTranslation();
   const [rows, setRows] = useState<DraftRow[]>([]);
   const [tick, setTick] = useState(0);
   const { hasPurchased, markPurchased } = usePurchasedVideos();
@@ -82,31 +84,20 @@ export function MyPageSavedDraftsSection() {
 
   if (!user) {
     return (
-      <section className="mt-8 reels-glass-card rounded-2xl p-5 sm:p-6">
-        <h2 className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          임시 저장한 편집
-        </h2>
-        <p className="mt-4 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          로그인하면 클라우드에 저장된 임시 편집을 이 기기에서도 이어서 열 수 있어요.
-        </p>
-      </section>
+      <p className="text-[15px] text-white/60 [html[data-theme='light']_&]:text-zinc-600">
+        {t("drafts.loginHint")}
+      </p>
     );
   }
 
   return (
-    <section className="mt-8 reels-glass-card rounded-2xl p-5 sm:p-6">
-      <h2 className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        임시 저장한 편집
-      </h2>
-      <p className="mt-2 text-[13px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-        <strong className="font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">임시 저장</strong>한 배경·구간·자막 설정이 계정에 연결되어 있습니다. 아래에서 확인한 뒤 이어서 편집하세요.
-      </p>
+    <>
       {cards.length === 0 ? (
-        <p className="mt-4 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          아직 임시 저장한 항목이 없어요.
+        <p className="w-full text-center text-[15px] text-white/60 [html[data-theme='light']_&]:text-zinc-600">
+          {t("drafts.empty")}
         </p>
       ) : (
-        <ul className="mt-4 space-y-3">
+        <ul className="space-y-3">
           {cards.map(({ videoId, updatedAt, video, summary }) => (
             <DraftRowView
               key={videoId}
@@ -131,7 +122,7 @@ export function MyPageSavedDraftsSection() {
           ))}
         </ul>
       )}
-    </section>
+    </>
   );
 }
 
@@ -152,13 +143,15 @@ function DraftRowView({
   onPurchaseDemo: () => void;
   onRemove: () => void;
 }) {
-  const title = video?.title ?? `릴스 ${videoId}`;
+  const { t, locale } = useTranslation();
+  const numLocale = locale === "en" ? "en-US" : "ko-KR";
+  const title = video?.title ?? t("drafts.videoFallback", { id: videoId });
   const poster = sanitizePosterSrc(video?.poster) ?? "";
   const creator = video?.creator;
   const when = (() => {
-    const t = Date.parse(updatedAt);
-    if (!Number.isFinite(t)) return updatedAt;
-    return new Date(t).toLocaleString("ko-KR");
+    const parsed = Date.parse(updatedAt);
+    if (!Number.isFinite(parsed)) return updatedAt;
+    return new Date(parsed).toLocaleString(numLocale);
   })();
 
   return (
@@ -169,47 +162,51 @@ function DraftRowView({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={poster} alt="" className="h-20 w-20 rounded-lg object-cover sm:h-[88px] sm:w-[88px]" />
           ) : (
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg border border-dashed border-white/20 bg-black/30 text-[10px] text-zinc-500 sm:h-[88px] sm:w-[88px] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100">
-              No poster
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg border border-dashed border-white/20 bg-black/30 text-[12px] text-zinc-500 sm:h-[88px] sm:w-[88px] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100">
+              {t("drafts.noPoster")}
             </div>
           )}
           <div className="min-w-0 flex-1 sm:hidden">
-            <p className="line-clamp-2 text-[14px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+            <p className="line-clamp-2 text-[16px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
               {title}
             </p>
-            <p className="text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-              {when} 저장
+            <p className="text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              {t("drafts.savedAt", { when })}
             </p>
           </div>
         </div>
 
         <div className="min-w-0 flex-1 space-y-2">
           <div className="hidden sm:block">
-            <p className="line-clamp-2 text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+            <p className="line-clamp-2 text-[17px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
               {title}
             </p>
             {creator ? (
-              <p className="mt-0.5 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">{creator}</p>
+              <p className="mt-0.5 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">{creator}</p>
             ) : null}
-            <p className="mt-1 text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-              {when} 저장
+            <p className="mt-1 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              {t("drafts.savedAt", { when })}
               {!video ? (
-                <span className="ml-2 rounded border border-amber-500/35 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-200 [html[data-theme='light']_&]:text-amber-900">
-                  카탈로그에 없는 ID — 본문만 복원됩니다
+                <span className="ml-2 rounded border border-amber-500/35 bg-amber-500/10 px-1.5 py-0.5 text-[12px] font-semibold text-amber-200 [html[data-theme='light']_&]:text-amber-900">
+                  {t("drafts.unknownCatalog")}
                 </span>
               ) : null}
             </p>
           </div>
 
           {summary ? (
-            <ul className="space-y-1 rounded-lg border border-white/8 bg-black/20 px-3 py-2 text-[12px] leading-snug text-zinc-300 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700">
+            <ul className="space-y-1 rounded-lg border border-white/8 bg-black/20 px-3 py-2 text-[14px] leading-snug text-zinc-300 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700">
               <li>
-                <span className="font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">배경</span>{" "}
-                {summary.backgroundMode === "image" ? "이미지 생성" : "영상 유지"}
+                <span className="font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                  {t("drafts.summary.background")}
+                </span>{" "}
+                {summary.backgroundMode === "image"
+                  ? t("drafts.summary.bgImage")
+                  : t("drafts.summary.bgVideo")}
                 {summary.backgroundPrompt.trim() ? (
                   <>
                     {" "}
-                    · 키워드: &ldquo;
+                    {t("drafts.keywordLead")} &ldquo;
                     {summary.backgroundPrompt.length > 72
                       ? `${summary.backgroundPrompt.slice(0, 72)}…`
                       : summary.backgroundPrompt}
@@ -218,20 +215,24 @@ function DraftRowView({
                 ) : null}
               </li>
               <li>
-                <span className="font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">구간</span>{" "}
+                <span className="font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                  {t("drafts.summary.segment")}
+                </span>{" "}
                 {formatSec(summary.trimStart)} — {formatSec(summary.trimEnd)}
               </li>
               <li>
-                <span className="font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">자막 레이어</span>{" "}
-                {summary.overlayCount}개
+                <span className="font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                  {t("drafts.summary.overlays")}
+                </span>{" "}
+                {t("drafts.summary.overlayCount", { n: summary.overlayCount })}
                 {summary.nonEmptyOverlayCount > 0
-                  ? ` (텍스트 입력 ${summary.nonEmptyOverlayCount}개)`
+                  ? t("drafts.summary.textInputs", { n: summary.nonEmptyOverlayCount })
                   : null}
               </li>
             </ul>
           ) : (
-            <p className="text-[12px] text-amber-300/90 [html[data-theme='light']_&]:text-amber-800">
-              저장 본문을 해석할 수 없어요. 스튜디오에서 다시 임시 저장해 주세요.
+            <p className="text-[14px] text-amber-300/90 [html[data-theme='light']_&]:text-amber-800">
+              {t("drafts.parseError")}
             </p>
           )}
 
@@ -240,28 +241,28 @@ function DraftRowView({
               <button
                 type="button"
                 onClick={onPurchaseDemo}
-                className="rounded-lg border border-reels-crimson/40 bg-reels-crimson/15 px-3 py-1.5 text-[11px] font-semibold text-reels-crimson hover:bg-reels-crimson/22"
+                className="rounded-lg border border-reels-crimson/40 bg-reels-crimson/15 px-3 py-1.5 text-[13px] font-semibold text-reels-crimson hover:bg-reels-crimson/22"
               >
-                바로 구매
+                {t("drafts.buyNow")}
               </button>
             ) : null}
             <Link
               href={`/video/${videoId}/customize`}
-              className="rounded-lg border border-reels-cyan/40 bg-reels-cyan/12 px-3 py-1.5 text-[11px] font-semibold text-reels-cyan hover:bg-reels-cyan/18"
+              className="rounded-lg border border-reels-cyan/40 bg-reels-cyan/12 px-3 py-1.5 text-[13px] font-semibold text-reels-cyan hover:bg-reels-cyan/18"
             >
-              이어서 편집
+              {t("drafts.resume")}
             </Link>
             <button
               type="button"
               onClick={() => {
-                if (typeof window !== "undefined" && !window.confirm("이 임시 저장을 삭제할까요?")) return;
+                if (typeof window !== "undefined" && !window.confirm(t("drafts.deleteConfirm"))) return;
                 onRemove();
               }}
-              className="inline-flex items-center gap-1 rounded-lg border border-white/12 bg-white/5 px-2.5 py-1.5 text-[11px] font-semibold text-zinc-400 transition hover:border-rose-500/35 hover:bg-rose-500/10 hover:text-rose-200 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-rose-800"
-              aria-label="임시 저장 삭제"
+              className="inline-flex items-center gap-1 rounded-lg border border-white/12 bg-white/5 px-2.5 py-1.5 text-[13px] font-semibold text-zinc-400 transition hover:border-reels-crimson/38 hover:bg-reels-crimson/12 hover:text-[#F3C4D9] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-reels-crimson"
+              aria-label={t("drafts.deleteAria")}
             >
               <Trash2 className="h-3.5 w-3.5" aria-hidden />
-              삭제
+              {t("drafts.delete")}
             </button>
           </div>
         </div>

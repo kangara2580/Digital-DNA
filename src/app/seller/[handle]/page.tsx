@@ -1,7 +1,13 @@
 import Image from "next/image";
-import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SellerFeedBioEditor } from "@/components/SellerFeedBioEditor";
+import {
+  SellerFeedEmptyListings,
+  SellerFeedListingCount,
+} from "@/components/SellerFeedI18n";
+import { SellerFeedSellCta } from "@/components/SellerFeedSellCta";
+import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { VideoCard } from "@/components/VideoCard";
 import type { FeedVideo } from "@/data/videos";
 import {
@@ -15,8 +21,41 @@ import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
 import { prisma } from "@/lib/prisma";
 import { getSupabaseServiceRoleClient } from "@/lib/supabaseServiceRole";
 import { supabaseTables } from "@/lib/supabaseTableNames";
+import { getMetricsForVideoDetail } from "@/data/trendingStats";
+import { translate } from "@/lib/i18n/dictionaries";
+import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
+import { resolveSellerDisplayNameForSeo } from "@/lib/seo/sellerSeo";
+
+/** Supabase `auth.users` id style; used so “내 피드” (`/seller/{userId}`) never 404s when there are no listings yet. */
+function isProbablySellerUserId(key: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key);
+}
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ handle: string }>;
+}): Promise<Metadata> {
+  const { handle } = await params;
+  let sellerKey = handle.trim();
+  try {
+    sellerKey = decodeURIComponent(handle).trim();
+  } catch {
+    sellerKey = handle.trim();
+  }
+  const name = await resolveSellerDisplayNameForSeo(sellerKey);
+  const locale = await getSiteLocale();
+  const title = translate(locale, "meta.sellerTitle", { name });
+  const description = translate(locale, "meta.sellerDescription", { name });
+  return {
+    title,
+    description,
+    ...socialMetadataFields(locale, title, description),
+  };
+}
 
 export default async function SellerPage({
   params,
@@ -70,66 +109,75 @@ export default async function SellerPage({
     videos = getVideosBySellerHandle(normalized);
   }
   const hasProfileOnly = Boolean(profileNickname || profileBio);
-  if (videos.length === 0 && !hasProfileOnly) notFound();
+  const allowEmptyOwnSellerPage = isProbablySellerUserId(sellerKey);
+  if (videos.length === 0 && !hasProfileOnly && !allowEmptyOwnSellerPage) notFound();
 
   const nickname = profileNickname || (videos[0] ? getSellerNickname(videos[0].creator) : sellerKey.slice(0, 8));
 
   return (
-    <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
-      <div className="mx-auto max-w-[1800px] px-4 py-8 sm:px-6 lg:px-8">
-        <nav className="mb-6 font-mono text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          <Link href="/" className="text-reels-cyan/90 hover:text-reels-cyan">
-            홈
-          </Link>
-          <span className="mx-1.5 text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
-          <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">{nickname}</span>
-        </nav>
-
-        <section className="reels-glass-card rounded-2xl border border-white/10 bg-white/[0.04] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80 sm:p-5">
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,34rem)] lg:items-center">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <Image
-                src={buildNotionistsAvatarUrl(nickname)}
-                width={56}
-                height={56}
-                alt=""
-                unoptimized
-                className="h-14 w-14 shrink-0 rounded-full object-cover ring-2 ring-white/10 [html[data-theme='light']_&]:ring-zinc-200"
-              />
-              <div className="min-w-0">
-                <h1 className="truncate text-2xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-3xl">
+    <div className="min-h-screen bg-transparent text-white [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
+      <div className="mx-auto max-w-[1800px] px-4 pb-14 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+        <SellerFeedSellCta sellerId={sellerKey} />
+        <section className="relative overflow-hidden rounded-[1.35rem] border border-white/[0.1] bg-[var(--background)] p-5 shadow-none sm:rounded-[1.65rem] sm:p-7 [html[data-theme='light']_&]:border-zinc-200/70 [html[data-theme='light']_&]:bg-gradient-to-br [html[data-theme='light']_&]:from-white [html[data-theme='light']_&]:via-white [html[data-theme='light']_&]:to-zinc-50/90 [html[data-theme='light']_&]:shadow-[0_20px_50px_-28px_rgba(15,23,42,0.18),0_0_0_1px_rgba(228,41,128,0.07)] [html[data-theme='light']_&]:backdrop-blur-xl">
+          <div
+            className="pointer-events-none absolute -left-24 -top-24 hidden h-48 w-48 rounded-full bg-[color:var(--reels-point)]/12 blur-[80px] [html[data-theme='light']_&]:block"
+            aria-hidden
+          />
+          <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,36rem)] lg:items-start lg:gap-8">
+            <div className="flex min-w-0 gap-4 sm:items-center sm:gap-5">
+              <div className="relative shrink-0">
+                <div
+                  className="absolute inset-0 hidden rounded-full bg-[color:var(--reels-point)]/15 blur-lg [html[data-theme='light']_&]:block"
+                  aria-hidden
+                />
+                <Image
+                  src={buildNotionistsAvatarUrl(nickname)}
+                  width={72}
+                  height={72}
+                  alt=""
+                  unoptimized
+                  className="relative h-[4.25rem] w-[4.25rem] rounded-full object-cover ring-2 ring-white/20 ring-offset-2 ring-offset-[var(--background)] sm:h-[4.75rem] sm:w-[4.75rem] [html[data-theme='light']_&]:ring-zinc-200/80 [html[data-theme='light']_&]:ring-offset-white"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="truncate text-2xl font-extrabold tracking-tight sm:text-[1.85rem] sm:leading-tight">
                   {nickname}
                 </h1>
-                <p className="mt-1 text-[12px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                  현재 판매 중인 영상 {videos.length}개{isDbSeller ? " · 실데이터" : ""}
-                </p>
+                <SellerFeedListingCount videoCount={videos.length} isDbSeller={isDbSeller} />
               </div>
             </div>
-            <SellerFeedBioEditor sellerId={sellerKey} initialBio={profileBio} />
+            <div className="min-w-0 border-t border-white/[0.1] pt-6 lg:border-t-0 lg:border-l lg:border-white/[0.1] lg:pl-8 lg:pt-0 [html[data-theme='light']_&]:border-zinc-200/75">
+              <SellerFeedBioEditor sellerId={sellerKey} initialBio={profileBio} />
+            </div>
           </div>
         </section>
 
-        <section className="mt-8">
-          <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-reels-cyan/90 [html[data-theme='light']_&]:text-reels-cyan">
-            Seller Clips
-          </h2>
+        <section className="mt-8 sm:mt-10">
           {videos.length > 0 ? (
-            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
               {videos.map((video) => (
                 <VideoCard
                   key={`seller-${sellerKey}-${video.id}`}
                   video={video}
                   reelLayout
-                  dense
+                  reelStrip
                   disableHoverScale
-                  className="min-w-0"
+                  hideCreatorMeta
+                  preloadMode="metadata"
+                  trendingRankCardPrice
+                  className="h-full min-w-0"
+                  detailHref={`/video/${encodeURIComponent(video.id)}?fromSeller=${encodeURIComponent(sellerKey)}`}
+                  footerExtension={
+                    <TrendingVideoStatsFooter
+                      hideMetricLabels
+                      metrics={getMetricsForVideoDetail(video.id)}
+                    />
+                  }
                 />
               ))}
             </div>
           ) : (
-            <div className="mt-3 rounded-xl border border-white/10 bg-black/20 px-4 py-5 text-sm text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-600">
-              아직 등록된 판매 영상이 없습니다.
-            </div>
+            <SellerFeedEmptyListings />
           )}
         </section>
       </div>

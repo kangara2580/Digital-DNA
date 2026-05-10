@@ -1,34 +1,16 @@
+"use client";
+
+import { useMemo } from "react";
 import { Eye, Heart, ShoppingBag, TrendingUp } from "lucide-react";
 import type { TrendingRankMetrics } from "@/data/trendingStats";
-
-/** 누적수익 — 한눈에 읽히도록 큰 자릿수·콤마 표기(전광판 박스 대신) */
-function RevenueHighlight({ won }: { won: number }) {
-  const formatted = Math.max(0, Math.floor(won)).toLocaleString("ko-KR");
-  return (
-    <p
-      className="text-right font-mono text-[15px] font-extrabold leading-none tabular-nums tracking-tight text-[#B9CCFF] sm:text-[16px] [html[data-theme='light']_&]:text-[#2F4FA8]"
-      aria-label={`수익 ${formatted}`}
-    >
-      {formatted}
-    </p>
-  );
-}
-
-function formatCountCompact(n: number): string {
-  if (n >= 100_000_000) {
-    const v = n / 100_000_000;
-    return `${v >= 10 ? Math.round(v) : v.toFixed(1)}억`;
-  }
-  if (n >= 10_000) {
-    const v = n / 10_000;
-    return `${v >= 100 ? Math.round(v) : v.toFixed(1)}만`;
-  }
-  if (n >= 1000) {
-    const v = n / 1000;
-    return `${v >= 10 ? Math.round(v) : v.toFixed(1)}천`;
-  }
-  return n.toLocaleString("ko-KR");
-}
+import { useTranslation } from "@/hooks/useTranslation";
+import { getExploreFormatters } from "@/lib/exploreLocaleFormat";
+import {
+  revenueAmountClass,
+  revenueTrendDeltaGlyphClass,
+  revenueTrendDownClass,
+  revenueTrendUpClass,
+} from "@/lib/revenueDisplayTokens";
 
 type Props = {
   metrics: TrendingRankMetrics;
@@ -36,10 +18,13 @@ type Props = {
   salesCount?: number;
   /** 오픈 에디션이 아닐 때 남은 수량 행 */
   stockRow?: { remaining: number | null; soldOut: boolean } | null;
+  /** 메인 인기순위 카드 등 — 수익·조회수·좋아요 표기 글자만 숨김(아이콘·수치·▲▼ 유지) */
+  hideMetricLabels?: boolean;
+  /** 장바구니·좁은 그리드 — 패딩·행 간격·글자 크기 축소 */
+  dense?: boolean;
 };
 
-const rowCls =
-  "flex items-center gap-8 py-1.5";
+const rowCls = "flex items-center gap-8 py-1.5";
 
 const labelCls =
   "w-[4.5rem] shrink-0 text-[14px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
@@ -47,64 +32,119 @@ const labelCls =
 const valueCls =
   "text-[15px] font-extrabold leading-snug tabular-nums tracking-tight text-[#EAF1FF] [html[data-theme='light']_&]:text-zinc-900";
 
+/** 메인 인기순위(라벨 숨김) — 수익·조회·좋아요 숫자만 소형 */
+const valueClsRankingCompact =
+  "text-[12px] font-extrabold leading-snug tabular-nums tracking-tight text-[#EAF1FF] [html[data-theme='light']_&]:text-zinc-900 sm:text-[13px]";
+
 export function TrendingVideoStatsFooter({
   metrics,
   salesCount,
   stockRow,
+  hideMetricLabels = false,
+  dense = false,
 }: Props) {
+  const { t, locale } = useTranslation();
+  const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
   const isUp = metrics.growthPercent >= 0;
-  const hasExtendedRows = typeof salesCount === "number" || Boolean(stockRow);
+  const metricRowCls =
+    dense && hideMetricLabels
+      ? "flex w-full min-w-0 items-center gap-1 py-0.5"
+      : hideMetricLabels
+        ? "flex w-full min-w-0 items-center gap-2 py-1.5"
+        : rowCls;
+  const labelColCls = hideMetricLabels
+    ? dense
+      ? "inline-flex w-[2.75rem] shrink-0 items-center justify-start gap-0.5"
+      : "inline-flex w-[3.5rem] shrink-0 items-center justify-start gap-1"
+    : "inline-flex w-[4.5rem] shrink-0 items-center gap-1.5";
+  const labelTone =
+    "text-[14px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
+  const valueDdExtras = hideMetricLabels ? "flex-1 text-right" : "";
+  const metricValueSize =
+    dense && hideMetricLabels
+      ? "text-[10px] sm:text-[11px]"
+      : hideMetricLabels
+        ? "text-[12px] sm:text-[13px]"
+        : "text-[15px]";
+  const neutralMetricValueCls =
+    dense && hideMetricLabels
+      ? "text-[10px] font-extrabold leading-snug tabular-nums tracking-tight text-[#EAF1FF] [html[data-theme='light']_&]:text-zinc-900 sm:text-[11px]"
+      : hideMetricLabels
+        ? valueClsRankingCompact
+        : valueCls;
+  const iconCls = dense ? "h-3 w-3 shrink-0" : "h-3.5 w-3.5 shrink-0";
+  const deltaCls = dense ? "text-[9px] leading-none" : "text-[11px] leading-none";
 
   return (
-    <div className="w-fit px-3 py-2 [html[data-theme='light']_&]:bg-white sm:px-4">
-      <dl className="leading-snug">
-        <div className={rowCls}>
-          <dt className={`inline-flex shrink-0 w-[4.5rem] items-center gap-1.5 text-[14px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500`}>
-            <TrendingUp className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            수익
+    <div
+      className={`${hideMetricLabels ? "w-full min-w-0" : "w-fit"} ${
+        dense
+          ? "bg-transparent px-2 py-1 [html[data-theme='light']_&]:bg-transparent"
+          : "px-3 py-2 [html[data-theme='light']_&]:bg-white sm:px-4"
+      }`}
+    >
+      <dl className={hideMetricLabels ? "w-full min-w-0 leading-snug" : "leading-snug"}>
+        <div className={metricRowCls}>
+          <dt className={`${labelColCls} ${labelTone}`}>
+            <TrendingUp className={iconCls} aria-hidden />
+            {hideMetricLabels ? <span className="sr-only">{t("stats.revenue")}</span> : t("stats.revenue")}
             <span
-              className={`text-[11px] leading-none ${isUp ? "text-[#FF3B57]" : "text-[#2FA2FF]"}`}
+              className={`${revenueTrendDeltaGlyphClass} ${deltaCls} ${isUp ? revenueTrendUpClass : revenueTrendDownClass}`}
               aria-hidden
             >
               {isUp ? "▲" : "▼"}
             </span>
           </dt>
-          <dd className="text-[15px] font-extrabold tabular-nums text-[#B9CCFF] [html[data-theme='light']_&]:text-[#2F4FA8]" style={{minWidth:0}}>
-            {Math.max(0, Math.floor(metrics.cumulativeRevenueWon)).toLocaleString("ko-KR")}
+          <dd
+            className={`min-w-0 font-extrabold tabular-nums ${metricValueSize} ${valueDdExtras} ${revenueAmountClass}`}
+          >
+            {fmt.formatCompactWon(metrics.cumulativeRevenueWon)}
           </dd>
         </div>
-        <div className={rowCls}>
-          <dt className={`${labelCls} inline-flex items-center gap-1.5`}>
-            <Eye className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            조회수
+        <div className={metricRowCls}>
+          <dt className={`${labelColCls} ${labelTone}`}>
+            <Eye className={iconCls} aria-hidden />
+            {hideMetricLabels ? <span className="sr-only">{t("stats.views")}</span> : t("stats.views")}
           </dt>
-          <dd className={valueCls}>{formatCountCompact(metrics.totalViews)}</dd>
+          <dd className={`${neutralMetricValueCls} min-w-0 ${valueDdExtras}`}>
+            {fmt.formatViewCountRail(metrics.totalViews)}
+          </dd>
         </div>
-        <div className={rowCls}>
-          <dt className={`${labelCls} inline-flex items-center gap-1.5`}>
-            <Heart className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            좋아요
+        <div className={metricRowCls}>
+          <dt className={`${labelColCls} ${labelTone}`}>
+            <Heart className={iconCls} aria-hidden />
+            {hideMetricLabels ? <span className="sr-only">{t("stats.likes")}</span> : t("stats.likes")}
           </dt>
-          <dd className={valueCls}>{formatCountCompact(metrics.totalLikes)}</dd>
+          <dd className={`${neutralMetricValueCls} min-w-0 ${valueDdExtras}`}>
+            {fmt.formatLikeApprox(metrics.totalLikes)}
+          </dd>
         </div>
         {typeof salesCount === "number" ? (
           <div className={rowCls}>
             <dt className={`${labelCls} inline-flex items-center gap-1.5`}>
               <ShoppingBag className="h-3.5 w-3.5 shrink-0" aria-hidden />
-              구매
+              {t("stats.purchases")}
             </dt>
-            <dd className={valueCls}>{salesCount.toLocaleString("ko-KR")}명</dd>
+            <dd className={valueCls}>
+              {t("stats.buyersCount", {
+                n: salesCount.toLocaleString(fmt.numberLocale),
+              })}
+            </dd>
           </div>
         ) : null}
         {stockRow ? (
           <div className={rowCls}>
-            <dt className={labelCls}>남은 수량</dt>
+            <dt className={labelCls}>{t("stats.remaining")}</dt>
             <dd className={valueCls}>
               {stockRow.soldOut ? (
-                <span className="text-reels-crimson">0개 — 품절</span>
+                <span className="text-reels-crimson">{t("stats.soldOutLine")}</span>
               ) : (
                 <span className="text-reels-cyan">
-                  {stockRow.remaining != null ? `${stockRow.remaining.toLocaleString("ko-KR")}개` : "—"}
+                  {stockRow.remaining != null
+                    ? t("stats.unitsLeft", {
+                        n: stockRow.remaining.toLocaleString(fmt.numberLocale),
+                      })
+                    : "—"}
                 </span>
               )}
             </dd>
