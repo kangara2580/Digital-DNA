@@ -1,0 +1,117 @@
+{
+  "psdName": "bridie-2-7-3",
+  "dimensions": {
+    "width": 1000,
+    "height": 1000
+  },
+  "layers": [
+    {
+      "name": "heart-4",
+      "path": "heart-4",
+      "position": {
+        "origin": {
+          "x": 199,
+          "y": 676.5
+        },
+        "bounds": {
+          "top": 530,
+          "left": 57,
+          "right": 341,
+          "bottom": 823
+        }
+      },
+      "dimensions": {
+        "width": 284,
+        "height": 293
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "heart-4.png",
+        "ktx": "heart-4.ktx2"
+      }
+    },
+    {
+      "name": "heart-4",
+      "path": "heart-4",
+      "position": {
+        "origin": {
+          "x": 1326.5,
+          "y": 1129
+        },
+        "bounds": {
+          "top": 1071,
+          "left": 1259,
+          "right": 1394,
+          "bottom": 1187
+        }
+      },
+      "dimensions": {
+        "width": 135,
+        "height": 116
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "heart-4.png",
+        "ktx": "heart-4.ktx2"
+      }
+    },
+    {
+      "name": "heart-5",
+      "path": "heart-5",
+      "position": {
+        "origin": {
+          "x": 504.5,
+          "y": 282
+        },
+        "bounds": {
+          "top": 5,
+          "left": 95,
+          "right": 914,
+          "bottom": 559
+        }
+      },
+      "dimensions": {
+        "width": 819,
+        "height": 554
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "heart-5.png",
+        "ktx": "heart-5.ktx2"
+      }
+    },
+    {
+      "name": "heart-3",
+      "path": "heart-3",
+      "position": {
+        "origin": {
+          "x": 674.5,
+          "y": 809.5
+        },
+        "bounds": {
+          "top": 628,
+          "left": 435,
+          "right": 914,
+          "bottom": 991
+        }
+      },
+      "dimensions": {
+        "width": 479,
+        "height": 363
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "heart-3.png",
+        "ktx": "heart-3.ktx2"
+      }
+    }
+  ]
+}

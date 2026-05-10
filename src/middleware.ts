@@ -34,6 +34,38 @@ function shouldRedirectVercelAuthSurfaceToCanonical(pathname: string): boolean {
  * @see https://supabase.com/docs/guides/auth/server-side/nextjs
  */
 export async function middleware(request: NextRequest) {
+  const tsdMirrorRoutes: Record<string, string> = {
+    "/chapter-1": "/tsd-mirror/chapter-1/index.html",
+    "/chapter-2": "/tsd-mirror/chapter-2/index.html",
+    "/chapter-3": "/tsd-mirror/chapter-3/index.html",
+    "/chapter-4": "/tsd-mirror/chapter-4/index.html",
+    "/chapter-5": "/tsd-mirror/chapter-5/index.html",
+  };
+  const referer = request.headers.get("referer") || "";
+  const fromThroughSlidingDoors =
+    referer.includes("/through-sliding-doors") || referer.includes("/tsd-mirror/");
+
+  if (request.nextUrl.pathname in tsdMirrorRoutes) {
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = tsdMirrorRoutes[request.nextUrl.pathname];
+    rewriteUrl.search = "";
+    return NextResponse.rewrite(rewriteUrl);
+  }
+
+  if (fromThroughSlidingDoors && request.nextUrl.pathname === "/about") {
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = "/tsd-mirror/about/index.html";
+    rewriteUrl.search = "";
+    return NextResponse.rewrite(rewriteUrl);
+  }
+
+  if (fromThroughSlidingDoors && request.nextUrl.pathname === "/") {
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = "/tsd-mirror/index.html";
+    rewriteUrl.search = "";
+    return NextResponse.rewrite(rewriteUrl);
+  }
+
   // 일부 설정 오타(leading space)로 "/%20auth/callback" 으로 돌아오는 OAuth 콜백을
   // 정상 경로로 정정합니다.
   if (request.nextUrl.pathname === "/%20auth/callback") {

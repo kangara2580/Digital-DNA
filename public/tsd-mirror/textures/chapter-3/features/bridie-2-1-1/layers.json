@@ -1,0 +1,225 @@
+{
+  "psdName": "bridie-2-1-1",
+  "dimensions": {
+    "width": 5018,
+    "height": 3480
+  },
+  "layers": [
+    {
+      "name": "text-2",
+      "path": "text-2",
+      "position": {
+        "origin": {
+          "x": 1526,
+          "y": 3287.5
+        },
+        "bounds": {
+          "top": 2978,
+          "left": 989,
+          "right": 2063,
+          "bottom": 3597
+        }
+      },
+      "dimensions": {
+        "width": 1074,
+        "height": 619
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "text-2.png",
+        "ktx": "text-2.ktx2"
+      }
+    },
+    {
+      "name": "text-1",
+      "path": "text-1",
+      "position": {
+        "origin": {
+          "x": 3931.5,
+          "y": 1049
+        },
+        "bounds": {
+          "top": 451,
+          "left": 3664,
+          "right": 4199,
+          "bottom": 1647
+        }
+      },
+      "dimensions": {
+        "width": 535,
+        "height": 1196
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "text-1.png",
+        "ktx": "text-1.ktx2"
+      }
+    },
+    {
+      "name": "mandala-2",
+      "path": "mandala-2",
+      "position": {
+        "origin": {
+          "x": 2057,
+          "y": 1732
+        },
+        "bounds": {
+          "top": 654,
+          "left": 995,
+          "right": 3119,
+          "bottom": 2810
+        }
+      },
+      "dimensions": {
+        "width": 2124,
+        "height": 2156
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "mandala-2.png",
+        "ktx": "mandala-2.ktx2"
+      }
+    },
+    {
+      "name": "mandala-1",
+      "path": "mandala-1",
+      "position": {
+        "origin": {
+          "x": 3232.5,
+          "y": 2882
+        },
+        "bounds": {
+          "top": 2302,
+          "left": 2661,
+          "right": 3804,
+          "bottom": 3462
+        }
+      },
+      "dimensions": {
+        "width": 1143,
+        "height": 1160
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "mandala-1.png",
+        "ktx": "mandala-1.ktx2"
+      }
+    },
+    {
+      "name": "heart-3",
+      "path": "heart/heart-3",
+      "position": {
+        "origin": {
+          "x": 2537,
+          "y": 1727
+        },
+        "bounds": {
+          "top": 1050,
+          "left": 1679,
+          "right": 3395,
+          "bottom": 2404
+        }
+      },
+      "dimensions": {
+        "width": 1716,
+        "height": 1354
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "heart-heart-3.png",
+        "ktx": "heart-heart-3.ktx2"
+      }
+    },
+    {
+      "name": "heart-2",
+      "path": "heart/heart-2",
+      "position": {
+        "origin": {
+          "x": 2528,
+          "y": 1754
+        },
+        "bounds": {
+          "top": 1033,
+          "left": 1637,
+          "right": 3419,
+          "bottom": 2475
+        }
+      },
+      "dimensions": {
+        "width": 1782,
+        "height": 1442
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "heart-heart-2.png",
+        "ktx": "heart-heart-2.ktx2"
+      }
+    },
+    {
+      "name": "heart-1",
+      "path": "heart/heart-1",
+      "position": {
+        "origin": {
+          "x": 2516.5,
+          "y": 1764
+        },
+        "bounds": {
+          "top": 723,
+          "left": 1395,
+          "right": 3638,
+          "bottom": 2805
+        }
+      },
+      "dimensions": {
+        "width": 2243,
+        "height": 2082
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "heart-heart-1.png",
+        "ktx": "heart-heart-1.ktx2"
+      }
+    },
+    {
+      "name": "couple",
+      "path": "couple",
+      "position": {
+        "origin": {
+          "x": 2511.5,
+          "y": 1749.5
+        },
+        "bounds": {
+          "top": 1101,
+          "left": 1825,
+          "right": 3198,
+          "bottom": 2398
+        }
+      },
+      "dimensions": {
+        "width": 1373,
+        "height": 1297
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "couple.png",
+        "ktx": "couple.ktx2"
+      }
+    }
+  ]
+}

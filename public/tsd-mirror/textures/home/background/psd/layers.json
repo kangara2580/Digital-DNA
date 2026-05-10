@@ -1,0 +1,387 @@
+{
+  "psdName": "train-background-looped-v2",
+  "dimensions": {
+    "width": 12288,
+    "height": 4096
+  },
+  "layers": [
+    {
+      "name": "cloud-2-4",
+      "path": "clouds-2/cloud-2-4",
+      "position": {
+        "origin": {
+          "x": 3883.5,
+          "y": 1473.5
+        },
+        "bounds": {
+          "top": 1426,
+          "left": 3472,
+          "right": 4295,
+          "bottom": 1521
+        }
+      },
+      "dimensions": {
+        "width": 823,
+        "height": 95
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "clouds-2-cloud-2-4.png",
+        "ktx": "clouds-2-cloud-2-4.ktx2"
+      }
+    },
+    {
+      "name": "cloud-2-3",
+      "path": "clouds-2/cloud-2-3",
+      "position": {
+        "origin": {
+          "x": 5290.5,
+          "y": 1635
+        },
+        "bounds": {
+          "top": 1597,
+          "left": 5117,
+          "right": 5464,
+          "bottom": 1673
+        }
+      },
+      "dimensions": {
+        "width": 347,
+        "height": 76
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "clouds-2-cloud-2-3.png",
+        "ktx": "clouds-2-cloud-2-3.ktx2"
+      }
+    },
+    {
+      "name": "cloud-2-2",
+      "path": "clouds-2/cloud-2-2",
+      "position": {
+        "origin": {
+          "x": 6839.5,
+          "y": 1518.5
+        },
+        "bounds": {
+          "top": 1451,
+          "left": 6640,
+          "right": 7039,
+          "bottom": 1586
+        }
+      },
+      "dimensions": {
+        "width": 399,
+        "height": 135
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "clouds-2-cloud-2-2.png",
+        "ktx": "clouds-2-cloud-2-2.ktx2"
+      }
+    },
+    {
+      "name": "cloud-2-1",
+      "path": "clouds-2/cloud-2-1",
+      "position": {
+        "origin": {
+          "x": 7710,
+          "y": 1458
+        },
+        "bounds": {
+          "top": 1406,
+          "left": 7570,
+          "right": 7850,
+          "bottom": 1510
+        }
+      },
+      "dimensions": {
+        "width": 280,
+        "height": 104
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "clouds-2-cloud-2-1.png",
+        "ktx": "clouds-2-cloud-2-1.ktx2"
+      }
+    },
+    {
+      "name": "houses",
+      "path": "houses/houses",
+      "position": {
+        "origin": {
+          "x": 6253,
+          "y": 2332
+        },
+        "bounds": {
+          "top": 1794,
+          "left": 3831,
+          "right": 8675,
+          "bottom": 2870
+        }
+      },
+      "dimensions": {
+        "width": 4844,
+        "height": 1076
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "houses-houses.png",
+        "ktx": "houses-houses.ktx2"
+      }
+    },
+    {
+      "name": "ground",
+      "path": "ground/ground",
+      "position": {
+        "origin": {
+          "x": 6238,
+          "y": 2415
+        },
+        "bounds": {
+          "top": 2102,
+          "left": 3816,
+          "right": 8660,
+          "bottom": 2728
+        }
+      },
+      "dimensions": {
+        "width": 4844,
+        "height": 626
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "ground-ground.png",
+        "ktx": "ground-ground.ktx2"
+      }
+    },
+    {
+      "name": "cloud-3",
+      "path": "clouds-1/cloud-3",
+      "position": {
+        "origin": {
+          "x": 5832.5,
+          "y": 1063.5
+        },
+        "bounds": {
+          "top": 925,
+          "left": 5239,
+          "right": 6426,
+          "bottom": 1202
+        }
+      },
+      "dimensions": {
+        "width": 1187,
+        "height": 277
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "clouds-1-cloud-3.png",
+        "ktx": "clouds-1-cloud-3.ktx2"
+      }
+    },
+    {
+      "name": "cloud-2",
+      "path": "clouds-1/cloud-2",
+      "position": {
+        "origin": {
+          "x": 4736,
+          "y": 1325
+        },
+        "bounds": {
+          "top": 1272,
+          "left": 4489,
+          "right": 4983,
+          "bottom": 1378
+        }
+      },
+      "dimensions": {
+        "width": 494,
+        "height": 106
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "clouds-1-cloud-2.png",
+        "ktx": "clouds-1-cloud-2.ktx2"
+      }
+    },
+    {
+      "name": "cloud-1",
+      "path": "clouds-1/cloud-1",
+      "position": {
+        "origin": {
+          "x": 8131.5,
+          "y": 1313.5
+        },
+        "bounds": {
+          "top": 1254,
+          "left": 7877,
+          "right": 8386,
+          "bottom": 1373
+        }
+      },
+      "dimensions": {
+        "width": 509,
+        "height": 119
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "clouds-1-cloud-1.png",
+        "ktx": "clouds-1-cloud-1.ktx2"
+      }
+    },
+    {
+      "name": "wires",
+      "path": "wires/wires",
+      "position": {
+        "origin": {
+          "x": 6240,
+          "y": 2118
+        },
+        "bounds": {
+          "top": 1648,
+          "left": 3818,
+          "right": 8662,
+          "bottom": 2588
+        }
+      },
+      "dimensions": {
+        "width": 4844,
+        "height": 940
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "wires-wires.png",
+        "ktx": "wires-wires.ktx2"
+      }
+    },
+    {
+      "name": "fore-poles",
+      "path": "foreground/fore-poles",
+      "position": {
+        "origin": {
+          "x": 6238,
+          "y": 2149
+        },
+        "bounds": {
+          "top": 1480,
+          "left": 2690,
+          "right": 9786,
+          "bottom": 2818
+        }
+      },
+      "dimensions": {
+        "width": 7096,
+        "height": 1338
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "foreground-fore-poles.png",
+        "ktx": "foreground-fore-poles.ktx2"
+      }
+    },
+    {
+      "name": "fill",
+      "path": "foreground/fill",
+      "position": {
+        "origin": {
+          "x": 6240,
+          "y": 3072.5
+        },
+        "bounds": {
+          "top": 2675,
+          "left": 2896,
+          "right": 9584,
+          "bottom": 3470
+        }
+      },
+      "dimensions": {
+        "width": 6688,
+        "height": 795
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "foreground-fill.png",
+        "ktx": "foreground-fill.ktx2"
+      }
+    },
+    {
+      "name": "posts",
+      "path": "features/posts",
+      "position": {
+        "origin": {
+          "x": 4626.5,
+          "y": 2155.5
+        },
+        "bounds": {
+          "top": 1434,
+          "left": 4065,
+          "right": 5188,
+          "bottom": 2877
+        }
+      },
+      "dimensions": {
+        "width": 1123,
+        "height": 1443
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "features-posts.png",
+        "ktx": "features-posts.ktx2"
+      }
+    },
+    {
+      "name": "crossing",
+      "path": "features/crossing",
+      "position": {
+        "origin": {
+          "x": 8221.5,
+          "y": 2142
+        },
+        "bounds": {
+          "top": 1541,
+          "left": 7547,
+          "right": 8896,
+          "bottom": 2743
+        }
+      },
+      "dimensions": {
+        "width": 1349,
+        "height": 1202
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "features-crossing.png",
+        "ktx": "features-crossing.ktx2"
+      }
+    }
+  ]
+}

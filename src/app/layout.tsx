@@ -11,11 +11,7 @@ import {
 } from "next/font/google";
 import { AppProviders } from "@/components/AppProviders";
 import { NavigationRecovery } from "@/components/NavigationRecovery";
-import { DnaBuilderDock } from "@/components/DnaBuilderDock";
-import { FloatingHelp } from "@/components/FloatingHelp";
-import { MallTopNav } from "@/components/MallTopNav";
-import { ReelsLeftRail } from "@/components/ReelsLeftRail";
-import { ARAFooter } from "@/components/ARAFooter";
+import { RouteChrome } from "@/components/RouteChrome";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -99,14 +95,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-[var(--background,#02040a)] font-sans text-[var(--foreground,#fafafa)] antialiased">
         <AppProviders>
           <NavigationRecovery />
-          <ReelsLeftRail />
-          <div className="min-w-0 md:pl-[var(--reels-rail-w)]">
-            <MallTopNav />
-            {children}
-            <ARAFooter />
-            <DnaBuilderDock />
-            <FloatingHelp />
-          </div>
+          <RouteChrome>{children}</RouteChrome>
         </AppProviders>
       </body>
     </html>

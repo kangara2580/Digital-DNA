@@ -1,0 +1,441 @@
+{
+  "psdName": "lani-2-2-2",
+  "dimensions": {
+    "width": 5018,
+    "height": 5018
+  },
+  "layers": [
+    {
+      "name": "gradient-scale-quarter-uastc",
+      "path": "gradient-scale-quarter-uastc",
+      "position": {
+        "origin": {
+          "x": 2500.5,
+          "y": 2440.5
+        },
+        "bounds": {
+          "top": -96,
+          "left": 421,
+          "right": 4580,
+          "bottom": 4977
+        }
+      },
+      "dimensions": {
+        "width": 4159,
+        "height": 5073
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "gradient-scale-quarter-uastc.png",
+        "ktx": "gradient-scale-quarter-uastc.ktx2"
+      }
+    },
+    {
+      "name": "House",
+      "path": "House",
+      "position": {
+        "origin": {
+          "x": 2080.5,
+          "y": 2447
+        },
+        "bounds": {
+          "top": 747,
+          "left": 1595,
+          "right": 2566,
+          "bottom": 4147
+        }
+      },
+      "dimensions": {
+        "width": 971,
+        "height": 3400
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "house.png",
+        "ktx": "house.ktx2"
+      }
+    },
+    {
+      "name": "Lani",
+      "path": "Lani",
+      "position": {
+        "origin": {
+          "x": 2405,
+          "y": 2839.5
+        },
+        "bounds": {
+          "top": 1758,
+          "left": 2051,
+          "right": 2759,
+          "bottom": 3921
+        }
+      },
+      "dimensions": {
+        "width": 708,
+        "height": 2163
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "lani.png",
+        "ktx": "lani.ktx2"
+      }
+    },
+    {
+      "name": "flowers-3",
+      "path": "foreground-1/flowers-3",
+      "position": {
+        "origin": {
+          "x": 1406.5,
+          "y": 2122
+        },
+        "bounds": {
+          "top": 1844,
+          "left": 1145,
+          "right": 1668,
+          "bottom": 2400
+        }
+      },
+      "dimensions": {
+        "width": 523,
+        "height": 556
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "foreground-1-flowers-3.png",
+        "ktx": "foreground-1-flowers-3.ktx2"
+      }
+    },
+    {
+      "name": "heart-1",
+      "path": "foreground-1/heart-1",
+      "position": {
+        "origin": {
+          "x": 3127,
+          "y": 1157.5
+        },
+        "bounds": {
+          "top": 872,
+          "left": 2927,
+          "right": 3327,
+          "bottom": 1443
+        }
+      },
+      "dimensions": {
+        "width": 400,
+        "height": 571
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "foreground-1-heart-1.png",
+        "ktx": "foreground-1-heart-1.ktx2"
+      }
+    },
+    {
+      "name": "heart-10",
+      "path": "foreground-1/heart-10",
+      "position": {
+        "origin": {
+          "x": 1724,
+          "y": 138.5
+        },
+        "bounds": {
+          "top": -147,
+          "left": 1524,
+          "right": 1924,
+          "bottom": 424
+        }
+      },
+      "dimensions": {
+        "width": 400,
+        "height": 571
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "foreground-1-heart-10.png",
+        "ktx": "foreground-1-heart-10.ktx2"
+      }
+    },
+    {
+      "name": "apple",
+      "path": "foreground-1/apple",
+      "position": {
+        "origin": {
+          "x": 1255,
+          "y": 3919.5
+        },
+        "bounds": {
+          "top": 3606,
+          "left": 1000,
+          "right": 1510,
+          "bottom": 4233
+        }
+      },
+      "dimensions": {
+        "width": 510,
+        "height": 627
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "foreground-1-apple.png",
+        "ktx": "foreground-1-apple.ktx2"
+      }
+    },
+    {
+      "name": "flowers-cash",
+      "path": "foreground-1/flowers-cash",
+      "position": {
+        "origin": {
+          "x": 3466.5,
+          "y": 3095
+        },
+        "bounds": {
+          "top": 2689,
+          "left": 3073,
+          "right": 3860,
+          "bottom": 3501
+        }
+      },
+      "dimensions": {
+        "width": 787,
+        "height": 812
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "foreground-1-flowers-cash.png",
+        "ktx": "foreground-1-flowers-cash.ktx2"
+      }
+    },
+    {
+      "name": "hearts-3",
+      "path": "foreground-2/hearts-3",
+      "position": {
+        "origin": {
+          "x": 1534,
+          "y": 3046
+        },
+        "bounds": {
+          "top": 2749,
+          "left": 1219,
+          "right": 1849,
+          "bottom": 3343
+        }
+      },
+      "dimensions": {
+        "width": 630,
+        "height": 594
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "foreground-2-hearts-3.png",
+        "ktx": "foreground-2-hearts-3.ktx2"
+      }
+    },
+    {
+      "name": "hearts-13",
+      "path": "foreground-2/hearts-13",
+      "position": {
+        "origin": {
+          "x": 655,
+          "y": 1568
+        },
+        "bounds": {
+          "top": 1413,
+          "left": 491,
+          "right": 819,
+          "bottom": 1723
+        }
+      },
+      "dimensions": {
+        "width": 328,
+        "height": 310
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "foreground-2-hearts-13.png",
+        "ktx": "foreground-2-hearts-13.ktx2"
+      }
+    },
+    {
+      "name": "flowers-2",
+      "path": "foreground-2/flowers-2",
+      "position": {
+        "origin": {
+          "x": 2776.5,
+          "y": 3894
+        },
+        "bounds": {
+          "top": 3437,
+          "left": 2407,
+          "right": 3146,
+          "bottom": 4351
+        }
+      },
+      "dimensions": {
+        "width": 739,
+        "height": 914
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "foreground-2-flowers-2.png",
+        "ktx": "foreground-2-flowers-2.ktx2"
+      }
+    },
+    {
+      "name": "Layer 1",
+      "path": "foreground-2/Layer 1",
+      "position": {
+        "origin": {
+          "x": 3813,
+          "y": 4226.5
+        },
+        "bounds": {
+          "top": 3879,
+          "left": 3516,
+          "right": 4110,
+          "bottom": 4574
+        }
+      },
+      "dimensions": {
+        "width": 594,
+        "height": 695
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "foreground-2-layer-1.png",
+        "ktx": "foreground-2-layer-1.ktx2"
+      }
+    },
+    {
+      "name": "beer",
+      "path": "foreground-2/beer",
+      "position": {
+        "origin": {
+          "x": 3592.5,
+          "y": 2093
+        },
+        "bounds": {
+          "top": 1580,
+          "left": 3336,
+          "right": 3849,
+          "bottom": 2606
+        }
+      },
+      "dimensions": {
+        "width": 513,
+        "height": 1026
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "foreground-2-beer.png",
+        "ktx": "foreground-2-beer.ktx2"
+      }
+    },
+    {
+      "name": "heart-2",
+      "path": "foreground-2/heart-2",
+      "position": {
+        "origin": {
+          "x": 3084,
+          "y": 1753.5
+        },
+        "bounds": {
+          "top": 1562,
+          "left": 2870,
+          "right": 3298,
+          "bottom": 1945
+        }
+      },
+      "dimensions": {
+        "width": 428,
+        "height": 383
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "foreground-2-heart-2.png",
+        "ktx": "foreground-2-heart-2.ktx2"
+      }
+    },
+    {
+      "name": "heart-15",
+      "path": "foreground-3/heart-15",
+      "position": {
+        "origin": {
+          "x": 2439.5,
+          "y": 774
+        },
+        "bounds": {
+          "top": 632,
+          "left": 2264,
+          "right": 2615,
+          "bottom": 916
+        }
+      },
+      "dimensions": {
+        "width": 351,
+        "height": 284
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "foreground-3-heart-15.png",
+        "ktx": "foreground-3-heart-15.ktx2"
+      }
+    },
+    {
+      "name": "flowers-6",
+      "path": "foreground-3/flowers-6",
+      "position": {
+        "origin": {
+          "x": 326,
+          "y": 2774
+        },
+        "bounds": {
+          "top": 2093,
+          "left": -48,
+          "right": 700,
+          "bottom": 3455
+        }
+      },
+      "dimensions": {
+        "width": 748,
+        "height": 1362
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "foreground-3-flowers-6.png",
+        "ktx": "foreground-3-flowers-6.ktx2"
+      }
+    }
+  ]
+}

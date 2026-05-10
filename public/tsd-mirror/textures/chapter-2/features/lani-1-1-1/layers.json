@@ -1,0 +1,63 @@
+{
+  "psdName": "lani-1-1-1",
+  "dimensions": {
+    "width": 5018,
+    "height": 3480
+  },
+  "layers": [
+    {
+      "name": "bang",
+      "path": "bang",
+      "position": {
+        "origin": {
+          "x": 2699,
+          "y": 1738.5
+        },
+        "bounds": {
+          "top": 855,
+          "left": 1590,
+          "right": 3808,
+          "bottom": 2622
+        }
+      },
+      "dimensions": {
+        "width": 2218,
+        "height": 1767
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "bang.png",
+        "ktx": "bang.ktx2"
+      }
+    },
+    {
+      "name": "lani",
+      "path": "lani",
+      "position": {
+        "origin": {
+          "x": 2835,
+          "y": 2125
+        },
+        "bounds": {
+          "top": 1246,
+          "left": 1940,
+          "right": 3730,
+          "bottom": 3004
+        }
+      },
+      "dimensions": {
+        "width": 1790,
+        "height": 1758
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "lani.png",
+        "ktx": "lani.ktx2"
+      }
+    }
+  ]
+}

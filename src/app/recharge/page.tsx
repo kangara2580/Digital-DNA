@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/** 예전 URL 호환 — 구독·결제 페이지로 이동 */
+/** Legacy recharge URL. Real credit purchases now run through Polar. */
 export default function RechargeRedirectPage() {
-  redirect("/subscribe");
+  redirect("/credits");
 }

@@ -1,0 +1,144 @@
+{
+  "psdName": "lani-1-3-2",
+  "dimensions": {
+    "width": 2000,
+    "height": 2000
+  },
+  "layers": [
+    {
+      "name": "gradient-uastc-scale-quarter",
+      "path": "gradient-uastc-scale-quarter",
+      "position": {
+        "origin": {
+          "x": 994,
+          "y": 998
+        },
+        "bounds": {
+          "top": -736,
+          "left": -747,
+          "right": 2735,
+          "bottom": 2732
+        }
+      },
+      "dimensions": {
+        "width": 3482,
+        "height": 3468
+      },
+      "visible": true,
+      "opacity": 0.2,
+      "blendMode": "normal",
+      "files": {
+        "png": "gradient-uastc-scale-quarter.png",
+        "ktx": "gradient-uastc-scale-quarter.ktx2"
+      }
+    },
+    {
+      "name": "Layer 8",
+      "path": "Layer 8",
+      "position": {
+        "origin": {
+          "x": 813,
+          "y": 1142.5
+        },
+        "bounds": {
+          "top": 784,
+          "left": 482,
+          "right": 1144,
+          "bottom": 1501
+        }
+      },
+      "dimensions": {
+        "width": 662,
+        "height": 717
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "layer-8.png",
+        "ktx": "layer-8.ktx2"
+      }
+    },
+    {
+      "name": "Layer 11",
+      "path": "Layer 11",
+      "position": {
+        "origin": {
+          "x": 532,
+          "y": 1472
+        },
+        "bounds": {
+          "top": 1352,
+          "left": 298,
+          "right": 766,
+          "bottom": 1592
+        }
+      },
+      "dimensions": {
+        "width": 468,
+        "height": 240
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "layer-11.png",
+        "ktx": "layer-11.ktx2"
+      }
+    },
+    {
+      "name": "Layer 10",
+      "path": "Layer 10",
+      "position": {
+        "origin": {
+          "x": 1299,
+          "y": 1021.5
+        },
+        "bounds": {
+          "top": 745,
+          "left": 1084,
+          "right": 1514,
+          "bottom": 1298
+        }
+      },
+      "dimensions": {
+        "width": 430,
+        "height": 553
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "layer-10.png",
+        "ktx": "layer-10.ktx2"
+      }
+    },
+    {
+      "name": "hearts",
+      "path": "hearts",
+      "position": {
+        "origin": {
+          "x": 1720,
+          "y": 1306
+        },
+        "bounds": {
+          "top": 835,
+          "left": 1550,
+          "right": 1890,
+          "bottom": 1777
+        }
+      },
+      "dimensions": {
+        "width": 340,
+        "height": 942
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "hearts.png",
+        "ktx": "hearts.ktx2"
+      }
+    }
+  ]
+}

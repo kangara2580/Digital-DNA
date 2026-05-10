@@ -1,0 +1,117 @@
+{
+  "psdName": "bridie-2-2-1",
+  "dimensions": {
+    "width": 5018,
+    "height": 5018
+  },
+  "layers": [
+    {
+      "name": "gradient-red-uastc-scale-quarter",
+      "path": "gradient-red-uastc-scale-quarter",
+      "position": {
+        "origin": {
+          "x": 2474.5,
+          "y": 1964
+        },
+        "bounds": {
+          "top": -982,
+          "left": -446,
+          "right": 5395,
+          "bottom": 4910
+        }
+      },
+      "dimensions": {
+        "width": 5841,
+        "height": 5892
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "gradient-red-uastc-scale-quarter.png",
+        "ktx": "gradient-red-uastc-scale-quarter.ktx2"
+      }
+    },
+    {
+      "name": "bridie",
+      "path": "bridie",
+      "position": {
+        "origin": {
+          "x": 2413,
+          "y": 2871
+        },
+        "bounds": {
+          "top": 1257,
+          "left": 1217,
+          "right": 3609,
+          "bottom": 4485
+        }
+      },
+      "dimensions": {
+        "width": 2392,
+        "height": 3228
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "bridie.png",
+        "ktx": "bridie.ktx2"
+      }
+    },
+    {
+      "name": "gradient-black1-uastc-scale-quarter",
+      "path": "gradient-black1-uastc-scale-quarter",
+      "position": {
+        "origin": {
+          "x": 2324,
+          "y": 2871
+        },
+        "bounds": {
+          "top": -303,
+          "left": -862,
+          "right": 5510,
+          "bottom": 6045
+        }
+      },
+      "dimensions": {
+        "width": 6372,
+        "height": 6348
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "gradient-black1-uastc-scale-quarter.png",
+        "ktx": "gradient-black1-uastc-scale-quarter.ktx2"
+      }
+    },
+    {
+      "name": "hand-uastc",
+      "path": "hand-uastc",
+      "position": {
+        "origin": {
+          "x": 1089.5,
+          "y": 3456.5
+        },
+        "bounds": {
+          "top": 1060,
+          "left": -787,
+          "right": 2966,
+          "bottom": 5853
+        }
+      },
+      "dimensions": {
+        "width": 3753,
+        "height": 4793
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "hand-uastc.png",
+        "ktx": "hand-uastc.ktx2"
+      }
+    }
+  ]
+}

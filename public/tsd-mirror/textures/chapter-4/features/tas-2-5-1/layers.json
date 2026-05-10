@@ -1,0 +1,117 @@
+{
+  "psdName": "tas-2-5-1",
+  "dimensions": {
+    "width": 5018,
+    "height": 5018
+  },
+  "layers": [
+    {
+      "name": "gradient-scale-quarter-uastc",
+      "path": "gradient-scale-quarter-uastc",
+      "position": {
+        "origin": {
+          "x": 1891.5,
+          "y": 2457
+        },
+        "bounds": {
+          "top": 369,
+          "left": 286,
+          "right": 3497,
+          "bottom": 4545
+        }
+      },
+      "dimensions": {
+        "width": 3211,
+        "height": 4176
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "gradient-scale-quarter-uastc.png",
+        "ktx": "gradient-scale-quarter-uastc.ktx2"
+      }
+    },
+    {
+      "name": "black-gradient-2-scale-quarter-uastc",
+      "path": "black-gradient-2-scale-quarter-uastc",
+      "position": {
+        "origin": {
+          "x": 1747,
+          "y": 3210.5
+        },
+        "bounds": {
+          "top": 1577,
+          "left": 112,
+          "right": 3382,
+          "bottom": 4844
+        }
+      },
+      "dimensions": {
+        "width": 3270,
+        "height": 3267
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "black-gradient-2-scale-quarter-uastc.png",
+        "ktx": "black-gradient-2-scale-quarter-uastc.ktx2"
+      }
+    },
+    {
+      "name": "black-gradient-1-scale-quarter-uastc",
+      "path": "black-gradient-1-scale-quarter-uastc",
+      "position": {
+        "origin": {
+          "x": 2727,
+          "y": 2050.5
+        },
+        "bounds": {
+          "top": 34,
+          "left": 708,
+          "right": 4746,
+          "bottom": 4067
+        }
+      },
+      "dimensions": {
+        "width": 4038,
+        "height": 4033
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "black-gradient-1-scale-quarter-uastc.png",
+        "ktx": "black-gradient-1-scale-quarter-uastc.ktx2"
+      }
+    },
+    {
+      "name": "arm",
+      "path": "hand-and-arm/arm",
+      "position": {
+        "origin": {
+          "x": 2547.5,
+          "y": 2408.5
+        },
+        "bounds": {
+          "top": 487,
+          "left": 1811,
+          "right": 3284,
+          "bottom": 4330
+        }
+      },
+      "dimensions": {
+        "width": 1473,
+        "height": 3843
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "hand-and-arm-arm.png",
+        "ktx": "hand-and-arm-arm.ktx2"
+      }
+    }
+  ]
+}

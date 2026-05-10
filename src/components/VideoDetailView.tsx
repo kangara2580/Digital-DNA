@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bookmark, ChevronLeft, ChevronRight, Heart, ShoppingCart } from "lucide-react";
 import { AuthPromptModal } from "@/components/AuthPromptModal";
+import { TossCheckoutButton } from "@/components/payments/TossCheckoutButton";
 import { SellerSocialPlatformIcon } from "@/components/SellerSocialPlatformIcon";
 import { SellerIdentityLink } from "@/components/SellerIdentityLink";
 import { VideoDetailRecommendations } from "@/components/VideoDetailRecommendations";
@@ -79,7 +80,7 @@ export function VideoDetailView({
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const dopamine = useDopamineBasket();
   const { isSaved, toggle: toggleWishlist } = useWishlist();
-  const { hasPurchased, markPurchased } = usePurchasedVideos();
+  const { hasPurchased } = usePurchasedVideos();
   const { recordView } = useRecentClips();
   const owned = hasPurchased(video.id);
   const isOwner = Boolean(
@@ -669,19 +670,34 @@ export function VideoDetailView({
 
             {/* 구매 버튼 */}
             <div className="px-8">
-            <button
-              type="button"
-              disabled={soldOut}
-              onClick={() => {
-                if (soldOut) return;
-                if (!requireAuth()) return;
-                if (!owned) markPurchased(video.id);
-                router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
-              }}
-              className="relative w-full h-[60px] rounded-full border-[3px] border-white/40 bg-transparent text-[17px] font-extrabold tracking-widest text-white backdrop-blur-sm shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-300 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] hover:-translate-y-0.5 active:scale-[0.99] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900"
-            >
-              {soldOut ? "품절" : "구매하기"}
-            </button>
+              {owned ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!requireAuth()) return;
+                    router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
+                  }}
+                  className="relative h-[60px] w-full rounded-full border-[3px] border-white/40 bg-transparent text-[17px] font-extrabold tracking-widest text-white shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] active:scale-[0.99] [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900"
+                >
+                  AI 제작 시작
+                </button>
+              ) : soldOut ? (
+                <button
+                  type="button"
+                  disabled
+                  className="relative h-[60px] w-full cursor-not-allowed rounded-full border-[3px] border-white/20 bg-transparent text-[17px] font-extrabold tracking-widest text-white/40"
+                >
+                  판매 완료
+                </button>
+              ) : (
+                <TossCheckoutButton
+                  productType="video"
+                  videoId={video.id}
+                  className="relative h-[60px] w-full rounded-full border-[3px] border-white/40 bg-transparent text-[17px] font-extrabold tracking-widest text-white shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] active:scale-[0.99] disabled:cursor-wait disabled:opacity-60 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900"
+                >
+                  토스로 구매하기
+                </TossCheckoutButton>
+              )}
             </div>
 
             {/* 액션 아이콘 */}

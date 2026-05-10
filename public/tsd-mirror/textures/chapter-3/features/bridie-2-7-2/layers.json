@@ -1,0 +1,171 @@
+{
+  "psdName": "bridie-2-7-2",
+  "dimensions": {
+    "width": 5018,
+    "height": 3480
+  },
+  "layers": [
+    {
+      "name": "floor",
+      "path": "floor-shock/floor",
+      "position": {
+        "origin": {
+          "x": 2633.5,
+          "y": 1516.5
+        },
+        "bounds": {
+          "top": 857,
+          "left": 1224,
+          "right": 4043,
+          "bottom": 2176
+        }
+      },
+      "dimensions": {
+        "width": 2819,
+        "height": 1319
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "floor-shock-floor.png",
+        "ktx": "floor-shock-floor.ktx2"
+      }
+    },
+    {
+      "name": "shock",
+      "path": "floor-shock/shock",
+      "position": {
+        "origin": {
+          "x": 2419,
+          "y": 1965
+        },
+        "bounds": {
+          "top": 881,
+          "left": 540,
+          "right": 4298,
+          "bottom": 3049
+        }
+      },
+      "dimensions": {
+        "width": 3758,
+        "height": 2168
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "floor-shock-shock.png",
+        "ktx": "floor-shock-shock.ktx2"
+      }
+    },
+    {
+      "name": "boot",
+      "path": "boot",
+      "position": {
+        "origin": {
+          "x": 2636.5,
+          "y": 1271.5
+        },
+        "bounds": {
+          "top": 519,
+          "left": 1977,
+          "right": 3296,
+          "bottom": 2024
+        }
+      },
+      "dimensions": {
+        "width": 1319,
+        "height": 1505
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "boot.png",
+        "ktx": "boot.ktx2"
+      }
+    },
+    {
+      "name": "heart-4",
+      "path": "hearts/heart-4",
+      "position": {
+        "origin": {
+          "x": 4189.5,
+          "y": 1715.5
+        },
+        "bounds": {
+          "top": 1468,
+          "left": 3950,
+          "right": 4429,
+          "bottom": 1963
+        }
+      },
+      "dimensions": {
+        "width": 479,
+        "height": 495
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "hearts-heart-4.png",
+        "ktx": "hearts-heart-4.ktx2"
+      }
+    },
+    {
+      "name": "heart-5",
+      "path": "hearts/heart-5",
+      "position": {
+        "origin": {
+          "x": 1160.5,
+          "y": 1208
+        },
+        "bounds": {
+          "top": 931,
+          "left": 751,
+          "right": 1570,
+          "bottom": 1485
+        }
+      },
+      "dimensions": {
+        "width": 819,
+        "height": 554
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "hearts-heart-5.png",
+        "ktx": "hearts-heart-5.ktx2"
+      }
+    },
+    {
+      "name": "heart-3",
+      "path": "hearts/heart-3",
+      "position": {
+        "origin": {
+          "x": 2679.5,
+          "y": 2421.5
+        },
+        "bounds": {
+          "top": 2240,
+          "left": 2440,
+          "right": 2919,
+          "bottom": 2603
+        }
+      },
+      "dimensions": {
+        "width": 479,
+        "height": 363
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "hearts-heart-3.png",
+        "ktx": "hearts-heart-3.ktx2"
+      }
+    }
+  ]
+}

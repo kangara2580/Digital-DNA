@@ -1,0 +1,279 @@
+{
+  "psdName": "carly-1-1-1",
+  "dimensions": {
+    "width": 5018,
+    "height": 3480
+  },
+  "layers": [
+    {
+      "name": "train",
+      "path": "train",
+      "position": {
+        "origin": {
+          "x": -646,
+          "y": 1777
+        },
+        "bounds": {
+          "top": 1496,
+          "left": -2828,
+          "right": 1536,
+          "bottom": 2058
+        }
+      },
+      "dimensions": {
+        "width": 4364,
+        "height": 562
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "train.png",
+        "ktx": "train.ktx2"
+      }
+    },
+    {
+      "name": "sign",
+      "path": "sign",
+      "position": {
+        "origin": {
+          "x": 3059.5,
+          "y": 1451
+        },
+        "bounds": {
+          "top": 640,
+          "left": 2828,
+          "right": 3291,
+          "bottom": 2262
+        }
+      },
+      "dimensions": {
+        "width": 463,
+        "height": 1622
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "sign.png",
+        "ktx": "sign.ktx2"
+      }
+    },
+    {
+      "name": "girl-01",
+      "path": "girls/girl-01",
+      "position": {
+        "origin": {
+          "x": 1676.5,
+          "y": 2018.5
+        },
+        "bounds": {
+          "top": 1459,
+          "left": 1359,
+          "right": 1994,
+          "bottom": 2578
+        }
+      },
+      "dimensions": {
+        "width": 635,
+        "height": 1119
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "girls-girl-01.png",
+        "ktx": "girls-girl-01.ktx2"
+      }
+    },
+    {
+      "name": "jo",
+      "path": "boys/jo",
+      "position": {
+        "origin": {
+          "x": 2232.5,
+          "y": 1986.5
+        },
+        "bounds": {
+          "top": 1490,
+          "left": 2080,
+          "right": 2385,
+          "bottom": 2483
+        }
+      },
+      "dimensions": {
+        "width": 305,
+        "height": 993
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "boys-jo.png",
+        "ktx": "boys-jo.ktx2"
+      }
+    },
+    {
+      "name": "boys",
+      "path": "boys/boys",
+      "position": {
+        "origin": {
+          "x": 3266,
+          "y": 1968
+        },
+        "bounds": {
+          "top": 1404,
+          "left": 2932,
+          "right": 3600,
+          "bottom": 2532
+        }
+      },
+      "dimensions": {
+        "width": 668,
+        "height": 1128
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "boys-boys.png",
+        "ktx": "boys-boys.ktx2"
+      }
+    },
+    {
+      "name": "cloud-01",
+      "path": "clouds/cloud-01",
+      "position": {
+        "origin": {
+          "x": 973.5,
+          "y": 425.5
+        },
+        "bounds": {
+          "top": 379,
+          "left": 792,
+          "right": 1155,
+          "bottom": 472
+        }
+      },
+      "dimensions": {
+        "width": 363,
+        "height": 93
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "clouds-cloud-01.png",
+        "ktx": "clouds-cloud-01.ktx2"
+      }
+    },
+    {
+      "name": "cloud-02",
+      "path": "clouds/cloud-02",
+      "position": {
+        "origin": {
+          "x": 1661.5,
+          "y": 536.5
+        },
+        "bounds": {
+          "top": 468,
+          "left": 1303,
+          "right": 2020,
+          "bottom": 605
+        }
+      },
+      "dimensions": {
+        "width": 717,
+        "height": 137
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "clouds-cloud-02.png",
+        "ktx": "clouds-cloud-02.ktx2"
+      }
+    },
+    {
+      "name": "cloud-03",
+      "path": "clouds/cloud-03",
+      "position": {
+        "origin": {
+          "x": 3059.5,
+          "y": 493.5
+        },
+        "bounds": {
+          "top": 414,
+          "left": 2690,
+          "right": 3429,
+          "bottom": 573
+        }
+      },
+      "dimensions": {
+        "width": 739,
+        "height": 159
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "clouds-cloud-03.png",
+        "ktx": "clouds-cloud-03.ktx2"
+      }
+    },
+    {
+      "name": "cloud-04",
+      "path": "clouds/cloud-04",
+      "position": {
+        "origin": {
+          "x": 3438,
+          "y": 854.5
+        },
+        "bounds": {
+          "top": 798,
+          "left": 3179,
+          "right": 3697,
+          "bottom": 911
+        }
+      },
+      "dimensions": {
+        "width": 518,
+        "height": 113
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "clouds-cloud-04.png",
+        "ktx": "clouds-cloud-04.ktx2"
+      }
+    },
+    {
+      "name": "carly",
+      "path": "carly",
+      "position": {
+        "origin": {
+          "x": 2638.5,
+          "y": 2024.5
+        },
+        "bounds": {
+          "top": 1248,
+          "left": 2250,
+          "right": 3027,
+          "bottom": 2801
+        }
+      },
+      "dimensions": {
+        "width": 777,
+        "height": 1553
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "carly.png",
+        "ktx": "carly.ktx2"
+      }
+    }
+  ]
+}
