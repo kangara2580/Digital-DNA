@@ -65,17 +65,21 @@ export function TossCheckoutButton({
   videoId,
   children,
   className,
+  disabled = false,
 }: {
   productType: "credits" | "video";
   productKey?: string;
   videoId?: string;
   children: string;
   className?: string;
+  disabled?: boolean;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function startPayment() {
+    if (disabled || loading) return;
+
     setLoading(true);
     setError(null);
     try {
@@ -131,14 +135,14 @@ export function TossCheckoutButton({
     <div className="space-y-2">
       <button
         type="button"
-        disabled={loading}
+        disabled={loading || disabled}
         onClick={startPayment}
         className={
           className ??
           "h-11 w-full rounded-full bg-[#ff2f93] px-5 text-sm font-black text-white shadow-[0_12px_30px_rgba(255,47,147,0.28)] transition hover:bg-[#ff4ba3] disabled:cursor-wait disabled:bg-zinc-700"
         }
       >
-        {loading ? "토스 결제창 여는 중" : children}
+        {loading ? "토스 결제창 여는 중..." : children}
       </button>
       {error ? <p className="text-xs font-bold text-rose-300">{error}</p> : null}
     </div>

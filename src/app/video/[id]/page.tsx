@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { VideoDetailView } from "@/components/VideoDetailView";
 import { getMarketVideoById } from "@/data/videoCommerce";
@@ -5,6 +6,11 @@ import {
   getExternalRankDemoPriceWonByCanonical,
   getManualTikTokPriceWonByVideoId,
 } from "@/data/tiktokData";
+import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
+import { translate } from "@/lib/i18n/dictionaries";
+import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
+import { resolveVideoDetailSeoTitle } from "@/lib/seo/videoDetailSeo";
 import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
 import { prisma } from "@/lib/prisma";
 
@@ -26,15 +32,41 @@ async function withTimeout<T>(work: Promise<T>, timeoutMs: number): Promise<T> {
   ]);
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const title = await resolveVideoDetailSeoTitle(id);
+  if (!title) {
+    return buildPageMetadata({
+      titleKey: "meta.videoDetail",
+      descriptionKey: "meta.rootDescription",
+    });
+  }
+  const locale = await getSiteLocale();
+  const description = translate(locale, "meta.videoDetailDescription", {
+    title,
+  });
+  return {
+    title,
+    description,
+    ...socialMetadataFields(locale, title, description),
+  };
+}
+
 export default async function VideoDetailPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ from?: string }>;
+  searchParams: Promise<{ from?: string; fromSeller?: string }>;
 }) {
   const { id } = await params;
-  const { from: fromCategory } = await searchParams;
+  const resolvedSearch = await searchParams;
+  const fromCategory = resolvedSearch.from;
+  const fromSeller = resolvedSearch.fromSeller;
 
   if (id.startsWith("tiktok-")) {
     const embedId = id.slice("tiktok-".length).trim();
@@ -77,6 +109,7 @@ export default async function VideoDetailPage({
           priceWon,
         }}
         fromCategory={fromCategory}
+        fromSeller={fromSeller}
       />
     );
   }
@@ -119,6 +152,7 @@ export default async function VideoDetailPage({
           priceWon: priceWon ?? undefined,
         }}
         fromCategory={fromCategory}
+        fromSeller={fromSeller}
       />
     );
   }
@@ -145,13 +179,14 @@ export default async function VideoDetailPage({
           priceWon: priceWon ?? undefined,
         }}
         fromCategory={fromCategory}
+        fromSeller={fromSeller}
       />
     );
   }
 
   const catalogVideo = getMarketVideoById(id);
   if (catalogVideo) {
-    return <VideoDetailView video={catalogVideo} fromCategory={fromCategory} />;
+    return <VideoDetailView video={catalogVideo} fromCategory={fromCategory} fromSeller={fromSeller} />;
   }
 
   try {
@@ -160,7 +195,7 @@ export default async function VideoDetailPage({
       DB_TIMEOUT_MS,
     );
     if (row) {
-      return <VideoDetailView video={videoRowToFeedVideo(row)} fromCategory={fromCategory} />;
+      return <VideoDetailView video={videoRowToFeedVideo(row)} fromCategory={fromCategory} fromSeller={fromSeller} />;
     }
   } catch {
     /* DB 미연결 등 */

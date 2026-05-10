@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bookmark, ChevronLeft, ChevronRight, Heart, ShoppingCart } from "lucide-react";
 import { AuthPromptModal } from "@/components/AuthPromptModal";
 import { TossCheckoutButton } from "@/components/payments/TossCheckoutButton";
+import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
 import { SellerSocialPlatformIcon } from "@/components/SellerSocialPlatformIcon";
 import { SellerIdentityLink } from "@/components/SellerIdentityLink";
 import { VideoDetailRecommendations } from "@/components/VideoDetailRecommendations";
@@ -13,10 +14,14 @@ import { VideoDetailReviewsSection } from "@/components/VideoDetailReviewsSectio
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
-import { useWishlist } from "@/context/WishlistContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useRecentClips } from "@/context/RecentClipsContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useVideoCartAction } from "@/hooks/useVideoCartAction";
+import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
+import { useVideoLike } from "@/hooks/useVideoLike";
+import { useVideoWishlistAction } from "@/hooks/useVideoWishlistAction";
 import type { FeedVideo } from "@/data/videos";
 import {
   clonesRemaining,
@@ -29,9 +34,13 @@ import {
   getExternalIframeForDetail,
   getExternalLiveStatsPageUrl,
 } from "@/lib/externalEmbed/playerUrls";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import {
+  EXTERNAL_EMBED_IFRAME_ALLOW,
+  EXTERNAL_EMBED_IFRAME_SANDBOX,
+} from "@/lib/externalEmbed/iframeSandbox";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
-import type { SellerSocialLink, SellerSocialPlatform } from "@/lib/sellerSocialLinks";
+import type { SellerSocialLink } from "@/lib/sellerSocialLinks";
+import { getVideoContentSource } from "@/lib/videoSourcePlatform";
 
 const sellerSocialLinksCache = new Map<string, SellerSocialLink[]>();
 const sellerSocialLinksInFlight = new Map<string, Promise<SellerSocialLink[]>>();
@@ -70,24 +79,29 @@ async function loadSellerSocialLinks(sellerId: string): Promise<SellerSocialLink
 export function VideoDetailView({
   video,
   fromCategory,
+  fromSeller,
 }: {
   video: FeedVideo;
   fromCategory?: string;
+  /** `/seller/[handle]` 리스트에서 진입 시 — 해당 판매자 클립만 이전/다음 */
+  fromSeller?: string;
 }) {
   const router = useRouter();
   const detailVideoRef = useRef<HTMLVideoElement | null>(null);
   const authPromptScrollYRef = useRef(0);
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const dopamine = useDopamineBasket();
-  const { isSaved, toggle: toggleWishlist } = useWishlist();
-  const { hasPurchased } = usePurchasedVideos();
+  const { hasPurchased, markPurchased } = usePurchasedVideos();
   const { recordView } = useRecentClips();
+  const { t, locale } = useTranslation();
+  const displayTitle = useVideoDisplayTitle();
   const owned = hasPurchased(video.id);
   const isOwner = Boolean(
     user?.id && video.listing?.sellerId && user.id === video.listing.sellerId,
   );
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [sellerFeedIds, setSellerFeedIds] = useState<string[] | null>(null);
 
   const requireAuth = useCallback(() => {
     if (authLoading) return false;
@@ -104,7 +118,9 @@ export function VideoDetailView({
       typeof window !== "undefined"
         ? `${window.location.pathname}${window.location.search}${window.location.hash}`
         : "/";
-    window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
+    const authStart = new URL("/api/auth/google/start", window.location.origin);
+    authStart.searchParams.set("next", next);
+    window.location.assign(authStart.toString());
   }, []);
 
   useEffect(() => {
@@ -131,6 +147,72 @@ export function VideoDetailView({
     recordView(video.id);
   }, [video.id, recordView]);
 
+  const sellerHandle = useMemo(() => (fromSeller ?? "").trim(), [fromSeller]);
+
+  /** 판매자 페이지(fromSeller) 또는 검색·직링크 등: 같은 판매자 DB 영상 순서로 이전/다음 */
+  useEffect(() => {
+    const key = sellerHandle;
+    if (key) {
+      let cancelled = false;
+      setSellerFeedIds(null);
+      void fetch(`/api/seller/clips?handle=${encodeURIComponent(key)}`, { cache: "no-store" })
+        .then(async (res) => {
+          const body = (await res.json().catch(() => ({}))) as {
+            ok?: boolean;
+            videoIds?: string[];
+          };
+          if (!res.ok || !body.ok || !Array.isArray(body.videoIds)) return;
+          if (!cancelled) setSellerFeedIds(body.videoIds);
+        })
+        .catch(() => {
+          if (!cancelled) setSellerFeedIds([]);
+        });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    if (fromCategory) {
+      setSellerFeedIds(null);
+      return;
+    }
+
+    const sellerId = video.listing?.sellerId?.trim();
+    if (!sellerId) {
+      setSellerFeedIds(null);
+      return;
+    }
+
+    let cancelled = false;
+    setSellerFeedIds(null);
+    void fetch(`/api/seller/videos?sellerId=${encodeURIComponent(sellerId)}`, {
+      cache: "no-store",
+    })
+      .then(async (res) => {
+        const body = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          videos?: { id: string }[];
+        };
+        if (!res.ok || !body.ok || !Array.isArray(body.videos)) return;
+        if (!cancelled) setSellerFeedIds(body.videos.map((v) => v.id));
+      })
+      .catch(() => {
+        if (!cancelled) setSellerFeedIds([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [sellerHandle, fromCategory, video.listing?.sellerId]);
+
+  const detailQuerySuffix = useMemo(() => {
+    const params = new URLSearchParams();
+    if (fromCategory) params.set("from", fromCategory);
+    const fs = sellerHandle;
+    if (fs) params.set("fromSeller", fs);
+    const s = params.toString();
+    return s ? `?${s}` : "";
+  }, [fromCategory, sellerHandle]);
+
   /* ── 카테고리 순환 네비게이션 ── */
   const categoryVideos = useMemo(() => {
     if (!fromCategory) return [];
@@ -156,22 +238,76 @@ export function VideoDetailView({
 
   const goToVideo = useCallback(
     (target: FeedVideo) => {
-      router.push(
-        `/video/${encodeURIComponent(target.id)}${fromCategory ? `?from=${encodeURIComponent(fromCategory)}` : ""}`,
-      );
+      router.push(`/video/${encodeURIComponent(target.id)}${detailQuerySuffix}`);
     },
-    [router, fromCategory],
+    [router, detailQuerySuffix],
   );
 
+  const goToVideoId = useCallback(
+    (videoId: string) => {
+      router.push(`/video/${encodeURIComponent(videoId)}${detailQuerySuffix}`);
+    },
+    [router, detailQuerySuffix],
+  );
+
+  const sellerIndex = useMemo(() => {
+    if (!sellerFeedIds || sellerFeedIds.length === 0) return -1;
+    return sellerFeedIds.indexOf(video.id);
+  }, [sellerFeedIds, video.id]);
+
+  const sellerPrevId =
+    sellerIndex > 0 && sellerFeedIds ? (sellerFeedIds[sellerIndex - 1] ?? null) : null;
+  const sellerNextId =
+    sellerIndex >= 0 && sellerFeedIds && sellerIndex < sellerFeedIds.length - 1
+      ? (sellerFeedIds[sellerIndex + 1] ?? null)
+      : null;
+
+  /** 카테고리 진입(from)이 아니면 같은 판매자 목록으로 좌우 이동 (검색·홈 등 포함) */
+  const prioritizeSellerFeed =
+    sellerHandle.length > 0 ||
+    (!fromCategory && Boolean(video.listing?.sellerId?.trim()));
+
+  const useSellerFeedNav =
+    prioritizeSellerFeed &&
+    sellerFeedIds !== null &&
+    sellerFeedIds.length > 1 &&
+    sellerIndex >= 0;
+
+  const showPrevNav = prioritizeSellerFeed
+    ? Boolean(useSellerFeedNav && sellerPrevId)
+    : Boolean(hasCategoryNav && prevVideo);
+  const showNextNav = prioritizeSellerFeed
+    ? Boolean(useSellerFeedNav && sellerNextId)
+    : Boolean(hasCategoryNav && nextVideo);
+  const showNavChrome = showPrevNav || showNextNav;
+
   useEffect(() => {
-    if (!hasCategoryNav) return;
+    if (!showNavChrome) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" && prevVideo) goToVideo(prevVideo);
-      if (e.key === "ArrowRight" && nextVideo) goToVideo(nextVideo);
+      if (prioritizeSellerFeed && useSellerFeedNav) {
+        if (e.key === "ArrowLeft" && sellerPrevId) goToVideoId(sellerPrevId);
+        if (e.key === "ArrowRight" && sellerNextId) goToVideoId(sellerNextId);
+        return;
+      }
+      if (hasCategoryNav) {
+        if (e.key === "ArrowLeft" && prevVideo) goToVideo(prevVideo);
+        if (e.key === "ArrowRight" && nextVideo) goToVideo(nextVideo);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [hasCategoryNav, prevVideo, nextVideo, goToVideo]);
+  }, [
+    showNavChrome,
+    prioritizeSellerFeed,
+    useSellerFeedNav,
+    sellerPrevId,
+    sellerNextId,
+    goToVideoId,
+    hasCategoryNav,
+    prevVideo,
+    nextVideo,
+    goToVideo,
+  ]);
 
   const meta = useMemo(
     () =>
@@ -186,21 +322,28 @@ export function VideoDetailView({
       return {
         tier: "active" as const,
         label: "",
-        subline: "판매자가 등록한 릴스 조각입니다.",
+        subline: t("video.detail.sellerListingSubline"),
       };
     }
     return getFreshnessForVideoId(video.id);
-  }, [video]);
+  }, [video, t]);
   const showFreshMeta = fresh.tier !== "archived";
   const price = video.priceWon ?? 0;
   const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
-  const wishlisted = isSaved(video.id);
+  const { wishlisted, toggleWishlist } = useVideoWishlistAction(video, requireAuth);
+  const { inCart, toggleCartFromButton } = useVideoCartAction(video, dopamine, requireAuth);
   const [wishlistPulse, setWishlistPulse] = useState(false);
   const [likePulse, setLikePulse] = useState(false);
-  const [internalLikeCount, setInternalLikeCount] = useState(0);
-  const [likedByMe, setLikedByMe] = useState(false);
-  const [likeBusy, setLikeBusy] = useState(false);
   const [likeBurst, setLikeBurst] = useState(false);
+  const { internalLikeCount, likedByMe, likeBusy, toggleLike } = useVideoLike({
+    videoId: video.id,
+    requireAuth,
+    onError: () => {
+      if (typeof window !== "undefined") {
+        window.alert(t("explore.likeFailed"));
+      }
+    },
+  });
 
   const rankMetrics = useMemo(() => {
     if (video.listing) {
@@ -247,48 +390,8 @@ export function VideoDetailView({
         : getExternalLiveStatsPageUrl(video),
     [video],
   );
+  const videoContentSource = useMemo(() => getVideoContentSource(video), [video]);
   const externalLikeCount = liveStats?.diggCount ?? rankMetrics.totalLikes;
-  const detectExternalPlatformFromUrl = useCallback((raw?: string | null): SellerSocialPlatform | null => {
-    if (!raw) return null;
-    const v = raw.trim().toLowerCase();
-    if (!v) return null;
-    if (
-      v.includes("tiktok.com/") ||
-      v.includes("vm.tiktok.com/") ||
-      v.includes("vt.tiktok.com/")
-    ) {
-      return "tiktok";
-    }
-    if (
-      v.includes("youtube.com/") ||
-      v.includes("youtu.be/")
-    ) {
-      return "youtube";
-    }
-    if (
-      v.includes("instagram.com/")
-    ) {
-      return "instagram";
-    }
-    return null;
-  }, []);
-  const externalLikePlatform = useMemo<SellerSocialPlatform>(() => {
-    if (video.tiktokEmbedId) return "tiktok";
-    if (video.instagramShortcode) return "instagram";
-    if (video.youtubeVideoId) return "youtube";
-    const fromSourcePage = detectExternalPlatformFromUrl(video.sourcePageUrl);
-    if (fromSourcePage) return fromSourcePage;
-    const fromSrc = detectExternalPlatformFromUrl(video.src);
-    if (fromSrc) return fromSrc;
-    return "website";
-  }, [
-    video.tiktokEmbedId,
-    video.instagramShortcode,
-    video.youtubeVideoId,
-    video.sourcePageUrl,
-    video.src,
-    detectExternalPlatformFromUrl,
-  ]);
   const totalLikeCount = useMemo(
     () => Math.max(0, externalLikeCount + internalLikeCount),
     [externalLikeCount, internalLikeCount],
@@ -392,101 +495,18 @@ export function VideoDetailView({
     };
   }, [video.listing?.sellerId]);
 
-  const loadInternalLikes = useCallback(async () => {
-    try {
-      const supabase = getSupabaseBrowserClient();
-      const session = supabase ? await supabase.auth.getSession() : null;
-      const token = session?.data.session?.access_token;
-      const headers = token
-        ? { Authorization: `Bearer ${token}` }
-        : undefined;
-      const res = await fetch(
-        `/api/video/likes?videoId=${encodeURIComponent(video.id)}`,
-        {
-          cache: "no-store",
-          headers,
-        },
-      );
-      if (!res.ok) return;
-      const body = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        internalLikes?: number;
-        likedByMe?: boolean;
-      };
-      if (!body.ok) return;
-      setInternalLikeCount(
-        typeof body.internalLikes === "number" ? Math.max(0, body.internalLikes) : 0,
-      );
-      setLikedByMe(Boolean(body.likedByMe));
-    } catch {
-      /* ignore */
-    }
-  }, [video.id]);
-
-  useEffect(() => {
-    setInternalLikeCount(0);
-    setLikedByMe(false);
-    void loadInternalLikes();
-  }, [video.id, loadInternalLikes]);
-
   const toggleInternalLike = useCallback(async () => {
-    if (likeBusy || authLoading) return;
-    if (!requireAuth()) return;
-
     const nextLiked = !likedByMe;
-    const prevLiked = likedByMe;
-    const prevCount = internalLikeCount;
-    setLikedByMe(nextLiked);
-    setInternalLikeCount((prev) => Math.max(0, prev + (nextLiked ? 1 : -1)));
     setLikePulse(true);
     if (nextLiked) {
       setLikeBurst(true);
       window.setTimeout(() => setLikeBurst(false), 420);
     }
     window.setTimeout(() => setLikePulse(false), 170);
-    setLikeBusy(true);
-
-    try {
-      const supabase = getSupabaseBrowserClient();
-      const session = supabase ? await supabase.auth.getSession() : null;
-      const token = session?.data.session?.access_token;
-      if (!token) throw new Error("no_token");
-      const res = await fetch("/api/video/likes", {
-        method: nextLiked ? "POST" : "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ videoId: video.id }),
-      });
-      const body = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        internalLikes?: number;
-        likedByMe?: boolean;
-      };
-      if (!res.ok || !body.ok) throw new Error("like_toggle_failed");
-      if (typeof body.internalLikes === "number") {
-        setInternalLikeCount(Math.max(0, body.internalLikes));
-      }
-      setLikedByMe(Boolean(body.likedByMe));
-    } catch {
-      setLikedByMe(prevLiked);
-      setInternalLikeCount(prevCount);
-      void loadInternalLikes();
-      if (typeof window !== "undefined") {
-        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
-      }
-    } finally {
-      setLikeBusy(false);
-    }
+    await toggleLike();
   }, [
-    likeBusy,
-    authLoading,
-    requireAuth,
     likedByMe,
-    internalLikeCount,
-    video.id,
-    loadInternalLikes,
+    toggleLike,
   ]);
 
   const toggleDetailVideoPlayback = useCallback(() => {
@@ -514,28 +534,44 @@ export function VideoDetailView({
                 : "w-full lg:flex-1"
             }`}
           >
-            {hasCategoryNav && (
+            {showNavChrome && (
               <>
-                <button
-                  type="button"
-                  aria-label="이전 영상"
-                  onClick={() => prevVideo && goToVideo(prevVideo)}
-                  className="group absolute left-0 top-1/2 z-[70] -translate-x-[calc(100%+1.5rem)] -translate-y-1/2"
-                >
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-black/60 text-zinc-200 shadow-xl backdrop-blur-sm transition-all duration-200 group-hover:border-white/35 group-hover:bg-black/80 group-hover:text-white group-hover:scale-110 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-700">
-                    <ChevronLeft className="h-7 w-7" />
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  aria-label="다음 영상"
-                  onClick={() => nextVideo && goToVideo(nextVideo)}
-                  className="group absolute right-0 top-1/2 z-[70] translate-x-[calc(100%+1.5rem)] -translate-y-1/2"
-                >
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-black/60 text-zinc-200 shadow-xl backdrop-blur-sm transition-all duration-200 group-hover:border-white/35 group-hover:bg-black/80 group-hover:text-white group-hover:scale-110 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-700">
-                    <ChevronRight className="h-7 w-7" />
-                  </span>
-                </button>
+                {showPrevNav ? (
+                  <button
+                    type="button"
+                    aria-label={t("explore.prevVideo")}
+                    onClick={() => {
+                      if (prioritizeSellerFeed && sellerPrevId) {
+                        goToVideoId(sellerPrevId);
+                        return;
+                      }
+                      if (prevVideo) goToVideo(prevVideo);
+                    }}
+                    className="group absolute left-0 top-1/2 z-[70] -translate-x-[calc(100%+1.5rem)] -translate-y-1/2"
+                  >
+                    <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-black/60 text-zinc-200 shadow-xl backdrop-blur-sm transition-all duration-200 group-hover:border-white/35 group-hover:bg-black/80 group-hover:text-white group-hover:scale-110 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-700">
+                      <ChevronLeft className="h-7 w-7" />
+                    </span>
+                  </button>
+                ) : null}
+                {showNextNav ? (
+                  <button
+                    type="button"
+                    aria-label={t("explore.nextVideo")}
+                    onClick={() => {
+                      if (prioritizeSellerFeed && sellerNextId) {
+                        goToVideoId(sellerNextId);
+                        return;
+                      }
+                      if (nextVideo) goToVideo(nextVideo);
+                    }}
+                    className="group absolute right-0 top-1/2 z-[70] translate-x-[calc(100%+1.5rem)] -translate-y-1/2"
+                  >
+                    <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-black/60 text-zinc-200 shadow-xl backdrop-blur-sm transition-all duration-200 group-hover:border-white/35 group-hover:bg-black/80 group-hover:text-white group-hover:scale-110 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white/90 [html[data-theme='light']_&]:text-zinc-700">
+                      <ChevronRight className="h-7 w-7" />
+                    </span>
+                  </button>
+                ) : null}
               </>
             )}
             <div
@@ -546,12 +582,19 @@ export function VideoDetailView({
               }`}
             >
               {externalEmbed ? (
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 overflow-hidden">
                   <iframe
-                    title={video.title}
+                    title={displayTitle(video)}
                     src={externalEmbed.src}
-                    className="h-full w-full border-0"
-                    allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                    sandbox={EXTERNAL_EMBED_IFRAME_SANDBOX}
+                    className={`border-0 ${
+                      externalEmbed.kind === "instagram"
+                        ? "absolute left-1/2 top-[2%] h-[118%] w-[112%] max-w-none -translate-x-1/2"
+                        : externalEmbed.kind === "youtube"
+                          ? "absolute left-1/2 top-1/2 h-[110%] w-[110%] max-w-none -translate-x-1/2 -translate-y-1/2"
+                          : "absolute inset-0 h-full w-full"
+                    }`}
+                    allow={EXTERNAL_EMBED_IFRAME_ALLOW}
                     allowFullScreen
                     loading="eager"
                     scrolling="no"
@@ -589,12 +632,18 @@ export function VideoDetailView({
                     </span>
                   ) : null}
                   <div className="mb-4 flex flex-wrap items-center gap-2">
-                    <SellerIdentityLink
-                      creator={video.creator}
-                      sellerId={video.listing?.sellerId}
-                      size="compact"
-                      className="w-fit"
-                    />
+                    <div className="flex min-w-0 max-w-full items-center gap-2">
+                      <VideoSourcePlatformIcon
+                        source={videoContentSource}
+                        className="h-4 w-4 shrink-0 text-zinc-400 [html[data-theme='light']_&]:text-zinc-600"
+                      />
+                      <SellerIdentityLink
+                        creator={video.creator}
+                        sellerId={video.listing?.sellerId}
+                        size="compact"
+                        className="min-w-0 flex-1"
+                      />
+                    </div>
                     {sellerSocialLinks.length > 0 ? (
                       <div className="flex items-center gap-1.5">
                         {sellerSocialLinks.slice(0, 4).map((link) => (
@@ -604,7 +653,9 @@ export function VideoDetailView({
                             target="_blank"
                             rel="noreferrer noopener"
                             className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/[0.04] text-zinc-300 transition hover:border-reels-cyan/45 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
-                            aria-label={`${link.platform} 링크 열기`}
+                            aria-label={t("video.detail.openPlatformLink", {
+                              platform: link.platform,
+                            })}
                             title={link.url}
                           >
                             <SellerSocialPlatformIcon
@@ -617,7 +668,7 @@ export function VideoDetailView({
                     ) : null}
                   </div>
                   <h1 className="min-w-0 text-center text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">
-                    {video.title}
+                    {displayTitle(video)}
                   </h1>
                   {video.description ? (
                     <p className="mt-3 whitespace-pre-wrap text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
@@ -625,10 +676,10 @@ export function VideoDetailView({
                     </p>
                   ) : null}
                   {video.hashtags ? (
-                    <p className="mt-2 text-[13px] leading-relaxed text-reels-cyan/95 [html[data-theme='light']_&]:text-[#6d28d9]">
+                    <p className="mt-2 text-[13px] leading-relaxed text-reels-cyan/95 [html[data-theme='light']_&]:text-[color:var(--reels-point)]">
                       {video.hashtags
                         .split(",")
-                        .map((t) => t.trim())
+                        .map((tag) => tag.trim())
                         .filter(Boolean)
                         .join(" ")}
                     </p>
@@ -639,7 +690,7 @@ export function VideoDetailView({
                     href={`/video/${encodeURIComponent(video.id)}/edit`}
                     className="shrink-0 rounded-full border border-white/20 bg-white/[0.08] px-3 py-1.5 text-[12px] font-extrabold text-zinc-100 transition hover:border-reels-cyan/45 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
                   >
-                    수정하기
+                    {t("video.detail.editListing")}
                   </Link>
                 ) : null}
               </div>
@@ -661,41 +712,42 @@ export function VideoDetailView({
             {/* 가격 표시 */}
             {price > 0 && (
               <div className="text-center">
-                <span className="text-[36px] font-black tabular-nums tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
-                  {price.toLocaleString("ko-KR")}
-                  <span className="ml-1.5 text-[22px] font-extrabold">원</span>
+                <span className="font-black tabular-nums tracking-tight text-[length:calc(36px_+_5pt)] text-white [html[data-theme='light']_&]:text-zinc-900">
+                  {locale === "en" ? (
+                    <>₩{price.toLocaleString("en-US")}</>
+                  ) : (
+                    <>
+                      {price.toLocaleString("ko-KR")}
+                      <span className="ml-1.5 font-extrabold text-[length:calc(22px_+_5pt)]">
+                        {t("video.detail.currencySuffix")}
+                      </span>
+                    </>
+                  )}
                 </span>
               </div>
             )}
 
             {/* 구매 버튼 */}
             <div className="px-8">
-              {owned ? (
+              {owned || isOwner ? (
                 <button
                   type="button"
                   onClick={() => {
                     if (!requireAuth()) return;
                     router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
                   }}
-                  className="relative h-[60px] w-full rounded-full border-[3px] border-white/40 bg-transparent text-[17px] font-extrabold tracking-widest text-white shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] active:scale-[0.99] [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900"
+                  className="relative h-[60px] w-full rounded-full border-[3px] border-white/40 bg-transparent text-[17px] font-extrabold tracking-widest text-white shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] active:scale-[0.99] active:translate-y-0 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900"
                 >
-                  AI 제작 시작
-                </button>
-              ) : soldOut ? (
-                <button
-                  type="button"
-                  disabled
-                  className="relative h-[60px] w-full cursor-not-allowed rounded-full border-[3px] border-white/20 bg-transparent text-[17px] font-extrabold tracking-widest text-white/40"
-                >
-                  판매 완료
+                  {t("video.detail.buyNow")}
                 </button>
               ) : (
                 <TossCheckoutButton
                   productType="video"
                   videoId={video.id}
-                  className="relative h-[60px] w-full rounded-full border-[3px] border-white/40 bg-transparent text-[17px] font-extrabold tracking-widest text-white shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] active:scale-[0.99] disabled:cursor-wait disabled:opacity-60 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900"
+                  className="relative h-[60px] w-full rounded-full border-[3px] border-white/40 bg-transparent text-[17px] font-extrabold tracking-widest text-white shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] active:scale-[0.99] active:translate-y-0 disabled:cursor-wait disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900"
+                  disabled={soldOut}
                 >
-                  토스로 구매하기
+                  {soldOut ? t("video.detail.soldOut") : t("video.detail.buyNow")}
                 </TossCheckoutButton>
               )}
             </div>
@@ -704,59 +756,64 @@ export function VideoDetailView({
             <div className="flex items-center justify-center gap-4">
               <button
                 type="button"
-                title="장바구니 담기"
+                title={inCart ? t("explore.rail.cartRemove") : t("explore.rail.cartAdd")}
                 onClick={(e) => {
                   if (soldOut) return;
                   if (!requireAuth()) return;
-                  dopamine.launchFromCartButton(e.currentTarget, video, posterSrc);
+                  toggleCartFromButton(e.currentTarget, posterSrc ?? undefined);
                 }}
-                className="inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-zinc-400 transition-colors hover:border-white/25 hover:text-zinc-100 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-600"
+                className={`inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border border-white/10 bg-white/[0.04] transition-colors hover:border-white/25 hover:text-zinc-100 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 ${
+                  inCart
+                    ? "border-[var(--reels-point)]/55 text-[var(--reels-point)] hover:border-[var(--reels-point)]/75 [html[data-theme='light']_&]:text-[var(--reels-point)]"
+                    : "text-zinc-400 [html[data-theme='light']_&]:text-zinc-600"
+                }`}
                 disabled={soldOut}
-                aria-label="장바구니 담기"
+                aria-label={inCart ? t("explore.rail.cartRemove") : t("explore.rail.cartAdd")}
+                aria-pressed={inCart}
               >
                 <ShoppingCart className="h-[18px] w-[18px]" />
               </button>
               <button
                 type="button"
-                title={likedByMe ? "좋아요 취소" : "좋아요"}
+                title={likedByMe ? t("explore.rail.likeUndo") : t("explore.rail.like")}
                 onClick={(e) => {
                   e.preventDefault();
                   void toggleInternalLike();
                 }}
                 className={`relative inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border transition-all duration-200 [html[data-theme='light']_&]:bg-zinc-100 ${
                   likedByMe
-                    ? "border-[#79adff]/70 bg-[#0e1d3f] text-[#9bc4ff]"
+                    ? "border-[var(--reels-point)]/60 bg-[var(--reels-point)]/[0.14] text-[var(--reels-point)] [html[data-theme='light']_&]:border-[var(--reels-point)]/45 [html[data-theme='light']_&]:bg-[var(--reels-point)]/[0.10] [html[data-theme='light']_&]:text-[var(--reels-point)]"
                     : "border-white/10 bg-white/[0.04] text-zinc-400 hover:border-white/25 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600"
                 } ${likePulse ? "scale-110" : "scale-100"}`}
-                aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+                aria-label={likedByMe ? t("explore.rail.likeUndo") : t("explore.rail.like")}
                 aria-pressed={likedByMe}
                 disabled={likeBusy}
               >
                 {likeBurst ? (
-                  <span className="pointer-events-none absolute inset-0 rounded-full bg-[#79adff]/30 animate-ping" />
+                  <span className="pointer-events-none absolute inset-0 rounded-full bg-[var(--reels-point)]/30 animate-ping" />
                 ) : null}
                 <Heart
                   className={`relative z-[1] h-[18px] w-[18px] transition-transform duration-300 ${
-                    likedByMe ? "fill-current text-[#9bc4ff]" : ""
+                    likedByMe ? "fill-current text-[var(--reels-point)]" : ""
                   } ${likeBurst ? "scale-125" : "scale-100"}`}
                 />
               </button>
               <button
                 type="button"
-                title={wishlisted ? "찜 해제" : "찜하기"}
+                title={wishlisted ? t("video.detail.wishlistRemove") : t("video.detail.wishlistAdd")}
                 onClick={(e) => {
                   e.preventDefault();
                   if (!requireAuth()) return;
                   setWishlistPulse(true);
                   window.setTimeout(() => setWishlistPulse(false), 170);
-                  toggleWishlist(video);
+                  toggleWishlist();
                 }}
                 className={`inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border transition-all duration-200 [html[data-theme='light']_&]:bg-zinc-100 ${
                   wishlisted
                     ? "border-reels-cyan/50 bg-reels-cyan/10 text-reels-cyan"
                     : "border-white/10 bg-white/[0.04] text-zinc-400 hover:border-white/25 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600"
                 } ${wishlistPulse ? "scale-110" : "scale-100"}`}
-                aria-label={wishlisted ? "찜 해제" : "찜하기"}
+                aria-label={wishlisted ? t("video.detail.wishlistRemove") : t("video.detail.wishlistAdd")}
                 aria-pressed={wishlisted}
               >
                 <Bookmark className={`h-[18px] w-[18px] ${wishlisted ? "fill-current" : ""}`} />

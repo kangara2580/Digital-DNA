@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronRight } from "lucide-react";
+import { AUTH_MODAL_BRAND_PINK_HEX, authModalGoogleChevronClass } from "@/lib/authModalTheme";
 
 const BTN =
   "flex w-full items-center justify-center gap-2.5 rounded-full border border-white/20 bg-white/[0.06] py-3 text-[14px] font-extrabold text-zinc-100 shadow-sm transition hover:border-white/35 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-55 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-50";
@@ -9,9 +11,17 @@ type Props = {
   nextPath: string | null;
   label: string;
   className?: string;
+  googleLabelTypographyClass?: string;
+  showBrandChevron?: boolean;
 };
 
-export function GoogleOAuthButton({ nextPath, label, className }: Props) {
+export function GoogleOAuthButton({
+  nextPath,
+  label,
+  className,
+  showBrandChevron = false,
+  googleLabelTypographyClass,
+}: Props) {
   const [busy, setBusy] = useState(false);
 
   return (
@@ -48,7 +58,18 @@ export function GoogleOAuthButton({ nextPath, label, className }: Props) {
           d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"
         />
       </svg>
-      {busy ? "Google로 이동 중..." : label}
+      <span className={googleLabelTypographyClass}>{busy ? "Google로 이동 중..." : label}</span>
+      {showBrandChevron && !busy ? (
+        <ChevronRight
+          className={authModalGoogleChevronClass}
+          color={AUTH_MODAL_BRAND_PINK_HEX}
+          stroke={AUTH_MODAL_BRAND_PINK_HEX}
+          strokeWidth={3.85}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        />
+      ) : null}
     </button>
   );
 }

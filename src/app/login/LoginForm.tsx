@@ -56,12 +56,12 @@ export function LoginForm() {
           로그인
         </h1>
         <p className="mt-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          릴스 판매 등록 등 회원 전용 기능에 사용됩니다.
+          동영상 판매 등록 등 회원 전용 기능에 사용됩니다.
         </p>
 
         {error ? (
           <p
-            className="mt-4 rounded-xl border border-rose-500/45 bg-rose-500/10 px-3 py-2 text-[13px] font-semibold text-rose-200 [html[data-theme='light']_&]:text-rose-800"
+            className="mt-4 rounded-xl border border-reels-crimson/45 bg-reels-crimson/12 px-3 py-2 text-[13px] font-semibold text-[#F9ECF3] [html[data-theme='light']_&]:text-zinc-900"
             role="alert"
           >
             {error}
