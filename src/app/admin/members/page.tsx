@@ -360,6 +360,42 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
               </section>
 
               <section className="grid gap-3">
+                <section className="rounded-lg border border-slate-200 bg-white p-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="text-slate-500">
+                      <BadgeDollarSign size={18} />
+                    </span>
+                    <h3 className="font-black">운영 데이터 요약</h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <MetricPill label="크레딧 잔액" value={formatNumber(selected.creditBalance)} />
+                    <MetricPill label="찜" value={formatNumber(selected.favoritesCount)} />
+                    <MetricPill label="좋아요" value={formatNumber(selected.likesCount)} />
+                    <MetricPill label="장바구니" value={formatNumber(selected.cartCount)} />
+                    <MetricPill label="제작 임시저장" value={formatNumber(selected.draftCount)} />
+                    <MetricPill label="SNS 링크" value={formatNumber(selected.socialLinks.length)} />
+                  </div>
+                </section>
+                <DetailBlock
+                  icon={<FileText size={18} />}
+                  title="SNS 링크"
+                  empty="저장된 SNS 링크가 없습니다."
+                  rows={selected.socialLinks.map((item) => ({
+                    key: item.url,
+                    title: item.platform,
+                    meta: item.url,
+                  }))}
+                />
+                <DetailBlock
+                  icon={<BadgeDollarSign size={18} />}
+                  title="최근 크레딧 변동"
+                  empty="크레딧 변동 기록이 없습니다."
+                  rows={selected.recentCreditLedger.map((item) => ({
+                    key: item.id,
+                    title: `${item.type} / ${item.amount > 0 ? "+" : ""}${formatNumber(item.amount)} / 잔액 ${formatNumber(item.balanceAfter)}`,
+                    meta: `${item.reason} / ${formatDate(item.createdAt)}`,
+                  }))}
+                />
                 <DetailBlock
                   icon={<BadgeDollarSign size={18} />}
                   title="최근 구매"
@@ -416,6 +452,15 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
         </aside>
       </div>
     </main>
+  );
+}
+
+function MetricPill({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-slate-100 bg-slate-50 px-3 py-2">
+      <p className="text-xs font-bold text-slate-500">{label}</p>
+      <p className="mt-1 font-black text-slate-900">{value}</p>
+    </div>
   );
 }
 

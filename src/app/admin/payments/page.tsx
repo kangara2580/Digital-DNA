@@ -14,8 +14,11 @@ function formatDate(value: Date | null): string {
   }).format(value);
 }
 
-function formatMoney(cents: number, currency: string): string {
-  return `${(cents / 100).toFixed(2)} ${currency.toUpperCase()}`;
+function formatMoney(amount: number, currency: string): string {
+  if (currency.toUpperCase() === "KRW") {
+    return `${new Intl.NumberFormat("ko-KR").format(amount)}원`;
+  }
+  return `${(amount / 100).toFixed(2)} ${currency.toUpperCase()}`;
 }
 
 function formatNumber(value: number): string {
@@ -94,10 +97,10 @@ export default async function AdminPaymentsPage() {
         </Link>
         <div className="flex items-center gap-2">
           <CreditCard size={24} className="text-slate-500" />
-          <h1 className="text-2xl font-black">Polar 결제 / 크레딧 관리</h1>
+          <h1 className="text-2xl font-black">Toss 결제 / 크레딧 관리</h1>
         </div>
         <p className="mt-1 text-sm text-slate-500">
-          실제 Polar 결제, 웹훅 처리 상태, 적립 크레딧을 확인합니다.
+          실제 Toss 결제, 결제 확정 상태, 적립 크레딧을 확인합니다.
         </p>
       </header>
 
@@ -109,7 +112,7 @@ export default async function AdminPaymentsPage() {
           </article>
           <article className="rounded-lg border border-slate-200 bg-white p-4">
             <p className="text-sm font-bold text-slate-500">성공 결제액</p>
-            <p className="mt-2 text-2xl font-black">{formatMoney(paidTotal, "USD")}</p>
+            <p className="mt-2 text-2xl font-black">{formatMoney(paidTotal, "KRW")}</p>
           </article>
           <article className="rounded-lg border border-slate-200 bg-white p-4">
             <p className="text-sm font-bold text-slate-500">지급 크레딧</p>
@@ -132,14 +135,14 @@ export default async function AdminPaymentsPage() {
                   <th className="px-4 py-3">상태</th>
                   <th className="px-4 py-3">금액</th>
                   <th className="px-4 py-3">크레딧</th>
-                  <th className="px-4 py-3">Polar ID</th>
+                  <th className="px-4 py-3">Toss 주문 ID</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {payments.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-4 py-10 text-center text-slate-500">
-                      아직 Polar 결제 기록이 없습니다.
+                      아직 Toss 결제 기록이 없습니다.
                     </td>
                   </tr>
                 ) : (

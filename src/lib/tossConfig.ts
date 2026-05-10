@@ -1,4 +1,4 @@
-export type TossCheckoutPurpose = "credits" | "video";
+export type TossCheckoutPurpose = "credits" | "video" | "cart";
 
 export type TossCreditPackKey = "starter" | "creator" | "studio";
 
@@ -16,21 +16,21 @@ export const tossCreditPacks: TossCreditPack[] = [
     name: "Starter",
     credits: 2200,
     priceKrw: 9900,
-    description: "AI 편집 입문용 크레딧 팩",
+    description: "AI 편집 입문용 크레딧",
   },
   {
     key: "creator",
     name: "Creator",
     credits: 6200,
     priceKrw: 24900,
-    description: "가장 추천하는 크리에이터 작업 팩",
+    description: "가장 추천하는 크리에이터 작업용",
   },
   {
     key: "studio",
     name: "Studio",
     credits: 15500,
     priceKrw: 59900,
-    description: "브랜드/대행사 반복 제작용 팩",
+    description: "브랜드와 팀 단위 반복 제작용",
   },
 ];
 

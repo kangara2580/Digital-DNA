@@ -91,7 +91,7 @@ export function VideoDetailView({
   const authPromptScrollYRef = useRef(0);
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const dopamine = useDopamineBasket();
-  const { hasPurchased, markPurchased } = usePurchasedVideos();
+  const { hasPurchased } = usePurchasedVideos();
   const { recordView } = useRecentClips();
   const { t, locale } = useTranslation();
   const displayTitle = useVideoDisplayTitle();

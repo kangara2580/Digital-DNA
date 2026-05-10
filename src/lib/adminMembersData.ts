@@ -28,6 +28,23 @@ export type AdminMemberListItem = {
 };
 
 export type AdminMemberDetail = AdminMemberListItem & {
+  creditBalance: number;
+  favoritesCount: number;
+  likesCount: number;
+  cartCount: number;
+  draftCount: number;
+  socialLinks: {
+    platform: string;
+    url: string;
+  }[];
+  recentCreditLedger: {
+    id: string;
+    type: string;
+    amount: number;
+    balanceAfter: number;
+    reason: string;
+    createdAt: string;
+  }[];
   recentPurchases: {
     id: string;
     videoId: string;
@@ -99,6 +116,32 @@ type ProfileRow = {
   reports_count: number;
   videos_count: number;
 };
+
+type SocialLinkRow = {
+  data: unknown;
+};
+
+type CountRow = {
+  count: number;
+};
+
+function parseSocialLinksFromBlob(blob: unknown): { platform: string; url: string }[] {
+  if (!Array.isArray(blob)) return [];
+  const result: { platform: string; url: string }[] = [];
+  const seen = new Set<string>();
+  for (const item of blob) {
+    if (!item || typeof item !== "object") continue;
+    const record = item as { platform?: unknown; url?: unknown };
+    const url = typeof record.url === "string" ? record.url.trim() : "";
+    if (!url || seen.has(url)) continue;
+    seen.add(url);
+    result.push({
+      platform: typeof record.platform === "string" ? record.platform : "website",
+      url,
+    });
+  }
+  return result;
+}
 
 const PAGE_SIZE = 30;
 const STATUSES = new Set(["all", "active", "suspended", "deleted"]);
@@ -276,7 +319,20 @@ async function fetchSelectedMember(userId: string | undefined): Promise<AdminMem
   const base = rows[0];
   if (!base) return null;
 
-  const [recentPurchases, recentJobs, recentReports, recentVideos, recentNotes] =
+  const [
+    recentPurchases,
+    recentJobs,
+    recentReports,
+    recentVideos,
+    recentNotes,
+    creditBalance,
+    recentCreditLedger,
+    socialRows,
+    favoriteRows,
+    likeRows,
+    cartRows,
+    draftRows,
+  ] =
     await Promise.all([
       prisma.purchase.findMany({
         where: { buyerId: userId },
@@ -323,10 +379,66 @@ async function fetchSelectedMember(userId: string | undefined): Promise<AdminMem
         take: 8,
         select: { id: true, body: true, createdBy: true, createdAt: true },
       }),
+      prisma.userCreditBalance.findUnique({
+        where: { userId },
+        select: { balance: true },
+      }),
+      prisma.creditLedger.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+        select: {
+          id: true,
+          type: true,
+          amount: true,
+          balanceAfter: true,
+          reason: true,
+          createdAt: true,
+        },
+      }),
+      prisma.$queryRaw<SocialLinkRow[]>`
+        select data
+        from public.user_data_blobs
+        where user_id::text = ${userId}
+          and blob_key = 'social_links'
+        limit 1
+      `,
+      prisma.$queryRaw<CountRow[]>`
+        select count(*)::int as count
+        from public.favorites
+        where user_id::text = ${userId}
+          and kind = 'wishlist'
+      `,
+      prisma.$queryRaw<CountRow[]>`
+        select count(*)::int as count
+        from public.favorites
+        where user_id::text = ${userId}
+          and kind = 'like'
+      `,
+      prisma.$queryRaw<CountRow[]>`
+        select count(*)::int as count
+        from public.user_cart_items
+        where user_id::text = ${userId}
+      `,
+      prisma.$queryRaw<CountRow[]>`
+        select count(*)::int as count
+        from public.user_customize_drafts
+        where user_id::text = ${userId}
+      `,
     ]);
 
   return {
     ...rowToItem(base),
+    creditBalance: creditBalance?.balance ?? 0,
+    favoritesCount: favoriteRows[0]?.count ?? 0,
+    likesCount: likeRows[0]?.count ?? 0,
+    cartCount: cartRows[0]?.count ?? 0,
+    draftCount: draftRows[0]?.count ?? 0,
+    socialLinks: parseSocialLinksFromBlob(socialRows[0]?.data),
+    recentCreditLedger: recentCreditLedger.map((item) => ({
+      ...item,
+      createdAt: item.createdAt.toISOString(),
+    })),
     recentPurchases: recentPurchases.map((item) => ({
       ...item,
       createdAt: item.createdAt.toISOString(),

@@ -29,7 +29,7 @@ export async function createPendingPayment(params: {
   userEmail: string | null;
   orderId: string;
   orderName: string;
-  productType: "credits" | "video";
+  productType: "credits" | "video" | "cart";
   productKey: string;
   amount: number;
   credits?: number;
@@ -144,14 +144,14 @@ export async function applyTossConfirmedPayment(params: {
       }
     }
 
-    if (paidPayment.productType === "video" && paidPayment.targetId) {
+    async function grantVideoPurchase(videoId: string, amount: number) {
       const video = await tx.video.findUnique({
-        where: { id: paidPayment.targetId },
+        where: { id: videoId },
         select: { id: true, sellerId: true, price: true },
       });
 
       if (!video) {
-        throw new Error(`Video not found for payment target: ${paidPayment.targetId}`);
+        throw new Error(`Video not found for payment target: ${videoId}`);
       }
 
       let purchase = await tx.purchase.findFirst({
@@ -168,7 +168,7 @@ export async function applyTossConfirmedPayment(params: {
             buyerId: paidPayment.userId,
             sellerId: video.sellerId,
             videoId: video.id,
-            price: paidPayment.amountCents,
+            price: amount,
             status: "paid",
           },
         });
@@ -208,7 +208,7 @@ export async function applyTossConfirmedPayment(params: {
       });
 
       if (!existingEarning) {
-        const fee = calculatePlatformFee(paidPayment.amountCents);
+        const fee = calculatePlatformFee(amount);
         await tx.sellerEarning.create({
           data: {
             sellerId: video.sellerId,
@@ -216,7 +216,7 @@ export async function applyTossConfirmedPayment(params: {
             purchaseId: purchase.id,
             paymentId: paidPayment.id,
             videoId: video.id,
-            grossAmount: paidPayment.amountCents,
+            grossAmount: amount,
             platformFee: fee.platformFee,
             netAmount: fee.netAmount,
             feeRateBps: fee.feeRateBps,
@@ -236,6 +236,37 @@ export async function applyTossConfirmedPayment(params: {
             status: "earned",
           },
         });
+      }
+    }
+
+    if (paidPayment.productType === "video" && paidPayment.targetId) {
+      await grantVideoPurchase(paidPayment.targetId, paidPayment.amountCents);
+    }
+
+    if (paidPayment.productType === "cart") {
+      const metadata =
+        paidPayment.metadataJson && typeof paidPayment.metadataJson === "object"
+          ? (paidPayment.metadataJson as Record<string, unknown>)
+          : {};
+      const items = Array.isArray(metadata.items)
+        ? metadata.items
+            .map((item) => {
+              if (!item || typeof item !== "object") return null;
+              const row = item as { videoId?: unknown; price?: unknown };
+              const videoId = typeof row.videoId === "string" ? row.videoId : "";
+              const price = Number(row.price);
+              if (!videoId || !Number.isFinite(price) || price <= 0) return null;
+              return { videoId, price };
+            })
+            .filter((item): item is { videoId: string; price: number } => item != null)
+        : [];
+
+      if (items.length === 0) {
+        throw new Error(`Cart payment has no payable items: ${paidPayment.id}`);
+      }
+
+      for (const item of items) {
+        await grantVideoPurchase(item.videoId, item.price);
       }
     }
 
