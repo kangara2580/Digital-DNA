@@ -52,6 +52,11 @@ export function topNavHeroCapsuleGlyphIconClass(): string {
   return "h-6 w-6 shrink-0";
 }
 
+/** 결제 다이아 SVG — 프로필·카트보다 살짝 크게(라인 아트 가시성). */
+export function topNavHeroCapsulePaymentDiamondIconClass(): string {
+  return "h-7 w-7 shrink-0";
+}
+
 export function topNavHeroProfileGlyphIconClass(): string {
   return topNavHeroCapsuleGlyphIconClass();
 }

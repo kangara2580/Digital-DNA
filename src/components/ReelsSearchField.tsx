@@ -12,16 +12,16 @@ const easeLayout =
 const searchIconMotion =
   "transition-colors duration-200 ease-out group-hover:text-[color:var(--reels-point)] group-focus-within:text-[color:var(--reels-point)]";
 
-/** compact 핑크 트레일(쇼핑망 검색 한 줄 등): 입력 h-9에 맞춘 작은 원 */
+/** compact 핑크 트레일(쇼핑망 검색 한 줄 등): 입력 h-9에 맞춘 원 */
 const pinkSubmitTileClass =
   "flex h-[1.625rem] w-[1.625rem] shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(228,41,128,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white";
 
-/** 히어로·넓은 필드용 — 지름 h-11 (캡슐 트랙과 별도) */
+/** 히어로·넓은 필드용 — 입력 필드(h-12) 옆 핑크 원 */
 const pinkSubmitTileHeroClass =
   "flex h-11 w-11 min-h-[2.75rem] shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(228,41,128,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white";
 
 /**
- * 호버 펼침 트랙(h-11) 안의 제출 버튼 — 지름을 살짝 줄여 캡슐 테두리에 안 잘리게.
+ * 호버 펼침 트랙(h-11) 안의 제출 버튼 — 캡슐 테두리와 맞춘 지름
  */
 const pinkSubmitTileExpandCapsuleClass =
   "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(228,41,128,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white";
@@ -185,13 +185,11 @@ export function ReelsSearchField({
             className={`${pinkSubmitTileExpandCapsuleClass} shrink-0`}
             aria-label={t("search.aria.submit")}
           >
-            <span className="block">
-              <Search
-                className="h-[1.125rem] w-[1.125rem] shrink-0"
-                strokeWidth={2.25}
-                aria-hidden
-              />
-            </span>
+            <Search
+              className="h-5 w-5 shrink-0"
+              strokeWidth={2.25}
+              aria-hidden
+            />
           </button>
         ) : null}
       </form>
@@ -239,34 +237,29 @@ export function ReelsSearchField({
           }
           aria-label={t("search.aria.submit")}
         >
-          <span
-            className={
-              mode === "homeHero" ||
-              (mode === "compact" && pinkTrailingSubmit)
-                ? "block"
-                : `block ${searchIconMotion}`
-            }
-          >
+          {mode === "homeHero" || (mode === "compact" && pinkTrailingSubmit) ? (
             <Search
               className={`shrink-0 ${
                 mode === "homeHero"
-                  ? "h-[1.125rem] w-[1.125rem]"
-                  : mode === "compact" && pinkTrailingSubmit
-                    ? "h-[1.125rem] w-[1.125rem]"
-                    : mode === "pill"
-                      ? "h-6 w-6"
-                      : mode === "compact"
-                        ? "h-4 w-4"
-                        : "h-5 w-5"
+                  ? "h-6 w-6"
+                  : navPairedPink || mallRowTallPink
+                    ? "h-5 w-5"
+                    : "h-[1.125rem] w-[1.125rem]"
               }`}
-              strokeWidth={
-                mode === "homeHero" || (mode === "compact" && pinkTrailingSubmit)
-                  ? 2.25
-                  : 2
-              }
+              strokeWidth={2.25}
               aria-hidden
             />
-          </span>
+          ) : (
+            <span className={`block ${searchIconMotion}`}>
+              <Search
+                className={`shrink-0 ${
+                  mode === "pill" ? "h-6 w-6" : mode === "compact" ? "h-4 w-4" : "h-5 w-5"
+                }`}
+                strokeWidth={2}
+                aria-hidden
+              />
+            </span>
+          )}
         </button>
       ) : null}
     </form>

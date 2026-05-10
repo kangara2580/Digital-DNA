@@ -45,6 +45,10 @@ import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
 import { AuthModalPortal } from "@/components/AuthModalPortal";
 import {
+  araAuthDialogWordmarkClassName,
+  araWordmarkFontStyle,
+} from "@/lib/araBrandTypography";
+import {
   authModalDialogSurface,
   authModalDismissButtonCls,
   authModalGlowBottom,
@@ -213,7 +217,7 @@ function AuthRequiredModal({
         >
           ×
         </button>
-        <p className="relative text-center text-[clamp(1.85rem,6vw,2.65rem)] font-black tracking-tight text-white">
+        <p className={araAuthDialogWordmarkClassName} style={araWordmarkFontStyle}>
           ARA
         </p>
         <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">

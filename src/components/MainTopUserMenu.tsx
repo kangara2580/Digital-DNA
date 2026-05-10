@@ -16,6 +16,7 @@ import {
   TOP_NAV_ACCOUNT_CART_PILL_OUTER,
   TOP_NAV_ACCOUNT_CART_PILL_TRIPLE_LAYOUT,
   topNavHeroCapsuleGlyphIconClass,
+  topNavHeroCapsulePaymentDiamondIconClass,
 } from "@/lib/topNavIconRing";
 import {
   authModalDialogSurface,
@@ -26,6 +27,10 @@ import {
 import { PaymentDiamondIcon } from "@/components/PaymentDiamondIcon";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useTranslation } from "@/hooks/useTranslation";
+import {
+  araAuthDialogWordmarkClassName,
+  araWordmarkFontStyle,
+} from "@/lib/araBrandTypography";
 
 /** 추후 결제 백엔드 연동 시 이 경로에 페이지 연결 */
 const PAYMENT_PLACEHOLDER_HREF = "/payment";
@@ -33,7 +38,7 @@ const PAYMENT_PLACEHOLDER_HREF = "/payment";
 function CapsulePaymentDiamondGlyph() {
   return (
     <PaymentDiamondIcon
-      className={`${topNavHeroCapsuleGlyphIconClass()} text-[color:var(--reels-point)]`}
+      className={`${topNavHeroCapsulePaymentDiamondIconClass()} text-[color:var(--reels-point)]`}
     />
   );
 }
@@ -179,7 +184,7 @@ export function MainTopUserMenu({ withCart = true }: Props) {
               >
                 ×
               </button>
-              <p className="relative text-center text-[clamp(1.85rem,6vw,2.65rem)] font-black tracking-tight text-white">
+              <p className={araAuthDialogWordmarkClassName} style={araWordmarkFontStyle}>
                 ARA
               </p>
               <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">

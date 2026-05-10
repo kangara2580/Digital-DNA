@@ -294,10 +294,7 @@ export function TrendingRankSection() {
                   role="listitem"
                 >
                   <VideoCard
-                    video={{
-                      ...entry.video,
-                      title: t("home.trending.rankLabel", { n: rankIndex + 1 }),
-                    }}
+                    video={entry.video}
                     reelLayout
                     reelStrip
                     disableHoverScale

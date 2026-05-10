@@ -15,6 +15,11 @@ import { HomeStartCtaButton } from "@/components/HomeStartCtaButton";
 import { MainTopUserMenu } from "@/components/MainTopUserMenu";
 import { ReelsSearchField } from "@/components/ReelsSearchField";
 import {
+  araAuthDialogWordmarkClassName,
+  araHeroWordmarkClassName,
+  araWordmarkFontStyle,
+} from "@/lib/araBrandTypography";
+import {
   authModalDialogSurface,
   authModalDismissButtonCls,
   authModalGlowBottom,
@@ -161,12 +166,7 @@ export function Highlight24() {
       </div>
 
       <div className="relative z-10 mx-auto flex w-full max-w-3xl -translate-y-2 flex-col items-center px-4 pb-4 pt-[max(0.25rem,calc(env(safe-area-inset-top)+3rem))] text-center motion-reduce:translate-y-0 sm:-translate-y-3 sm:px-6 sm:pb-5 sm:pt-[max(0.5rem,calc(env(safe-area-inset-top)+3.25rem))] motion-reduce:sm:translate-y-0">
-        <h1
-          className="select-none text-[clamp(3.6rem,16.5vw,7.5rem)] font-semibold leading-none tracking-[0.02em] text-white"
-          style={{
-            fontFamily: "var(--font-fredoka), ui-rounded, system-ui, sans-serif",
-          }}
-        >
+        <h1 className={araHeroWordmarkClassName} style={araWordmarkFontStyle}>
           ARA
         </h1>
         <p className="mx-auto mt-2 max-w-[min(100%,52rem)] px-2 text-center text-[clamp(10px,2.8vw,14px)] font-medium leading-tight tracking-[0.01em] text-white/60 whitespace-nowrap [html[data-theme='light']_&]:text-zinc-700/72 sm:text-[14px]">
@@ -232,12 +232,7 @@ export function Highlight24() {
                 >
                   ×
                 </button>
-                <p
-                  className="relative text-center text-[clamp(2.2rem,6.85vw,3.05rem)] font-semibold tracking-[0.02em] text-white"
-                  style={{
-                    fontFamily: "var(--font-fredoka), ui-rounded, system-ui, sans-serif",
-                  }}
-                >
+                <p className={araAuthDialogWordmarkClassName} style={araWordmarkFontStyle}>
                   ARA
                 </p>
                 <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">

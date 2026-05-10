@@ -19,6 +19,10 @@ import {
 import { homeSectionHeadingH2ClassName } from "@/lib/homeSectionHeadingTypography";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
+  araAuthDialogWordmarkClassName,
+  araWordmarkFontStyle,
+} from "@/lib/araBrandTypography";
+import {
   PitchIllustCreatorPrice,
   PitchIllustCreatorSell,
   PitchIllustCreatorUpload,
@@ -123,7 +127,7 @@ function SellerPitchAuthModal({
             >
               ×
             </button>
-            <p className="relative text-center text-[clamp(1.85rem,6vw,2.65rem)] font-black tracking-tight text-white">
+            <p className={araAuthDialogWordmarkClassName} style={araWordmarkFontStyle}>
               ARA
             </p>
             <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
@@ -287,7 +291,10 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
             </div>
 
             <div className="mt-14 text-center sm:mt-16">
-              <p className="mt-3 text-[clamp(2.1rem,5.6vw,4rem)] font-black tracking-[0.1em] text-white [text-shadow:0_0_22px_rgba(143,208,255,0.22)] [html[data-theme='light']_&]:text-zinc-950 [html[data-theme='light']_&]:[text-shadow:none]">
+              <p
+                className="mt-3 text-[clamp(2.1rem,5.6vw,4rem)] font-semibold leading-none tracking-[0.02em] text-white [text-shadow:0_0_22px_rgba(143,208,255,0.22)] [html[data-theme='light']_&]:text-zinc-950 [html[data-theme='light']_&]:[text-shadow:none]"
+                style={araWordmarkFontStyle}
+              >
                 ARA
               </p>
             </div>
@@ -312,7 +319,7 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                 </h2>
                 <div className="grid gap-7 lg:grid-cols-2 lg:gap-10 xl:gap-12">
                   {/* 사용자 카드 */}
-                  <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-black px-6 py-8 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-7 sm:py-9 lg:px-9 lg:py-10">
+                  <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-black px-7 py-9 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-9 sm:py-11 lg:px-11 lg:py-12">
                     <section className="flex flex-col items-center space-y-7 text-center sm:space-y-8">
                       <p className={pitchRoleHeadingClassName}>{t("home.pitch.roleUser")}</p>
                       <p className={`max-w-md ${pitchStepBodyClassName}`}>
@@ -345,7 +352,7 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                   </div>
 
                   {/* 크리에이터 카드 */}
-                  <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-black px-6 py-8 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-7 sm:py-9 lg:px-9 lg:py-10">
+                  <div className="relative overflow-hidden rounded-[22px] border-[0.5px] border-solid border-white/[0.26] bg-black px-7 py-9 shadow-[0_14px_40px_-24px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:border-zinc-200/90 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-28px_rgba(15,23,42,0.12)] sm:px-9 sm:py-11 lg:px-11 lg:py-12">
                     <section className="flex flex-col items-center space-y-7 text-center sm:space-y-8">
                       <p className={pitchRoleHeadingClassName}>{t("home.pitch.roleCreator")}</p>
                       <p className={`max-w-md ${pitchStepBodyClassName}`}>
@@ -361,7 +368,7 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
                         </li>
                         <li className="flex flex-col items-center gap-6 sm:gap-8">
                           <PitchIllustCreatorPrice aria-label={t("home.pitch.creator.step2Alt")} />
-                          <div className="space-y-2.5">
+                          <div className="-translate-y-2 space-y-2.5">
                             <p className={pitchStepTitleClassName}>{t("home.pitch.creator.step2Title")}</p>
                             <p className={pitchStepBodyClassName}>{t("home.pitch.creator.step2Body")}</p>
                           </div>

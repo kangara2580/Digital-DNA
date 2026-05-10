@@ -10,6 +10,10 @@ import {
   authModalGlowTop,
 } from "@/lib/authModalTheme";
 import { useTranslation } from "@/hooks/useTranslation";
+import {
+  araAuthDialogWordmarkClassName,
+  araWordmarkFontStyle,
+} from "@/lib/araBrandTypography";
 
 type Props = {
   open: boolean;
@@ -45,7 +49,7 @@ export function AuthPromptModal({ open, onClose, onGoogleStart }: Props) {
         >
           ×
         </button>
-        <p className="relative text-center text-[clamp(1.85rem,6vw,2.65rem)] font-black tracking-tight text-white">
+        <p className={araAuthDialogWordmarkClassName} style={araWordmarkFontStyle}>
           ARA
         </p>
         <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">

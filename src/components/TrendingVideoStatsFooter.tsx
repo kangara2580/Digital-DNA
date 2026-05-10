@@ -20,6 +20,8 @@ type Props = {
   stockRow?: { remaining: number | null; soldOut: boolean } | null;
   /** 메인 인기순위 카드 등 — 수익·조회수·좋아요 표기 글자만 숨김(아이콘·수치·▲▼ 유지) */
   hideMetricLabels?: boolean;
+  /** 장바구니·좁은 그리드 — 패딩·행 간격·글자 크기 축소 */
+  dense?: boolean;
 };
 
 const rowCls = "flex items-center gap-8 py-1.5";
@@ -39,33 +41,55 @@ export function TrendingVideoStatsFooter({
   salesCount,
   stockRow,
   hideMetricLabels = false,
+  dense = false,
 }: Props) {
   const { t, locale } = useTranslation();
   const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
   const isUp = metrics.growthPercent >= 0;
-  const metricRowCls = hideMetricLabels
-    ? "flex w-full min-w-0 items-center gap-2 py-1.5"
-    : rowCls;
+  const metricRowCls =
+    dense && hideMetricLabels
+      ? "flex w-full min-w-0 items-center gap-1 py-0.5"
+      : hideMetricLabels
+        ? "flex w-full min-w-0 items-center gap-2 py-1.5"
+        : rowCls;
   const labelColCls = hideMetricLabels
-    ? "inline-flex w-[3.5rem] shrink-0 items-center justify-start gap-1"
+    ? dense
+      ? "inline-flex w-[2.75rem] shrink-0 items-center justify-start gap-0.5"
+      : "inline-flex w-[3.5rem] shrink-0 items-center justify-start gap-1"
     : "inline-flex w-[4.5rem] shrink-0 items-center gap-1.5";
   const labelTone =
     "text-[14px] font-medium leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
   const valueDdExtras = hideMetricLabels ? "flex-1 text-right" : "";
-  const metricValueSize = hideMetricLabels ? "text-[12px] sm:text-[13px]" : "text-[15px]";
-  const neutralMetricValueCls = hideMetricLabels ? valueClsRankingCompact : valueCls;
+  const metricValueSize =
+    dense && hideMetricLabels
+      ? "text-[10px] sm:text-[11px]"
+      : hideMetricLabels
+        ? "text-[12px] sm:text-[13px]"
+        : "text-[15px]";
+  const neutralMetricValueCls =
+    dense && hideMetricLabels
+      ? "text-[10px] font-extrabold leading-snug tabular-nums tracking-tight text-[#EAF1FF] [html[data-theme='light']_&]:text-zinc-900 sm:text-[11px]"
+      : hideMetricLabels
+        ? valueClsRankingCompact
+        : valueCls;
+  const iconCls = dense ? "h-3 w-3 shrink-0" : "h-3.5 w-3.5 shrink-0";
+  const deltaCls = dense ? "text-[9px] leading-none" : "text-[11px] leading-none";
 
   return (
     <div
-      className={`${hideMetricLabels ? "w-full min-w-0" : "w-fit"} px-3 py-2 [html[data-theme='light']_&]:bg-white sm:px-4`}
+      className={`${hideMetricLabels ? "w-full min-w-0" : "w-fit"} ${
+        dense
+          ? "bg-transparent px-2 py-1 [html[data-theme='light']_&]:bg-transparent"
+          : "px-3 py-2 [html[data-theme='light']_&]:bg-white sm:px-4"
+      }`}
     >
       <dl className={hideMetricLabels ? "w-full min-w-0 leading-snug" : "leading-snug"}>
         <div className={metricRowCls}>
           <dt className={`${labelColCls} ${labelTone}`}>
-            <TrendingUp className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            <TrendingUp className={iconCls} aria-hidden />
             {hideMetricLabels ? <span className="sr-only">{t("stats.revenue")}</span> : t("stats.revenue")}
             <span
-              className={`${revenueTrendDeltaGlyphClass} text-[11px] leading-none ${isUp ? revenueTrendUpClass : revenueTrendDownClass}`}
+              className={`${revenueTrendDeltaGlyphClass} ${deltaCls} ${isUp ? revenueTrendUpClass : revenueTrendDownClass}`}
               aria-hidden
             >
               {isUp ? "▲" : "▼"}
@@ -79,7 +103,7 @@ export function TrendingVideoStatsFooter({
         </div>
         <div className={metricRowCls}>
           <dt className={`${labelColCls} ${labelTone}`}>
-            <Eye className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            <Eye className={iconCls} aria-hidden />
             {hideMetricLabels ? <span className="sr-only">{t("stats.views")}</span> : t("stats.views")}
           </dt>
           <dd className={`${neutralMetricValueCls} min-w-0 ${valueDdExtras}`}>
@@ -88,7 +112,7 @@ export function TrendingVideoStatsFooter({
         </div>
         <div className={metricRowCls}>
           <dt className={`${labelColCls} ${labelTone}`}>
-            <Heart className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            <Heart className={iconCls} aria-hidden />
             {hideMetricLabels ? <span className="sr-only">{t("stats.likes")}</span> : t("stats.likes")}
           </dt>
           <dd className={`${neutralMetricValueCls} min-w-0 ${valueDdExtras}`}>

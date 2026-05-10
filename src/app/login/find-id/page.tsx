@@ -2,6 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import {
+  araAuthFlowWordmarkClassName,
+  araWordmarkFontStyle,
+} from "@/lib/araBrandTypography";
 
 const INPUT =
   "w-full rounded-xl border border-white/20 bg-black/30 px-3.5 py-3 text-sm text-zinc-100 outline-none backdrop-blur-sm transition placeholder:text-zinc-500 focus:border-[#E42980]/60 focus:ring-2 focus:ring-[#E42980]/26";
@@ -152,7 +156,9 @@ export default function FindIdPage() {
     <main className="relative min-h-screen overflow-hidden bg-[#07080f] px-4 py-12 text-zinc-100 sm:px-6">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(228,41,128,0.17),transparent_40%),radial-gradient(circle_at_80%_90%,rgba(59,130,246,0.16),transparent_45%),linear-gradient(180deg,#05060b_0%,#080913_100%)]" />
       <div className="relative mx-auto mt-10 w-full max-w-md rounded-2xl border border-white/15 bg-white/[0.04] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:mt-16 sm:p-8">
-        <p className="text-xs uppercase tracking-[0.35em] text-zinc-400">ARA</p>
+        <p className={araAuthFlowWordmarkClassName} style={araWordmarkFontStyle}>
+          ARA
+        </p>
         <h1 className="mt-3 text-2xl font-black tracking-tight text-white">아이디(이메일) 찾기</h1>
         <p className="mt-2 text-sm text-zinc-400">
           로그인 아이디는 <strong className="text-zinc-300">이메일 주소</strong>입니다. 가입 시 등록한{" "}

@@ -7,29 +7,58 @@ const wrap = "flex h-[200px] w-full items-center justify-center px-2";
 
 type FigProps = { "aria-label": string };
 
-/** 1) 영상 선택: 마우스 포인터(커서) — 좌우 대칭, 화이트 아웃라인, 속 투명 */
+/**
+ * 1) 영상 선택: Lucide `mouse-pointer-click` 경로 그대로(24×24 뷰박스 → 렌더만 다른 단계보다 살짝 작게).
+ * 막대 4개만 브랜드 핑크, 커터 실루엣은 currentColor(다크 화이트 / 라이트 zinc-900).
+ * @see https://github.com/lucide-icons/lucide/blob/main/icons/mouse-pointer-click.svg (ISC)
+ */
 export function PitchIllustUserBrowse(fig: FigProps) {
-  /*
-   * 포인터는 중심 x=60 기준으로 완벽 좌우 대칭.
-   * 상단 꼭짓점(60,24) → 좌측 날개(42,70) → 중앙 오목(60,58) → 우측 날개(78,70) → 닫힘.
-   * strokeLinejoin="round"로 모서리를 부드럽게.
-   */
+  const rayStroke = 2;
+  /** 다른 피치 일러스트(120)보다 작게 — 추가로 10px 축소 */
+  const svgPx = 94;
+
   return (
     <div className={wrap} role="img" aria-label={fig["aria-label"]}>
       <svg
-        width="120"
-        height="120"
-        viewBox="0 0 120 120"
+        width={svgPx}
+        height={svgPx}
+        viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden
+        fill="none"
+        className="text-white [html[data-theme='light']_&]:text-zinc-900"
       >
         <path
-          d="M60 24 L42 70 L60 58 L78 70 Z"
-          fill="none"
-          stroke="white"
-          strokeWidth="3.5"
-          strokeLinejoin="round"
+          d="M14 4.1 12 6"
+          stroke={P}
+          strokeWidth={rayStroke}
           strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="m5.1 8-2.9-.8"
+          stroke={P}
+          strokeWidth={rayStroke}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="m6 12-1.9 2"
+          stroke={P}
+          strokeWidth={rayStroke}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M7.2 2.2 8 5.1"
+          stroke={P}
+          strokeWidth={rayStroke}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"
+          fill="currentColor"
         />
       </svg>
     </div>
@@ -89,31 +118,42 @@ export function PitchIllustUserDownload(fig: FigProps) {
   );
 }
 
-/** 영상 등록: 핑크 원형 재생 아이콘 */
+/** 영상 등록: 핑크 원·재생 삼각형 — 반지름 기준 3 줄임(r 34→31), 비율 유지로 함께 축소 · 뷰박스 여백으로 테두리 잘림 방지 */
 export function PitchIllustCreatorUpload(fig: FigProps) {
+  const uploadGlyphScale = 31 / 34;
   return (
-    <div className={wrap} role="img" aria-label={fig["aria-label"]}>
-      <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden className="shrink-0">
-        <circle cx="60" cy="60" r="34" fill={P} />
-        <polygon points="51,46 51,74 79,60" fill="#fff" />
+    <div className={`${wrap} overflow-visible -translate-y-2`} role="img" aria-label={fig["aria-label"]}>
+      <svg
+        width="120"
+        height="120"
+        viewBox="-12 -12 144 144"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden
+        className="shrink-0 overflow-visible"
+      >
+        <g transform={`translate(60 60) scale(${uploadGlyphScale}) translate(-60 -60)`}>
+          <circle cx="60" cy="60" r="34" fill={P} />
+          <polygon points="51,46 51,74 79,60" fill="#fff" />
+        </g>
       </svg>
     </div>
   );
 }
 
-/** 4) 가격: 테두리 없이 ₩만 크게 */
+/** 4) 가격: 테두리 없이 $ 기호 크게 — 뷰박스 세로 중앙 정렬 · 문구보다 한 단계 더 위(-translate-y-3) */
 export function PitchIllustCreatorPrice(fig: FigProps) {
   return (
-    <div className={wrap} role="img" aria-label={fig["aria-label"]}>
+    <div className={`${wrap} -translate-y-3`} role="img" aria-label={fig["aria-label"]}>
       <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden className="shrink-0">
         <text
           x="60"
-          y="78"
+          y="60"
           textAnchor="middle"
+          dominantBaseline="central"
           fill={P}
           style={{ fontSize: "52px", fontWeight: 800, fontFamily: "ui-sans-serif, system-ui, sans-serif" }}
         >
-          ₩
+          $
         </text>
       </svg>
     </div>

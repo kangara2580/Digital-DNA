@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { SellRegistrationModal } from "@/components/SellRegistrationModal";
+import { ShopBagOutlineIcon } from "@/components/ShopBagOutlineIcon";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const stroke = 1.75;
@@ -49,44 +50,6 @@ type RailItem = {
   isActive: (pathname: string) => boolean;
 };
 
-function ShopBagOutline({
-  className,
-  strokeWidth = 1.75,
-  ...props
-}: React.ComponentProps<"svg"> & { strokeWidth?: number }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className={className}
-      aria-hidden
-      {...props}
-    >
-      <path
-        d="M5.3 8.8H18.7L17.5 20H6.5L5.3 8.8Z"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M8.8 8.8V6.9C8.8 5.1 10.2 3.7 12 3.7C13.8 3.7 15.2 5.1 15.2 6.9V8.8"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9.3 15.8H14.7"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 const RAIL_ITEMS: RailItem[] = [
   {
     href: "/explore",
@@ -97,7 +60,7 @@ const RAIL_ITEMS: RailItem[] = [
   {
     href: "/category/best",
     labelKey: "rail.shop",
-    Icon: ShopBagOutline,
+    Icon: ShopBagOutlineIcon,
     isActive: (p) =>
       p === "/shop" || p.startsWith("/shop/") || p.startsWith("/category/"),
   },

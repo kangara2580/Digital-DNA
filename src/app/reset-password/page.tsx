@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { EmailOtpType } from "@supabase/supabase-js";
+import {
+  araAuthFlowWordmarkClassName,
+  araWordmarkFontStyle,
+} from "@/lib/araBrandTypography";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 const INPUT =
@@ -208,7 +212,9 @@ export default function ResetPasswordPage() {
     <main className="relative min-h-screen overflow-hidden bg-[#07080f] px-4 py-12 text-zinc-100 sm:px-6">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(228,41,128,0.17),transparent_40%),radial-gradient(circle_at_80%_90%,rgba(59,130,246,0.16),transparent_45%),linear-gradient(180deg,#05060b_0%,#080913_100%)]" />
       <div className="relative mx-auto mt-10 w-full max-w-md rounded-2xl border border-white/15 bg-white/[0.04] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:mt-16 sm:p-8">
-        <p className="text-xs uppercase tracking-[0.35em] text-zinc-400">ARA</p>
+        <p className={araAuthFlowWordmarkClassName} style={araWordmarkFontStyle}>
+          ARA
+        </p>
         <h1 className="mt-3 text-2xl font-black tracking-tight text-white">새 비밀번호 설정</h1>
         <p className="mt-2 text-sm text-zinc-400">
           이메일로 받은 링크를 연 뒤, 아래에 새 비밀번호를 입력해 주세요.

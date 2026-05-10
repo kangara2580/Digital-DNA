@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
@@ -9,9 +10,12 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import type { FeedVideo } from "@/data/videos";
+import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
+import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
+import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { explorePurchaseButtonClass } from "@/lib/explorePurchaseButtonClass";
-import { sellerProfileHrefFromVideo } from "@/lib/sellerProfile";
 import type { SiteLocale } from "@/lib/sitePreferences";
+import { getVideoContentSource } from "@/lib/videoSourcePlatform";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 const cartOutlineBtn =
@@ -219,17 +223,22 @@ export default function CartPage() {
       ) : !cartUiReady ? (
         <div className="mx-auto mt-14 w-full max-w-[1800px] space-y-4" aria-busy="true" aria-live="polite">
           <div className="mx-auto h-4 w-40 animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-x-8 lg:gap-y-8">
-            {[0, 1, 2].map((i) => (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 md:gap-4 lg:grid-cols-5 lg:gap-x-3 lg:gap-y-4">
+            {[0, 1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className="flex min-w-0 flex-col rounded-xl border border-white/10 p-4 [html[data-theme='light']_&]:border-zinc-200"
+                className="flex min-w-0 flex-col rounded-xl border border-white/10 p-3 sm:p-3.5 [html[data-theme='light']_&]:border-zinc-200"
               >
-                <div className="aspect-[9/16] w-full animate-pulse rounded-lg bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
-                <div className="mt-3 space-y-2">
-                  <div className="h-4 w-[88%] animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
-                  <div className="h-3 w-28 animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
-                  <div className="mt-4 h-3 w-24 animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
+                <div className="aspect-[3/4] w-full min-w-0 animate-pulse rounded-lg bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
+                <div className="mt-2 space-y-1.5 border-t border-white/10 pt-2 [html[data-theme='light']_&]:border-zinc-200">
+                  <div className="h-4 w-full animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
+                  {[0, 1, 2].map((j) => (
+                    <div
+                      key={j}
+                      className="h-3 w-full animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200"
+                    />
+                  ))}
+                  <div className="mt-1 h-8 w-full animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
                 </div>
               </div>
             ))}
@@ -252,28 +261,49 @@ export default function CartPage() {
         </div>
       ) : (
         <>
-          <ul className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-x-8 lg:gap-y-8">
+          <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 md:gap-4 lg:grid-cols-5 lg:gap-x-3 lg:gap-y-4">
             {builderItems.map(({ key, video }) => {
               const owned = hasPurchased(video.id);
               const checked = selected.has(key);
+              const videoContentSource = getVideoContentSource(video);
+              const metrics = getMetricsForVideoDetail(video.id);
+              const priceLabel =
+                video.priceWon != null
+                  ? `${video.priceWon.toLocaleString(numLocale)}${t("cart.currencySuffix")}`
+                  : null;
               return (
                 <li
                   key={key}
-                  className="flex min-w-0 flex-col rounded-xl border border-white/10 bg-white/[0.02] p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
+                  className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] p-3 sm:p-3.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
                 >
-                  <div className="relative w-full shrink-0">
-                    <label className="absolute left-3 top-3 z-[2] cursor-pointer rounded-md bg-black/50 p-1.5 backdrop-blur-sm [html[data-theme='light']_&]:bg-white/80">
+                  <div className="relative w-full min-w-0 shrink-0">
+                    <label className="absolute left-2 top-2 z-[2] cursor-pointer rounded-md bg-black/50 p-1 backdrop-blur-sm [html[data-theme='light']_&]:bg-white/80 lg:left-1.5 lg:top-1.5">
                       <input
                         type="checkbox"
                         checked={checked}
                         onChange={() => toggleKey(key)}
-                        className="h-5 w-5 rounded border border-white/35 bg-black/50 accent-[#E42980] [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-white"
+                        className="h-4 w-4 rounded border border-white/35 bg-black/50 accent-[#E42980] sm:h-5 sm:w-5 [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-white"
                       />
                       <span className="sr-only">{t("cart.selectAria")}</span>
                     </label>
+                    <button
+                      type="button"
+                      aria-label={t("cart.delete")}
+                      onClick={() => {
+                        removeBuilderItem(key);
+                        setSelected((s) => {
+                          const n = new Set(s);
+                          n.delete(key);
+                          return n;
+                        });
+                      }}
+                      className="absolute right-2 top-2 z-[3] inline-flex h-8 w-8 items-center justify-center rounded-md bg-black/55 text-zinc-200 backdrop-blur-sm transition-colors hover:bg-black/70 hover:text-white [html[data-theme='light']_&]:bg-white/85 [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:bg-white lg:right-1.5 lg:top-1.5"
+                    >
+                      <X className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+                    </button>
                     <Link
                       href={`/video/${video.id}`}
-                      className="relative block aspect-[9/16] w-full overflow-hidden rounded-lg border border-white/12 bg-black/40 ring-1 ring-white/10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100"
+                      className="relative block aspect-[3/4] w-full min-w-0 overflow-hidden rounded-lg border border-white/12 bg-black/40 ring-1 ring-white/10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -283,54 +313,45 @@ export default function CartPage() {
                       />
                     </Link>
                   </div>
-                  <div className="mt-3 flex min-h-0 min-w-0 flex-1 flex-col">
-                    <Link
-                      href={`/video/${video.id}`}
-                      className="line-clamp-2 text-left text-[15px] font-bold leading-snug text-zinc-100 transition-colors hover:text-[#E42980] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:text-[#E42980] sm:text-[16px]"
-                    >
-                      {displayTitle(video)}
-                    </Link>
-                    <p className="mt-2 min-h-0 truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                      <Link
-                        href={sellerProfileHrefFromVideo(video)}
-                        className="text-inherit underline-offset-2 transition-colors hover:text-[#E42980] hover:underline"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {video.creator}
-                      </Link>
-                    </p>
-                    <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-2 border-t border-white/10 pt-3 [html[data-theme='light']_&]:border-zinc-200">
-                      {video.priceWon != null ? (
-                        <span className="text-[15px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[16px]">
-                          {video.priceWon.toLocaleString(numLocale)}
-                          {t("cart.currencySuffix")}
-                        </span>
-                      ) : (
-                        <span className="text-[14px] text-zinc-500">{t("cart.priceInquire")}</span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          removeBuilderItem(key);
-                          setSelected((s) => {
-                            const n = new Set(s);
-                            n.delete(key);
-                            return n;
-                          });
-                        }}
-                        className="rounded-md px-2 py-1 text-[12px] font-medium text-zinc-500 underline-offset-2 hover:bg-white/10 hover:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
-                      >
-                        {t("cart.delete")}
-                      </button>
-                      {owned ? (
+                  <div className="mt-0 flex min-h-0 min-w-0 flex-1 flex-col rounded-b-lg border-t border-white/10 bg-black/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+                    <div className="flex min-h-[34px] min-w-0 flex-col gap-0.5 px-2 py-1.5 sm:min-h-[36px] sm:px-2.5 sm:py-2">
+                      <div className="flex min-w-0 items-start gap-2">
+                        <VideoSourcePlatformIcon
+                          source={videoContentSource}
+                          className="mt-0.5 h-3 w-3 shrink-0 text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:h-3.5 sm:w-3.5"
+                        />
+                        <Link
+                          href={`/video/${video.id}`}
+                          className="min-w-0 flex-1 break-words text-left text-[12px] font-semibold leading-snug text-zinc-100 transition-colors hover:text-[#E42980] [html[data-theme='light']_&]:text-zinc-900 sm:text-[13px]"
+                        >
+                          {displayTitle(video)}
+                        </Link>
+                        {priceLabel ? (
+                          <span className="shrink-0 rounded-md px-2 py-0.5 text-right text-[12px] font-extrabold tabular-nums text-zinc-50 transition-colors duration-200 sm:text-[13px] [html[data-theme='light']_&]:text-zinc-950">
+                            {priceLabel}
+                          </span>
+                        ) : (
+                          <span className="shrink-0 text-[11px] font-semibold text-zinc-500 sm:text-[12px]">
+                            {t("cart.priceInquire")}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <TrendingVideoStatsFooter
+                      metrics={metrics}
+                      hideMetricLabels
+                      dense
+                    />
+                    {owned ? (
+                      <div className="border-t border-white/10 px-2 py-1.5 [html[data-theme='light']_&]:border-zinc-200 sm:px-2.5 sm:py-2">
                         <Link
                           href={`/create?videoId=${encodeURIComponent(video.id)}`}
-                          className="rounded-md px-2 py-1 text-[12px] font-semibold text-reels-cyan hover:bg-reels-cyan/10 hover:underline"
+                          className="inline-flex rounded-md px-1 py-0.5 text-[11px] font-semibold text-reels-cyan hover:bg-reels-cyan/10 hover:underline sm:text-[12px]"
                         >
                           {t("cart.creditAiCta")}
                         </Link>
-                      ) : null}
-                    </div>
+                      </div>
+                    ) : null}
                   </div>
                 </li>
               );

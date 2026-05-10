@@ -642,21 +642,19 @@ export function SellerClipUploadForm({
                     e.target.value = "";
                   }}
                 />
-                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2">
-                  <span className="text-left text-[13px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
-                    {t("sellForm.sourceFile")}
-                  </span>
+                <div className="flex w-full min-w-0 flex-row flex-wrap items-center gap-x-3 gap-y-1.5">
                   <button
                     type="button"
-                    className={`${SOURCE_SECONDARY_BTN} w-full sm:w-auto`}
+                    aria-label={t("sellForm.sourceFile")}
+                    className={`${SOURCE_SECONDARY_BTN} shrink-0 px-5 py-3 text-[15px] font-semibold sm:px-6 sm:py-3.5 sm:text-[16px]`}
                     onClick={() => fileInputRef.current?.click()}
                   >
                     {t("sellForm.chooseFile")}
                   </button>
+                  <p className="min-w-0 flex-1 truncate text-left text-[13px] leading-snug text-zinc-500 sm:text-[14px] [html[data-theme='light']_&]:text-zinc-600">
+                    {file?.name ?? t("sellForm.noFileChosen")}
+                  </p>
                 </div>
-                <p className="mt-1.5 truncate text-left text-[12px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                  {file?.name ?? t("sellForm.noFileChosen")}
-                </p>
               </>
             ) : (
               <div className="w-full max-w-[40rem] space-y-2 text-left">
