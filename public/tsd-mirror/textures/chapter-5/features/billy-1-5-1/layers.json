@@ -1,0 +1,252 @@
+{
+  "psdName": "billy-1-5-1",
+  "dimensions": {
+    "width": 5018,
+    "height": 3480
+  },
+  "layers": [
+    {
+      "name": "gradient-3-scale-quarter",
+      "path": "gradient-3-scale-quarter",
+      "position": {
+        "origin": {
+          "x": 2458,
+          "y": 1757
+        },
+        "bounds": {
+          "top": -874,
+          "left": -176,
+          "right": 5092,
+          "bottom": 4388
+        }
+      },
+      "dimensions": {
+        "width": 5268,
+        "height": 5262
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "gradient-3-scale-quarter.png",
+        "ktx": "gradient-3-scale-quarter.ktx2"
+      }
+    },
+    {
+      "name": "tower",
+      "path": "tower",
+      "position": {
+        "origin": {
+          "x": 1063,
+          "y": 856.5
+        },
+        "bounds": {
+          "top": -387,
+          "left": 897,
+          "right": 1229,
+          "bottom": 2100
+        }
+      },
+      "dimensions": {
+        "width": 332,
+        "height": 2487
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "tower.png",
+        "ktx": "tower.ktx2"
+      }
+    },
+    {
+      "name": "cloud-2",
+      "path": "clouds/cloud-2",
+      "position": {
+        "origin": {
+          "x": 3511.5,
+          "y": 858
+        },
+        "bounds": {
+          "top": 778,
+          "left": 3276,
+          "right": 3747,
+          "bottom": 938
+        }
+      },
+      "dimensions": {
+        "width": 471,
+        "height": 160
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "clouds-cloud-2.png",
+        "ktx": "clouds-cloud-2.ktx2"
+      }
+    },
+    {
+      "name": "cloud-1",
+      "path": "clouds/cloud-1",
+      "position": {
+        "origin": {
+          "x": 2643.5,
+          "y": 583
+        },
+        "bounds": {
+          "top": 419,
+          "left": 1942,
+          "right": 3345,
+          "bottom": 747
+        }
+      },
+      "dimensions": {
+        "width": 1403,
+        "height": 328
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "clouds-cloud-1.png",
+        "ktx": "clouds-cloud-1.ktx2"
+      }
+    },
+    {
+      "name": "gradient-1-scale-quarter-uastc",
+      "path": "gradient-1-scale-quarter-uastc",
+      "position": {
+        "origin": {
+          "x": 3598,
+          "y": 1118.5
+        },
+        "bounds": {
+          "top": -581,
+          "left": 1898,
+          "right": 5298,
+          "bottom": 2818
+        }
+      },
+      "dimensions": {
+        "width": 3400,
+        "height": 3399
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "gradient-1-scale-quarter-uastc.png",
+        "ktx": "gradient-1-scale-quarter-uastc.ktx2"
+      }
+    },
+    {
+      "name": "landscape",
+      "path": "landscape",
+      "position": {
+        "origin": {
+          "x": 2574,
+          "y": 1812
+        },
+        "bounds": {
+          "top": 859,
+          "left": -12,
+          "right": 5160,
+          "bottom": 2765
+        }
+      },
+      "dimensions": {
+        "width": 5172,
+        "height": 1906
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "landscape.png",
+        "ktx": "landscape.ktx2"
+      }
+    },
+    {
+      "name": "wires",
+      "path": "wires",
+      "position": {
+        "origin": {
+          "x": 4246.5,
+          "y": 1314
+        },
+        "bounds": {
+          "top": 629,
+          "left": 745,
+          "right": 7748,
+          "bottom": 1999
+        }
+      },
+      "dimensions": {
+        "width": 7003,
+        "height": 1370
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "wires.png",
+        "ktx": "wires.ktx2"
+      }
+    },
+    {
+      "name": "billy",
+      "path": "buds/billy",
+      "position": {
+        "origin": {
+          "x": 2131,
+          "y": 1851
+        },
+        "bounds": {
+          "top": 981,
+          "left": 1722,
+          "right": 2540,
+          "bottom": 2721
+        }
+      },
+      "dimensions": {
+        "width": 818,
+        "height": 1740
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "buds-billy.png",
+        "ktx": "buds-billy.ktx2"
+      }
+    },
+    {
+      "name": "eric",
+      "path": "buds/eric",
+      "position": {
+        "origin": {
+          "x": 2992,
+          "y": 1864.5
+        },
+        "bounds": {
+          "top": 984,
+          "left": 2537,
+          "right": 3447,
+          "bottom": 2745
+        }
+      },
+      "dimensions": {
+        "width": 910,
+        "height": 1761
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "buds-eric.png",
+        "ktx": "buds-eric.ktx2"
+      }
+    }
+  ]
+}

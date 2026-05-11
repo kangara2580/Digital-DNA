@@ -37,7 +37,7 @@ export function MyPageSavedDraftsSection() {
   const { t } = useTranslation();
   const [rows, setRows] = useState<DraftRow[]>([]);
   const [tick, setTick] = useState(0);
-  const { hasPurchased, markPurchased } = usePurchasedVideos();
+  const { hasPurchased } = usePurchasedVideos();
   const { user, supabaseConfigured } = useAuthSession();
 
   const reload = useCallback(() => {
@@ -106,7 +106,6 @@ export function MyPageSavedDraftsSection() {
               video={video}
               summary={summary}
               owned={hasPurchased(videoId)}
-              onPurchaseDemo={() => markPurchased(videoId)}
               onRemove={() => {
                 const supabase = getSupabaseBrowserClient();
                 if (supabase && user) {
@@ -132,7 +131,6 @@ function DraftRowView({
   video,
   summary,
   owned,
-  onPurchaseDemo,
   onRemove,
 }: {
   videoId: string;
@@ -140,7 +138,6 @@ function DraftRowView({
   video: FeedVideo | undefined;
   summary: CustomizeDraftSummary | null;
   owned: boolean;
-  onPurchaseDemo: () => void;
   onRemove: () => void;
 }) {
   const { t, locale } = useTranslation();
@@ -238,13 +235,12 @@ function DraftRowView({
 
           <div className="flex flex-wrap items-center gap-2 pt-1">
             {!owned ? (
-              <button
-                type="button"
-                onClick={onPurchaseDemo}
+              <Link
+                href={`/video/${videoId}`}
                 className="rounded-lg border border-reels-crimson/40 bg-reels-crimson/15 px-3 py-1.5 text-[13px] font-semibold text-reels-crimson hover:bg-reels-crimson/22"
               >
                 {t("drafts.buyNow")}
-              </button>
+              </Link>
             ) : null}
             <Link
               href={`/video/${videoId}/customize`}

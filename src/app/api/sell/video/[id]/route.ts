@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { decodeDevUserIdFromJwt } from "@/lib/devJwtFallback";
 import { ensureVideoCategoryColumn } from "@/lib/ensureVideoCategoryColumn";
 import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
+import { writeContentChangeLog } from "@/lib/contentChangeLog";
 import { prisma } from "@/lib/prisma";
 import { isSellVideoCategory } from "@/lib/sellVideoCategory";
 import { normalizeSellHashtags } from "@/lib/sellHashtags";
@@ -35,6 +36,26 @@ function normalizePosterMime(poster: Blob): string {
 
 function isPersistentStorageRequired(): boolean {
   return process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
+}
+
+function videoEditSnapshot(video: {
+  id: string;
+  title: string;
+  description: string | null;
+  hashtags: string | null;
+  category: string | null;
+  poster: string;
+  status: string;
+}) {
+  return {
+    id: video.id,
+    title: video.title,
+    description: video.description,
+    hashtags: video.hashtags,
+    category: video.category,
+    poster: video.poster,
+    status: video.status,
+  };
 }
 
 function hasUnknownCategoryArgError(error: unknown): boolean {
@@ -310,7 +331,10 @@ export async function PATCH(
           description: description || null,
           hashtags: hashtagsNormalized,
           category,
-          price,
+          status: "pending",
+          moderationReason: "Seller edited content; admin review required.",
+          approvedAt: null,
+          approvedBy: null,
           ...(posterUrl ? { poster: posterUrl } : {}),
         },
       });
@@ -323,7 +347,10 @@ export async function PATCH(
           title,
           description: description || null,
           hashtags: hashtagsNormalized,
-          price,
+          status: "pending",
+          moderationReason: "Seller edited content; admin review required.",
+          approvedAt: null,
+          approvedBy: null,
           ...(posterUrl ? { poster: posterUrl } : {}),
         },
       });
@@ -342,6 +369,15 @@ export async function PATCH(
         );
       }
     }
+    await writeContentChangeLog({
+      targetType: "video",
+      targetId: id,
+      actorId: userId,
+      actorType: "seller",
+      changeType: "edit",
+      before: videoEditSnapshot(existing),
+      after: videoEditSnapshot(updated),
+    });
     return NextResponse.json({
       ok: true,
       video: videoRowToFeedVideo(updated),

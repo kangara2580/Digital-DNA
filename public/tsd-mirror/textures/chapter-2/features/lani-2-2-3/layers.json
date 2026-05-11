@@ -1,0 +1,171 @@
+{
+  "psdName": "lani-2-2-3",
+  "dimensions": {
+    "width": 5018,
+    "height": 5018
+  },
+  "layers": [
+    {
+      "name": "gradient-scale-quarter-uastc",
+      "path": "gradient-scale-quarter-uastc",
+      "position": {
+        "origin": {
+          "x": 2790,
+          "y": 2695.5
+        },
+        "bounds": {
+          "top": 245,
+          "left": 52,
+          "right": 5528,
+          "bottom": 5146
+        }
+      },
+      "dimensions": {
+        "width": 5476,
+        "height": 4901
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "gradient-scale-quarter-uastc.png",
+        "ktx": "gradient-scale-quarter-uastc.ktx2"
+      }
+    },
+    {
+      "name": "Layer 11",
+      "path": "Layer 11",
+      "position": {
+        "origin": {
+          "x": 2509,
+          "y": 2013
+        },
+        "bounds": {
+          "top": 1684,
+          "left": -90,
+          "right": 5108,
+          "bottom": 2342
+        }
+      },
+      "dimensions": {
+        "width": 5198,
+        "height": 658
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "layer-11.png",
+        "ktx": "layer-11.ktx2"
+      }
+    },
+    {
+      "name": "hearts-2",
+      "path": "decoration/hearts-2",
+      "position": {
+        "origin": {
+          "x": 2828.5,
+          "y": 1705
+        },
+        "bounds": {
+          "top": 1367,
+          "left": 2592,
+          "right": 3065,
+          "bottom": 2043
+        }
+      },
+      "dimensions": {
+        "width": 473,
+        "height": 676
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "decoration-hearts-2.png",
+        "ktx": "decoration-hearts-2.ktx2"
+      }
+    },
+    {
+      "name": "flowers",
+      "path": "decoration/flowers",
+      "position": {
+        "origin": {
+          "x": 934.5,
+          "y": 2709
+        },
+        "bounds": {
+          "top": 2380,
+          "left": 625,
+          "right": 1244,
+          "bottom": 3038
+        }
+      },
+      "dimensions": {
+        "width": 619,
+        "height": 658
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "decoration-flowers.png",
+        "ktx": "decoration-flowers.ktx2"
+      }
+    },
+    {
+      "name": "hearts",
+      "path": "decoration/hearts",
+      "position": {
+        "origin": {
+          "x": 2639,
+          "y": 2633
+        },
+        "bounds": {
+          "top": 2319,
+          "left": 2291,
+          "right": 2987,
+          "bottom": 2947
+        }
+      },
+      "dimensions": {
+        "width": 696,
+        "height": 628
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "decoration-hearts.png",
+        "ktx": "decoration-hearts.ktx2"
+      }
+    },
+    {
+      "name": "lani",
+      "path": "lani",
+      "position": {
+        "origin": {
+          "x": 2427.5,
+          "y": 2828
+        },
+        "bounds": {
+          "top": 1349,
+          "left": 678,
+          "right": 4177,
+          "bottom": 4307
+        }
+      },
+      "dimensions": {
+        "width": 3499,
+        "height": 2958
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "lani.png",
+        "ktx": "lani.ktx2"
+      }
+    }
+  ]
+}

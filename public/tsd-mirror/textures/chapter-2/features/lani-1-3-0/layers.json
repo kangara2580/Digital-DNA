@@ -1,0 +1,144 @@
+{
+  "psdName": "lani-1-3-0",
+  "dimensions": {
+    "width": 2000,
+    "height": 2000
+  },
+  "layers": [
+    {
+      "name": "mum",
+      "path": "mum",
+      "position": {
+        "origin": {
+          "x": 1609,
+          "y": 1491.5
+        },
+        "bounds": {
+          "top": -110,
+          "left": 1183,
+          "right": 2035,
+          "bottom": 3093
+        }
+      },
+      "dimensions": {
+        "width": 852,
+        "height": 3203
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "mum.png",
+        "ktx": "mum.ktx2"
+      }
+    },
+    {
+      "name": "dad",
+      "path": "dad",
+      "position": {
+        "origin": {
+          "x": 683,
+          "y": 774
+        },
+        "bounds": {
+          "top": -622,
+          "left": -19,
+          "right": 1385,
+          "bottom": 2170
+        }
+      },
+      "dimensions": {
+        "width": 1404,
+        "height": 2792
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "dad.png",
+        "ktx": "dad.ktx2"
+      }
+    },
+    {
+      "name": "lani",
+      "path": "lani",
+      "position": {
+        "origin": {
+          "x": 749.5,
+          "y": 1535
+        },
+        "bounds": {
+          "top": 750,
+          "left": 431,
+          "right": 1068,
+          "bottom": 2320
+        }
+      },
+      "dimensions": {
+        "width": 637,
+        "height": 1570
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "lani.png",
+        "ktx": "lani.ktx2"
+      }
+    },
+    {
+      "name": "lani and sis",
+      "path": "lani and sis",
+      "position": {
+        "origin": {
+          "x": 1062.5,
+          "y": 1931.5
+        },
+        "bounds": {
+          "top": 1235,
+          "left": 262,
+          "right": 1863,
+          "bottom": 2628
+        }
+      },
+      "dimensions": {
+        "width": 1601,
+        "height": 1393
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "lani-and-sis.png",
+        "ktx": "lani-and-sis.ktx2"
+      }
+    },
+    {
+      "name": "hearts",
+      "path": "hearts",
+      "position": {
+        "origin": {
+          "x": 1709,
+          "y": 1755
+        },
+        "bounds": {
+          "top": 1284,
+          "left": 1539,
+          "right": 1879,
+          "bottom": 2226
+        }
+      },
+      "dimensions": {
+        "width": 340,
+        "height": 942
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "hearts.png",
+        "ktx": "hearts.ktx2"
+      }
+    }
+  ]
+}

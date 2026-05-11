@@ -1,0 +1,117 @@
+{
+  "psdName": "bridie-1-3-1",
+  "dimensions": {
+    "width": 5018,
+    "height": 3480
+  },
+  "layers": [
+    {
+      "name": "circle-phone",
+      "path": "circle-phone/circle-phone",
+      "position": {
+        "origin": {
+          "x": 3479,
+          "y": 2182
+        },
+        "bounds": {
+          "top": 1920,
+          "left": 3219,
+          "right": 3739,
+          "bottom": 2444
+        }
+      },
+      "dimensions": {
+        "width": 520,
+        "height": 524
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "circle-phone-circle-phone.png",
+        "ktx": "circle-phone-circle-phone.ktx2"
+      }
+    },
+    {
+      "name": "flash",
+      "path": "circle-phone/flash",
+      "position": {
+        "origin": {
+          "x": 3358,
+          "y": 2060
+        },
+        "bounds": {
+          "top": 1640,
+          "left": 2934,
+          "right": 3782,
+          "bottom": 2480
+        }
+      },
+      "dimensions": {
+        "width": 848,
+        "height": 840
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "circle-phone-flash.png",
+        "ktx": "circle-phone-flash.ktx2"
+      }
+    },
+    {
+      "name": "circle-couple",
+      "path": "circle-couple",
+      "position": {
+        "origin": {
+          "x": 3107,
+          "y": 1430
+        },
+        "bounds": {
+          "top": 1177,
+          "left": 2856,
+          "right": 3358,
+          "bottom": 1683
+        }
+      },
+      "dimensions": {
+        "width": 502,
+        "height": 506
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "circle-couple.png",
+        "ktx": "circle-couple.ktx2"
+      }
+    },
+    {
+      "name": "circle-hands",
+      "path": "circle-hands",
+      "position": {
+        "origin": {
+          "x": 2231,
+          "y": 1285
+        },
+        "bounds": {
+          "top": 1023,
+          "left": 1971,
+          "right": 2491,
+          "bottom": 1547
+        }
+      },
+      "dimensions": {
+        "width": 520,
+        "height": 524
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "circle-hands.png",
+        "ktx": "circle-hands.ktx2"
+      }
+    }
+  ]
+}

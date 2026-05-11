@@ -1,0 +1,90 @@
+{
+  "psdName": "bridie-3-1-1",
+  "dimensions": {
+    "width": 5018,
+    "height": 3480
+  },
+  "layers": [
+    {
+      "name": "1",
+      "path": "1",
+      "position": {
+        "origin": {
+          "x": 2359.5,
+          "y": 1769.5
+        },
+        "bounds": {
+          "top": 1097,
+          "left": 1275,
+          "right": 3444,
+          "bottom": 2442
+        }
+      },
+      "dimensions": {
+        "width": 2169,
+        "height": 1345
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "1.png",
+        "ktx": "1.ktx2"
+      }
+    },
+    {
+      "name": "Group 1",
+      "path": "Group 1",
+      "position": {
+        "origin": {
+          "x": 2143.5,
+          "y": 1721
+        },
+        "bounds": {
+          "top": 1132,
+          "left": 1709,
+          "right": 2578,
+          "bottom": 2310
+        }
+      },
+      "dimensions": {
+        "width": 869,
+        "height": 1178
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "group-1.png",
+        "ktx": "group-1.ktx2"
+      }
+    },
+    {
+      "name": "Layer 73",
+      "path": "Layer 73",
+      "position": {
+        "origin": {
+          "x": 2855,
+          "y": 1946
+        },
+        "bounds": {
+          "top": 1079,
+          "left": 2349,
+          "right": 3361,
+          "bottom": 2813
+        }
+      },
+      "dimensions": {
+        "width": 1012,
+        "height": 1734
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "layer-73.png",
+        "ktx": "layer-73.ktx2"
+      }
+    }
+  ]
+}

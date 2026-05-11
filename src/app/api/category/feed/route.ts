@@ -64,9 +64,10 @@ export async function GET(request: NextRequest) {
       prisma.video.findMany({
         where:
           slug === "latest"
-            ? undefined
+            ? { status: "approved" }
             : {
                 category: slug,
+                status: "approved",
               },
         orderBy: { createdAt: "desc" },
         take: 240,

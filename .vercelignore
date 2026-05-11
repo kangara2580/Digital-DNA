@@ -1,0 +1,12 @@
+node_modules
+.next
+.next-build
+bg_face_ai
+.git
+.vercel.backup-*
+dev-server.*.log
+*.log
+gemini_test.json
+kling_tasks_db.json
+__MACOSX
+.DS_Store

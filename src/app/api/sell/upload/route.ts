@@ -468,7 +468,8 @@ export async function POST(request: Request) {
         hashtags: hashtagsNormalized,
         isAiGenerated: isAi,
         category: categoryRaw,
-        ...processedFields,
+        status: "pending",
+        moderationReason: "New seller upload awaiting admin review.",
       },
     });
   } catch (e) {
@@ -489,7 +490,8 @@ export async function POST(request: Request) {
         description: description || null,
         hashtags: hashtagsNormalized,
         isAiGenerated: isAi,
-        ...processedFields,
+        status: "pending",
+        moderationReason: "New seller upload awaiting admin review.",
       },
     });
     const dbUrl = process.env.DATABASE_URL?.trim() ?? "";
@@ -517,6 +519,6 @@ export async function POST(request: Request) {
     videoId: created.id,
     video: videoRowToFeedVideo(created),
     message:
-      "등록이 접수되었습니다. 심사 후 마켓에 노출될 수 있어요(데모: 즉시 DB 반영).",
+      "등록이 접수되었습니다. Admin 검수 후 마켓에 노출됩니다.",
   });
 }

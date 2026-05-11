@@ -103,10 +103,10 @@ export async function GET(request: Request) {
     const since = periodStart(period);
     const periodSql =
       period === "today"
-        ? Prisma.sql`AND v.created_at >= date_trunc('day', now())`
+        ? Prisma.sql`AND pu.created_at >= date_trunc('day', now())`
         : period === "7d"
-          ? Prisma.sql`AND v.created_at >= now() - interval '7 day'`
-          : Prisma.sql`AND v.created_at >= now() - interval '30 day'`;
+          ? Prisma.sql`AND pu.created_at >= now() - interval '7 day'`
+          : Prisma.sql`AND pu.created_at >= now() - interval '30 day'`;
 
     let rows: LeaderboardRow[] = [];
 
@@ -123,12 +123,14 @@ export async function GET(request: Request) {
           v.seller_id AS "sellerId",
           p.nickname AS nickname,
           p.avatar_custom AS "avatarCustom",
-          COALESCE(v.sales_count, 0)::bigint AS "salesCount",
-          COALESCE(v.sales_count * v.price, 0)::bigint AS "totalRevenue"
+          COUNT(pu.id)::bigint AS "salesCount",
+          COALESCE(SUM(pu.price), 0)::bigint AS "totalRevenue"
         FROM videos v
+        INNER JOIN purchases pu ON pu.video_id = v.id AND pu.status = 'paid'
         LEFT JOIN profiles p ON p.user_id::text = v.seller_id
-        WHERE COALESCE(v.sales_count, 0) > 0
+        WHERE 1 = 1
         ${periodSql}
+        GROUP BY v.id, v.title, v.seller_id, p.nickname, p.avatar_custom, v.created_at
         ${orderSql}
         LIMIT 10
       `);

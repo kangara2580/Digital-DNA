@@ -1,0 +1,63 @@
+{
+  "psdName": "carly-1-5-2",
+  "dimensions": {
+    "width": 3271,
+    "height": 1550
+  },
+  "layers": [
+    {
+      "name": "carly",
+      "path": "carly",
+      "position": {
+        "origin": {
+          "x": 1050,
+          "y": 780
+        },
+        "bounds": {
+          "top": 184,
+          "left": 266,
+          "right": 1834,
+          "bottom": 1376
+        }
+      },
+      "dimensions": {
+        "width": 1568,
+        "height": 1192
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "carly.png",
+        "ktx": "carly.ktx2"
+      }
+    },
+    {
+      "name": "motion",
+      "path": "motion",
+      "position": {
+        "origin": {
+          "x": 1635,
+          "y": 775
+        },
+        "bounds": {
+          "top": 476,
+          "left": 1235,
+          "right": 2035,
+          "bottom": 1074
+        }
+      },
+      "dimensions": {
+        "width": 800,
+        "height": 598
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "motion.png",
+        "ktx": "motion.ktx2"
+      }
+    }
+  ]
+}

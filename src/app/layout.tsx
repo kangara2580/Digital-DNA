@@ -16,16 +16,15 @@ import {
 import { AppProviders } from "@/components/AppProviders";
 import { GlobalLenis } from "@/components/GlobalLenis";
 import { NavigationRecovery } from "@/components/NavigationRecovery";
-import { DnaBuilderDock } from "@/components/DnaBuilderDock";
-import { FloatingHelp } from "@/components/FloatingHelp";
-import { MallTopNav } from "@/components/MallTopNav";
 import { RailHomeLogoSvgFilters } from "@/components/RailHomeLogoSvgFilters";
-import { ReelsLeftRail } from "@/components/ReelsLeftRail";
-import { ARAFooter } from "@/components/ARAFooter";
+import { RouteChrome } from "@/components/RouteChrome";
+import { translate } from "@/lib/i18n/dictionaries";
+import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
+import { getSiteMetadataBase } from "@/lib/siteMetadataBase";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-/** 히어로 등 브랜드 워드마크용 — 동글동글 레터링 */
 const fredoka = Fredoka({
   subsets: ["latin"],
   weight: ["600"],
@@ -57,6 +56,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const titleDefault = translate(locale, "meta.rootTitle");
   const desc = translate(locale, "meta.rootDescription");
   const base = getSiteMetadataBase();
+
   return {
     metadataBase: base,
     title: {
@@ -90,7 +90,7 @@ export default async function RootLayout({
         document.documentElement.dataset.theme = "dark";
       }
       try {
-        var cookieMatch = document.cookie.match(/(?:^|;\s)reels-locale=([^;]+)/);
+        var cookieMatch = document.cookie.match(/(?:^|;\\s)reels-locale=([^;]+)/);
         var cookieLoc = cookieMatch ? decodeURIComponent(cookieMatch[1].trim()) : null;
         var storedLoc = localStorage.getItem("reels-locale");
         var loc =
@@ -143,14 +143,7 @@ export default async function RootLayout({
           <RailHomeLogoSvgFilters />
           <NavigationRecovery />
           <GlobalLenis />
-          <ReelsLeftRail />
-          <div className="min-w-0 md:pl-[var(--reels-rail-w)]">
-            <MallTopNav />
-            {children}
-            <ARAFooter />
-            <DnaBuilderDock />
-            <FloatingHelp />
-          </div>
+          <RouteChrome>{children}</RouteChrome>
         </AppProviders>
       </body>
     </html>

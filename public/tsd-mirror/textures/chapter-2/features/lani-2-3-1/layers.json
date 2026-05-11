@@ -1,0 +1,144 @@
+{
+  "psdName": "lani-2-3-1",
+  "dimensions": {
+    "width": 2000,
+    "height": 2000
+  },
+  "layers": [
+    {
+      "name": "gradient-uastc-scale-quarter",
+      "path": "gradient-uastc-scale-quarter",
+      "position": {
+        "origin": {
+          "x": 994,
+          "y": 998
+        },
+        "bounds": {
+          "top": -736,
+          "left": -747,
+          "right": 2735,
+          "bottom": 2732
+        }
+      },
+      "dimensions": {
+        "width": 3482,
+        "height": 3468
+      },
+      "visible": true,
+      "opacity": 0.2,
+      "blendMode": "normal",
+      "files": {
+        "png": "gradient-uastc-scale-quarter.png",
+        "ktx": "gradient-uastc-scale-quarter.ktx2"
+      }
+    },
+    {
+      "name": "Layer 39",
+      "path": "Layer 39",
+      "position": {
+        "origin": {
+          "x": 370.5,
+          "y": 968
+        },
+        "bounds": {
+          "top": 436,
+          "left": 50,
+          "right": 691,
+          "bottom": 1500
+        }
+      },
+      "dimensions": {
+        "width": 641,
+        "height": 1064
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "layer-39.png",
+        "ktx": "layer-39.ktx2"
+      }
+    },
+    {
+      "name": "Layer 40",
+      "path": "decoration/Layer 40",
+      "position": {
+        "origin": {
+          "x": 1778,
+          "y": 1285
+        },
+        "bounds": {
+          "top": 707,
+          "left": 1567,
+          "right": 1989,
+          "bottom": 1863
+        }
+      },
+      "dimensions": {
+        "width": 422,
+        "height": 1156
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "decoration-layer-40.png",
+        "ktx": "decoration-layer-40.ktx2"
+      }
+    },
+    {
+      "name": "Layer 41",
+      "path": "decoration/Layer 41",
+      "position": {
+        "origin": {
+          "x": 1539.5,
+          "y": 17.5
+        },
+        "bounds": {
+          "top": -332,
+          "left": 1241,
+          "right": 1838,
+          "bottom": 367
+        }
+      },
+      "dimensions": {
+        "width": 597,
+        "height": 699
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "decoration-layer-41.png",
+        "ktx": "decoration-layer-41.ktx2"
+      }
+    },
+    {
+      "name": "Layer 35",
+      "path": "Layer 35",
+      "position": {
+        "origin": {
+          "x": 949,
+          "y": 951
+        },
+        "bounds": {
+          "top": 112,
+          "left": 386,
+          "right": 1512,
+          "bottom": 1790
+        }
+      },
+      "dimensions": {
+        "width": 1126,
+        "height": 1678
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "layer-35.png",
+        "ktx": "layer-35.ktx2"
+      }
+    }
+  ]
+}

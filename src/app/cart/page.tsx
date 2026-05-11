@@ -20,6 +20,61 @@ import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 const cartOutlineBtn =
   "inline-flex shrink-0 items-center justify-center rounded-xl border border-white/30 bg-transparent px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/35 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
+
+type TossCheckoutPayload = {
+  ok?: boolean;
+  clientKey?: string;
+  orderId?: string;
+  orderName?: string;
+  amount?: number;
+  customerEmail?: string | null;
+  customerName?: string | null;
+  successUrl?: string;
+  failUrl?: string;
+  loginUrl?: string;
+  error?: string;
+};
+
+declare global {
+  interface Window {
+    TossPayments?: (clientKey: string) => {
+      requestPayment: (
+        method: string,
+        params: {
+          amount: number;
+          orderId: string;
+          orderName: string;
+          customerName?: string;
+          customerEmail?: string;
+          successUrl: string;
+          failUrl: string;
+        },
+      ) => Promise<void>;
+    };
+  }
+}
+
+function loadTossSdk(): Promise<void> {
+  if (window.TossPayments) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>(
+      'script[src="https://js.tosspayments.com/v1/payment"]',
+    );
+    if (existing) {
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error("Toss SDK load failed")), {
+        once: true,
+      });
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://js.tosspayments.com/v1/payment";
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Toss SDK load failed"));
+    document.head.appendChild(script);
+  });
+}
 function localCartPosterFallback(videoId: string): string {
   const hash = Array.from(videoId).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
   const idx = (Math.abs(hash) % 10) + 1;
@@ -84,13 +139,39 @@ export default function CartPage() {
     });
   }, []);
 
-  const selectedTotal = useMemo(() => {
-    let sum = 0;
-    for (const { key, video } of builderItems) {
-      if (selected.has(key)) sum += video.priceWon ?? 0;
-    }
-    return sum;
-  }, [builderItems, selected]);
+  const selectedItems = useMemo(
+    () => builderItems.filter(({ key }) => selected.has(key)),
+    [builderItems, selected],
+  );
+
+  const selectedPayableItems = useMemo(
+    () => selectedItems.filter(({ video }) => !hasPurchased(video.id)),
+    [hasPurchased, selectedItems],
+  );
+
+  const selectedTotal = useMemo(
+    () =>
+      selectedPayableItems.reduce(
+        (sum, { video }) => sum + (video.priceWon ?? 0),
+        0,
+      ),
+    [selectedPayableItems],
+  );
+
+  const allKeys = useMemo(() => builderItems.map((b) => b.key), [builderItems]);
+
+  const allItemsSelected =
+    allKeys.length > 0 && allKeys.every((k) => selected.has(k));
+
+  const selectAll = useCallback(() => {
+    setSelected((prev) => {
+      if (allKeys.length === 0) return prev;
+      const allSelected =
+        allKeys.every((k) => prev.has(k));
+      if (allSelected) return new Set();
+      return new Set(allKeys);
+    });
+  }, [allKeys]);
 
   const allKeys = useMemo(() => builderItems.map((b) => b.key), [builderItems]);
 
@@ -113,13 +194,8 @@ export default function CartPage() {
     setSelected(new Set());
   }, [selected, removeBuilderItemsByKeys]);
 
-  const selectedItems = useMemo(
-    () => builderItems.filter(({ key }) => selected.has(key)),
-    [builderItems, selected],
-  );
-
   const onCheckoutPreflight = useCallback(async () => {
-    if (selectedItems.length === 0 || checkoutBusy) return;
+    if (selectedPayableItems.length === 0 || checkoutBusy) return;
     setCheckoutError(null);
     setCheckoutBusy(true);
     try {
@@ -127,7 +203,7 @@ export default function CartPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: selectedItems.map(({ video }) => ({
+          items: selectedPayableItems.map(({ video }) => ({
             videoId: video.id,
             expectedPriceWon: video.priceWon ?? 0,
           })),
@@ -163,6 +239,45 @@ export default function CartPage() {
         }
         return;
       }
+      const checkout = await fetch("/api/payments/toss/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productType: "cart",
+          items: selectedPayableItems.map(({ video }) => ({
+            videoId: video.id,
+            expectedPriceWon: video.priceWon ?? 0,
+          })),
+        }),
+      });
+      const payload = (await checkout.json().catch(() => null)) as TossCheckoutPayload | null;
+      if (checkout.status === 401) {
+        window.location.href = payload?.loginUrl ?? "/login";
+        return;
+      }
+      if (
+        !checkout.ok ||
+        !payload?.clientKey ||
+        !payload.orderId ||
+        !payload.orderName ||
+        !payload.amount ||
+        !payload.successUrl ||
+        !payload.failUrl
+      ) {
+        throw new Error(payload?.error ?? "checkout_failed");
+      }
+      await loadTossSdk();
+      if (!window.TossPayments) throw new Error("Toss SDK is unavailable.");
+      await window.TossPayments(payload.clientKey).requestPayment("카드", {
+        amount: payload.amount,
+        orderId: payload.orderId,
+        orderName: payload.orderName,
+        customerName: payload.customerName ?? undefined,
+        customerEmail: payload.customerEmail ?? undefined,
+        successUrl: payload.successUrl,
+        failUrl: payload.failUrl,
+      });
+      return;
       setCheckoutError(
         "가격 검증 완료. 결제 백엔드 연동 시 이 지점에서 결제 생성 API를 호출하면 됩니다.",
       );
@@ -171,7 +286,7 @@ export default function CartPage() {
     } finally {
       setCheckoutBusy(false);
     }
-  }, [checkoutBusy, numLocale, selectedItems, t]);
+  }, [checkoutBusy, numLocale, selectedPayableItems, t]);
 
   const confirmClearCart = useCallback(() => {
     if (typeof window === "undefined") return;

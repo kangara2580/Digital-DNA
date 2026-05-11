@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bookmark, ChevronLeft, ChevronRight, Heart, ShoppingCart } from "lucide-react";
 import { AuthPromptModal } from "@/components/AuthPromptModal";
+import { TossCheckoutButton } from "@/components/payments/TossCheckoutButton";
 import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
 import { SellerSocialPlatformIcon } from "@/components/SellerSocialPlatformIcon";
 import { SellerIdentityLink } from "@/components/SellerIdentityLink";
@@ -37,8 +38,6 @@ import {
   EXTERNAL_EMBED_IFRAME_ALLOW,
   EXTERNAL_EMBED_IFRAME_SANDBOX,
 } from "@/lib/externalEmbed/iframeSandbox";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import type { SellerSocialLink } from "@/lib/sellerSocialLinks";
 import { getVideoContentSource } from "@/lib/videoSourcePlatform";
@@ -92,7 +91,7 @@ export function VideoDetailView({
   const authPromptScrollYRef = useRef(0);
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const dopamine = useDopamineBasket();
-  const { hasPurchased, markPurchased } = usePurchasedVideos();
+  const { hasPurchased } = usePurchasedVideos();
   const { recordView } = useRecentClips();
   const { t, locale } = useTranslation();
   const displayTitle = useVideoDisplayTitle();
@@ -114,27 +113,14 @@ export function VideoDetailView({
     return true;
   }, [authLoading, supabaseConfigured, user]);
 
-  const startGoogleAuth = useCallback(async () => {
+  const startGoogleAuth = useCallback(() => {
     const next =
       typeof window !== "undefined"
         ? `${window.location.pathname}${window.location.search}${window.location.hash}`
         : "/";
-    const redirectTo = buildAuthCallbackRedirectTo(next);
-    const supabase = getSupabaseBrowserClient();
-    if (supabase && redirectTo) {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo,
-          queryParams: { prompt: "select_account" },
-        },
-      });
-      if (!error && data.url) {
-        window.location.assign(data.url);
-        return;
-      }
-    }
-    window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
+    const authStart = new URL("/api/auth/google/start", window.location.origin);
+    authStart.searchParams.set("next", next);
+    window.location.assign(authStart.toString());
   }, []);
 
   useEffect(() => {
@@ -743,19 +729,27 @@ export function VideoDetailView({
 
             {/* 구매 버튼 */}
             <div className="px-8">
-            <button
-              type="button"
-              disabled={soldOut}
-              onClick={() => {
-                if (soldOut) return;
-                if (!requireAuth()) return;
-                if (!owned) markPurchased(video.id);
-                router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
-              }}
-              className="relative w-full h-[60px] rounded-full border-[3px] border-white/40 bg-transparent text-[17px] font-extrabold tracking-widest text-white backdrop-blur-sm shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-300 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] hover:-translate-y-0.5 active:scale-[0.99] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900"
-            >
-              {soldOut ? t("video.detail.soldOut") : t("video.detail.buyNow")}
-            </button>
+              {owned || isOwner ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!requireAuth()) return;
+                    router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
+                  }}
+                  className="relative h-[60px] w-full rounded-full border-[3px] border-white/40 bg-transparent text-[17px] font-extrabold tracking-widest text-white shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] active:scale-[0.99] active:translate-y-0 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900"
+                >
+                  {t("video.detail.buyNow")}
+                </button>
+              ) : (
+                <TossCheckoutButton
+                  productType="video"
+                  videoId={video.id}
+                  className="relative h-[60px] w-full rounded-full border-[3px] border-white/40 bg-transparent text-[17px] font-extrabold tracking-widest text-white shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] active:scale-[0.99] active:translate-y-0 disabled:cursor-wait disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900"
+                  disabled={soldOut}
+                >
+                  {soldOut ? t("video.detail.soldOut") : t("video.detail.buyNow")}
+                </TossCheckoutButton>
+              )}
             </div>
 
             {/* 액션 아이콘 */}

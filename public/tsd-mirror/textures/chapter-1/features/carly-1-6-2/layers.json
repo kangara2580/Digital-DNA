@@ -1,0 +1,36 @@
+{
+  "psdName": "carly-1-6-2",
+  "dimensions": {
+    "width": 3271,
+    "height": 1550
+  },
+  "layers": [
+    {
+      "name": "flash",
+      "path": "flash",
+      "position": {
+        "origin": {
+          "x": 2168.5,
+          "y": 751
+        },
+        "bounds": {
+          "top": -290,
+          "left": 1158,
+          "right": 3179,
+          "bottom": 1792
+        }
+      },
+      "dimensions": {
+        "width": 2021,
+        "height": 2082
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "flash.png",
+        "ktx": "flash.ktx2"
+      }
+    }
+  ]
+}

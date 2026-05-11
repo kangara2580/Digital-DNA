@@ -27,6 +27,7 @@ export async function scanStaleListings(now = new Date()): Promise<ScanStaleResu
       createdAt: { lt: cutoff },
       views: { gte: MIN_VIEWS },
       salesCount: 0,
+      status: "approved",
     },
   });
 

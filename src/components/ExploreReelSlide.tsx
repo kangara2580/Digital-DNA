@@ -243,7 +243,7 @@ function ReelDesktopRail({
 }) {
   const router = useRouter();
   const dopamine = useDopamineBasket();
-  const { hasPurchased, markPurchased } = usePurchasedVideos();
+  const { hasPurchased } = usePurchasedVideos();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const owned = hasPurchased(video.id);
 
@@ -287,12 +287,14 @@ function ReelDesktopRail({
   const onBuyClick = useCallback(() => {
     if (soldOut || authLoading) return;
     if (!requireAuth()) return;
-    if (!owned) markPurchased(video.id);
-    router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
+    router.push(
+      owned
+        ? `/create?videoId=${encodeURIComponent(video.id)}`
+        : `/video/${encodeURIComponent(video.id)}`,
+    );
   }, [
     authLoading,
     owned,
-    markPurchased,
     requireAuth,
     router,
     soldOut,

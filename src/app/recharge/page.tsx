@@ -1,14 +1,7 @@
 import { redirect } from "next/navigation";
 import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 
-export async function generateMetadata() {
-  return buildPageMetadata({
-    titleKey: "meta.mypage",
-    descriptionKey: "meta.mypageDescription",
-  });
-}
-
-/** 예전 URL 호환 — 구매내역으로 이동 */
+/** Legacy recharge URL. Real credit purchases now run through Polar. */
 export default function RechargeRedirectPage() {
-  redirect("/mypage?tab=purchases");
+  redirect("/credits");
 }

@@ -52,6 +52,7 @@ export async function GET() {
     await withTimeout(ensureVideoCategoryColumn(), DB_TIMEOUT_MS);
     const rows = await withTimeout(
       prisma.video.findMany({
+        where: { status: "approved" },
         orderBy: { createdAt: "desc" },
         take: 240,
       }),

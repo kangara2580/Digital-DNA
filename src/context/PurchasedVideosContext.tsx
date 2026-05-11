@@ -11,11 +11,6 @@ import {
   type ReactNode,
 } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import {
-  addUserPurchasedVideo,
-  fetchUserPurchasedIds,
-} from "@/lib/supabaseUserSync";
 
 type Ctx = {
   hasPurchased: (videoId: string) => boolean;
@@ -29,6 +24,25 @@ export function PurchasedVideosProvider({ children }: { children: ReactNode }) {
   const [ids, setIds] = useState<Set<string>>(new Set());
   const restoreGuardRef = useRef(false);
 
+  const reloadPurchasedIds = useCallback(async () => {
+    try {
+      const response = await fetch("/api/purchases/owned", {
+        cache: "no-store",
+        credentials: "include",
+      });
+      const data = (await response.json().catch(() => null)) as
+        | { ok?: boolean; videoIds?: string[] }
+        | null;
+      if (!response.ok || !data?.ok || !Array.isArray(data.videoIds)) {
+        setIds(new Set());
+        return;
+      }
+      setIds(new Set(data.videoIds));
+    } catch {
+      setIds(new Set());
+    }
+  }, []);
+
   useEffect(() => {
     if (authLoading) return;
 
@@ -37,22 +51,18 @@ export function PurchasedVideosProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-
     let cancelled = false;
     restoreGuardRef.current = true;
 
     void (async () => {
-      const server = await fetchUserPurchasedIds(supabase, user.id);
-      if (!cancelled) setIds(new Set(server));
+      await reloadPurchasedIds();
       restoreGuardRef.current = false;
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [authLoading, supabaseConfigured, user]);
+  }, [authLoading, reloadPurchasedIds, supabaseConfigured, user]);
 
   const hasPurchased = useCallback(
     (videoId: string) => ids.has(videoId),
@@ -62,23 +72,16 @@ export function PurchasedVideosProvider({ children }: { children: ReactNode }) {
   const markPurchased = useCallback(
     (videoId: string) => {
       if (!supabaseConfigured || !user) return;
+      // 실제 운영 구매권한은 Toss 결제 확정 API가 Purchase/UserEntitlement에 기록한다.
+      // 이 함수는 결제 완료 직후 UI가 즉시 반응하도록 임시 반영한 뒤 서버 장부로 다시 동기화한다.
       setIds((prev) => {
         const next = new Set(prev);
         next.add(videoId);
         return next;
       });
-      const supabase = getSupabaseBrowserClient();
-      if (supabase) {
-        void addUserPurchasedVideo(supabase, user.id, videoId).then((ok) => {
-          if (!ok && !restoreGuardRef.current) {
-            void fetchUserPurchasedIds(supabase, user.id).then((remote) => {
-              setIds(new Set(remote));
-            });
-          }
-        });
-      }
+      if (!restoreGuardRef.current) void reloadPurchasedIds();
     },
-    [supabaseConfigured, user],
+    [reloadPurchasedIds, supabaseConfigured, user],
   );
 
   const value = useMemo(

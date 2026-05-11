@@ -1,10 +1,8 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
+import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
 
 export const runtime = "nodejs";
-
-const FALLBACK_SUPABASE_ORIGIN = "https://ynlfcnezvieqzultbklf.supabase.co";
-const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_6UqQ0Aqd5OlxM8U3KCtLWQ_g_1VZ9dc";
 
 function normalizeSupabaseOrigin(raw: string | undefined): string | null {
   const trimmed = raw?.trim() ?? "";
@@ -22,11 +20,28 @@ function safeNextPath(raw: string | null): string {
   return raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
 }
 
+function isLocalOrigin(origin: string): boolean {
+  try {
+    const { hostname } = new URL(origin);
+    return hostname === "localhost" || hostname === "127.0.0.1";
+  } catch {
+    return false;
+  }
+}
+
 function resolveSiteOrigin(fallbackOrigin: string): string {
+  if (process.env.NODE_ENV !== "production" && isLocalOrigin(fallbackOrigin)) {
+    return fallbackOrigin;
+  }
+
   const raw =
-    process.env.NEXT_PUBLIC_SITE_URL?.trim() ??
-    process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim() ??
-    "";
+    [
+      process.env.NEXT_PUBLIC_SITE_URL,
+      process.env.NEXTAUTH_URL,
+      process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    ]
+      .map((value) => value?.trim())
+      .find(Boolean) ?? "";
   if (!raw) return fallbackOrigin;
   const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
   try {
@@ -36,17 +51,43 @@ function resolveSiteOrigin(fallbackOrigin: string): string {
   }
 }
 
+function envStatus() {
+  return {
+    hasSupabaseUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()),
+    hasSupabaseAnonKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()),
+    hasPublicSiteUrl: Boolean(process.env.NEXT_PUBLIC_SITE_URL?.trim()),
+    hasNextAuthUrl: Boolean(process.env.NEXTAUTH_URL?.trim()),
+    hasVercelProductionUrl: Boolean(
+      process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim(),
+    ),
+  };
+}
+
 export async function GET(request: Request) {
   const reqUrl = new URL(request.url);
-  const supabaseOrigin =
-    normalizeSupabaseOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL) ??
-    FALLBACK_SUPABASE_ORIGIN;
-  const anonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
-    FALLBACK_SUPABASE_PUBLISHABLE_KEY;
+  const supabaseOrigin = normalizeSupabaseOrigin(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+  );
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? "";
 
   if (!supabaseOrigin || !anonKey) {
-    return NextResponse.redirect(new URL("/login?error=oauth", reqUrl.origin));
+    console.log("[oauth:start] missing Supabase env", {
+      origin: reqUrl.origin,
+      redirectTo: null,
+      generatedAuthUrl: null,
+      supabaseUrlExists: Boolean(supabaseOrigin),
+      supabaseAnonKeyExists: Boolean(anonKey),
+      env: envStatus(),
+    });
+    const errorUrl = new URL("/login", reqUrl.origin);
+    errorUrl.searchParams.set("error", "oauth_start_failed");
+    errorUrl.searchParams.set(
+      "reason",
+      !supabaseOrigin
+        ? "missing_NEXT_PUBLIC_SUPABASE_URL"
+        : "missing_NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    );
+    return NextResponse.redirect(errorUrl);
   }
 
   const nextPath = safeNextPath(reqUrl.searchParams.get("next"));
@@ -54,11 +95,70 @@ export async function GET(request: Request) {
   const redirectTo = new URL("/auth/callback", siteOrigin);
   redirectTo.searchParams.set("next", nextPath);
 
-  const authUrl = new URL("/auth/v1/authorize", supabaseOrigin);
-  authUrl.searchParams.set("provider", "google");
-  authUrl.searchParams.set("redirect_to", redirectTo.toString());
-  authUrl.searchParams.set("prompt", "select_account");
-  authUrl.searchParams.set("apikey", anonKey);
+  const cookiesToSet: {
+    name: string;
+    value: string;
+    options: Parameters<NextResponse["cookies"]["set"]>[2];
+  }[] = [];
 
-  return NextResponse.redirect(authUrl);
+  const supabase = createServerClient(supabaseOrigin, anonKey, {
+    cookieOptions: getSupabaseAuthCookieOptions(),
+    cookies: {
+      getAll() {
+        return [];
+      },
+      setAll(items) {
+        cookiesToSet.push(
+          ...items.map(({ name, value, options }) => ({ name, value, options })),
+        );
+      },
+    },
+  });
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: redirectTo.toString(),
+      skipBrowserRedirect: true,
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
+      },
+    },
+  });
+
+  if (error || !data.url) {
+    console.log("[oauth:start] Supabase signInWithOAuth failed", {
+      origin: reqUrl.origin,
+      redirectTo: redirectTo.toString(),
+      generatedAuthUrl: null,
+      message: error?.message ?? null,
+      status: error?.status ?? null,
+      name: error?.name ?? null,
+      supabaseUrlExists: Boolean(supabaseOrigin),
+      supabaseAnonKeyExists: Boolean(anonKey),
+      env: envStatus(),
+    });
+    const errorUrl = new URL("/login", reqUrl.origin);
+    errorUrl.searchParams.set("error", "oauth_start_failed");
+    errorUrl.searchParams.set("reason", error?.message || "missing_auth_url");
+    return NextResponse.redirect(errorUrl);
+  }
+
+  console.log("[oauth:start] generated Google OAuth URL", {
+    origin: reqUrl.origin,
+    redirectTo: redirectTo.toString(),
+    generatedAuthUrl: data.url.replace(anonKey, "[redacted]"),
+    supabaseUrlExists: Boolean(supabaseOrigin),
+    supabaseAnonKeyExists: Boolean(anonKey),
+    pkceCookieCount: cookiesToSet.length,
+    env: envStatus(),
+  });
+
+  const response = NextResponse.redirect(data.url);
+  cookiesToSet.forEach(({ name, value, options }) => {
+    response.cookies.set(name, value, options);
+  });
+
+  return response;
 }

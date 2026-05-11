@@ -1,0 +1,198 @@
+{
+  "psdName": "billy-1-4-1",
+  "dimensions": {
+    "width": 5018,
+    "height": 3480
+  },
+  "layers": [
+    {
+      "name": "gradient-3-scale-quarter",
+      "path": "gradient-3-scale-quarter",
+      "position": {
+        "origin": {
+          "x": 2458,
+          "y": 1757
+        },
+        "bounds": {
+          "top": -874,
+          "left": -176,
+          "right": 5092,
+          "bottom": 4388
+        }
+      },
+      "dimensions": {
+        "width": 5268,
+        "height": 5262
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "gradient-3-scale-quarter.png",
+        "ktx": "gradient-3-scale-quarter.ktx2"
+      }
+    },
+    {
+      "name": "gradient-2-scale-quarter",
+      "path": "gradient-2-scale-quarter",
+      "position": {
+        "origin": {
+          "x": 3259,
+          "y": 1977.5
+        },
+        "bounds": {
+          "top": -301,
+          "left": 977,
+          "right": 5541,
+          "bottom": 4256
+        }
+      },
+      "dimensions": {
+        "width": 4564,
+        "height": 4557
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "gradient-2-scale-quarter.png",
+        "ktx": "gradient-2-scale-quarter.ktx2"
+      }
+    },
+    {
+      "name": "gradient-1-scale-quarter",
+      "path": "gradient-1-scale-quarter",
+      "position": {
+        "origin": {
+          "x": 1559,
+          "y": 1189.5
+        },
+        "bounds": {
+          "top": -1089,
+          "left": -723,
+          "right": 3841,
+          "bottom": 3468
+        }
+      },
+      "dimensions": {
+        "width": 4564,
+        "height": 4557
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "gradient-1-scale-quarter.png",
+        "ktx": "gradient-1-scale-quarter.ktx2"
+      }
+    },
+    {
+      "name": "boys",
+      "path": "boys",
+      "position": {
+        "origin": {
+          "x": 2452,
+          "y": 1390
+        },
+        "bounds": {
+          "top": 150,
+          "left": 1240,
+          "right": 3664,
+          "bottom": 2630
+        }
+      },
+      "dimensions": {
+        "width": 2424,
+        "height": 2480
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "boys.png",
+        "ktx": "boys.ktx2"
+      }
+    },
+    {
+      "name": "game-2",
+      "path": "game-2",
+      "position": {
+        "origin": {
+          "x": 2991.5,
+          "y": 1863
+        },
+        "bounds": {
+          "top": 1669,
+          "left": 2700,
+          "right": 3283,
+          "bottom": 2057
+        }
+      },
+      "dimensions": {
+        "width": 583,
+        "height": 388
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "game-2.png",
+        "ktx": "game-2.ktx2"
+      }
+    },
+    {
+      "name": "game-1",
+      "path": "game-1",
+      "position": {
+        "origin": {
+          "x": 3324,
+          "y": 2656.5
+        },
+        "bounds": {
+          "top": 2128,
+          "left": 2807,
+          "right": 3841,
+          "bottom": 3185
+        }
+      },
+      "dimensions": {
+        "width": 1034,
+        "height": 1057
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "game-1.png",
+        "ktx": "game-1.ktx2"
+      }
+    },
+    {
+      "name": "game-0",
+      "path": "game-0",
+      "position": {
+        "origin": {
+          "x": 2762.5,
+          "y": 2361
+        },
+        "bounds": {
+          "top": 2059,
+          "left": 2375,
+          "right": 3150,
+          "bottom": 2663
+        }
+      },
+      "dimensions": {
+        "width": 775,
+        "height": 604
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "game-0.png",
+        "ktx": "game-0.ktx2"
+      }
+    }
+  ]
+}

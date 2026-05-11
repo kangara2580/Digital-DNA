@@ -1,25 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
+import type { AuthError } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
-import { POST_LOGIN_REDIRECT_PATH } from "@/lib/postLoginRedirect";
+import { syncProfileFromAuthUserAsServer } from "@/lib/serverProfileSync";
 import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
+import { syncProfileFromAuthUser } from "@/lib/supabaseProfiles";
 
-/**
- * OAuth 리다이렉트 전용 Route Handler — HTML을 렌더링하지 않으므로 `generateMetadata`는
- * 적용되지 않습니다. 탭 제목·검색 스니펫은 이전 페이지 또는 `/login` 등 최종 목적지
- * 메타가 유지됩니다.
- */
-
-/** Edge가 아닌 Node에서 Supabase Auth HTTP 호출 안정화 */
 export const runtime = "nodejs";
-
-const FALLBACK_SUPABASE_ORIGIN = "https://ynlfcnezvieqzultbklf.supabase.co";
-const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_6UqQ0Aqd5OlxM8U3KCtLWQ_g_1VZ9dc";
 
 function normalizeSupabaseOrigin(raw: string | undefined): string | null {
   const trimmed = raw?.trim() ?? "";
   if (!trimmed) return null;
-  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  const withProtocol = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
   try {
     return new URL(withProtocol).origin;
   } catch {
@@ -27,13 +20,26 @@ function normalizeSupabaseOrigin(raw: string | undefined): string | null {
   }
 }
 
-function oauthErrorRedirect(origin: string, reason?: string): NextResponse {
-  const url = new URL("/login?error=oauth", origin);
-  const trimmed = (reason ?? "").trim();
-  if (trimmed) {
-    url.searchParams.set("reason", trimmed.slice(0, 220));
-  }
+function safeNextPath(raw: string | null): string {
+  return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
+}
+
+function callbackFailureRedirect(
+  origin: string,
+  reason: string,
+  status = "oauth_callback_failed",
+): NextResponse {
+  const url = new URL("/login", origin);
+  url.searchParams.set("error", status);
+  url.searchParams.set("reason", reason.slice(0, 220));
   return NextResponse.redirect(url);
+}
+
+function envStatus() {
+  return {
+    hasSupabaseUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()),
+    hasSupabaseAnonKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()),
+  };
 }
 
 function isTransientNetworkAuthError(message: string): boolean {
@@ -52,44 +58,102 @@ function isTransientNetworkAuthError(message: string): boolean {
 async function exchangeCodeWithRetry(
   supabase: ReturnType<typeof createServerClient>,
   code: string,
-): Promise<{ error: { message: string } | null }> {
-  let last = "exchange_failed";
-  /** OAuth code는 성공 시 한 번만 유효 — 과도한 재시도는 invalid_grant 위험이 있어 2회만 */
+): Promise<{ error: AuthError | Error | null }> {
+  let last: AuthError | Error = new Error("exchange_failed");
+
   for (let attempt = 0; attempt < 2; attempt++) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) return { error: null };
-    last = error.message || "exchange_failed";
-    if (!isTransientNetworkAuthError(last) || attempt === 1) {
-      return { error: { message: last } };
+
+    last = error;
+    if (!isTransientNetworkAuthError(error.message || "") || attempt === 1) {
+      return { error };
     }
-    await new Promise((r) => setTimeout(r, 320));
+    await new Promise((resolve) => setTimeout(resolve, 320));
   }
-  return { error: { message: last } };
+
+  return { error: last };
 }
 
 /**
- * Supabase OAuth(PKCE) 콜백 — `signInWithOAuth` 후 Google 등에서 리다이렉트됩니다.
- * @see https://supabase.com/docs/guides/auth/server-side/nextjs
+ * Supabase OAuth callback.
+ *
+ * Required external settings:
+ * - Google Cloud Authorized redirect URI:
+ *   https://<SUPABASE_PROJECT_REF>.supabase.co/auth/v1/callback
+ * - Supabase Redirect URLs:
+ *   https://ara.pink/auth/callback
+ *   http://localhost:3001/auth/callback
  */
 export async function GET(request: NextRequest) {
-  const supabaseUrl =
-    normalizeSupabaseOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL) ??
-    FALLBACK_SUPABASE_ORIGIN;
-  const anonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
-    FALLBACK_SUPABASE_PUBLISHABLE_KEY;
-  const requestUrl = new URL(request.url);
+  const requestUrl = request.nextUrl;
   const code = requestUrl.searchParams.get("code");
+  const error = requestUrl.searchParams.get("error");
+  const errorDescription = requestUrl.searchParams.get("error_description");
   const providerError =
-    requestUrl.searchParams.get("error_description") ||
-    requestUrl.searchParams.get("error") ||
+    errorDescription ||
+    error ||
     "";
+  const next = safeNextPath(requestUrl.searchParams.get("next"));
+  const supabaseUrl = normalizeSupabaseOrigin(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+  );
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? "";
+
+  console.log("[oauth:callback] received callback", {
+    href: requestUrl.href,
+    searchParams: Object.fromEntries(requestUrl.searchParams.entries()),
+    codeExists: Boolean(code),
+    error,
+    error_description: errorDescription,
+    supabaseUrlExists: Boolean(supabaseUrl),
+    supabaseAnonKeyExists: Boolean(anonKey),
+  });
+
   if (providerError) {
-    return oauthErrorRedirect(requestUrl.origin, providerError);
+    console.log("[oauth:callback] provider returned error", {
+      href: requestUrl.href,
+      searchParams: Object.fromEntries(requestUrl.searchParams.entries()),
+      codeExists: Boolean(code),
+      error,
+      error_description: errorDescription,
+      providerError,
+      supabaseUrlExists: Boolean(supabaseUrl),
+      supabaseAnonKeyExists: Boolean(anonKey),
+    });
+    return callbackFailureRedirect(requestUrl.origin, providerError);
   }
 
-  if (!supabaseUrl || !anonKey || !code) {
-    return oauthErrorRedirect(requestUrl.origin, "missing_code_or_config");
+  if (!code) {
+    console.log("[oauth:callback] missing code", {
+      href: requestUrl.href,
+      searchParams: Object.fromEntries(requestUrl.searchParams.entries()),
+      searchParamKeys: Array.from(requestUrl.searchParams.keys()),
+      codeExists: false,
+      error,
+      error_description: errorDescription,
+      supabaseUrlExists: Boolean(supabaseUrl),
+      supabaseAnonKeyExists: Boolean(anonKey),
+    });
+    return callbackFailureRedirect(requestUrl.origin, "missing_code");
+  }
+
+  if (!supabaseUrl || !anonKey) {
+    const reason = !supabaseUrl
+      ? "missing_NEXT_PUBLIC_SUPABASE_URL"
+      : "missing_NEXT_PUBLIC_SUPABASE_ANON_KEY";
+    console.log("[oauth:callback] missing Supabase env", {
+      reason,
+      href: requestUrl.href,
+      searchParams: Object.fromEntries(requestUrl.searchParams.entries()),
+      codeExists: Boolean(code),
+      error,
+      error_description: errorDescription,
+      supabaseUrlExists: Boolean(supabaseUrl),
+      supabaseAnonKeyExists: Boolean(anonKey),
+      env: envStatus(),
+    });
+    return callbackFailureRedirect(requestUrl.origin, reason);
   }
 
   const redirectTo = new URL(POST_LOGIN_REDIRECT_PATH, requestUrl.origin);
@@ -111,7 +175,45 @@ export async function GET(request: NextRequest) {
 
   const { error: exchangeErr } = await exchangeCodeWithRetry(supabase, code);
   if (exchangeErr) {
-    return oauthErrorRedirect(requestUrl.origin, exchangeErr.message || "exchange_failed");
+    const errWithStatus = exchangeErr as AuthError & { status?: number };
+    console.log("[oauth:callback] exchangeCodeForSession failed", {
+      message: exchangeErr.message,
+      status: errWithStatus.status ?? null,
+      name: exchangeErr.name ?? null,
+      href: requestUrl.href,
+      searchParams: Object.fromEntries(requestUrl.searchParams.entries()),
+      codeExists: Boolean(code),
+      error,
+      error_description: errorDescription,
+      supabaseUrlExists: Boolean(supabaseUrl),
+      supabaseAnonKeyExists: Boolean(anonKey),
+      origin: requestUrl.origin,
+      redirectTo: redirectTo.toString(),
+    });
+    return callbackFailureRedirect(
+      requestUrl.origin,
+      exchangeErr.message || "exchange_failed",
+    );
+  }
+
+  const {
+    data: { user },
+    error: userErr,
+  } = await supabase.auth.getUser();
+
+  if (userErr) {
+    console.log("[oauth:callback] getUser failed after exchange", {
+      message: userErr.message,
+      status: userErr.status ?? null,
+      name: userErr.name ?? null,
+    });
+  }
+
+  if (user) {
+    const profile = await syncProfileFromAuthUser(supabase, user);
+    if (!profile) {
+      await syncProfileFromAuthUserAsServer(user);
+    }
   }
 
   return response;

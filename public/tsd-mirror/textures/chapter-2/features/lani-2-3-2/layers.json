@@ -1,0 +1,198 @@
+{
+  "psdName": "lani-2-3-2",
+  "dimensions": {
+    "width": 2000,
+    "height": 2000
+  },
+  "layers": [
+    {
+      "name": "gradient-uastc-scale-quarter",
+      "path": "gradient-uastc-scale-quarter",
+      "position": {
+        "origin": {
+          "x": 994,
+          "y": 998
+        },
+        "bounds": {
+          "top": -736,
+          "left": -747,
+          "right": 2735,
+          "bottom": 2732
+        }
+      },
+      "dimensions": {
+        "width": 3482,
+        "height": 3468
+      },
+      "visible": true,
+      "opacity": 0.2,
+      "blendMode": "normal",
+      "files": {
+        "png": "gradient-uastc-scale-quarter.png",
+        "ktx": "gradient-uastc-scale-quarter.ktx2"
+      }
+    },
+    {
+      "name": "Layer 53",
+      "path": "Group 1/Layer 53",
+      "position": {
+        "origin": {
+          "x": 1404.5,
+          "y": 430.5
+        },
+        "bounds": {
+          "top": -15,
+          "left": 1242,
+          "right": 1567,
+          "bottom": 876
+        }
+      },
+      "dimensions": {
+        "width": 325,
+        "height": 891
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "group-1-layer-53.png",
+        "ktx": "group-1-layer-53.ktx2"
+      }
+    },
+    {
+      "name": "Layer 44",
+      "path": "Layer 44",
+      "position": {
+        "origin": {
+          "x": 975,
+          "y": 1190.5
+        },
+        "bounds": {
+          "top": 257,
+          "left": 116,
+          "right": 1834,
+          "bottom": 2124
+        }
+      },
+      "dimensions": {
+        "width": 1718,
+        "height": 1867
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "layer-44.png",
+        "ktx": "layer-44.ktx2"
+      }
+    },
+    {
+      "name": "Layer 49",
+      "path": "Group 2/Layer 49",
+      "position": {
+        "origin": {
+          "x": 320,
+          "y": 166
+        },
+        "bounds": {
+          "top": -24,
+          "left": -22,
+          "right": 662,
+          "bottom": 356
+        }
+      },
+      "dimensions": {
+        "width": 684,
+        "height": 380
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "group-2-layer-49.png",
+        "ktx": "group-2-layer-49.ktx2"
+      }
+    },
+    {
+      "name": "Layer 52",
+      "path": "Group 2/Layer 52",
+      "position": {
+        "origin": {
+          "x": 125.5,
+          "y": 1019
+        },
+        "bounds": {
+          "top": 850,
+          "left": -86,
+          "right": 337,
+          "bottom": 1188
+        }
+      },
+      "dimensions": {
+        "width": 423,
+        "height": 338
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "group-2-layer-52.png",
+        "ktx": "group-2-layer-52.ktx2"
+      }
+    },
+    {
+      "name": "Layer 51",
+      "path": "Group 2/Layer 51",
+      "position": {
+        "origin": {
+          "x": 314.5,
+          "y": 1719.5
+        },
+        "bounds": {
+          "top": 1333,
+          "left": -17,
+          "right": 646,
+          "bottom": 2106
+        }
+      },
+      "dimensions": {
+        "width": 663,
+        "height": 773
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "group-2-layer-51.png",
+        "ktx": "group-2-layer-51.ktx2"
+      }
+    },
+    {
+      "name": "Layer 50",
+      "path": "Layer 50",
+      "position": {
+        "origin": {
+          "x": 1416,
+          "y": 1399
+        },
+        "bounds": {
+          "top": 1062,
+          "left": 1114,
+          "right": 1718,
+          "bottom": 1736
+        }
+      },
+      "dimensions": {
+        "width": 604,
+        "height": 674
+      },
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "files": {
+        "png": "layer-50.png",
+        "ktx": "layer-50.ktx2"
+      }
+    }
+  ]
+}

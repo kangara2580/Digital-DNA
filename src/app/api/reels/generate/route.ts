@@ -1,5 +1,5 @@
-import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { getMarketVideoById } from "@/data/videoCommerce";
 import { createJob, getJob } from "@/lib/reelsGenerate/jobStore";
 import { runReelsGenerationPipeline } from "@/lib/reelsGenerate/pipeline";
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
   const jobId = randomUUID();
   const now = new Date().toISOString();
 
-  createJob({
+  await createJob({
     id: jobId,
     status: "queued",
     createdAt: now,
@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "jobId_required" }, { status: 400 });
   }
 
-  const job = getJob(jobId);
+  const job = await getJob(jobId);
   if (!job) {
     return NextResponse.json({ error: "job_not_found" }, { status: 404 });
   }
