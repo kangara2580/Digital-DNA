@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, Trash2 } from "lucide-react";
 import { MyListingEditDialog } from "@/components/MyListingEditDialog";
-import { SellRegistrationModal } from "@/components/SellRegistrationModal";
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { VideoCard } from "@/components/VideoCard";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -29,7 +28,6 @@ export function MyPageMyListingsSection() {
   const [error, setError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleteBusy, setDeleteBusy] = useState(false);
-  const [sellModalOpen, setSellModalOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<"all" | SellVideoCategory>(
     "all",
   );
@@ -316,9 +314,8 @@ export function MyPageMyListingsSection() {
         <p className="text-[17px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">
           {t("listings.empty")}
         </p>
-        <button
-          type="button"
-          onClick={() => setSellModalOpen(true)}
+        <Link
+          href="/sell"
           className="mt-6 inline-flex items-center justify-center gap-1 text-[16px] font-semibold hover:underline"
         >
           <span
@@ -330,7 +327,7 @@ export function MyPageMyListingsSection() {
           <span className="text-white [html[data-theme='light']_&]:text-zinc-900">
             {t("listings.sellCta")}
           </span>
-        </button>
+        </Link>
       </div>
     );
   }
@@ -354,16 +351,12 @@ export function MyPageMyListingsSection() {
             ) : null}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setSellModalOpen(true)}
-          className={`inline-flex ${MYPAGE_OUTLINE_BTN_MD}`}
-        >
+        <Link href="/sell" className={`inline-flex ${MYPAGE_OUTLINE_BTN_MD}`}>
           <span className="text-[22px] leading-none text-[color:var(--reels-point)]">+</span>
           <span className="ml-1.5 text-white [html[data-theme='light']_&]:text-zinc-900">
             {t("listings.newListing").replace(/\s*[→➜➡]+$/u, "")}
           </span>
-        </button>
+        </Link>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -492,7 +485,6 @@ export function MyPageMyListingsSection() {
           }}
         />
       ) : null}
-      <SellRegistrationModal open={sellModalOpen} onClose={() => setSellModalOpen(false)} />
     </div>
   );
 }

@@ -28,9 +28,16 @@ export const authLoginPageScrim =
 export const authModalDialogSurface =
   "border border-white/[0.22] bg-[linear-gradient(180deg,rgba(255,255,255,0.075)_0%,transparent_48%),linear-gradient(167deg,rgba(26,28,38,0.68)_0%,rgba(18,20,30,0.74)_44%,rgba(13,15,24,0.80)_100%)] backdrop-blur-md saturate-[1.06]";
 
+/**
+ * 로그인·회원가입 모달 카드 — `overflow-y-auto`는 `authModalGlow*`의 음수 offset 때문에
+ * 가로·세로 스크롤 트랙이 잡히는 경우가 있어 숨김(글로우는 카드 안에서 클립).
+ */
+export const authModalDialogClipNoScroll =
+  "max-h-[min(92vh,760px)] overflow-x-hidden overflow-y-hidden";
+
 /** 카드 우측 상단 닫기(X) — 진한 회색 테두리·글자 + 밝은 배경 블룸 위에서 대비 확보 */
 export const authModalDismissButtonCls =
-  "absolute right-4 top-4 z-[1] inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-zinc-600 bg-zinc-50 text-[1.15rem] font-semibold leading-none text-zinc-700 shadow-[0_1px_4px_rgba(0,0,0,0.18)] transition hover:border-zinc-700 hover:bg-white hover:text-zinc-900 [html[data-theme='light']_&]:border-zinc-500 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-600";
+  "absolute right-4 top-4 z-[1] inline-flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white text-[1.05rem] font-semibold leading-none text-black shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition hover:bg-zinc-50 hover:text-black";
 
 /** 브랜드 포인트 — Google CTA 화살표 등 (globals --reels-point 와 동일) */
 export const AUTH_MODAL_BRAND_PINK_HEX = "#E42980";

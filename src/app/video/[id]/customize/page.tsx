@@ -25,21 +25,27 @@ export default async function VideoCustomizePage({
   if (!video) notFound();
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      <div className="mx-auto max-w-[1100px] py-8 pl-4 sm:pl-6 lg:pl-8 reels-pr-safe-fixed">
-        <nav className="mb-6 flex flex-wrap items-center gap-2 font-mono text-[11px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          <Link href="/" className="text-reels-cyan/90 hover:text-reels-cyan">
+    <main className="min-h-[60vh] bg-zinc-950 text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
+      <div className="mx-auto max-w-[1500px] px-4 py-10 sm:px-6 sm:py-12 lg:px-10 reels-pr-safe-fixed">
+        <nav
+          aria-label="breadcrumb"
+          className="mb-8 flex flex-wrap items-center gap-2 border-b border-white/10 pb-6 text-[13px] font-medium text-zinc-500 [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:text-zinc-600"
+        >
+          <Link href="/" className="text-zinc-400 transition-colors hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900">
             홈
           </Link>
-          <span className="text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
-          <Link href={`/video/${video.id}`} className="text-reels-cyan/90 hover:text-reels-cyan">
+          <span className="text-zinc-600 [html[data-theme='light']_&]:text-zinc-400">/</span>
+          <Link
+            href={`/video/${video.id}`}
+            className="text-zinc-400 transition-colors hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900"
+          >
             동영상 상세
           </Link>
-          <span className="text-zinc-700 [html[data-theme='light']_&]:text-zinc-500">/</span>
-          <span className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">맞춤 리스킨</span>
+          <span className="text-zinc-600 [html[data-theme='light']_&]:text-zinc-400">/</span>
+          <span className="text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">맞춤 리스킨</span>
         </nav>
         <PurchaseCustomizeStudio video={video} />
       </div>
-    </div>
+    </main>
   );
 }

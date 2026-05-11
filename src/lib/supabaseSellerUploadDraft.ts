@@ -2,7 +2,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabaseTables } from "@/lib/supabaseTableNames";
 
 export type SellerUploadDraftPayload = {
-  sourceType: "file" | "url";
+  sourceType: "file";
+  /** 레거시 초안에만 남을 수 있음 — URL 등록은 사용하지 않습니다. */
   videoUrl: string;
   title: string;
   description: string;

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useState, type ReactNode } from "react";
 import { LayoutGrid, LogOut, Settings, UserRound } from "lucide-react";
+import { PaymentDiamondIcon } from "@/components/PaymentDiamondIcon";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
@@ -50,8 +51,12 @@ function LoggedInAccountHoverMenuInner({
     (pathname === `/seller/${user!.id}` || pathname === `/seller/${encodeURIComponent(user!.id)}`);
   const onMypageHub = pathname.startsWith("/mypage") && mypageQueryTab === "";
   const onSettings = pathname === "/settings" || pathname.startsWith("/settings/");
+  const onAssets = pathname === "/assets" || pathname.startsWith("/assets/");
   const accountSectionActive =
-    pathname.startsWith("/mypage") || pathname.startsWith("/seller/") || onSettings;
+    pathname.startsWith("/mypage") ||
+    pathname.startsWith("/seller/") ||
+    onSettings ||
+    onAssets;
 
   const myFeedHref =
     user?.id != null && user.id.length > 0
@@ -68,7 +73,7 @@ function LoggedInAccountHoverMenuInner({
     } finally {
       setBusy(false);
     }
-    router.replace("/login?logged_out=1");
+    router.replace("/");
     router.refresh();
   }, [router]);
 
@@ -109,6 +114,15 @@ function LoggedInAccountHoverMenuInner({
           >
             <LayoutGrid className={menuIconClass} strokeWidth={2} aria-hidden />
             {t("account.mypage")}
+          </Link>
+          <Link
+            href="/assets"
+            role="menuitem"
+            className={menuItemLink}
+            aria-current={onAssets ? "page" : undefined}
+          >
+            <PaymentDiamondIcon className={`${menuIconClass} text-[color:var(--reels-point)]`} aria-hidden />
+            {t("account.assets")}
           </Link>
           <Link
             href="/settings"

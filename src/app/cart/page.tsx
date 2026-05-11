@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useAuthPromptModal } from "@/components/AuthPromptModalProvider";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useSitePreferences } from "@/context/SitePreferencesContext";
@@ -96,6 +97,7 @@ function cartThumbnailSrc(video: FeedVideo): string {
 }
 
 export default function CartPage() {
+  const { openAuthModal } = useAuthPromptModal();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const { t } = useTranslation();
   const { locale } = useSitePreferences();
@@ -237,7 +239,7 @@ export default function CartPage() {
       });
       const payload = (await checkout.json().catch(() => null)) as TossCheckoutPayload | null;
       if (checkout.status === 401) {
-        window.location.href = payload?.loginUrl ?? "/login";
+        openAuthModal();
         return;
       }
       if (
@@ -271,7 +273,7 @@ export default function CartPage() {
     } finally {
       setCheckoutBusy(false);
     }
-  }, [checkoutBusy, numLocale, selectedPayableItems, t]);
+  }, [checkoutBusy, numLocale, openAuthModal, selectedPayableItems, t]);
 
   const confirmClearCart = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -313,12 +315,13 @@ export default function CartPage() {
           <p className="text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             {t("cart.loginHint")}
           </p>
-          <Link
-            href={`/login?redirect=${encodeURIComponent("/cart")}`}
+          <button
+            type="button"
+            onClick={() => openAuthModal()}
             className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[14px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
           >
             {t("mypage.loginCta")}
-          </Link>
+          </button>
         </div>
       ) : !cartUiReady ? (
         <div className="mx-auto mt-14 w-full max-w-[1800px] space-y-4" aria-busy="true" aria-live="polite">

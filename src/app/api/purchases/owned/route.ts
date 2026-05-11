@@ -39,5 +39,20 @@ export async function GET() {
     ]),
   );
 
-  return NextResponse.json({ ok: true, videoIds });
+  const videos =
+    videoIds.length === 0
+      ? []
+      : await prisma.video.findMany({
+          where: { id: { in: videoIds } },
+          select: { id: true, title: true },
+        });
+  const titleById = new Map(videos.map((v) => [v.id, v.title]));
+
+  const items = videoIds.map((videoId) => ({
+    videoId,
+    title: titleById.get(videoId) ?? videoId,
+  }));
+  items.sort((a, b) => a.title.localeCompare(b.title, "ko"));
+
+  return NextResponse.json({ ok: true, videoIds, items });
 }

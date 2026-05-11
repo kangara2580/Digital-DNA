@@ -201,6 +201,57 @@ function ExploreWatchReels({
   const goNextReel = useCallback(() => scrollByOneSlide(1), [scrollByOneSlide]);
   const goPrevReel = useCallback(() => scrollByOneSlide(-1), [scrollByOneSlide]);
 
+  /** 브라우저/탭 전체화면(F11)·Fullscreen API·거의 전체 뷰포트일 때만 방향키를 가격 레일 쪽으로 더 당김 */
+  const [chevronFullscreenNudge, setChevronFullscreenNudge] = useState(false);
+  useEffect(() => {
+    const readFullscreenLayout = () => {
+      const doc = document;
+      const fsEl =
+        doc.fullscreenElement ??
+        (doc as Document & { webkitFullscreenElement?: Element | null })
+          .webkitFullscreenElement ??
+        null;
+      if (fsEl) {
+        setChevronFullscreenNudge(true);
+        return;
+      }
+      if (typeof window === "undefined" || typeof window.screen === "undefined") {
+        setChevronFullscreenNudge(false);
+        return;
+      }
+      const pwa =
+        window.matchMedia?.("(display-mode: fullscreen)")?.matches === true;
+      if (pwa) {
+        setChevronFullscreenNudge(true);
+        return;
+      }
+      const { innerWidth: iw, innerHeight: ih } = window;
+      const { availWidth: aw, availHeight: ah } = window.screen;
+      const fillsViewport =
+        iw >= aw - 4 && ih >= ah - 56;
+      setChevronFullscreenNudge(fillsViewport);
+    };
+
+    readFullscreenLayout();
+    const onResize = () => readFullscreenLayout();
+    document.addEventListener("fullscreenchange", readFullscreenLayout);
+    document.addEventListener(
+      "webkitfullscreenchange",
+      readFullscreenLayout as EventListener,
+    );
+    window.addEventListener("resize", onResize);
+    window.visualViewport?.addEventListener("resize", onResize);
+    return () => {
+      document.removeEventListener("fullscreenchange", readFullscreenLayout);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        readFullscreenLayout as EventListener,
+      );
+      window.removeEventListener("resize", onResize);
+      window.visualViewport?.removeEventListener("resize", onResize);
+    };
+  }, []);
+
   const [chevronPortal, setChevronPortal] = useState<HTMLElement | null>(null);
   useLayoutEffect(() => {
     setChevronPortal(document.body);
@@ -242,12 +293,21 @@ function ExploreWatchReels({
   }, []);
 
   const chevronRail = (
-    /* 오른쪽 고정 레일 버튼을 화면 안쪽으로 이동 */
-    <div
-      className="pointer-events-none fixed inset-0 z-[101] box-border flex w-full items-center justify-end"
-      style={{ paddingRight: "calc(env(safe-area-inset-right, 0px) + 88px)" }}
-    >
-      <div className="pointer-events-none flex flex-col gap-2">
+    /*
+     * 데스크톱: 릴 본문은 `md:pl[--reels-rail-w]` + 가운데 `max-w:56rem` 블록이라, 뷰가 넓을수록
+     * 가격 레일은 화면 오른쪽에서 멀어짐. `50vw - rail/2 - 28rem`으로 블록 오른쪽까지 거리를 잡고 보정값을 뺌.
+     * 좁은 md에서는 `max(..., 7.5rem)`으로 창 모드 위치 유지.
+     * 브라우저 전체화면(F11)·Fullscreen API 등은 `chevronFullscreenNudge`로 감지해, 그때만
+     * 버튼 스택에 `translateX`를 더해 가격·통계 레일 쪽으로 붙임(일반 창에서는 기존 pr만 사용).
+     */
+    <div className="pointer-events-none fixed inset-0 z-[101] box-border flex w-full items-center justify-end pr-[calc(env(safe-area-inset-right,0px)+2rem)] sm:pr-[calc(env(safe-area-inset-right,0px)+3.25rem)] md:pr-[calc(env(safe-area-inset-right,0px)+max(7.5rem,(50vw-(var(--reels-rail-w)/2))-28rem-1.75rem))] 2xl:pr-[calc(env(safe-area-inset-right,0px)+max(7.5rem,(50vw-(var(--reels-rail-w)/2))-28rem+7rem))]">
+      <div
+        className={
+          chevronFullscreenNudge
+            ? "pointer-events-none flex flex-col gap-2 transition-transform duration-150 md:-translate-x-8 2xl:-translate-x-14"
+            : "pointer-events-none flex flex-col gap-2 transition-transform duration-150"
+        }
+      >
         <button
           type="button"
           onClick={goPrevReel}

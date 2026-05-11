@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 declare global {
   interface Window {
@@ -66,6 +67,8 @@ export function TossCheckoutButton({
   children,
   className,
   disabled = false,
+  /** 401일 때 로그인 페이지로 보내지 않고 모달 등을 띄울 때 사용 */
+  onUnauthorized,
 }: {
   productType: "credits" | "video";
   productKey?: string;
@@ -73,9 +76,16 @@ export function TossCheckoutButton({
   children: string;
   className?: string;
   disabled?: boolean;
+  onUnauthorized?: () => void;
 }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function checkoutMessageForError(code: string | undefined): string {
+    if (code === "toss_not_configured") return t("checkout.error.tossNotConfigured");
+    return t("checkout.error.generic");
+  }
 
   async function startPayment() {
     if (disabled || loading) return;
@@ -91,6 +101,10 @@ export function TossCheckoutButton({
       const payload = (await response.json().catch(() => null)) as CheckoutResponse | null;
 
       if (response.status === 401) {
+        if (onUnauthorized) {
+          onUnauthorized();
+          return;
+        }
         window.location.href = payload?.loginUrl ?? "/login";
         return;
       }
@@ -104,7 +118,8 @@ export function TossCheckoutButton({
         !payload.successUrl ||
         !payload.failUrl
       ) {
-        throw new Error(payload?.error ?? "checkout_failed");
+        setError(checkoutMessageForError(payload?.error));
+        return;
       }
 
       await loadTossSdk();
@@ -120,12 +135,8 @@ export function TossCheckoutButton({
         failUrl: payload.failUrl,
       });
     } catch (paymentError) {
-      console.error("[toss.checkout] client failed", paymentError);
-      setError(
-        paymentError instanceof Error
-          ? paymentError.message
-          : "결제창을 열지 못했습니다.",
-      );
+      console.warn("[toss.checkout] client failed", paymentError);
+      setError(t("checkout.error.generic"));
     } finally {
       setLoading(false);
     }
@@ -142,7 +153,7 @@ export function TossCheckoutButton({
           "h-11 w-full rounded-full bg-[#ff2f93] px-5 text-sm font-black text-white shadow-[0_12px_30px_rgba(255,47,147,0.28)] transition hover:bg-[#ff4ba3] disabled:cursor-wait disabled:bg-zinc-700"
         }
       >
-        {loading ? "토스 결제창 여는 중..." : children}
+        {loading ? t("assets.checkoutBusy") : children}
       </button>
       {error ? <p className="text-xs font-bold text-rose-300">{error}</p> : null}
     </div>

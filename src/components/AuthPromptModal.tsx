@@ -1,9 +1,11 @@
 "use client";
 
 import { createPortal } from "react-dom";
+import { useEffect } from "react";
 import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
 import { AuthModalPortal } from "@/components/AuthModalPortal";
 import {
+  authModalDialogClipNoScroll,
   authModalDialogSurface,
   authModalDismissButtonCls,
   authModalGlowBottom,
@@ -23,6 +25,25 @@ type Props = {
 
 export function AuthPromptModal({ open, onClose, onGoogleStart }: Props) {
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   return createPortal(
@@ -31,7 +52,7 @@ export function AuthPromptModal({ open, onClose, onGoogleStart }: Props) {
         role="dialog"
         aria-modal="true"
         aria-label={t("auth.dialogAria")}
-        className={`relative w-full rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
+        className={`relative w-full ${authModalDialogClipNoScroll} rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >

@@ -98,6 +98,13 @@ function parsePersistedPreview(raw: unknown): PersistedPreviewV1 | null {
   };
 }
 
+/** 빈 문자열이면 null — `<img src>` 에 빈 문자열을 넣지 않음 */
+function nonEmptyImageSrc(u: string | null | undefined): string | null {
+  if (u == null) return null;
+  const t = String(u).trim();
+  return t.length > 0 ? t : null;
+}
+
 const defaultOverlays = (): TextOverlay[] => [
   {
     id: "o1",
@@ -427,16 +434,22 @@ function previewToneFromPrompt(prompt: string): string {
   return "linear-gradient(140deg, rgba(255,255,255,0.12), rgba(0,0,0,0.14))";
 }
 
-/** 마이페이지 섹션 카드와 동일한 서피스 */
+/** 마이페이지·설정 `MyPageSectionShell` / 탭 카드와 동일한 서피스 */
 const STUDIO_SECTION_SURFACE =
   "rounded-2xl border border-white/10 bg-zinc-900/40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm";
+
+/** 섹션 제목 — 설정 탭 `h2` / `MyPageSectionShell` 제목과 동일 톤 */
+const STUDIO_SECTION_H2_ROW =
+  "flex items-center gap-3 text-xl font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900";
+const STUDIO_STEP_BADGE =
+  "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white bg-transparent text-[11px] font-semibold text-white [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-zinc-950";
 
 export function PurchaseCustomizeStudio({
   video: initialVideo,
   heroTitle,
 }: {
   video: FeedVideo;
-  /** 창작 스튜디오 등 상단 제목 — 있으면 제목 행 오른쪽에 빠른 생성 버튼 배치 */
+  /** 창작 스튜디오 등 상단 제목 — 있으면 제목 바로 오른쪽에 「영상만 구매」 버튼 */
   heroTitle?: string;
 }) {
   const [video, setVideo] = useState(initialVideo);
@@ -473,11 +486,11 @@ export function PurchaseCustomizeStudio({
   const [previewCandidateIndex, setPreviewCandidateIndex] = useState(0);
   const [textPreviewEnabled, setTextPreviewEnabled] = useState(false);
   const [activeDragOverlayId, setActiveDragOverlayId] = useState<string | null>(null);
-  const [facePreviewApplying, setFacePreviewApplying] = useState(false);
   const [backgroundPreviewApplying, setBackgroundPreviewApplying] = useState(false);
-  const [facePreviewError, setFacePreviewError] = useState<string | null>(null);
   const [backgroundPreviewError, setBackgroundPreviewError] = useState<string | null>(null);
   const [backgroundPreviewInfo, setBackgroundPreviewInfo] = useState<string | null>(null);
+  const [facePreviewApplying, setFacePreviewApplying] = useState(false);
+  const [facePreviewError, setFacePreviewError] = useState<string | null>(null);
   const [selectedFaceSourceUrl, setSelectedFaceSourceUrl] = useState<string | null>(
     null,
   );
@@ -544,7 +557,13 @@ export function PurchaseCustomizeStudio({
   const prevBackgroundModeRef = useRef<"video" | "image" | null>(null);
 
   useEffect(() => {
-    const onFocus = () => setFaceOptions(buildFacePickerOptions());
+    const onFocus = () => {
+      setFaceOptions((prev) => {
+        const base = buildFacePickerOptions();
+        const customs = prev.filter((o) => o.id.startsWith("custom-"));
+        return [...base, ...customs];
+      });
+    };
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
   }, []);
@@ -589,9 +608,9 @@ export function PurchaseCustomizeStudio({
     setPreviewTransitionLoading(false);
     setPreviewBgVersion((v) => v + 1);
     setFacePreviewError(null);
+    setFacePreviewApplying(false);
     setBackgroundPreviewError(null);
     setBackgroundPreviewInfo(null);
-    setFacePreviewApplying(false);
     setBackgroundPreviewApplying(false);
     setSaveStatus("idle");
     setCustomUploadModalVisible(false);
@@ -604,10 +623,16 @@ export function PurchaseCustomizeStudio({
   }, [aiPreviewQuotaActive]);
 
   useEffect(() => {
-    if (faceOptions.length === 0 || !draft) return;
+    if (!draft) return;
+    if (faceOptions.length === 0) {
+      if (draft.faceOptionId != null) {
+        setDraft((d) => (d ? { ...d, faceOptionId: null } : d));
+      }
+      return;
+    }
     const ok = faceOptions.some((o) => o.id === draft.faceOptionId);
     if (!ok) {
-      setDraft((d) => (d ? { ...d, faceOptionId: faceOptions[0].id } : d));
+      setDraft((d) => (d ? { ...d, faceOptionId: faceOptions[0]?.id ?? null } : d));
     }
   }, [faceOptions, draft]);
 
@@ -619,6 +644,11 @@ export function PurchaseCustomizeStudio({
   useEffect(() => {
     setSelectedFaceSourceUrl(selectedFace?.src ?? null);
   }, [selectedFace]);
+
+  const effectiveFaceImageUrl = useMemo(
+    () => nonEmptyImageSrc(selectedFace?.src ?? selectedFaceSourceUrl),
+    [selectedFace, selectedFaceSourceUrl],
+  );
 
   const trimStart = draft?.trimStart ?? 0;
   const trimEnd = draft?.trimEnd ?? 0;
@@ -644,9 +674,37 @@ export function PurchaseCustomizeStudio({
     needsStartFramePoster,
     { timeSec: 0.08, maxWidth: 720 },
   );
+  const originFrameThumbUrl = useMemo(
+    () => nonEmptyImageSrc(startFramePoster ?? sanitizePosterSrc(video.poster)),
+    [startFramePoster, video.poster],
+  );
+  const confirmedBackgroundThumbUrl = useMemo(
+    () =>
+      bgPreviewOn
+        ? nonEmptyImageSrc(previewBgImageUrl ?? previewBgVideoUrl ?? previewVideoSrc)
+        : originFrameThumbUrl,
+    [
+      bgPreviewOn,
+      previewBgImageUrl,
+      previewBgVideoUrl,
+      previewVideoSrc,
+      originFrameThumbUrl,
+    ],
+  );
+  const fusionBgThumbUrl = useMemo(
+    () =>
+      bgPreviewOn
+        ? nonEmptyImageSrc(previewBgImageUrl ?? previewVideoSrc)
+        : originFrameThumbUrl,
+    [bgPreviewOn, previewBgImageUrl, previewVideoSrc, originFrameThumbUrl],
+  );
+  const confirmedAvatarThumbUrl = useMemo(
+    () => nonEmptyImageSrc(selectedFaceSourceUrl),
+    [selectedFaceSourceUrl],
+  );
   const previewPoster = bgPreviewOn
     ? undefined
-    : (startFramePoster ?? sanitizePosterSrc(video.poster));
+    : (nonEmptyImageSrc(startFramePoster ?? sanitizePosterSrc(video.poster)) ?? undefined);
   const preloadCacheRef = useRef<Set<string>>(new Set());
   const incomingCommitRef = useRef<number | null>(null);
 
@@ -779,9 +837,9 @@ export function PurchaseCustomizeStudio({
     setPreviewTransitionLoading(false);
     setPreviewCandidates([]);
     setPreviewCandidateIndex(0);
-    setFacePreviewError(null);
     setBackgroundPreviewError(null);
     setBackgroundPreviewInfo(null);
+    setFacePreviewError(null);
     setPreviewBgVersion((v) => v + 1);
     // 모드 전환 직후에는 자동 재적용을 막고, 사용자가 명시적으로 적용하도록 유지
     lastAutoAppliedKeywordRef.current = draft.backgroundPrompt.trim();
@@ -887,7 +945,7 @@ export function PurchaseCustomizeStudio({
   ]);
 
   const submitServerGeneration = useCallback(async () => {
-    if (!draft || !selectedFace) {
+    if (!draft || !effectiveFaceImageUrl) {
       setRemoteErr("얼굴을 선택해 주세요.");
       return;
     }
@@ -899,7 +957,7 @@ export function PurchaseCustomizeStudio({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           videoId: video.id,
-          faceImageUrl: selectedFace.src,
+          faceImageUrl: effectiveFaceImageUrl,
           draft,
         }),
       });
@@ -921,7 +979,7 @@ export function PurchaseCustomizeStudio({
     } finally {
       setSubmitRemote(false);
     }
-  }, [draft, selectedFace, video.id]);
+  }, [draft, effectiveFaceImageUrl, video.id]);
 
   // 오프스크린 preload: 모드(영상/이미지)에 맞춰 로드
   const preloadVideoUrl = useCallback((url: string) => {
@@ -952,7 +1010,7 @@ export function PurchaseCustomizeStudio({
     v.load();
   }, [backgroundMode]);
 
-  /** 얼굴 스왑 미리보기만 (배경 Flux/검색 없음) */
+  /** 얼굴 스왑 미리보기만 (배경 Flux/검색 없음) — 결과는 오른쪽 큰 미리보기 영역에 반영 */
   const applyFacePreview = useCallback(async () => {
     if (!draft) return;
     const faceUrl =
@@ -1017,13 +1075,12 @@ export function PurchaseCustomizeStudio({
       setFacePreviewApplying(false);
     }
   }, [
-    draft,
     aiPreviewQuotaActive,
-    previewBgVideoUrl,
+    draft,
+    motionReferenceUrl,
     selectedFace,
     selectedFaceSourceUrl,
     trackBehavior,
-    motionReferenceUrl,
   ]);
 
   /** 배경 미리보기만 — 이미지: Flux만, 동영상: 스톡 검색만 (얼굴 스왑 없음) */
@@ -1112,10 +1169,8 @@ export function PurchaseCustomizeStudio({
         return;
       }
       const subjectVideoUrl = motionReferenceUrl;
-      const imageUrl = (selectedFace?.src ?? selectedFaceSourceUrl)?.trim() || "";
-      
-      if (!imageUrl) {
-        setBackgroundPreviewError("배경 영상으로 생성하기 전 얼굴 이미지를 먼저 선택해 주세요.");
+      if (!effectiveFaceImageUrl) {
+        setBackgroundPreviewError("배경 영상으로 생성하기 전 얼굴 이미지를 먼저 추가해 주세요.");
         setPreviewTransitionLoading(false);
         return;
       }
@@ -1124,7 +1179,7 @@ export function PurchaseCustomizeStudio({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          imageUrl,
+          imageUrl: effectiveFaceImageUrl,
           videoUrl: subjectVideoUrl,
           prompt: keyword,
         }),
@@ -1165,10 +1220,14 @@ export function PurchaseCustomizeStudio({
     aiPreviewQuotaActive,
     backgroundMode,
     draft,
+    effectiveFaceImageUrl,
     preloadVideoUrl,
     previewBgVideoUrl,
     trackBehavior,
     motionReferenceUrl,
+    startFramePoster,
+    video.orientation,
+    video.poster,
   ]);
 
   // 키워드 입력 중 미리 후보를 받아와 백그라운드 preload
@@ -1378,24 +1437,25 @@ export function PurchaseCustomizeStudio({
   const t1 = Math.max(Math.min(trimEnd > 0 ? trimEnd : dMax, dMax), t0 + 0.1);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       {heroTitle ? (
         <header className="border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-100">
-          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-10">
-            <div className="min-w-0 flex-1 md:max-w-[min(100%,42rem)]">
-              <h1 className="text-[1.625rem] font-semibold tracking-tight text-zinc-50 sm:text-[1.875rem] [html[data-theme='light']_&]:text-zinc-900">
-                {heroTitle}
-              </h1>
-              <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">
-                커스텀 편집으로 얼굴·배경을 조정한 뒤, 아래에서 생성을 이어가면 됩니다.
-              </p>
-            </div>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-2 sm:gap-x-3">
+            <h1 className="min-w-0 text-[1.625rem] font-semibold tracking-tight text-zinc-50 sm:text-[1.875rem] [html[data-theme='light']_&]:text-zinc-900">
+              {heroTitle}
+            </h1>
+            <span
+              className="inline-block shrink-0 origin-center select-none text-[1.35rem] font-light leading-none text-zinc-500 scale-y-[1.18] sm:text-[1.5rem] sm:scale-y-[1.22] [html[data-theme='light']_&]:text-zinc-400"
+              aria-hidden
+            >
+              /
+            </span>
             <button
               type="button"
               onClick={() => setUseAdvancedStep(false)}
-              className={`${MYPAGE_OUTLINE_BTN_MD} w-full max-w-xs shrink-0 md:w-auto`}
+              className={`${MYPAGE_OUTLINE_BTN_MD} shrink-0`}
             >
-              빠른 생성
+              영상만 구매
             </button>
           </div>
         </header>
@@ -1403,15 +1463,15 @@ export function PurchaseCustomizeStudio({
 
       {!heroTitle ? (
         <div className="flex flex-col gap-4 border-b border-white/10 pb-8 md:flex-row md:items-center md:justify-between md:gap-6 [html[data-theme='light']_&]:border-zinc-100">
-          <p className="min-w-0 max-w-xl flex-1 text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[15px]">
-            먼저 커스텀 편집으로 얼굴·배경을 만져 보세요. 편집 없이 바로 생성만 진행하려면 오른쪽 버튼을 누르세요.
+          <p className="min-w-0 max-w-xl flex-1 text-[15px] leading-relaxed text-white/55 [html[data-theme='light']_&]:text-zinc-600">
+            먼저 커스텀 편집으로 얼굴·배경을 만져 보세요. 편집 없이 바로 진행하려면 오른쪽 「영상만 구매」를 누르세요.
           </p>
           <button
             type="button"
             onClick={() => setUseAdvancedStep(false)}
             className={`${MYPAGE_OUTLINE_BTN_MD} w-full max-w-xs shrink-0 md:w-auto`}
           >
-            빠른 생성
+            영상만 구매
           </button>
         </div>
       ) : null}
@@ -1442,8 +1502,9 @@ export function PurchaseCustomizeStudio({
         </div>
       ) : null}
 
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,340px)_1fr] lg:gap-12">
-        <div className="min-w-0 lg:sticky lg:top-[calc(var(--header-height,220px)+0.75rem)] lg:self-start">
+      <div className="grid gap-10 lg:grid-cols-[1fr_minmax(0,340px)] lg:items-start lg:gap-12">
+        {/* 데스크톱: 미리보기는 오른쪽 열(col 2). 모바일: DOM 순서대로 미리보기가 위에 유지 */}
+        <div className="min-w-0 w-full lg:sticky lg:top-[calc(var(--header-height,220px)+0.75rem)] lg:col-start-2 lg:row-start-1 lg:self-start">
           <p className="text-[13px] font-medium uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
             미리보기
           </p>
@@ -1627,104 +1688,111 @@ export function PurchaseCustomizeStudio({
               </>
             ) : null}
           </div>
-          {useAdvancedStep && selectedFace ? (
+          {useAdvancedStep &&
+          effectiveFaceImageUrl &&
+          selectedFace?.aiAngles &&
+          selectedFace.aiAngles.length > 0 ? (
             <div className="mx-auto mt-4 w-full max-w-[280px] rounded-xl border border-white/10 bg-white/[0.04] p-3 flex flex-col gap-3">
-              <div className="flex items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={selectedFace.src} alt="" className="h-12 w-12 shrink-0 rounded-full object-cover border border-white/20" />
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-zinc-500">선택한 얼굴</p>
-                  <p className="truncate text-[12px] font-semibold text-zinc-200">{selectedFace.label}</p>
-                </div>
-              </div>
-              {selectedFace.aiAngles && selectedFace.aiAngles.length > 0 && (
-                <div className="pt-2 border-t border-white/5">
-                  <p className="mb-2 text-[10px] font-bold text-zinc-400">AI 생성 3면도 (C.U)</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {selectedFace.aiAngles.map((angle, j) => (
-                      <div key={j} className="relative w-full aspect-square overflow-hidden rounded-md border border-white/10 bg-black/50">
-                        <img 
-                          src={angle} 
-                          alt="" 
-                          className="absolute top-0 h-full max-w-none cursor-zoom-in transition hover:opacity-80" 
-                          style={{ width: '300%', left: `-${j * 100}%`, objectFit: 'cover' }}
-                          onClick={() => setEnlargedImage({ url: angle, index: j })} 
-                        />
-                      </div>
-                    ))}
+              <p className="mb-2 text-[10px] font-bold text-zinc-400">AI 생성 3면도 (C.U)</p>
+              <div className="grid grid-cols-3 gap-2">
+                {selectedFace.aiAngles.map((angle, j) => (
+                  <div key={j} className="relative w-full aspect-square overflow-hidden rounded-md border border-white/10 bg-black/50">
+                    <img 
+                      src={angle} 
+                      alt="" 
+                      className="absolute top-0 h-full max-w-none cursor-zoom-in transition hover:opacity-80" 
+                      style={{ width: '300%', left: `-${j * 100}%`, objectFit: 'cover' }}
+                      onClick={() => setEnlargedImage({ url: angle, index: j })} 
+                    />
                   </div>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
           ) : null}
         </div>
 
-        <div className="min-w-0 space-y-8">
+        <div className="min-w-0 space-y-8 lg:col-start-1 lg:row-start-1">
           {useAdvancedStep ? (
-          <section className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5 relative overflow-hidden`}>
-            <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-zinc-100">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-[11px] font-black text-white">1</span>
-              아바타 선택 (변환할 얼굴 소스)
+            <>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:items-stretch md:gap-3 lg:gap-4">
+                <section
+                  className={`${STUDIO_SECTION_SURFACE} relative flex min-h-0 h-full min-w-0 flex-col overflow-hidden p-4 sm:p-5`}
+                >
+            <h2 className={`${STUDIO_SECTION_H2_ROW} min-w-0`}>
+              <span className={STUDIO_STEP_BADGE}>1</span>
+              <span className="min-w-0 truncate">아바타 선택</span>
             </h2>
             
+            <div className="mt-0 flex min-h-0 flex-1 flex-col">
             {isAvatarConfirmed ? (
-              <div className="mt-4 flex flex-col items-center gap-3">
+              <div className="mt-3 flex flex-1 flex-col items-center justify-center gap-2">
                 <div className="relative group rounded-xl overflow-hidden shadow-lg border-2 border-[color:var(--reels-point)]">
-                  <img src={selectedFaceSourceUrl ?? ""} alt="Confirmed Avatar" className="w-[120px] h-[120px] object-cover" />
-                  <div className="absolute top-1 right-1 bg-[color:var(--reels-point)] px-1.5 py-0.5 text-[10px] font-bold text-white rounded">
-                    확정됨
-                  </div>
+                  {confirmedAvatarThumbUrl ? (
+                    <img
+                      src={confirmedAvatarThumbUrl}
+                      alt="Confirmed Avatar"
+                      className="h-[140px] w-[100px] object-cover sm:h-[196px] sm:w-[140px]"
+                    />
+                  ) : (
+                    <div
+                      className="h-[140px] w-[100px] bg-zinc-800 sm:h-[196px] sm:w-[140px]"
+                      aria-hidden
+                    />
+                  )}
                   
-                  {/* Hover Edit Overlay */}
-                  <div className="absolute inset-x-0 bottom-0 top-1/2 bg-gradient-to-t from-black/80 to-transparent flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button 
+                  {/* Hover Edit Overlay — 배경 확정 카드의 「변경하기」와 동일 크기·중앙 정렬 */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                    <button
+                      type="button"
                       onClick={() => setIsAvatarConfirmed(false)}
-                      className="bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold px-3 py-1 rounded-full backdrop-blur-md border border-white/30"
+                      className="bg-white/20 hover:bg-white/30 text-white text-[12px] font-bold px-4 py-2 rounded-full backdrop-blur-md border border-white/30 transition-colors w-[80%]"
                     >
                       변경하기
                     </button>
                   </div>
                 </div>
-                <p className="text-[12px] font-medium text-[color:var(--reels-point)]">아바타가 선택되었습니다.</p>
+                <p className="text-[12px] font-medium text-white [html[data-theme='light']_&]:text-zinc-900">
+                  아바타가 선택되었습니다.
+                </p>
               </div>
             ) : (
             <>
-              <p className="mt-1 text-[12px] text-zinc-500">
-                <Link
-                  href="/mypage"
-                  className="font-semibold text-[color:var(--reels-point)] underline-offset-2 hover:underline"
-                >
-                  마이페이지
-                </Link>
-                에서 등록한 프로필이 있으면 맨 앞에 표시됩니다.
+              <p className="mt-1 text-[11px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[12px]">
+                <span className="font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                  아래{" "}
+                  <span className="font-semibold text-reels-cyan">+</span>로 사진을 올린 뒤 AI 3면도를 완료해야
+                  아바타를 쓸 수 있어요.
+                </span>
               </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {faceOptions.map((o) => {
-                  const on = draft.faceOptionId === o.id;
-                  return (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {faceOptions.map((o) => (
                     <button
                       key={o.id}
                       type="button"
-                      onClick={() => {
-                        setSelectedFaceSourceUrl(o.src);
-                        updateDraft({ faceOptionId: o.id });
-                      }}
-                      className={`relative rounded-full p-0.5 ring-2 transition-shadow ${
-                        on ? "ring-[color:var(--reels-point)] shadow-[0_0_14px_-4px_rgba(255,45,141,0.35)]" : "ring-transparent hover:ring-white/15"
+                      onClick={() => updateDraft({ faceOptionId: o.id })}
+                      aria-label={o.label}
+                      aria-pressed={draft?.faceOptionId === o.id}
+                      className={`relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-full border-2 transition-colors sm:h-[60px] sm:w-[60px] ${
+                        draft?.faceOptionId === o.id
+                          ? "border-reels-cyan ring-2 ring-reels-cyan/25"
+                          : "border-white/20 hover:border-reels-cyan/50"
                       }`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={o.src} alt="" className="h-14 w-14 rounded-full object-cover" />
+                      <img src={o.src} alt="" className="h-full w-full object-cover" />
                     </button>
-                  );
-                })}
-                {/* 추가된 커스텀 업로드 + 버튼 */}
-                <label className="relative flex h-[60px] w-[60px] cursor-pointer items-center justify-center rounded-full border-2 border-dashed border-white/20 bg-white/5 transition-colors hover:border-reels-cyan/60 hover:bg-white/10">
-                  <span className="text-2xl font-light text-zinc-400">+</span>
+                  ))}
+                <label className="relative flex h-[52px] w-[52px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-white/20 bg-white/5 transition-colors hover:border-reels-cyan/60 hover:bg-white/10 sm:h-[60px] sm:w-[60px]">
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 grid place-items-center text-[2.1rem] font-light leading-none text-[color:var(--reels-point)] sm:text-[2.4rem]"
+                  >
+                    +
+                  </span>
                   <input
                     type="file"
                     accept="image/*"
-                    className="hidden"
+                    className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 file:cursor-pointer"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
@@ -1744,155 +1812,146 @@ export function PurchaseCustomizeStudio({
                   />
                 </label>
               </div>
-              <p className="mt-3 text-[11px] leading-relaxed text-zinc-500">
-                얼굴만 고르면 영상이 바로 바뀌지 않습니다. 「선택 얼굴로 미리보기」는 얼굴 스왑만 실행합니다. 배경은 아래 「배경 AI 프롬프트」에서
-                별도로 미리 적용할 수 있습니다.
-              </p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  disabled={
-                    facePreviewApplying ||
-                    !selectedFace ||
-                    (aiPreviewQuotaActive && localFacePreviewRemaining <= 0)
-                  }
-                  onClick={() => void applyFacePreview()}
-                  className="rounded-lg border border-reels-cyan/35 bg-reels-cyan/10 px-3 py-1.5 text-[11px] font-semibold text-reels-cyan hover:bg-reels-cyan/18 disabled:opacity-50"
-                >
-                  {facePreviewApplying
-                    ? "합성 중…"
-                    : aiPreviewQuotaActive && localFacePreviewRemaining <= 0
-                      ? "무료 1회 소진 (구독 필요)"
-                      : "선택 얼굴로 미리보기"}
-                </button>
+              <div className="mt-auto flex min-w-0 flex-wrap items-center justify-end gap-x-3 gap-y-2 pt-2">
+                <p className="min-w-0 max-w-[16rem] shrink text-left text-[11px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                  미리보기는 20크레딧 소요됩니다.
+                </p>
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={
+                      facePreviewApplying ||
+                      !selectedFaceSourceUrl?.trim()
+                    }
+                    onClick={() => void applyFacePreview()}
+                    className="inline-flex shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-[11px] font-semibold text-zinc-100 transition-colors hover:bg-white/15 disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-200 sm:py-2.5 sm:text-[12px]"
+                  >
+                    {facePreviewApplying ? "미리보기 중…" : "미리보기"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!selectedFaceSourceUrl?.trim()}
+                    onClick={() => {
+                      if (!selectedFaceSourceUrl?.trim()) return;
+                      setIsAvatarConfirmed(true);
+                    }}
+                    className="inline-flex shrink-0 items-center justify-center rounded-lg bg-reels-cyan px-2.5 py-2 text-[11px] font-bold text-black shadow-[0_0_15px_-3px_rgba(255,45,141,0.4)] transition-colors hover:bg-reels-cyan/90 disabled:pointer-events-none disabled:opacity-40 sm:py-2.5 sm:text-[12px]"
+                  >
+                    확정
+                  </button>
+                </div>
               </div>
-              
-              {/* 확정 버튼 */}
-              {selectedFaceSourceUrl && (
-                 <div className="mt-4 flex justify-end">
-                    <button
-                       onClick={() => {
-                          setIsAvatarConfirmed(true);
-                       }}
-                       className="bg-reels-cyan text-black px-4 py-2 rounded-lg text-[12px] font-bold hover:bg-reels-cyan/90 transition-colors shadow-[0_0_15px_-3px_rgba(255,45,141,0.4)]"
-                    >
-                       이 아바타로 확정
-                    </button>
-                 </div>
-              )}
               {facePreviewError ? (
-                <p className="mt-2 text-[11px] font-medium text-reels-crimson">{facePreviewError}</p>
+                <p
+                  className={`mt-2 text-[11px] leading-snug text-red-400 [html[data-theme='light']_&]:text-red-600 ${
+                    selectedFaceSourceUrl?.trim()
+                      ? "text-right sm:text-left"
+                      : "text-right"
+                  }`}
+                >
+                  {facePreviewError}
+                </p>
               ) : null}
             </>
             )}
+            </div>
           </section>
-          ) : null}
 
-          {useAdvancedStep ? (
-            <>
-              <section className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5 relative overflow-hidden`}>
-            <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-zinc-100">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-[11px] font-black text-white">2</span>
-              시공간 이동 (배경 변경)
+                <section
+                  className={`${STUDIO_SECTION_SURFACE} relative flex min-h-0 h-full min-w-0 flex-col overflow-hidden p-4 sm:p-5`}
+                >
+            <h2 className={`${STUDIO_SECTION_H2_ROW} min-w-0`}>
+              <span className={STUDIO_STEP_BADGE}>2</span>
+              <span className="min-w-0 truncate">배경 설정</span>
             </h2>
-            
+            <div className="mt-0 flex min-h-0 flex-1 flex-col">
             {isBackgroundConfirmed ? (
-              <div className="mt-4 flex flex-col items-center gap-3">
+              <div className="mt-3 flex min-h-0 flex-1 flex-col items-center justify-center gap-2">
                 <div className="relative group rounded-xl overflow-hidden shadow-lg border-2 border-reels-cyan">
-                  <img 
-                    src={bgPreviewOn ? (previewBgImageUrl ?? previewBgVideoUrl ?? previewVideoSrc) : (startFramePoster ?? sanitizePosterSrc(video.poster) ?? "")} 
-                    alt="Confirmed Background" 
-                    className="w-[100px] h-[140px] sm:w-[140px] sm:h-[196px] object-cover" 
-                  />
-                  <div className="absolute top-1 right-1 bg-[color:var(--reels-point)] px-1.5 py-0.5 text-[10px] font-bold text-white rounded">
-                    확정됨
-                  </div>
+                  {confirmedBackgroundThumbUrl ? (
+                    <img
+                      src={confirmedBackgroundThumbUrl}
+                      alt="Confirmed Background"
+                      className="w-[100px] h-[140px] sm:w-[140px] sm:h-[196px] object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="h-[140px] w-[100px] bg-zinc-900 sm:h-[196px] sm:w-[140px]"
+                      aria-hidden
+                    />
+                  )}
                   
                   {/* Hover Edit Overlay */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button 
-                      onClick={() => setEnlargedImage({ url: bgPreviewOn ? (previewBgImageUrl ?? previewBgVideoUrl ?? previewVideoSrc) : (startFramePoster ?? sanitizePosterSrc(video.poster) ?? ""), index: 0, type: 'full' })}
-                      className="bg-reels-cyan/90 hover:bg-reels-cyan text-black text-[12px] font-bold px-4 py-2 rounded-full shadow-[0_0_15px_-3px_rgba(255,45,141,0.5)] transition-colors w-[80%]"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (confirmedBackgroundThumbUrl) {
+                          setEnlargedImage({
+                            url: confirmedBackgroundThumbUrl,
+                            index: 0,
+                            type: "full",
+                          });
+                        }
+                      }}
+                      className="bg-white/20 hover:bg-white/30 text-white text-[12px] font-bold px-4 py-2 rounded-full backdrop-blur-md border border-white/30 transition-colors w-[80%]"
                     >
-                      🔍 크게보기
+                      크게보기
                     </button>
-                    <button 
+                    <button
+                      type="button"
                       onClick={() => setIsBackgroundConfirmed(false)}
                       className="bg-white/20 hover:bg-white/30 text-white text-[12px] font-bold px-4 py-2 rounded-full backdrop-blur-md border border-white/30 transition-colors w-[80%]"
                     >
-                      🔄 변경하기
+                      변경하기
                     </button>
                   </div>
                 </div>
-                <p className="text-[12px] font-medium text-reels-cyan">({bgPreviewOn ? previewBgPrompt ?? "새로운 시공간" : "원본 시공간"}) 배경이 확정되었습니다.</p>
+                <p className="text-[12px] font-medium text-white [html[data-theme='light']_&]:text-zinc-900">
+                  {bgPreviewOn
+                    ? `(${previewBgPrompt ?? "새로운 시공간"}) 배경이 확정되었습니다.`
+                    : "배경이 확정되었습니다."}
+                </p>
               </div>
             ) : (
             <>
-            <div className="mt-5 flex flex-col sm:flex-row items-start gap-4">
-              {/* 원본 영상(스타트 프레임) 직관적 표시 */}
-              <div className="shrink-0 w-[100px] h-[140px] rounded-lg overflow-hidden border border-white/20 relative shadow-lg">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={startFramePoster ?? sanitizePosterSrc(video.poster) ?? ""} alt="Origin" className="absolute inset-0 w-full h-full object-cover bg-zinc-900" />
-                <div className="absolute inset-x-0 bottom-0 bg-black/70 p-1.5 text-center text-[10px] text-zinc-200 font-bold tracking-wide backdrop-blur-sm">원본 스타트프레임</div>
-              </div>
-              
-              <div className="flex-1 w-full flex flex-col gap-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-[12px] text-zinc-400">
-                    원본의 배경을 지우고 어떤 시공간으로 보낼까요? (예: &quot;밤의 네온 골목&quot;)
-                  </p>
-                  <button 
-                     onClick={() => {
-                        // 무한대의 조합을 생성하는 완전 랜덤 조합 알고리즘
-                        const locations = ["subway station", "neon street alley", "boutique cafe", "luxury penthouse", "cyberpunk market", "abandoned warehouse", "modern art museum", "futuristic spaceport", "botanical greenhouse", "train cabin", "rooftop overlooking city", "zen temple garden", "neon lit arcade room", "royal palace hall", "underground speakeasy", "beachside cabana", "neon basketball court", "high-end fashion runway", "underwater research lab", "Victorian library"];
-                        const times = ["at dusk", "at dawn", "at midnight", "at golden hour", "in bright daylight", "in deep night", "under twilight", "at sunset"];
-                        const lighting = ["with cinematic rim lighting", "with neon glowing accents", "with warm ambient lighting", "with dappled sunlight filtering through", "with dramatic moody shadows", "with volumetric fog lighting", "with high contrast chiaroscuro", "with soft pastel glowing light", "with harsh cyberpunk strobe lights"];
-                        const details = ["rain-slicked pavement", "complex glowing signs", "floating dust particles", "intricate architectural details", "lush exotic plants", "steampunk mechanical gears", "geometric glass reflections", "vintage interior design elements", "holographic billboards", "fog rolling over the ground", "falling cherry blossom petals", "scattered glowing debris"];
-                        
-                        const rand = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
-                        
-                        let d1 = rand(details);
-                        let d2 = rand(details);
-                        while(d1 === d2) d2 = rand(details);
-                        
-                        const randomScenario = `A highly detailed, photorealistic ${rand(locations)} ${rand(times)}, ${rand(lighting)}. The scene features ${d1} and ${d2}. Cinematic composition, vivid colors, 8k resolution.`;
-                        
-                        void applyBackgroundPreview(randomScenario);
-                     }}
-                     className="flex shrink-0 items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold bg-white/10 hover:bg-white/15 text-reels-cyan rounded-full transition-colors border border-reels-cyan/20"
-                  >
-                     ✨ 자동생성 (무작위)
-                  </button>
-                </div>
+            <div className="mt-3 flex min-w-0 w-full flex-col gap-2">
             <InputSection
               ref={bgPromptRef}
               value={draft.backgroundPrompt}
               onChange={(value) => updateDraft({ backgroundPrompt: value })}
-              rows={3}
+              rows={2}
               placeholder="예: 골목"
+              className="mt-0 w-full resize-none rounded-lg border border-white/10 bg-black/35 px-3 py-1.5 text-[12px] leading-snug text-zinc-100 placeholder:text-zinc-600 focus:border-reels-cyan/45 focus:outline-none focus:ring-1 focus:ring-reels-cyan/30"
             />
-            <p className="mt-2 text-[11px] text-zinc-600">
-              Tip: 장면 요소는 2~4개로 간단하게 쓰면 인물이 새 배경빛(Re-lighting)에 완벽하게 동화됩니다.
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => void applyBackgroundPreview(bgPromptRef.current?.value)}
-                disabled={
-                  backgroundPreviewApplying ||
-                  (aiPreviewQuotaActive && localFacePreviewRemaining <= 0)
-                }
-                className="w-full sm:w-auto rounded-lg border border-reels-cyan/35 bg-reels-cyan/10 px-6 py-2.5 text-[13px] font-semibold text-reels-cyan hover:bg-reels-cyan/18 disabled:opacity-50"
-              >
-                {backgroundPreviewApplying
-                  ? "AI 배경 생성 중..."
-                  : aiPreviewQuotaActive && localFacePreviewRemaining <= 0
-                    ? "무료 1회 소진 (구독 필요)"
-                    : "생성하기"}
-              </button>
-                <p className="text-[11px] text-zinc-500">
-                  Tip: 마음에 드는 이미지는 아래 갤러리에 저장됩니다. 자유롭게 비교해보세요.
-                </p>
+            <div className="flex min-w-0 flex-wrap items-center justify-end gap-x-3 gap-y-2">
+              <p className="min-w-0 max-w-[16rem] shrink text-left text-[11px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                미리보기는 20크레딧 소요됩니다.
+              </p>
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => void applyBackgroundPreview(bgPromptRef.current?.value)}
+                  disabled={
+                    backgroundPreviewApplying ||
+                    (aiPreviewQuotaActive && localFacePreviewRemaining <= 0)
+                  }
+                  className="inline-flex shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-[11px] font-semibold text-zinc-100 transition-colors hover:bg-white/15 disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-200 sm:py-2.5 sm:text-[12px]"
+                >
+                  {backgroundPreviewApplying
+                    ? "미리보기 중…"
+                    : aiPreviewQuotaActive && localFacePreviewRemaining <= 0
+                      ? "무료 1회 소진 (구독 필요)"
+                      : "미리보기"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsBackgroundConfirmed(true)}
+                  className="inline-flex shrink-0 items-center justify-center rounded-lg bg-reels-cyan px-2.5 py-2 text-[11px] font-bold text-black shadow-[0_0_15px_-3px_rgba(255,45,141,0.4)] transition-colors hover:bg-reels-cyan/90 sm:py-2.5 sm:text-[12px]"
+                >
+                  확정
+                </button>
+              </div>
             </div>
             {backgroundPreviewError ? (
               <p className="mt-3 text-[11px] font-medium leading-relaxed text-reels-crimson">
@@ -1907,7 +1966,7 @@ export function PurchaseCustomizeStudio({
 
             {/* 시공간 이동 결과물 갤러리 */}
             {bgPreviewOn || previewCandidates.length > 0 ? (
-              <div className="mt-5 border-t border-white/10 pt-4">
+              <div className="mt-3">
                 <p className="text-[12px] font-bold text-zinc-300 mb-3 flex items-center gap-2">
                   <span>🎨 생성된 시공간 갤러리</span>
                   <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-zinc-400 font-normal">탭하여 선택</span>
@@ -1922,12 +1981,31 @@ export function PurchaseCustomizeStudio({
                         setPreviewCompositeBgUrl(null);
                   }}>
                     <div className={`w-[80px] h-[110px] rounded-lg overflow-hidden border-2 relative transition ${!bgPreviewOn ? 'border-reels-cyan' : 'border-transparent hover:border-white/20'}`}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={startFramePoster ?? sanitizePosterSrc(video.poster) ?? ""} className="absolute inset-0 w-full h-full object-cover" alt="original" />
+                      {originFrameThumbUrl ? (
+                        <>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={originFrameThumbUrl}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            alt="original"
+                          />
+                        </>
+                      ) : (
+                        <div className="absolute inset-0 bg-zinc-800" aria-hidden />
+                      )}
                       
                       {/* Enlarge Button */}
                       <button 
-                        onClick={(e) => { e.stopPropagation(); setEnlargedImage({ url: startFramePoster ?? sanitizePosterSrc(video.poster) ?? "", index: 0, type: 'full' }); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (originFrameThumbUrl) {
+                            setEnlargedImage({
+                              url: originFrameThumbUrl,
+                              index: 0,
+                              type: "full",
+                            });
+                          }
+                        }}
                         className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity"
                       >
                          <span className="bg-reels-cyan text-black px-2 py-1 rounded-full text-[10px] font-bold">🔍 확대</span>
@@ -1974,26 +2052,30 @@ export function PurchaseCustomizeStudio({
               </div>
             ) : null}
             </div>
-            </div>
-            
-            {/* 확정 버튼 (Step 2) */}
-            <div className="mt-4 flex justify-end w-full border-t border-white/5 pt-4">
-               <button
-                  onClick={() => setIsBackgroundConfirmed(true)}
-                  className="bg-reels-cyan text-black px-4 py-2 rounded-lg text-[12px] font-bold hover:bg-reels-cyan/90 transition-colors shadow-[0_0_15px_-3px_rgba(255,45,141,0.4)]"
-               >
-                  이 시공간으로 확정
-               </button>
-            </div>
             </>
             )}
+            </div>
               </section>
+            </div>
 
-              <section className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5 relative overflow-hidden transition-all duration-500 ${isAvatarConfirmed && isBackgroundConfirmed && !fusionResultUrl ? 'border-[color:var(--reels-point)]/35 shadow-[0_0_20px_rgba(255,45,141,0.12)] ring-1 ring-[color:var(--reels-point)]/40' : 'border-white/10'}`}>
-                <div className="absolute inset-0 bg-gradient-to-br from-reels-cyan/5 to-transparent pointer-events-none" />
-                <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-zinc-100 mb-3">
-                  <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-black transition-colors ${isAvatarConfirmed && isBackgroundConfirmed ? 'bg-[color:var(--reels-point)] text-white' : 'bg-white/10 text-zinc-500'}`}>3</span>
-                  <span className={isAvatarConfirmed && isBackgroundConfirmed ? 'text-zinc-100' : 'text-zinc-500'}>DNA & 의상 융합 (최종 스타트 프레임 생성)</span>
+              <section
+                className={`${STUDIO_SECTION_SURFACE} p-6 sm:p-8 relative overflow-hidden transition-colors duration-300 ${
+                  isAvatarConfirmed && isBackgroundConfirmed && !fusionResultUrl
+                    ? "border-[color:var(--reels-point)]/35 [html[data-theme='light']_&]:border-[color:var(--reels-point)]/30"
+                    : ""
+                }`}
+              >
+                <h2 className={`${STUDIO_SECTION_H2_ROW} mb-4`}>
+                  <span className={STUDIO_STEP_BADGE}>3</span>
+                  <span
+                    className={
+                      isAvatarConfirmed && isBackgroundConfirmed
+                        ? ""
+                        : "text-zinc-500 [html[data-theme='light']_&]:text-zinc-500"
+                    }
+                  >
+                    의상 스타일 변경
+                  </span>
                 </h2>
                 
                 {!(isAvatarConfirmed && isBackgroundConfirmed) ? (
@@ -2008,8 +2090,18 @@ export function PurchaseCustomizeStudio({
                             {/* Input 1: Avatar */}
                             <div className="flex flex-col items-center gap-2 z-10 w-1/3">
                                <div className="relative w-[70px] h-[70px] rounded-full p-1 bg-gradient-to-br from-reels-cyan to-reels-crimson shadow-lg shrink-0">
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img src={selectedFaceSourceUrl || ""} className="w-full h-full object-cover rounded-full bg-black" alt="Confirm Avatar" />
+                                  {confirmedAvatarThumbUrl ? (
+                                    <>
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img
+                                        src={confirmedAvatarThumbUrl}
+                                        className="h-full w-full rounded-full bg-black object-cover"
+                                        alt="Confirm Avatar"
+                                      />
+                                    </>
+                                  ) : (
+                                    <div className="h-full w-full rounded-full bg-black" aria-hidden />
+                                  )}
                                </div>
                                <span className="text-[10px] font-bold text-zinc-300 whitespace-nowrap">내 디지털 DNA</span>
                             </div>
@@ -2020,8 +2112,18 @@ export function PurchaseCustomizeStudio({
                             {/* Input 2: Background */}
                             <div className="flex flex-col items-center gap-2 z-10 w-1/3">
                                <div className="relative w-[60px] h-[80px] rounded-lg p-0.5 bg-gradient-to-br from-reels-cyan to-reels-crimson shadow-lg shrink-0">
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img src={bgPreviewOn ? (previewBgImageUrl ?? previewVideoSrc) : (startFramePoster ?? sanitizePosterSrc(video.poster) ?? "")} className="w-full h-full object-cover rounded-md bg-black" alt="Confirm Background" />
+                                  {fusionBgThumbUrl ? (
+                                    <>
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img
+                                        src={fusionBgThumbUrl}
+                                        className="h-full w-full rounded-md bg-black object-cover"
+                                        alt="Confirm Background"
+                                      />
+                                    </>
+                                  ) : (
+                                    <div className="h-full w-full rounded-md bg-black" aria-hidden />
+                                  )}
                                </div>
                                <span className="text-[10px] font-bold text-zinc-300 text-center">배경 및 기본 포즈</span>
                             </div>
@@ -2042,7 +2144,7 @@ export function PurchaseCustomizeStudio({
                          </div>
 
                          {/* Outfit Customization UI */}
-                         <div className="w-full max-w-sm mb-6 bg-[#1A1A1A] border border-white/10 rounded-xl p-4 shadow-lg relative z-10">
+                         <div className="mb-6 w-full max-w-4xl bg-[#1A1A1A] border border-white/10 rounded-xl p-4 shadow-lg relative z-10 mx-auto sm:p-5">
                             <div className="flex justify-between items-center mb-2">
                                <label className="text-[12px] font-bold text-zinc-200 flex items-center gap-2">
                                    희망하는 의상 묘사
@@ -2078,9 +2180,10 @@ export function PurchaseCustomizeStudio({
                          </div>
 
                          <button 
+                           type="button"
                            onClick={async () => {
                               if (!selectedFaceSourceUrl) return;
-                              const bgUrl = bgPreviewOn ? (previewBgImageUrl ?? previewVideoSrc) : (startFramePoster ?? sanitizePosterSrc(video.poster) ?? "");
+                              const bgUrl = fusionBgThumbUrl;
                               if (!bgUrl) return;
                               
                               setIsFusionApplying(true);
@@ -2107,18 +2210,17 @@ export function PurchaseCustomizeStudio({
                               }
                            }}
                            disabled={isFusionApplying}
-                           className="w-full sm:w-[90%] mx-auto py-3.5 bg-gradient-to-r from-reels-cyan to-[#ff2d8d] rounded-xl font-extrabold text-black text-[14px] shadow-[0_0_24px_rgba(255,45,141,0.35)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2 z-10 relative"
+                           className={`${MYPAGE_OUTLINE_BTN_MD} relative z-10 mx-auto w-fit shrink-0 disabled:pointer-events-none disabled:opacity-45`}
                          >
                             {isFusionApplying ? (
                                <>
-                                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-black" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" fill="none" viewBox="0 0 24 24" aria-hidden><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                  의상 적용 및 DNA 융합 중...
                                </>
                             ) : (
-                               <>🧬 내 얼굴 + 추천 의상으로 프레임 융합 시작</>
+                               "아바타 + 의상 피팅 시작"
                             )}
                          </button>
-                         <p className="mt-3 text-[11px] text-zinc-500 text-center relative z-10 px-4">원본 댄서의 자세(Pose)를 복제한 후, 대표님의 얼굴과 원하는 의상을 합성하여 완벽한 모션 시작 프레임을 창조해 냅니다.</p>
                        </>
                     ) : (
                        <div className="w-full flex justify-center py-2 animate-fade-in">
@@ -2152,10 +2254,10 @@ export function PurchaseCustomizeStudio({
                 )}
               </section>
 
-              <section className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5 relative overflow-hidden`}>
-                <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-zinc-100 mb-5">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-[11px] font-black text-white">4</span>
-                  KLING AI 모션 렌더링
+              <section className={`${STUDIO_SECTION_SURFACE} p-6 sm:p-8 relative overflow-hidden`}>
+                <h2 className={`${STUDIO_SECTION_H2_ROW} mb-6`}>
+                  <span className={STUDIO_STEP_BADGE}>4</span>
+                  AI 모션 생성하기
                 </h2>
                 
                 <div className="flex flex-wrap justify-center gap-6 sm:gap-10">
@@ -2164,16 +2266,13 @@ export function PurchaseCustomizeStudio({
                      <div className="absolute inset-0 z-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <video src={motionReferenceUrl} autoPlay loop muted playsInline className="w-full h-full object-cover opacity-90" />
-                        <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/90 via-black/40 to-transparent p-3 pt-4">
-                           <p className="text-[10px] sm:text-[11px] font-bold tracking-wide text-zinc-300 drop-shadow-md leading-tight">Original Motion<br/><span className="text-zinc-500 font-medium">(Mimic Reference)</span></p>
-                        </div>
                      </div>
                      <div className="px-3 py-3 bg-[#131313]/90 backdrop-blur-md z-10 flex flex-col gap-1.5 absolute bottom-0 w-full border-t border-white/10">
                         <div className="flex items-center gap-1.5">
                            <div className="w-3 h-3 rounded-full border border-reels-cyan flex items-center justify-center shrink-0">
                              <div className="w-1.5 h-1.5 rounded-full bg-reels-cyan"></div>
                            </div>
-                           <span className="text-[10px] text-zinc-300 font-bold tracking-tight">원본 댄스 모션</span>
+                           <span className="text-[10px] text-zinc-300 font-bold tracking-tight">원본 모션</span>
                         </div>
                      </div>
                   </div>
@@ -2193,7 +2292,7 @@ export function PurchaseCustomizeStudio({
                             <div className="mb-3 text-zinc-400 border border-white/10 rounded-lg p-2 border-dashed">
                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                             </div>
-                            <p className="text-[11px] sm:text-[13px] font-semibold tracking-wide text-zinc-400 text-center">Step 3<br/>표면 융합 대기</p>
+                            <p className="text-[11px] sm:text-[13px] font-semibold tracking-wide text-zinc-400 text-center">Step 3</p>
                          </div>
                      )}
                      <div className="absolute inset-0 z-0 opacity-5 pointer-events-none bg-dots-grid bg-[length:16px_16px]"></div>
@@ -2240,6 +2339,7 @@ export function PurchaseCustomizeStudio({
                         <p className="text-[11px] text-zinc-400">아래 Step 5 섹션에서 실사진척도를 확인하세요.</p>
                      </div>
                 ) : (
+                  <div className="mt-4 flex justify-center">
                    <button 
                      onClick={async () => {
                         if (!fusionResultUrl) {
@@ -2265,7 +2365,7 @@ export function PurchaseCustomizeStudio({
                               })
                            });
                            const data = await res.json();
-                           if (!res.ok) throw new Error(data.error || "KLING API 에러");
+                           if (!res.ok) throw new Error(data.error || "AI 모션 API 에러");
                            
                            const taskId = data.data?.task_id;
                            if (taskId) {
@@ -2309,25 +2409,28 @@ export function PurchaseCustomizeStudio({
                         }
                      }}
                      disabled={!fusionResultUrl || isKlingGenerating || needsServerMp4Extraction(video)}
-                     className="mt-4 w-full py-3.5 bg-white text-black rounded-lg font-bold text-[15px] hover:bg-zinc-200 transition-colors shadow-lg shadow-white/10 relative z-10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                     className={`${MYPAGE_OUTLINE_BTN_MD} relative z-10 shrink-0 gap-2 disabled:pointer-events-none disabled:!border-zinc-500 disabled:opacity-50 [html[data-theme='light']_&]:disabled:!border-zinc-400`}
                    >
                       {isKlingGenerating ? (
                           <>
-                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-black" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" fill="none" viewBox="0 0 24 24" aria-hidden><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                             Task 전송 중...
                           </>
                       ) : (
-                          <>🚀 KLING 모션 렌더링 시작</>
+                          <>🚀 AI 모션 생성 시작</>
                       )}
                    </button>
+                  </div>
                 )}
               </section>
 
               {/* Step 5: Final Result UI */}
               {(klingJob || isKlingGenerating) && (
-                  <section className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5 relative overflow-hidden ring-2 ring-[color:var(--reels-point)]/45 shadow-[0_0_30px_rgba(255,45,141,0.12)] animate-fade-in-up mt-6`}>
-                    <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-zinc-100 mb-5">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-[11px] font-black text-white shadow-[0_0_10px_rgba(255,45,141,0.45)]">5</span>
+                  <section
+                    className={`${STUDIO_SECTION_SURFACE} p-6 sm:p-8 relative overflow-hidden mt-6 border-[color:var(--reels-point)]/25 [html[data-theme='light']_&]:border-[color:var(--reels-point)]/20`}
+                  >
+                    <h2 className={`${STUDIO_SECTION_H2_ROW} mb-6`}>
+                      <span className={STUDIO_STEP_BADGE}>5</span>
                       최종 동영상 완성 및 다운로드
                     </h2>
 
@@ -2412,12 +2515,10 @@ export function PurchaseCustomizeStudio({
 
               {/* Step 6: History Gallery (Black Box) */}
               {klingHistory.length > 0 && (
-                  <section className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5 relative overflow-hidden mt-6 border border-[color:var(--reels-point)]/25 shadow-[0_0_30px_rgba(255,45,141,0.08)]`}>
-                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-reels-cyan rounded-full mix-blend-screen filter blur-[50px] opacity-20"></div>
-                    <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-reels-crimson rounded-full mix-blend-screen filter blur-[50px] opacity-10"></div>
-                    
-                    <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-zinc-100 mb-5 relative z-10">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-zinc-800 text-[10px] font-black text-white border border-zinc-600">📜</span>
+                  <section
+                    className={`${STUDIO_SECTION_SURFACE} p-6 sm:p-8 relative overflow-hidden mt-6 border-[color:var(--reels-point)]/25 [html[data-theme='light']_&]:border-[color:var(--reels-point)]/20`}
+                  >
+                    <h2 className={`${STUDIO_SECTION_H2_ROW} mb-6 relative z-10`}>
                       이전 렌더링 완성본 목록 (내 동영상 보관함)
                     </h2>
                     
@@ -2450,8 +2551,10 @@ export function PurchaseCustomizeStudio({
                   </section>
               )}
 
-              <section className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5`}>
-            <h2 className="text-[13px] font-extrabold text-zinc-100">구간 자르기</h2>
+              <section className={`${STUDIO_SECTION_SURFACE} p-6 sm:p-8`}>
+            <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+              구간 자르기
+            </h2>
             <p className="mt-1 text-[12px] text-zinc-500">
               재생 구간을 지정하면 미리보기에서 그 범위만 반복됩니다.
             </p>
@@ -2488,9 +2591,11 @@ export function PurchaseCustomizeStudio({
             </div>
               </section>
 
-              <section className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5`}>
+              <section className={`${STUDIO_SECTION_SURFACE} p-6 sm:p-8`}>
             <div className="flex items-center justify-between gap-2">
-              <h2 className="text-[13px] font-extrabold text-zinc-100">텍스트 오버레이</h2>
+              <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+                텍스트 오버레이
+              </h2>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -2701,10 +2806,12 @@ export function PurchaseCustomizeStudio({
               </section>
             </>
           ) : (
-            <div className={`${STUDIO_SECTION_SURFACE} p-4 sm:p-5`}>
-              <p className="text-[13px] font-extrabold text-zinc-100">커스텀 편집</p>
+            <div className={`${STUDIO_SECTION_SURFACE} p-6 sm:p-8`}>
+              <p className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+                커스텀 편집
+              </p>
               <p className="mt-1 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                AI로 얼굴·배경을 바꾸고, 원하는 톤으로 다듬을 수 있어요. 빠른 생성만 이어가려면 상단의 「빠른 생성」을 누르세요.
+                AI로 얼굴·배경을 바꾸고, 원하는 톤으로 다듬을 수 있어요. 편집 없이 진행하려면 상단의 「영상만 구매」를 누르세요.
               </p>
             </div>
           )}
@@ -2730,7 +2837,7 @@ export function PurchaseCustomizeStudio({
             ) : null}
             <button
               type="button"
-              disabled={submitRemote || !selectedFace}
+              disabled={submitRemote || !effectiveFaceImageUrl}
               onClick={submitServerGeneration}
               className={`${MYPAGE_OUTLINE_BTN_MD} disabled:pointer-events-none disabled:opacity-45`}
             >
@@ -2739,7 +2846,7 @@ export function PurchaseCustomizeStudio({
             <span className="text-[12px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
               {useAdvancedStep
                 ? "커스텀 편집 후 서버 생성 요청을 누르세요."
-                : "빠른 생성 모드입니다. 서버 생성 요청을 누르세요."}
+                : "영상만 구매 모드입니다. 서버 생성 요청을 누르세요."}
             </span>
           </div>
           {!remoteJob ? (
@@ -2785,7 +2892,7 @@ export function PurchaseCustomizeStudio({
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
-                <h3 className="text-[17px] font-bold text-zinc-100">AI Multi-Shot</h3>
+                <h3 className="text-[17px] font-bold text-zinc-100">AI 3면도 생성</h3>
               </div>
               <button 
                 onClick={() => setCustomUploadModalVisible(false)}
@@ -2799,7 +2906,7 @@ export function PurchaseCustomizeStudio({
             <div className="flex flex-col md:flex-row gap-6 p-6 flex-1 overflow-y-auto">
               {/* Left: Main Reference */}
               <div className="flex-shrink-0 w-full md:w-[240px] flex flex-col gap-3">
-                <div className="text-[14px] text-zinc-400">Main Reference</div>
+                <div className="text-[14px] text-zinc-400">기준 사진</div>
                 <div className="w-full aspect-[3/4] overflow-hidden rounded-xl border border-white/10 bg-black">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={customUploadSourceUrl} alt="원본 피사체" className="w-full h-full object-cover" />
@@ -2809,7 +2916,9 @@ export function PurchaseCustomizeStudio({
               {/* Right: Select favorite multi-shots */}
               <div className="flex-1 flex flex-col min-w-0">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
-                  <div className="text-[14px] text-zinc-400">Select your favorite multi-shots</div>
+                  <div className="text-[14px] text-zinc-400">
+                    생성된 3면도를 확인한 뒤 확정하세요
+                  </div>
                   <div className="flex items-center gap-3">
                     {customUploadAngles.length > 0 && (
                       <button 
@@ -2838,11 +2947,11 @@ export function PurchaseCustomizeStudio({
                         className="text-[13px] text-zinc-400 hover:text-white flex items-center gap-1.5 transition-colors"
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></svg>
-                        Generate Again
+                        다시 생성
                       </button>
                     )}
                     <span className="text-[11px] text-zinc-400 bg-white/5 py-1 px-2.5 rounded-md border border-white/5">
-                      Daily Free Use 3/3
+                      일일 무료 3/3
                     </span>
                   </div>
                 </div>
@@ -2876,7 +2985,7 @@ export function PurchaseCustomizeStudio({
                         }}
                         className="px-8 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium border border-white/10 transition-colors"
                        >
-                         Start AI Generation
+                         AI 3면도 생성 시작
                        </button>
                     </div>
                   )}
@@ -2906,7 +3015,7 @@ export function PurchaseCustomizeStudio({
                                   {/* eslint-disable-next-line @next/next/no-img-element */}
                                   <img 
                                      src={url} 
-                                     alt={`Generated Angle ${i}`} 
+                                     alt={`생성 각도 ${i + 1}`} 
                                      className="absolute top-0 h-full max-w-none cursor-zoom-in transition hover:opacity-80" 
                                      style={{ width: '300%', left: `-${i * 100}%`, objectFit: 'cover' }}
                                      onClick={() => setEnlargedImage({ url: url, index: i })} 
@@ -2926,14 +3035,14 @@ export function PurchaseCustomizeStudio({
                 onClick={() => setCustomUploadModalVisible(false)}
                 className="rounded-lg border border-white/10 px-6 py-2.5 text-[14px] font-medium text-zinc-300 hover:bg-white/5 transition-colors"
               >
-                Cancel
+                취소
               </button>
               <button 
                 onClick={() => {
                   const newId = `custom-${Date.now()}`;
                   setFaceOptions((prev) => [
                     ...prev,
-                    { id: newId, label: '내 프로필 (AI 3면도)', src: customUploadSourceUrl!, aiAngles: customUploadAngles }
+                    { id: newId, label: "내 프로필 (AI 3면도)", src: customUploadSourceUrl!, aiAngles: customUploadAngles }
                   ]);
                   setSelectedFaceSourceUrl(customUploadSourceUrl);
                   updateDraft({ faceOptionId: newId });
@@ -2951,7 +3060,7 @@ export function PurchaseCustomizeStudio({
                 className="rounded-lg bg-[#2e3138] disabled:opacity-50 px-6 py-2.5 text-[14px] font-semibold text-zinc-100 hover:bg-[#3f434c] transition-colors"
                 disabled={customUploadAngles.length === 0 || isGeneratingAngles}
               >
-                Confirm
+                확정
               </button>
             </div>
           </div>

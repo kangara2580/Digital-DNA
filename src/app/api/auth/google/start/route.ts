@@ -1,5 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
+import { resolveOAuthCallbackOriginFromRequest } from "@/lib/oauthCallbackOrigin";
+import { postLoginRedirectPath } from "@/lib/postLoginRedirect";
 import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
 
 export const runtime = "nodejs";
@@ -15,51 +17,15 @@ function normalizeSupabaseOrigin(raw: string | undefined): string | null {
   }
 }
 
-function safeNextPath(raw: string | null): string {
-  if (!raw) return "/";
-  return raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
-}
-
-function isLocalOrigin(origin: string): boolean {
-  try {
-    const { hostname } = new URL(origin);
-    return hostname === "localhost" || hostname === "127.0.0.1";
-  } catch {
-    return false;
-  }
-}
-
-function resolveSiteOrigin(fallbackOrigin: string): string {
-  if (process.env.NODE_ENV !== "production" && isLocalOrigin(fallbackOrigin)) {
-    return fallbackOrigin;
-  }
-
-  const raw =
-    [
-      process.env.NEXT_PUBLIC_SITE_URL,
-      process.env.NEXTAUTH_URL,
-      process.env.VERCEL_PROJECT_PRODUCTION_URL,
-    ]
-      .map((value) => value?.trim())
-      .find(Boolean) ?? "";
-  if (!raw) return fallbackOrigin;
-  const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-  try {
-    return new URL(withProtocol).origin;
-  } catch {
-    return fallbackOrigin;
-  }
-}
-
 function envStatus() {
   return {
     hasSupabaseUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()),
     hasSupabaseAnonKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()),
     hasPublicSiteUrl: Boolean(process.env.NEXT_PUBLIC_SITE_URL?.trim()),
-    hasNextAuthUrl: Boolean(process.env.NEXTAUTH_URL?.trim()),
     hasVercelProductionUrl: Boolean(
       process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim(),
     ),
+    hasVercelUrl: Boolean(process.env.VERCEL_URL?.trim()),
   };
 }
 
@@ -90,8 +56,8 @@ export async function GET(request: Request) {
     return NextResponse.redirect(errorUrl);
   }
 
-  const nextPath = safeNextPath(reqUrl.searchParams.get("next"));
-  const siteOrigin = resolveSiteOrigin(reqUrl.origin);
+  const nextPath = postLoginRedirectPath(reqUrl.searchParams.get("next"));
+  const siteOrigin = resolveOAuthCallbackOriginFromRequest(reqUrl.origin);
   const redirectTo = new URL("/auth/callback", siteOrigin);
   redirectTo.searchParams.set("next", nextPath);
 

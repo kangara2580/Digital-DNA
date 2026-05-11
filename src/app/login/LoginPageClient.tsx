@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { GoogleOAuthButton } from "@/components/GoogleOAuthButton";
 import {
   authLoginPageScrim,
+  authModalDialogClipNoScroll,
   authModalDialogSurface,
   authModalDismissButtonCls,
   authModalGlowBottom,
@@ -14,6 +15,7 @@ import {
   loginPageAmbientBg,
 } from "@/lib/authModalTheme";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { isAuthSimulateLoginEnabled } from "@/lib/authSimulate";
 import { postLoginRedirectPath } from "@/lib/postLoginRedirect";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
@@ -62,10 +64,10 @@ export function LoginPageClient() {
 
   useEffect(() => {
     if (authLoading || !user) return;
+    // 시뮬레이션 유저는 실제 JWT가 없어 미들웨어와 불일치 → 여기서 / 로내면 로그인 화면이 깜빡입니다.
+    if (isAuthSimulateLoginEnabled()) return;
     const raw = searchParams.get("redirect");
-    const path =
-      raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : null;
-    router.replace(postLoginRedirectPath(path));
+    router.replace(postLoginRedirectPath(raw));
   }, [authLoading, router, searchParams, user]);
 
   const redirectPath = useMemo(() => searchParams.get("redirect"), [searchParams]);
@@ -75,7 +77,7 @@ export function LoginPageClient() {
       <div className={`pointer-events-none absolute inset-0 ${loginPageAmbientBg}`} />
       <div className="relative flex min-h-[calc(100vh-3rem)] items-center justify-center sm:min-h-[calc(100vh-4rem)]">
         <div className={`absolute inset-0 ${authLoginPageScrim}`} />
-        <div className={`relative w-full max-w-[560px] rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}>
+        <div className={`relative w-full max-w-[560px] ${authModalDialogClipNoScroll} rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}>
           <div className={authModalGlowTop} aria-hidden />
           <div className={authModalGlowBottom} aria-hidden />
           <button

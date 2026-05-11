@@ -7,6 +7,7 @@ import {
   buildSimulatedSession,
   isAuthSimulateLoginEnabled,
 } from "@/lib/authSimulate";
+import { clearOAuthFlowPending, isOAuthFlowPending } from "@/lib/authOAuthPending";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 export type AuthSessionState = {
@@ -31,34 +32,36 @@ function shouldMaskRecoverySession(): boolean {
 /**
  * Supabase 브라우저 세션. 환경변수가 없으면 `loading`만 false이고 user는 항상 null.
  * 로컬에서만: `.env.local`에 `NEXT_PUBLIC_DEV_AUTH_SIMULATE_LOGIN=1` → `authSimulate.ts`.
+ *
+ * 시뮬 여부는 `useMemo([], …)`로 고정하지 않습니다. 예전에 켜 둔 번들/ Fast Refresh 이후에도
+ * `.env.local`을 끈 값이 반영되도록 매 effect에서 `isAuthSimulateLoginEnabled()`를 다시 읽습니다.
+ * (헤더에 로그인으로 보이는데 시뮬이 꺼져 있다면, 이전 구글 로그인의 실제 Supabase 쿠키입니다.)
  */
 export function useAuthSession(): AuthSessionState {
-  const simEnabled = useMemo(() => isAuthSimulateLoginEnabled(), []);
   const simUserRef = useMemo(() => buildSimulatedAuthUser(), []);
   const simSessionRef = useMemo(() => buildSimulatedSession(simUserRef), [simUserRef]);
 
-  const [user, setUser] = useState<User | null>(() => (simEnabled ? simUserRef : null));
-  const [session, setSession] = useState<Session | null>(() => (simEnabled ? simSessionRef : null));
-  const [loading, setLoading] = useState(() => !simEnabled);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const supabaseConfigured = useMemo(
-    () =>
-      simEnabled ||
-      Boolean(
-        process.env.NEXT_PUBLIC_SUPABASE_URL?.length &&
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length,
-      ),
-    [simEnabled],
-  );
+  const simOn = isAuthSimulateLoginEnabled();
+  const supabaseConfigured =
+    simOn ||
+    Boolean(
+      process.env.NEXT_PUBLIC_SUPABASE_URL?.length &&
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length,
+    );
 
   useEffect(() => {
-    if (simEnabled) {
+    if (isAuthSimulateLoginEnabled()) {
       setUser(simUserRef);
       setSession(simSessionRef);
       setLoading(false);
       return;
     }
 
+    setLoading(true);
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
       setUser(null);
@@ -93,6 +96,7 @@ export function useAuthSession(): AuthSessionState {
         if (s) {
           setSession(s);
           setUser(s.user ?? null);
+          clearOAuthFlowPending();
           return;
         }
 
@@ -110,9 +114,15 @@ export function useAuthSession(): AuthSessionState {
 
     const init = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
+        let s = (await supabase.auth.getSession()).data.session;
+        if (!s && isOAuthFlowPending()) {
+          for (let i = 0; i < 15 && !s; i++) {
+            await new Promise((r) => setTimeout(r, 180));
+            if (cancelled) return;
+            s = (await supabase.auth.getSession()).data.session;
+          }
+        }
         if (cancelled) return;
-        const s = data.session;
         resolved = true;
         if (shouldMaskRecoverySession()) {
           setSession(null);
@@ -127,7 +137,10 @@ export function useAuthSession(): AuthSessionState {
         setSession(null);
         setUser(null);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          clearOAuthFlowPending();
+          setLoading(false);
+        }
       }
     };
 
@@ -137,7 +150,7 @@ export function useAuthSession(): AuthSessionState {
       cancelled = true;
       subscription?.unsubscribe();
     };
-  }, [simEnabled, simSessionRef, simUserRef]);
+  }, [simOn, simUserRef, simSessionRef]);
 
   return {
     user,

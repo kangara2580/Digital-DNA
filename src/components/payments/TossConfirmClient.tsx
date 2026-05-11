@@ -90,7 +90,7 @@ export function TossConfirmClient({
         <h1 className="mt-3 text-3xl font-black">처리가 완료되지 않았습니다</h1>
         <p className="mt-3 text-sm leading-6 text-rose-100">{state.message}</p>
         <Link
-          href="/credits"
+          href="/assets"
           className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-black text-slate-950"
         >
           다시 시도하기
@@ -100,11 +100,7 @@ export function TossConfirmClient({
   }
 
   const href =
-    state.productType === "video" && state.targetId
-      ? `/video/${state.targetId}`
-      : state.productType === "credits"
-        ? "/credits"
-        : "/billing";
+    state.productType === "video" && state.targetId ? `/video/${state.targetId}` : "/assets";
 
   return (
     <section className="w-full max-w-md rounded-lg border border-white/10 bg-white/[0.05] p-8 text-center">
@@ -120,8 +116,8 @@ export function TossConfirmClient({
         >
           확인하러 가기
         </Link>
-        <Link href="/billing" className="text-sm font-bold text-zinc-400 hover:text-white">
-          결제 내역 보기
+        <Link href="/assets" className="text-sm font-bold text-zinc-400 hover:text-white">
+          내 자산에서 결제·크레딧 보기
         </Link>
       </div>
     </section>

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { AUTH_MODAL_BRAND_PINK_HEX, authModalGoogleChevronClass } from "@/lib/authModalTheme";
+import { markOAuthFlowStarted } from "@/lib/authOAuthPending";
+import { postLoginRedirectPath } from "@/lib/postLoginRedirect";
 
 const BTN =
   "flex w-full items-center justify-center gap-2.5 rounded-full border border-white/20 bg-white/[0.06] py-3 text-[14px] font-extrabold text-zinc-100 shadow-sm transition hover:border-white/35 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-55 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-50";
@@ -30,11 +32,9 @@ export function GoogleOAuthButton({
       disabled={busy}
       className={className ?? BTN}
       onClick={() => {
-        const next =
-          nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")
-            ? nextPath
-            : "/";
+        const next = postLoginRedirectPath(nextPath);
         setBusy(true);
+        markOAuthFlowStarted();
         const authStart = new URL("/api/auth/google/start", window.location.origin);
         authStart.searchParams.set("next", next);
         window.location.assign(authStart.toString());

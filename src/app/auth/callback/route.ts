@@ -1,6 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import type { AuthError } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
+import { postLoginRedirectPath } from "@/lib/postLoginRedirect";
+import { resolveOAuthCallbackOriginFromRequest } from "@/lib/oauthCallbackOrigin";
+import { getAuthAppBaseUrl } from "@/lib/authAppBaseUrl";
 import { syncProfileFromAuthUserAsServer } from "@/lib/serverProfileSync";
 import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
 import { syncProfileFromAuthUser } from "@/lib/supabaseProfiles";
@@ -18,10 +21,6 @@ function normalizeSupabaseOrigin(raw: string | undefined): string | null {
   } catch {
     return null;
   }
-}
-
-function safeNextPath(raw: string | null): string {
-  return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
 }
 
 function callbackFailureRedirect(
@@ -81,9 +80,8 @@ async function exchangeCodeWithRetry(
  * Required external settings:
  * - Google Cloud Authorized redirect URI:
  *   https://<SUPABASE_PROJECT_REF>.supabase.co/auth/v1/callback
- * - Supabase Redirect URLs:
- *   https://ara.pink/auth/callback
- *   http://localhost:3001/auth/callback
+ * - Supabase Redirect URLs: 앱이 실제로 열리는 origin마다
+ *   `{origin}/auth/callback` (로컬 예: `NEXTAUTH_URL` 또는 `http://localhost:3000/auth/callback`)
  */
 export async function GET(request: NextRequest) {
   const requestUrl = request.nextUrl;
@@ -94,7 +92,7 @@ export async function GET(request: NextRequest) {
     errorDescription ||
     error ||
     "";
-  const next = safeNextPath(requestUrl.searchParams.get("next"));
+  const afterLoginPath = postLoginRedirectPath(requestUrl.searchParams.get("next"));
   const supabaseUrl = normalizeSupabaseOrigin(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
   );
@@ -108,6 +106,7 @@ export async function GET(request: NextRequest) {
     error_description: errorDescription,
     supabaseUrlExists: Boolean(supabaseUrl),
     supabaseAnonKeyExists: Boolean(anonKey),
+    authAppBaseUrl: getAuthAppBaseUrl(),
   });
 
   if (providerError) {
@@ -156,7 +155,8 @@ export async function GET(request: NextRequest) {
     return callbackFailureRedirect(requestUrl.origin, reason);
   }
 
-  const redirectTo = new URL(next, requestUrl.origin);
+  const destOrigin = resolveOAuthCallbackOriginFromRequest(requestUrl.origin);
+  const redirectTo = new URL(afterLoginPath, destOrigin);
   const response = NextResponse.redirect(redirectTo);
 
   const supabase = createServerClient(supabaseUrl, anonKey, {
@@ -214,6 +214,16 @@ export async function GET(request: NextRequest) {
     if (!profile) {
       await syncProfileFromAuthUserAsServer(user);
     }
+  }
+
+  if (process.env.NODE_ENV === "development") {
+    response.cookies.set("dev_oauth_return", "1", {
+      path: "/",
+      maxAge: 180,
+      sameSite: "lax",
+      secure: false,
+      httpOnly: false,
+    });
   }
 
   return response;

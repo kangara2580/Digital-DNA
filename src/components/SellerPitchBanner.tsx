@@ -2,26 +2,16 @@
 
 import { Link2, WandSparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useCallback, useEffect, useState } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { HomeStartCtaButton } from "@/components/HomeStartCtaButton";
-import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
-import { AuthModalPortal } from "@/components/AuthModalPortal";
-import {
-  authModalDialogSurface,
-  authModalDismissButtonCls,
-  authModalGlowBottom,
-  authModalGlowTop,
-} from "@/lib/authModalTheme";
+import { AuthPromptModal } from "@/components/AuthPromptModal";
 import { homeSectionHeadingH2ClassName } from "@/lib/homeSectionHeadingTypography";
+import { markOAuthFlowStarted } from "@/lib/authOAuthPending";
 import { useTranslation } from "@/hooks/useTranslation";
-import {
-  araAuthDialogWordmarkClassName,
-  araWordmarkFontStyle,
-} from "@/lib/araBrandTypography";
+import { araWordmarkFontStyle } from "@/lib/araBrandTypography";
 import {
   PitchIllustCreatorPrice,
   PitchIllustCreatorSell,
@@ -30,13 +20,6 @@ import {
   PitchIllustUserCustomize,
   PitchIllustUserDownload,
 } from "@/components/HomePitchStepIllustrations";
-
-type AuthModalProps = {
-  authOpen: boolean;
-  mounted: boolean;
-  setAuthOpen: Dispatch<SetStateAction<boolean>>;
-  startGoogleAuth: () => Promise<void>;
-};
 
 function useSellerPitchStart() {
   const router = useRouter();
@@ -50,6 +33,7 @@ function useSellerPitchStart() {
         ? `${window.location.pathname}${window.location.search}${window.location.hash}`
         : "/";
     const redirectTo = buildAuthCallbackRedirectTo(next);
+    markOAuthFlowStarted();
     const supabase = getSupabaseBrowserClient();
     if (supabase && redirectTo) {
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -80,65 +64,7 @@ function useSellerPitchStart() {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (!authOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [authOpen]);
-
-  useEffect(() => {
-    if (!authOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setAuthOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [authOpen]);
-
   return { authLoading, authOpen, mounted, onStartClick, setAuthOpen, startGoogleAuth };
-}
-
-function SellerPitchAuthModal({
-  authOpen,
-  mounted,
-  setAuthOpen,
-  startGoogleAuth,
-}: AuthModalProps) {
-  const { t } = useTranslation();
-  return mounted && authOpen
-    ? createPortal(
-        <AuthModalPortal onDismiss={() => setAuthOpen(false)}>
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={t("auth.dialogAria")}
-            className={`relative w-full max-h-[min(92vh,760px)] overflow-y-auto rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
-          >
-            <div className={authModalGlowTop} aria-hidden />
-            <div className={authModalGlowBottom} aria-hidden />
-            <button
-              type="button"
-              onClick={() => setAuthOpen(false)}
-              className={authModalDismissButtonCls}
-              aria-label={t("a11y.close")}
-            >
-              ×
-            </button>
-            <p className={araAuthDialogWordmarkClassName} style={araWordmarkFontStyle}>
-              ARA
-            </p>
-            <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
-              {t("auth.loginSignupTitle")}
-            </p>
-            <AuthModalGoogleStartButton onClick={() => void startGoogleAuth()} />
-          </div>
-        </AuthModalPortal>,
-        document.body,
-      )
-    : null;
 }
 
 const pitchRoleHeadingClassName =
@@ -182,12 +108,13 @@ export function SellerPitchBottomStartButton() {
           </div>
         </div>
       </section>
-      <SellerPitchAuthModal
-        authOpen={authOpen}
-        mounted={mounted}
-        setAuthOpen={setAuthOpen}
-        startGoogleAuth={startGoogleAuth}
-      />
+      {mounted ? (
+        <AuthPromptModal
+          open={authOpen}
+          onClose={() => setAuthOpen(false)}
+          onGoogleStart={() => void startGoogleAuth()}
+        />
+      ) : null}
     </>
   );
 }
@@ -404,12 +331,13 @@ export function SellerPitchBanner({ showStartButton = true }: SellerPitchBannerP
           </div>
         </div>
       </section>
-      <SellerPitchAuthModal
-        authOpen={authOpen}
-        mounted={mounted}
-        setAuthOpen={setAuthOpen}
-        startGoogleAuth={startGoogleAuth}
-      />
+      {mounted ? (
+        <AuthPromptModal
+          open={authOpen}
+          onClose={() => setAuthOpen(false)}
+          onGoogleStart={() => void startGoogleAuth()}
+        />
+      ) : null}
     </>
   );
 }

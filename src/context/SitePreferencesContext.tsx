@@ -83,8 +83,12 @@ export function SitePreferencesProvider({
   );
 }
 
+export function useOptionalSitePreferences(): Ctx | null {
+  return useContext(SitePreferencesContext);
+}
+
 export function useSitePreferences(): Ctx {
-  const c = useContext(SitePreferencesContext);
+  const c = useOptionalSitePreferences();
   if (!c) {
     throw new Error("useSitePreferences must be used within SitePreferencesProvider");
   }

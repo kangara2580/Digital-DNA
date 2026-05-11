@@ -6,17 +6,9 @@ import {
   Film,
   Loader2,
   Upload,
-  X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
@@ -36,15 +28,6 @@ import {
   type SellerUploadDraftPayload,
 } from "@/lib/supabaseSellerUploadDraft";
 import { SellCategorySelect } from "@/components/SellCategorySelect";
-import {
-  parseSocialVideoEmbed,
-  normalizeYouTubeUrlToWatch,
-  type SocialVideoEmbed,
-} from "@/lib/socialVideoEmbed";
-import {
-  EXTERNAL_EMBED_IFRAME_ALLOW,
-  EXTERNAL_EMBED_IFRAME_SANDBOX,
-} from "@/lib/externalEmbed/iframeSandbox";
 import type { FeedVideo } from "@/data/videos";
 
 const PENDING_UPLOADED_VIDEO_KEY = "sell:pending-uploaded-video";
@@ -55,8 +38,7 @@ const INPUT =
 const LABEL =
   "mb-2 block text-[15px] font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900";
 
-const SOURCE_PANEL =
-  "px-0 py-0";
+const SOURCE_PANEL = "px-0 py-0";
 
 /** 마이페이지 고스트 CTA와 동일 호버 — 비활성일 때 리프트·스케일 제거 */
 const BTN_DISABLED_GHOST =
@@ -65,111 +47,6 @@ const BTN_DISABLED_GHOST =
 /** 본문 액션: 탭 선택과 구분되는 얇은 아웃라인 (핑크 채우기·글로우 없음) */
 const SOURCE_SECONDARY_BTN =
   "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg border border-white/20 bg-transparent px-4 py-2.5 text-[13px] font-medium text-zinc-100 shadow-none transition-colors hover:border-white/[0.32] hover:bg-white/[0.06] active:bg-white/[0.04] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-50";
-
-const EMBED_9_16_SHELL =
-  "relative mx-auto w-full max-w-[300px] aspect-[9/16] overflow-hidden rounded-xl border border-white/12 bg-zinc-950 shadow-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100";
-
-const EMBED_16_9_SHELL =
-  "relative w-full aspect-video overflow-hidden rounded-xl border border-white/12 bg-zinc-950 shadow-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100";
-
-function YouTubeSellPreview({
-  videoId,
-  iframeSrc,
-  aspect,
-}: {
-  videoId: string;
-  iframeSrc: string;
-  aspect: "16:9" | "9:16";
-}) {
-  const [thumbTier, setThumbTier] = useState<"max" | "hq">("max");
-  const [iframeReady, setIframeReady] = useState(false);
-  const thumbUrl =
-    thumbTier === "max"
-      ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
-      : `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-
-  const shell = aspect === "9:16" ? EMBED_9_16_SHELL : EMBED_16_9_SHELL;
-
-  useEffect(() => {
-    setIframeReady(false);
-    setThumbTier("max");
-    const t = window.setTimeout(() => setIframeReady(true), 5000);
-    return () => window.clearTimeout(t);
-  }, [videoId, iframeSrc]);
-
-  return (
-    <div className={shell}>
-      {!iframeReady ? (
-        <img
-          src={thumbUrl}
-          alt=""
-          className="absolute inset-0 z-0 h-full w-full object-cover"
-          onError={() => setThumbTier("hq")}
-        />
-      ) : null}
-      <iframe
-        src={iframeSrc}
-        title="YouTube preview"
-        loading="lazy"
-        sandbox={EXTERNAL_EMBED_IFRAME_SANDBOX}
-        allow={EXTERNAL_EMBED_IFRAME_ALLOW}
-        allowFullScreen
-        onLoad={() => setIframeReady(true)}
-        className={
-          aspect === "9:16"
-            ? "absolute inset-0 z-10 h-full w-full border-0 bg-black"
-            : "absolute left-1/2 top-1/2 z-10 h-[108%] w-[108%] max-w-none -translate-x-1/2 -translate-y-1/2 border-0 bg-black"
-        }
-      />
-    </div>
-  );
-}
-
-function SocialSellEmbedPreview({ embed }: { embed: SocialVideoEmbed }) {
-  if (embed.provider === "youtube" && embed.youtubeVideoId) {
-    return (
-      <YouTubeSellPreview
-        videoId={embed.youtubeVideoId}
-        iframeSrc={embed.iframeSrc}
-        aspect={embed.aspect}
-      />
-    );
-  }
-
-  const shell = embed.aspect === "9:16" ? EMBED_9_16_SHELL : EMBED_16_9_SHELL;
-
-  if (embed.provider === "instagram") {
-    return (
-      <div className={`${shell} !overflow-hidden`}>
-        <iframe
-          src={embed.iframeSrc}
-          title="Instagram preview"
-          loading="lazy"
-          sandbox={EXTERNAL_EMBED_IFRAME_SANDBOX}
-          allow={EXTERNAL_EMBED_IFRAME_ALLOW}
-          allowFullScreen
-          scrolling="no"
-          className="absolute left-1/2 top-[2%] h-[118%] w-[112%] max-w-none -translate-x-1/2 border-0"
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className={shell}>
-      <iframe
-        src={embed.iframeSrc}
-        title="TikTok preview"
-        loading="lazy"
-        sandbox={EXTERNAL_EMBED_IFRAME_SANDBOX}
-        allow={EXTERNAL_EMBED_IFRAME_ALLOW}
-        allowFullScreen
-        scrolling="no"
-        className="absolute inset-0 h-full w-full border-0"
-      />
-    </div>
-  );
-}
 
 /** 등록 포스터 캡처 시점(sec) 안전 클램프 */
 function clampThumbSec(t: number, durationSec: number | null): number {
@@ -181,19 +58,7 @@ function clampThumbSec(t: number, durationSec: number | null): number {
   return x;
 }
 
-function normalizeVideoUrl(raw: string): string {
-  const t = raw.trim();
-  if (!t) return t;
-  if (t.startsWith("http://") || t.startsWith("https://")) return t;
-  if (t.startsWith("/")) return t;
-  return `https://${t}`;
-}
-
-export function SellerClipUploadForm({
-  initialSourceType,
-}: {
-  initialSourceType: "file" | "url";
-}) {
+export function SellerClipUploadForm() {
   const router = useRouter();
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -203,8 +68,6 @@ export function SellerClipUploadForm({
   const [sellerDraftReady, setSellerDraftReady] = useState(false);
 
   const [file, setFile] = useState<File | null>(null);
-  const [sourceType] = useState<"file" | "url">(initialSourceType);
-  const [videoUrl, setVideoUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [durationSec, setDurationSec] = useState<number | null>(null);
   /** 슬라이더·영상 미리보기 동기 시점(초) */
@@ -215,9 +78,7 @@ export function SellerClipUploadForm({
   const [appliedThumbPreviewUrl, setAppliedThumbPreviewUrl] = useState<string | null>(null);
   /** true일 때 슬라이더·적용 UI 표시; 적용 후 접어서 미리보기만 */
   const [thumbPickerOpen, setThumbPickerOpen] = useState(true);
-  const [orientation, setOrientation] = useState<"portrait" | "landscape">(
-    "portrait",
-  );
+  const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -226,15 +87,7 @@ export function SellerClipUploadForm({
   const [isAi, setIsAi] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
-    null,
-  );
-
-  /** YouTube·TikTok·Instagram 공유 주소 등 — `<video src>` 불가 시 iframe 미리보기 */
-  const socialEmbedPreview = useMemo(() => {
-    if (sourceType !== "url" || !previewUrl) return null;
-    return parseSocialVideoEmbed(previewUrl);
-  }, [sourceType, previewUrl]);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
   const resetPreview = useCallback(() => {
     if (previewUrl?.startsWith("blob:")) {
@@ -260,11 +113,6 @@ export function SellerClipUploadForm({
     setThumbPickerOpen(true);
   }, [previewUrl, appliedThumbPreviewUrl]);
 
-  const clearUrlFieldAndPreview = useCallback(() => {
-    setVideoUrl("");
-    resetPreview();
-  }, [resetPreview]);
-
   useEffect(() => {
     if (!user || !supabaseConfigured) {
       setSellerDraftReady(true);
@@ -283,7 +131,6 @@ export function SellerClipUploadForm({
         if (!cancelled) setSellerDraftReady(true);
         return;
       }
-      setVideoUrl(normalizeYouTubeUrlToWatch(normalizeVideoUrl(d.videoUrl.trim())));
       setTitle(d.title);
       setDescription(d.description);
       setCategory(coerceSellCategoryForUserForm(d.category));
@@ -291,14 +138,8 @@ export function SellerClipUploadForm({
       setIsAi(d.isAi);
       setDurationSec(d.durationSec);
       setOrientation(d.orientation);
-      if (sourceType === "url" && d.videoUrl.trim()) {
-        setFile(null);
-        const vu = normalizeVideoUrl(d.videoUrl.trim());
-        setPreviewUrl(normalizeYouTubeUrlToWatch(vu));
-      } else {
-        setFile(null);
-        setPreviewUrl(null);
-      }
+      setFile(null);
+      setPreviewUrl(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       if (d.hadLocalFile) {
         setMessage({
@@ -311,15 +152,15 @@ export function SellerClipUploadForm({
     return () => {
       cancelled = true;
     };
-  }, [user, supabaseConfigured, sourceType]);
+  }, [user, supabaseConfigured, t]);
 
   useEffect(() => {
     if (!sellerDraftReady || !user || !supabaseConfigured) return;
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
     const payload: SellerUploadDraftPayload = {
-      sourceType,
-      videoUrl,
+      sourceType: "file",
+      videoUrl: "",
       title,
       description,
       hashtags: "",
@@ -333,16 +174,14 @@ export function SellerClipUploadForm({
       orientation,
       hadLocalFile: Boolean(file),
     };
-    const t = window.setTimeout(() => {
+    const timer = window.setTimeout(() => {
       void upsertSellerUploadDraft(supabase, user.id, payload);
     }, 500);
-    return () => window.clearTimeout(t);
+    return () => window.clearTimeout(timer);
   }, [
     sellerDraftReady,
     user,
     supabaseConfigured,
-    sourceType,
-    videoUrl,
     title,
     description,
     category,
@@ -360,8 +199,8 @@ export function SellerClipUploadForm({
     if (!el || !previewUrl) return;
     const d = el.duration;
     const cap = Number.isFinite(d) && d > 0 ? d - 0.04 : undefined;
-    const t = cap !== undefined ? Math.min(thumbDraftSec, cap) : thumbDraftSec;
-    el.currentTime = Number.isFinite(t) ? t : 0;
+    const seekT = cap !== undefined ? Math.min(thumbDraftSec, cap) : thumbDraftSec;
+    el.currentTime = Number.isFinite(seekT) ? seekT : 0;
   }, [thumbDraftSec, previewUrl, thumbPickerOpen]);
 
   /** 피커를 닫은 뒤엔 확정 시점 프레임에 고정 */
@@ -372,21 +211,9 @@ export function SellerClipUploadForm({
     const raw = el.duration;
     const cap = Number.isFinite(raw) && raw > 0 ? raw - 0.04 : undefined;
     const next = clampThumbSec(thumbCommittedSec, durationSec);
-    const t = cap !== undefined ? Math.min(next, cap) : next;
-    el.currentTime = Number.isFinite(t) ? t : 0;
+    const seekT = cap !== undefined ? Math.min(next, cap) : next;
+    el.currentTime = Number.isFinite(seekT) ? seekT : 0;
   }, [thumbPickerOpen, thumbCommittedSec, previewUrl, durationSec]);
-
-  /** 공식 임베드(YouTube·TikTok·Instagram): duration·썸네일 시간 UI 제거 — 직접 URL은 resetPreview가 피커를 연다 */
-  useEffect(() => {
-    if (sourceType !== "url" || !previewUrl?.trim()) return;
-    const embed = parseSocialVideoEmbed(previewUrl);
-    if (!embed) return;
-    setDurationSec(null);
-    setThumbDraftSec(0);
-    setThumbCommittedSec(0);
-    setThumbPickerOpen(false);
-    setOrientation(embed.aspect === "9:16" ? "portrait" : "landscape");
-  }, [sourceType, previewUrl]);
 
   const onPickFile = (f: File | null) => {
     resetPreview();
@@ -394,24 +221,6 @@ export function SellerClipUploadForm({
     setFile(f);
     const url = URL.createObjectURL(f);
     setPreviewUrl(url);
-  };
-
-  const onApplyVideoUrl = () => {
-    const raw = videoUrl.trim();
-    if (!raw) return;
-    let normalized =
-      raw.startsWith("http://") || raw.startsWith("https://")
-        ? raw
-        : raw.startsWith("/")
-          ? raw
-          : `https://${raw}`;
-    const ytWatch = normalizeYouTubeUrlToWatch(normalized);
-    if (ytWatch !== normalized) {
-      setVideoUrl(ytWatch);
-      normalized = ytWatch;
-    }
-    resetPreview();
-    setPreviewUrl(normalized);
   };
 
   const onVideoMeta = () => {
@@ -459,12 +268,8 @@ export function SellerClipUploadForm({
     e.preventDefault();
     setMessage(null);
 
-    if (sourceType === "file" && !file) {
+    if (!file) {
       setMessage({ ok: false, text: t("sellForm.errNoFile") });
-      return;
-    }
-    if (sourceType === "url" && !videoUrl.trim()) {
-      setMessage({ ok: false, text: t("sellForm.errNoUrl") });
       return;
     }
     if (!category) {
@@ -492,12 +297,7 @@ export function SellerClipUploadForm({
     setSubmitting(true);
     try {
       const fd = new FormData();
-      if (sourceType === "file" && file) {
-        fd.append("video", file);
-      }
-      if (sourceType === "url") {
-        fd.append("videoUrl", videoUrl.trim());
-      }
+      fd.append("video", file);
       fd.append("title", title.trim());
       fd.append("description", description.trim());
       fd.append("hashtags", "");
@@ -513,38 +313,26 @@ export function SellerClipUploadForm({
         fd.append("durationSec", String(durationSec));
       }
 
-      if (sourceType === "file" && file) {
-        let posterBlob: Blob | null = null;
-        if (previewUrl && videoPreviewRef.current) {
-          posterBlob = await captureFrameFromVideo(
-            videoPreviewRef.current,
-            thumbCommittedSec,
-            "image/jpeg",
-            0.92,
-          );
-        }
-        if (!posterBlob) {
-          posterBlob = await capturePosterFromFile(file, thumbCommittedSec);
-        }
-        if (!posterBlob) {
-          setMessage({
-            ok: false,
-            text: t("sellForm.errThumbFail"),
-          });
-          return;
-        }
-        fd.append("poster", posterBlob, "poster.jpg");
-      } else if (sourceType === "url" && previewUrl && videoPreviewRef.current) {
-        const posterBlob = await captureFrameFromVideo(
+      let posterBlob: Blob | null = null;
+      if (previewUrl && videoPreviewRef.current) {
+        posterBlob = await captureFrameFromVideo(
           videoPreviewRef.current,
           thumbCommittedSec,
           "image/jpeg",
           0.92,
         );
-        if (posterBlob) {
-          fd.append("poster", posterBlob, "poster.jpg");
-        }
       }
+      if (!posterBlob) {
+        posterBlob = await capturePosterFromFile(file, thumbCommittedSec);
+      }
+      if (!posterBlob) {
+        setMessage({
+          ok: false,
+          text: t("sellForm.errThumbFail"),
+        });
+        return;
+      }
+      fd.append("poster", posterBlob, "poster.jpg");
 
       const res = await fetch("/api/sell/upload", {
         method: "POST",
@@ -577,8 +365,6 @@ export function SellerClipUploadForm({
       setCategory("daily");
       setPrice("1000");
       setIsAi(false);
-      setVideoUrl("");
-      // 진입 전에 고른 등록 방식은 유지합니다.
       resetPreview();
       if (fileInputRef.current) fileInputRef.current.value = "";
       setMessage(null);
@@ -595,7 +381,6 @@ export function SellerClipUploadForm({
         ? `/seller/${encodeURIComponent(sellerIdForRedirect)}`
         : "/mypage?tab=listings";
 
-      // 상태 플러시·언마운트 후 이동 — refresh 병행 시 RSC/클라이언트 트리 불일치로 훅 오류가 날 수 있음
       queueMicrotask(() => {
         router.replace(sellerFeedHref);
       });
@@ -608,6 +393,7 @@ export function SellerClipUploadForm({
 
   return (
     <form
+      autoComplete="off"
       className="rounded-2xl border border-white/10 bg-zinc-900/50 p-6 sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm"
       onSubmit={onSubmit}
     >
@@ -627,70 +413,32 @@ export function SellerClipUploadForm({
         <fieldset className="w-full max-w-[40rem] text-left">
           <legend className="sr-only">{t("sellForm.sourceLegend")}</legend>
           <div className={SOURCE_PANEL}>
-            {sourceType === "file" ? (
-              <>
-                <input
-                  id={`${hid}-video`}
-                  ref={fileInputRef}
-                  type="file"
-                  accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
-                  tabIndex={-1}
-                  className="sr-only"
-                  aria-hidden
-                  onChange={(e) => {
-                    onPickFile(e.target.files?.[0] ?? null);
-                    e.target.value = "";
-                  }}
-                />
-                <div className="flex w-full min-w-0 flex-row flex-wrap items-center gap-x-3 gap-y-1.5">
-                  <button
-                    type="button"
-                    aria-label={t("sellForm.sourceFile")}
-                    className={`${SOURCE_SECONDARY_BTN} shrink-0 px-5 py-3 text-[15px] font-semibold sm:px-6 sm:py-3.5 sm:text-[16px]`}
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    {t("sellForm.chooseFile")}
-                  </button>
-                  <p className="min-w-0 flex-1 truncate text-left text-[13px] leading-snug text-zinc-500 sm:text-[14px] [html[data-theme='light']_&]:text-zinc-600">
-                    {file?.name ?? t("sellForm.noFileChosen")}
-                  </p>
-                </div>
-              </>
-            ) : (
-              <div className="w-full max-w-[40rem] space-y-2 text-left">
-                <label className={`${LABEL} mb-0`} htmlFor={`${hid}-video-url`}>
-                  {t("sellForm.sourceUrl")}
-                </label>
-                <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-stretch">
-                  <div className="relative min-h-[48px] min-w-0 flex-1">
-                    <input
-                      id={`${hid}-video-url`}
-                      className={`${INPUT} min-h-[48px] w-full py-3 pr-11`}
-                      value={videoUrl}
-                      onChange={(e) => setVideoUrl(e.target.value)}
-                      placeholder={t("sellForm.urlPlaceholder")}
-                    />
-                    {videoUrl.trim().length > 0 ? (
-                      <button
-                        type="button"
-                        aria-label={t("sellForm.clearUrl")}
-                        className="absolute right-2 top-1/2 z-[1] -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-white/[0.08] hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-500 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
-                        onClick={clearUrlFieldAndPreview}
-                      >
-                        <X className="h-4 w-4 shrink-0" aria-hidden strokeWidth={2} />
-                      </button>
-                    ) : null}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={onApplyVideoUrl}
-                    className={`${SOURCE_SECONDARY_BTN} min-h-[48px] shrink-0 whitespace-nowrap sm:min-w-[7.5rem]`}
-                  >
-                    {t("sellForm.preview")}
-                  </button>
-                </div>
-              </div>
-            )}
+            <input
+              id={`${hid}-video`}
+              ref={fileInputRef}
+              type="file"
+              accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
+              tabIndex={-1}
+              className="sr-only"
+              aria-hidden
+              onChange={(e) => {
+                onPickFile(e.target.files?.[0] ?? null);
+                e.target.value = "";
+              }}
+            />
+            <div className="flex w-full min-w-0 flex-row flex-wrap items-center gap-x-3 gap-y-1.5">
+              <button
+                type="button"
+                aria-label={t("sellForm.sourceFile")}
+                className={`${SOURCE_SECONDARY_BTN} shrink-0 px-5 py-3 text-[15px] font-semibold sm:px-6 sm:py-3.5 sm:text-[16px]`}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {t("sellForm.chooseFile")}
+              </button>
+              <p className="min-w-0 flex-1 truncate text-left text-[13px] leading-snug text-zinc-500 sm:text-[14px] [html[data-theme='light']_&]:text-zinc-600">
+                {file?.name ?? t("sellForm.noFileChosen")}
+              </p>
+            </div>
           </div>
         </fieldset>
       </header>
@@ -716,11 +464,14 @@ export function SellerClipUploadForm({
               </label>
               <input
                 id={`${hid}-title`}
+                name="sell_clip_listing_title"
                 className={INPUT}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t("sellForm.titlePlaceholder")}
                 maxLength={120}
+                autoComplete="off"
+                data-lpignore="true"
                 required
               />
             </div>
@@ -731,11 +482,14 @@ export function SellerClipUploadForm({
               </label>
               <textarea
                 id={`${hid}-desc`}
+                name="sell_clip_listing_description"
                 className={`${INPUT} min-h-[120px] resize-y`}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder={t("sellForm.descPlaceholder")}
                 maxLength={2000}
+                autoComplete="off"
+                data-lpignore="true"
               />
             </div>
 
@@ -776,102 +530,90 @@ export function SellerClipUploadForm({
           >
             {previewUrl ? (
               <>
-                {socialEmbedPreview ? (
-                  <SocialSellEmbedPreview embed={socialEmbedPreview} />
+                <div className="overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
+                  <video
+                    ref={videoPreviewRef}
+                    className={
+                      orientation === "portrait"
+                        ? "sell-video-preview mx-auto w-full max-w-[300px] aspect-[9/16] object-cover"
+                        : "sell-video-preview w-full aspect-video object-contain"
+                    }
+                    src={previewUrl}
+                    crossOrigin="anonymous"
+                    muted
+                    playsInline
+                    controls
+                    controlsList="nodownload noplaybackrate noremoteplayback nopictureinpicture"
+                    disablePictureInPicture
+                    disableRemotePlayback
+                    onLoadedMetadata={onVideoMeta}
+                  />
+                </div>
+
+                {thumbPickerOpen ? (
+                  <div className="rounded-xl border border-white/10 bg-black/20 p-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
+                    <div className="mb-2 flex items-end justify-between gap-2">
+                      <label
+                        htmlFor={`${hid}-thumb-range`}
+                        className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600"
+                      >
+                        {t("sellForm.thumbnailScene")}
+                      </label>
+                      <span className="font-mono text-[12px] tabular-nums text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
+                        {(durationSec != null && durationSec > 0
+                          ? Math.min(thumbDraftSec, durationSec)
+                          : thumbDraftSec
+                        ).toFixed(2)}
+                        {t("sellForm.sec")}
+                      </span>
+                    </div>
+                    <input
+                      id={`${hid}-thumb-range`}
+                      type="range"
+                      min={0}
+                      max={durationSec != null && durationSec > 0 ? durationSec : 1}
+                      step={0.05}
+                      value={
+                        durationSec != null && durationSec > 0
+                          ? Math.min(thumbDraftSec, durationSec)
+                          : thumbDraftSec
+                      }
+                      onChange={(e) => setThumbDraftSec(parseFloat(e.target.value))}
+                      className="w-full cursor-pointer accent-reels-crimson"
+                      aria-label={t("sellForm.thumbnailSeekAria")}
+                    />
+                    <button
+                      type="button"
+                      onClick={onApplyThumbnailTime}
+                      className={`mt-3 ${MYPAGE_OUTLINE_BTN_MD} w-full cursor-pointer ${BTN_DISABLED_GHOST}`}
+                      disabled={!(durationSec != null && durationSec > 0)}
+                    >
+                      {t("sellForm.applyThumbnail")}
+                    </button>
+                  </div>
                 ) : (
-                  <div className="overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
-                    <video
-                      ref={videoPreviewRef}
+                  <button
+                    type="button"
+                    onClick={() => setThumbPickerOpen(true)}
+                    className={`${SOURCE_SECONDARY_BTN} w-auto px-4 text-[15px]`}
+                  >
+                    {t("sellForm.changeThumbnail")}
+                  </button>
+                )}
+
+                {appliedThumbPreviewUrl ? (
+                  <div className="w-full max-w-[200px] overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
+                    <img
+                      src={appliedThumbPreviewUrl}
+                      alt={t("sellForm.thumbnailPreviewAlt")}
                       className={
                         orientation === "portrait"
-                          ? "sell-video-preview mx-auto w-full max-w-[300px] aspect-[9/16] object-cover"
-                          : "sell-video-preview w-full aspect-video object-contain"
+                          ? "w-full aspect-[9/16] object-cover"
+                          : "w-full aspect-video object-cover"
                       }
-                      src={previewUrl}
-                      crossOrigin="anonymous"
-                      muted
-                      playsInline
-                      controls
-                      controlsList="nodownload noplaybackrate noremoteplayback nopictureinpicture"
-                      disablePictureInPicture
-                      disableRemotePlayback
-                      onLoadedMetadata={onVideoMeta}
                     />
                   </div>
-                )}
-
-                {!socialEmbedPreview ? (
-                  <>
-                    {thumbPickerOpen ? (
-                      <div className="rounded-xl border border-white/10 bg-black/20 p-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
-                        <div className="mb-2 flex items-end justify-between gap-2">
-                          <label
-                            htmlFor={`${hid}-thumb-range`}
-                            className="block text-[12px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600"
-                          >
-                            {t("sellForm.thumbnailScene")}
-                          </label>
-                          <span className="font-mono text-[12px] tabular-nums text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-                            {(durationSec != null && durationSec > 0
-                              ? Math.min(thumbDraftSec, durationSec)
-                              : thumbDraftSec
-                            ).toFixed(2)}
-                            {t("sellForm.sec")}
-                          </span>
-                        </div>
-                        <input
-                          id={`${hid}-thumb-range`}
-                          type="range"
-                          min={0}
-                          max={durationSec != null && durationSec > 0 ? durationSec : 1}
-                          step={0.05}
-                          value={
-                            durationSec != null && durationSec > 0
-                              ? Math.min(thumbDraftSec, durationSec)
-                              : thumbDraftSec
-                          }
-                          onChange={(e) => setThumbDraftSec(parseFloat(e.target.value))}
-                          className="w-full cursor-pointer accent-reels-crimson"
-                          aria-label={t("sellForm.thumbnailSeekAria")}
-                        />
-                        <button
-                          type="button"
-                          onClick={onApplyThumbnailTime}
-                          className={`mt-3 ${MYPAGE_OUTLINE_BTN_MD} w-full cursor-pointer ${BTN_DISABLED_GHOST}`}
-                          disabled={!(durationSec != null && durationSec > 0)}
-                        >
-                          {t("sellForm.applyThumbnail")}
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setThumbPickerOpen(true)}
-                        className={`${SOURCE_SECONDARY_BTN} w-auto px-4 text-[15px]`}
-                      >
-                        {t("sellForm.changeThumbnail")}
-                      </button>
-                    )}
-
-                    {appliedThumbPreviewUrl ? (
-                      <div className="w-full max-w-[200px] overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
-                        <img
-                          src={appliedThumbPreviewUrl}
-                          alt={t("sellForm.thumbnailPreviewAlt")}
-                          className={
-                            orientation === "portrait"
-                              ? "w-full aspect-[9/16] object-cover"
-                              : "w-full aspect-video object-cover"
-                          }
-                        />
-                      </div>
-                    ) : null}
-                  </>
-                ) : (
-                  <p className="text-[11px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                    {t("sellForm.platformPreviewNote")}
-                  </p>
-                )}
+                ) : null}
               </>
             ) : (
               <div className="flex min-h-[220px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 bg-black/[0.12] px-4 py-8 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80">
@@ -899,9 +641,9 @@ export function SellerClipUploadForm({
             <span>{message.text}</span>
           </div>
         ) : (
-        <p className="text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-          {t("sellForm.termsNotice")}
-        </p>
+          <p className="text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+            {t("sellForm.termsNotice")}
+          </p>
         )}
         <button
           type="submit"

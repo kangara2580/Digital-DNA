@@ -10,8 +10,11 @@ export async function getUserCreditBalance(userId: string): Promise<number> {
 }
 
 export async function getUserCreditSummary(userId: string) {
-  const [balance, ledger, payments] = await Promise.all([
-    getUserCreditBalance(userId),
+  const [balanceRow, ledger, payments] = await Promise.all([
+    prisma.userCreditBalance.findUnique({
+      where: { userId },
+      select: { balance: true, updatedAt: true },
+    }),
     prisma.creditLedger.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
@@ -43,7 +46,14 @@ export async function getUserCreditSummary(userId: string) {
     }),
   ]);
 
-  return { balance, ledger, payments };
+  const balance = balanceRow?.balance ?? 0;
+
+  return {
+    balance,
+    balanceUpdatedAt: balanceRow?.updatedAt ?? null,
+    ledger,
+    payments,
+  };
 }
 
 export async function grantCreditsForPayment(params: {

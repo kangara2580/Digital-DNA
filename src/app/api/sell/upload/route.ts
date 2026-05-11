@@ -106,39 +106,6 @@ async function uploadSellVideoWithOptionalCustomPoster(params: {
   return { videoUrl, posterUrl };
 }
 
-async function uploadCustomPosterBuffer(
-  client: SupabaseClient,
-  userId: string,
-  buffer: Buffer,
-  mime: string,
-): Promise<string | null> {
-  if (!ALLOWED_POSTER_MIME.has(mime)) return null;
-  const ext = mime === "image/png" ? "png" : mime === "image/webp" ? "webp" : "jpg";
-  const stamp = Date.now();
-  const thumbPath = `sell/${userId}/${stamp}_poster.${ext}`;
-  const { error } = await client.storage.from("thumbnails").upload(thumbPath, buffer, {
-    contentType: mime,
-    upsert: true,
-  });
-  if (error) return null;
-  return client.storage.from("thumbnails").getPublicUrl(thumbPath).data.publicUrl;
-}
-
-async function uploadSellPosterOnly(
-  client: SupabaseClient,
-  userId: string,
-): Promise<string | null> {
-  const posterBuf = getNeutralPosterBuffer();
-  const stamp = Date.now();
-  const thumbPath = `sell/${userId}/${stamp}_poster.jpg`;
-  const { error } = await client.storage.from("thumbnails").upload(thumbPath, posterBuf, {
-    contentType: "image/jpeg",
-    upsert: true,
-  });
-  if (error) return null;
-  return client.storage.from("thumbnails").getPublicUrl(thumbPath).data.publicUrl;
-}
-
 function displayNameFromUser(user: {
   email?: string | null;
   user_metadata?: Record<string, unknown>;
@@ -241,47 +208,23 @@ export async function POST(request: Request) {
       ? { buffer: posterPart.buffer, mime: posterPart.mime }
       : null;
 
-  const videoUrlRaw = String(fields.videoUrl ?? "").trim();
   const hasFile = Boolean(videoPart && videoPart.buffer.length > 0);
-  const hasVideoUrl = videoUrlRaw.length > 0;
-  if (!hasFile && !hasVideoUrl) {
+  if (!hasFile || !videoPart) {
     return NextResponse.json(
-      { ok: false, error: "동영상 파일 또는 동영상 URL을 입력해 주세요." },
+      { ok: false, error: "동영상 파일을 올려 주세요." },
       { status: 400 },
     );
   }
 
-  if (hasFile && videoPart) {
-    const mime = videoPart.mime || "application/octet-stream";
-    if (!ALLOWED_MIME.has(mime)) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "지원하는 형식은 MP4, MOV, WebM, AVI 계열입니다.",
-        },
-        { status: 400 },
-      );
-    }
-  }
-
-  let normalizedVideoUrl: string | null = null;
-  if (hasVideoUrl) {
-    if (videoUrlRaw.startsWith("/")) {
-      normalizedVideoUrl = videoUrlRaw;
-    } else {
-      try {
-        const u = new URL(videoUrlRaw.startsWith("http") ? videoUrlRaw : `https://${videoUrlRaw}`);
-        if (!(u.protocol === "http:" || u.protocol === "https:")) {
-          throw new Error("bad protocol");
-        }
-        normalizedVideoUrl = u.toString();
-      } catch {
-        return NextResponse.json(
-          { ok: false, error: "동영상 URL 형식이 올바르지 않습니다." },
-          { status: 400 },
-        );
-      }
-    }
+  const mime = videoPart.mime || "application/octet-stream";
+  if (!ALLOWED_MIME.has(mime)) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "지원하는 형식은 MP4, MOV, WebM, AVI 계열입니다.",
+      },
+      { status: 400 },
+    );
   }
 
   const title = String(fields.title ?? "").trim();
@@ -348,7 +291,7 @@ export async function POST(request: Request) {
       ? Math.round(durationParsed)
       : null;
 
-  let publicSrc = normalizedVideoUrl ?? "";
+  let publicSrc = "";
   let posterForDb = NEUTRAL_POSTER_DATA_URL;
 
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || null;
@@ -407,27 +350,6 @@ export async function POST(request: Request) {
         },
         { status: 500 },
       );
-    }
-  } else if (hasVideoUrl && canTrySupabaseStorage) {
-    try {
-      const storageClient = createStorageClient(url!, anonKey!, {
-        serviceRoleKey,
-        userJwt: serviceRoleKey ? null : bearerToken,
-      });
-      if (customPoster) {
-        const thumb = await uploadCustomPosterBuffer(
-          storageClient,
-          user.id,
-          customPoster.buffer,
-          customPoster.mime,
-        );
-        if (thumb) posterForDb = thumb;
-      } else {
-        const thumb = await uploadSellPosterOnly(storageClient, user.id);
-        if (thumb) posterForDb = thumb;
-      }
-    } catch {
-      /* 기본 포스터 유지 */
     }
   }
 

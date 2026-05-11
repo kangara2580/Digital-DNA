@@ -3,9 +3,9 @@
 import { Compass, Plus, Trophy } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { SellRegistrationModal } from "@/components/SellRegistrationModal";
 import { ShopBagOutlineIcon } from "@/components/ShopBagOutlineIcon";
+import { useAuthPromptModal } from "@/components/AuthPromptModalProvider";
+import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const stroke = 1.75;
@@ -72,39 +72,58 @@ const RAIL_ITEMS: RailItem[] = [
   },
 ];
 
-function RailSellButton({
-  onClick,
+function RailSellLink({
   sellActive,
   isHomeRail,
+  guest,
+  onGuestClick,
 }: {
-  onClick: () => void;
   sellActive: boolean;
   isHomeRail: boolean;
+  guest: boolean;
+  onGuestClick: () => void;
 }) {
   const { t } = useTranslation();
   const widthCls = isHomeRail ? "pointer-events-auto w-full max-w-full" : "w-full max-w-full";
 
+  const iconWrapClass = `${railIconBtn} ${sellActive ? railIconActive : ""}`;
+  const labelClass = `${railItemLabelBase} ${
+    sellActive
+      ? "text-[color:var(--reels-point)] group-hover:text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-[color:var(--reels-point)] [html[data-theme='light']_&]:group-hover:text-[color:var(--reels-point)]"
+      : "text-white/88"
+  }`;
+
+  if (guest) {
+    return (
+      <div className={widthCls}>
+        <button
+          type="button"
+          onClick={onGuestClick}
+          aria-label={t("rail.sellAria")}
+          className={`${railNavItemLink} ${sellActive ? railNavItemLinkCurrent : ""}`}
+        >
+          <span className={iconWrapClass}>
+            <Plus className="h-[38px] w-[38px]" strokeWidth={2} aria-hidden />
+          </span>
+          <span className={labelClass}>{t("rail.sell")}</span>
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className={widthCls}>
-      <button
-        type="button"
-        onClick={onClick}
+      <Link
+        href="/sell"
         aria-label={t("rail.sellAria")}
+        aria-current={sellActive ? "page" : undefined}
         className={`${railNavItemLink} ${sellActive ? railNavItemLinkCurrent : ""}`}
       >
-        <span className={`${railIconBtn} ${sellActive ? railIconActive : ""}`}>
+        <span className={iconWrapClass}>
           <Plus className="h-[38px] w-[38px]" strokeWidth={2} aria-hidden />
         </span>
-        <span
-          className={`${railItemLabelBase} ${
-            sellActive
-              ? "text-[color:var(--reels-point)] group-hover:text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-[color:var(--reels-point)] [html[data-theme='light']_&]:group-hover:text-[color:var(--reels-point)]"
-              : "text-white/88"
-          }`}
-        >
-          {t("rail.sell")}
-        </span>
-      </button>
+        <span className={labelClass}>{t("rail.sell")}</span>
+      </Link>
     </div>
   );
 }
@@ -112,8 +131,10 @@ function RailSellButton({
 export function ReelsLeftRail() {
   const pathname = usePathname();
   const { t } = useTranslation();
+  const { user, loading: authLoading } = useAuthSession();
+  const { openAuthModal } = useAuthPromptModal();
+  const guest = !authLoading && !user;
   const isHome = pathname === "/";
-  const [sellModalOpen, setSellModalOpen] = useState(false);
   const sellActive = pathname === "/sell" || pathname.startsWith("/sell/");
 
   if (isHome) {
@@ -168,15 +189,15 @@ export function ReelsLeftRail() {
                   </Link>
                 );
               })}
-              <RailSellButton
+              <RailSellLink
                 isHomeRail
                 sellActive={sellActive}
-                onClick={() => setSellModalOpen(true)}
+                guest={guest}
+                onGuestClick={() => openAuthModal()}
               />
             </nav>
           </div>
         </aside>
-        <SellRegistrationModal open={sellModalOpen} onClose={() => setSellModalOpen(false)} />
       </>
     );
   }
@@ -232,15 +253,15 @@ export function ReelsLeftRail() {
                 </Link>
               );
             })}
-            <RailSellButton
+            <RailSellLink
               isHomeRail={false}
               sellActive={sellActive}
-              onClick={() => setSellModalOpen(true)}
+              guest={guest}
+              onGuestClick={() => openAuthModal()}
             />
           </nav>
         </div>
       </aside>
-      <SellRegistrationModal open={sellModalOpen} onClose={() => setSellModalOpen(false)} />
     </>
   );
 }

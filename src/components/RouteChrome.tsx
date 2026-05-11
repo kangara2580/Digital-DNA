@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { ARAFooter } from "@/components/ARAFooter";
+import { AuthPromptModalProvider } from "@/components/AuthPromptModalProvider";
 import { DnaBuilderDock } from "@/components/DnaBuilderDock";
 import { FloatingHelp } from "@/components/FloatingHelp";
 import { MallTopNav } from "@/components/MallTopNav";
@@ -41,7 +42,7 @@ export function RouteChrome({ children }: { children: ReactNode }) {
   }
 
   return (
-    <>
+    <AuthPromptModalProvider>
       <ReelsLeftRail />
       <div className="min-w-0 md:pl-[var(--reels-rail-w)]">
         <MallTopNav />
@@ -50,6 +51,6 @@ export function RouteChrome({ children }: { children: ReactNode }) {
         <DnaBuilderDock />
         <FloatingHelp />
       </div>
-    </>
+    </AuthPromptModalProvider>
   );
 }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bookmark, ChevronLeft, ChevronRight, Heart, ShoppingCart } from "lucide-react";
-import { AuthPromptModal } from "@/components/AuthPromptModal";
+import { useAuthPromptModal } from "@/components/AuthPromptModalProvider";
 import { TossCheckoutButton } from "@/components/payments/TossCheckoutButton";
 import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
 import { SellerSocialPlatformIcon } from "@/components/SellerSocialPlatformIcon";
@@ -88,7 +88,7 @@ export function VideoDetailView({
 }) {
   const router = useRouter();
   const detailVideoRef = useRef<HTMLVideoElement | null>(null);
-  const authPromptScrollYRef = useRef(0);
+  const { openAuthModal } = useAuthPromptModal();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const dopamine = useDopamineBasket();
   const { hasPurchased } = usePurchasedVideos();
@@ -99,49 +99,16 @@ export function VideoDetailView({
   const isOwner = Boolean(
     user?.id && video.listing?.sellerId && user.id === video.listing.sellerId,
   );
-  const [authPromptOpen, setAuthPromptOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [sellerFeedIds, setSellerFeedIds] = useState<string[] | null>(null);
 
   const requireAuth = useCallback(() => {
     if (authLoading) return false;
     if (!supabaseConfigured || !user) {
-      authPromptScrollYRef.current = window.scrollY;
-      setAuthPromptOpen(true);
+      openAuthModal();
       return false;
     }
     return true;
-  }, [authLoading, supabaseConfigured, user]);
-
-  const startGoogleAuth = useCallback(() => {
-    const next =
-      typeof window !== "undefined"
-        ? `${window.location.pathname}${window.location.search}${window.location.hash}`
-        : "/";
-    const authStart = new URL("/api/auth/google/start", window.location.origin);
-    authStart.searchParams.set("next", next);
-    window.location.assign(authStart.toString());
-  }, []);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!authPromptOpen) return;
-    const scrollY = authPromptScrollYRef.current;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setAuthPromptOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      requestAnimationFrame(() => window.scrollTo(0, scrollY));
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [authPromptOpen]);
+  }, [authLoading, openAuthModal, supabaseConfigured, user]);
 
   useEffect(() => {
     recordView(video.id);
@@ -521,6 +488,12 @@ export function VideoDetailView({
     el.pause();
   }, []);
 
+  /** 로컬/스테이징에서 토스 없이 스튜디오 UI만 개발할 때 — `.env.local` 에 `NEXT_PUBLIC_DEV_BYPASS_CHECKOUT_TO_STUDIO=1` */
+  const devBypassCheckoutToStudio =
+    process.env.NEXT_PUBLIC_DEV_BYPASS_CHECKOUT_TO_STUDIO === "1";
+  const buyStudioCtaClassName =
+    "relative h-[60px] w-full rounded-full border-[3px] border-white/40 bg-transparent text-[17px] font-extrabold tracking-widest text-white shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] active:scale-[0.99] active:translate-y-0 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900";
+
   return (
     <div className="relative min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
 
@@ -727,7 +700,7 @@ export function VideoDetailView({
               </div>
             )}
 
-            {/* 구매 버튼 */}
+            {/* 구매 버튼 — 운영: 미보유 시 Toss. 개발: NEXT_PUBLIC_DEV_BYPASS_CHECKOUT_TO_STUDIO=1 이면 토스 없이 스튜디오로 */}
             <div className="px-8">
               {owned || isOwner ? (
                 <button
@@ -736,15 +709,29 @@ export function VideoDetailView({
                     if (!requireAuth()) return;
                     router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
                   }}
-                  className="relative h-[60px] w-full rounded-full border-[3px] border-white/40 bg-transparent text-[17px] font-extrabold tracking-widest text-white shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] active:scale-[0.99] active:translate-y-0 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900"
+                  className={buyStudioCtaClassName}
                 >
                   {t("video.detail.buyNow")}
+                </button>
+              ) : devBypassCheckoutToStudio ? (
+                <button
+                  type="button"
+                  disabled={soldOut}
+                  onClick={() => {
+                    if (soldOut) return;
+                    if (!requireAuth()) return;
+                    router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
+                  }}
+                  className={`${buyStudioCtaClassName} disabled:cursor-not-allowed disabled:opacity-40`}
+                >
+                  {soldOut ? t("video.detail.soldOut") : t("video.detail.buyNow")}
                 </button>
               ) : (
                 <TossCheckoutButton
                   productType="video"
                   videoId={video.id}
-                  className="relative h-[60px] w-full rounded-full border-[3px] border-white/40 bg-transparent text-[17px] font-extrabold tracking-widest text-white shadow-[0_0_24px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/70 hover:bg-white/5 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] active:scale-[0.99] active:translate-y-0 disabled:cursor-wait disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/60 [html[data-theme='light']_&]:text-zinc-900"
+                  onUnauthorized={openAuthModal}
+                  className={`${buyStudioCtaClassName} disabled:cursor-wait disabled:opacity-40`}
                   disabled={soldOut}
                 >
                   {soldOut ? t("video.detail.soldOut") : t("video.detail.buyNow")}
@@ -826,13 +813,6 @@ export function VideoDetailView({
         <VideoDetailReviewsSection videoId={video.id} />
         <VideoDetailRecommendations video={video} />
       </div>
-      {mounted ? (
-        <AuthPromptModal
-          open={authPromptOpen}
-          onClose={() => setAuthPromptOpen(false)}
-          onGoogleStart={startGoogleAuth}
-        />
-      ) : null}
     </div>
   );
 }

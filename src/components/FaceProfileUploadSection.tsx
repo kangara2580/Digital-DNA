@@ -298,6 +298,7 @@ export function FaceProfileUploadSection() {
 
   return (
     <section
+      id="face-profile-upload"
       className="rounded-2xl border border-white/10 bg-zinc-900/60 p-5 shadow-sm sm:p-6 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white"
       aria-labelledby="my-face-heading"
     >
@@ -311,13 +312,13 @@ export function FaceProfileUploadSection() {
       {/* ① 빠른 등록 (AI) — 먼저 노출 */}
       <div className="mt-8 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-100">
         <h3 className="text-[17px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-          빠른 생성
+          {t("faceProfile.sectionQuickTitle")}
         </h3>
         <p className="mt-1 text-[14px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-          정면 사진 1장으로 빠르게 시작합니다.
+          {t("faceProfile.sectionQuickLead")}
         </p>
         <p className="mt-1 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          ※ 사진 1장만 사용할 경우 정확도가 낮아질 수 있습니다.
+          {t("faceProfile.sectionQuickNote")}
         </p>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -335,7 +336,7 @@ export function FaceProfileUploadSection() {
             disabled={aiRunning}
             className={`${faceProfileNeutralPickBtn} px-6 py-3.5 text-[17px] font-semibold disabled:opacity-50`}
           >
-            정면 사진 1장 업로드
+            {t("faceProfile.uploadFrontOneButton")}
           </button>
           {singlePending && (
             <button
@@ -391,7 +392,7 @@ export function FaceProfileUploadSection() {
                       className={`h-full w-full object-cover ${position}`}
                     />
                     <span className="absolute left-1.5 top-1.5 rounded bg-zinc-900/80 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
-                      AI
+                      {t("faceProfile.aiBadge")}
                     </span>
                   </div>
                   <p className="mt-1.5 text-center text-[13px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
@@ -414,13 +415,13 @@ export function FaceProfileUploadSection() {
       <div className="mt-10 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-100">
         <h3 className="inline-flex items-center gap-2 text-[17px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
           <CheckCircle2 className="h-4.5 w-4.5 text-[color:var(--reels-point)]" aria-hidden />
-          정확한 생성 (추천)
+          {t("faceProfile.sectionAccurateTitle")}
         </h3>
         <p className="mt-1 text-[14px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-          정면 · 좌측 · 우측 사진 3장을 업로드하세요.
+          {t("faceProfile.sectionAccurateLead")}
         </p>
         <p className="mt-1 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          더 자연스럽고 정확한 결과를 생성합니다.
+          {t("faceProfile.sectionAccurateNote")}
         </p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">

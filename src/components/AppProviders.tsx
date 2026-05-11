@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { DevAuthSessionReset } from "@/components/DevAuthSessionReset";
 import { SitePreferencesProvider } from "@/context/SitePreferencesContext";
 import { DopamineBasketProvider } from "@/context/DopamineBasketContext";
 import { PurchasedVideosProvider } from "@/context/PurchasedVideosContext";
@@ -10,16 +11,19 @@ import { WishlistProvider } from "@/context/WishlistContext";
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
-    <SitePreferencesProvider>
-      <WishlistProvider>
-        <RecentClipsProvider>
-          <DopamineBasketProvider>
-            <PurchasedVideosProvider>
-              <StudioHistoryProvider>{children}</StudioHistoryProvider>
-            </PurchasedVideosProvider>
-          </DopamineBasketProvider>
-        </RecentClipsProvider>
-      </WishlistProvider>
-    </SitePreferencesProvider>
+    <>
+      <DevAuthSessionReset />
+      <SitePreferencesProvider>
+        <WishlistProvider>
+          <RecentClipsProvider>
+            <DopamineBasketProvider>
+              <PurchasedVideosProvider>
+                <StudioHistoryProvider>{children}</StudioHistoryProvider>
+              </PurchasedVideosProvider>
+            </DopamineBasketProvider>
+          </RecentClipsProvider>
+        </WishlistProvider>
+      </SitePreferencesProvider>
+    </>
   );
 }

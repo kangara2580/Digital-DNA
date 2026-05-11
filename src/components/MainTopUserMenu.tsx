@@ -2,13 +2,9 @@
 
 import Link from "next/link";
 import { ShoppingCart, UserRound } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
 import { useAuthSession } from "@/hooks/useAuthSession";
-import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
-import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
+import { useAuthPromptModal } from "@/components/AuthPromptModalProvider";
 import { LoggedInAccountHoverMenu } from "@/components/LoggedInAccountHoverMenu";
-import { AuthModalPortal } from "@/components/AuthModalPortal";
 import {
   TOP_NAV_ACCOUNT_CART_PILL_CELL,
   TOP_NAV_ACCOUNT_CART_PILL_DIAMOND_USER_LAYOUT,
@@ -18,22 +14,12 @@ import {
   topNavHeroCapsuleGlyphIconClass,
   topNavHeroCapsulePaymentDiamondIconClass,
 } from "@/lib/topNavIconRing";
-import {
-  authModalDialogSurface,
-  authModalDismissButtonCls,
-  authModalGlowBottom,
-  authModalGlowTop,
-} from "@/lib/authModalTheme";
 import { PaymentDiamondIcon } from "@/components/PaymentDiamondIcon";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useTranslation } from "@/hooks/useTranslation";
-import {
-  araAuthDialogWordmarkClassName,
-  araWordmarkFontStyle,
-} from "@/lib/araBrandTypography";
+import { ASSETS_CREDIT_PAYMENT } from "@/lib/assetsPaths";
 
-/** 추후 결제 백엔드 연동 시 이 경로에 페이지 연결 */
-const PAYMENT_PLACEHOLDER_HREF = "/payment";
+/** 결제·크레딧·정산 통합 — 내 자산 */
+const PAYMENT_HREF = ASSETS_CREDIT_PAYMENT;
 
 function CapsulePaymentDiamondGlyph() {
   return (
@@ -79,63 +65,7 @@ function CapsuleCartGlyph() {
 export function MainTopUserMenu({ withCart = true }: Props) {
   const { t } = useTranslation();
   const { user, loading } = useAuthSession();
-  const [authOpen, setAuthOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!authOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [authOpen]);
-
-  useEffect(() => {
-    if (!authOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setAuthOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [authOpen]);
-
-  const startGoogleAuth = useCallback(async () => {
-    const next =
-      typeof window !== "undefined"
-        ? `${window.location.pathname}${window.location.search}${window.location.hash}`
-        : "/";
-    const redirectTo = buildAuthCallbackRedirectTo(next);
-    const supabase = getSupabaseBrowserClient();
-    if (supabase && redirectTo) {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo,
-          queryParams: { prompt: "select_account" },
-        },
-      });
-      if (!error && data.url) {
-        window.location.assign(data.url);
-        return;
-      }
-    }
-    window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
-  }, []);
-
-  const paymentLink = (
-    <Link
-      href={PAYMENT_PLACEHOLDER_HREF}
-      className={capsuleSegmentDiamondClass}
-      aria-label={t("topNav.paymentAria")}
-    >
-      <CapsulePaymentDiamondGlyph />
-    </Link>
-  );
+  const { openAuthModal } = useAuthPromptModal();
 
   if (loading) {
     if (!withCart) {
@@ -164,91 +94,78 @@ export function MainTopUserMenu({ withCart = true }: Props) {
     );
   }
 
-  const guestModal =
-    mounted && authOpen
-      ? createPortal(
-          <AuthModalPortal onDismiss={() => setAuthOpen(false)}>
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-label="로그인 또는 회원가입"
-              className={`relative w-full max-h-[min(92vh,760px)] overflow-y-auto rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
-            >
-              <div className={authModalGlowTop} aria-hidden />
-              <div className={authModalGlowBottom} aria-hidden />
-              <button
-                type="button"
-                onClick={() => setAuthOpen(false)}
-                className={authModalDismissButtonCls}
-                aria-label="닫기"
-              >
-                ×
-              </button>
-              <p className={araAuthDialogWordmarkClassName} style={araWordmarkFontStyle}>
-                ARA
-              </p>
-              <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
-                로그인/회원가입
-              </p>
-              <AuthModalGoogleStartButton onClick={startGoogleAuth} />
-            </div>
-          </AuthModalPortal>,
-          document.body,
-        )
-      : null;
+  const paymentLoggedIn = (
+    <Link
+      href={PAYMENT_HREF}
+      className={capsuleSegmentDiamondClass}
+      aria-label={t("topNav.paymentAria")}
+    >
+      <CapsulePaymentDiamondGlyph />
+    </Link>
+  );
+
+  const paymentGuest = (
+    <button
+      type="button"
+      onClick={() => openAuthModal()}
+      className={capsuleSegmentDiamondClass}
+      aria-label={t("topNav.paymentAria")}
+      aria-haspopup="dialog"
+    >
+      <CapsulePaymentDiamondGlyph />
+    </button>
+  );
 
   if (!user) {
     if (!withCart) {
       return (
-        <>
-          <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_DIAMOND_USER_LAYOUT}`}>
-            {paymentLink}
-            <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} aria-hidden />
-            <button
-              type="button"
-              onClick={() => setAuthOpen(true)}
-              className={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-r-full px-2.5`}
-              aria-haspopup="dialog"
-              aria-expanded={authOpen}
-              aria-label="로그인/회원가입 시작하기"
-            >
-              <CapsuleUserGlyph />
-            </button>
-          </div>
-          {guestModal}
-        </>
-      );
-    }
-
-    return (
-      <>
-        <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_TRIPLE_LAYOUT}`}>
-          {paymentLink}
+        <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_DIAMOND_USER_LAYOUT}`}>
+          {paymentGuest}
           <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} aria-hidden />
           <button
             type="button"
-            onClick={() => setAuthOpen(true)}
-            className={capsuleSegmentUserMidClass}
+            onClick={() => openAuthModal()}
+            className={`${TOP_NAV_ACCOUNT_CART_PILL_CELL} rounded-r-full px-2.5`}
             aria-haspopup="dialog"
-            aria-expanded={authOpen}
             aria-label="로그인/회원가입 시작하기"
           >
             <CapsuleUserGlyph />
           </button>
-          <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} aria-hidden />
-          <Link href="/cart" className={capsuleSegmentCartClass} aria-label="장바구니">
-            <CapsuleCartGlyph />
-          </Link>
         </div>
-        {guestModal}
-      </>
+      );
+    }
+
+    return (
+      <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_TRIPLE_LAYOUT}`}>
+        {paymentGuest}
+        <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} aria-hidden />
+        <button
+          type="button"
+          onClick={() => openAuthModal()}
+          className={capsuleSegmentUserMidClass}
+          aria-haspopup="dialog"
+          aria-label="로그인/회원가입 시작하기"
+        >
+          <CapsuleUserGlyph />
+        </button>
+        <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} aria-hidden />
+        <button
+          type="button"
+          onClick={() => openAuthModal()}
+          className={capsuleSegmentCartClass}
+          aria-label={t("meta.cart")}
+          aria-haspopup="dialog"
+        >
+          <CapsuleCartGlyph />
+        </button>
+      </div>
     );
   }
 
   if (!withCart) {
     return (
       <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_DIAMOND_USER_LAYOUT}`}>
-        {paymentLink}
+        {paymentLoggedIn}
         <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} aria-hidden />
         <LoggedInAccountHoverMenu
           rootClassName={accountHoverRootDiamondUserRightClass}
@@ -262,7 +179,7 @@ export function MainTopUserMenu({ withCart = true }: Props) {
 
   return (
     <div className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_TRIPLE_LAYOUT}`}>
-      {paymentLink}
+      {paymentLoggedIn}
       <div className={TOP_NAV_ACCOUNT_CART_PILL_DIVIDER} aria-hidden />
       <LoggedInAccountHoverMenu
         rootClassName={accountHoverRootTripleMidClass}

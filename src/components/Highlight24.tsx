@@ -2,30 +2,19 @@
 
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
-import { createPortal } from "react-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { FeedVideo } from "@/data/videos";
 import { LOCAL_TRENDING_FEED_VIDEOS } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
-import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
-import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartButton";
-import { AuthModalPortal } from "@/components/AuthModalPortal";
+import { useAuthPromptModal } from "@/components/AuthPromptModalProvider";
 import { HomeMarqueeVideoCard } from "@/components/HomeMarqueeVideoCard";
 import { HomeStartCtaButton } from "@/components/HomeStartCtaButton";
 import { MainTopUserMenu } from "@/components/MainTopUserMenu";
 import { ReelsSearchField } from "@/components/ReelsSearchField";
 import {
-  araAuthDialogWordmarkClassName,
   araHeroWordmarkClassName,
   araWordmarkFontStyle,
 } from "@/lib/araBrandTypography";
-import {
-  authModalDialogSurface,
-  authModalDismissButtonCls,
-  authModalGlowBottom,
-  authModalGlowTop,
-} from "@/lib/authModalTheme";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { MAIN_TOP_USER_FLOAT_BOX_CLASS } from "@/lib/topNavIconRing";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -55,6 +44,7 @@ export function Highlight24() {
   const router = useRouter();
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuthSession();
+  const { openAuthModal } = useAuthPromptModal();
   /** 베스트 피드 — 로컬 인기 10종, 판매가 높은 순(데모) */
   const bestVideos = useMemo(() => {
     return [...LOCAL_TRENDING_FEED_VIDEOS].sort(
@@ -67,32 +57,6 @@ export function Highlight24() {
   }, [bestVideos]);
 
   const [searchQ, setSearchQ] = useState("");
-  const [authOpen, setAuthOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  const startGoogleAuth = useCallback(async () => {
-    const next =
-      typeof window !== "undefined"
-        ? `${window.location.pathname}${window.location.search}${window.location.hash}`
-        : "/";
-    const redirectTo = buildAuthCallbackRedirectTo(next);
-    const supabase = getSupabaseBrowserClient();
-    if (supabase && redirectTo) {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo,
-          queryParams: { prompt: "select_account" },
-        },
-      });
-      if (!error && data.url) {
-        window.location.assign(data.url);
-        return;
-      }
-    }
-    window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
-  }, []);
-
   const onStartClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       event.preventDefault();
@@ -101,32 +65,10 @@ export function Highlight24() {
         router.push("/mypage");
         return;
       }
-      setAuthOpen(true);
+      openAuthModal();
     },
-    [user, router],
+    [user, router, openAuthModal],
   );
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!authOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [authOpen]);
-
-  useEffect(() => {
-    if (!authOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setAuthOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [authOpen]);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -212,38 +154,6 @@ export function Highlight24() {
       <div className="relative z-[5] -translate-y-1 motion-reduce:translate-y-0 sm:-translate-y-2 motion-reduce:sm:translate-y-0">
         <HomeBestMarquee videos={bestVideos} />
       </div>
-
-      {mounted && authOpen
-        ? createPortal(
-            <AuthModalPortal onDismiss={() => setAuthOpen(false)}>
-              <div
-                role="dialog"
-                aria-modal="true"
-                aria-label={t("auth.dialogAria")}
-                className={`relative w-full max-h-[min(92vh,760px)] overflow-y-auto rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
-              >
-                <div className={authModalGlowTop} aria-hidden />
-                <div className={authModalGlowBottom} aria-hidden />
-                <button
-                  type="button"
-                  onClick={() => setAuthOpen(false)}
-                  className={authModalDismissButtonCls}
-                  aria-label={t("a11y.close")}
-                >
-                  ×
-                </button>
-                <p className={araAuthDialogWordmarkClassName} style={araWordmarkFontStyle}>
-                  ARA
-                </p>
-                <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
-                  {t("auth.loginSignupTitle")}
-                </p>
-                <AuthModalGoogleStartButton onClick={startGoogleAuth} />
-              </div>
-            </AuthModalPortal>,
-            document.body,
-          )
-        : null}
     </section>
   );
 }

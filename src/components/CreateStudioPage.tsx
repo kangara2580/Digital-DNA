@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { PurchaseCustomizeStudio } from "@/components/PurchaseCustomizeStudio";
 import { MYPAGE_OUTLINE_BTN_MD } from "@/lib/mypageOutlineCta";
 import { resolveManualTikTokVideoForStudio } from "@/data/tiktokData";
+import { ALL_MARKET_VIDEOS } from "@/data/videoCatalog";
 import { getMarketVideoById } from "@/data/videoCommerce";
 import type { FeedVideo } from "@/data/videos";
 
@@ -14,9 +15,33 @@ function hasStaticStudioVideo(id: string): boolean {
   return Boolean(getMarketVideoById(id) ?? resolveManualTikTokVideoForStudio(id));
 }
 
+/**
+ * TEMP(UI 작업용): `?studioUiPreview=1` 이고 `videoId` 가 없을 때 마켓 샘플 클립으로 스튜디오를 연다.
+ * — 개발 서버에서는 항상 허용, 프로덕션에서는 `NEXT_PUBLIC_STUDIO_UI_PREVIEW=1` 일 때만 허용.
+ * 작업 종료 후 사용자 요청 시 이 블록 전체를 제거하면 원래 동작으로 돌아간다.
+ */
+function resolveStudioUiPreviewFallbackVideo(): FeedVideo | null {
+  return (
+    getMarketVideoById("dna-100-asphalt") ??
+    getMarketVideoById("micro-100-neon-bokeh") ??
+    ALL_MARKET_VIDEOS[0] ??
+    null
+  );
+}
+
 export function CreateStudioPage() {
   const searchParams = useSearchParams();
   const videoId = searchParams.get("videoId") ?? "";
+  const studioUiPreviewAllowed =
+    process.env.NODE_ENV === "development" ||
+    process.env.NEXT_PUBLIC_STUDIO_UI_PREVIEW === "1";
+  const studioUiPreviewActive =
+    studioUiPreviewAllowed && searchParams.get("studioUiPreview") === "1" && !videoId.trim();
+  const previewFallbackVideo = useMemo((): FeedVideo | null => {
+    if (!studioUiPreviewActive) return null;
+    return resolveStudioUiPreviewFallbackVideo();
+  }, [studioUiPreviewActive]);
+
   const staticVideo = useMemo((): FeedVideo | null => {
     if (!videoId) return null;
     return getMarketVideoById(videoId) ?? resolveManualTikTokVideoForStudio(videoId) ?? null;
@@ -67,6 +92,10 @@ export function CreateStudioPage() {
   }, [videoId, staticVideo]);
 
   const video = staticVideo ?? dbVideo;
+
+  if (studioUiPreviewActive && previewFallbackVideo) {
+    return <PurchaseCustomizeStudio video={previewFallbackVideo} heroTitle="창작 스튜디오" />;
+  }
 
   if (!videoId) {
     return (
