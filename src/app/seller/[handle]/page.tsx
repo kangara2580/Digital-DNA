@@ -6,9 +6,8 @@ import {
   SellerFeedEmptyListings,
   SellerFeedListingCount,
 } from "@/components/SellerFeedI18n";
+import { SellerFeedListingsGrid } from "@/components/SellerFeedListingsGrid";
 import { SellerFeedSellCta } from "@/components/SellerFeedSellCta";
-import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
-import { VideoCard } from "@/components/VideoCard";
 import type { FeedVideo } from "@/data/videos";
 import {
   getSellerNickname,
@@ -21,7 +20,8 @@ import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
 import { prisma } from "@/lib/prisma";
 import { getSupabaseServiceRoleClient } from "@/lib/supabaseServiceRole";
 import { supabaseTables } from "@/lib/supabaseTableNames";
-import { getMetricsForVideoDetail } from "@/data/trendingStats";
+import type { TrendingRankMetrics } from "@/data/trendingStats";
+import { listingMetricsPayloadForFeeds } from "@/lib/sellerListingCardMetrics";
 import { translate } from "@/lib/i18n/dictionaries";
 import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
 import { getSiteLocale } from "@/lib/i18n/serverLocale";
@@ -112,6 +112,11 @@ export default async function SellerPage({
   const allowEmptyOwnSellerPage = isProbablySellerUserId(sellerKey);
   if (videos.length === 0 && !hasProfileOnly && !allowEmptyOwnSellerPage) notFound();
 
+  let listingMetricsByVideoId: Record<string, TrendingRankMetrics> = {};
+  if (isDbSeller && videos.length > 0) {
+    listingMetricsByVideoId = await listingMetricsPayloadForFeeds(videos);
+  }
+
   const nickname = profileNickname || (videos[0] ? getSellerNickname(videos[0].creator) : sellerKey.slice(0, 8));
 
   return (
@@ -123,7 +128,7 @@ export default async function SellerPage({
             className="pointer-events-none absolute -left-24 -top-24 hidden h-48 w-48 rounded-full bg-[color:var(--reels-point)]/12 blur-[80px] [html[data-theme='light']_&]:block"
             aria-hidden
           />
-          <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,36rem)] lg:items-start lg:gap-8">
+          <div className="relative grid gap-6 lg:grid-cols-2 lg:items-start lg:gap-8">
             <div className="flex min-w-0 gap-4 sm:items-center sm:gap-5">
               <div className="relative shrink-0">
                 <div
@@ -147,35 +152,21 @@ export default async function SellerPage({
               </div>
             </div>
             <div className="min-w-0 border-t border-white/[0.1] pt-6 lg:border-t-0 lg:border-l lg:border-white/[0.1] lg:pl-8 lg:pt-0 [html[data-theme='light']_&]:border-zinc-200/75">
-              <SellerFeedBioEditor sellerId={sellerKey} initialBio={profileBio} />
+              <div className="w-full max-w-2xl">
+                <SellerFeedBioEditor sellerId={sellerKey} initialBio={profileBio} />
+              </div>
             </div>
           </div>
         </section>
 
         <section className="mt-8 sm:mt-10">
           {videos.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
-              {videos.map((video) => (
-                <VideoCard
-                  key={`seller-${sellerKey}-${video.id}`}
-                  video={video}
-                  reelLayout
-                  reelStrip
-                  disableHoverScale
-                  hideCreatorMeta
-                  preloadMode="metadata"
-                  trendingRankCardPrice
-                  className="h-full min-w-0"
-                  detailHref={`/video/${encodeURIComponent(video.id)}?fromSeller=${encodeURIComponent(sellerKey)}`}
-                  footerExtension={
-                    <TrendingVideoStatsFooter
-                      hideMetricLabels
-                      metrics={getMetricsForVideoDetail(video.id)}
-                    />
-                  }
-                />
-              ))}
-            </div>
+            <SellerFeedListingsGrid
+              sellerId={sellerKey}
+              isDbSeller={isDbSeller}
+              initialVideos={videos}
+              initialMetricsByVideoId={listingMetricsByVideoId}
+            />
           ) : (
             <SellerFeedEmptyListings />
           )}

@@ -102,7 +102,7 @@ type Props = {
    * 가로 스트립 + 상단 해시태그 등이 있을 때 — 호버 확대를 약하게·위 기준으로 잘림 방지
    */
   subtleHover?: boolean;
-  /** true면 카드 전체 호버 시 확대(scale)만 끔 — 인기순위 스트립 등 */
+  /** true면 카드 전체 호버 시 확대(scale)만 끔. `reelLayout`+`reelStrip`+`trendingRankCardPrice`(몰 타일)는 항상 끔 */
   disableHoverScale?: boolean;
   /** 제목·가격 아래 추가 블록(인기순위 지표 등) */
   footerExtension?: ReactNode;
@@ -124,6 +124,13 @@ type Props = {
   hideInfoBar?: boolean;
   /** 홈 인기순위 그리드만 — 가격 글자 흰색·한 단계 크게 */
   trendingRankCardPrice?: boolean;
+  /** 마이 찜/좋아요 목록 그리드 — 가격 흰색·호버 네온·카드 확대 없음 */
+  mypageListCard?: boolean;
+  /**
+   * 릴 카드 우측 호버 액션(장바구니·좋아요·찜) **위**에 렌더 — 동일 레일 스타일·정렬.
+   * `hideHoverActions`가 true면 무시됩니다.
+   */
+  reelHoverRailLead?: ReactNode;
 };
 
 function formatDuration(seconds: number): string {
@@ -256,6 +263,8 @@ export function VideoCard({
   hideCreatorMeta = false,
   hideInfoBar = false,
   trendingRankCardPrice = false,
+  mypageListCard = false,
+  reelHoverRailLead,
 }: Props) {
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
@@ -493,7 +502,9 @@ export function VideoCard({
     ? "rounded-none border-0 bg-transparent shadow-none"
     : dense
       ? "rounded-lg border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-white/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-zinc-300"
-      : "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-white/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-zinc-300";
+      : mypageListCard
+        ? "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md transition-[border-color,background-color] duration-200 ease-out hover:border-white/16 hover:bg-white/[0.07] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-zinc-50"
+        : "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-white/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-zinc-300";
 
   const priceLabel =
     video.priceWon != null
@@ -512,8 +523,9 @@ export function VideoCard({
     ? "right-1.5 top-1.5 max-w-[min(100%-12px,6rem)] sm:right-2 sm:top-2 sm:max-w-[7rem]"
     : "left-1.5 top-1.5 max-w-[min(100%-12px,7rem)] sm:left-2 sm:top-2 sm:max-w-[9rem]";
 
-  const transitionCls =
-    overlapOnHover === true
+  const transitionCls = mypageListCard
+    ? "transition-[border-color,background-color] duration-200 ease-out motion-reduce:transition-none"
+    : overlapOnHover === true
       ? "transition-[transform,box-shadow] duration-[400ms] ease-in-out motion-reduce:transition-none"
       : !dense && !flush
         ? "transition-[transform,box-shadow] duration-[400ms] ease-in-out motion-reduce:transition-none"
@@ -524,8 +536,15 @@ export function VideoCard({
       ? "relative z-0 hover:z-[30] hover:overflow-visible hover:-translate-y-0.5 hover:scale-[1.06] hover:shadow-xl motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100 motion-reduce:hover:shadow-md"
       : "";
 
+  /** 쇼핑·카테고리 그리드 등 세로 타일 — 카드 전체 scale 호버는 끔(영상만 커지는 느낌 방지) */
+  const mallStripTile = reelLayout && reelStrip && trendingRankCardPrice;
   const gridHoverScale =
-    disableHoverScale || dense || flush || overlapOnHover === true
+    disableHoverScale ||
+    dense ||
+    flush ||
+    overlapOnHover === true ||
+    mypageListCard ||
+    mallStripTile
       ? ""
       : subtleHover
         ? "origin-top hover:z-[2] hover:scale-[1.02] motion-reduce:hover:scale-100"
@@ -736,6 +755,7 @@ export function VideoCard({
         {!hideHoverActions ? (
           <div className={reelActionRailOuter}>
             <div className={reelActionRailColumn}>
+              {reelHoverRailLead ?? null}
               <button
                 ref={cartBtnRef}
                 type="button"
@@ -878,15 +898,25 @@ export function VideoCard({
                 className={
                   trendingRankCardPrice
                     ? "shrink-0 rounded-md px-2 py-0.5 text-right text-[13px] font-extrabold tabular-nums text-zinc-50 transition-colors duration-200 motion-reduce:transition-none [html[data-theme='light']_&]:text-zinc-950 sm:text-[15px] group-hover:bg-white/[0.08] group-hover:text-white motion-reduce:group-hover:bg-transparent"
-                    : `shrink-0 rounded-md px-1.5 py-0.5 text-right font-extrabold tabular-nums text-[#64E3FF] transition-[transform,background-color,color,box-shadow,font-weight] duration-[300ms] ease-out motion-reduce:transition-none group-hover:scale-[1.03] group-hover:bg-[#2348A8]/35 group-hover:text-[#BFE0FF] group-hover:shadow-[0_0_14px_-4px_rgba(79,140,255,0.7)] motion-reduce:group-hover:scale-100 motion-reduce:group-hover:bg-transparent motion-reduce:group-hover:font-extrabold motion-reduce:group-hover:text-[#64E3FF] motion-reduce:group-hover:shadow-none [html[data-theme='light']_&]:text-[#2A62D8] ${
-                        dense
-                          ? "text-[10px]"
-                          : reelStrip
-                            ? "text-[12px] sm:text-[13px]"
-                            : reelLayout
+                    : mypageListCard
+                      ? `shrink-0 rounded-md px-1.5 py-0.5 text-right font-semibold tabular-nums text-white transition-colors duration-200 ease-out motion-reduce:transition-none group-hover:bg-white/[0.06] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:group-hover:bg-zinc-200/45 ${
+                          dense
+                            ? "text-[10px]"
+                            : reelStrip
                               ? "text-[12px] sm:text-[13px]"
-                              : "text-[11px] sm:text-[12px]"
-                      }`
+                              : reelLayout
+                                ? "text-[12px] sm:text-[13px]"
+                                : "text-[11px] sm:text-[12px]"
+                        }`
+                      : `shrink-0 rounded-md px-1.5 py-0.5 text-right font-extrabold tabular-nums text-[#64E3FF] transition-[transform,background-color,color,box-shadow,font-weight] duration-[300ms] ease-out motion-reduce:transition-none group-hover:scale-[1.03] group-hover:bg-[#2348A8]/35 group-hover:text-[#BFE0FF] group-hover:shadow-[0_0_14px_-4px_rgba(79,140,255,0.7)] motion-reduce:group-hover:scale-100 motion-reduce:group-hover:bg-transparent motion-reduce:group-hover:font-extrabold motion-reduce:group-hover:text-[#64E3FF] motion-reduce:group-hover:shadow-none [html[data-theme='light']_&]:text-[#2A62D8] ${
+                          dense
+                            ? "text-[10px]"
+                            : reelStrip
+                              ? "text-[12px] sm:text-[13px]"
+                              : reelLayout
+                                ? "text-[12px] sm:text-[13px]"
+                                : "text-[11px] sm:text-[12px]"
+                        }`
                 }
               >
                 {priceLabel}

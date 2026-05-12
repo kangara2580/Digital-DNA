@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getMarketVideoById } from "@/data/videoCommerce";
 import { createPendingPayment } from "@/lib/commerceLedger";
 import { prisma } from "@/lib/prisma";
+import { parseSafePaymentNextParam } from "@/lib/safePaymentNextPath";
 import { getCurrentUser } from "@/lib/serverSession";
 import {
   createTossOrderId,
@@ -17,6 +18,8 @@ type CheckoutBody = {
   productType?: "credits" | "video" | "cart";
   productKey?: string;
   videoId?: string;
+  /** 결제 성공 후 이동할 내부 경로(검증됨). 예: `/purchase/complete/{videoId}` */
+  next?: string;
   items?: { videoId?: string; expectedPriceWon?: number }[];
 };
 
@@ -135,6 +138,12 @@ export async function POST(request: Request) {
   });
 
   const siteUrl = getSiteUrl();
+  const successUrl = new URL("/payments/toss/success", siteUrl);
+  const nextPath =
+    typeof body.next === "string" ? parseSafePaymentNextParam(body.next) : null;
+  if (nextPath) {
+    successUrl.searchParams.set("next", nextPath);
+  }
 
   return NextResponse.json({
     ok: true,
@@ -144,7 +153,7 @@ export async function POST(request: Request) {
     amount,
     customerEmail: user.email,
     customerName: user.name,
-    successUrl: `${siteUrl}/payments/toss/success`,
+    successUrl: successUrl.toString(),
     failUrl: `${siteUrl}/payments/toss/fail`,
   });
 }

@@ -14,7 +14,8 @@ import {
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { MYPAGE_OUTLINE_BTN_MD, MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 import type { FeedVideo } from "@/data/videos";
-import { getMetricsForVideoDetail } from "@/data/trendingStats";
+import type { TrendingRankMetrics } from "@/data/trendingStats";
+import { metricsForSellerListingCard } from "@/lib/sellerListingCardMetricsPure";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const PENDING_UPLOADED_VIDEO_KEY = "sell:pending-uploaded-video";
@@ -23,6 +24,9 @@ export function MyPageMyListingsSection() {
   const { t } = useTranslation();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const [videos, setVideos] = useState<FeedVideo[]>([]);
+  const [listingCardMetrics, setListingCardMetrics] = useState<
+    Record<string, TrendingRankMetrics>
+  >({});
   const [editing, setEditing] = useState<FeedVideo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +65,7 @@ export function MyPageMyListingsSection() {
   const load = useCallback(async () => {
     if (!user || !supabaseConfigured) {
       setVideos([]);
+      setListingCardMetrics({});
       setLoading(false);
       setError(null);
       return;
@@ -88,17 +93,20 @@ export function MyPageMyListingsSection() {
       let body: {
         ok?: boolean;
         videos?: FeedVideo[];
+        metricsByVideoId?: Record<string, TrendingRankMetrics>;
         error?: string;
       } = {};
       try {
         body = (await res.json()) as typeof body;
       } catch {
         setVideos([]);
+        setListingCardMetrics({});
         setError(t("listings.errNetwork"));
         return;
       }
       if (!res.ok || !body.ok || !Array.isArray(body.videos)) {
         setVideos([]);
+        setListingCardMetrics({});
         const code = body.error;
         setError(
           code === "login_required"
@@ -114,8 +122,14 @@ export function MyPageMyListingsSection() {
         return;
       }
       setVideos(body.videos);
+      setListingCardMetrics(
+        body.metricsByVideoId && typeof body.metricsByVideoId === "object"
+          ? body.metricsByVideoId
+          : {},
+      );
     } catch {
       setVideos([]);
+      setListingCardMetrics({});
       setError(t("listings.errNetwork"));
     } finally {
       setLoading(false);
@@ -314,17 +328,11 @@ export function MyPageMyListingsSection() {
         <p className="text-[17px] font-bold text-white [html[data-theme='light']_&]:text-zinc-900">
           {t("listings.empty")}
         </p>
-        <Link
-          href="/sell"
-          className="mt-6 inline-flex items-center justify-center gap-1 text-[16px] font-semibold hover:underline"
-        >
-          <span
-            className="shrink-0 text-[22px] font-semibold leading-none text-[color:var(--reels-point)]"
-            aria-hidden
-          >
+        <Link href="/sell" className={`mt-6 inline-flex ${MYPAGE_OUTLINE_BTN_MD}`}>
+          <span className="text-[22px] leading-none text-[color:var(--reels-point)]" aria-hidden>
             +
           </span>
-          <span className="text-white [html[data-theme='light']_&]:text-zinc-900">
+          <span className="ml-1.5 text-white [html[data-theme='light']_&]:text-zinc-900">
             {t("listings.sellCta")}
           </span>
         </Link>
@@ -455,7 +463,10 @@ export function MyPageMyListingsSection() {
                 footerExtension={
                   <TrendingVideoStatsFooter
                     hideMetricLabels
-                    metrics={getMetricsForVideoDetail(v.id)}
+                    metrics={
+                      listingCardMetrics[v.id] ??
+                      metricsForSellerListingCard(v, { revenueWon: 0, likes: 0 })
+                    }
                   />
                 }
               />

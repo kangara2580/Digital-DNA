@@ -6,9 +6,6 @@ export const dynamic = "force-dynamic";
 
 type Body = {
   amount?: unknown;
-  bankName?: unknown;
-  accountNo?: unknown;
-  accountHolder?: unknown;
 };
 
 function parseAmount(raw: unknown): number | null {
@@ -33,17 +30,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "invalid_amount" }, { status: 400 });
   }
 
-  const bankName =
-    typeof body?.bankName === "string" ? body.bankName.trim().slice(0, 64) || null : null;
-  const accountNo =
-    typeof body?.accountNo === "string" ? body.accountNo.trim().slice(0, 64) || null : null;
-  const accountHolder =
-    typeof body?.accountHolder === "string"
-      ? body.accountHolder.trim().slice(0, 64) || null
-      : null;
-
   try {
     const result = await prisma.$transaction(async (tx) => {
+      const acct = await tx.sellerPayoutAccount.findUnique({
+        where: { sellerId: user.id },
+      });
+      if (!acct) {
+        return { ok: false as const, error: "payout_account_required" as const };
+      }
+
       const now = new Date();
       const rows = await tx.sellerEarning.findMany({
         where: {
@@ -72,9 +67,9 @@ export async function POST(request: Request) {
         data: {
           sellerId: user.id,
           amount,
-          bankName,
-          accountNo,
-          accountHolder,
+          bankName: acct.bankName,
+          accountNo: acct.accountNo,
+          accountHolder: acct.accountHolder,
         },
       });
 
@@ -89,6 +84,9 @@ export async function POST(request: Request) {
     if (!result.ok) {
       if (result.error === "no_available") {
         return NextResponse.json({ ok: false, error: "no_available" }, { status: 400 });
+      }
+      if (result.error === "payout_account_required") {
+        return NextResponse.json({ ok: false, error: "payout_account_required" }, { status: 400 });
       }
       return NextResponse.json(
         {

@@ -64,6 +64,7 @@ export function TossCheckoutButton({
   productType,
   productKey,
   videoId,
+  next,
   children,
   className,
   disabled = false,
@@ -73,6 +74,8 @@ export function TossCheckoutButton({
   productType: "credits" | "video";
   productKey?: string;
   videoId?: string;
+  /** 결제 성공 후 `TossConfirmClient`가 이동할 내부 경로(서버에서 화이트리스트 검증) */
+  next?: string;
   children: string;
   className?: string;
   disabled?: boolean;
@@ -96,7 +99,7 @@ export function TossCheckoutButton({
       const response = await fetch("/api/payments/toss/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productType, productKey, videoId }),
+        body: JSON.stringify({ productType, productKey, videoId, next }),
       });
       const payload = (await response.json().catch(() => null)) as CheckoutResponse | null;
 

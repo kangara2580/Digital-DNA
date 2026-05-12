@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { SellRegistrationModal } from "@/components/SellRegistrationModal";
+import Link from "next/link";
 import { SellerFeedOwnerQuickMenu } from "@/components/SellerFeedOwnerQuickMenu";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -10,16 +9,14 @@ import { useTranslation } from "@/hooks/useTranslation";
 export function SellerFeedSellCta({ sellerId }: { sellerId: string }) {
   const { user, loading: authLoading } = useAuthSession();
   const { t } = useTranslation();
-  const [sellModalOpen, setSellModalOpen] = useState(false);
 
   if (authLoading || !user?.id || user.id !== sellerId) return null;
 
   return (
     <div className="mb-3 flex flex-wrap items-center gap-1.5 sm:mb-4">
       <SellerFeedOwnerQuickMenu sellerId={sellerId} />
-      <button
-        type="button"
-        onClick={() => setSellModalOpen(true)}
+      <Link
+        href="/sell"
         className="min-w-0 inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-[16px] font-semibold outline-none transition-[background-color] hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)]/35 [html[data-theme='light']_&]:hover:bg-zinc-200/50 [html[data-theme='light']_&]:focus-visible:ring-reels-crimson/25"
       >
         <span
@@ -31,8 +28,7 @@ export function SellerFeedSellCta({ sellerId }: { sellerId: string }) {
         <span className="text-white [html[data-theme='light']_&]:text-zinc-900">
           {t("seller.feed.sellCta")}
         </span>
-      </button>
-      <SellRegistrationModal open={sellModalOpen} onClose={() => setSellModalOpen(false)} />
+      </Link>
     </div>
   );
 }

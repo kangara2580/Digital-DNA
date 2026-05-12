@@ -20,6 +20,7 @@ export default async function TossSuccessPage({ searchParams }: PageProps) {
           paymentKey={one(params.paymentKey)}
           orderId={one(params.orderId)}
           amount={one(params.amount)}
+          nextRedirect={one(params.next)}
         />
       </Suspense>
     </main>

@@ -1,13 +1,11 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DocumentTitleI18n } from "@/components/DocumentTitleI18n";
 import { MyPageSectionShell } from "@/components/MyPageSectionShell";
 import { formatCredits, formatWhen, formatWon, ledgerTypeLabel } from "@/components/assets/assetsFormat";
 import { useMeWallet } from "@/hooks/useMeWallet";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ASSETS_CREDIT_PAYMENT } from "@/lib/assetsPaths";
 import { MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 import type { SiteLocale } from "@/lib/sitePreferences";
 
@@ -15,12 +13,23 @@ export function AssetsSettlementClient() {
   const { t, locale } = useTranslation();
   const { wallet, walletError, walletLoading, loadWallet } = useMeWallet();
 
-  const [bankName, setBankName] = useState("");
-  const [accountNo, setAccountNo] = useState("");
-  const [accountHolder, setAccountHolder] = useState("");
+  const [regBankName, setRegBankName] = useState("");
+  const [regAccountNo, setRegAccountNo] = useState("");
+  const [regAccountHolder, setRegAccountHolder] = useState("");
+  const [accountBusy, setAccountBusy] = useState(false);
+  const [accountMessage, setAccountMessage] = useState<string | null>(null);
+  const [accountError, setAccountError] = useState<string | null>(null);
+
   const [payoutBusy, setPayoutBusy] = useState(false);
   const [payoutMessage, setPayoutMessage] = useState<string | null>(null);
   const [payoutError, setPayoutError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!wallet) return;
+    setRegBankName(wallet.payoutAccount?.bankName ?? "");
+    setRegAccountNo(wallet.payoutAccount?.accountNo ?? "");
+    setRegAccountHolder(wallet.payoutAccount?.accountHolder ?? "");
+  }, [wallet]);
 
   const feePct = useMemo(() => {
     const bps = wallet?.policy.platformFeeRateBps ?? 0;
@@ -30,6 +39,49 @@ export function AssetsSettlementClient() {
   }, [locale, wallet?.policy.platformFeeRateBps]);
 
   const available = wallet?.settlement.availableAmount ?? 0;
+
+  const hasPayoutAccount = Boolean(
+    wallet?.payoutAccount?.bankName &&
+      wallet.payoutAccount.accountNo &&
+      wallet.payoutAccount.accountHolder,
+  );
+
+  async function savePayoutAccount() {
+    if (accountBusy) return;
+    setAccountBusy(true);
+    setAccountError(null);
+    setAccountMessage(null);
+    const bn = regBankName.trim();
+    const an = regAccountNo.trim();
+    const ah = regAccountHolder.trim();
+    if (!bn || !an || !ah) {
+      setAccountError(t("assets.payout.accountFieldsRequired"));
+      setAccountBusy(false);
+      return;
+    }
+    try {
+      const res = await fetch("/api/me/payout-account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bankName: bn, accountNo: an, accountHolder: ah }),
+      });
+      const data = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+      if (!res.ok || !data?.ok) {
+        setAccountError(
+          data?.error === "fields_required"
+            ? t("assets.payout.accountFieldsRequired")
+            : t("assets.payout.accountSaveErr"),
+        );
+        return;
+      }
+      setAccountMessage(t("assets.payout.accountSaved"));
+      await loadWallet();
+    } catch {
+      setAccountError(t("assets.payout.accountSaveErr"));
+    } finally {
+      setAccountBusy(false);
+    }
+  }
 
   async function submitPayout() {
     if (!wallet || available <= 0 || payoutBusy) return;
@@ -42,9 +94,6 @@ export function AssetsSettlementClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: available,
-          bankName: bankName.trim() || undefined,
-          accountNo: accountNo.trim() || undefined,
-          accountHolder: accountHolder.trim() || undefined,
         }),
       });
       const data = (await res.json().catch(() => null)) as {
@@ -56,6 +105,8 @@ export function AssetsSettlementClient() {
       if (!res.ok || !data?.ok) {
         if (data?.error === "no_available") {
           setPayoutError(t("assets.payout.errNoAvailable"));
+        } else if (data?.error === "payout_account_required") {
+          setPayoutError(t("assets.payout.errAccountRequired"));
         } else if (data?.error === "full_amount_required" && typeof data.availableAmount === "number") {
           setPayoutError(
             `${t("assets.payout.errFullAmount")} (${t("assets.payout.available")}: ${formatWon(data.availableAmount, locale as SiteLocale)})`,
@@ -67,9 +118,6 @@ export function AssetsSettlementClient() {
       }
 
       setPayoutMessage(t("assets.payout.success"));
-      setBankName("");
-      setAccountNo("");
-      setAccountHolder("");
       await loadWallet();
     } catch {
       setPayoutError(t("assets.errLoad"));
@@ -81,12 +129,6 @@ export function AssetsSettlementClient() {
   return (
     <>
       <DocumentTitleI18n titleKey="meta.assetsSettlement" />
-      <p className="text-[15px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        {t("assets.settlement.pageLead")}{" "}
-        <Link href={ASSETS_CREDIT_PAYMENT} className="font-medium text-[color:var(--reels-point)] underline-offset-2 hover:underline">
-          {t("assets.settlement.linkToCredit")}
-        </Link>
-      </p>
 
       {walletError ? (
         <div className="rounded-2xl border border-rose-400/25 bg-rose-500/10 p-5 text-sm text-rose-100 [html[data-theme='light']_&]:border-rose-200 [html[data-theme='light']_&]:bg-rose-50 [html[data-theme='light']_&]:text-rose-900">
@@ -193,8 +235,65 @@ export function AssetsSettlementClient() {
         </MyPageSectionShell>
 
         <MyPageSectionShell title={t("assets.section.payouts.title")} description={t("assets.section.payouts.lead")}>
+          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+            <h3 className="text-lg font-semibold text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
+              {t("assets.payout.accountSectionTitle")}
+            </h3>
+            <p className="mt-2 text-[15px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+              {t("assets.payout.accountSectionLead")}
+            </p>
+            {accountMessage ? (
+              <p className="mt-3 text-[15px] text-emerald-300 [html[data-theme='light']_&]:text-emerald-800">
+                {accountMessage}
+              </p>
+            ) : null}
+            {accountError ? (
+              <p className="mt-3 text-[15px] text-rose-300 [html[data-theme='light']_&]:text-rose-800">
+                {accountError}
+              </p>
+            ) : null}
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <label className="block text-[14px] font-medium text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
+                {t("assets.payout.accountBankLabel")}
+                <input
+                  value={regBankName}
+                  onChange={(e) => setRegBankName(e.target.value)}
+                  autoComplete="organization"
+                  className="mt-2 w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2.5 text-[15px] text-zinc-100 outline-none ring-[color:var(--reels-point)]/30 focus:ring-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+                />
+              </label>
+              <label className="block text-[14px] font-medium text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
+                {t("assets.payout.accountNumberLabel")}
+                <input
+                  value={regAccountNo}
+                  onChange={(e) => setRegAccountNo(e.target.value)}
+                  inputMode="numeric"
+                  autoComplete="off"
+                  className="mt-2 w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2.5 text-[15px] text-zinc-100 outline-none ring-[color:var(--reels-point)]/30 focus:ring-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+                />
+              </label>
+              <label className="block text-[14px] font-medium text-zinc-300 sm:col-span-2 [html[data-theme='light']_&]:text-zinc-700">
+                {t("assets.payout.accountHolderLabel")}
+                <input
+                  value={regAccountHolder}
+                  onChange={(e) => setRegAccountHolder(e.target.value)}
+                  autoComplete="name"
+                  className="mt-2 w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2.5 text-[15px] text-zinc-100 outline-none ring-[color:var(--reels-point)]/30 focus:ring-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
+                />
+              </label>
+            </div>
+            <button
+              type="button"
+              disabled={!wallet || walletLoading || accountBusy}
+              onClick={() => void savePayoutAccount()}
+              className={`mt-6 ${MYPAGE_OUTLINE_BTN_SM} disabled:cursor-not-allowed disabled:opacity-40`}
+            >
+              {accountBusy ? t("assets.payout.accountSavingBusy") : t("assets.payout.accountSaveCta")}
+            </button>
+          </div>
+
           {wallet ? (
-            <div className="space-y-3 text-[15px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600">
+            <div className="mt-8 space-y-3 text-[15px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-600">
               <p>{t("assets.payout.holdHint", { days: wallet.policy.settlementHoldDays })}</p>
               <p>
                 {t("assets.payout.feeHint", {
@@ -212,6 +311,9 @@ export function AssetsSettlementClient() {
             <h3 className="text-lg font-semibold text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
               {t("assets.payout.requestTitle")}
             </h3>
+            <p className="mt-2 text-[15px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+              {t("assets.payout.requestSectionLead")}
+            </p>
             {payoutMessage ? (
               <p className="mt-3 text-[15px] text-emerald-300 [html[data-theme='light']_&]:text-emerald-800">
                 {payoutMessage}
@@ -223,7 +325,7 @@ export function AssetsSettlementClient() {
               </p>
             ) : null}
 
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <div className="mt-5">
               <label className="block text-[14px] font-medium text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
                 {t("assets.payout.amountLabel")}
                 <input
@@ -232,36 +334,18 @@ export function AssetsSettlementClient() {
                   className="mt-2 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2.5 text-[15px] text-zinc-100 outline-none [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
                 />
               </label>
-              <div className="hidden sm:block" aria-hidden />
-              <label className="block text-[14px] font-medium text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-                {t("assets.payout.bankLabel")}
-                <input
-                  value={bankName}
-                  onChange={(e) => setBankName(e.target.value)}
-                  className="mt-2 w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2.5 text-[15px] text-zinc-100 outline-none ring-[color:var(--reels-point)]/30 focus:ring-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
-                />
-              </label>
-              <label className="block text-[14px] font-medium text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-                {t("assets.payout.accountLabel")}
-                <input
-                  value={accountNo}
-                  onChange={(e) => setAccountNo(e.target.value)}
-                  className="mt-2 w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2.5 text-[15px] text-zinc-100 outline-none ring-[color:var(--reels-point)]/30 focus:ring-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
-                />
-              </label>
-              <label className="block text-[14px] font-medium text-zinc-300 sm:col-span-2 [html[data-theme='light']_&]:text-zinc-700">
-                {t("assets.payout.holderLabel")}
-                <input
-                  value={accountHolder}
-                  onChange={(e) => setAccountHolder(e.target.value)}
-                  className="mt-2 w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2.5 text-[15px] text-zinc-100 outline-none ring-[color:var(--reels-point)]/30 focus:ring-2 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
-                />
-              </label>
             </div>
 
             <button
               type="button"
-              disabled={!wallet || available <= 0 || available < 1000 || payoutBusy || walletLoading}
+              disabled={
+                !wallet ||
+                !hasPayoutAccount ||
+                available <= 0 ||
+                available < 1000 ||
+                payoutBusy ||
+                walletLoading
+              }
               onClick={() => void submitPayout()}
               className={`mt-6 ${MYPAGE_OUTLINE_BTN_SM} disabled:cursor-not-allowed disabled:opacity-40`}
             >

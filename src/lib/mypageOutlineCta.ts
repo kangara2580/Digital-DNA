@@ -7,3 +7,9 @@ export const MYPAGE_OUTLINE_BTN_CORE =
 export const MYPAGE_OUTLINE_BTN_SM = `${MYPAGE_OUTLINE_BTN_CORE} px-5 py-2.5 text-[16px]`;
 
 export const MYPAGE_OUTLINE_BTN_MD = `${MYPAGE_OUTLINE_BTN_CORE} px-6 py-3 text-[16px]`;
+
+/** `MYPAGE_OUTLINE_BTN_CORE`와 동일 호버·리프트·스케일, 테두리만 회색(핑크 고정 아님) — 창작 스튜디오「임시 저장」 */
+export const MYPAGE_OUTLINE_BTN_CORE_TRANSPARENT_BORDER =
+  "inline-flex items-center justify-center rounded-full border border-white/22 bg-transparent font-semibold text-white outline-none transition-[transform,background-color,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-[color:var(--reels-point)]/14 active:translate-y-0 active:scale-[0.98] motion-reduce:transition-colors motion-reduce:hover:scale-100 motion-reduce:hover:translate-y-0 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-[color:var(--reels-point)]/10";
+
+export const MYPAGE_OUTLINE_BTN_MD_TRANSPARENT = `${MYPAGE_OUTLINE_BTN_CORE_TRANSPARENT_BORDER} px-6 py-3 text-[16px]`;

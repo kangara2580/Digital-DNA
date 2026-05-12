@@ -33,6 +33,12 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { getExternalLiveStatsPageUrl } from "@/lib/externalEmbed/playerUrls";
 import { explorePurchaseButtonClass } from "@/lib/explorePurchaseButtonClass";
 import {
+  EXPLORE_RAIL_ACTION_BTN,
+  EXPLORE_RAIL_ACTION_BTN_ACTIVE_TINT,
+  EXPLORE_RAIL_ACTION_ICON,
+  EXPLORE_RAIL_ACTION_ICON_FILLED,
+} from "@/lib/exploreRailActionTokens";
+import {
   revenueAmountClass,
   revenueTrendDeltaGlyphClass,
   revenueTrendDownClass,
@@ -52,17 +58,6 @@ type ReelSlideProps = {
   muted: boolean;
   onMutedChange: (muted: boolean) => void;
 };
-
-/** 액션 hit 영역 통일 (카트·찜) */
-const railActionPlainBtn =
-  "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-0 bg-transparent p-0 text-white/90 transition-colors duration-200 hover:text-white active:scale-[0.92] [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900";
-
-const railActionIcon =
-  "h-[21px] w-[21px] shrink-0 pointer-events-none stroke-[2.25] [html[data-theme='light']_&]:stroke-zinc-700";
-
-/** 담김·찜·좋아요 활성 — `railActionIcon`의 라이트 zinc 테두리가 브랜드색 가리지 않도록 고정 채색 */
-const railActionIconBrandFilled =
-  "h-[21px] w-[21px] shrink-0 pointer-events-none stroke-[2.25] stroke-[var(--reels-point)] fill-[var(--reels-point)] [html[data-theme='light']_&]:stroke-[var(--reels-point)] [html[data-theme='light']_&]:fill-[var(--reels-point)]";
 
 /** 레일 바깥 패딩만 (테두리 없음) */
 const railDeckClass = "shrink-0 pb-6 pt-4";
@@ -399,11 +394,7 @@ function ReelDesktopRail({
           icon={
             <Heart
               strokeWidth={2.25}
-              className={
-                likedByMe
-                  ? "shrink-0 stroke-[var(--reels-point)] fill-[var(--reels-point)]"
-                  : "shrink-0 stroke-white/[0.9] [html[data-theme='light']_&]:stroke-zinc-700"
-              }
+              className="shrink-0 stroke-white/[0.9] [html[data-theme='light']_&]:stroke-zinc-700"
               aria-hidden
             />
           }
@@ -474,10 +465,8 @@ function ReelDesktopRail({
             if (!requireAuth()) return;
             toggleCartFromButton(e.currentTarget, posterSrc ?? undefined);
           }}
-          className={`${railActionPlainBtn} disabled:cursor-not-allowed disabled:opacity-40 ${
-            inCart
-              ? "!text-[var(--reels-point)] hover:brightness-110 [html[data-theme='light']_&]:!text-[var(--reels-point)]"
-              : ""
+          className={`${EXPLORE_RAIL_ACTION_BTN} disabled:cursor-not-allowed disabled:opacity-40 ${
+            inCart ? EXPLORE_RAIL_ACTION_BTN_ACTIVE_TINT : ""
           }`}
           disabled={soldOut}
           aria-label={inCart ? t("explore.rail.cartRemove") : t("explore.rail.cartAdd")}
@@ -485,7 +474,7 @@ function ReelDesktopRail({
         >
           <ShoppingCart
             strokeWidth={2.25}
-            className={inCart ? railActionIconBrandFilled : `${railActionIcon} stroke-current`}
+            className={inCart ? EXPLORE_RAIL_ACTION_ICON_FILLED : `${EXPLORE_RAIL_ACTION_ICON} stroke-current`}
           />
         </button>
         <button
@@ -495,10 +484,8 @@ function ReelDesktopRail({
             e.preventDefault();
             void toggleInternalLike();
           }}
-          className={`relative ${railActionPlainBtn} ${
-            likedByMe
-              ? "!text-[var(--reels-point)] hover:brightness-110 [html[data-theme='light']_&]:!text-[var(--reels-point)]"
-              : ""
+          className={`relative ${EXPLORE_RAIL_ACTION_BTN} ${
+            likedByMe ? EXPLORE_RAIL_ACTION_BTN_ACTIVE_TINT : ""
           }`}
           aria-label={likedByMe ? t("explore.rail.likeUndo") : t("explore.rail.like")}
           aria-pressed={likedByMe}
@@ -509,19 +496,17 @@ function ReelDesktopRail({
           <Heart
             strokeWidth={2.25}
             className={`relative z-[1] transition-transform duration-150 ${
-              likedByMe ? railActionIconBrandFilled : `${railActionIcon} stroke-current`
+              likedByMe ? EXPLORE_RAIL_ACTION_ICON_FILLED : `${EXPLORE_RAIL_ACTION_ICON} stroke-current`
             } ${likePulse || likeBurst ? "scale-110" : "scale-100"}`}
           />
         </button>
         <BookmarkButton
           video={video}
           beforeToggle={requireAuth}
-          buttonClassNameBase={railActionPlainBtn}
-          buttonClassWhenBookmarked={
-            "!text-[var(--reels-point)] hover:brightness-110 [html[data-theme='light']_&]:!text-[var(--reels-point)]"
-          }
-          iconClassWhenBookmarked={railActionIconBrandFilled}
-          iconClassWhenDefault={`${railActionIcon} stroke-current`}
+          buttonClassNameBase={EXPLORE_RAIL_ACTION_BTN}
+          buttonClassWhenBookmarked={EXPLORE_RAIL_ACTION_BTN_ACTIVE_TINT}
+          iconClassWhenBookmarked={EXPLORE_RAIL_ACTION_ICON_FILLED}
+          iconClassWhenDefault={`${EXPLORE_RAIL_ACTION_ICON} stroke-current`}
         />
       </div>
 

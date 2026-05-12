@@ -6,6 +6,7 @@ import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
 import { writeContentChangeLog } from "@/lib/contentChangeLog";
 import { prisma } from "@/lib/prisma";
 import { isSellVideoCategory } from "@/lib/sellVideoCategory";
+import { SELL_CUSTOM_POSTER_MAX_BYTES } from "@/lib/sellCustomPosterMaxBytes";
 import { normalizeSellHashtags } from "@/lib/sellHashtags";
 
 export const runtime = "nodejs";
@@ -222,6 +223,7 @@ export async function PATCH(
   const hashtagsRaw = fd.get("hashtags");
   const categoryRaw = fd.get("category");
   const poster = fd.get("poster");
+  const priceRaw = fd.get("price");
 
   const title =
     typeof titleRaw === "string" ? titleRaw.trim() : String(titleRaw ?? "").trim();
@@ -241,6 +243,16 @@ export async function PATCH(
   if (!isSellVideoCategory(category)) {
     return NextResponse.json(
       { ok: false, error: "카테고리를 선택해 주세요." },
+      { status: 400 },
+    );
+  }
+
+  const priceStr =
+    typeof priceRaw === "string" ? priceRaw.trim() : String(priceRaw ?? "").trim();
+  const priceWon = Number.parseInt(priceStr.replace(/,/g, ""), 10);
+  if (!Number.isFinite(priceWon) || priceWon < 100) {
+    return NextResponse.json(
+      { ok: false, error: "가격은 100원 이상으로 입력해 주세요." },
       { status: 400 },
     );
   }
@@ -269,9 +281,9 @@ export async function PATCH(
         { status: 400 },
       );
     }
-    if (poster.size > 8 * 1024 * 1024) {
+    if (poster.size > SELL_CUSTOM_POSTER_MAX_BYTES) {
       return NextResponse.json(
-        { ok: false, error: "썸네일은 8MB 이하로 올려 주세요." },
+        { ok: false, error: "썸네일은 2MB 이하로 올려 주세요." },
         { status: 413 },
       );
     }
@@ -321,6 +333,7 @@ export async function PATCH(
           description: description || null,
           hashtags: hashtagsNormalized,
           category,
+          price: priceWon,
           status: "pending",
           moderationReason: "Seller edited content; admin review required.",
           approvedAt: null,
@@ -337,6 +350,7 @@ export async function PATCH(
           title,
           description: description || null,
           hashtags: hashtagsNormalized,
+          price: priceWon,
           status: "pending",
           moderationReason: "Seller edited content; admin review required.",
           approvedAt: null,

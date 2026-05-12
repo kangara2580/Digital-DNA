@@ -22,6 +22,8 @@ type Props = {
   hideMetricLabels?: boolean;
   /** 장바구니·좁은 그리드 — 패딩·행 간격·글자 크기 축소 */
   dense?: boolean;
+  /** 상세·구매 등 — 수익만 만/억 축약 없이 전체 숫자(천 단위 구분) */
+  revenueFullWon?: boolean;
 };
 
 const rowCls = "flex items-center gap-8 py-1.5";
@@ -42,9 +44,16 @@ export function TrendingVideoStatsFooter({
   stockRow,
   hideMetricLabels = false,
   dense = false,
+  revenueFullWon = false,
 }: Props) {
   const { t, locale } = useTranslation();
   const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
+  const revenueDisplay = useMemo(() => {
+    const v = Math.max(0, Math.floor(metrics.cumulativeRevenueWon));
+    if (!revenueFullWon) return fmt.formatCompactWon(metrics.cumulativeRevenueWon);
+    if (locale === "en") return `₩${v.toLocaleString("en-US")}`;
+    return v.toLocaleString("ko-KR");
+  }, [revenueFullWon, metrics.cumulativeRevenueWon, fmt, locale]);
   const isUp = metrics.growthPercent >= 0;
   const metricRowCls =
     dense && hideMetricLabels
@@ -75,6 +84,22 @@ export function TrendingVideoStatsFooter({
   const iconCls = dense ? "h-3 w-3 shrink-0" : "h-3.5 w-3.5 shrink-0";
   const deltaCls = dense ? "text-[9px] leading-none" : "text-[11px] leading-none";
 
+  const labelRevenue = hideMetricLabels ? (
+    <span className="sr-only">{t("stats.revenue")}</span>
+  ) : (
+    t("stats.revenue")
+  );
+  const labelViews = hideMetricLabels ? (
+    <span className="sr-only">{t("stats.views")}</span>
+  ) : (
+    t("stats.views")
+  );
+  const labelLikes = hideMetricLabels ? (
+    <span className="sr-only">{t("stats.likes")}</span>
+  ) : (
+    t("stats.likes")
+  );
+
   return (
     <div
       className={`${hideMetricLabels ? "w-full min-w-0" : "w-fit"} ${
@@ -83,59 +108,59 @@ export function TrendingVideoStatsFooter({
           : "px-3 py-2 [html[data-theme='light']_&]:bg-white sm:px-4"
       }`}
     >
-      <dl className={hideMetricLabels ? "w-full min-w-0 leading-snug" : "leading-snug"}>
-        <div className={metricRowCls}>
-          <dt className={`${labelColCls} ${labelTone}`}>
+      <ul className={`m-0 list-none p-0 ${hideMetricLabels ? "w-full min-w-0 leading-snug" : "leading-snug"}`}>
+        <li key="revenue" className={metricRowCls}>
+          <div className={`${labelColCls} ${labelTone}`}>
             <TrendingUp className={iconCls} aria-hidden />
-            {hideMetricLabels ? <span className="sr-only">{t("stats.revenue")}</span> : t("stats.revenue")}
+            {labelRevenue}
             <span
               className={`${revenueTrendDeltaGlyphClass} ${deltaCls} ${isUp ? revenueTrendUpClass : revenueTrendDownClass}`}
               aria-hidden
             >
               {isUp ? "▲" : "▼"}
             </span>
-          </dt>
-          <dd
+          </div>
+          <div
             className={`min-w-0 font-extrabold tabular-nums ${metricValueSize} ${valueDdExtras} ${revenueAmountClass}`}
           >
-            {fmt.formatCompactWon(metrics.cumulativeRevenueWon)}
-          </dd>
-        </div>
-        <div className={metricRowCls}>
-          <dt className={`${labelColCls} ${labelTone}`}>
+            {revenueDisplay}
+          </div>
+        </li>
+        <li key="views" className={metricRowCls}>
+          <div className={`${labelColCls} ${labelTone}`}>
             <Eye className={iconCls} aria-hidden />
-            {hideMetricLabels ? <span className="sr-only">{t("stats.views")}</span> : t("stats.views")}
-          </dt>
-          <dd className={`${neutralMetricValueCls} min-w-0 ${valueDdExtras}`}>
+            {labelViews}
+          </div>
+          <div className={`${neutralMetricValueCls} min-w-0 ${valueDdExtras}`}>
             {fmt.formatViewCountRail(metrics.totalViews)}
-          </dd>
-        </div>
-        <div className={metricRowCls}>
-          <dt className={`${labelColCls} ${labelTone}`}>
+          </div>
+        </li>
+        <li key="likes" className={metricRowCls}>
+          <div className={`${labelColCls} ${labelTone}`}>
             <Heart className={iconCls} aria-hidden />
-            {hideMetricLabels ? <span className="sr-only">{t("stats.likes")}</span> : t("stats.likes")}
-          </dt>
-          <dd className={`${neutralMetricValueCls} min-w-0 ${valueDdExtras}`}>
+            {labelLikes}
+          </div>
+          <div className={`${neutralMetricValueCls} min-w-0 ${valueDdExtras}`}>
             {fmt.formatLikeApprox(metrics.totalLikes)}
-          </dd>
-        </div>
+          </div>
+        </li>
         {typeof salesCount === "number" ? (
-          <div className={rowCls}>
-            <dt className={`${labelCls} inline-flex items-center gap-1.5`}>
+          <li key="purchases" className={rowCls}>
+            <div className={`${labelCls} inline-flex items-center gap-1.5`}>
               <ShoppingBag className="h-3.5 w-3.5 shrink-0" aria-hidden />
               {t("stats.purchases")}
-            </dt>
-            <dd className={valueCls}>
+            </div>
+            <div className={valueCls}>
               {t("stats.buyersCount", {
                 n: salesCount.toLocaleString(fmt.numberLocale),
               })}
-            </dd>
-          </div>
+            </div>
+          </li>
         ) : null}
         {stockRow ? (
-          <div className={rowCls}>
-            <dt className={labelCls}>{t("stats.remaining")}</dt>
-            <dd className={valueCls}>
+          <li key="stock" className={rowCls}>
+            <div className={labelCls}>{t("stats.remaining")}</div>
+            <div className={valueCls}>
               {stockRow.soldOut ? (
                 <span className="text-reels-crimson">{t("stats.soldOutLine")}</span>
               ) : (
@@ -147,10 +172,10 @@ export function TrendingVideoStatsFooter({
                     : "—"}
                 </span>
               )}
-            </dd>
-          </div>
+            </div>
+          </li>
         ) : null}
-      </dl>
+      </ul>
     </div>
   );
 }

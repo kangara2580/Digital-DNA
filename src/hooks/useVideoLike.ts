@@ -6,6 +6,23 @@ import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { captureActionError, logActionEvent } from "@/lib/observability";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
+/** 같은 창의 좋아요 목록 등이 카드 하트와 동기화되도록 */
+export const USER_FAVORITE_LIKE_UPDATED_EVENT = "ara-user-favorite-like-updated";
+
+export type UserFavoriteLikeUpdatedDetail = {
+  videoId: string;
+  likedByMe: boolean;
+};
+
+function dispatchUserFavoriteLikeUpdated(videoId: string, likedByMe: boolean) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent<UserFavoriteLikeUpdatedDetail>(USER_FAVORITE_LIKE_UPDATED_EVENT, {
+      detail: { videoId, likedByMe },
+    }),
+  );
+}
+
 type UseVideoLikeOptions = {
   videoId: string;
   requireAuth: () => boolean;
@@ -66,8 +83,10 @@ export function useVideoLike({ videoId, requireAuth, onError }: UseVideoLikeOpti
     const nextLiked = !likedByMe;
     const prevLiked = likedByMe;
     const prevCount = internalLikeCount;
+    const canon = canonicalFavoriteVideoId(videoId);
     setLikedByMe(nextLiked);
     setInternalLikeCount((prev) => Math.max(0, prev + (nextLiked ? 1 : -1)));
+    dispatchUserFavoriteLikeUpdated(canon, nextLiked);
     setLikeBusy(true);
     try {
       const supabase = getSupabaseBrowserClient();
@@ -91,7 +110,11 @@ export function useVideoLike({ videoId, requireAuth, onError }: UseVideoLikeOpti
       if (typeof body.internalLikes === "number") {
         setInternalLikeCount(Math.max(0, body.internalLikes));
       }
-      setLikedByMe(Boolean(body.likedByMe));
+      const serverLiked = Boolean(body.likedByMe);
+      setLikedByMe(serverLiked);
+      if (serverLiked !== nextLiked) {
+        dispatchUserFavoriteLikeUpdated(canon, serverLiked);
+      }
       logActionEvent({
         domain: "like",
         action: nextLiked ? "like" : "unlike",
@@ -104,6 +127,7 @@ export function useVideoLike({ videoId, requireAuth, onError }: UseVideoLikeOpti
     } catch {
       setLikedByMe(prevLiked);
       setInternalLikeCount(prevCount);
+      dispatchUserFavoriteLikeUpdated(canon, prevLiked);
       void loadLikeState();
       captureActionError(new Error("like_toggle_failed"), {
         domain: "like",

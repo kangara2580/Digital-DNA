@@ -39,6 +39,12 @@ import {
   EXTERNAL_EMBED_IFRAME_SANDBOX,
 } from "@/lib/externalEmbed/iframeSandbox";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
+import {
+  EXPLORE_RAIL_ACTION_BTN,
+  EXPLORE_RAIL_ACTION_BTN_ACTIVE_TINT,
+  EXPLORE_RAIL_ACTION_ICON,
+  EXPLORE_RAIL_ACTION_ICON_FILLED,
+} from "@/lib/exploreRailActionTokens";
 import type { SellerSocialLink } from "@/lib/sellerSocialLinks";
 import { getVideoContentSource } from "@/lib/videoSourcePlatform";
 
@@ -113,6 +119,24 @@ export function VideoDetailView({
   useEffect(() => {
     recordView(video.id);
   }, [video.id, recordView]);
+
+  /** DB에 등록된 마켓 영상만 — 세션당 1회 조회수 반영 */
+  useEffect(() => {
+    const id = video.id?.trim();
+    if (!id) return;
+    if (/^(tiktok-|youtube-|instagram-)/i.test(id)) return;
+    if (typeof window === "undefined") return;
+    const key = `araRecordedDetailView:${id}`;
+    if (sessionStorage.getItem(key)) return;
+    void fetch("/api/videos/record-view", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ videoId: id }),
+      keepalive: true,
+    }).then((res) => {
+      if (res.ok) sessionStorage.setItem(key, "1");
+    });
+  }, [video.id]);
 
   const sellerHandle = useMemo(() => (fromSeller ?? "").trim(), [fromSeller]);
 
@@ -672,6 +696,7 @@ export function VideoDetailView({
             {/* 스탯 — 미니멀 카드 */}
             <section className="w-fit mx-auto">
               <TrendingVideoStatsFooter
+                revenueFullWon
                 metrics={detailMetrics}
                 salesCount={meta.salesCount}
                 stockRow={
@@ -739,8 +764,8 @@ export function VideoDetailView({
               )}
             </div>
 
-            {/* 액션 아이콘 */}
-            <div className="flex items-center justify-center gap-4">
+            {/* 액션 아이콘 — 탐색 레일과 동일 실루엣 */}
+            <div className="flex items-center justify-center gap-3">
               <button
                 type="button"
                 title={inCart ? t("explore.rail.cartRemove") : t("explore.rail.cartAdd")}
@@ -749,16 +774,19 @@ export function VideoDetailView({
                   if (!requireAuth()) return;
                   toggleCartFromButton(e.currentTarget, posterSrc ?? undefined);
                 }}
-                className={`inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border border-white/10 bg-white/[0.04] transition-colors hover:border-white/25 hover:text-zinc-100 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 ${
-                  inCart
-                    ? "border-[var(--reels-point)]/55 text-[var(--reels-point)] hover:border-[var(--reels-point)]/75 [html[data-theme='light']_&]:text-[var(--reels-point)]"
-                    : "text-zinc-400 [html[data-theme='light']_&]:text-zinc-600"
+                className={`${EXPLORE_RAIL_ACTION_BTN} disabled:cursor-not-allowed disabled:opacity-40 ${
+                  inCart ? EXPLORE_RAIL_ACTION_BTN_ACTIVE_TINT : ""
                 }`}
                 disabled={soldOut}
                 aria-label={inCart ? t("explore.rail.cartRemove") : t("explore.rail.cartAdd")}
                 aria-pressed={inCart}
               >
-                <ShoppingCart className="h-[18px] w-[18px]" />
+                <ShoppingCart
+                  strokeWidth={2.25}
+                  className={
+                    inCart ? EXPLORE_RAIL_ACTION_ICON_FILLED : `${EXPLORE_RAIL_ACTION_ICON} stroke-current`
+                  }
+                />
               </button>
               <button
                 type="button"
@@ -767,22 +795,21 @@ export function VideoDetailView({
                   e.preventDefault();
                   void toggleInternalLike();
                 }}
-                className={`relative inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border transition-all duration-200 [html[data-theme='light']_&]:bg-zinc-100 ${
-                  likedByMe
-                    ? "border-[var(--reels-point)]/60 bg-[var(--reels-point)]/[0.14] text-[var(--reels-point)] [html[data-theme='light']_&]:border-[var(--reels-point)]/45 [html[data-theme='light']_&]:bg-[var(--reels-point)]/[0.10] [html[data-theme='light']_&]:text-[var(--reels-point)]"
-                    : "border-white/10 bg-white/[0.04] text-zinc-400 hover:border-white/25 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600"
-                } ${likePulse ? "scale-110" : "scale-100"}`}
+                className={`relative ${EXPLORE_RAIL_ACTION_BTN} ${
+                  likedByMe ? EXPLORE_RAIL_ACTION_BTN_ACTIVE_TINT : ""
+                } disabled:cursor-not-allowed disabled:opacity-40`}
                 aria-label={likedByMe ? t("explore.rail.likeUndo") : t("explore.rail.like")}
                 aria-pressed={likedByMe}
                 disabled={likeBusy}
               >
                 {likeBurst ? (
-                  <span className="pointer-events-none absolute inset-0 rounded-full bg-[var(--reels-point)]/30 animate-ping" />
+                  <span className="pointer-events-none absolute inset-0 rounded-full bg-[var(--reels-point)]/28 animate-ping" />
                 ) : null}
                 <Heart
-                  className={`relative z-[1] h-[18px] w-[18px] transition-transform duration-300 ${
-                    likedByMe ? "fill-current text-[var(--reels-point)]" : ""
-                  } ${likeBurst ? "scale-125" : "scale-100"}`}
+                  strokeWidth={2.25}
+                  className={`relative z-[1] transition-transform duration-150 ${
+                    likedByMe ? EXPLORE_RAIL_ACTION_ICON_FILLED : `${EXPLORE_RAIL_ACTION_ICON} stroke-current`
+                  } ${likePulse || likeBurst ? "scale-110" : "scale-100"}`}
                 />
               </button>
               <button
@@ -795,15 +822,18 @@ export function VideoDetailView({
                   window.setTimeout(() => setWishlistPulse(false), 170);
                   toggleWishlist();
                 }}
-                className={`inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border transition-all duration-200 [html[data-theme='light']_&]:bg-zinc-100 ${
-                  wishlisted
-                    ? "border-reels-cyan/50 bg-reels-cyan/10 text-reels-cyan"
-                    : "border-white/10 bg-white/[0.04] text-zinc-400 hover:border-white/25 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-600"
-                } ${wishlistPulse ? "scale-110" : "scale-100"}`}
+                className={`${EXPLORE_RAIL_ACTION_BTN} ${
+                  wishlisted ? EXPLORE_RAIL_ACTION_BTN_ACTIVE_TINT : ""
+                } transition-transform duration-200 ${wishlistPulse ? "scale-110" : "scale-100"}`}
                 aria-label={wishlisted ? t("video.detail.wishlistRemove") : t("video.detail.wishlistAdd")}
                 aria-pressed={wishlisted}
               >
-                <Bookmark className={`h-[18px] w-[18px] ${wishlisted ? "fill-current" : ""}`} />
+                <Bookmark
+                  strokeWidth={2.25}
+                  className={
+                    wishlisted ? EXPLORE_RAIL_ACTION_ICON_FILLED : `${EXPLORE_RAIL_ACTION_ICON} stroke-current`
+                  }
+                />
               </button>
             </div>
 

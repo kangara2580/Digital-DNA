@@ -10,11 +10,20 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
 
 export type PurchasedListItem = {
   videoId: string;
-  title: string;
+  /** 결제 시점 금액(원). 유료 결제 기록이 없으면 목록가와 동일하게 둡니다. */
+  paidPriceWon: number;
+  listPriceWon: number;
+  /** 마켓에서 신규 구매 가능 여부(승인된 판매 목록 또는 카탈로그). */
+  listedForSale: boolean;
+  /** 권한·결제 중 더 늦게 잡힌 시각(ms). */
+  acquiredAt: number;
+  /** 카드·상세에 쓰는 영상 페이로드 */
+  feed: FeedVideo;
 };
 
 type Ctx = {
@@ -24,6 +33,50 @@ type Ctx = {
 };
 
 const PurchasedVideosContext = createContext<Ctx | null>(null);
+
+function placeholderFeed(videoId: string, title: string): FeedVideo {
+  return {
+    id: videoId,
+    title,
+    creator: "—",
+    src: "/videos/sample1.mp4",
+    poster: `https://picsum.photos/seed/${encodeURIComponent(videoId)}/720/1280`,
+    orientation: "portrait",
+    priceWon: 0,
+    listing: { sellerId: "", views: 0, salesCount: 0 },
+  };
+}
+
+function parseItem(row: Record<string, unknown>, videoId: string): PurchasedListItem {
+  const acquiredAt =
+    typeof row.acquiredAt === "number" && Number.isFinite(row.acquiredAt) ? row.acquiredAt : 0;
+  const feed =
+    row.feed && typeof row.feed === "object" && row.feed !== null && typeof (row.feed as FeedVideo).id === "string"
+      ? (row.feed as FeedVideo)
+      : placeholderFeed(
+          videoId,
+          typeof row.title === "string" ? row.title : videoId,
+        );
+  const listPriceWon =
+    typeof row.listPriceWon === "number" && Number.isFinite(row.listPriceWon)
+      ? row.listPriceWon
+      : typeof row.priceWon === "number" && Number.isFinite(row.priceWon)
+        ? row.priceWon
+        : (feed.priceWon ?? 0);
+  const paidPriceWon =
+    typeof row.paidPriceWon === "number" && Number.isFinite(row.paidPriceWon)
+      ? row.paidPriceWon
+      : listPriceWon;
+  const listedForSale = typeof row.listedForSale === "boolean" ? row.listedForSale : true;
+  return {
+    videoId,
+    acquiredAt,
+    paidPriceWon,
+    listPriceWon,
+    listedForSale,
+    feed,
+  };
+}
 
 export function PurchasedVideosProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
@@ -38,7 +91,11 @@ export function PurchasedVideosProvider({ children }: { children: ReactNode }) {
         credentials: "include",
       });
       const data = (await response.json().catch(() => null)) as
-        | { ok?: boolean; videoIds?: string[]; items?: PurchasedListItem[] }
+        | {
+            ok?: boolean;
+            videoIds?: string[];
+            items?: Record<string, unknown>[];
+          }
         | null;
       if (!response.ok || !data?.ok || !Array.isArray(data.videoIds)) {
         setIds(new Set());
@@ -46,19 +103,21 @@ export function PurchasedVideosProvider({ children }: { children: ReactNode }) {
         return;
       }
       setIds(new Set(data.videoIds));
-      const titleMap = new Map<string, string>();
+      const rowById = new Map<string, PurchasedListItem>();
       if (Array.isArray(data.items)) {
-        for (const row of data.items) {
-          if (typeof row?.videoId === "string" && typeof row?.title === "string") {
-            titleMap.set(row.videoId, row.title);
-          }
+        for (const raw of data.items) {
+          if (!raw || typeof raw !== "object") continue;
+          const vid = raw.videoId;
+          if (typeof vid !== "string") continue;
+          rowById.set(vid, parseItem(raw as Record<string, unknown>, vid));
         }
       }
       setPurchasedItems(
-        data.videoIds.map((videoId) => ({
-          videoId,
-          title: titleMap.get(videoId) ?? videoId,
-        })),
+        data.videoIds.map((videoId) => {
+          const hit = rowById.get(videoId);
+          if (hit) return hit;
+          return parseItem({}, videoId);
+        }),
       );
     } catch {
       setIds(new Set());
@@ -91,8 +150,6 @@ export function PurchasedVideosProvider({ children }: { children: ReactNode }) {
   const markPurchased = useCallback(
     (videoId: string) => {
       if (!supabaseConfigured || !user) return;
-      // 실제 운영 구매권한은 Toss 결제 확정 API가 Purchase/UserEntitlement에 기록한다.
-      // 이 함수는 결제 완료 직후 UI가 즉시 반응하도록 임시 반영한 뒤 서버 장부로 다시 동기화한다.
       setIds((prev) => {
         const next = new Set(prev);
         next.add(videoId);
@@ -100,7 +157,17 @@ export function PurchasedVideosProvider({ children }: { children: ReactNode }) {
       });
       setPurchasedItems((prev) => {
         if (prev.some((row) => row.videoId === videoId)) return prev;
-        return [...prev, { videoId, title: videoId }];
+        return [
+          ...prev,
+          {
+            videoId,
+            paidPriceWon: 0,
+            listPriceWon: 0,
+            listedForSale: true,
+            acquiredAt: Date.now(),
+            feed: placeholderFeed(videoId, videoId),
+          },
+        ];
       });
       if (!restoreGuardRef.current) void reloadPurchasedIds();
     },

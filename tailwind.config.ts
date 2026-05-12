@@ -9,6 +9,7 @@ const config: Config = {
     "./src/lib/**/*.{ts,tsx}",
   ],
   theme: {
+    /** `spacing` / `fontSize` / `borderRadius` 기본값은 rem — `globals.css`의 fluid `html { font-size }`와 함께 뷰포트에 비례합니다. */
     extend: {
       fontFamily: {
         sans: [

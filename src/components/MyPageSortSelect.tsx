@@ -14,6 +14,7 @@ export function MyPageSortSelect({
   onChange,
   ariaLabel,
   compact = false,
+  stretch = false,
 }: {
   options: readonly MyPageSortOption[];
   value: string;
@@ -21,6 +22,8 @@ export function MyPageSortSelect({
   ariaLabel: string;
   /** 짧은 라벨(언어 선택 등) — 트리거·폭을 줄입니다 */
   compact?: boolean;
+  /** 부모 폭에 맞춤(레일 스택 언어 등) */
+  stretch?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -29,11 +32,21 @@ export function MyPageSortSelect({
 
   const selected = options.find((o) => o.value === value) ?? options[0];
   const triggerMin = compact ? "min-w-[9rem]" : "min-w-[11.5rem]";
-  const wrapCls = compact
-    ? "relative w-fit min-w-[9rem]"
-    : "relative min-w-[11.5rem]";
-  const optionMin = compact ? "min-w-[8.75rem]" : "min-w-[11.25rem]";
-  const optionMax = compact ? "max-w-[13rem]" : "max-w-[20rem]";
+  const wrapCls = stretch
+    ? "relative w-full min-w-0"
+    : compact
+      ? "relative w-fit min-w-[9rem]"
+      : "relative min-w-[11.5rem]";
+  const optionMin = stretch
+    ? "min-w-0"
+    : compact
+      ? "min-w-[8.75rem]"
+      : "min-w-[11.25rem]";
+  const optionMax = stretch
+    ? "max-w-none"
+    : compact
+      ? "max-w-[13rem]"
+      : "max-w-[20rem]";
 
   useEffect(() => {
     if (!open) return;
@@ -64,7 +77,7 @@ export function MyPageSortSelect({
         aria-controls={open ? listId : undefined}
         aria-label={ariaLabel}
         onClick={() => setOpen((o) => !o)}
-        className={`${TRIGGER_REST} ${triggerMin}`}
+        className={`${TRIGGER_REST} ${stretch ? "w-full" : triggerMin}`}
       >
         <span className="min-w-0 flex-1 truncate">{selected.label}</span>
         <ChevronDown
@@ -79,7 +92,7 @@ export function MyPageSortSelect({
           id={listId}
           role="listbox"
           aria-labelledby={btnId}
-          className="absolute left-0 top-full z-[100] mt-1 w-max min-w-full max-h-[min(22rem,calc(100vh-8rem))] overflow-y-auto overflow-x-hidden rounded-lg border border-white/12 bg-[#121214]/98 py-1 shadow-[0_14px_48px_-10px_rgba(0,0,0,0.85)] backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-lg"
+          className="absolute left-0 top-full z-[100] mt-1 w-max min-w-full max-h-[min(22rem,calc(100vh-8rem))] overflow-y-auto overflow-x-hidden rounded-lg border border-white/12 bg-[#121214] py-1 shadow-[0_14px_48px_-10px_rgba(0,0,0,0.85)] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-lg"
         >
           {options.map((o) => {
             const isSel = o.value === value;

@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { getMarketVideoById } from "@/data/videoCommerce";
 import { prisma } from "@/lib/prisma";
 import { settlementHoldDays, platformFeeRateBps } from "@/lib/tossConfig";
 import type { TossConfirmResponse } from "@/lib/tossPayments";
@@ -145,19 +146,29 @@ export async function applyTossConfirmedPayment(params: {
     }
 
     async function grantVideoPurchase(videoId: string, amount: number) {
-      const video = await tx.video.findUnique({
+      const row = await tx.video.findUnique({
         where: { id: videoId },
         select: { id: true, sellerId: true, price: true },
       });
 
-      if (!video) {
+      const feed = row ? null : getMarketVideoById(videoId);
+      const fallbackSeller = process.env.ARA_MARKETPLACE_FALLBACK_SELLER_ID?.trim() ?? "";
+      const sellerId = row?.sellerId ?? feed?.listing?.sellerId ?? fallbackSeller;
+      const resolvedId = row?.id ?? videoId;
+
+      if (!row && !feed) {
         throw new Error(`Video not found for payment target: ${videoId}`);
+      }
+      if (!sellerId) {
+        throw new Error(
+          `Cannot record purchase for ${videoId}: add a DB Video row, or catalog listing.sellerId, or set ARA_MARKETPLACE_FALLBACK_SELLER_ID.`,
+        );
       }
 
       let purchase = await tx.purchase.findFirst({
         where: {
           buyerId: paidPayment.userId,
-          videoId: video.id,
+          videoId: resolvedId,
           status: "paid",
         },
       });
@@ -166,19 +177,19 @@ export async function applyTossConfirmedPayment(params: {
         purchase = await tx.purchase.create({
           data: {
             buyerId: paidPayment.userId,
-            sellerId: video.sellerId,
-            videoId: video.id,
+            sellerId,
+            videoId: resolvedId,
             price: amount,
             status: "paid",
           },
         });
 
-        await tx.video.update({
-          where: { id: video.id },
-          data: {
-            salesCount: { increment: 1 },
-          },
-        });
+        if (row) {
+          await tx.video.update({
+            where: { id: row.id },
+            data: { salesCount: { increment: 1 } },
+          });
+        }
       }
 
       await tx.userEntitlement.upsert({
@@ -186,13 +197,13 @@ export async function applyTossConfirmedPayment(params: {
           userId_sourceType_sourceId: {
             userId: paidPayment.userId,
             sourceType: "video",
-            sourceId: video.id,
+            sourceId: resolvedId,
           },
         },
         create: {
           userId: paidPayment.userId,
           sourceType: "video",
-          sourceId: video.id,
+          sourceId: resolvedId,
           purchaseId: purchase.id,
           status: "active",
         },
@@ -211,11 +222,11 @@ export async function applyTossConfirmedPayment(params: {
         const fee = calculatePlatformFee(amount);
         await tx.sellerEarning.create({
           data: {
-            sellerId: video.sellerId,
+            sellerId,
             buyerId: paidPayment.userId,
             purchaseId: purchase.id,
             paymentId: paidPayment.id,
-            videoId: video.id,
+            videoId: resolvedId,
             grossAmount: amount,
             platformFee: fee.platformFee,
             netAmount: fee.netAmount,
@@ -229,7 +240,7 @@ export async function applyTossConfirmedPayment(params: {
           data: {
             paymentId: paidPayment.id,
             purchaseId: purchase.id,
-            sellerId: video.sellerId,
+            sellerId,
             amount: fee.platformFee,
             currency: "KRW",
             feeRateBps: fee.feeRateBps,

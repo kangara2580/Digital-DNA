@@ -1,9 +1,10 @@
 import busboy from "busboy";
 import { Readable } from "node:stream";
 
+import { SELL_CUSTOM_POSTER_MAX_BYTES } from "@/lib/sellCustomPosterMaxBytes";
+
 /** 판매 업로드 폼 — 미들웨어 + request.formData() 조합에서 큰 본문이 잘릴 때를 피하기 위한 스트리밍 파서 */
 const MAX_VIDEO_BYTES = 500 * 1024 * 1024;
-const MAX_POSTER_BYTES = 8 * 1024 * 1024;
 
 export type ParsedSellUpload = {
   fields: Record<string, string>;
@@ -95,7 +96,7 @@ export function parseSellUploadMultipart(request: Request): Promise<ParsedSellUp
         file.on("data", (chunk: Buffer) => {
           if (tooBig) return;
           size += chunk.length;
-          if (size > MAX_POSTER_BYTES) {
+          if (size > SELL_CUSTOM_POSTER_MAX_BYTES) {
             tooBig = true;
             chunks.length = 0;
             file.resume();
@@ -107,9 +108,9 @@ export function parseSellUploadMultipart(request: Request): Promise<ParsedSellUp
           tooBig = true;
         });
         file.on("close", () => {
-          if (tooBig || size > MAX_POSTER_BYTES) {
+          if (tooBig || size > SELL_CUSTOM_POSTER_MAX_BYTES) {
             fail(
-              new MultipartParseError("썸네일 이미지는 8MB 이하로 올려 주세요.", "file_too_large"),
+              new MultipartParseError("썸네일 이미지는 2MB 이하로 올려 주세요.", "file_too_large"),
             );
             return;
           }

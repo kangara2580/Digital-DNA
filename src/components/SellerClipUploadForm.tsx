@@ -16,6 +16,7 @@ import {
   coerceSellCategoryForUserForm,
   type SellVideoUserSelectableCategory,
 } from "@/lib/sellVideoCategory";
+import { SELL_CUSTOM_POSTER_MAX_BYTES } from "@/lib/sellCustomPosterMaxBytes";
 import {
   captureFrameFromVideo,
   capturePosterFromFile,
@@ -48,6 +49,12 @@ const BTN_DISABLED_GHOST =
 const SOURCE_SECONDARY_BTN =
   "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg border border-white/20 bg-transparent px-4 py-2.5 text-[13px] font-medium text-zinc-100 shadow-none transition-colors hover:border-white/[0.32] hover:bg-white/[0.06] active:bg-white/[0.04] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-50";
 
+const ALLOWED_CUSTOM_POSTER_MIME = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+
 /** 등록 포스터 캡처 시점(sec) 안전 클램프 */
 function clampThumbSec(t: number, durationSec: number | null): number {
   const x = Number.isFinite(t) ? Math.max(0, t) : 0;
@@ -62,6 +69,7 @@ export function SellerClipUploadForm() {
   const router = useRouter();
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const posterImageInputRef = useRef<HTMLInputElement>(null);
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
   const hid = useId();
   const { user, supabaseConfigured } = useAuthSession();
@@ -85,6 +93,9 @@ export function SellerClipUploadForm() {
   const [category, setCategory] = useState<SellVideoUserSelectableCategory>("daily");
   const [price, setPrice] = useState("1000");
   const [isAi, setIsAi] = useState(false);
+  /** 직접 올린 썸네일 — 있으면 등록 시 영상 프레임 캡처 대신 전송 */
+  const [customPosterFile, setCustomPosterFile] = useState<File | null>(null);
+  const [customPosterPreviewUrl, setCustomPosterPreviewUrl] = useState<string | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
@@ -104,14 +115,65 @@ export function SellerClipUploadForm() {
         /* noop */
       }
     }
+    if (customPosterPreviewUrl?.startsWith("blob:")) {
+      try {
+        URL.revokeObjectURL(customPosterPreviewUrl);
+      } catch {
+        /* noop */
+      }
+    }
     setPreviewUrl(null);
     setAppliedThumbPreviewUrl(null);
+    setCustomPosterPreviewUrl(null);
+    setCustomPosterFile(null);
     setFile(null);
     setDurationSec(null);
     setThumbDraftSec(0);
     setThumbCommittedSec(0);
     setThumbPickerOpen(true);
-  }, [previewUrl, appliedThumbPreviewUrl]);
+    if (posterImageInputRef.current) posterImageInputRef.current.value = "";
+  }, [previewUrl, appliedThumbPreviewUrl, customPosterPreviewUrl]);
+
+  const clearCustomPoster = useCallback(() => {
+    setMessage(null);
+    setCustomPosterPreviewUrl((prev) => {
+      if (prev?.startsWith("blob:")) {
+        try {
+          URL.revokeObjectURL(prev);
+        } catch {
+          /* noop */
+        }
+      }
+      return null;
+    });
+    setCustomPosterFile(null);
+    if (posterImageInputRef.current) posterImageInputRef.current.value = "";
+  }, []);
+
+  const onPickCustomPoster = (f: File | null) => {
+    setMessage(null);
+    if (!f) return;
+    const mime = f.type || "";
+    if (!ALLOWED_CUSTOM_POSTER_MIME.has(mime)) {
+      setMessage({ ok: false, text: t("sellForm.errPosterType") });
+      return;
+    }
+    if (f.size > SELL_CUSTOM_POSTER_MAX_BYTES) {
+      setMessage({ ok: false, text: t("sellForm.errPosterTooLarge") });
+      return;
+    }
+    setCustomPosterPreviewUrl((prev) => {
+      if (prev?.startsWith("blob:")) {
+        try {
+          URL.revokeObjectURL(prev);
+        } catch {
+          /* noop */
+        }
+      }
+      return URL.createObjectURL(f);
+    });
+    setCustomPosterFile(f);
+  };
 
   useEffect(() => {
     if (!user || !supabaseConfigured) {
@@ -277,6 +339,7 @@ export function SellerClipUploadForm() {
       return;
     }
     if (
+      !customPosterFile &&
       previewUrl &&
       durationSec != null &&
       durationSec > 0 &&
@@ -313,26 +376,46 @@ export function SellerClipUploadForm() {
         fd.append("durationSec", String(durationSec));
       }
 
-      let posterBlob: Blob | null = null;
-      if (previewUrl && videoPreviewRef.current) {
-        posterBlob = await captureFrameFromVideo(
-          videoPreviewRef.current,
-          thumbCommittedSec,
-          "image/jpeg",
-          0.92,
+      if (customPosterFile) {
+        const mime = customPosterFile.type || "";
+        if (!ALLOWED_CUSTOM_POSTER_MIME.has(mime)) {
+          setMessage({ ok: false, text: t("sellForm.errPosterType") });
+          return;
+        }
+        if (customPosterFile.size > SELL_CUSTOM_POSTER_MAX_BYTES) {
+          setMessage({ ok: false, text: t("sellForm.errPosterTooLarge") });
+          return;
+        }
+        const ext =
+          mime === "image/png" ? "png" : mime === "image/webp" ? "webp" : "jpg";
+        const safeName = (customPosterFile.name || "").trim();
+        fd.append(
+          "poster",
+          customPosterFile,
+          safeName || `poster.${ext}`,
         );
+      } else {
+        let posterBlob: Blob | null = null;
+        if (previewUrl && videoPreviewRef.current) {
+          posterBlob = await captureFrameFromVideo(
+            videoPreviewRef.current,
+            thumbCommittedSec,
+            "image/jpeg",
+            0.92,
+          );
+        }
+        if (!posterBlob) {
+          posterBlob = await capturePosterFromFile(file, thumbCommittedSec);
+        }
+        if (!posterBlob) {
+          setMessage({
+            ok: false,
+            text: t("sellForm.errThumbFail"),
+          });
+          return;
+        }
+        fd.append("poster", posterBlob, "poster.jpg");
       }
-      if (!posterBlob) {
-        posterBlob = await capturePosterFromFile(file, thumbCommittedSec);
-      }
-      if (!posterBlob) {
-        setMessage({
-          ok: false,
-          text: t("sellForm.errThumbFail"),
-        });
-        return;
-      }
-      fd.append("poster", posterBlob, "poster.jpg");
 
       const res = await fetch("/api/sell/upload", {
         method: "POST",
@@ -522,6 +605,53 @@ export function SellerClipUploadForm() {
                 />
               </div>
             </div>
+
+            <div>
+              <label className={LABEL} htmlFor={`${hid}-custom-poster-open`}>
+                {t("sellForm.customPosterLabel")}
+              </label>
+              <p className="mb-2 text-[13px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                {t("sellForm.customPosterHint")}
+              </p>
+              <div className={SOURCE_PANEL}>
+                <input
+                  id={`${hid}-custom-poster`}
+                  ref={posterImageInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  tabIndex={-1}
+                  className="sr-only"
+                  aria-hidden
+                  onChange={(e) => {
+                    onPickCustomPoster(e.target.files?.[0] ?? null);
+                    e.target.value = "";
+                  }}
+                />
+                <div className="flex w-full min-w-0 flex-row flex-wrap items-center gap-x-3 gap-y-1.5">
+                  <button
+                    type="button"
+                    id={`${hid}-custom-poster-open`}
+                    aria-label={t("sellForm.customPosterChoose")}
+                    className={`${SOURCE_SECONDARY_BTN} shrink-0 px-5 py-3 text-[15px] font-semibold sm:px-6 sm:py-3.5 sm:text-[16px]`}
+                    onClick={() => posterImageInputRef.current?.click()}
+                  >
+                    {t("sellForm.customPosterChoose")}
+                  </button>
+                  <p className="min-w-0 flex-1 truncate text-left text-[13px] leading-snug text-zinc-500 sm:text-[14px] [html[data-theme='light']_&]:text-zinc-600">
+                    {customPosterFile?.name ?? t("sellForm.customPosterNone")}
+                  </p>
+                  {customPosterFile ? (
+                    <button
+                      type="button"
+                      onClick={clearCustomPoster}
+                      className={`${SOURCE_SECONDARY_BTN} shrink-0 px-4 py-2.5 text-[13px] font-medium`}
+                    >
+                      {t("sellForm.customPosterClear")}
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            </div>
           </div>
 
           <aside
@@ -601,10 +731,10 @@ export function SellerClipUploadForm() {
                   </button>
                 )}
 
-                {appliedThumbPreviewUrl ? (
+                {(customPosterPreviewUrl || appliedThumbPreviewUrl) ? (
                   <div className="w-full max-w-[200px] overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
                     <img
-                      src={appliedThumbPreviewUrl}
+                      src={customPosterPreviewUrl ?? appliedThumbPreviewUrl ?? ""}
                       alt={t("sellForm.thumbnailPreviewAlt")}
                       className={
                         orientation === "portrait"

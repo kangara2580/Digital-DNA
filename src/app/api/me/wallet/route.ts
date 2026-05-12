@@ -16,7 +16,7 @@ export async function GET() {
     );
   }
 
-  const [credit, settlement, settlementRequests] = await Promise.all([
+  const [credit, settlement, settlementRequests, payoutAccount] = await Promise.all([
     getUserCreditSummary(user.id),
     getSellerSettlementSummary(user.id),
     prisma.sellerSettlementRequest.findMany({
@@ -31,6 +31,15 @@ export async function GET() {
         accountNo: true,
         accountHolder: true,
         createdAt: true,
+      },
+    }),
+    prisma.sellerPayoutAccount.findUnique({
+      where: { sellerId: user.id },
+      select: {
+        bankName: true,
+        accountNo: true,
+        accountHolder: true,
+        updatedAt: true,
       },
     }),
   ]);
@@ -55,6 +64,14 @@ export async function GET() {
       ...r,
       createdAt: r.createdAt.toISOString(),
     })),
+    payoutAccount: payoutAccount
+      ? {
+          bankName: payoutAccount.bankName,
+          accountNo: payoutAccount.accountNo,
+          accountHolder: payoutAccount.accountHolder,
+          updatedAt: payoutAccount.updatedAt.toISOString(),
+        }
+      : null,
     toss,
     policy: {
       settlementHoldDays: settlementHoldDays(),

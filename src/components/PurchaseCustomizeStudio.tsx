@@ -10,6 +10,7 @@ import { LOCAL_FACE_SWAP_VIDEO_IDS } from "@/constants/videos";
 import { buildFacePickerOptions, type FacePickerOption } from "@/lib/facePickerOptions";
 import { markCustomizeDraftSaved } from "@/lib/customizeDraftIndex";
 import { getCustomizeDraftStorageKey } from "@/lib/customizeDraftStorage";
+import { buildPurchaseCompleteNextPath } from "@/lib/safePaymentNextPath";
 import {
   consumeLocalFacePreviewSuccess,
   FREE_LOCAL_FACE_PREVIEW_TRIES,
@@ -20,13 +21,24 @@ import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { useVideoStartPoster } from "@/hooks/useVideoStartPoster";
 import { InputSection } from "@/components/InputSection";
+import { TossCheckoutButton } from "@/components/payments/TossCheckoutButton";
 import { VideoBackgroundComposite } from "@/components/VideoBackgroundComposite";
-import { MYPAGE_OUTLINE_BTN_MD } from "@/lib/mypageOutlineCta";
+import { MYPAGE_OUTLINE_BTN_MD, MYPAGE_OUTLINE_BTN_MD_TRANSPARENT } from "@/lib/mypageOutlineCta";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import {
   needsServerMp4Extraction,
   resolveKlingMotionVideoUrl,
 } from "@/lib/klingMotionVideoUrl";
+import { getMetricsForVideoDetail } from "@/data/trendingStats";
+import {
+  clonesRemaining,
+  getCommerceMeta,
+  isLimitedFamily,
+} from "@/data/videoCommerce";
+import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
+import { SellerIdentityLink } from "@/components/SellerIdentityLink";
+import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const FONT_PRETENDARD = "var(--font-pretendard)";
 const FONT_MONTSERRAT = "var(--font-montserrat), Arial, sans-serif";
@@ -119,14 +131,6 @@ const defaultOverlays = (): TextOverlay[] => [
     strokeWidth: 0,
     strokeColor: "#000000",
   },
-];
-
-const FONT_OPTIONS: { label: string; value: string }[] = [
-  { label: "Pretendard (현대적·깔끔)", value: FONT_PRETENDARD },
-  { label: "Black Han Sans (강렬·임팩트)", value: FONT_BLACK_HAN_SANS },
-  { label: "Song Myung (우아·몽환)", value: FONT_SONG_MYUNG },
-  { label: "Montserrat (글로벌·세련)", value: FONT_MONTSERRAT },
-  { label: "Nanum Gothic (가독성·한글 안정)", value: FONT_NANUM_GOTHIC },
 ];
 
 function normalizeFontFamily(input: unknown): string {
@@ -444,6 +448,18 @@ const STUDIO_SECTION_H2_ROW =
 const STUDIO_STEP_BADGE =
   "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white bg-transparent text-[11px] font-semibold text-white [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-zinc-950";
 
+/** 창작 스튜디오 히어로: 캡슐 안 좌·우 모드 — 공통 베이스(배경·호버는 선택/비선택에서 분기) */
+const HERO_STUDIO_CAPSULE_BTN_BASE =
+  "inline-flex shrink-0 items-center justify-center border-0 py-2.5 px-5 text-[calc(1.625rem_-_3pt)] font-semibold tracking-tight text-zinc-50 transition-[background-color,color] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/35 sm:px-6 sm:text-[calc(1.875rem_-_3pt)] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:focus-visible:ring-zinc-400/60";
+
+/** 비선택: 투명 + 호버 시 하이라이트 */
+const HERO_STUDIO_CAPSULE_BTN_IDLE =
+  `${HERO_STUDIO_CAPSULE_BTN_BASE} bg-transparent hover:bg-white/[0.12] [html[data-theme='light']_&]:hover:bg-zinc-200/55`;
+
+/** 선택됨: 호버와 동일 배경 유지(현재 모드 표시) */
+const HERO_STUDIO_CAPSULE_BTN_SELECTED =
+  `${HERO_STUDIO_CAPSULE_BTN_BASE} bg-white/[0.12] [html[data-theme='light']_&]:bg-zinc-200/55`;
+
 export function PurchaseCustomizeStudio({
   video: initialVideo,
   heroTitle,
@@ -461,6 +477,34 @@ export function PurchaseCustomizeStudio({
   const aiPreviewQuotaActive = false; // 구독 게이트 비활성화 시 항상 false
   const isLocalFaceSwapDemo = LOCAL_FACE_SWAP_VIDEO_IDS.includes(video.id);
   const owned = hasPurchased(video.id) || isLocalFaceSwapDemo;
+  const { t, locale } = useTranslation();
+  const displayTitle = useVideoDisplayTitle();
+
+  const purchaseCommerceMeta = useMemo(
+    () =>
+      video.listing
+        ? { salesCount: video.listing.salesCount, edition: "open" as const }
+        : getCommerceMeta(video.id),
+    [video],
+  );
+  const purchaseRankMetrics = useMemo(() => {
+    if (video.listing) {
+      const views = video.listing.views;
+      const sales = video.listing.salesCount;
+      const p = video.priceWon ?? 0;
+      return {
+        cumulativeRevenueWon: p * sales,
+        totalViews: Math.max(0, views),
+        totalLikes: Math.max(0, Math.floor(views * 0.028)),
+        growthPercent: 0,
+      };
+    }
+    return getMetricsForVideoDetail(video.id);
+  }, [video]);
+  const purchasePriceWon = video.priceWon ?? 0;
+  const purchaseRemaining = clonesRemaining(purchaseCommerceMeta);
+  const purchaseSoldOut =
+    purchaseRemaining === 0 && isLimitedFamily(purchaseCommerceMeta.edition);
 
   const [faceOptions, setFaceOptions] = useState<FacePickerOption[]>([]);
   const [draft, setDraft] = useState<CustomizeDraft | null>(null);
@@ -484,8 +528,6 @@ export function PurchaseCustomizeStudio({
   const [previewTransitionLoading, setPreviewTransitionLoading] = useState(false);
   const [previewCandidates, setPreviewCandidates] = useState<string[]>([]);
   const [previewCandidateIndex, setPreviewCandidateIndex] = useState(0);
-  const [textPreviewEnabled, setTextPreviewEnabled] = useState(false);
-  const [activeDragOverlayId, setActiveDragOverlayId] = useState<string | null>(null);
   const [backgroundPreviewApplying, setBackgroundPreviewApplying] = useState(false);
   const [backgroundPreviewError, setBackgroundPreviewError] = useState<string | null>(null);
   const [backgroundPreviewInfo, setBackgroundPreviewInfo] = useState<string | null>(null);
@@ -579,7 +621,7 @@ export function PurchaseCustomizeStudio({
     lastAutoAppliedKeywordRef.current = loaded.draft.backgroundPrompt.trim();
 
     if (p) {
-      setUseAdvancedStep(true);
+      setUseAdvancedStep(p.useAdvancedStep);
       setPreviewBgPrompt(p.previewBgPrompt);
       setPreviewBgVideoUrl(p.previewBgVideoUrl);
       setPreviewBgImageUrl(p.previewBgImageUrl);
@@ -591,7 +633,6 @@ export function PurchaseCustomizeStudio({
           ? Math.min(p.previewCandidateIndex, p.previewCandidates.length - 1)
           : 0,
       );
-      setTextPreviewEnabled(p.textPreviewEnabled);
     } else {
       setUseAdvancedStep(true);
       setPreviewBgPrompt(null);
@@ -601,7 +642,6 @@ export function PurchaseCustomizeStudio({
       setPreviewCompositeBgUrl(null);
       setPreviewCandidates([]);
       setPreviewCandidateIndex(0);
-      setTextPreviewEnabled(false);
     }
     setIncomingPreviewUrl(null);
     setIncomingVisible(false);
@@ -616,6 +656,13 @@ export function PurchaseCustomizeStudio({
     setCustomUploadModalVisible(false);
     saveInFlightRef.current = false;
   }, [video.id]);
+
+  useEffect(() => {
+    if (useAdvancedStep) return;
+    setRemoteJob(null);
+    setPollJobId(null);
+    setRemoteErr(null);
+  }, [useAdvancedStep]);
 
   useEffect(() => {
     if (!aiPreviewQuotaActive) return;
@@ -911,7 +958,7 @@ export function PurchaseCustomizeStudio({
         previewCompositeBgUrl,
         previewCandidates,
         previewCandidateIndex,
-        textPreviewEnabled,
+        textPreviewEnabled: false,
       };
       saveDraft(video.id, draft, persistedPreview);
       markCustomizeDraftSaved(video.id);
@@ -920,12 +967,6 @@ export function PurchaseCustomizeStudio({
         keyword: draft.backgroundPrompt,
         mode: draft.backgroundMode ?? "video",
       });
-      for (const f of new Set(draft.overlays.map((o) => o.fontFamily).filter(Boolean))) {
-        trackBehavior({
-          type: "font_selected",
-          fontFamily: f,
-        });
-      }
       setSaveStatus("saved");
       saveInFlightRef.current = false;
     }, minSpinnerMs);
@@ -941,7 +982,6 @@ export function PurchaseCustomizeStudio({
     previewCompositeBgUrl,
     previewCandidates,
     previewCandidateIndex,
-    textPreviewEnabled,
   ]);
 
   const submitServerGeneration = useCallback(async () => {
@@ -1349,67 +1389,6 @@ export function PurchaseCustomizeStudio({
     };
   }, [pollJobId]);
 
-  const addOverlay = useCallback(() => {
-    setDraft((prev) => {
-      if (!prev) return prev;
-      const id = `o-${Date.now()}`;
-      return {
-        ...prev,
-        overlays: [
-          ...prev.overlays,
-          {
-            id,
-            text: "새 텍스트",
-            color: "#fafafa",
-            fontFamily: FONT_PRETENDARD,
-            fontSize: 18,
-            topPct: 50,
-            leftPct: 50,
-            opacity: 1,
-            shadow: 0.65,
-            strokeWidth: 0,
-            strokeColor: "#000000",
-          },
-        ],
-      };
-    });
-  }, []);
-
-  const patchOverlay = useCallback((id: string, patch: Partial<TextOverlay>) => {
-    setDraft((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        overlays: prev.overlays.map((o) => (o.id === id ? { ...o, ...patch } : o)),
-      };
-    });
-  }, []);
-
-  const removeOverlay = useCallback((id: string) => {
-    setDraft((prev) => {
-      if (!prev) return prev;
-      return { ...prev, overlays: prev.overlays.filter((o) => o.id !== id) };
-    });
-  }, []);
-
-  const nudgeOverlay = useCallback((id: string, dx: number, dy: number) => {
-    setDraft((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        overlays: prev.overlays.map((o) =>
-          o.id === id
-            ? {
-                ...o,
-                leftPct: clampOverlayPosition((o.leftPct ?? 50) + dx),
-                topPct: clampOverlayPosition((o.topPct ?? 50) + dy),
-              }
-            : o,
-        ),
-      };
-    });
-  }, []);
-
   // 테스트를 위해 임시로 권한 체크를 해제합니다.
   // if (!owned) {
   //   return (
@@ -1432,32 +1411,53 @@ export function PurchaseCustomizeStudio({
     );
   }
 
-  const dMax = duration > 0 ? duration : 100;
-  const t0 = Math.min(trimStart, dMax - 0.1);
-  const t1 = Math.max(Math.min(trimEnd > 0 ? trimEnd : dMax, dMax), t0 + 0.1);
-
   return (
     <div className="space-y-8">
       {heroTitle ? (
         <header className="border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-100">
-          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-2 sm:gap-x-3">
-            <h1 className="min-w-0 text-[1.625rem] font-semibold tracking-tight text-zinc-50 sm:text-[1.875rem] [html[data-theme='light']_&]:text-zinc-900">
-              {heroTitle}
-            </h1>
-            <span
-              className="inline-block shrink-0 origin-center select-none text-[1.35rem] font-light leading-none text-zinc-500 scale-y-[1.18] sm:text-[1.5rem] sm:scale-y-[1.22] [html[data-theme='light']_&]:text-zinc-400"
-              aria-hidden
+          <h1 className="min-w-0 max-w-full">
+            <div
+              role="group"
+              aria-label="창작 스튜디오 모드"
+              className="inline-flex w-max max-w-full min-w-0 items-stretch overflow-hidden rounded-full border-2 border-white/[0.26] bg-zinc-950/35 p-0 [html[data-theme='light']_&]:border-zinc-400/45 [html[data-theme='light']_&]:bg-white/70"
             >
-              /
-            </span>
-            <button
-              type="button"
-              onClick={() => setUseAdvancedStep(false)}
-              className={`${MYPAGE_OUTLINE_BTN_MD} shrink-0`}
-            >
-              영상만 구매
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setUseAdvancedStep(true);
+                  requestAnimationFrame(() => {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  });
+                }}
+                aria-pressed={useAdvancedStep}
+                aria-label={
+                  useAdvancedStep
+                    ? "편집 화면 맨 위로 이동"
+                    : "커스텀 편집 단계로 돌아가기"
+                }
+                className={`${
+                  useAdvancedStep ? HERO_STUDIO_CAPSULE_BTN_SELECTED : HERO_STUDIO_CAPSULE_BTN_IDLE
+                } rounded-none`}
+              >
+                <span className="whitespace-nowrap text-center">{heroTitle}</span>
+              </button>
+              <span
+                aria-hidden
+                className="pointer-events-none w-0.5 shrink-0 self-stretch bg-white/[0.26] [html[data-theme='light']_&]:bg-zinc-400/45"
+              />
+              <button
+                type="button"
+                onClick={() => setUseAdvancedStep(false)}
+                aria-pressed={!useAdvancedStep}
+                aria-label="영상만 구매 모드로 전환"
+                className={`${
+                  !useAdvancedStep ? HERO_STUDIO_CAPSULE_BTN_SELECTED : HERO_STUDIO_CAPSULE_BTN_IDLE
+                } rounded-none`}
+              >
+                <span className="whitespace-nowrap text-center">영상만 구매</span>
+              </button>
+            </div>
+          </h1>
         </header>
       ) : null}
 
@@ -1504,7 +1504,9 @@ export function PurchaseCustomizeStudio({
 
       <div className="grid gap-10 lg:grid-cols-[1fr_minmax(0,340px)] lg:items-start lg:gap-12">
         {/* 데스크톱: 미리보기는 오른쪽 열(col 2). 모바일: DOM 순서대로 미리보기가 위에 유지 */}
-        <div className="min-w-0 w-full lg:sticky lg:top-[calc(var(--header-height,220px)+0.75rem)] lg:col-start-2 lg:row-start-1 lg:self-start">
+        <div
+          className="min-w-0 w-full scroll-mt-[calc(var(--header-height,4.5rem)+3rem+env(safe-area-inset-top))] max-lg:pt-6 lg:sticky lg:top-[calc(var(--header-height,4.5rem)+3rem+env(safe-area-inset-top))] lg:col-start-2 lg:row-start-1 lg:self-start"
+        >
           <p className="text-[13px] font-medium uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
             미리보기
           </p>
@@ -1550,7 +1552,7 @@ export function PurchaseCustomizeStudio({
                   <video
                     key={`${previewVideoSrc}::${previewBgVersion}`}
                     ref={videoRef}
-                    className="h-full w-full object-cover"
+                    className="studio-preview-native-video h-full w-full object-contain"
                     poster={previewPoster}
                     src={previewVideoSrc}
                     playsInline
@@ -1558,6 +1560,8 @@ export function PurchaseCustomizeStudio({
                     autoPlay={bgPreviewOn}
                     loop={bgPreviewOn}
                     controls
+                    controlsList="nodownload noplaybackrate noremoteplayback"
+                    disablePictureInPicture
                     preload={bgPreviewOn ? "metadata" : "auto"}
                     onLoadedMetadata={onVideoMeta}
                     onLoadedData={(e) => {
@@ -1613,30 +1617,6 @@ export function PurchaseCustomizeStudio({
                   ) : null}
                 </>
               )}
-              {textPreviewEnabled
-                ? draft.overlays.map((o) => (
-                    <div
-                      key={o.id}
-                      className="pointer-events-none absolute z-[10] max-w-[88%] text-center font-extrabold leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
-                      style={{
-                        top: `${o.topPct}%`,
-                        left: `${o.leftPct ?? 50}%`,
-                        transform: "translate(-50%, -50%)",
-                        color: o.color,
-                        fontFamily: o.fontFamily,
-                        fontSize: `${o.fontSize}px`,
-                        opacity: o.opacity ?? 1,
-                        WebkitTextStroke:
-                          (o.strokeWidth ?? 0) > 0
-                            ? `${o.strokeWidth}px ${o.strokeColor ?? "#000000"}`
-                            : undefined,
-                        textShadow: `0 2px 8px rgba(0,0,0,${0.85 * (o.shadow ?? 0.65)})`,
-                      }}
-                    >
-                      {o.text}
-                    </div>
-                  ))
-                : null}
               {bgPreviewOn ? (
                 <>
                   <div
@@ -1712,6 +1692,63 @@ export function PurchaseCustomizeStudio({
         </div>
 
         <div className="min-w-0 space-y-8 lg:col-start-1 lg:row-start-1">
+          {!useAdvancedStep ? (
+            <section className="mx-auto flex w-full max-w-md flex-col gap-5 rounded-2xl border border-white/10 bg-black/45 px-5 py-6 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+              <div className="self-start">
+                <SellerIdentityLink
+                  creator={video.creator}
+                  sellerId={video.listing?.sellerId}
+                  size="compact"
+                  className="min-w-0 max-w-full"
+                />
+              </div>
+              <h2 className="text-center text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">
+                {displayTitle(video)}
+              </h2>
+              <div className="mx-auto w-fit">
+                <TrendingVideoStatsFooter
+                  revenueFullWon
+                  metrics={purchaseRankMetrics}
+                  salesCount={purchaseCommerceMeta.salesCount}
+                  stockRow={
+                    purchaseCommerceMeta.edition === "open"
+                      ? null
+                      : {
+                          remaining: purchaseRemaining,
+                          soldOut: purchaseSoldOut,
+                        }
+                  }
+                />
+              </div>
+              {purchasePriceWon > 0 ? (
+                <div className="text-center">
+                  <span className="font-black tabular-nums tracking-tight text-[length:calc(36px_+_5pt)] text-white [html[data-theme='light']_&]:text-zinc-900">
+                    {locale === "en" ? (
+                      <>₩{purchasePriceWon.toLocaleString("en-US")}</>
+                    ) : (
+                      <>
+                        {purchasePriceWon.toLocaleString("ko-KR")}
+                        <span className="ml-1.5 font-extrabold text-[length:calc(22px_+_5pt)]">
+                          {t("video.detail.currencySuffix")}
+                        </span>
+                      </>
+                    )}
+                  </span>
+                </div>
+              ) : null}
+              <div className="flex w-full justify-center pt-1">
+                <TossCheckoutButton
+                  productType="video"
+                  videoId={video.id}
+                  next={buildPurchaseCompleteNextPath(video.id)}
+                  disabled={!user || owned || !purchasePriceWon || purchaseSoldOut}
+                  className={`${MYPAGE_OUTLINE_BTN_MD} w-full max-w-sm shrink-0 disabled:pointer-events-none disabled:opacity-45`}
+                >
+                  바로 구매
+                </TossCheckoutButton>
+              </div>
+            </section>
+          ) : null}
           {useAdvancedStep ? (
             <>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:items-stretch md:gap-3 lg:gap-4">
@@ -1816,7 +1853,7 @@ export function PurchaseCustomizeStudio({
                 <p className="min-w-0 max-w-[16rem] shrink text-left text-[11px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
                   미리보기는 20크레딧 소요됩니다.
                 </p>
-                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                <div className="grid min-w-0 shrink-0 grid-cols-2 gap-2">
                   <button
                     type="button"
                     disabled={
@@ -1824,7 +1861,7 @@ export function PurchaseCustomizeStudio({
                       !selectedFaceSourceUrl?.trim()
                     }
                     onClick={() => void applyFacePreview()}
-                    className="inline-flex shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-[11px] font-semibold text-zinc-100 transition-colors hover:bg-white/15 disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-200 sm:py-2.5 sm:text-[12px]"
+                    className="flex w-full min-w-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-[12px] font-semibold text-zinc-100 transition-colors hover:bg-white/15 disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-200 sm:py-2.5 sm:text-[13px]"
                   >
                     {facePreviewApplying ? "미리보기 중…" : "미리보기"}
                   </button>
@@ -1835,7 +1872,7 @@ export function PurchaseCustomizeStudio({
                       if (!selectedFaceSourceUrl?.trim()) return;
                       setIsAvatarConfirmed(true);
                     }}
-                    className="inline-flex shrink-0 items-center justify-center rounded-lg bg-reels-cyan px-2.5 py-2 text-[11px] font-bold text-black shadow-[0_0_15px_-3px_rgba(255,45,141,0.4)] transition-colors hover:bg-reels-cyan/90 disabled:pointer-events-none disabled:opacity-40 sm:py-2.5 sm:text-[12px]"
+                    className="flex w-full min-w-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-[12px] font-semibold text-zinc-100 transition-colors hover:bg-white/15 disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-200 sm:py-2.5 sm:text-[13px]"
                   >
                     확정
                   </button>
@@ -1915,7 +1952,7 @@ export function PurchaseCustomizeStudio({
               </div>
             ) : (
             <>
-            <div className="mt-3 flex min-w-0 w-full flex-col gap-2">
+            <div className="mt-3 flex min-h-0 min-w-0 w-full flex-1 flex-col gap-2 overflow-y-auto">
             <InputSection
               ref={bgPromptRef}
               value={draft.backgroundPrompt}
@@ -1924,49 +1961,20 @@ export function PurchaseCustomizeStudio({
               placeholder="예: 골목"
               className="mt-0 w-full resize-none rounded-lg border border-white/10 bg-black/35 px-3 py-1.5 text-[12px] leading-snug text-zinc-100 placeholder:text-zinc-600 focus:border-reels-cyan/45 focus:outline-none focus:ring-1 focus:ring-reels-cyan/30"
             />
-            <div className="flex min-w-0 flex-wrap items-center justify-end gap-x-3 gap-y-2">
-              <p className="min-w-0 max-w-[16rem] shrink text-left text-[11px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                미리보기는 20크레딧 소요됩니다.
-              </p>
-              <div className="flex shrink-0 flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => void applyBackgroundPreview(bgPromptRef.current?.value)}
-                  disabled={
-                    backgroundPreviewApplying ||
-                    (aiPreviewQuotaActive && localFacePreviewRemaining <= 0)
-                  }
-                  className="inline-flex shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-[11px] font-semibold text-zinc-100 transition-colors hover:bg-white/15 disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-200 sm:py-2.5 sm:text-[12px]"
-                >
-                  {backgroundPreviewApplying
-                    ? "미리보기 중…"
-                    : aiPreviewQuotaActive && localFacePreviewRemaining <= 0
-                      ? "무료 1회 소진 (구독 필요)"
-                      : "미리보기"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsBackgroundConfirmed(true)}
-                  className="inline-flex shrink-0 items-center justify-center rounded-lg bg-reels-cyan px-2.5 py-2 text-[11px] font-bold text-black shadow-[0_0_15px_-3px_rgba(255,45,141,0.4)] transition-colors hover:bg-reels-cyan/90 sm:py-2.5 sm:text-[12px]"
-                >
-                  확정
-                </button>
-              </div>
-            </div>
             {backgroundPreviewError ? (
-              <p className="mt-3 text-[11px] font-medium leading-relaxed text-reels-crimson">
+              <p className="mt-1 text-[11px] font-medium leading-relaxed text-reels-crimson">
                 {backgroundPreviewError}
               </p>
             ) : null}
             {backgroundPreviewInfo ? (
-              <p className="mt-2 text-[11px] font-medium leading-relaxed text-amber-200/95">
+              <p className="mt-1 text-[11px] font-medium leading-relaxed text-amber-200/95">
                 {backgroundPreviewInfo}
               </p>
             ) : null}
 
             {/* 시공간 이동 결과물 갤러리 */}
             {bgPreviewOn || previewCandidates.length > 0 ? (
-              <div className="mt-3">
+              <div className="mt-3 min-h-0 flex-1 flex flex-col">
                 <p className="text-[12px] font-bold text-zinc-300 mb-3 flex items-center gap-2">
                   <span>🎨 생성된 시공간 갤러리</span>
                   <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-zinc-400 font-normal">탭하여 선택</span>
@@ -2052,6 +2060,35 @@ export function PurchaseCustomizeStudio({
               </div>
             ) : null}
             </div>
+            <div className="mt-auto flex min-w-0 flex-wrap items-center justify-end gap-x-3 gap-y-2 pt-2">
+              <p className="min-w-0 max-w-[16rem] shrink text-left text-[11px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                미리보기는 20크레딧 소요됩니다.
+              </p>
+              <div className="grid min-w-0 shrink-0 grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => void applyBackgroundPreview(bgPromptRef.current?.value)}
+                  disabled={
+                    backgroundPreviewApplying ||
+                    (aiPreviewQuotaActive && localFacePreviewRemaining <= 0)
+                  }
+                  className="flex w-full min-w-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-[12px] font-semibold text-zinc-100 transition-colors hover:bg-white/15 disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-200 sm:py-2.5 sm:text-[13px]"
+                >
+                  {backgroundPreviewApplying
+                    ? "미리보기 중…"
+                    : aiPreviewQuotaActive && localFacePreviewRemaining <= 0
+                      ? "무료 1회 소진 (구독 필요)"
+                      : "미리보기"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsBackgroundConfirmed(true)}
+                  className="flex w-full min-w-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-[12px] font-semibold text-zinc-100 transition-colors hover:bg-white/15 disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-200 sm:py-2.5 sm:text-[13px]"
+                >
+                  확정
+                </button>
+              </div>
+            </div>
             </>
             )}
             </div>
@@ -2080,7 +2117,7 @@ export function PurchaseCustomizeStudio({
                 
                 {!(isAvatarConfirmed && isBackgroundConfirmed) ? (
                   <div className="flex flex-col items-center justify-center py-6 text-center opacity-50">
-                     <p className="text-[12px] font-medium text-zinc-400">Step 1과 Step 2의 선택을 모두 확정해야 진행할 수 있습니다.</p>
+                     <p className="text-[12px] font-medium text-zinc-400">아바타선택과 배경 설정을 모두 확정해야 진행할 수 있습니다.</p>
                   </div>
                 ) : (
                   <div className="mt-4 flex flex-col items-center">
@@ -2103,7 +2140,7 @@ export function PurchaseCustomizeStudio({
                                     <div className="h-full w-full rounded-full bg-black" aria-hidden />
                                   )}
                                </div>
-                               <span className="text-[10px] font-bold text-zinc-300 whitespace-nowrap">내 디지털 DNA</span>
+                               <span className="text-[10px] font-bold text-zinc-300 whitespace-nowrap">내 아바타</span>
                             </div>
 
                             {/* + icon */}
@@ -2262,17 +2299,24 @@ export function PurchaseCustomizeStudio({
                 
                 <div className="flex flex-wrap justify-center gap-6 sm:gap-10">
                   {/* Left Box: Video */}
-                  <div className="rounded-xl border border-white/10 bg-[#1A1A1A] overflow-hidden flex flex-col relative w-[150px] sm:w-[200px] shrink-0 aspect-[9/16] shadow-2xl">
-                     <div className="absolute inset-0 z-0">
+                  <div className="relative aspect-[9/16] w-[150px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black shadow-2xl sm:w-[200px]">
+                     <div className="absolute inset-0 z-0 overflow-hidden rounded-xl bg-black">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <video src={motionReferenceUrl} autoPlay loop muted playsInline className="w-full h-full object-cover opacity-90" />
+                        <video
+                          src={motionReferenceUrl}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="absolute left-1/2 top-1/2 min-h-full min-w-full -translate-x-1/2 -translate-y-1/2 object-cover opacity-90"
+                        />
                      </div>
-                     <div className="px-3 py-3 bg-[#131313]/90 backdrop-blur-md z-10 flex flex-col gap-1.5 absolute bottom-0 w-full border-t border-white/10">
-                        <div className="flex items-center gap-1.5">
+                     <div className="absolute bottom-0 z-10 flex w-full flex-col gap-1.5 rounded-b-xl border-t border-white/10 bg-black/40 px-3 py-3 backdrop-blur-sm">
+                        <div className="flex items-center gap-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
                            <div className="w-3 h-3 rounded-full border border-reels-cyan flex items-center justify-center shrink-0">
                              <div className="w-1.5 h-1.5 rounded-full bg-reels-cyan"></div>
                            </div>
-                           <span className="text-[10px] text-zinc-300 font-bold tracking-tight">원본 모션</span>
+                           <span className="text-[10px] text-zinc-100 font-bold tracking-tight">원본 모션</span>
                         </div>
                      </div>
                   </div>
@@ -2280,36 +2324,31 @@ export function PurchaseCustomizeStudio({
                   {/* Right Box: Image */}
                   <div className="rounded-xl border border-white/10 bg-[#1A1A1A] overflow-hidden flex flex-col relative w-[150px] sm:w-[200px] shrink-0 aspect-[9/16] shadow-2xl">
                      {fusionResultUrl ? (
-                         <div className="absolute inset-0 z-0 bg-[#0a0a0a]">
+                         <div className="absolute inset-0 z-0 overflow-hidden rounded-xl bg-[#0a0a0a]">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={fusionResultUrl} alt="Target Character Image" className="w-full h-full object-contain pb-8" />
+                            <img src={fusionResultUrl} alt="Target Character Image" className="h-full w-full object-contain pb-8" />
                             <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/90 via-black/40 to-transparent p-3 pt-4">
                                <p className="text-[10px] sm:text-[11px] font-bold tracking-wide text-zinc-300 drop-shadow-md leading-tight">Target Frame<br/><span className="text-zinc-500 font-medium">(DNA Fusion)</span></p>
                             </div>
                          </div>
                      ) : (
-                         <div className="flex flex-col items-center justify-center flex-1 w-full relative z-10 p-6 pt-8 pb-12">
-                            <div className="mb-3 text-zinc-400 border border-white/10 rounded-lg p-2 border-dashed">
+                         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center overflow-hidden rounded-xl p-6 pt-8 pb-12">
+                            <div className="text-zinc-400 border border-white/10 rounded-lg p-2 border-dashed">
                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                             </div>
-                            <p className="text-[11px] sm:text-[13px] font-semibold tracking-wide text-zinc-400 text-center">Step 3</p>
                          </div>
                      )}
-                     <div className="absolute inset-0 z-0 opacity-5 pointer-events-none bg-dots-grid bg-[length:16px_16px]"></div>
-                     <div className="px-3 py-3 bg-[#131313]/90 backdrop-blur-md z-10 flex flex-col gap-1.5 absolute bottom-0 w-full border-t border-white/10">
-                        <div className="flex items-center gap-1.5">
+                     <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-xl bg-dots-grid bg-[length:16px_16px] opacity-5"></div>
+                     <div className="absolute bottom-0 z-10 flex w-full flex-col gap-1.5 rounded-b-xl border-t border-white/10 bg-black/40 px-3 py-3 backdrop-blur-sm">
+                        <div className="flex items-center gap-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
                            <div className="w-3 h-3 rounded-full border border-reels-cyan flex items-center justify-center shrink-0">
                              <div className="w-1.5 h-1.5 rounded-full bg-reels-cyan"></div>
                            </div>
-                           <span className="text-[10px] text-zinc-300 font-bold tracking-tight">최종 합성 이미지</span>
+                           <span className="text-[10px] text-zinc-100 font-bold tracking-tight">최종 합성</span>
                         </div>
                      </div>
                   </div>
                 </div>
-
-                <p className="mt-5 text-[11.5px] text-zinc-500 leading-relaxed max-w-full break-keep relative z-10">
-                  When Character Orientation matches the video, complex motions perform better; when it matches the image, camera movements are better supported. Please upload according to the <span className="underline cursor-pointer hover:text-zinc-300 transition-colors">Upload Guidelines</span>. For more skills, refer to the <span className="underline cursor-pointer hover:text-zinc-300 transition-colors">User Guide</span>.
-                </p>
 
                 <div className="mt-5 relative z-10">
                    <div className="flex items-center justify-between mb-2">
@@ -2317,15 +2356,15 @@ export function PurchaseCustomizeStudio({
                        <div className="flex bg-[#111] border border-white/10 rounded-lg p-0.5 relative z-10">
                            <button 
                              onClick={() => setCharacterOrientation("image")}
-                             className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${characterOrientation === "image" ? "bg-reels-cyan text-black shadow-md" : "text-zinc-500 hover:text-zinc-300"}`}
+                             className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${characterOrientation === "image" ? "bg-zinc-600 text-zinc-100 shadow-inner ring-1 ring-white/10" : "text-zinc-500 hover:text-zinc-300"}`}
                            >
-                             📷 이미지 기준 (자연스러운 배경)
+                             이미지 기준 (자연스러운 배경)
                            </button>
                            <button 
                              onClick={() => setCharacterOrientation("video")}
-                             className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${characterOrientation === "video" ? "bg-reels-cyan text-black shadow-md" : "text-zinc-500 hover:text-zinc-300"}`}
+                             className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${characterOrientation === "video" ? "bg-zinc-600 text-zinc-100 shadow-inner ring-1 ring-white/10" : "text-zinc-500 hover:text-zinc-300"}`}
                            >
-                             💃 댄스 모션 기준 (격렬한 춤)
+                             댄스 모션 기준 (격렬한 춤)
                            </button>
                        </div>
                    </div>
@@ -2417,7 +2456,7 @@ export function PurchaseCustomizeStudio({
                             Task 전송 중...
                           </>
                       ) : (
-                          <>🚀 AI 모션 생성 시작</>
+                          <>AI 모션 생성 시작</>
                       )}
                    </button>
                   </div>
@@ -2471,7 +2510,16 @@ export function PurchaseCustomizeStudio({
                             </div>
 
                             <div className="w-[80%] max-w-[280px] rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-white/10 relative group">
-                                <video src={klingJob.outputVideoUrl} controls autoPlay loop playsInline className="w-full h-full object-cover aspect-[9/16]" />
+                                <video
+                                  src={klingJob.outputVideoUrl}
+                                  controls
+                                  controlsList="nodownload noplaybackrate noremoteplayback"
+                                  disablePictureInPicture
+                                  autoPlay
+                                  loop
+                                  playsInline
+                                  className="studio-preview-native-video aspect-[9/16] h-full w-full object-contain"
+                                />
                                 <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                     <span className="bg-black/60 backdrop-blur-md px-2 py-1 rounded text-[10px] text-white font-bold tracking-wider">9:16 REELS</span>
                                 </div>
@@ -2525,12 +2573,14 @@ export function PurchaseCustomizeStudio({
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 relative z-10">
                         {klingHistory.map((hist, idx) => (
                             <div key={idx} className="relative group rounded-xl overflow-hidden border border-white/10 bg-black aspect-[9/16] shadow-lg">
-                                <video 
-                                   src={hist.videoUrl} 
-                                   className="w-full h-full object-cover" 
-                                   controls 
-                                   playsInline 
-                                   muted 
+                                <video
+                                  src={hist.videoUrl}
+                                  className="studio-preview-native-video h-full w-full object-contain"
+                                  controls
+                                  controlsList="nodownload noplaybackrate noremoteplayback"
+                                  disablePictureInPicture
+                                  playsInline
+                                  muted
                                 />
                                 <div className="absolute top-0 left-0 w-full p-2 bg-gradient-to-b from-black/80 to-transparent flex justify-between items-start pointer-events-none transition-opacity opacity-0 group-hover:opacity-100">
                                     <div className="max-w-[70%]">
@@ -2551,321 +2601,58 @@ export function PurchaseCustomizeStudio({
                   </section>
               )}
 
-              <section className={`${STUDIO_SECTION_SURFACE} p-6 sm:p-8`}>
-            <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-              구간 자르기
-            </h2>
-            <p className="mt-1 text-[12px] text-zinc-500">
-              재생 구간을 지정하면 미리보기에서 그 범위만 반복됩니다.
-            </p>
-            <div className="mt-4 space-y-3">
-              <div>
-                <label className="text-[11px] font-semibold text-zinc-400">시작 (초)</label>
-                <input
-                  type="range"
-                  min={0}
-                  max={Math.max(0, t1 - 0.1)}
-                  step={0.05}
-                  value={t0}
-                  onChange={(e) => {
-                    const v = Number(e.target.value);
-                    updateDraft({ trimStart: v, trimEnd: Math.max(v + 0.1, t1) });
-                  }}
-                  className="mt-1 w-full accent-reels-cyan"
-                />
-                <p className="text-[11px] tabular-nums text-zinc-500">{t0.toFixed(2)}s</p>
-              </div>
-              <div>
-                <label className="text-[11px] font-semibold text-zinc-400">끝 (초)</label>
-                <input
-                  type="range"
-                  min={t0 + 0.1}
-                  max={dMax}
-                  step={0.05}
-                  value={t1}
-                  onChange={(e) => updateDraft({ trimEnd: Number(e.target.value) })}
-                  className="mt-1 w-full accent-reels-cyan"
-                />
-                <p className="text-[11px] tabular-nums text-zinc-500">{t1.toFixed(2)}s</p>
-              </div>
-            </div>
-              </section>
-
-              <section className={`${STUDIO_SECTION_SURFACE} p-6 sm:p-8`}>
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                텍스트 오버레이
-              </h2>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setTextPreviewEnabled((v) => !v)}
-                  className={`rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition ${
-                    textPreviewEnabled
-                      ? "border-reels-cyan/40 bg-reels-cyan/12 text-reels-cyan"
-                      : "border-white/15 text-zinc-400 hover:border-reels-cyan/35 hover:text-zinc-200"
-                  }`}
-                >
-                  {textPreviewEnabled ? "글씨 미리보기 해제" : "글씨 미리보기 적용"}
-                </button>
-                <button
-                  type="button"
-                  onClick={addOverlay}
-                  className="rounded-lg border border-white/15 px-2.5 py-1 text-[11px] font-semibold text-zinc-400 hover:border-reels-cyan/35 hover:text-zinc-200"
-                >
-                  + 추가
-                </button>
-              </div>
-            </div>
-            <p className="mt-1 text-[12px] text-zinc-500">글씨체·색상·크기와 위치를 게임 패드처럼 조절합니다.</p>
-            <ul className="mt-4 space-y-4">
-              {draft.overlays.map((o) => (
-                <li key={o.id} className="rounded-lg border border-white/10 bg-black/25 p-3">
-                  <input
-                    value={o.text}
-                    onChange={(e) => patchOverlay(o.id, { text: e.target.value })}
-                    className="w-full rounded border border-white/10 bg-black/40 px-2 py-1.5 text-[13px] text-zinc-100"
-                    placeholder="문구 입력"
-                  />
-                  <div className="mt-2 flex flex-wrap items-center gap-3">
-                    <label className="flex items-center gap-2 text-[11px] text-zinc-500">
-                      색
-                      <input
-                        type="color"
-                        value={o.color}
-                        onChange={(e) => patchOverlay(o.id, { color: e.target.value })}
-                        className="h-8 w-10 cursor-pointer rounded border border-white/15 bg-transparent"
-                      />
-                    </label>
-                    <label className="flex items-center gap-2 text-[11px] text-zinc-500">
-                      글씨체
-                      <select
-                        value={o.fontFamily}
-                        onChange={(e) => {
-                          patchOverlay(o.id, { fontFamily: e.target.value });
-                          trackBehavior({
-                            type: "font_selected",
-                            fontFamily: e.target.value,
-                          });
-                        }}
-                        className="rounded border border-white/15 bg-black/40 px-2 py-1 text-[11px] text-zinc-200"
-                      >
-                        {FONT_OPTIONS.map((f) => (
-                          <option key={f.value} value={f.value}>
-                            {f.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="flex flex-1 items-center gap-2 text-[11px] text-zinc-500">
-                      크기 {o.fontSize}px
-                      <input
-                        type="range"
-                        min={10}
-                        max={36}
-                        value={o.fontSize}
-                        onChange={(e) => patchOverlay(o.id, { fontSize: Number(e.target.value) })}
-                        className="min-w-[100px] flex-1 accent-reels-cyan"
-                      />
-                    </label>
-                  </div>
-                  <div className="mt-2 flex flex-wrap items-center gap-3">
-                    <label className="flex flex-1 items-center gap-2 text-[11px] text-zinc-500">
-                      불투명도 {Math.round((o.opacity ?? 1) * 100)}%
-                      <input
-                        type="range"
-                        min={0}
-                        max={100}
-                        value={Math.round((o.opacity ?? 1) * 100)}
-                        onChange={(e) => patchOverlay(o.id, { opacity: Number(e.target.value) / 100 })}
-                        className="min-w-[100px] flex-1 accent-reels-cyan"
-                      />
-                    </label>
-                    <label className="flex flex-1 items-center gap-2 text-[11px] text-zinc-500">
-                      그림자 {Math.round((o.shadow ?? 0.65) * 100)}%
-                      <input
-                        type="range"
-                        min={0}
-                        max={100}
-                        value={Math.round((o.shadow ?? 0.65) * 100)}
-                        onChange={(e) => patchOverlay(o.id, { shadow: Number(e.target.value) / 100 })}
-                        className="min-w-[100px] flex-1 accent-reels-cyan"
-                      />
-                    </label>
-                  </div>
-                  <div className="mt-2 flex flex-wrap items-center gap-3">
-                    <label className="flex items-center gap-2 text-[11px] text-zinc-500">
-                      테두리 색
-                      <input
-                        type="color"
-                        value={o.strokeColor ?? "#000000"}
-                        onChange={(e) => patchOverlay(o.id, { strokeColor: e.target.value })}
-                        className="h-8 w-10 cursor-pointer rounded border border-white/15 bg-transparent"
-                      />
-                    </label>
-                    <label className="flex flex-1 items-center gap-2 text-[11px] text-zinc-500">
-                      테두리 두께 {o.strokeWidth ?? 0}px
-                      <input
-                        type="range"
-                        min={0}
-                        max={6}
-                        step={1}
-                        value={o.strokeWidth ?? 0}
-                        onChange={(e) => patchOverlay(o.id, { strokeWidth: Number(e.target.value) })}
-                        className="min-w-[100px] flex-1 accent-reels-cyan"
-                      />
-                    </label>
-                  </div>
-                  <div className="mt-3 flex flex-col gap-3 rounded-lg border border-white/10 bg-black/30 p-3">
-                    <div className="flex items-center justify-between text-[11px] text-zinc-500">
-                      <span>위치 패드 (드래그 + 1단위 미세 이동)</span>
-                      <span className="tabular-nums">
-                        X {Math.round(o.leftPct ?? 50)}% / Y {Math.round(o.topPct ?? 50)}%
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`relative h-28 w-28 rounded-full border border-white/15 bg-black/45 ${
-                          activeDragOverlayId === o.id ? "ring-2 ring-reels-cyan/45" : ""
-                        }`}
-                        onPointerDown={(e) => {
-                          const el = e.currentTarget;
-                          el.setPointerCapture?.(e.pointerId);
-                          setActiveDragOverlayId(o.id);
-                          const r = el.getBoundingClientRect();
-                          const cx = r.left + r.width / 2;
-                          const cy = r.top + r.height / 2;
-                          const dx = (e.clientX - cx) / (r.width / 2);
-                          const dy = (e.clientY - cy) / (r.height / 2);
-                          patchOverlay(o.id, {
-                            leftPct: clampOverlayPosition(50 + dx * 45),
-                            topPct: clampOverlayPosition(50 + dy * 45),
-                          });
-                        }}
-                        onPointerMove={(e) => {
-                          if (activeDragOverlayId !== o.id) return;
-                          const el = e.currentTarget;
-                          const r = el.getBoundingClientRect();
-                          const cx = r.left + r.width / 2;
-                          const cy = r.top + r.height / 2;
-                          const dx = (e.clientX - cx) / (r.width / 2);
-                          const dy = (e.clientY - cy) / (r.height / 2);
-                          patchOverlay(o.id, {
-                            leftPct: clampOverlayPosition(50 + dx * 45),
-                            topPct: clampOverlayPosition(50 + dy * 45),
-                          });
-                        }}
-                        onPointerUp={(e) => {
-                          e.currentTarget.releasePointerCapture?.(e.pointerId);
-                          setActiveDragOverlayId((id) => (id === o.id ? null : id));
-                        }}
-                        onPointerCancel={() => setActiveDragOverlayId((id) => (id === o.id ? null : id))}
-                      >
-                        <div className="absolute left-1/2 top-2 h-4 w-4 -translate-x-1/2 text-center text-[12px] text-zinc-400">↑</div>
-                        <div className="absolute bottom-2 left-1/2 h-4 w-4 -translate-x-1/2 text-center text-[12px] text-zinc-400">↓</div>
-                        <div className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-center text-[12px] text-zinc-400">←</div>
-                        <div className="absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-center text-[12px] text-zinc-400">→</div>
-                        <div
-                          className="absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-reels-cyan/70 bg-reels-cyan/35 shadow-[0_0_10px_rgba(255,45,141,0.45)]"
-                          style={{
-                            left: `${o.leftPct ?? 50}%`,
-                            top: `${o.topPct ?? 50}%`,
-                          }}
-                        />
-                      </div>
-                      <div className="grid grid-cols-3 gap-1">
-                        <button type="button" onClick={() => nudgeOverlay(o.id, -1, -1)} className="rounded border border-white/15 px-2 py-1 text-[11px] text-zinc-300 hover:border-reels-cyan/35">↖</button>
-                        <button type="button" onClick={() => nudgeOverlay(o.id, 0, -1)} className="rounded border border-white/15 px-2 py-1 text-[11px] text-zinc-300 hover:border-reels-cyan/35">↑</button>
-                        <button type="button" onClick={() => nudgeOverlay(o.id, 1, -1)} className="rounded border border-white/15 px-2 py-1 text-[11px] text-zinc-300 hover:border-reels-cyan/35">↗</button>
-                        <button type="button" onClick={() => nudgeOverlay(o.id, -1, 0)} className="rounded border border-white/15 px-2 py-1 text-[11px] text-zinc-300 hover:border-reels-cyan/35">←</button>
-                        <button
-                          type="button"
-                          onClick={() => patchOverlay(o.id, { leftPct: 50, topPct: 50 })}
-                          className="rounded border border-white/15 px-2 py-1 text-[11px] text-zinc-500 hover:border-reels-cyan/35"
-                        >
-                          •
-                        </button>
-                        <button type="button" onClick={() => nudgeOverlay(o.id, 1, 0)} className="rounded border border-white/15 px-2 py-1 text-[11px] text-zinc-300 hover:border-reels-cyan/35">→</button>
-                        <button type="button" onClick={() => nudgeOverlay(o.id, -1, 1)} className="rounded border border-white/15 px-2 py-1 text-[11px] text-zinc-300 hover:border-reels-cyan/35">↙</button>
-                        <button type="button" onClick={() => nudgeOverlay(o.id, 0, 1)} className="rounded border border-white/15 px-2 py-1 text-[11px] text-zinc-300 hover:border-reels-cyan/35">↓</button>
-                        <button type="button" onClick={() => nudgeOverlay(o.id, 1, 1)} className="rounded border border-white/15 px-2 py-1 text-[11px] text-zinc-300 hover:border-reels-cyan/35">↘</button>
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeOverlay(o.id)}
-                    disabled={draft.overlays.length <= 1}
-                    className="mt-2 text-[11px] font-medium text-zinc-600 hover:text-reels-crimson disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {draft.overlays.length <= 1 ? "기본 1개 유지" : "삭제"}
-                  </button>
-                </li>
-              ))}
-            </ul>
-              </section>
             </>
-          ) : (
-            <div className={`${STUDIO_SECTION_SURFACE} p-6 sm:p-8`}>
-              <p className="text-lg font-semibold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                커스텀 편집
-              </p>
-              <p className="mt-1 text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                AI로 얼굴·배경을 바꾸고, 원하는 톤으로 다듬을 수 있어요. 편집 없이 진행하려면 상단의 「영상만 구매」를 누르세요.
-              </p>
-            </div>
-          )}
-
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={persist}
-              disabled={saveStatus === "saving"}
-              className="rounded-full border border-white/15 bg-transparent px-6 py-3 text-[14px] font-semibold text-zinc-200 transition hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-60 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:bg-zinc-100"
-            >
-              임시 저장
-            </button>
-            {saveStatus === "saving" ? (
-              <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
-                저장 중…
-              </span>
-            ) : saveStatus === "saved" ? (
-              <span className="text-[12px] font-semibold text-[color:var(--reels-point)]">
-                마이페이지에 임시 저장됨
-              </span>
-            ) : null}
-            <button
-              type="button"
-              disabled={submitRemote || !effectiveFaceImageUrl}
-              onClick={submitServerGeneration}
-              className={`${MYPAGE_OUTLINE_BTN_MD} disabled:pointer-events-none disabled:opacity-45`}
-            >
-              {submitRemote ? "요청 중…" : "서버 생성 요청"}
-            </button>
-            <span className="text-[12px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-              {useAdvancedStep
-                ? "커스텀 편집 후 서버 생성 요청을 누르세요."
-                : "영상만 구매 모드입니다. 서버 생성 요청을 누르세요."}
-            </span>
-          </div>
-          {!remoteJob ? (
-            <p className="mt-3 max-w-xl text-[11px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-              서버 생성은 백그라운드에서 진행돼요. 시작한 뒤에는 이 화면을 나가도 작업은 이어지며, 결과는{" "}
-              <Link
-                href="/mypage?tab=drafts"
-                className="font-semibold text-[color:var(--reels-point)] underline-offset-2 hover:underline"
-              >
-                마이페이지 → 임시 저장
-              </Link>
-              에서 다시 열어볼 수 있어요.
-            </p>
           ) : null}
 
-          {remoteErr ? (
+          {useAdvancedStep ? (
+            <div className="flex w-full flex-col items-end gap-3">
+              <div className="flex flex-wrap items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={persist}
+                  disabled={saveStatus === "saving"}
+                  className={`${MYPAGE_OUTLINE_BTN_MD_TRANSPARENT} disabled:pointer-events-none disabled:opacity-45`}
+                >
+                  임시 저장
+                </button>
+                {saveStatus === "saving" ? (
+                  <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                    <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
+                    저장 중…
+                  </span>
+                ) : saveStatus === "saved" ? (
+                  <span className="text-[12px] font-semibold text-[color:var(--reels-point)]">
+                    마이페이지에 임시 저장됨
+                  </span>
+                ) : null}
+                <button
+                  type="button"
+                  disabled={submitRemote || !effectiveFaceImageUrl}
+                  onClick={submitServerGeneration}
+                  className={`${MYPAGE_OUTLINE_BTN_MD} disabled:pointer-events-none disabled:opacity-45`}
+                >
+                  {submitRemote ? "생성 중…" : "생성 하기"}
+                </button>
+              </div>
+              {!remoteJob ? (
+                <p className="max-w-xl text-right text-[11px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                  생성 시작한 뒤에는 이 화면을 나가도 작업은 이어지며, 결과는{" "}
+                  <Link
+                    href="/mypage?tab=drafts"
+                    className="font-semibold text-[color:var(--reels-point)] underline-offset-2 hover:underline"
+                  >
+                    마이페이지 → 임시 저장
+                  </Link>
+                  에서 다시 열어볼 수 있어요.
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {remoteErr && useAdvancedStep ? (
             <p className="mt-3 text-[12px] font-medium text-reels-crimson">{remoteErr}</p>
           ) : null}
-          {remoteJob ? (
+          {remoteJob && useAdvancedStep ? (
             <ServerGenerationStatusCard
               job={{
                 jobId: remoteJob.id,
@@ -3094,7 +2881,6 @@ export function PurchaseCustomizeStudio({
           {enlargedImage.type === 'full' ? (
              <div 
                 className="relative w-full max-w-[90vw] md:max-w-4xl max-h-[90vh] flex flex-col items-center justify-center"
-                onClick={(e) => e.stopPropagation()}
              >
                  {/* eslint-disable-next-line @next/next/no-img-element */}
                  <img src={enlargedImage.url} alt="Enlarged Full" className="w-auto h-auto max-w-full max-h-[85vh] object-contain drop-shadow-[0_0_40px_rgba(0,0,0,0.8)] rounded-lg cursor-default" />

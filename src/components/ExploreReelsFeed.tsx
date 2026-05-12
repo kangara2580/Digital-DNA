@@ -12,7 +12,6 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { createPortal } from "react-dom";
 import { ExploreReelSlide } from "@/components/ExploreReelSlide";
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { VideoCard } from "@/components/VideoCard";
@@ -252,11 +251,6 @@ function ExploreWatchReels({
     };
   }, []);
 
-  const [chevronPortal, setChevronPortal] = useState<HTMLElement | null>(null);
-  useLayoutEffect(() => {
-    setChevronPortal(document.body);
-  }, []);
-
   // 키보드 이동만 커스텀 처리(휠/트랙패드는 네이티브 스크롤로 버벅임 최소화)
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -294,20 +288,18 @@ function ExploreWatchReels({
 
   const chevronRail = (
     /*
-     * 데스크톱: 릴 본문은 `md:pl[--reels-rail-w]` + 가운데 `max-w:56rem` 블록이라, 뷰가 넓을수록
-     * 가격 레일은 화면 오른쪽에서 멀어짐. `50vw - rail/2 - 28rem`으로 블록 오른쪽까지 거리를 잡고 보정값을 뺌.
-     * 좁은 md에서는 `max(..., 7.5rem)`으로 창 모드 위치 유지.
-     * 브라우저 전체화면(F11)·Fullscreen API 등은 `chevronFullscreenNudge`로 감지해, 그때만
-     * 버튼 스택에 `translateX`를 더해 가격·통계 레일 쪽으로 붙임(일반 창에서는 기존 pr만 사용).
+     * 슬라이드(ExploreReelSlide)와 동일한 가로 기준: md 레일 inset + max-w 56rem + px-2/md:px-4.
+     * 뷰포트 우측 고정(pr vw 계산) 대신 콘텐츠 열 안에서 정렬해 해상도가 커져도 가격 레일과 겹치지 않음.
      */
-    <div className="pointer-events-none fixed inset-0 z-[101] box-border flex w-full items-center justify-end pr-[calc(env(safe-area-inset-right,0px)+2rem)] sm:pr-[calc(env(safe-area-inset-right,0px)+3.25rem)] md:pr-[calc(env(safe-area-inset-right,0px)+max(7.5rem,(50vw-(var(--reels-rail-w)/2))-28rem-1.75rem))] 2xl:pr-[calc(env(safe-area-inset-right,0px)+max(7.5rem,(50vw-(var(--reels-rail-w)/2))-28rem+7rem))]">
-      <div
-        className={
-          chevronFullscreenNudge
-            ? "pointer-events-none flex flex-col gap-2 transition-transform duration-150 md:-translate-x-8 2xl:-translate-x-14"
-            : "pointer-events-none flex flex-col gap-2 transition-transform duration-150"
-        }
-      >
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[101] box-border flex justify-center md:pl-[var(--reels-rail-w)]">
+      <div className="pointer-events-none flex h-full w-full max-w-[min(56rem,100%)] items-center justify-end px-2 sm:px-4 md:px-4">
+        <div
+          className={
+            chevronFullscreenNudge
+              ? "pointer-events-none flex flex-col gap-2 pr-[env(safe-area-inset-right,0px)] transition-transform duration-150 md:-translate-x-8 2xl:-translate-x-14"
+              : "pointer-events-none flex flex-col gap-2 pr-[env(safe-area-inset-right,0px)] transition-transform duration-150"
+          }
+        >
         <button
           type="button"
           onClick={goPrevReel}
@@ -335,12 +327,13 @@ function ExploreWatchReels({
           />
         </button>
       </div>
+      </div>
     </div>
   );
 
   return (
     <>
-      {chevronPortal ? createPortal(chevronRail, chevronPortal) : chevronRail}
+      {chevronRail}
 
       <div
         ref={scrollRef}

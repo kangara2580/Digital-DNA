@@ -1,8 +1,11 @@
 "use client";
 
-import { ChevronDown, Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
+import { useMemo } from "react";
 import type { SiteLocale } from "@/lib/sitePreferences";
 import { useSitePreferences } from "@/context/SitePreferencesContext";
+import { useTranslation } from "@/hooks/useTranslation";
+import { MyPageSortSelect } from "@/components/MyPageSortSelect";
 
 const iconStroke = 1.25;
 
@@ -22,6 +25,7 @@ export function SitePreferencesMenu({
   className,
   layout = "row",
 }: Props) {
+  const { t } = useTranslation();
   const { themeMode, toggleTheme, locale, setLocale } = useSitePreferences();
 
   const localeGroup = (
@@ -79,23 +83,23 @@ export function SitePreferencesMenu({
     </div>
   );
 
+  const localeSortOptions = useMemo(
+    () => [
+      { value: "ko", label: `${t("locale.option.ko")} (KO)` },
+      { value: "en", label: `${t("locale.option.en")} (EN)` },
+    ],
+    [t],
+  );
+
   const stackLocaleSelect = (
-    <div className="relative">
-      <select
-        value={locale}
-        onChange={(e) => setLocale(e.target.value as SiteLocale)}
-        aria-label="언어 선택"
-        className="w-full cursor-pointer appearance-none rounded-xl border border-white/15 bg-zinc-950/90 py-2.5 pl-3 pr-10 text-[14px] font-semibold text-zinc-100 caret-reels-crimson outline-none transition-[border-color,box-shadow] hover:border-white/25 focus:border-reels-crimson/45 focus:ring-2 focus:ring-reels-crimson/28 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-zinc-400"
-      >
-        <option value="ko">한국어 (KO)</option>
-        <option value="en">English (EN)</option>
-      </select>
-      <ChevronDown
-        className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 [html[data-theme='light']_&]:text-zinc-600"
-        strokeWidth={2}
-        aria-hidden
-      />
-    </div>
+    <MyPageSortSelect
+      compact
+      stretch
+      ariaLabel={t("settings.language.selectAria")}
+      options={localeSortOptions}
+      value={locale}
+      onChange={(v) => setLocale(v as SiteLocale)}
+    />
   );
 
   /** iOS 스타일 흑백 스위치 — 썸 왼쪽: 라이트, 오른쪽: 다크 */
@@ -125,18 +129,20 @@ export function SitePreferencesMenu({
       <div className={`flex flex-col gap-4 ${className ?? ""}`}>
         <div>
           <p className="mb-2 px-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            언어
+            {t("prefs.stackSectionLocale")}
           </p>
           {stackLocaleSelect}
         </div>
         <div className="flex flex-col gap-2">
           <p className="px-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            화면 테마
+            {t("prefs.stackSectionTheme")}
           </p>
           <div className="flex items-center gap-3">
             {stackThemeToggle}
             <span className="text-[13px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-              {themeMode === "dark" ? "다크" : "라이트"}
+              {themeMode === "dark"
+                ? t("prefs.stackThemeDark")
+                : t("prefs.stackThemeLight")}
             </span>
           </div>
         </div>

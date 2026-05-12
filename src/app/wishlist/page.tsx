@@ -1,34 +1,28 @@
 "use client";
 
 import Link from "next/link";
+import { Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
 import { MyPageSortSelect } from "@/components/MyPageSortSelect";
-import { useSitePreferences } from "@/context/SitePreferencesContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { resolveManualTikTokVideoForStudio } from "@/data/tiktokData";
 import { buildWishlistVideoLookup } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
-import { videoDisplayTitle } from "@/lib/videoDisplayTitle";
-import type { SiteLocale } from "@/lib/sitePreferences";
 
 const SORT_OPTIONS = [
   { value: "recent", label: "최근 찜한 순" },
   { value: "oldest", label: "오래된 순" },
   { value: "price-asc", label: "가격 낮은 순" },
   { value: "price-desc", label: "가격 높은 순" },
-  { value: "title-asc", label: "제목 가나다순" },
-  { value: "title-desc", label: "제목 역순" },
-  { value: "duration-asc", label: "재생 짧은 순" },
-  { value: "duration-desc", label: "재생 긴 순" },
 ] as const;
 
 type SortValue = (typeof SORT_OPTIONS)[number]["value"];
 
 type Row = { entryId: string; video: FeedVideo; savedAt: number };
 
-function sortRows(rows: Row[], sort: SortValue, locale: SiteLocale): Row[] {
+function sortRows(rows: Row[], sort: SortValue): Row[] {
   const copy = [...rows];
   const noPrice = 1e12;
   switch (sort) {
@@ -46,32 +40,6 @@ function sortRows(rows: Row[], sort: SortValue, locale: SiteLocale): Row[] {
         (a, b) =>
           (b.video.priceWon ?? -1) - (a.video.priceWon ?? -1),
       );
-    case "title-asc":
-      return copy.sort((a, b) =>
-        videoDisplayTitle(a.video, locale).localeCompare(
-          videoDisplayTitle(b.video, locale),
-          locale === "en" ? "en" : "ko",
-          { sensitivity: "base" },
-        ),
-      );
-    case "title-desc":
-      return copy.sort((a, b) =>
-        videoDisplayTitle(b.video, locale).localeCompare(
-          videoDisplayTitle(a.video, locale),
-          locale === "en" ? "en" : "ko",
-          { sensitivity: "base" },
-        ),
-      );
-    case "duration-asc":
-      return copy.sort(
-        (a, b) =>
-          (a.video.durationSec ?? 0) - (b.video.durationSec ?? 0),
-      );
-    case "duration-desc":
-      return copy.sort(
-        (a, b) =>
-          (b.video.durationSec ?? 0) - (a.video.durationSec ?? 0),
-      );
     default:
       return copy;
   }
@@ -79,8 +47,7 @@ function sortRows(rows: Row[], sort: SortValue, locale: SiteLocale): Row[] {
 
 export default function WishlistPage() {
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
-  const { entries, hydrated, clear, removeMany } = useWishlist();
-  const { locale } = useSitePreferences();
+  const { entries, hydrated, removeMany } = useWishlist();
   const [sort, setSort] = useState<SortValue>("recent");
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [loginCtaVisible, setLoginCtaVisible] = useState(false);
@@ -95,8 +62,8 @@ export default function WishlistPage() {
         fromCatalog ?? resolveManualTikTokVideoForStudio(e.id) ?? undefined;
       if (video) list.push({ entryId: e.id, video, savedAt: e.savedAt });
     }
-    return sortRows(list, sort, locale as SiteLocale);
-  }, [entries, videoByStoredId, sort, locale]);
+    return sortRows(list, sort);
+  }, [entries, videoByStoredId, sort]);
 
   const allEntryIds = useMemo(() => rows.map((r) => r.entryId), [rows]);
 
@@ -189,25 +156,11 @@ export default function WishlistPage() {
                   type="button"
                   onClick={deleteSelectedWishlist}
                   disabled={selected.size === 0}
-                  className="rounded-lg border border-reels-crimson/38 px-3 py-2 text-[15px] font-medium text-[#F3C4D9] transition-colors hover:bg-reels-crimson/12 disabled:opacity-40 [html[data-theme='light']_&]:text-reels-crimson"                >
-                  선택 삭제
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    void (async () => {
-                      if (
-                        typeof window !== "undefined" &&
-                        window.confirm("찜한 동영상을 모두 목록에서 삭제할까요?")
-                      ) {
-                        await clear();
-                        setSelected(new Set());
-                      }
-                    })();
-                  }}
-                  className="rounded-lg border border-white/15 px-3 py-2 text-[15px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
+                  aria-label="선택 삭제"
+                  title="선택 삭제"
+                  className="relative z-10 inline-flex items-center justify-center rounded-lg border border-[color:var(--reels-point)] bg-transparent p-2 text-white shadow-none outline-none transition-[background-color] hover:bg-[color:var(--reels-point)]/14 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-[#E42980] [html[data-theme='light']_&]:hover:bg-[color:var(--reels-point)]/10"
                 >
-                  전체 삭제
+                  <Trash2 className="h-[1.125rem] w-[1.125rem] shrink-0" strokeWidth={2} aria-hidden />
                 </button>
               </>
             ) : null}
@@ -269,6 +222,7 @@ export default function WishlistPage() {
                 domId={`wishlist-${entryId}`}
                 className="min-w-0"
                 compactHoverActions
+                mypageListCard
               />
             </li>
           ))}

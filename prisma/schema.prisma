@@ -288,6 +288,18 @@ model SellerSettlementRequest {
   @@map("seller_settlement_requests")
 }
 
+/// 판매자가 한 번 등록해 두는 정산 입금 계좌 (정산 신청 시 자동 반영).
+model SellerPayoutAccount {
+  sellerId      String   @id @map("seller_id")
+  bankName      String   @map("bank_name")
+  accountNo     String   @map("account_no")
+  accountHolder String   @map("account_holder")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("seller_payout_accounts")
+}
+
 /// Admin settlement batch. MVP can be manual bank transfer, recorded here.
 model SellerSettlement {
   id                  String   @id @default(cuid())

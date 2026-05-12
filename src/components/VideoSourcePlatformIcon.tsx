@@ -1,9 +1,4 @@
-import { Clapperboard } from "lucide-react";
-import { SellerSocialPlatformIcon } from "@/components/SellerSocialPlatformIcon";
-import {
-  type VideoContentSource,
-  videoContentSourceAriaLabel,
-} from "@/lib/videoSourcePlatform";
+import type { VideoContentSource } from "@/lib/videoSourcePlatform";
 
 type Props = {
   source: VideoContentSource;
@@ -11,28 +6,9 @@ type Props = {
 };
 
 /**
- * 영상 출처 아이콘 — TikTok·YouTube·Instagram·직접 업로드(클래퍼보드).
+ * 예전에는 URL 임베드 vs 직접 업로드를 아이콘으로 구분했습니다.
+ * 플로우가 직접 업로드 중심으로 통합되어 더 이상 표시하지 않습니다.
  */
-export function VideoSourcePlatformIcon({ source, className }: Props) {
-  const cls = className ?? "h-3.5 w-3.5";
-  if (source === "upload") {
-    return (
-      <span
-        className="inline-flex shrink-0 text-current"
-        title={videoContentSourceAriaLabel(source)}
-        aria-label={videoContentSourceAriaLabel(source)}
-      >
-        <Clapperboard className={cls} strokeWidth={2} aria-hidden />
-      </span>
-    );
-  }
-  return (
-    <span
-      className="inline-flex shrink-0 text-current"
-      title={videoContentSourceAriaLabel(source)}
-      aria-label={videoContentSourceAriaLabel(source)}
-    >
-      <SellerSocialPlatformIcon platform={source} className={cls} />
-    </span>
-  );
+export function VideoSourcePlatformIcon(_props: Props) {
+  return null;
 }

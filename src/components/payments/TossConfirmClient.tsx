@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { parseSafePaymentNextParam, videoIdFromPurchaseCompletePath } from "@/lib/safePaymentNextPath";
 
 type ConfirmState =
   | { status: "confirming" }
@@ -12,10 +13,13 @@ export function TossConfirmClient({
   paymentKey,
   orderId,
   amount,
+  nextRedirect,
 }: {
   paymentKey: string | null;
   orderId: string | null;
   amount: string | null;
+  /** `/payments/toss/success?next=...` — 검증 후 우선 사용 */
+  nextRedirect?: string | null;
 }) {
   const [state, setState] = useState<ConfirmState>({ status: "confirming" });
 
@@ -99,8 +103,16 @@ export function TossConfirmClient({
     );
   }
 
+  const safeNext = nextRedirect ? parseSafePaymentNextParam(nextRedirect) : null;
+  const nextVideoId = safeNext ? videoIdFromPurchaseCompletePath(safeNext) : null;
+  const nextMatchesTarget =
+    Boolean(safeNext && state.targetId && nextVideoId) && nextVideoId === state.targetId;
   const href =
-    state.productType === "video" && state.targetId ? `/video/${state.targetId}` : "/assets";
+    nextMatchesTarget && state.productType === "video"
+      ? safeNext!
+      : state.productType === "video" && state.targetId
+        ? `/video/${state.targetId}`
+        : "/assets";
 
   return (
     <section className="w-full max-w-md rounded-lg border border-white/10 bg-white/[0.05] p-8 text-center">

@@ -59,7 +59,11 @@ function bigintToNumber(value: bigint | number): number {
 }
 
 function fallbackNickname(seed: string): string {
-  return `판매자 ${seed.slice(0, 6)}`;
+  const s = seed.trim();
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)) {
+    return s.replace(/-/g, "").slice(0, 10);
+  }
+  return s.slice(0, 24);
 }
 
 function pickAvatarUrl(avatarCustom: string | null): string | null {
@@ -116,6 +120,9 @@ export async function GET(request: Request) {
           ? Prisma.sql`ORDER BY "totalRevenue" DESC, "salesCount" DESC, v.created_at DESC`
           : Prisma.sql`ORDER BY "salesCount" DESC, "totalRevenue" DESC, v.created_at DESC`;
 
+      /** 판매·매출 모두 `purchases.created_at` 기준으로 선택 기간 내 집계 */
+      const purchaseTimeFilter = periodSql;
+
       rows = await prisma.$queryRaw<LeaderboardRow[]>(Prisma.sql`
         SELECT
           v.id AS "videoId",
@@ -129,7 +136,7 @@ export async function GET(request: Request) {
         INNER JOIN purchases pu ON pu.video_id = v.id AND pu.status = 'paid'
         LEFT JOIN profiles p ON p.user_id::text = v.seller_id
         WHERE 1 = 1
-        ${periodSql}
+        ${purchaseTimeFilter}
         GROUP BY v.id, v.title, v.seller_id, p.nickname, p.avatar_custom, v.created_at
         ${orderSql}
         LIMIT 10

@@ -1,17 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import { Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
 import { MyPageSortSelect } from "@/components/MyPageSortSelect";
 import { resolveManualTikTokVideoForStudio } from "@/data/tiktokData";
 import { buildWishlistVideoLookup } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
-import { useSitePreferences } from "@/context/SitePreferencesContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import {
+  USER_FAVORITE_LIKE_UPDATED_EVENT,
+  type UserFavoriteLikeUpdatedDetail,
+} from "@/hooks/useVideoLike";
 import { useTranslation } from "@/hooks/useTranslation";
-import { videoDisplayTitle } from "@/lib/videoDisplayTitle";
-import type { SiteLocale } from "@/lib/sitePreferences";
+import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import {
   fetchUserFavoritesByKind,
@@ -20,20 +23,12 @@ import {
 import { waitForSupabaseAccessToken } from "@/lib/waitSupabaseSessionReady";
 import { MYPAGE_OUTLINE_BTN_MD, MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 
-type Sort =
-  | "recent"
-  | "oldest"
-  | "price-asc"
-  | "price-desc"
-  | "title-asc"
-  | "title-desc"
-  | "duration-asc"
-  | "duration-desc";
+type Sort = "recent" | "oldest" | "price-asc" | "price-desc";
 
 type LikeEntry = { id: string; likedAt: number };
 type Row = { entryId: string; video: FeedVideo; likedAt: number };
 
-function sortRows(rows: Row[], sort: Sort, locale: SiteLocale): Row[] {
+function sortRows(rows: Row[], sort: Sort): Row[] {
   const copy = [...rows];
   const noPrice = 1e12;
   switch (sort) {
@@ -45,26 +40,6 @@ function sortRows(rows: Row[], sort: Sort, locale: SiteLocale): Row[] {
       return copy.sort((a, b) => (a.video.priceWon ?? noPrice) - (b.video.priceWon ?? noPrice));
     case "price-desc":
       return copy.sort((a, b) => (b.video.priceWon ?? -1) - (a.video.priceWon ?? -1));
-    case "title-asc":
-      return copy.sort((a, b) =>
-        videoDisplayTitle(a.video, locale).localeCompare(
-          videoDisplayTitle(b.video, locale),
-          locale === "en" ? "en" : "ko",
-          { sensitivity: "base" },
-        ),
-      );
-    case "title-desc":
-      return copy.sort((a, b) =>
-        videoDisplayTitle(b.video, locale).localeCompare(
-          videoDisplayTitle(a.video, locale),
-          locale === "en" ? "en" : "ko",
-          { sensitivity: "base" },
-        ),
-      );
-    case "duration-asc":
-      return copy.sort((a, b) => (a.video.durationSec ?? 0) - (b.video.durationSec ?? 0));
-    case "duration-desc":
-      return copy.sort((a, b) => (b.video.durationSec ?? 0) - (a.video.durationSec ?? 0));
     default:
       return copy;
   }
@@ -84,9 +59,7 @@ const LOGIN_REDIRECT = encodeURIComponent("/mypage?tab=likes");
 
 export function MyPageLikedVideosSection() {
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
-  const { locale } = useSitePreferences();
   const { t } = useTranslation();
-  const loc = locale as SiteLocale;
 
   const sortOptions = useMemo(
     () =>
@@ -95,18 +68,8 @@ export function MyPageLikedVideosSection() {
         { value: "oldest" as const, label: t("mypage.sort.oldestSaved") },
         { value: "price-asc" as const, label: t("mypage.sort.priceAsc") },
         { value: "price-desc" as const, label: t("mypage.sort.priceDesc") },
-        {
-          value: "title-asc" as const,
-          label: loc === "en" ? t("mypage.sort.titleAscEn") : t("mypage.sort.titleAsc"),
-        },
-        {
-          value: "title-desc" as const,
-          label: loc === "en" ? t("mypage.sort.titleDescEn") : t("mypage.sort.titleDesc"),
-        },
-        { value: "duration-asc" as const, label: t("mypage.sort.durationAsc") },
-        { value: "duration-desc" as const, label: t("mypage.sort.durationDesc") },
       ] as const,
-    [t, loc],
+    [t],
   );
 
   const videoByStoredId = useMemo(() => buildWishlistVideoLookup(), []);
@@ -151,6 +114,35 @@ export function MyPageLikedVideosSection() {
     void loadLikes();
   }, [authLoading, loadLikes]);
 
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<UserFavoriteLikeUpdatedDetail>;
+      const d = ce.detail;
+      if (!d || typeof d.videoId !== "string" || typeof d.likedByMe !== "boolean") return;
+      if (!d.likedByMe) {
+        setEntries((prev) =>
+          prev.filter((x) => canonicalFavoriteVideoId(x.id) !== d.videoId),
+        );
+        setSelected((s) => {
+          let changed = false;
+          const n = new Set(s);
+          for (const id of s) {
+            if (canonicalFavoriteVideoId(id) === d.videoId) {
+              n.delete(id);
+              changed = true;
+            }
+          }
+          return changed ? n : s;
+        });
+      } else {
+        void loadLikes();
+      }
+    };
+    window.addEventListener(USER_FAVORITE_LIKE_UPDATED_EVENT, handler as EventListener);
+    return () =>
+      window.removeEventListener(USER_FAVORITE_LIKE_UPDATED_EVENT, handler as EventListener);
+  }, [loadLikes]);
+
   const rows = useMemo(() => {
     const list: Row[] = [];
     for (const e of entries) {
@@ -159,8 +151,8 @@ export function MyPageLikedVideosSection() {
         fromCatalog ?? resolveManualTikTokVideoForStudio(e.id) ?? undefined;
       if (video) list.push({ entryId: e.id, video, likedAt: e.likedAt });
     }
-    return sortRows(list, sort, loc);
-  }, [entries, videoByStoredId, sort, loc]);
+    return sortRows(list, sort);
+  }, [entries, videoByStoredId, sort]);
 
   const allEntryIds = useMemo(() => rows.map((r) => r.entryId), [rows]);
 
@@ -246,9 +238,11 @@ export function MyPageLikedVideosSection() {
                   type="button"
                   onClick={() => void unlikeSelected()}
                   disabled={selected.size === 0}
-                  className="rounded-lg border border-reels-crimson/38 px-3 py-2 text-[15px] font-medium text-[#F3C4D9] transition-colors hover:bg-reels-crimson/12 disabled:opacity-40 [html[data-theme='light']_&]:text-reels-crimson"
+                  aria-label={t("mypage.likes.unlikeSelected")}
+                  title={t("mypage.likes.unlikeSelected")}
+                  className="relative z-10 inline-flex items-center justify-center rounded-lg border border-[color:var(--reels-point)] bg-transparent p-2 text-white shadow-none outline-none transition-[background-color] hover:bg-[color:var(--reels-point)]/14 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-[#E42980] [html[data-theme='light']_&]:hover:bg-[color:var(--reels-point)]/10"
                 >
-                  {t("mypage.likes.unlikeSelected")}
+                  <Trash2 className="h-[1.125rem] w-[1.125rem] shrink-0" strokeWidth={2} aria-hidden />
                 </button>
               </>
             ) : null}
@@ -281,6 +275,7 @@ export function MyPageLikedVideosSection() {
                     domId={`mypage-likes-${entryId}`}
                     className="min-w-0"
                     compactHoverActions
+                    mypageListCard
                   />
                 </li>
               ))}

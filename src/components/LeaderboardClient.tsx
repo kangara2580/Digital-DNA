@@ -29,20 +29,29 @@ type LeaderboardResponse = {
   error?: string;
 };
 
-/** 상위 카드: 1위만 브랜드 핑크 포인트, 나머지는 중립 톤 */
+/** 표시용: 레거시/폴백 문자열의 「판매자 」 접두 제거 */
+function stripLeaderboardSellerLabel(name: string): string {
+  const s = name.trim();
+  if (s.startsWith("판매자 ")) return s.slice(4).trim();
+  const stripped = s.replace(/^판매자\s*/u, "").trim();
+  return stripped || s;
+}
+
+/** 상위 카드: 1위는 테두리·배경만 살짝 강조(색상 포인트 없음) */
 const topCardShell = (rank: number) =>
   rank === 1
-    ? "border border-[color:rgba(255,45,141,0.4)] bg-[color:rgba(255,45,141,0.07)] [html[data-theme='light']_&]:border-[color:rgba(255,45,141,0.35)] [html[data-theme='light']_&]:bg-[color:rgba(255,45,141,0.06)]"
+    ? "border border-white/20 bg-white/[0.06] shadow-[0_0_0_1px_rgba(255,255,255,0.04)] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:shadow-none"
     : "border border-white/[0.08] bg-white/[0.03] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white";
 
 const rankChipClass = (rank: number) =>
   rank === 1
-    ? "bg-[color:var(--reels-point)] text-white shadow-sm"
+    ? "bg-zinc-200 text-zinc-950 shadow-sm [html[data-theme='light']_&]:bg-zinc-800 [html[data-theme='light']_&]:text-zinc-50"
     : "bg-white/[0.1] text-zinc-100 [html[data-theme='light']_&]:bg-zinc-200 [html[data-theme='light']_&]:text-zinc-900";
 
 function Avatar({ item, profileAlt }: { item: LeaderboardItem; profileAlt: string }) {
   const [imgFailed, setImgFailed] = useState(false);
-  const letter = item.nickname.slice(0, 1).toUpperCase();
+  const handle = stripLeaderboardSellerLabel(item.nickname);
+  const letter = (handle.slice(0, 1) || "?").toUpperCase();
 
   useEffect(() => {
     setImgFailed(false);
@@ -66,7 +75,8 @@ function Avatar({ item, profileAlt }: { item: LeaderboardItem; profileAlt: strin
 
 function ListAvatar({ item }: { item: LeaderboardItem }) {
   const [imgFailed, setImgFailed] = useState(false);
-  const letter = item.nickname.slice(0, 1).toUpperCase();
+  const handle = stripLeaderboardSellerLabel(item.nickname);
+  const letter = (handle.slice(0, 1) || "?").toUpperCase();
 
   useEffect(() => {
     setImgFailed(false);
@@ -88,6 +98,11 @@ function ListAvatar({ item }: { item: LeaderboardItem }) {
   );
 }
 
+/** 데이터 없음·슬롯 패딩용 행 — `videoId`가 `empty-`로 시작하면 실제 랭킹이 아님 */
+function isLeaderboardPlaceholderRow(item: LeaderboardItem): boolean {
+  return item.videoId.startsWith("empty-");
+}
+
 export function LeaderboardClient() {
   const { t, locale } = useTranslation();
   const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
@@ -105,7 +120,7 @@ export function LeaderboardClient() {
   const metricValue = (item: LeaderboardItem, m: Metric): string =>
     m === "revenue" ? formatRevenueValue(item.totalRevenue) : formatSalesValue(item.totalSales);
 
-  const [metric, setMetric] = useState<Metric>("sales");
+  const [metric, setMetric] = useState<Metric>("revenue");
   const [period, setPeriod] = useState<Period>("today");
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<LeaderboardItem[]>([]);
@@ -142,17 +157,34 @@ export function LeaderboardClient() {
 
   const hasData = items.length > 0;
   const rankedItems: LeaderboardItem[] = useMemo(() => {
-    if (hasData) return items;
-    return Array.from({ length: 10 }, (_, idx) => ({
-      rank: idx + 1,
-      videoId: `empty-${idx + 1}`,
+    const makePlaceholder = (rank: number): LeaderboardItem => ({
+      rank,
+      videoId: `empty-${rank}`,
       title: t("leaderboard.placeholderTitle"),
-      sellerId: `empty-${idx + 1}`,
+      sellerId: `empty-${rank}`,
       nickname: t("leaderboard.placeholderNickname"),
       avatarUrl: null,
       totalSales: 0,
       totalRevenue: 0,
+    });
+
+    if (!hasData) {
+      return Array.from({ length: 10 }, (_, idx) => makePlaceholder(idx + 1));
+    }
+
+    const fromApi = items.slice(0, 10).map((row, idx) => ({
+      ...row,
+      rank: idx + 1,
     }));
+
+    if (fromApi.length >= 10) return fromApi;
+
+    return [
+      ...fromApi,
+      ...Array.from({ length: 10 - fromApi.length }, (_, i) =>
+        makePlaceholder(fromApi.length + i + 1),
+      ),
+    ];
   }, [hasData, items, t]);
 
   const topThree = rankedItems.slice(0, 3);
@@ -161,7 +193,7 @@ export function LeaderboardClient() {
   return (
     <div className="mx-auto w-full max-w-lg px-4 pb-24 pt-8 sm:max-w-xl sm:px-5 md:max-w-2xl md:pt-10">
       <div
-        className="pointer-events-none fixed inset-x-0 top-[var(--header-height,4.5rem)] z-0 h-44 max-h-[38vh] bg-[radial-gradient(ellipse_90%_85%_at_50%_-5%,rgba(255,45,141,0.11),transparent_62%)] [html[data-theme='light']_&]:bg-[radial-gradient(ellipse_90%_85%_at_50%_-5%,rgba(255,45,141,0.14),transparent_62%)]"
+        className="pointer-events-none fixed inset-x-0 top-[var(--header-height,4.5rem)] z-0 h-44 max-h-[38vh] bg-[radial-gradient(ellipse_90%_85%_at_50%_-5%,rgba(255,255,255,0.06),transparent_62%)] [html[data-theme='light']_&]:bg-[radial-gradient(ellipse_90%_85%_at_50%_-5%,rgba(24,24,27,0.08),transparent_62%)]"
         aria-hidden
       />
 
@@ -170,22 +202,11 @@ export function LeaderboardClient() {
           <h1 className="text-[1.6rem] font-extrabold tracking-tight text-zinc-50 [html[data-theme='light']_&]:text-zinc-900 sm:text-[1.85rem]">
             {t("leaderboard.title")}
           </h1>
-          <p className="mx-auto mt-2.5 max-w-md text-[15px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-            {t("leaderboard.subtitle.lead")}
-            <span className="font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
-              {t("leaderboard.subtitle.salesWord")}
-            </span>
-            {t("leaderboard.subtitle.mid")}
-            <span className="font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
-              {t("leaderboard.subtitle.revenueWord")}
-            </span>
-            {t("leaderboard.subtitle.trail")}
-          </p>
         </header>
 
-        <div className="rounded-2xl border border-[color:rgba(255,45,141,0.32)] bg-white/[0.03] p-1 [html[data-theme='light']_&]:border-[color:rgba(255,45,141,0.28)] [html[data-theme='light']_&]:bg-zinc-100/80">
+        <div className="rounded-2xl border border-white/12 bg-white/[0.03] p-1 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80">
           <div className="grid grid-cols-2 gap-1">
-            {(["sales", "revenue"] as const).map((tab) => {
+            {(["revenue", "sales"] as const).map((tab) => {
               const active = metric === tab;
               return (
                 <button
@@ -194,19 +215,19 @@ export function LeaderboardClient() {
                   onClick={() => setMetric(tab)}
                   className={`inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl px-3 py-3 text-[15px] font-semibold transition-colors ${
                     active
-                      ? "bg-[color:rgba(255,45,141,0.3)] text-white shadow-[0_6px_22px_-10px_rgba(255,45,141,0.55)] [html[data-theme='light']_&]:bg-[color:rgba(255,45,141,0.28)] [html[data-theme='light']_&]:text-white"
+                      ? "bg-white/15 text-white shadow-[0_6px_22px_-10px_rgba(0,0,0,0.45)] ring-1 ring-white/20 [html[data-theme='light']_&]:bg-zinc-900 [html[data-theme='light']_&]:text-white [html[data-theme='light']_&]:shadow-[0_6px_22px_-10px_rgba(0,0,0,0.12)] [html[data-theme='light']_&]:ring-zinc-700"
                       : "text-zinc-500 hover:bg-white/[0.08] hover:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:hover:text-zinc-900"
                   }`}
                 >
                   {tab === "sales" ? (
                     <Trophy
-                      className={`h-[18px] w-[18px] shrink-0 ${active ? "text-white" : "text-[color:var(--reels-point)]"}`}
+                      className={`h-[18px] w-[18px] shrink-0 ${active ? "text-[color:var(--reels-point)]" : "text-zinc-400 [html[data-theme='light']_&]:text-zinc-500"}`}
                       strokeWidth={2}
                       aria-hidden
                     />
                   ) : (
                     <TrendingUp
-                      className={`h-[18px] w-[18px] shrink-0 ${active ? "text-white" : "text-[color:var(--reels-point)]"}`}
+                      className={`h-[18px] w-[18px] shrink-0 ${active ? "text-[color:var(--reels-point)]" : "text-zinc-400 [html[data-theme='light']_&]:text-zinc-500"}`}
                       strokeWidth={2}
                       aria-hidden
                     />
@@ -232,7 +253,7 @@ export function LeaderboardClient() {
                   onClick={() => setPeriod(tab)}
                   className={`rounded-full px-4 py-2 text-[14px] font-semibold transition-all ${
                     active
-                      ? "border border-[color:rgba(255,45,141,0.5)] bg-[color:rgba(255,45,141,0.14)] text-[color:var(--reels-point)] [html[data-theme='light']_&]:border-[color:rgba(255,45,141,0.45)] [html[data-theme='light']_&]:bg-[color:rgba(255,45,141,0.1)]"
+                      ? "border border-white/25 bg-white/10 text-zinc-50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-200/90 [html[data-theme='light']_&]:text-zinc-900"
                       : "border border-transparent bg-white/[0.05] text-zinc-400 hover:bg-white/[0.1] hover:text-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-200/80 [html[data-theme='light']_&]:hover:text-zinc-900"
                   }`}
                 >
@@ -248,19 +269,20 @@ export function LeaderboardClient() {
             <span className="inline-block animate-pulse">{t("leaderboard.loading")}</span>
           </div>
         ) : error ? (
-          <div className="rounded-3xl border border-reels-crimson/25 bg-reels-crimson/[0.08] px-5 py-6 text-center text-[15px] font-medium text-[#F9ECF3] [html[data-theme='light']_&]:border-[#F9C6D4] [html[data-theme='light']_&]:bg-[#FCEEF6] [html[data-theme='light']_&]:text-reels-crimson">
+          <div className="rounded-3xl border border-red-500/25 bg-red-950/25 px-5 py-6 text-center text-[15px] font-medium text-red-100 [html[data-theme='light']_&]:border-red-200 [html[data-theme='light']_&]:bg-red-50 [html[data-theme='light']_&]:text-red-800">
             {t("leaderboard.error")}
           </div>
         ) : (
           <div className="space-y-6">
             <div className="grid gap-4 sm:grid-cols-3 sm:gap-3">
               {topThree.map((item) => {
-                const empty = !hasData;
+                const rowFilled = hasData && !isLeaderboardPlaceholderRow(item);
                 const shell = topCardShell(item.rank);
                 const chip = rankChipClass(item.rank);
                 const badge = t("leaderboard.rankShort", { n: item.rank });
-                const profileAlt = t("leaderboard.avatarAlt", { name: item.nickname });
-                const sellerFeedAria = t("leaderboard.sellerFeedAria", { name: item.nickname });
+                const displayNick = stripLeaderboardSellerLabel(item.nickname);
+                const profileAlt = t("leaderboard.avatarAlt", { name: displayNick });
+                const sellerFeedAria = t("leaderboard.sellerFeedAria", { name: displayNick });
                 return (
                   <article
                     key={item.videoId}
@@ -274,20 +296,17 @@ export function LeaderboardClient() {
                       </span>
                     </div>
 
-                    {hasData ? (
+                    {rowFilled ? (
                       <Link
                         href={`/seller/${encodeURIComponent(item.sellerId)}`}
-                        className="mt-4 flex flex-1 flex-col gap-3 rounded-xl transition-opacity hover:opacity-90"
+                        className="group mt-4 flex flex-1 flex-col gap-3 rounded-xl transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 [html[data-theme='light']_&]:focus-visible:ring-zinc-400"
                         aria-label={sellerFeedAria}
                       >
                         <div className="flex items-center gap-3">
                           <Avatar item={item} profileAlt={profileAlt} />
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-[17px] font-bold text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                              {item.nickname}
-                            </p>
-                            <p className="mt-0.5 line-clamp-2 text-[14px] leading-snug text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                              {item.title}
+                            <p className="truncate text-[17px] font-bold text-zinc-50 underline decoration-transparent underline-offset-2 [html[data-theme='light']_&]:text-zinc-900 group-hover:underline">
+                              {displayNick}
                             </p>
                           </div>
                         </div>
@@ -298,10 +317,7 @@ export function LeaderboardClient() {
                           <Avatar item={item} profileAlt={profileAlt} />
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-[17px] font-bold text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
-                              {item.nickname}
-                            </p>
-                            <p className="mt-0.5 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-                              {t("leaderboard.aggregating")}
+                              {displayNick}
                             </p>
                           </div>
                         </div>
@@ -319,7 +335,7 @@ export function LeaderboardClient() {
                             : "text-zinc-50 [html[data-theme='light']_&]:text-zinc-900"
                         }`}
                       >
-                        {empty ? "—" : metricValue(item, metric)}
+                        {rowFilled ? metricValue(item, metric) : "—"}
                       </p>
                     </div>
                   </article>
@@ -329,12 +345,11 @@ export function LeaderboardClient() {
 
             {others.length > 0 ? (
               <div>
-                <p className="mb-3 px-0.5 text-[13px] font-semibold uppercase tracking-[0.1em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-                  {t("leaderboard.listFromRank4")}
-                </p>
                 <ul className="space-y-2">
                   {others.map((item) => {
-                    const sellerFeedAria = t("leaderboard.sellerFeedAria", { name: item.nickname });
+                    const rowFilled = hasData && !isLeaderboardPlaceholderRow(item);
+                    const displayNick = stripLeaderboardSellerLabel(item.nickname);
+                    const sellerFeedAria = t("leaderboard.sellerFeedAria", { name: displayNick });
                     return (
                       <li
                         key={item.videoId}
@@ -348,19 +363,16 @@ export function LeaderboardClient() {
                             {item.rank}
                           </span>
                           <div className="min-w-0 flex-1">
-                            {hasData ? (
+                            {rowFilled ? (
                               <Link
                                 href={`/seller/${encodeURIComponent(item.sellerId)}`}
-                                className="flex min-w-0 items-center gap-3 rounded-xl py-0.5 transition-opacity hover:opacity-90"
+                                className="group flex min-w-0 items-center gap-3 rounded-xl py-0.5 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 [html[data-theme='light']_&]:focus-visible:ring-zinc-400"
                                 aria-label={sellerFeedAria}
                               >
                                 <ListAvatar item={item} />
                                 <div className="min-w-0 flex-1">
-                                  <p className="truncate text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                                    {item.nickname}
-                                  </p>
-                                  <p className="truncate text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-                                    {item.title}
+                                  <p className="truncate text-[15px] font-bold text-zinc-100 underline decoration-transparent underline-offset-2 [html[data-theme='light']_&]:text-zinc-900 group-hover:underline">
+                                    {displayNick}
                                   </p>
                                 </div>
                               </Link>
@@ -369,9 +381,8 @@ export function LeaderboardClient() {
                                 <ListAvatar item={item} />
                                 <div className="min-w-0 flex-1">
                                   <p className="truncate text-[15px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                                    {item.nickname}
+                                    {displayNick}
                                   </p>
-                                  <p className="truncate text-[13px] text-zinc-500">{t("leaderboard.rowWaiting")}</p>
                                 </div>
                               </div>
                             )}
@@ -383,7 +394,7 @@ export function LeaderboardClient() {
                                 : "text-zinc-50 [html[data-theme='light']_&]:text-zinc-950"
                             }`}
                           >
-                            {hasData ? metricValue(item, metric) : "—"}
+                            {rowFilled ? metricValue(item, metric) : "—"}
                           </span>
                         </div>
                       </li>

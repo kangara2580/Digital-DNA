@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { decodeDevUserIdFromJwt } from "@/lib/devJwtFallback";
 import { ensureVideoCategoryColumn } from "@/lib/ensureVideoCategoryColumn";
 import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
+import { listingMetricsPayloadForFeeds } from "@/lib/sellerListingCardMetrics";
 import { prisma } from "@/lib/prisma";
 import { parseSellerSocialBlob } from "@/lib/sellerSocialLinks";
 import { getSupabaseServiceRoleClient } from "@/lib/supabaseServiceRole";
@@ -51,7 +52,8 @@ export async function GET(request: Request) {
       take: 200,
     });
     const videos = rows.map((row) => videoRowToFeedVideo(row));
-    return NextResponse.json({ ok: true, videos });
+    const metricsByVideoId = await listingMetricsPayloadForFeeds(videos);
+    return NextResponse.json({ ok: true, videos, metricsByVideoId });
   }
 
   try {
@@ -77,7 +79,8 @@ export async function GET(request: Request) {
       ...videoRowToFeedVideo(row),
       sellerSocialLinks,
     }));
-    return NextResponse.json({ ok: true, videos });
+    const metricsByVideoId = await listingMetricsPayloadForFeeds(videos);
+    return NextResponse.json({ ok: true, videos, metricsByVideoId });
   } catch {
     return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
   }

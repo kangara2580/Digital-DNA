@@ -42,6 +42,12 @@ export type WalletPayload = {
     accountHolder: string | null;
     createdAt: string;
   }[];
+  payoutAccount: {
+    bankName: string;
+    accountNo: string;
+    accountHolder: string;
+    updatedAt: string;
+  } | null;
   toss: { hasClientKey: boolean; hasSecretKey: boolean };
   policy: { settlementHoldDays: number; platformFeeRateBps: number };
 };

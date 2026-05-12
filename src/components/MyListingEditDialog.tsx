@@ -21,12 +21,22 @@ import {
   coerceSellCategoryForUserForm,
   type SellVideoUserSelectableCategory,
 } from "@/lib/sellVideoCategory";
+import { SELL_CUSTOM_POSTER_MAX_BYTES } from "@/lib/sellCustomPosterMaxBytes";
 
 const INPUT =
   "w-full rounded-xl border border-white/[0.14] bg-[#0c0c0e] px-3.5 py-2.5 text-[14px] text-zinc-100 outline-none transition focus:border-[color:var(--reels-point)]/45 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900";
 
 const LABEL =
   "mb-1.5 block text-[16px] font-bold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900";
+
+const ALLOWED_CUSTOM_POSTER_MIME = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+
+const THUMB_OUTLINE_BTN =
+  "inline-flex w-full max-w-[16rem] items-center justify-center rounded-xl border border-white/20 bg-white/5 px-5 py-2.5 text-[13px] font-extrabold leading-snug text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:bg-zinc-100 sm:w-auto";
 
 type Props = {
   video: FeedVideo;
@@ -39,6 +49,7 @@ export function MyListingEditDialog({ video, open, onClose, onSaved }: Props) {
   const router = useRouter();
   const hid = useId();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const posterFileInputRef = useRef<HTMLInputElement>(null);
   const scrubbingRef = useRef(false);
   const thumbTimeSecRef = useRef(0);
 
@@ -78,6 +89,7 @@ export function MyListingEditDialog({ video, open, onClose, onSaved }: Props) {
     setError(null);
     setVideoError(null);
     setVideoReady(false);
+    if (posterFileInputRef.current) posterFileInputRef.current.value = "";
   }, [open, video]);
 
   useEffect(() => {
@@ -191,10 +203,25 @@ export function MyListingEditDialog({ video, open, onClose, onSaved }: Props) {
       fd.append("category", category);
       fd.append("price", String(normalizedPrice));
       if (newPosterBlob) {
-        fd.append(
-          "poster",
-          new File([newPosterBlob], "poster.jpg", { type: "image/jpeg" }),
-        );
+        if (newPosterBlob instanceof File) {
+          const ext =
+            newPosterBlob.type === "image/png"
+              ? "png"
+              : newPosterBlob.type === "image/webp"
+                ? "webp"
+                : "jpg";
+          const name = newPosterBlob.name?.trim();
+          fd.append(
+            "poster",
+            newPosterBlob,
+            name && name.length > 0 ? name : `poster.${ext}`,
+          );
+        } else {
+          fd.append(
+            "poster",
+            new File([newPosterBlob], "poster.jpg", { type: "image/jpeg" }),
+          );
+        }
       }
       fd.append(
         "thumb_time_sec",
@@ -245,8 +272,8 @@ export function MyListingEditDialog({ video, open, onClose, onSaved }: Props) {
     !videoReady || durationSec == null || durationSec <= 0;
   const previewFrameClass =
     video.orientation === "portrait"
-      ? "h-[240px] w-[135px] aspect-[9/16]"
-      : "h-[135px] w-[240px] aspect-video";
+      ? "relative aspect-[9/16] w-[min(280px,100%)] max-w-[300px] shrink-0 overflow-hidden"
+      : "relative aspect-video w-full max-w-[min(400px,100%)] min-h-[200px] shrink-0 overflow-hidden";
 
   const modal = (
     <div
@@ -369,50 +396,98 @@ export function MyListingEditDialog({ video, open, onClose, onSaved }: Props) {
                     {durationSec != null && durationSec > 0 ? `총 ${durationSec}초` : "…"}
                   </span>
                 </div>
-                <div className="mt-3 flex items-start justify-between gap-4">
-                  <button
-                    type="button"
-                    disabled={!videoReady}
-                    onClick={async () => {
-                      const el = videoRef.current;
-                      if (!el) return;
-                      let blob = await captureFrameFromVideo(
-                        el,
-                        thumbTimeSec,
-                        "image/jpeg",
-                        0.92,
-                      );
-                      if (!blob && video.src) {
-                        blob = await captureFrameFromVideoSrc(
-                          video.src,
+                <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                  <div className="flex min-w-0 flex-col gap-2">
+                    <button
+                      type="button"
+                      disabled={!videoReady}
+                      onClick={async () => {
+                        const el = videoRef.current;
+                        if (!el) return;
+                        let blob = await captureFrameFromVideo(
+                          el,
                           thumbTimeSec,
                           "image/jpeg",
                           0.92,
                         );
-                      }
-                      if (blob) {
-                        setNewPosterBlob(blob);
+                        if (!blob && video.src) {
+                          blob = await captureFrameFromVideoSrc(
+                            video.src,
+                            thumbTimeSec,
+                            "image/jpeg",
+                            0.92,
+                          );
+                        }
+                        if (blob) {
+                          setNewPosterBlob(blob);
+                          setError(null);
+                        } else {
+                          setError("이 시점의 화면을 캡처하지 못했습니다. 다른 시점을 시도해 주세요.");
+                        }
+                      }}
+                      className={THUMB_OUTLINE_BTN}
+                    >
+                      썸네일 적용
+                    </button>
+                    <input
+                      id={`${hid}-poster-file`}
+                      ref={posterFileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="sr-only"
+                      tabIndex={-1}
+                      aria-hidden
+                      onChange={(e) => {
+                        const f = e.target.files?.[0] ?? null;
+                        e.target.value = "";
+                        if (!f) return;
+                        if (!ALLOWED_CUSTOM_POSTER_MIME.has(f.type)) {
+                          setError("썸네일은 JPEG, PNG, WebP만 올릴 수 있어요.");
+                          return;
+                        }
+                        if (f.size > SELL_CUSTOM_POSTER_MAX_BYTES) {
+                          setError("썸네일은 2MB 이하로 올려 주세요.");
+                          return;
+                        }
+                        setNewPosterBlob(f);
                         setError(null);
-                      } else {
-                        setError("이 시점의 화면을 캡처하지 못했습니다. 다른 시점을 시도해 주세요.");
-                      }
-                    }}
-                    className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-5 py-2.5 text-[13px] font-extrabold leading-snug text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:bg-zinc-100"
-                  >
-                    썸네일 추출
-                  </button>
-                  <div className="hidden lg:flex lg:min-h-[240px] lg:w-[240px] lg:items-start lg:justify-center">
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className={THUMB_OUTLINE_BTN}
+                      onClick={() => posterFileInputRef.current?.click()}
+                    >
+                      썸네일 직접 업로드
+                    </button>
+                    <p className="text-[11px] leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                      JPEG, PNG, WebP · 최대 2MB
+                    </p>
+                    {newPosterBlob ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewPosterBlob(null);
+                          setError(null);
+                        }}
+                        className="w-fit text-left text-[12px] font-semibold text-zinc-400 underline-offset-2 hover:text-zinc-200 hover:underline [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900"
+                      >
+                        썸네일 선택 지우기
+                      </button>
+                    ) : null}
+                  </div>
+                  <div className="hidden shrink-0 lg:flex lg:min-w-[min(280px,34%)] lg:max-w-[min(320px,40%)] lg:flex-1 lg:items-center lg:justify-center">
                     <div
-                      className={`${previewFrameClass} overflow-hidden rounded-lg border border-white/15 [html[data-theme='light']_&]:border-zinc-200`}
+                      className={`${previewFrameClass} rounded-lg border border-white/15 bg-black [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-950`}
                     >
                       {capturedPreviewUrl ? (
                         <img
                           src={capturedPreviewUrl}
                           alt="선택한 썸네일 미리보기"
-                          className="h-full w-full object-cover"
+                          className="absolute inset-0 h-full w-full object-cover object-center"
                         />
                       ) : (
-                        <div className="h-full w-full bg-transparent" />
+                        <div className="h-full min-h-[1px] w-full bg-transparent" />
                       )}
                     </div>
                   </div>

@@ -24,7 +24,7 @@ import {
   TOP_NAV_ACCOUNT_CART_PILL_OUTER,
   topNavHeroCapsuleGlyphIconClass,
 } from "@/lib/topNavIconRing";
-import { SitePreferencesMenu } from "@/components/SitePreferencesMenu";
+import { SitePreferencesOverflowButton } from "@/components/SitePreferencesOverflowButton";
 import { MainTopUserMenu } from "@/components/MainTopUserMenu";
 import { ReelsSearchField } from "@/components/ReelsSearchField";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -40,7 +40,7 @@ const categoryPillActiveClass =
   "cursor-default border-white/22 bg-white/10 font-extrabold !text-[#ffffff] hover:border-white/25 hover:bg-white/14 hover:!text-[#ffffff] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:!text-zinc-950 [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:!text-zinc-950";
 
 /** 쇼핑 헤더 필터 링크(/category) · CategoryClipsClient 필터 버튼과 동일 톤 */
-const mallHeaderFilterTriggerClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} max-w-full min-w-0 gap-1.5 rounded-full px-2 text-[12px] font-bold leading-none sm:gap-2 sm:px-3 sm:text-[13px]`;
+const mallHeaderFilterTriggerClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} max-w-full min-w-0 gap-1.5 rounded-full px-2 text-[0.75rem] font-bold leading-none sm:gap-2 sm:px-3 sm:text-[0.8125rem]`;
 
 /**
  * 고정 플로팅 묶음(검색 + 결제·계정·카트) — 헤더 카테고리 행이 그 아래로 들어가지 않도록 우측 여백.
@@ -83,7 +83,7 @@ export function MallTopNav() {
   const isCategoryPage = pathname.startsWith("/category/");
   const isExplorePath =
     pathname === "/explore" || pathname.startsWith("/explore/");
-  /** 명예의 전당 · 마이페이지 트리: 상단 검은 헤더바 숨김, 계정·장바구니만 우측 상단 플로팅 */
+  /** 랭킹(/leaderboard) · 마이페이지 트리: 상단 검은 헤더바 숨김, 계정·장바구니만 우측 상단 플로팅 */
   const isLeaderboardPath =
     pathname === "/leaderboard" || pathname.startsWith("/leaderboard/");
   const isMypagePath =
@@ -376,7 +376,7 @@ export function MallTopNav() {
             <MainTopUserMenu />
             {compactEffective ? (
               <div className="md:hidden">
-                <SitePreferencesMenu />
+                <SitePreferencesOverflowButton variant="topNav" />
               </div>
             ) : null}
           </div>
@@ -386,7 +386,7 @@ export function MallTopNav() {
   }
 
   const logoClass = `flex shrink-0 items-center gap-2 font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 ${easeNav} ${
-    compactEffective ? "text-[12px]" : "text-sm"
+    compactEffective ? "text-[0.75rem]" : "text-sm"
   }`;
 
   const categoryNavigation =
@@ -401,7 +401,7 @@ export function MallTopNav() {
           className={categoryScrollChevronBtnClass}
           aria-label={t("nav.categoryPrev")}
         >
-          <ChevronLeft className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden />
+          <ChevronLeft className="h-[1.125rem] w-[1.125rem]" strokeWidth={2.2} aria-hidden />
         </button>
         <nav
           ref={categoryScrollRef}
@@ -415,7 +415,7 @@ export function MallTopNav() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} shrink-0 whitespace-nowrap px-3 py-[9px] text-[15px] sm:px-3.5 sm:py-[9px] sm:text-[16px]`}
+                className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} shrink-0 whitespace-nowrap px-3 py-[0.5625rem] text-[0.9375rem] sm:px-3.5 sm:py-[0.5625rem] sm:text-[1rem]`}
               >
                 {t(categoryNavKey(item.href))}
               </Link>
@@ -441,7 +441,7 @@ export function MallTopNav() {
                   key={item.href}
                   href={item.href}
                   aria-current={active ? "page" : undefined}
-                  className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} px-2.5 py-[7px] text-[14px] sm:px-3 sm:py-[7px] sm:text-[15px]`}
+                  className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} px-2.5 py-[0.4375rem] text-[0.875rem] sm:px-3 sm:py-[0.4375rem] sm:text-[0.9375rem]`}
                 >
                   {t(categoryNavKey(item.href))}
                 </Link>
@@ -463,7 +463,7 @@ export function MallTopNav() {
                 aria-haspopup="true"
                 aria-controls="mall-category-more"
                 id="mall-category-trigger"
-                className={`inline-flex items-center gap-0.5 ${categoryPillClass} ${easeLayout} px-2.5 py-[7px] text-[14px] sm:px-3 sm:py-[7px] sm:text-[15px]`}
+                className={`inline-flex items-center gap-0.5 ${categoryPillClass} ${easeLayout} px-2.5 py-[0.4375rem] text-[0.875rem] sm:px-3 sm:py-[0.4375rem] sm:text-[0.9375rem]`}
               >
                 {t("nav.category")}
                 <ChevronDown
@@ -508,7 +508,7 @@ export function MallTopNav() {
                                 cancelHoverClose();
                                 setMoreOpen(false);
                               }}
-                              className={`inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 py-[7px] text-[14px] font-semibold leading-none text-zinc-300 transition-colors duration-200 first:pl-2.5 last:pr-2.5 sm:px-2.5 sm:py-[7px] sm:text-[15px] sm:first:pl-3 sm:last:pr-3 ${easeLayout} hover:bg-white/10 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black ${
+                              className={`inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 py-[0.4375rem] text-[0.875rem] font-semibold leading-none text-zinc-300 transition-colors duration-200 first:pl-2.5 last:pr-2.5 sm:px-2.5 sm:py-[0.4375rem] sm:text-[0.9375rem] sm:first:pl-3 sm:last:pr-3 ${easeLayout} hover:bg-white/10 hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-black ${
                                 active
                                   ? "border border-white/22 bg-white/10 font-extrabold !text-[#ffffff] hover:!text-[#ffffff] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:font-extrabold [html[data-theme='light']_&]:!text-zinc-950 [html[data-theme='light']_&]:hover:!text-zinc-950"
                                   : "border border-transparent"
@@ -533,7 +533,7 @@ export function MallTopNav() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} px-2.5 py-[7px] text-[14px] sm:px-3 sm:py-[7px] sm:text-[15px]`}
+                className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} px-2.5 py-[0.4375rem] text-[0.875rem] sm:px-3 sm:py-[0.4375rem] sm:text-[0.9375rem]`}
               >
                 {t(categoryNavKey(item.href))}
               </Link>
@@ -552,7 +552,7 @@ export function MallTopNav() {
         className={categoryScrollChevronBtnClass}
         aria-label={t("nav.categoryNext")}
       >
-        <ChevronRight className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden />
+        <ChevronRight className="h-[1.125rem] w-[1.125rem]" strokeWidth={2.2} aria-hidden />
       </button>
     ) : null;
 
@@ -695,7 +695,7 @@ export function MallTopNav() {
         <MainTopUserMenu />
         {compactEffective ? (
           <div className="md:hidden">
-            <SitePreferencesMenu />
+            <SitePreferencesOverflowButton variant="topNav" />
           </div>
         ) : null}
       </div>

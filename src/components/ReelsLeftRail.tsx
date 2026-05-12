@@ -7,14 +7,15 @@ import { ShopBagOutlineIcon } from "@/components/ShopBagOutlineIcon";
 import { useAuthPromptModal } from "@/components/AuthPromptModalProvider";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
+import { SitePreferencesOverflowButton } from "@/components/SitePreferencesOverflowButton";
 
 const stroke = 1.75;
 
-/** 레일 폭(--reels-rail-w) 안에서만 커지도록, 버튼(h-12)에 맞춘 아이콘 크기 */
+/** 레일 폭(--reels-rail-w) 안에서만 커지도록, 버튼(h-12)에 맞춘 아이콘 크기 — rem으로 루트 스케일 동기 */
 const railNavIconClass = (href: string) =>
   href === "/category/best" || href === "/shop"
-    ? "h-[38px] w-[38px]"
-    : "h-[30px] w-[30px]";
+    ? "h-[2.375rem] w-[2.375rem]"
+    : "h-[1.875rem] w-[1.875rem]";
 
 /** 아이콘+라벨 한 덩어리: 부모 Link에만 호버 시 반투명 네모 배경 */
 const railNavItemLink =
@@ -30,7 +31,7 @@ const railIconActive =
   "!text-[color:var(--reels-point)] [&_svg]:!text-[color:var(--reels-point)] group-hover:!text-[color:var(--reels-point)] group-hover:[&_svg]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:[&_svg]:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:group-hover:!text-[color:var(--reels-point)] [html[data-theme='light']_&]:group-hover:[&_svg]:!text-[color:var(--reels-point)]";
 
 const railItemLabelBase =
-  "max-w-[3.75rem] cursor-pointer text-center text-[10px] font-medium leading-[1.2] tracking-tight transition-colors duration-200 group-hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:group-hover:text-zinc-950";
+  "max-w-[3.75rem] cursor-pointer text-center text-[0.625rem] font-medium leading-[1.2] tracking-tight transition-colors duration-200 group-hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:group-hover:text-zinc-950";
 
 /** 홈 마크 — 윤곽 필터가 img 박스 밖으로 펼쳐지므로 여백·약간 작은 렌더로 상하 클립 방지 */
 const railHomeLogoLink =
@@ -103,7 +104,7 @@ function RailSellLink({
           className={`${railNavItemLink} ${sellActive ? railNavItemLinkCurrent : ""}`}
         >
           <span className={iconWrapClass}>
-            <Plus className="h-[38px] w-[38px]" strokeWidth={2} aria-hidden />
+            <Plus className="h-[2.375rem] w-[2.375rem]" strokeWidth={2} aria-hidden />
           </span>
           <span className={labelClass}>{t("rail.sell")}</span>
         </button>
@@ -120,7 +121,7 @@ function RailSellLink({
         className={`${railNavItemLink} ${sellActive ? railNavItemLinkCurrent : ""}`}
       >
         <span className={iconWrapClass}>
-          <Plus className="h-[38px] w-[38px]" strokeWidth={2} aria-hidden />
+          <Plus className="h-[2.375rem] w-[2.375rem]" strokeWidth={2} aria-hidden />
         </span>
         <span className={labelClass}>{t("rail.sell")}</span>
       </Link>
@@ -195,6 +196,7 @@ export function ReelsLeftRail() {
                 guest={guest}
                 onGuestClick={() => openAuthModal()}
               />
+              <SitePreferencesOverflowButton variant="rail" />
             </nav>
           </div>
         </aside>
@@ -259,6 +261,7 @@ export function ReelsLeftRail() {
               guest={guest}
               onGuestClick={() => openAuthModal()}
             />
+            <SitePreferencesOverflowButton variant="rail" />
           </nav>
         </div>
       </aside>

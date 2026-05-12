@@ -18,10 +18,10 @@ export function CategoryBar() {
   return (
     <div className="border border-slate-200/80 bg-white px-5 py-6 shadow-sm sm:px-8">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-[13px] font-semibold text-[#000000]">
+        <h2 className="text-[0.8125rem] font-semibold text-[#000000]">
           카테고리
         </h2>
-        <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">
+        <span className="text-[0.625rem] font-medium uppercase tracking-[0.18em] text-slate-400">
           Filter
         </span>
       </div>
@@ -32,7 +32,7 @@ export function CategoryBar() {
               key={tag}
               type="button"
               onClick={() => setActive(tag)}
-            className={`px-3.5 py-1.5 text-[11px] font-medium tracking-wide transition-colors ${
+            className={`px-3.5 py-1.5 text-[0.6875rem] font-medium tracking-wide transition-colors ${
               active === tag
                 ? "bg-[#000000] text-white"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -42,7 +42,7 @@ export function CategoryBar() {
             </button>
           ))}
         </div>
-        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+        <span className="shrink-0 text-[0.625rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
           RANK
         </span>
       </div>
