@@ -28,9 +28,9 @@ function getScrollTopTargetY(pathname: string): number {
   return Math.max(0, top - header - 8);
 }
 
-/** 맨 위로: 살짝만 비치게 하되 아이콘 대비 확보(전체 opacity 금지) */
+/** 맨 위로 — 다크: 어두운 글래스 / 라이트: 흰 배경 + 검정 테두리 */
 const scrollTopShell =
-  "border border-white/15 bg-reels-void/90 text-zinc-100 shadow-[0_10px_36px_-16px_rgba(255,255,255,0.14)] backdrop-blur-xl";
+  "border border-white/15 bg-reels-void/90 text-zinc-100 shadow-[0_10px_36px_-16px_rgba(255,255,255,0.14)] backdrop-blur-xl [html[data-theme='light']_&]:border-black [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-950 [html[data-theme='light']_&]:shadow-[0_10px_32px_-14px_rgba(0,0,0,0.1)] [html[data-theme='light']_&]:backdrop-blur-none";
 
 function getViewportScrollTop(): number {
   if (typeof document === "undefined") return 0;
@@ -163,14 +163,14 @@ export function FloatingHelp() {
         }}
         onClick={scrollToTop}
         aria-label={pathname === "/" ? "인기순위 섹션으로 이동" : "맨 위로 가기"}
-        className={`flex h-11 w-11 items-center justify-center rounded-full ${scrollTopShell} scale-95 opacity-0 transition-[opacity,transform,box-shadow] duration-[400ms] ease-in-out hover:border-white/55 hover:bg-white/8 hover:shadow-[0_12px_36px_-14px_rgba(255,255,255,0.45)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 motion-reduce:transition-none ${
+        className={`flex h-11 w-11 items-center justify-center rounded-full ${scrollTopShell} scale-95 opacity-0 transition-[opacity,transform,box-shadow,background-color,border-color] duration-[400ms] ease-in-out hover:border-white/55 hover:bg-white/8 hover:shadow-[0_12px_36px_-14px_rgba(255,255,255,0.45)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 [html[data-theme='light']_&]:hover:border-black [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:hover:shadow-[0_12px_36px_-14px_rgba(0,0,0,0.14)] [html[data-theme='light']_&]:focus-visible:outline-zinc-900/75 motion-reduce:transition-none ${
           showScrollTop
             ? "pointer-events-auto scale-100 opacity-100"
             : "pointer-events-none"
         }`}
       >
         <ChevronUp
-          className="h-[18px] w-[18px] shrink-0 text-white"
+          className="h-[18px] w-[18px] shrink-0 text-white [html[data-theme='light']_&]:text-zinc-950"
           strokeWidth={2.25}
           aria-hidden
         />

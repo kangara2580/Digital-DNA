@@ -94,6 +94,7 @@ function ExploreBrowseGrid({
               reelStrip
               disableHoverScale
               hideCreatorMeta
+              showSellerAvatar={browseCardTarget === "purchase"}
               preloadMode="metadata"
               trendingRankCardPrice
               onPick={() => onEnterWatch(video, gridIndex)}
@@ -303,12 +304,12 @@ function ExploreWatchReels({
         <button
           type="button"
           onClick={goPrevReel}
-          className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
+          className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-black [html[data-theme='light']_&]:bg-transparent [html[data-theme='light']_&]:text-black [html[data-theme='light']_&]:shadow-none [html[data-theme='light']_&]:backdrop-blur-none [html[data-theme='light']_&]:hover:border-black [html[data-theme='light']_&]:hover:bg-transparent"
           aria-label={t("explore.prevVideo")}
           title={t("explore.prevVideo")}
         >
           <ChevronUp
-            className="h-6 w-6 text-white transition-colors group-hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:group-hover:text-zinc-950"
+            className="h-6 w-6 text-white transition-colors group-hover:text-white [html[data-theme='light']_&]:text-black [html[data-theme='light']_&]:group-hover:text-black"
             strokeWidth={2.85}
             aria-hidden
           />
@@ -316,12 +317,12 @@ function ExploreWatchReels({
         <button
           type="button"
           onClick={goNextReel}
-          className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/92 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:border-white"
+          className="group pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-zinc-100 shadow-lg backdrop-blur-md transition hover:border-white hover:bg-black/65 hover:text-white [html[data-theme='light']_&]:border-black [html[data-theme='light']_&]:bg-transparent [html[data-theme='light']_&]:text-black [html[data-theme='light']_&]:shadow-none [html[data-theme='light']_&]:backdrop-blur-none [html[data-theme='light']_&]:hover:border-black [html[data-theme='light']_&]:hover:bg-transparent"
           aria-label={t("explore.nextVideo")}
           title={t("explore.nextVideo")}
         >
           <ChevronDown
-            className="h-6 w-6 text-white transition-colors group-hover:text-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:group-hover:text-zinc-950"
+            className="h-6 w-6 text-white transition-colors group-hover:text-white [html[data-theme='light']_&]:text-black [html[data-theme='light']_&]:group-hover:text-black"
             strokeWidth={2.85}
             aria-hidden
           />

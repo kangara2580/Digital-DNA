@@ -14,27 +14,30 @@ const searchIconMotion =
 
 /** compact 핑크 트레일(쇼핑망 검색 한 줄 등): 입력 h-9에 맞춘 원 */
 const pinkSubmitTileClass =
-  "flex h-[1.625rem] w-[1.625rem] shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(228,41,128,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white";
+  "reels-search-submit-tile flex h-[1.625rem] w-[1.625rem] shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(255,45,141,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white";
 
 /** 히어로·넓은 필드용 — 입력 필드(h-12) 옆 핑크 원 */
 const pinkSubmitTileHeroClass =
-  "flex h-11 w-11 min-h-[2.75rem] shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(228,41,128,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white";
+  "reels-search-submit-tile flex h-11 w-11 min-h-[2.75rem] shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(255,45,141,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white";
 
 /**
  * 호버 펼침 트랙(h-11) 안의 제출 버튼 — 캡슐 테두리와 맞춘 지름
  */
 const pinkSubmitTileExpandCapsuleClass =
-  "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(228,41,128,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white";
+  "reels-search-submit-tile flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[color:var(--reels-point)] text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.97] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:brightness-100 [html[data-theme='light']_&]:hover:brightness-100 [html[data-theme='light']_&]:shadow-[0_1px_3px_rgba(255,45,141,0.25)] [html[data-theme='light']_&]:focus-visible:ring-offset-white";
+
+/** 핑크 검색 버튼 내 돋보기 — 라이트 전역 .text-white 보정 예외 */
+const pinkSearchSubmitIconClass = "reels-search-submit-icon shrink-0 text-white";
 
 /** 풀시청 검색창 펼침 — 느리고 부드러운 감속 */
 const exploreWatchExpandTransition =
   "transition-[max-width,background-color,border-color,box-shadow,padding,border-radius,backdrop-filter] duration-[680ms] ease-[cubic-bezier(0.16,1,0.22,1)] motion-reduce:transition-none";
 
 /**
- * 플로팅 검색 호버·포커스 시 트랙 max-width — rem 상한·calc(가용 폭) 모두 이전 대비 약 1.5배.
+ * 플로팅 검색 호버·포커스 시 트랙 max-width — 우측 고정·왼쪽으로 펼침( ml-auto ). ×4/3.
  */
 const exploreWatchExpandedWidthClasses =
-  "hover:max-w-[min(25.5rem,calc((100vw-var(--reels-rail-w,0px)-10rem)*1.5))] sm:hover:max-w-[min(29.25rem,calc((100vw-var(--reels-rail-w,0px)-11rem)*1.5))] md:hover:max-w-[min(36rem,calc((100vw-var(--reels-rail-w,0px)-12rem)*1.5))] lg:hover:max-w-[min(54rem,calc((100vw-var(--reels-rail-w,0px)-13rem)*1.5))] xl:hover:max-w-[min(75rem,calc((100vw-var(--reels-rail-w,0px)-14rem)*1.5))] 2xl:hover:max-w-[min(90rem,calc((100vw-var(--reels-rail-w,0px)-15rem)*1.5))] focus-within:max-w-[min(25.5rem,calc((100vw-var(--reels-rail-w,0px)-10rem)*1.5))] sm:focus-within:max-w-[min(29.25rem,calc((100vw-var(--reels-rail-w,0px)-11rem)*1.5))] md:focus-within:max-w-[min(36rem,calc((100vw-var(--reels-rail-w,0px)-12rem)*1.5))] lg:focus-within:max-w-[min(54rem,calc((100vw-var(--reels-rail-w,0px)-13rem)*1.5))] xl:focus-within:max-w-[min(75rem,calc((100vw-var(--reels-rail-w,0px)-14rem)*1.5))] 2xl:focus-within:max-w-[min(90rem,calc((100vw-var(--reels-rail-w,0px)-15rem)*1.5))]";
+  "hover:max-w-[min(48rem,calc((100vw-var(--reels-rail-w,0px)-7rem)*2.37))] sm:hover:max-w-[min(56rem,calc((100vw-var(--reels-rail-w,0px)-7.5rem)*2.37))] md:hover:max-w-[min(67rem,calc((100vw-var(--reels-rail-w,0px)-8rem)*2.37))] lg:hover:max-w-[min(96rem,calc((100vw-var(--reels-rail-w,0px)-8.5rem)*2.37))] xl:hover:max-w-[min(128rem,calc((100vw-var(--reels-rail-w,0px)-9rem)*2.37))] 2xl:hover:max-w-[min(149rem,calc((100vw-var(--reels-rail-w,0px)-9.5rem)*2.37))] focus-within:max-w-[min(48rem,calc((100vw-var(--reels-rail-w,0px)-7rem)*2.37))] sm:focus-within:max-w-[min(56rem,calc((100vw-var(--reels-rail-w,0px)-7.5rem)*2.37))] md:focus-within:max-w-[min(67rem,calc((100vw-var(--reels-rail-w,0px)-8rem)*2.37))] lg:focus-within:max-w-[min(96rem,calc((100vw-var(--reels-rail-w,0px)-8.5rem)*2.37))] xl:focus-within:max-w-[min(128rem,calc((100vw-var(--reels-rail-w,0px)-9rem)*2.37))] 2xl:focus-within:max-w-[min(149rem,calc((100vw-var(--reels-rail-w,0px)-9.5rem)*2.37))]";
 
 /** 헤더 인라인 변형(레거시) — 동일 1.5배 스케일 */
 const exploreWatchExpandedWidthClassesInline =
@@ -114,7 +117,11 @@ export function ReelsSearchField({
   }, [onExpandTrayOpenChange]);
 
   const pinkBorder =
-    "hover:border-[color:rgba(255,45,141,0.42)] focus:border-[color:rgba(255,45,141,0.55)] [html[data-theme='light']_&]:hover:border-[color:rgba(255,45,141,0.38)] [html[data-theme='light']_&]:focus:border-[color:rgba(255,45,141,0.48)]";
+    "hover:border-[color:rgba(255,45,141,0.42)] focus:border-[color:rgba(255,45,141,0.55)] [html[data-theme='light']_&]:hover:border-black [html[data-theme='light']_&]:focus:border-black";
+
+  /** 라이트: 검정 테두리 2px (호버·포커스도 핑크 테두리 없음) */
+  const lightSearchBorder =
+    "[html[data-theme='light']_&]:border-2 [html[data-theme='light']_&]:border-black [html[data-theme='light']_&]:hover:border-black [html[data-theme='light']_&]:focus:border-black [html[data-theme='light']_&]:active:border-black";
 
   const mode = homeHero ? "homeHero" : topNavPill ? "pill" : compact ? "compact" : "default";
 
@@ -131,14 +138,14 @@ export function ReelsSearchField({
 
   let inputClassByMode =
     mode === "homeHero"
-      ? `mall-search min-h-[3rem] h-12 rounded-full border border-white/18 bg-zinc-950 pl-4 ${showTrailingIcon ? "pr-14" : "pr-4"} text-[15px] font-medium leading-snug text-zinc-100 shadow-[0_10px_40px_-14px_rgba(0,0,0,0.5)] hover:border-white/26 hover:bg-zinc-900 hover:shadow-[0_12px_44px_-14px_rgba(0,0,0,0.54)] focus:border-white/50 focus:bg-zinc-900 focus:shadow-[0_0_0_1px_rgba(255,255,255,0.35),0_14px_48px_-16px_rgba(0,0,0,0.58)] focus:outline-none focus:ring-0 active:border-white/55 [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_4px_28px_-10px_rgba(0,0,0,0.14)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:hover:shadow-[0_8px_32px_-12px_rgba(0,0,0,0.1)] [html[data-theme='light']_&]:focus:border-white [html[data-theme='light']_&]:focus:bg-white [html[data-theme='light']_&]:focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_3px_rgba(15,23,42,0.08),0_8px_32px_-12px_rgba(0,0,0,0.08)] [html[data-theme='light']_&]:active:border-white`
+      ? `mall-search min-h-[3rem] h-12 rounded-full border border-white/18 bg-zinc-950 pl-4 ${showTrailingIcon ? "pr-14" : "pr-4"} text-[15px] font-medium leading-snug text-zinc-100 shadow-[0_10px_40px_-14px_rgba(0,0,0,0.5)] hover:border-white/26 hover:bg-zinc-900 hover:shadow-[0_12px_44px_-14px_rgba(0,0,0,0.54)] focus:border-white/50 focus:bg-zinc-900 focus:shadow-[0_0_0_1px_rgba(255,255,255,0.35),0_14px_48px_-16px_rgba(0,0,0,0.58)] focus:outline-none focus:ring-0 active:border-white/55 [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_4px_28px_-10px_rgba(0,0,0,0.14)] [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:hover:shadow-[0_8px_32px_-12px_rgba(0,0,0,0.1)] [html[data-theme='light']_&]:focus:bg-white [html[data-theme='light']_&]:focus:shadow-[0_8px_32px_-12px_rgba(0,0,0,0.1)] ${lightSearchBorder}`
       : mode === "pill"
-        ? `h-11 min-h-[2.75rem] rounded-full border border-white/40 bg-zinc-900 pl-3.5 ${showTrailingIcon ? "pr-11" : "pr-3.5"} text-[13px] text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] hover:border-white/52 hover:bg-zinc-800 focus:bg-zinc-800 ${pinkBorder} [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.05)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:bg-white`
+        ? `h-11 min-h-[2.75rem] rounded-full border border-white/40 bg-zinc-900 pl-3.5 ${showTrailingIcon ? "pr-11" : "pr-3.5"} text-[13px] text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] hover:border-white/52 hover:bg-zinc-800 focus:bg-zinc-800 ${pinkBorder} [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.05)] [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:bg-white ${lightSearchBorder}`
         : mode === "compact"
           ? tallPinkTrailCompact
-            ? `h-11 min-h-[2.75rem] rounded-full border border-white/40 bg-zinc-900 pl-3.5 ${showTrailingIcon ? "pr-10" : "pr-3.5"} text-[13px] text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] hover:border-white/52 hover:bg-zinc-800 focus:bg-zinc-800 ${pinkBorder} [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.05)] [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:bg-white`
-            : `h-9 border-white/15 bg-zinc-950 pl-3 ${showTrailingIcon ? "pr-10" : "pr-3"} text-[13px] ${pinkBorder} hover:bg-zinc-900 focus:bg-zinc-900 [html[data-theme='dark']_&]:border-white/20 [html[data-theme='dark']_&]:bg-zinc-950 [html[data-theme='dark']_&]:hover:bg-zinc-900 [html[data-theme='dark']_&]:focus:bg-zinc-800 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:bg-white`
-          : `h-[3.25rem] border-2 border-white/20 bg-zinc-950 pl-6 ${showTrailingIcon ? "pr-14" : "pr-6"} text-[15px] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${pinkBorder} hover:bg-zinc-900 focus:bg-zinc-900 [html[data-theme='dark']_&]:border-white/25 [html[data-theme='dark']_&]:bg-zinc-950 [html[data-theme='dark']_&]:hover:bg-zinc-900 [html[data-theme='dark']_&]:focus:bg-zinc-800 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:focus:bg-white`;
+            ? `h-11 min-h-[2.75rem] rounded-full border border-white/40 bg-zinc-900 pl-3.5 ${showTrailingIcon ? "pr-10" : "pr-3.5"} text-[13px] text-zinc-100 shadow-[0_0_0_1px_rgba(255,255,255,0.05)] hover:border-white/52 hover:bg-zinc-800 focus:bg-zinc-800 ${pinkBorder} [html[data-theme='dark']_&]:text-zinc-50 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-[0_0_0_1px_rgba(0,0,0,0.05)] [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:bg-white ${lightSearchBorder}`
+            : `h-9 border-white/15 bg-zinc-950 pl-3 ${showTrailingIcon ? "pr-10" : "pr-3"} text-[13px] ${pinkBorder} hover:bg-zinc-900 focus:bg-zinc-900 [html[data-theme='dark']_&]:border-white/20 [html[data-theme='dark']_&]:bg-zinc-950 [html[data-theme='dark']_&]:hover:bg-zinc-900 [html[data-theme='dark']_&]:focus:bg-zinc-800 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus:bg-white ${lightSearchBorder}`
+          : `h-[3.25rem] border-2 border-white/20 bg-zinc-950 pl-6 ${showTrailingIcon ? "pr-14" : "pr-6"} text-[15px] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${pinkBorder} hover:bg-zinc-900 focus:bg-zinc-900 [html[data-theme='dark']_&]:border-white/25 [html[data-theme='dark']_&]:bg-zinc-950 [html[data-theme='dark']_&]:hover:bg-zinc-900 [html[data-theme='dark']_&]:focus:bg-zinc-800 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:focus:bg-white ${lightSearchBorder}`;
 
   const placeholderClass =
     mode === "homeHero"
@@ -152,7 +159,7 @@ export function ReelsSearchField({
     return (
       <form
         ref={expandTrayFormRef}
-        className={`group relative ml-auto flex h-11 max-w-11 shrink-0 flex-row items-center justify-end self-center overflow-visible rounded-none border border-transparent bg-transparent py-0 shadow-none backdrop-blur-0 ${expandedWidthClasses} hover:overflow-hidden hover:rounded-full hover:border-white/28 hover:bg-zinc-900 hover:pr-1 focus-within:overflow-hidden focus-within:rounded-full focus-within:border-white/28 focus-within:bg-zinc-900 focus-within:pr-1 motion-reduce:overflow-hidden motion-reduce:rounded-full motion-reduce:border-white/25 motion-reduce:bg-zinc-900 motion-reduce:pr-1 ${exploreWatchExpandTransition} [html[data-theme='dark']_&]:hover:border-white/30 [html[data-theme='dark']_&]:hover:bg-zinc-800 [html[data-theme='dark']_&]:focus-within:border-white/30 [html[data-theme='dark']_&]:focus-within:bg-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus-within:border-zinc-300 [html[data-theme='light']_&]:focus-within:bg-white`}
+        className={`group relative ml-auto flex h-11 max-w-11 shrink-0 flex-row items-center justify-end self-center overflow-visible rounded-none border border-transparent bg-transparent py-0 shadow-none backdrop-blur-0 ${expandedWidthClasses} hover:overflow-hidden hover:rounded-full hover:border-white/28 hover:bg-zinc-900 hover:pr-1 focus-within:overflow-hidden focus-within:rounded-full focus-within:border-white/28 focus-within:bg-zinc-900 focus-within:pr-1 motion-reduce:overflow-hidden motion-reduce:rounded-full motion-reduce:border-white/25 motion-reduce:bg-zinc-900 motion-reduce:pr-1 ${exploreWatchExpandTransition} [html[data-theme='dark']_&]:hover:border-white/30 [html[data-theme='dark']_&]:hover:bg-zinc-800 [html[data-theme='dark']_&]:focus-within:border-white/30 [html[data-theme='dark']_&]:focus-within:bg-zinc-800 [html[data-theme='light']_&]:hover:border-2 [html[data-theme='light']_&]:hover:border-black [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus-within:border-2 [html[data-theme='light']_&]:focus-within:border-black [html[data-theme='light']_&]:focus-within:bg-white`}
         onPointerEnter={
           onExpandTrayOpenChange ? () => syncExpandTrayOpen(true) : undefined
         }
@@ -186,7 +193,7 @@ export function ReelsSearchField({
             aria-label={t("search.aria.submit")}
           >
             <Search
-              className="h-5 w-5 shrink-0"
+              className={`${pinkSearchSubmitIconClass} h-5 w-5`}
               strokeWidth={2.25}
               aria-hidden
             />
@@ -239,7 +246,7 @@ export function ReelsSearchField({
         >
           {mode === "homeHero" || (mode === "compact" && pinkTrailingSubmit) ? (
             <Search
-              className={`shrink-0 ${
+              className={`${pinkSearchSubmitIconClass} ${
                 mode === "homeHero"
                   ? "h-6 w-6"
                   : navPairedPink || mallRowTallPink

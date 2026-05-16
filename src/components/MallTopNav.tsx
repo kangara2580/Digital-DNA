@@ -49,10 +49,6 @@ const mallHeaderFilterTriggerClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} max-w-fu
 const mallToolbarReservedForFloatChromeClass =
   "pr-[max(16.75rem,calc(env(safe-area-inset-right)+15.5rem))] sm:pr-[max(17.25rem,calc(env(safe-area-inset-right)+16rem))] md:pr-[max(16.5rem,calc(env(safe-area-inset-right)+15.25rem))]";
 
-/** 몰 헤더: 플로팅 검색 펼침과 동기화되는 카테고리 슬라이드 */
-const mallCategorySearchPeerShift =
-  "transition-transform duration-[680ms] ease-[cubic-bezier(0.16,1,0.22,1)] motion-reduce:transition-none";
-
 /** 카테고리 스크롤 좌우 화살표 — 헤더 h-11 라인 정렬 */
 const categoryScrollChevronBtnClass =
   "inline-flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white disabled:cursor-default disabled:opacity-35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700";
@@ -116,7 +112,6 @@ export function MallTopNav() {
     isCartPage ||
     isSellPage;
   const [topNavSearchQ, setTopNavSearchQ] = useState("");
-  const [mallSearchTrayOpen, setMallSearchTrayOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const moreWrapRef = useRef<HTMLDivElement>(null);
   const menuPortalRef = useRef<HTMLDivElement>(null);
@@ -231,12 +226,6 @@ export function MallTopNav() {
       document.documentElement.style.removeProperty("--header-height");
     }
   }, [showFloatingChromeOnlyNav]);
-
-  useEffect(() => {
-    if (!mallStackSearchUnderCategory) {
-      setMallSearchTrayOpen(false);
-    }
-  }, [mallStackSearchUnderCategory]);
 
   useEffect(() => {
     if (!compactEffective) setMoreOpen(false);
@@ -661,11 +650,7 @@ export function MallTopNav() {
                 ) : null}
                 <div className={`flex min-h-[2.75rem] min-w-0 flex-1 basis-0 items-center self-center gap-2 sm:gap-3 ${easeNav}`}>
                   <div
-                    className={`min-h-[2.75rem] min-w-0 flex-1 overflow-x-auto overflow-y-visible ${mallCategorySearchPeerShift} ${
-                      mallSearchTrayOpen
-                        ? "-translate-x-4 sm:-translate-x-6 md:-translate-x-9"
-                        : "translate-x-0"
-                    }`}
+                    className="min-h-[2.75rem] min-w-0 flex-1 overflow-x-auto overflow-y-visible"
                   >
                     {categoryNavigation}
                   </div>
@@ -688,9 +673,6 @@ export function MallTopNav() {
           exploreWatchExpand
           q={topNavSearchQ}
           setQ={setTopNavSearchQ}
-          onExpandTrayOpenChange={
-            mallStackSearchUnderCategory ? setMallSearchTrayOpen : undefined
-          }
         />
         <MainTopUserMenu />
         {compactEffective ? (

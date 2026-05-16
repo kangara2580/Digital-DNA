@@ -123,7 +123,7 @@ export default async function SellerPage({
     <div className="min-h-screen bg-transparent text-white [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
       <div className="mx-auto max-w-[1800px] px-4 pb-14 pt-6 sm:px-6 sm:pt-8 lg:px-8">
         <SellerFeedSellCta sellerId={sellerKey} />
-        <section className="relative overflow-hidden rounded-[1.35rem] border border-white/[0.1] bg-[var(--background)] p-5 shadow-none sm:rounded-[1.65rem] sm:p-7 [html[data-theme='light']_&]:border-zinc-200/70 [html[data-theme='light']_&]:bg-gradient-to-br [html[data-theme='light']_&]:from-white [html[data-theme='light']_&]:via-white [html[data-theme='light']_&]:to-zinc-50/90 [html[data-theme='light']_&]:shadow-[0_20px_50px_-28px_rgba(15,23,42,0.18),0_0_0_1px_rgba(228,41,128,0.07)] [html[data-theme='light']_&]:backdrop-blur-xl">
+        <section className="relative overflow-hidden rounded-[1.35rem] border border-white/[0.1] bg-[var(--background)] p-5 shadow-none sm:rounded-[1.65rem] sm:p-7 [html[data-theme='light']_&]:border-zinc-200/70 [html[data-theme='light']_&]:bg-gradient-to-br [html[data-theme='light']_&]:from-white [html[data-theme='light']_&]:via-white [html[data-theme='light']_&]:to-zinc-50/90 [html[data-theme='light']_&]:shadow-[0_20px_50px_-28px_rgba(15,23,42,0.18),0_0_0_1px_rgba(255,45,141,0.07)] [html[data-theme='light']_&]:backdrop-blur-xl">
           <div
             className="pointer-events-none absolute -left-24 -top-24 hidden h-48 w-48 rounded-full bg-[color:var(--reels-point)]/12 blur-[80px] [html[data-theme='light']_&]:block"
             aria-hidden

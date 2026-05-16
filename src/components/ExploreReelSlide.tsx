@@ -781,13 +781,21 @@ export function ExploreReelSlide({
             <button
               type="button"
               onClick={toggleMute}
-              className="pointer-events-auto absolute right-3 top-3 z-[3] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition hover:bg-black/60"
+              className="explore-reel-mute-btn pointer-events-auto absolute right-3 top-3 z-[3] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition hover:bg-black/60"
               aria-label={muted ? t("explore.player.unmute") : t("explore.player.mute")}
             >
               {muted ? (
-                <VolumeX className="h-4 w-4" strokeWidth={2} aria-hidden />
+                <VolumeX
+                  className="explore-reel-mute-icon h-4 w-4 text-white"
+                  strokeWidth={2}
+                  aria-hidden
+                />
               ) : (
-                <Volume2 className="h-4 w-4" strokeWidth={2} aria-hidden />
+                <Volume2
+                  className="explore-reel-mute-icon h-4 w-4 text-white"
+                  strokeWidth={2}
+                  aria-hidden
+                />
               )}
             </button>
             {volumeUiVisible ? (
@@ -799,7 +807,7 @@ export function ExploreReelSlide({
                   step={0.01}
                   value={muted ? 0 : volume}
                   onChange={(e) => onVolumeChange(e.currentTarget.valueAsNumber)}
-                  className="h-6 w-20 -rotate-90 cursor-pointer appearance-none bg-transparent [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-white/30 [&::-webkit-slider-thumb]:-mt-[5px] [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#9DB9FF] [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(157,185,255,0.85)] [&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-white/30 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-[#9DB9FF]"
+                  className="h-6 w-20 -rotate-90 cursor-pointer appearance-none bg-transparent [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-white/30 [&::-webkit-slider-thumb]:-mt-[5px] [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--reels-point)] [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(255,45,141,0.85)] [&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-white/30 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-[var(--reels-point)] [&::-moz-range-thumb]:shadow-[0_0_10px_rgba(255,45,141,0.85)]"
                   aria-label={t("explore.player.volume")}
                 />
               </div>

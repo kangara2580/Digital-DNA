@@ -475,7 +475,7 @@ export function MyPageMyListingsSection() {
                   type="button"
                   onClick={() => setEditing(v)}
                   disabled={deleteBusy}
-                  className="rounded-lg border border-white/20 bg-black/60 px-2 py-1 text-[12px] font-extrabold uppercase tracking-wide text-white shadow-md backdrop-blur-sm transition hover:bg-black/75 sm:px-2.5 sm:py-1.5 sm:text-[13px]"
+                  className="rounded-lg border border-white/20 bg-black/60 px-2 py-1 text-[12px] font-extrabold uppercase tracking-wide text-white shadow-md backdrop-blur-sm transition hover:bg-black/75 sm:px-2.5 sm:py-1.5 sm:text-[13px] [html[data-theme='light']_&]:border-black [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-950 [html[data-theme='light']_&]:shadow-[0_1px_4px_rgba(0,0,0,0.08)] [html[data-theme='light']_&]:backdrop-blur-none [html[data-theme='light']_&]:hover:bg-zinc-50"
                 >
                   {t("listings.edit")}
                 </button>

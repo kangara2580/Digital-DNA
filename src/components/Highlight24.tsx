@@ -95,7 +95,7 @@ export function Highlight24() {
       aria-label={t("home.hero.sectionAria")}
     >
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_50%_-10%,rgba(228,41,128,0.09),transparent_55%)]"
+        className="highlight24-hero-glow pointer-events-none absolute inset-0 hidden [html[data-theme='dark']_&]:block bg-[radial-gradient(ellipse_90%_60%_at_50%_-10%,rgba(255,45,141,0.09),transparent_55%)]"
         aria-hidden
       />
       <div
@@ -111,7 +111,7 @@ export function Highlight24() {
         <h1 className={araHeroWordmarkClassName} style={araWordmarkFontStyle}>
           ARA
         </h1>
-        <p className="mx-auto mt-2 max-w-[min(100%,52rem)] px-2 text-center text-[clamp(10px,2.8vw,14px)] font-medium leading-tight tracking-[0.01em] text-white/60 whitespace-nowrap [html[data-theme='light']_&]:text-zinc-700/72 sm:text-[14px]">
+        <p className="mx-auto mt-2 max-w-[min(100%,52rem)] px-2 text-center text-[clamp(10px,2.8vw,14px)] font-medium leading-tight tracking-[0.01em] text-white/60 whitespace-nowrap sm:text-[14px]">
           {t("home.hero.tagline")}
         </p>
 
@@ -140,7 +140,7 @@ export function Highlight24() {
                   }}
                   className="group relative flex flex-col items-center gap-1 focus-visible:outline-none"
                 >
-                  <span className="whitespace-nowrap text-[15px] font-medium text-white/60 transition-colors duration-300 group-hover:text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-zinc-500 [html[data-theme='light']_&]:group-hover:text-[color:var(--reels-point)]">
+                  <span className="home-hero-jump-label whitespace-nowrap text-[15px] font-medium text-white/60 transition-colors duration-300 group-hover:text-[color:var(--reels-point)] group-focus-visible:text-[color:var(--reels-point)]">
                     {t(labelKey)}
                   </span>
                   <span className="h-[1.5px] w-full origin-left scale-x-0 rounded-full bg-[color:var(--reels-point)] transition-transform duration-300 group-hover:scale-x-100" />

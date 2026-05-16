@@ -38,7 +38,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
           href={`/video/${hero.id}`}
           className="group relative w-[44%] max-w-[120px] shrink-0 overflow-hidden rounded-lg border border-white/12 bg-black/40 shadow-none ring-1 ring-reels-cyan/10 transition-[box-shadow] hover:border-reels-cyan/35 hover:shadow-reels-cyan/15 sm:w-[42%] sm:max-w-[140px]"
         >
-          <div className="aspect-[4/5] w-full sm:aspect-[3/4]">
+          <div className="aspect-[9/16] w-full">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={sanitizePosterSrc(hero.poster)}
@@ -64,7 +64,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
               href={`/video/${v.id}`}
               className="group relative block min-h-0 overflow-hidden rounded-md border border-white/12 bg-black/35 shadow-none transition-[box-shadow] hover:border-reels-cyan/25 hover:shadow-md"
             >
-              <div className="aspect-square w-full">
+              <div className="aspect-[9/16] w-full">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={sanitizePosterSrc(v.poster)}
@@ -95,7 +95,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
               href={`/video/${v.id}`}
               className="group overflow-hidden rounded-md border border-white/10 bg-black/35"
             >
-              <div className="aspect-[4/5] w-full">
+              <div className="aspect-[9/16] w-full">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={sanitizePosterSrc(v.poster)}

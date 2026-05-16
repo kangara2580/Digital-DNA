@@ -67,46 +67,176 @@
   --foreground: #1a1a1a;
 }
 
-/* 라이트 모드 가독성 안전장치:
-   기존 다크 기준의 text-white/text-zinc-*를 자동으로 어둡게 보정 */
+/* 라이트 모드: 다크용 text-white/text-zinc-* → 검정·중립 회색 (보라 톤 제거) */
 :root[data-theme="light"] body .text-white {
-  color: #24163b !important;
+  color: #0a0a0a !important;
 }
 
 :root[data-theme="light"] body .text-zinc-100 {
-  color: #2a1740 !important;
+  color: #0a0a0a !important;
 }
 
 :root[data-theme="light"] body .text-zinc-200 {
-  color: #3a2454 !important;
+  color: #171717 !important;
 }
 
 :root[data-theme="light"] body .text-zinc-300 {
-  color: #4a3366 !important;
+  color: #262626 !important;
 }
 
 :root[data-theme="light"] body .text-zinc-400 {
-  color: #5b4578 !important;
+  color: #404040 !important;
 }
 
 :root[data-theme="light"] body .text-zinc-500,
 :root[data-theme="light"] body .text-zinc-600 {
-  color: #715c8b !important;
+  color: #525252 !important;
 }
 
-/* 하이라이트 섹션은 테마와 무관하게 기존 흰 글씨/대비 유지 */
+/* 로그인·회원가입 모달: ARA·부제만 흰색 (다크 카드 위) */
+:root[data-theme="light"] body .auth-modal-brand-headline {
+  color: #ffffff !important;
+}
+
+/* 랭킹 매출/판매 탭: 선택(검은 배경) 시 라벨 흰색 — body .text-white 보정보다 우선 */
+:root[data-theme="light"] body button.leaderboard-metric-tab--active {
+  color: #ffffff !important;
+}
+
+/* 핑크 검색 제출 버튼 — 돋보기 아이콘 라이트에서 흰색 유지 */
+:root[data-theme="light"] body button.reels-search-submit-tile {
+  color: #ffffff !important;
+}
+
+:root[data-theme="light"] body button.reels-search-submit-tile .reels-search-submit-icon,
+:root[data-theme="light"] body button.reels-search-submit-tile svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* 카테고리 필터 활성 개수 뱃지 — 브랜드 핑크·흰 숫자 (라이트 body .text-white 보정 무시) */
+:root[data-theme="light"] body .category-filter-active-count {
+  color: #ffffff !important;
+  background-color: var(--reels-point) !important;
+}
+
+/* 구매후기·별점 — 채워진 별 브랜드 핑크 (라이트 body .text-white 보정 무시) */
+.review-star-filled,
+.review-star-filled svg {
+  color: var(--reels-point) !important;
+  fill: var(--reels-point) !important;
+}
+
+:root[data-theme="light"] .review-star-filled,
+:root[data-theme="light"] .review-star-filled svg {
+  color: var(--reels-point) !important;
+  fill: var(--reels-point) !important;
+  stroke: var(--reels-point) !important;
+}
+
+/* 탐색 릴 음소거 버튼 — 영상 위 오버레이, 라이트에서도 흰 아이콘 */
+:root[data-theme="light"] button.explore-reel-mute-btn,
+:root[data-theme="light"] button.explore-reel-mute-btn .explore-reel-mute-icon,
+:root[data-theme="light"] button.explore-reel-mute-btn svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* 영상 카드 — 재생시간·호버 액션(라이트에서 body .text-white 보정 무시) */
+:root[data-theme="light"] .video-reel-media-root .video-card-duration-badge,
+:root[data-theme="light"] .video-reel-media-root .video-card-price-on-media {
+  color: #ffffff !important;
+}
+
+/* 몰·그리드 카드 하단 가격 — 호버 시 영상 위와 동일하게 흰색 */
+:root[data-theme="light"] .group:hover .video-card-mall-price,
+:root[data-theme="light"] .group:focus-within .video-card-mall-price {
+  color: #ffffff !important;
+}
+
+:root[data-theme="light"] .video-reel-media-root button.reels-action-glass-btn {
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.48) !important;
+  background-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+:root[data-theme="light"] .video-reel-media-root button.reels-action-glass-btn:hover {
+  border-color: rgba(255, 255, 255, 0.62) !important;
+  background-color: rgba(255, 255, 255, 0.34) !important;
+}
+
+:root[data-theme="light"] .video-reel-media-root .reels-action-icon-on-media {
+  color: #ffffff !important;
+}
+
+:root[data-theme="light"] .video-reel-media-root .text-\[var\(--reels-point\)\] {
+  color: var(--reels-point) !important;
+}
+
+/* 메인 히어로 상단 핑크 글로우 — 라이트에서 완전 제거 (bg-[gradient]는 transparent로 안 지워짐) */
+:root[data-theme="light"] .highlight24-hero-glow {
+  display: none !important;
+  background: none !important;
+  background-image: none !important;
+}
+
+/* 메인 히어로: 라이트에서 흰 글씨 → 검정 (lock-white 섹션) */
 :root[data-theme="light"] .highlight24-lock-white .text-white,
+:root[data-theme="light"] .highlight24-lock-white .text-white\/60,
 :root[data-theme="light"] .highlight24-lock-white .text-zinc-100,
 :root[data-theme="light"] .highlight24-lock-white .text-zinc-200,
 :root[data-theme="light"] .highlight24-lock-white .text-zinc-300,
 :root[data-theme="light"] .highlight24-lock-white .text-zinc-400,
 :root[data-theme="light"] .highlight24-lock-white .text-zinc-500,
 :root[data-theme="light"] .highlight24-lock-white .text-zinc-600 {
+  color: #0a0a0a !important;
+}
+
+:root[data-theme="light"] .highlight24-lock-white .text-white\/60 {
+  color: rgba(10, 10, 10, 0.62) !important;
+}
+
+/* 메인 히어로 인기순위·설명·후기 — 라이트 기본 검정, 호버/포커스 시 브랜드 핑크 */
+:root[data-theme="light"] .highlight24-lock-white .home-hero-jump-label {
+  color: #0a0a0a !important;
+}
+
+:root[data-theme="light"] .highlight24-lock-white button.group:hover .home-hero-jump-label,
+:root[data-theme="light"] .highlight24-lock-white button.group:focus-visible .home-hero-jump-label {
+  color: var(--reels-point) !important;
+}
+
+/* 메인 히어로 핑크 검색 버튼 — lock-white .text-white 보정보다 우선 */
+:root[data-theme="light"] .highlight24-lock-white button.reels-search-submit-tile {
   color: #ffffff !important;
 }
 
+:root[data-theme="light"] .highlight24-lock-white button.reels-search-submit-tile .reels-search-submit-icon,
+:root[data-theme="light"] .highlight24-lock-white button.reels-search-submit-tile svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* 메인 마퀴 영상 — lock-white .text-white 보정보다 가격·액션 아이콘 흰색 우선 */
+:root[data-theme="light"] .highlight24-lock-white .video-reel-media-root .video-card-price-on-media,
+:root[data-theme="light"] .highlight24-lock-white .video-reel-media-root .video-card-duration-badge,
+:root[data-theme="light"] .highlight24-lock-white .video-reel-media-root .reels-action-icon-on-media,
+:root[data-theme="light"] .highlight24-lock-white .video-reel-media-root button.reels-action-glass-btn {
+  color: #ffffff !important;
+}
+
+:root[data-theme="light"] .highlight24-lock-white .video-reel-media-root .reels-action-icon-on-media svg,
+:root[data-theme="light"] .highlight24-lock-white .video-reel-media-root button.reels-action-glass-btn svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+:root[data-theme="light"] .highlight24-lock-white .video-reel-media-root .text-\[var\(--reels-point\)\] {
+  color: var(--reels-point) !important;
+}
+
 :root[data-theme="dark"] {
-  --reels-crimson: #E42980;
+  --reels-crimson: #ff2d8d;
   --reels-cyan: #ff2d8d;
   --background: #02040a;
   --foreground: #fafafa;
@@ -231,8 +361,8 @@ html[data-theme="light"]::-webkit-scrollbar-thumb {
 
 :root[data-theme="light"] .video-card-ai-badge {
   background: rgba(255, 255, 255, 0.94);
-  color: #5b21b6;
-  border-color: rgba(124, 58, 237, 0.4);
+  color: #0a0a0a;
+  border-color: rgba(10, 10, 10, 0.22);
   box-shadow: 0 0.0625rem 0.1875rem rgba(56, 78, 125, 0.12);
 }
 
@@ -244,7 +374,7 @@ html[data-theme="light"]::-webkit-scrollbar-thumb {
   .text-legible-white {
     text-shadow:
       0 0.0625rem 0.125rem rgba(0, 0, 0, 0.65),
-      0 0 0.875rem rgba(228, 41, 128, 0.32);
+      0 0 0.875rem rgba(255, 45, 141, 0.32);
   }
 
   /** Glassmorphism 카드 — 1px 라이트 보더 */
@@ -294,7 +424,7 @@ html[data-theme="light"]::-webkit-scrollbar-thumb {
     box-shadow:
       0 0 0 1px rgba(155, 109, 255, 0.38),
       0 0 24px -4px rgba(155, 109, 255, 0.55),
-      0 0 48px -12px rgba(228, 41, 128, 0.38);
+      0 0 48px -12px rgba(255, 45, 141, 0.38);
   }
 
   .reels-ai-glow::after {
@@ -307,7 +437,7 @@ html[data-theme="light"]::-webkit-scrollbar-thumb {
       110deg,
       transparent 30%,
       rgba(155, 109, 255, 0.5) 45%,
-      rgba(228, 41, 128, 0.28) 55%,
+      rgba(255, 45, 141, 0.28) 55%,
       transparent 70%
     );
     background-size: 200% 100%;
@@ -328,7 +458,7 @@ html[data-theme="light"]::-webkit-scrollbar-thumb {
     border: 1px solid transparent;
     background:
       linear-gradient(var(--reels-lift), var(--reels-lift)) padding-box,
-      linear-gradient(135deg, rgba(228, 41, 128, 0.42), rgba(155, 109, 255, 0.35))
+      linear-gradient(135deg, rgba(255, 45, 141, 0.42), rgba(155, 109, 255, 0.35))
         border-box;
   }
 
@@ -351,7 +481,7 @@ html[data-theme="light"]::-webkit-scrollbar-thumb {
       transparent,
       rgba(155, 109, 255, 0.12),
       rgba(155, 109, 255, 0.35),
-      rgba(228, 41, 128, 0.14),
+      rgba(255, 45, 141, 0.14),
       transparent
     );
     animation: reels-scan-move 1.35s ease-in-out infinite;
@@ -407,7 +537,7 @@ html[data-theme="light"]::-webkit-scrollbar-thumb {
     border-color: rgba(155, 109, 255, 0.5);
     box-shadow:
       0 0 22px rgba(155, 109, 255, 0.35),
-      0 0 36px rgba(228, 41, 128, 0.14),
+      0 0 36px rgba(255, 45, 141, 0.14),
       inset 0 0 0 1px rgba(155, 109, 255, 0.2);
   }
 }
@@ -420,7 +550,7 @@ html[data-theme="light"]::-webkit-scrollbar-thumb {
   50% {
     text-shadow:
       0 0 14px rgba(155, 109, 255, 0.55),
-      0 0 24px rgba(228, 41, 128, 0.22);
+      0 0 24px rgba(255, 45, 141, 0.22);
   }
 }
 
@@ -509,53 +639,53 @@ html[data-theme="light"]::-webkit-scrollbar-thumb {
   }
 }
 
-/* Primary CTA: reels-crimson — 브랜드 핑크 (#E42980) 유리 버튼 */
+/* Primary CTA: reels-crimson — 브랜드 핑크 (#FF2D8D) 유리 버튼 */
 :where(button, a)[class*="bg-reels-crimson"] {
   background:
     linear-gradient(
       135deg,
-      rgba(228, 41, 128, 0.55) 0%,
-      rgba(226, 2, 130, 0.42) 52%,
-      rgba(228, 41, 128, 0.5) 100%
+      rgba(255, 45, 141, 0.58) 0%,
+      rgba(255, 45, 141, 0.45) 52%,
+      rgba(255, 45, 141, 0.52) 100%
     ) !important;
   color: #ffffff !important;
   box-shadow:
-    0 0 28px -8px rgba(228, 41, 128, 0.72),
-    0 12px 28px -14px rgba(210, 2, 120, 0.55),
-    inset 0 1px 0 rgba(255, 210, 240, 0.38) !important;
+    0 0 28px -8px rgba(255, 45, 141, 0.72),
+    0 12px 28px -14px rgba(255, 45, 141, 0.55),
+    inset 0 1px 0 rgba(255, 210, 235, 0.38) !important;
   backdrop-filter: blur(10px) saturate(1.12) !important;
   -webkit-backdrop-filter: blur(10px) saturate(1.12) !important;
 }
 
 :where(button, a)[class*="shadow-reels-crimson"] {
   box-shadow:
-    0 0 28px -8px rgba(228, 41, 128, 0.72),
-    0 12px 28px -14px rgba(210, 2, 120, 0.55),
-    inset 0 1px 0 rgba(255, 210, 240, 0.38) !important;
+    0 0 28px -8px rgba(255, 45, 141, 0.72),
+    0 12px 28px -14px rgba(255, 45, 141, 0.55),
+    inset 0 1px 0 rgba(255, 210, 235, 0.38) !important;
 }
 
 :where(button, a)[class*="border-reels-crimson"] {
   border-width: 1.5px !important;
-  border-color: rgba(228, 41, 128, 0.62) !important;
+  border-color: rgba(255, 45, 141, 0.62) !important;
   box-shadow:
-    0 0 0 1px rgba(228, 41, 128, 0.35),
-    0 0 28px -8px rgba(228, 41, 128, 0.55),
-    0 12px 28px -14px rgba(210, 2, 120, 0.5),
-    inset 0 1px 0 rgba(255, 210, 240, 0.34) !important;
+    0 0 0 1px rgba(255, 45, 141, 0.35),
+    0 0 28px -8px rgba(255, 45, 141, 0.55),
+    0 12px 28px -14px rgba(255, 45, 141, 0.5),
+    inset 0 1px 0 rgba(255, 210, 235, 0.34) !important;
 }
 
 :where(button, a)[class*="text-reels-crimson"] {
-  color: #fea6db !important;
+  color: var(--reels-point) !important;
 }
 
 :where(button, a)[class*="from-reels-crimson"] {
-  --tw-gradient-from: rgba(228, 41, 128, 0.92) var(--tw-gradient-from-position) !important;
-  --tw-gradient-to: rgba(228, 41, 128, 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-from: rgba(255, 45, 141, 0.92) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgba(255, 45, 141, 0) var(--tw-gradient-to-position) !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
 
 :where(button, a)[class*="to-reels-crimson"] {
-  --tw-gradient-to: rgba(228, 41, 128, 0.88) var(--tw-gradient-to-position) !important;
+  --tw-gradient-to: rgba(255, 45, 141, 0.88) var(--tw-gradient-to-position) !important;
 }
 
 /* 가로 피드 스크롤바 — 불투명 흰 썸(보라 X). 다크 배경: 밝은 트랙 */

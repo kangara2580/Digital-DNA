@@ -21,6 +21,10 @@ import {
   removeFavorite,
 } from "@/lib/supabaseFavorites";
 import { waitForSupabaseAccessToken } from "@/lib/waitSupabaseSessionReady";
+import {
+  feedOverlayCheckboxInputClass,
+  feedOverlayCheckboxLabelClass,
+} from "@/lib/brandPinkTokens";
 
 type SortValue = "recent" | "oldest" | "price-asc" | "price-desc";
 type LikeEntry = { id: string; likedAt: number };
@@ -241,7 +245,7 @@ export default function LikesPage() {
                   disabled={selected.size === 0}
                   aria-label={t("mypage.likes.unlikeSelected")}
                   title={t("mypage.likes.unlikeSelected")}
-                  className="relative z-10 inline-flex items-center justify-center rounded-lg border border-[color:var(--reels-point)] bg-transparent p-2 text-white shadow-none outline-none transition-[background-color] hover:bg-[color:var(--reels-point)]/14 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-[#E42980] [html[data-theme='light']_&]:hover:bg-[color:var(--reels-point)]/10"
+                  className="relative z-10 inline-flex items-center justify-center rounded-lg border border-[color:var(--reels-point)] bg-transparent p-2 text-white shadow-none outline-none transition-[background-color] hover:bg-[color:var(--reels-point)]/14 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-[color:var(--reels-point)] [html[data-theme='light']_&]:hover:bg-[color:var(--reels-point)]/10"
                 >
                   <Trash2 className="h-[1.125rem] w-[1.125rem] shrink-0" strokeWidth={2} aria-hidden />
                 </button>
@@ -287,12 +291,12 @@ export default function LikesPage() {
         <ul className="mt-8 grid list-none grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {rows.map(({ entryId, video }) => (
             <li key={entryId} className="relative min-w-0">
-              <label className="absolute left-2 top-2 z-[20] flex cursor-pointer items-center rounded-md bg-black/55 px-1.5 py-1 backdrop-blur-sm">
+              <label className={feedOverlayCheckboxLabelClass}>
                 <input
                   type="checkbox"
                   checked={selected.has(entryId)}
                   onChange={() => toggleSelect(entryId)}
-                  className="h-4 w-4 rounded border-white/30 accent-reels-cyan"
+                  className={feedOverlayCheckboxInputClass}
                 />
                 <span className="sr-only">{t("mypage.selectItemAria")}</span>
               </label>

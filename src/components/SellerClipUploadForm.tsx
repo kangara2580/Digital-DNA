@@ -484,7 +484,7 @@ export function SellerClipUploadForm() {
         <div className="mb-4 flex min-w-0 items-center gap-2 sm:gap-2.5">
           <Film
             aria-hidden
-            color="#E42980"
+            color="#FF2D8D"
             className="h-6 w-6 shrink-0 sm:h-[1.625rem] sm:w-[1.625rem]"
             strokeWidth={2}
           />

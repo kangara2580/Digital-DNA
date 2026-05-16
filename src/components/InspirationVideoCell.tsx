@@ -14,9 +14,10 @@ import {
   reelActionBtn,
   reelActionBtnActive,
   reelActionIcon,
+  reelActionIconColorClass,
   reelActionRailColumn,
   reelActionRailOuter,
-  videoReelMediaContainer,
+  videoReelMediaRootClassName,
 } from "@/lib/videoReelActionStyles";
 import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { useVideoLike } from "@/hooks/useVideoLike";
@@ -66,7 +67,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
   const [likePulse, setLikePulse] = useState(false);
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(video.src);
   const fallbackPoster = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
-    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#E42980'/><stop offset='100%' stop-color='#FF2D8D'/></linearGradient></defs><rect width='600' height='600' fill='#050505'/><rect x='20' y='20' width='560' height='560' rx='36' fill='url(#g)' opacity='0.86'/></svg>",
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#FF2D8D'/><stop offset='100%' stop-color='#FF2D8D'/></linearGradient></defs><rect width='600' height='600' fill='#050505'/><rect x='20' y='20' width='560' height='560' rx='36' fill='url(#g)' opacity='0.86'/></svg>",
   )}`;
   const normalizedPoster = video.poster?.trim()
     ? /^\/videos\/.+\.jpg$/i.test(video.poster)
@@ -103,11 +104,11 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
     <div className="inspiration-cell group flex min-w-0 flex-col gap-1.5">
       <div
         ref={wrapRef}
-        className={`${videoReelMediaContainer} inspiration-cell__media relative overflow-hidden rounded-[12px]`}
+        className={`${videoReelMediaRootClassName} inspiration-cell__media relative aspect-[9/16] w-full overflow-hidden rounded-[12px]`}
       >
         <video
           ref={videoRef}
-          className="inspiration-cell__video aspect-square h-auto w-full object-cover"
+          className="inspiration-cell__video h-full w-full object-cover"
           src={isPexelsBlockedVideo ? undefined : video.src}
           poster={normalizedPoster}
           preload="metadata"
@@ -144,7 +145,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
               }}
             >
               <CartIcon
-                className={`${reelActionIcon} ${inCart ? "text-[var(--reels-point)]" : "text-white"}`}
+                className={`${reelActionIcon} ${reelActionIconColorClass(inCart)}`}
               />
             </button>
             <button
@@ -161,7 +162,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
             >
               <Heart
                 strokeWidth={1.5}
-                className={`${reelActionIcon} transition-all duration-200 ${likedByMe ? "fill-current text-[var(--reels-point)]" : "text-white"} ${likePulse ? "scale-110" : "scale-100"}`}
+                className={`${reelActionIcon} transition-all duration-200 ${likedByMe ? `fill-current ${reelActionIconColorClass(true)}` : reelActionIconColorClass(false)} ${likePulse ? "scale-110" : "scale-100"}`}
               />
             </button>
             <button
@@ -198,7 +199,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
                   />
                 </motion.span>
                 <Bookmark
-                  className={`pointer-events-none absolute inset-0 z-[1] block h-full w-full ${wishlisted ? "text-[var(--reels-point)]" : "text-white"}`}
+                  className={`pointer-events-none absolute inset-0 z-[1] block h-full w-full ${reelActionIconColorClass(wishlisted)}`}
                   fill="none"
                   stroke="currentColor"
                   strokeWidth={1.5}

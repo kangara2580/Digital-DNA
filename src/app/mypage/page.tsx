@@ -22,7 +22,8 @@ export default async function MyPage({
     tab === "basic" ||
     tab === "profile" ||
     tab === "edit" ||
-    tab === "language"
+    tab === "language" ||
+    tab === "theme"
   ) {
     redirect(`/settings?tab=${encodeURIComponent(tab)}`);
   }

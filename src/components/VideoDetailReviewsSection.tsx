@@ -51,9 +51,9 @@ function Stars({
           key={i}
           className={`${cls} shrink-0 transition-colors ${
             i <= filled
-              ? "fill-white text-white"
-              : "fill-transparent text-white/30"
-          } ${interactive ? "cursor-pointer hover:text-white" : ""}`}
+              ? "review-star-filled fill-[color:var(--reels-point)] text-[color:var(--reels-point)]"
+              : "fill-transparent text-white/30 [html[data-theme='light']_&]:text-zinc-300"
+          } ${interactive ? "cursor-pointer hover:text-[color:var(--reels-point)]" : ""}`}
           onClick={() => interactive && onRate?.(i)}
           onMouseEnter={() => interactive && setHover(i)}
           onMouseLeave={() => interactive && setHover(0)}

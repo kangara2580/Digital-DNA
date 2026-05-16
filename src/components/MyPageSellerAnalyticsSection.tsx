@@ -102,10 +102,10 @@ function KpiCard({
 }) {
   const ring =
     accent === "crimson"
-      ? "border-reels-crimson/30 shadow-[0_0_32px_-12px_rgba(228,41,128,0.38)]"
+      ? "border-[color:var(--reels-point)]/30 shadow-[0_0_32px_-12px_rgba(255,45,141,0.38)]"
       : accent === "violet"
-        ? "border-reels-crimson/18 shadow-[0_0_28px_-14px_rgba(228,41,128,0.22)]"
-        : "border-reels-crimson/22 shadow-[0_0_28px_-14px_rgba(228,41,128,0.26)]";
+        ? "border-[color:var(--reels-point)]/18 shadow-[0_0_28px_-14px_rgba(255,45,141,0.22)]"
+        : "border-[color:var(--reels-point)]/22 shadow-[0_0_28px_-14px_rgba(255,45,141,0.26)]";
   return (
     <div
       className={`rounded-2xl border bg-black/30 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white ${ring}`}

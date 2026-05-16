@@ -19,13 +19,19 @@ import {
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DocumentTitleI18n } from "@/components/DocumentTitleI18n";
+import { SettingsThemeSection } from "@/components/SettingsThemeSection";
+import {
+  sidebarNavLinkActiveClass,
+  sidebarNavLinkInactiveClass,
+} from "@/lib/brandPinkTokens";
 
-type SettingsTab = "basic" | "profile" | "language";
+type SettingsTab = "basic" | "profile" | "language" | "theme";
 
 const SETTINGS_TAB_DEFS: { id: SettingsTab; href: string }[] = [
   { id: "basic", href: "/settings" },
   { id: "profile", href: "/settings?tab=profile" },
   { id: "language", href: "/settings?tab=language" },
+  { id: "theme", href: "/settings?tab=theme" },
 ];
 
 function LoginRequiredPanel({
@@ -61,6 +67,7 @@ function LoginRequiredPanel({
 function normalizeSettingsTab(input: string | null): SettingsTab {
   if (input === "profile") return "profile";
   if (input === "language") return "language";
+  if (input === "theme") return "theme";
   return "basic";
 }
 
@@ -244,11 +251,7 @@ export function AccountSettingsDashboard() {
                   <Link
                     key={item.id}
                     href={item.href}
-                    className={
-                      active
-                        ? "rounded-lg border-l-[3px] border-l-[#E42980] bg-white/[0.06] py-2.5 pl-[13px] pr-3 text-[16px] font-semibold text-zinc-50 transition-colors [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900"
-                        : "rounded-lg border-l-[3px] border-l-transparent py-2.5 pl-[13px] pr-3 text-[16px] font-medium text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
-                    }
+                    className={active ? sidebarNavLinkActiveClass : sidebarNavLinkInactiveClass}
                   >
                     {t(`settings.tab.${item.id}`)}
                   </Link>
@@ -265,7 +268,7 @@ export function AccountSettingsDashboard() {
               </p>
             </div>
           ) : null}
-          {!authLoading && !user ? (
+          {!authLoading && !user && currentTab !== "theme" ? (
             <LoginRequiredPanel sectionLabel={activeSectionLabel} redirectHref={activeHref} />
           ) : null}
 
@@ -304,6 +307,8 @@ export function AccountSettingsDashboard() {
           ) : null}
 
           {currentTab === "profile" && user ? <FaceProfileUploadSection /> : null}
+
+          {currentTab === "theme" ? <SettingsThemeSection /> : null}
 
           </section>
         </div>

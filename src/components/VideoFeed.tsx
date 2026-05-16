@@ -77,7 +77,7 @@ export function VideoFeed() {
     >
       {/* 배경 글로우 — 추천 섹션만 살짝 떠 있는 느낌 */}
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(255,45,141,0.14),transparent_55%),radial-gradient(ellipse_70%_50%_at_100%_50%,rgba(228,41,128,0.1),transparent_50%),radial-gradient(ellipse_60%_40%_at_0%_80%,rgba(99,102,241,0.1),transparent_45%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(255,45,141,0.14),transparent_55%),radial-gradient(ellipse_70%_50%_at_100%_50%,rgba(255,45,141,0.1),transparent_50%),radial-gradient(ellipse_60%_40%_at_0%_80%,rgba(99,102,241,0.1),transparent_45%)]"
         aria-hidden
       />
       <div className="relative mx-auto max-w-[1800px] px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8">
@@ -164,7 +164,7 @@ export function VideoFeed() {
                   className="group/card relative min-w-0 rounded-2xl p-[1px] transition-[filter,transform] duration-300 hover:shadow-[0_12px_40px_-12px_rgba(255,45,141,0.25)]"
                 >
                   <div
-                    className="absolute -inset-px rounded-2xl bg-gradient-to-br from-[color:var(--reels-point)]/25 via-transparent to-[#E42980]/20 opacity-0 transition-opacity duration-300 group-hover/card:opacity-100"
+                    className="absolute -inset-px rounded-2xl bg-gradient-to-br from-[color:var(--reels-point)]/25 via-transparent to-[color:var(--reels-point)]/20 opacity-0 transition-opacity duration-300 group-hover/card:opacity-100"
                     aria-hidden
                   />
                   <div className="relative rounded-[15px] bg-[#05070d]/80 p-1">

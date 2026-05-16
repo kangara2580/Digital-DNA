@@ -16,6 +16,7 @@ import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartBut
 import {
   araAuthDialogWordmarkClassName,
   araWordmarkFontStyle,
+  authModalBrandHeadlineClassName,
 } from "@/lib/araBrandTypography";
 import { AuthModalPortal } from "@/components/AuthModalPortal";
 import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
@@ -41,9 +42,11 @@ import {
   reelActionBtn,
   reelActionBtnActive,
   reelActionIcon,
+  reelActionIconColorClass,
   reelActionRailColumn,
   reelActionRailOuter,
-  videoReelMediaContainer,
+  videoCardPriceOnMediaClass,
+  videoReelMediaRootClassName,
 } from "@/lib/videoReelActionStyles";
 
 function AuthRequiredModal({
@@ -81,10 +84,15 @@ function AuthRequiredModal({
         >
           ×
         </button>
-        <p className={araAuthDialogWordmarkClassName} style={araWordmarkFontStyle}>
+        <p
+          className={`${araAuthDialogWordmarkClassName} ${authModalBrandHeadlineClassName}`}
+          style={araWordmarkFontStyle}
+        >
           ARA
         </p>
-        <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
+        <p
+          className={`relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100 ${authModalBrandHeadlineClassName}`}
+        >
           로그인/회원가입
         </p>
         <AuthModalGoogleStartButton onClick={onGoogleStart} />
@@ -236,10 +244,10 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
     <>
       <Link
         href={`/video/${video.id}`}
-        className="group relative aspect-[216/384] h-[clamp(352px,62vh,580px)] shrink-0 overflow-hidden rounded-2xl bg-black/30 shadow-[0_16px_48px_-20px_rgba(0,0,0,0.55)] outline-none transition-[transform,box-shadow,ring-width] duration-200 hover:z-[2] focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070708] active:ring-2 active:ring-[color:var(--reels-point)] active:ring-offset-2 active:ring-offset-[#070708] motion-reduce:transition-none [html[data-theme='light']_&]:bg-zinc-100/80 [html[data-theme='light']_&]:focus-visible:ring-offset-white [html[data-theme='light']_&]:active:ring-offset-white"
+        className="group relative aspect-[9/16] h-[clamp(352px,62vh,580px)] shrink-0 overflow-hidden rounded-2xl bg-black/30 shadow-[0_16px_48px_-20px_rgba(0,0,0,0.55)] outline-none transition-[transform,box-shadow,ring-width] duration-200 hover:z-[2] focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070708] active:ring-2 active:ring-[color:var(--reels-point)] active:ring-offset-2 active:ring-offset-[#070708] motion-reduce:transition-none [html[data-theme='light']_&]:bg-zinc-100/80 [html[data-theme='light']_&]:focus-visible:ring-offset-white [html[data-theme='light']_&]:active:ring-offset-white"
         aria-label={`${displayTitle(video)} — 상세 보기`}
       >
-        <div className={`${videoReelMediaContainer} relative h-full w-full`}>
+        <div className={`${videoReelMediaRootClassName} relative h-full w-full`}>
           <MarqueeCardPreview video={video} />
           <div
             className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/50 via-transparent to-black/20 transition-opacity duration-300 group-hover:from-black/65 motion-reduce:transition-none"
@@ -248,7 +256,7 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
           {priceLabel ? (
             <div className="pointer-events-none absolute inset-x-0 top-0 z-[4] flex justify-center px-2 pb-8 pt-2.5 sm:px-3 sm:pb-10 sm:pt-3">
               <span
-                className={`inline-block max-w-[min(100%,calc(100%-3.5rem))] truncate px-1 text-center text-[13px] font-bold tabular-nums text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.85)] sm:max-w-[min(100%,calc(100%-4rem))] sm:text-sm ${hoverRevealPrice}`}
+                className={`${videoCardPriceOnMediaClass} inline-block max-w-[min(100%,calc(100%-3.5rem))] truncate px-1 text-center text-[13px] font-bold tabular-nums text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.92),0_0_10px_rgba(0,0,0,0.5)] sm:max-w-[min(100%,calc(100%-4rem))] sm:text-sm ${hoverRevealPrice}`}
               >
                 {priceLabel}
               </span>
@@ -274,7 +282,7 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
                 }}
               >
                 <CartIcon
-                  className={`${reelActionIcon} ${inCart ? "text-[var(--reels-point)]" : "text-white"}`}
+                  className={`${reelActionIcon} ${reelActionIconColorClass(inCart)}`}
                 />
               </button>
               <button
@@ -291,7 +299,7 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
               >
                 <Heart
                   strokeWidth={1.5}
-                  className={`${reelActionIcon} transition-transform duration-200 ${likedByMe ? "fill-current text-[var(--reels-point)]" : "text-white"} ${likePulse ? "scale-110" : "scale-100"}`}
+                  className={`${reelActionIcon} transition-transform duration-200 ${likedByMe ? `fill-current ${reelActionIconColorClass(true)}` : reelActionIconColorClass(false)} ${likePulse ? "scale-110" : "scale-100"}`}
                 />
               </button>
               <button
@@ -329,7 +337,7 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
                     />
                   </motion.span>
                   <Bookmark
-                    className={`pointer-events-none absolute inset-0 z-[1] block h-full w-full ${wishlisted ? "text-[var(--reels-point)]" : "text-white"}`}
+                    className={`pointer-events-none absolute inset-0 z-[1] block h-full w-full ${reelActionIconColorClass(wishlisted)}`}
                     fill="none"
                     stroke="currentColor"
                     strokeWidth={1.5}

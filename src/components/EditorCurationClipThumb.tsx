@@ -37,7 +37,7 @@ export function EditorCurationClipThumb({ video, className }: Props) {
       }
     >
       <div
-        className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-white/12 bg-black/35 shadow-none transition-[box-shadow,transform] duration-[400ms] ease-in-out group-hover:border-reels-cyan/30 group-hover:shadow-reels-cyan/20"
+        className="relative aspect-[9/16] overflow-hidden rounded-2xl border border-white/12 bg-black/35 shadow-none transition-[box-shadow,transform] duration-[400ms] ease-in-out group-hover:border-reels-cyan/30 group-hover:shadow-reels-cyan/20"
         onMouseEnter={isPexelsBlockedVideo ? undefined : onEnter}
         onMouseLeave={isPexelsBlockedVideo ? undefined : onLeave}
       >

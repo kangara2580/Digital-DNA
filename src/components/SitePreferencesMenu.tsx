@@ -6,6 +6,7 @@ import type { SiteLocale } from "@/lib/sitePreferences";
 import { useSitePreferences } from "@/context/SitePreferencesContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MyPageSortSelect } from "@/components/MyPageSortSelect";
+import { ThemeModeToggleSwitch } from "@/components/ThemeModeToggleSwitch";
 
 const iconStroke = 1.25;
 
@@ -39,7 +40,7 @@ export function SitePreferencesMenu({
         onClick={() => setLocale("ko")}
         className={`${localeSegClass} ${
           locale === "ko"
-            ? "bg-reels-crimson/18 text-reels-crimson [html[data-theme='light']_&]:bg-reels-crimson/12"
+            ? "bg-[color:var(--reels-point)]/18 text-[color:var(--reels-point)] [html[data-theme='light']_&]:bg-[color:var(--reels-point)]/12"
             : "text-zinc-500 hover:text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900"
         }`}
         aria-pressed={locale === "ko"}
@@ -52,7 +53,7 @@ export function SitePreferencesMenu({
         onClick={() => setLocale("en")}
         className={`${localeSegClass} ${
           locale === "en"
-            ? "bg-reels-crimson/18 text-reels-crimson [html[data-theme='light']_&]:bg-reels-crimson/12"
+            ? "bg-[color:var(--reels-point)]/18 text-[color:var(--reels-point)] [html[data-theme='light']_&]:bg-[color:var(--reels-point)]/12"
             : "text-zinc-500 hover:text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900"
         }`}
         aria-pressed={locale === "en"}
@@ -102,28 +103,6 @@ export function SitePreferencesMenu({
     />
   );
 
-  /** iOS 스타일 흑백 스위치 — 썸 왼쪽: 라이트, 오른쪽: 다크 */
-  const stackThemeToggle = (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={themeMode === "dark"}
-      aria-label={themeMode === "dark" ? "라이트 테마로 전환" : "다크 테마로 전환"}
-      onClick={toggleTheme}
-      className={`relative h-[30px] w-[51px] shrink-0 rounded-full border p-[3px] transition-[background-color,border-color] duration-200 ease-out ${
-        themeMode === "dark"
-          ? "border-zinc-500/70 bg-zinc-800 [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-zinc-400"
-          : "border-zinc-600/80 bg-zinc-700 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-zinc-200"
-      }`}
-    >
-      <span
-        className={`pointer-events-none absolute left-[3px] top-[3px] block h-[23px] w-[23px] rounded-full border border-black/10 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.9)] transition-transform duration-200 ease-out motion-reduce:transition-none ${
-          themeMode === "dark" ? "translate-x-[22px]" : "translate-x-0"
-        }`}
-      />
-    </button>
-  );
-
   if (layout === "stack") {
     return (
       <div className={`flex flex-col gap-4 ${className ?? ""}`}>
@@ -137,14 +116,7 @@ export function SitePreferencesMenu({
           <p className="px-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
             {t("prefs.stackSectionTheme")}
           </p>
-          <div className="flex items-center gap-3">
-            {stackThemeToggle}
-            <span className="text-[13px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-              {themeMode === "dark"
-                ? t("prefs.stackThemeDark")
-                : t("prefs.stackThemeLight")}
-            </span>
-          </div>
+          <ThemeModeToggleSwitch labelClassName="text-[13px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600" />
         </div>
       </div>
     );

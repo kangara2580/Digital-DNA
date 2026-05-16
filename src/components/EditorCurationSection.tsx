@@ -73,7 +73,7 @@ function EditorCurationBlock({
             role="listitem"
             aria-label={`${catName} 카테고리 전체 보기`}
           >
-            <div className="relative flex aspect-[3/4] flex-col items-center justify-center gap-1.5 overflow-hidden rounded-2xl border border-dashed border-reels-cyan/40 bg-gradient-to-br from-reels-crimson/[0.12] via-reels-void/80 to-reels-cyan/[0.08] px-2 text-center transition-[border-color,background-color,box-shadow] hover:border-reels-cyan/65 hover:from-reels-crimson/[0.18] hover:shadow-[0_8px_28px_-12px_rgba(0,242,234,0.2)] [html[data-theme='light']_&]:from-white [html[data-theme='light']_&]:to-zinc-50 [html[data-theme='light']_&]:hover:border-reels-cyan/55">
+            <div className="relative flex aspect-[9/16] flex-col items-center justify-center gap-1.5 overflow-hidden rounded-2xl border border-dashed border-reels-cyan/40 bg-gradient-to-br from-reels-crimson/[0.12] via-reels-void/80 to-reels-cyan/[0.08] px-2 text-center transition-[border-color,background-color,box-shadow] hover:border-reels-cyan/65 hover:from-reels-crimson/[0.18] hover:shadow-[0_8px_28px_-12px_rgba(0,242,234,0.2)] [html[data-theme='light']_&]:from-white [html[data-theme='light']_&]:to-zinc-50 [html[data-theme='light']_&]:hover:border-reels-cyan/55">
               <span className="text-[11px] font-extrabold leading-tight text-zinc-100 sm:text-[12px]">
                 더보기
               </span>

@@ -66,7 +66,7 @@ function ReviewStars({ rating }: { rating: number }) {
               />
             </svg>
             <span
-              className="absolute inset-y-0 left-0 overflow-hidden text-white/85 transition-colors duration-200 ease-out group-hover:text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-amber-500 [html[data-theme='light']_&]:group-hover:text-[color:var(--reels-point)]"
+              className="review-star-filled absolute inset-y-0 left-0 overflow-hidden text-[color:var(--reels-point)]"
               style={{ width: `${fillRatio * 100}%` }}
             >
               <svg

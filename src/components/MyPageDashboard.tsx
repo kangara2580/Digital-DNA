@@ -13,6 +13,10 @@ import { MyPageWishlistSection } from "@/components/MyPageWishlistSection";
 import { MyPageLikedVideosSection } from "@/components/MyPageLikedVideosSection";
 import { DocumentTitleI18n } from "@/components/DocumentTitleI18n";
 import { MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
+import {
+  sidebarNavLinkActiveClass,
+  sidebarNavLinkInactiveClass,
+} from "@/lib/brandPinkTokens";
 import { useTranslation } from "@/hooks/useTranslation";
 
 type MyPageTab = "drafts" | "analytics" | "listings" | "wishlist" | "likes" | "purchases";
@@ -97,11 +101,7 @@ export function MyPageDashboard() {
                   <Link
                     key={item.id}
                     href={item.href}
-                    className={
-                      active
-                        ? "rounded-lg border-l-[3px] border-l-[#E42980] bg-white/[0.06] py-2.5 pl-[13px] pr-3 text-[16px] font-semibold text-zinc-50 transition-colors [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900"
-                        : "rounded-lg border-l-[3px] border-l-transparent py-2.5 pl-[13px] pr-3 text-[16px] font-medium text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
-                    }
+                    className={active ? sidebarNavLinkActiveClass : sidebarNavLinkInactiveClass}
                   >
                     {label}
                   </Link>

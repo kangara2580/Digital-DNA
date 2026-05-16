@@ -34,6 +34,7 @@ import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { CartIcon } from "@/components/CartIcon";
 import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
 import type { SellerSocialLink } from "@/lib/sellerSocialLinks";
+import { SellerProfileAvatarLink } from "@/components/SellerProfileAvatarLink";
 import {
   sellerDisplayNameFromVideo,
   sellerProfileHrefFromVideo,
@@ -47,6 +48,7 @@ import { AuthModalPortal } from "@/components/AuthModalPortal";
 import {
   araAuthDialogWordmarkClassName,
   araWordmarkFontStyle,
+  authModalBrandHeadlineClassName,
 } from "@/lib/araBrandTypography";
 import {
   authModalDialogSurface,
@@ -60,11 +62,14 @@ import {
   reelActionBtnCompact,
   reelActionBtnDense,
   reelActionIcon,
+  reelActionIconColorClass,
   reelActionIconCompact,
   reelActionIconDense,
   reelActionRailColumn,
   reelActionRailOuter,
-  videoReelMediaContainer,
+  videoCardDurationBadgeClass,
+  videoReelMediaRootClassName,
+  videoShortFormAspectClassName,
 } from "@/lib/videoReelActionStyles";
 
 type Props = {
@@ -94,9 +99,7 @@ type Props = {
    * 홈 인기순위·실패 섹션 등 — 세로 9:16·여백·타이포를 동영상 마켓형으로
    */
   reelLayout?: boolean;
-  /**
-   * reelLayout + 인기순위 한 줄 5열 등 — 9:16 대신 3:4로 높이를 줄여 가로 스트립에 맞춤
-   */
+  /** reelLayout + 몰·카테고리 그리드 등 — 세로 스트립 타일(9:16과 동일 프레임) */
   reelStrip?: boolean;
   /**
    * 가로 스트립 + 상단 해시태그 등이 있을 때 — 호버 확대를 약하게·위 기준으로 잘림 방지
@@ -120,6 +123,8 @@ type Props = {
   hideHoverActions?: boolean;
   /** true면 작성자(아이디) 한 줄 숨김 */
   hideCreatorMeta?: boolean;
+  /** hideCreatorMeta일 때 제목 앞 판매자 프로필(쇼핑몰 그리드 등) */
+  showSellerAvatar?: boolean;
   /** true면 하단 정보 바(아이디·제목·가격) 전체 숨김 */
   hideInfoBar?: boolean;
   /** 홈 인기순위 그리드만 — 가격 글자 흰색·한 단계 크게 */
@@ -224,10 +229,15 @@ function AuthRequiredModal({
         >
           ×
         </button>
-        <p className={araAuthDialogWordmarkClassName} style={araWordmarkFontStyle}>
+        <p
+          className={`${araAuthDialogWordmarkClassName} ${authModalBrandHeadlineClassName}`}
+          style={araWordmarkFontStyle}
+        >
           ARA
         </p>
-        <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
+        <p
+          className={`relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100 ${authModalBrandHeadlineClassName}`}
+        >
           로그인/회원가입
         </p>
         <AuthModalGoogleStartButton onClick={onGoogleStart} />
@@ -261,6 +271,7 @@ export function VideoCard({
   hideLikeAction = false,
   hideHoverActions = false,
   hideCreatorMeta = false,
+  showSellerAvatar = false,
   hideInfoBar = false,
   trendingRankCardPrice = false,
   mypageListCard = false,
@@ -291,18 +302,7 @@ export function VideoCard({
   const [mounted, setMounted] = useState(false);
   const authPromptScrollYRef = useRef(0);
   const displayTitle = useVideoDisplayTitle();
-  const reelAspectPortrait =
-    reelLayout && reelStrip ? "aspect-[3/4] w-full" : "aspect-[9/16] w-full";
-  const reelAspectLandscape =
-    reelLayout && reelStrip ? "aspect-[4/5] w-full" : "aspect-[9/16] w-full";
-  const aspectClass =
-    video.orientation === "portrait"
-      ? reelLayout
-        ? reelAspectPortrait
-        : "aspect-[3/4] w-full"
-      : reelLayout
-        ? reelAspectLandscape
-        : "aspect-video w-full";
+  const aspectClass = videoShortFormAspectClassName;
   const previewSrc = video.previewSrc ?? video.src;
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(previewSrc);
   const isDirectVideoLikeSource =
@@ -597,7 +597,7 @@ export function VideoCard({
       onMouseMove={externalIframe ? playTikTok : undefined}
     >
       <div
-        className={`${videoReelMediaContainer} relative overflow-hidden bg-black/40 ${aspectClass}`}
+        className={`${videoReelMediaRootClassName} relative overflow-hidden bg-black/40 ${aspectClass}`}
       >
         {externalIframe ? (
           <div className="absolute inset-0 z-0 overflow-hidden">
@@ -701,7 +701,7 @@ export function VideoCard({
               </span>
             ) : null}
             {topBadge ? (
-              <span className="truncate rounded-full border border-reels-crimson/35 bg-reels-crimson/85 px-1.5 py-0.5 text-[9px] font-bold leading-none text-white sm:px-2 sm:text-[10px]">
+              <span className="truncate rounded-full border border-[color:var(--reels-point)]/40 bg-[color:var(--reels-point)] px-1.5 py-0.5 text-[9px] font-bold leading-none text-white sm:px-2 sm:text-[10px]">
                 {topBadge}
               </span>
             ) : null}
@@ -709,14 +709,14 @@ export function VideoCard({
         ) : null}
         {showMicro && topBadge ? (
           <span
-            className={`pointer-events-none absolute z-[6] truncate rounded-full border border-reels-crimson/35 bg-reels-crimson/85 px-1.5 py-0.5 text-[9px] font-bold leading-none text-white sm:px-2 sm:text-[10px] ${topBadgePos}`}
+            className={`pointer-events-none absolute z-[6] truncate rounded-full border border-[color:var(--reels-point)]/40 bg-[color:var(--reels-point)] px-1.5 py-0.5 text-[9px] font-bold leading-none text-white sm:px-2 sm:text-[10px] ${topBadgePos}`}
           >
             {topBadge}
           </span>
         ) : null}
         {video.durationSec != null ? (
           <span
-            className={`pointer-events-none absolute right-2 top-2 z-[6] font-medium tabular-nums leading-none text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.75),0_0_8px_rgba(0,0,0,0.35)] sm:right-2.5 sm:top-2.5 ${
+            className={`${videoCardDurationBadgeClass} pointer-events-none absolute right-2 top-2 z-[6] font-semibold tabular-nums leading-none text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.92),0_0_12px_rgba(0,0,0,0.55)] sm:right-2.5 sm:top-2.5 ${
               dense ? "text-[9px]" : "text-[10px] sm:text-[11px]"
             }`}
           >
@@ -774,7 +774,7 @@ export function VideoCard({
                 }}
               >
                 <CartIcon
-                  className={`${reelIconCls} ${inCart ? "text-[var(--reels-point)]" : "text-white"}`}
+                  className={`${reelIconCls} ${reelActionIconColorClass(inCart)}`}
                 />
               </button>
               {!hideLikeAction ? (
@@ -792,7 +792,7 @@ export function VideoCard({
                 >
                   <Heart
                     strokeWidth={1.5}
-                    className={`${reelIconCls} transition-transform duration-200 ${likedByMe ? "fill-current text-[var(--reels-point)]" : "text-white"} ${
+                    className={`${reelIconCls} transition-transform duration-200 ${likedByMe ? `fill-current ${reelActionIconColorClass(true)}` : reelActionIconColorClass(false)} ${
                       likePulse ? "scale-110" : "scale-100"
                     }`}
                   />
@@ -834,7 +834,7 @@ export function VideoCard({
                     />
                   </motion.span>
                   <Bookmark
-                    className={`pointer-events-none absolute inset-0 z-[1] block h-full w-full ${wishlisted ? "text-[var(--reels-point)]" : "text-white"}`}
+                    className={`pointer-events-none absolute inset-0 z-[1] block h-full w-full ${reelActionIconColorClass(wishlisted)}`}
                     fill="none"
                     stroke="currentColor"
                     strokeWidth={1.5}
@@ -873,7 +873,10 @@ export function VideoCard({
               {sellerName}
             </Link>
           ) : null}
-          <div className={`flex min-w-0 items-center ${dense ? "gap-1" : "gap-2"}`}>
+          <div className={`flex min-w-0 items-center ${dense ? "gap-1" : "gap-1.5"}`}>
+            {hideCreatorMeta && showSellerAvatar ? (
+              <SellerProfileAvatarLink video={video} size="sm" />
+            ) : null}
             <VideoSourcePlatformIcon
               source={videoContentSource}
               className={`shrink-0 text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 ${
@@ -897,9 +900,9 @@ export function VideoCard({
               <span
                 className={
                   trendingRankCardPrice
-                    ? "shrink-0 rounded-md px-2 py-0.5 text-right text-[13px] font-extrabold tabular-nums text-zinc-50 transition-colors duration-200 motion-reduce:transition-none [html[data-theme='light']_&]:text-zinc-950 sm:text-[15px] group-hover:bg-white/[0.08] group-hover:text-white motion-reduce:group-hover:bg-transparent"
+                    ? "video-card-mall-price shrink-0 rounded-md px-2 py-0.5 text-right text-[13px] font-extrabold tabular-nums text-zinc-50 transition-colors duration-200 motion-reduce:transition-none [html[data-theme='light']_&]:text-zinc-950 sm:text-[15px] group-hover:bg-white/[0.08] group-hover:text-white motion-reduce:group-hover:bg-transparent"
                     : mypageListCard
-                      ? `shrink-0 rounded-md px-1.5 py-0.5 text-right font-semibold tabular-nums text-white transition-colors duration-200 ease-out motion-reduce:transition-none group-hover:bg-white/[0.06] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:group-hover:bg-zinc-200/45 ${
+                      ? `video-card-mall-price shrink-0 rounded-md px-1.5 py-0.5 text-right font-semibold tabular-nums text-white transition-colors duration-200 ease-out motion-reduce:transition-none group-hover:bg-white/[0.06] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:group-hover:bg-zinc-200/45 ${
                           dense
                             ? "text-[10px]"
                             : reelStrip

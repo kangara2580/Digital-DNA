@@ -73,7 +73,7 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
           </p>
           <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black/40">
             <div
-              className={`relative ${video.orientation === "portrait" ? "mx-auto aspect-[3/4] max-w-sm" : "aspect-video w-full"}`}
+              className={`relative ${video.orientation === "portrait" ? "mx-auto aspect-[9/16] max-w-sm" : "aspect-video w-full"}`}
             >
               <video
                 className="h-full w-full object-cover"

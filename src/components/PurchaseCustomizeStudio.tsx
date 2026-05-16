@@ -424,7 +424,7 @@ function ServerGenerationStatusCard({ job }: { job: RemoteJobBanner }) {
 function previewToneFromPrompt(prompt: string): string {
   const p = prompt.toLowerCase();
   if (p.includes("neon") || p.includes("네온")) {
-    return "linear-gradient(140deg, rgba(255,45,141,0.2), rgba(228,41,128,0.18))";
+    return "linear-gradient(140deg, rgba(255,45,141,0.2), rgba(255,45,141,0.18))";
   }
   if (p.includes("sunset") || p.includes("노을") || p.includes("orange")) {
     return "linear-gradient(140deg, rgba(255,158,44,0.22), rgba(255,76,76,0.14))";
@@ -2694,7 +2694,7 @@ export function PurchaseCustomizeStudio({
               {/* Left: Main Reference */}
               <div className="flex-shrink-0 w-full md:w-[240px] flex flex-col gap-3">
                 <div className="text-[14px] text-zinc-400">기준 사진</div>
-                <div className="w-full aspect-[3/4] overflow-hidden rounded-xl border border-white/10 bg-black">
+                <div className="w-full aspect-[9/16] overflow-hidden rounded-xl border border-white/10 bg-black">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={customUploadSourceUrl} alt="원본 피사체" className="w-full h-full object-cover" />
                 </div>
@@ -2784,7 +2784,7 @@ export function PurchaseCustomizeStudio({
                         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 bg-[#16171a] rounded-xl p-4 sm:p-5 border border-white/5">
                            <div className="flex-1 grid grid-cols-3 gap-3 w-full">
                               {[1, 2, 3].map(col => (
-                                <div key={col} className="aspect-[3/4] rounded-xl bg-[#1c1d21] flex items-center justify-center">
+                                <div key={col} className="aspect-[9/16] rounded-xl bg-[#1c1d21] flex items-center justify-center">
                                    <div className="w-5 h-5 border-2 border-white/10 border-t-white/40 rounded-full animate-spin"></div>
                                 </div>
                               ))}
@@ -2798,7 +2798,7 @@ export function PurchaseCustomizeStudio({
                      <div className="w-full flex flex-col gap-4">
                         <div className="flex-1 grid grid-cols-3 gap-3 w-full">
                             {customUploadAngles.map((url, i) => (
-                              <div key={i} className="relative aspect-[3/4] rounded-xl overflow-hidden border border-white/5 bg-black">
+                              <div key={i} className="relative aspect-[9/16] rounded-xl overflow-hidden border border-white/5 bg-black">
                                   {/* eslint-disable-next-line @next/next/no-img-element */}
                                   <img 
                                      src={url} 
@@ -2900,7 +2900,7 @@ export function PurchaseCustomizeStudio({
              </div>
           ) : (
              <div 
-                className="relative w-[30vh] max-w-[80vw] aspect-[3/4] overflow-hidden rounded-xl shadow-2xl bg-black md:w-[45vh]"
+                className="relative w-[30vh] max-w-[80vw] aspect-[9/16] overflow-hidden rounded-xl shadow-2xl bg-black md:w-[45vh]"
                 onClick={(e) => e.stopPropagation()}
              >
                {/* eslint-disable-next-line @next/next/no-img-element */}

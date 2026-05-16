@@ -1,5 +1,6 @@
 import type { FeedVideo } from "@/data/videos";
 import { getSellerNickname, normalizeSellerHandle } from "@/data/videoCatalog";
+import { buildNotionistsAvatarUrl } from "@/data/reelsAvatarPresets";
 
 type SellerSource = Pick<FeedVideo, "creator" | "listing">;
 
@@ -16,4 +17,9 @@ export function sellerProfileHrefFromVideo(video: SellerSource): string {
 
 export function sellerDisplayNameFromVideo(video: SellerSource): string {
   return getSellerNickname(video.creator);
+}
+
+/** 판매자 피드·카드용 프로필 이미지 URL (업로드 전 Notionists 시드) */
+export function sellerAvatarUrlFromVideo(video: SellerSource): string {
+  return buildNotionistsAvatarUrl(sellerDisplayNameFromVideo(video));
 }

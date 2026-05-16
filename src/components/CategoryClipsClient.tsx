@@ -41,9 +41,9 @@ const CATEGORY_FEED_CACHE_TTL_MS = 120_000;
 
 /** 필터 칩 — 컴팩트(전체 너비 행 제거) */
 const chipBase =
-  "inline-flex shrink-0 items-center justify-center rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition-[background-color,color,opacity] tabular-nums";
+  "inline-flex shrink-0 items-center justify-center rounded-full border-2 border-transparent px-2.5 py-1.5 text-[11px] font-semibold transition-[background-color,color,opacity,border-color] tabular-nums";
 const chipOn =
-  "bg-white/22 text-white ring-2 ring-white/35 [html[data-theme='light']_&]:bg-zinc-900 [html[data-theme='light']_&]:text-white [html[data-theme='light']_&]:ring-zinc-700";
+  "bg-white/22 text-white ring-2 ring-white/35 [html[data-theme='light']_&]:border-black [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-950 [html[data-theme='light']_&]:ring-0";
 const chipOff =
   "text-zinc-200 hover:bg-white/14 hover:text-white [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-200 [html[data-theme='light']_&]:hover:text-zinc-950";
 const chipDisabled =
@@ -232,6 +232,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
             reelLayout
             reelStrip
             hideCreatorMeta
+            showSellerAvatar
             preloadMode="metadata"
             trendingRankCardPrice
             onPick={() => openExploreWatch(video)}
@@ -305,7 +306,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
         <SlidersHorizontal className={`${topNavHeroCapsuleGlyphIconClass()} shrink-0`} aria-hidden />
         <span className="max-w-[4.5rem] truncate sm:max-w-none">{t("category.filter.button")}</span>
         {activeFilterCount > 0 ? (
-          <span className="inline-flex min-w-[1.125rem] items-center justify-center rounded-full bg-reels-crimson/85 px-1 py-0.5 text-[10px] font-extrabold leading-none text-white">
+          <span className="category-filter-active-count inline-flex min-w-[1.125rem] items-center justify-center rounded-full bg-[color:var(--reels-point)] px-1 py-0.5 text-[10px] font-extrabold leading-none text-white">
             {activeFilterCount}
           </span>
         ) : null}
@@ -432,7 +433,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
               setPriceFilter("all");
               setNewestFilter("all");
             }}
-            className="mt-3 w-full rounded-full border border-white/30 py-1.5 text-[11px] font-semibold text-zinc-100 transition hover:border-white/45 hover:bg-white/[0.08] [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:border-zinc-500 [html[data-theme='light']_&]:hover:bg-zinc-100"
+            className="mt-3 w-full rounded-full border border-white/30 py-1.5 text-[11px] font-semibold text-zinc-100 transition hover:border-white/45 hover:bg-white/[0.08] [html[data-theme='light']_&]:border-black [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-950 [html[data-theme='light']_&]:hover:border-black [html[data-theme='light']_&]:hover:bg-zinc-50"
           >
             {t("category.filter.reset")}
           </button>

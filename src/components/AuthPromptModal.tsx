@@ -15,6 +15,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import {
   araAuthDialogWordmarkClassName,
   araWordmarkFontStyle,
+  authModalBrandHeadlineClassName,
 } from "@/lib/araBrandTypography";
 
 type Props = {
@@ -70,10 +71,15 @@ export function AuthPromptModal({ open, onClose, onGoogleStart }: Props) {
         >
           ×
         </button>
-        <p className={araAuthDialogWordmarkClassName} style={araWordmarkFontStyle}>
+        <p
+          className={`${araAuthDialogWordmarkClassName} ${authModalBrandHeadlineClassName}`}
+          style={araWordmarkFontStyle}
+        >
           ARA
         </p>
-        <p className="relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100">
+        <p
+          className={`relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100 ${authModalBrandHeadlineClassName}`}
+        >
           {t("auth.loginSignupTitle")}
         </p>
         <AuthModalGoogleStartButton onClick={onGoogleStart} />

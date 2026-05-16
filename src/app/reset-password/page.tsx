@@ -10,7 +10,7 @@ import {
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 const INPUT =
-  "w-full rounded-xl border border-white/20 bg-black/30 px-3.5 py-3 text-sm text-zinc-100 outline-none backdrop-blur-sm transition placeholder:text-zinc-500 focus:border-[#E42980]/60 focus:ring-2 focus:ring-[#E42980]/26";
+  "w-full rounded-xl border border-white/20 bg-black/30 px-3.5 py-3 text-sm text-zinc-100 outline-none backdrop-blur-sm transition placeholder:text-zinc-500 focus:border-[#FF2D8D]/60 focus:ring-2 focus:ring-[#FF2D8D]/26";
 const SAME_PASSWORD_MESSAGE = "기존 비밀번호와 동일해요. 새로운 비밀번호로 변경해 주세요.";
 const RECOVERY_COOKIE = "rm_recovery_in_progress";
 
@@ -210,7 +210,7 @@ export default function ResetPasswordPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#07080f] px-4 py-12 text-zinc-100 sm:px-6">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(228,41,128,0.17),transparent_40%),radial-gradient(circle_at_80%_90%,rgba(59,130,246,0.16),transparent_45%),linear-gradient(180deg,#05060b_0%,#080913_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,45,141,0.17),transparent_40%),radial-gradient(circle_at_80%_90%,rgba(59,130,246,0.16),transparent_45%),linear-gradient(180deg,#05060b_0%,#080913_100%)]" />
       <div className="relative mx-auto mt-10 w-full max-w-md rounded-2xl border border-white/15 bg-white/[0.04] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:mt-16 sm:p-8">
         <p className={araAuthFlowWordmarkClassName} style={araWordmarkFontStyle}>
           ARA
@@ -275,7 +275,7 @@ export default function ResetPasswordPage() {
             <button
               type="submit"
               disabled={busy}
-              className="w-full rounded-full bg-gradient-to-r from-[#E42980] to-indigo-500 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_30px_rgba(228,41,128,0.42)] transition hover:brightness-110 disabled:opacity-60"
+              className="w-full rounded-full bg-gradient-to-r from-[#FF2D8D] to-indigo-500 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_30px_rgba(255,45,141,0.42)] transition hover:brightness-110 disabled:opacity-60"
             >
               {busy ? "저장 중…" : "비밀번호 저장"}
             </button>

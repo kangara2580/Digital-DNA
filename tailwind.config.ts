@@ -25,28 +25,28 @@ const config: Config = {
           raised: "#f8fafc",
           border: "#e2e8f0",
         },
-        /** REELS MARKET — Brand magenta-pink (#E42980) + Cyan */
+        /** REELS MARKET — Brand pink (#FF2D8D) */
         reels: {
           abyss: "#050505",
           void: "#0a0a0a",
           lift: "#121212",
           muted: "#a1a1aa",
-          crimson: "#E42980",
-          /** 레거시 이름 유지 — 실제 색은 브랜드 핑크(#FF2D8D) */
+          crimson: "#FF2D8D",
+          /** 레거시 이름 유지 — 브랜드 핑크 */
           cyan: "#FF2D8D",
         },
         market: {
           canvas: "#faf7f8",
           surface: "#ffffff",
           mist: "#fff5f9",
-          bloom: "#E42980",
-          bloomHover: "#C41F6E",
+          bloom: "#FF2D8D",
+          bloomHover: "#E6287F",
           line: "#F9C6D4",
           lineSoft: "#FCEFF3",
         },
       },
       boxShadow: {
-        "reels-crimson": "0 0 26px -4px rgba(228, 41, 128, 0.48)",
+        "reels-crimson": "0 0 26px -4px rgba(255, 45, 141, 0.48)",
         "reels-cyan": "0 0 28px -6px rgba(255, 45, 141, 0.42)",
       },
       transitionDuration: {

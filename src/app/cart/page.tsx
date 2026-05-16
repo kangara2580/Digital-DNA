@@ -332,7 +332,7 @@ export default function CartPage() {
                 key={i}
                 className="flex min-w-0 flex-col rounded-xl border border-white/10 p-3 sm:p-3.5 [html[data-theme='light']_&]:border-zinc-200"
               >
-                <div className="aspect-[3/4] w-full min-w-0 animate-pulse rounded-lg bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
+                <div className="aspect-[9/16] w-full min-w-0 animate-pulse rounded-lg bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
                 <div className="mt-2 space-y-1.5 border-t border-white/10 pt-2 [html[data-theme='light']_&]:border-zinc-200">
                   <div className="h-4 w-full animate-pulse rounded bg-white/10 [html[data-theme='light']_&]:bg-zinc-200" />
                   {[0, 1, 2].map((j) => (
@@ -380,12 +380,12 @@ export default function CartPage() {
                   className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] p-3 sm:p-3.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
                 >
                   <div className="relative w-full min-w-0 shrink-0">
-                    <label className="absolute left-2 top-2 z-[2] cursor-pointer rounded-md bg-black/50 p-1 backdrop-blur-sm [html[data-theme='light']_&]:bg-white/80 lg:left-1.5 lg:top-1.5">
+                    <label className="absolute left-2 top-2 z-[2] flex cursor-pointer items-center lg:left-1.5 lg:top-1.5">
                       <input
                         type="checkbox"
                         checked={checked}
                         onChange={() => toggleKey(key)}
-                        className="h-4 w-4 rounded border border-white/35 bg-black/50 accent-[#E42980] sm:h-5 sm:w-5 [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-white"
+                        className="h-4 w-4 shrink-0 rounded border-2 border-white/90 bg-black/35 accent-[color:var(--reels-point)] shadow-[0_1px_4px_rgba(0,0,0,0.4)] sm:h-5 sm:w-5 [html[data-theme='light']_&]:border-black [html[data-theme='light']_&]:bg-white"
                       />
                       <span className="sr-only">{t("cart.selectAria")}</span>
                     </label>
@@ -400,13 +400,13 @@ export default function CartPage() {
                           return n;
                         });
                       }}
-                      className="absolute right-2 top-2 z-[3] inline-flex h-8 w-8 items-center justify-center rounded-md bg-black/55 text-zinc-200 backdrop-blur-sm transition-colors hover:bg-black/70 hover:text-white [html[data-theme='light']_&]:bg-white/85 [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:bg-white lg:right-1.5 lg:top-1.5"
+                      className="absolute right-2 top-2 z-[3] inline-flex h-7 w-7 items-center justify-center rounded-md bg-black/90 text-white shadow-[0_1px_4px_rgba(0,0,0,0.45)] transition-colors hover:bg-black [html[data-theme='light']_&]:border [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:shadow-sm [html[data-theme='light']_&]:hover:border-zinc-400 [html[data-theme='light']_&]:hover:bg-zinc-50 lg:right-1.5 lg:top-1.5"
                     >
                       <X className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
                     </button>
                     <Link
                       href={`/video/${video.id}`}
-                      className="relative block aspect-[3/4] w-full min-w-0 overflow-hidden rounded-lg border border-white/12 bg-black/40 ring-1 ring-white/10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100"
+                      className="relative block aspect-[9/16] w-full min-w-0 overflow-hidden rounded-lg border border-white/12 bg-black/40 ring-1 ring-white/10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -425,7 +425,7 @@ export default function CartPage() {
                         />
                         <Link
                           href={`/video/${video.id}`}
-                          className="min-w-0 flex-1 break-words text-left text-[12px] font-semibold leading-snug text-zinc-100 transition-colors hover:text-[#E42980] [html[data-theme='light']_&]:text-zinc-900 sm:text-[13px]"
+                          className="min-w-0 flex-1 break-words text-left text-[12px] font-semibold leading-snug text-zinc-100 transition-colors hover:text-[#FF2D8D] [html[data-theme='light']_&]:text-zinc-900 sm:text-[13px]"
                         >
                           {displayTitle(video)}
                         </Link>

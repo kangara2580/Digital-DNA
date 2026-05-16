@@ -215,7 +215,7 @@ export function LeaderboardClient() {
                   onClick={() => setMetric(tab)}
                   className={`inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl px-3 py-3 text-[15px] font-semibold transition-colors ${
                     active
-                      ? "bg-white/15 text-white shadow-[0_6px_22px_-10px_rgba(0,0,0,0.45)] ring-1 ring-white/20 [html[data-theme='light']_&]:bg-zinc-900 [html[data-theme='light']_&]:text-white [html[data-theme='light']_&]:shadow-[0_6px_22px_-10px_rgba(0,0,0,0.12)] [html[data-theme='light']_&]:ring-zinc-700"
+                      ? "leaderboard-metric-tab--active bg-white/15 text-white shadow-[0_6px_22px_-10px_rgba(0,0,0,0.45)] ring-1 ring-white/20 [html[data-theme='light']_&]:bg-zinc-900 [html[data-theme='light']_&]:shadow-[0_6px_22px_-10px_rgba(0,0,0,0.12)] [html[data-theme='light']_&]:ring-zinc-700"
                       : "text-zinc-500 hover:bg-white/[0.08] hover:text-zinc-200 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:hover:text-zinc-900"
                   }`}
                 >

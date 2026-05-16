@@ -26,18 +26,18 @@ const ITEM_DEFS = [
 const triggerClass =
   "flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border-0 bg-transparent text-zinc-100 outline-none transition-[background-color,color] hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)]/35 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-200/50 [html[data-theme='light']_&]:focus-visible:ring-reels-crimson/25";
 
-/** 프로필 호버 메뉴(`LoggedInAccountHoverMenu`)와 동일 패널·항목 톤 */
+/** 프로필 호버 메뉴(`LoggedInAccountHoverMenu`)와 동일 패널·항목 크기 */
 const panelClass =
-  "absolute left-0 top-full z-[100] -mt-2 w-max max-w-[calc(100vw-2rem)] origin-top-left overflow-hidden rounded-xl border border-white/[0.16] bg-[rgba(5,8,14,0.96)] pb-1 pt-2 shadow-[0_14px_42px_-12px_rgba(0,0,0,0.75)] backdrop-blur-md motion-reduce:transition-none [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.12)]";
+  "absolute left-0 top-full z-[100] -mt-2 w-max min-w-[12.5rem] max-w-[calc(100vw-2rem)] origin-top-left overflow-hidden rounded-2xl border border-white/[0.16] bg-[rgba(5,8,14,0.96)] py-2 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.75)] backdrop-blur-md motion-reduce:transition-none [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[0_14px_44px_-16px_rgba(0,0,0,0.14)]";
 
 const panelVisibilityClass =
   "invisible pointer-events-none opacity-0 transition-[opacity,visibility] duration-150 ease-out motion-reduce:transition-none group-hover/ownerquick:pointer-events-auto group-hover/ownerquick:visible group-hover/ownerquick:opacity-100 group-focus-within/ownerquick:pointer-events-auto group-focus-within/ownerquick:visible group-focus-within/ownerquick:opacity-100";
 
 const linkClass =
-  "flex items-center gap-2 whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold text-zinc-100 transition-colors hover:bg-white/[0.08] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
+  "flex items-center gap-3.5 whitespace-nowrap px-5 py-3.5 text-left text-[15px] font-semibold leading-snug text-zinc-100 transition-colors hover:bg-white/[0.08] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
 
 const iconClass =
-  "h-4 w-4 shrink-0 text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
+  "h-[18px] w-[18px] shrink-0 text-zinc-400 [html[data-theme='light']_&]:text-zinc-500";
 
 /** 내 피드 상단 — 마이페이지 주요 탭으로 바로가기(본인만) */
 export function SellerFeedOwnerQuickMenu({ sellerId }: { sellerId: string }) {
@@ -89,7 +89,7 @@ export function SellerFeedOwnerQuickMenu({ sellerId }: { sellerId: string }) {
         aria-controls={menuId}
         onClick={(e) => e.currentTarget.focus()}
       >
-        <Menu className="h-5 w-5" strokeWidth={2.25} aria-hidden />
+        <Menu className="h-6 w-6" strokeWidth={2.25} aria-hidden />
       </button>
       <ul
         id={menuId}

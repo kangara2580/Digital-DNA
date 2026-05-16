@@ -25,7 +25,7 @@ function SkeletonGrid({ ariaLabel }: { ariaLabel: string }) {
       {Array.from({ length: 10 }).map((_, i) => (
         <div key={`skeleton-${i}`} className="relative">
           <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/70">
-            <div className="aspect-[3/4] animate-pulse bg-zinc-800/70 [html[data-theme='light']_&]:bg-zinc-200" />
+            <div className="aspect-[9/16] animate-pulse bg-zinc-800/70 [html[data-theme='light']_&]:bg-zinc-200" />
             <div className="space-y-2 px-3 py-3">
               <div className="h-3 w-3/4 animate-pulse rounded bg-zinc-700/80 [html[data-theme='light']_&]:bg-zinc-300" />
               <div className="h-3 w-1/2 animate-pulse rounded bg-zinc-700/80 [html[data-theme='light']_&]:bg-zinc-300" />

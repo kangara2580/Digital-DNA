@@ -7,12 +7,10 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 import { ASSETS_CREDIT_PAYMENT, ASSETS_SETTLEMENT } from "@/lib/assetsPaths";
-
-const ASSETS_NAV_LINK_ACTIVE =
-  "rounded-lg border-l-[3px] border-l-[#E42980] bg-white/[0.06] py-2.5 pl-[13px] pr-3 text-[16px] font-semibold text-zinc-50 transition-colors [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900";
-
-const ASSETS_NAV_LINK_INACTIVE =
-  "rounded-lg border-l-[3px] border-l-transparent py-2.5 pl-[13px] pr-3 text-[16px] font-medium text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900";
+import {
+  sidebarNavLinkActiveClass,
+  sidebarNavLinkInactiveClass,
+} from "@/lib/brandPinkTokens";
 
 type Props = { children: ReactNode };
 
@@ -47,14 +45,14 @@ export function AssetsLayoutClient({ children }: Props) {
             <nav aria-label={t("assets.navAria")} className="flex flex-col gap-1">
               <Link
                 href={ASSETS_CREDIT_PAYMENT}
-                className={onCredit ? ASSETS_NAV_LINK_ACTIVE : ASSETS_NAV_LINK_INACTIVE}
+                className={onCredit ? sidebarNavLinkActiveClass : sidebarNavLinkInactiveClass}
                 aria-current={onCredit ? "page" : undefined}
               >
                 {t("assets.nav.creditPayment")}
               </Link>
               <Link
                 href={ASSETS_SETTLEMENT}
-                className={onSettlement ? ASSETS_NAV_LINK_ACTIVE : ASSETS_NAV_LINK_INACTIVE}
+                className={onSettlement ? sidebarNavLinkActiveClass : sidebarNavLinkInactiveClass}
                 aria-current={onSettlement ? "page" : undefined}
               >
                 {t("assets.nav.settlement")}
