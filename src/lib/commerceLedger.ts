@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { settlementHoldDays, platformFeeRateBps } from "@/lib/tossConfig";
 import type { TossConfirmResponse } from "@/lib/tossPayments";
 import { toJsonValue } from "@/lib/tossPayments";
+import { sendPurchaseReceipt } from "@/lib/email/send";
 
 export function calculatePlatformFee(grossAmount: number): {
   feeRateBps: number;
@@ -279,6 +280,17 @@ export async function applyTossConfirmedPayment(params: {
       for (const item of items) {
         await grantVideoPurchase(item.videoId, item.price);
       }
+    }
+
+    // Send purchase receipt email (fire-and-forget, outside tx is fine)
+    if (paidPayment.userEmail) {
+      sendPurchaseReceipt({
+        to: paidPayment.userEmail,
+        orderName: paidPayment.orderName ?? paidPayment.productKey,
+        amount: paidPayment.amountCents,
+        currency: paidPayment.currency,
+        credits: paidPayment.credits > 0 ? paidPayment.credits : undefined,
+      }).catch(() => {});
     }
 
     return paidPayment;

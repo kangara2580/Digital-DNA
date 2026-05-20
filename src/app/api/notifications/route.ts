@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/serverSession";
 
 export const dynamic = "force-dynamic";
 /** Prisma·SQLite는 Node 런타임에서만 안전 */
@@ -29,11 +30,14 @@ async function loadPrismaRuntime(): Promise<{ prisma: any } | null> {
 }
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const sellerId = searchParams.get("sellerId");
-  if (!sellerId?.trim()) {
-    return NextResponse.json({ error: "sellerId required" }, { status: 400 });
+  // Auth check: only return notifications for the logged-in user
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "login_required" }, { status: 401 });
   }
+
+  // Use the authenticated user's ID — ignore any sellerId from query params
+  const sellerId = user.id;
 
   try {
     const runtime = await loadPrismaRuntime();
