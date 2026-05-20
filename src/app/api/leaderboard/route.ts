@@ -1,11 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
-import {
-  BEST_REVIEW_AVATAR_PRESETS,
-  buildNotionistsAvatarUrl,
-  DEFAULT_BEST_REVIEW_AVATAR_SEED,
-} from "@/data/reelsAvatarPresets";
 import { prisma } from "@/lib/prisma";
+import { resolveStoredProfileColor } from "@/lib/profileColorSpectrum";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,7 +14,8 @@ type LeaderboardRow = {
   title: string | null;
   sellerId: string;
   nickname: string | null;
-  avatarCustom: string | null;
+  avatarKind: string | null;
+  avatarSeed: string | null;
   salesCount: bigint | number;
   totalRevenue: bigint | number;
 };
@@ -29,7 +26,7 @@ type LeaderboardItem = {
   title: string;
   sellerId: string;
   nickname: string;
-  avatarUrl: string | null;
+  avatarColor: string;
   totalSales: number;
   totalRevenue: number;
 };
@@ -66,35 +63,8 @@ function fallbackNickname(seed: string): string {
   return s.slice(0, 24);
 }
 
-function pickAvatarUrl(avatarCustom: string | null): string | null {
-  if (!avatarCustom) return null;
-  const raw = avatarCustom.trim();
-  if (!raw) return null;
-  if (raw.startsWith("data:image/")) return raw;
-  if (/^https?:\/\//i.test(raw)) return raw;
-  return null;
-}
-
 function fallbackTitle(seed: string): string {
   return `인기 릴스 #${seed.slice(0, 6)}`;
-}
-
-function hashToIndex(input: string, length: number): number {
-  if (length <= 1) return 0;
-  let hash = 0;
-  for (let i = 0; i < input.length; i += 1) {
-    hash = (hash * 31 + input.charCodeAt(i)) >>> 0;
-  }
-  return hash % length;
-}
-
-function fallbackAvatarUrl(seed: string): string {
-  const presets = BEST_REVIEW_AVATAR_PRESETS;
-  if (presets.length === 0) {
-    return buildNotionistsAvatarUrl(DEFAULT_BEST_REVIEW_AVATAR_SEED);
-  }
-  const idx = hashToIndex(seed, presets.length);
-  return buildNotionistsAvatarUrl(presets[idx]!.seed);
 }
 
 export async function GET(request: Request) {
@@ -129,7 +99,8 @@ export async function GET(request: Request) {
           v.title AS title,
           v.seller_id AS "sellerId",
           p.nickname AS nickname,
-          p.avatar_custom AS "avatarCustom",
+          p.avatar_kind AS "avatarKind",
+          p.avatar_seed AS "avatarSeed",
           COUNT(pu.id)::bigint AS "salesCount",
           COALESCE(SUM(pu.price), 0)::bigint AS "totalRevenue"
         FROM videos v
@@ -137,7 +108,7 @@ export async function GET(request: Request) {
         LEFT JOIN profiles p ON p.user_id::text = v.seller_id
         WHERE 1 = 1
         ${purchaseTimeFilter}
-        GROUP BY v.id, v.title, v.seller_id, p.nickname, p.avatar_custom, v.created_at
+        GROUP BY v.id, v.title, v.seller_id, p.nickname, p.avatar_kind, p.avatar_seed, v.created_at
         ${orderSql}
         LIMIT 10
       `);
@@ -163,7 +134,8 @@ export async function GET(request: Request) {
         title: video.title,
         sellerId: video.sellerId,
         nickname: null,
-        avatarCustom: null,
+        avatarKind: null,
+        avatarSeed: null,
         salesCount: video.salesCount,
         totalRevenue: video.salesCount * video.price,
       }));
@@ -186,7 +158,7 @@ export async function GET(request: Request) {
       title: row.title?.trim() || fallbackTitle(row.videoId),
       sellerId: row.sellerId,
       nickname: row.nickname?.trim() || fallbackNickname(row.sellerId),
-      avatarUrl: pickAvatarUrl(row.avatarCustom) ?? fallbackAvatarUrl(row.sellerId),
+      avatarColor: resolveStoredProfileColor(row.avatarKind, row.avatarSeed, row.sellerId),
       totalSales: bigintToNumber(row.salesCount),
       totalRevenue: bigintToNumber(row.totalRevenue),
     }));

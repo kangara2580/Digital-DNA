@@ -1,83 +1,70 @@
-import { buildNotionistsAvatarUrl } from "@/data/reelsAvatarPresets";
-import {
-  buildNotionistsCustomAvatarUrl,
-  createDefaultCharacterParts,
-  normalizeCharacterParts,
-  type CharacterPartsV1,
-} from "@/lib/notionistsCharacter";
-import {
-  paletteForSeed,
-  variantIndexFromParts,
-  variantIndexFromSeed,
-  getAraDotPresetByStorageSeed,
-  DEFAULT_ARA_DOT_PRESET_SEED,
-  type PixelAvatarPalette,
-} from "@/lib/pixelAvatarSprite";
 import type { User } from "@supabase/supabase-js";
 import type { AppProfile } from "@/lib/supabaseProfiles";
+import {
+  normalizeProfileColorHex,
+  profileColorFromSeed,
+  resolveStoredProfileColor,
+} from "@/lib/profileColorSpectrum";
 
 const STORAGE_KEY = "reels-market-profile-avatar-v1";
-/** 직접 업로드 data URL 상한(대략 1.5MB) — localStorage 안전 여유 */
-export const PROFILE_AVATAR_UPLOAD_MAX_CHARS = 1_500_000;
+
+/** 직접 업로드 data URL 상한 — DB·API 전송 안전 여유 */
+export const PROFILE_AVATAR_UPLOAD_MAX_CHARS = 900_000;
+/** 압축 목표(이보다 작게 맞추면 저장 실패 가능성↓) */
+export const PROFILE_AVATAR_TARGET_CHARS = 650_000;
 
 export type ProfileAvatar =
-  | { kind: "preset"; seed: string }
-  | { kind: "upload"; dataUrl: string }
-  | { kind: "custom"; parts: CharacterPartsV1 };
+  | { kind: "color"; hex: string }
+  | { kind: "upload"; dataUrl: string };
 
-export type ProfileAvatarPixelPreview =
-  | { type: "upload"; src: string }
-  | { type: "pixel"; palette: PixelAvatarPalette; variant: number; entropy: string };
+/** auth `user_metadata`/JWT — 이미지 본문 금지(쿠키 431 방지) */
+export function isOversizedAuthAvatarCustom(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  const s = value.trim();
+  if (!s) return false;
+  return s.startsWith("data:image/") || s.length > 280;
+}
 
-export function getProfileAvatarPixelPreview(
-  v: ProfileAvatar | null,
-  fallbackSeed: string,
-): ProfileAvatarPixelPreview {
-  if (v?.kind === "upload") {
-    return { type: "upload", src: v.dataUrl };
+/** Supabase `auth.updateUser({ data })` — avatar_kind/seed 만 (avatar_custom 제외) */
+export function profileAvatarToAuthMetaPatch(
+  next: ProfileAvatar | null,
+): {
+  avatar_kind: string | null;
+  avatar_seed: string | null;
+  avatar_custom: null;
+} {
+  if (!next) {
+    return { avatar_kind: null, avatar_seed: null, avatar_custom: null };
   }
-  if (v?.kind === "preset" && v.seed.trim()) {
-    const seed = v.seed.trim();
-    const pinned = getAraDotPresetByStorageSeed(seed);
-    if (pinned) {
-      return {
-        type: "pixel",
-        palette: pinned.palette,
-        variant: pinned.variant,
-        entropy: pinned.entropy,
-      };
-    }
-    return {
-      type: "pixel",
-      palette: paletteForSeed(seed),
-      variant: variantIndexFromSeed(seed),
-      entropy: seed,
-    };
+  if (next.kind === "upload") {
+    return { avatar_kind: "upload", avatar_seed: null, avatar_custom: null };
   }
-  if (v?.kind === "custom") {
-    const p = v.parts;
-    return {
-      type: "pixel",
-      palette: paletteForSeed(p.seed),
-      variant: variantIndexFromParts(p),
-      entropy: `${p.seed}|${p.gender}|${p.hair}|${p.eyes}|${p.lips}|${p.faceShape}`,
-    };
-  }
-  const seedFb = fallbackSeed.trim() || DEFAULT_ARA_DOT_PRESET_SEED;
-  const pinnedFb = getAraDotPresetByStorageSeed(seedFb);
-  if (pinnedFb) {
-    return {
-      type: "pixel",
-      palette: pinnedFb.palette,
-      variant: pinnedFb.variant,
-      entropy: pinnedFb.entropy,
-    };
-  }
+  const hex = normalizeProfileColorHex(next.hex);
   return {
-    type: "pixel",
-    palette: paletteForSeed(seedFb),
-    variant: variantIndexFromSeed(seedFb),
-    entropy: seedFb,
+    avatar_kind: "color",
+    avatar_seed: hex ?? next.hex,
+    avatar_custom: null,
+  };
+}
+
+export function profileAvatarToDbPatch(
+  next: ProfileAvatar | null,
+): Pick<AppProfile, "avatar_kind" | "avatar_seed" | "avatar_custom"> {
+  if (!next) {
+    return { avatar_kind: null, avatar_seed: null, avatar_custom: null };
+  }
+  if (next.kind === "upload") {
+    return {
+      avatar_kind: "upload",
+      avatar_seed: null,
+      avatar_custom: next.dataUrl,
+    };
+  }
+  const hex = normalizeProfileColorHex(next.hex);
+  return {
+    avatar_kind: "color",
+    avatar_seed: hex ?? next.hex,
+    avatar_custom: null,
   };
 }
 
@@ -88,20 +75,20 @@ export function readProfileAvatar(): ProfileAvatar | null {
     if (!raw) return null;
     const j = JSON.parse(raw) as unknown;
     if (!j || typeof j !== "object") return null;
-    const o = j as Partial<ProfileAvatar>;
-    if (o.kind === "preset" && typeof o.seed === "string" && o.seed.trim()) {
-      return { kind: "preset", seed: o.seed.trim() };
-    }
+    const o = j as { kind?: string; hex?: string; seed?: string };
     if (
       o.kind === "upload" &&
-      typeof o.dataUrl === "string" &&
-      o.dataUrl.startsWith("data:image/")
+      typeof (o as { dataUrl?: string }).dataUrl === "string" &&
+      (o as { dataUrl: string }).dataUrl.startsWith("data:image/")
     ) {
-      return { kind: "upload", dataUrl: o.dataUrl };
+      return { kind: "upload", dataUrl: (o as { dataUrl: string }).dataUrl };
     }
-    if (o.kind === "custom" && o.parts && typeof o.parts === "object") {
-      const p = normalizeCharacterParts(o.parts, "reels-market");
-      if (p) return { kind: "custom", parts: p };
+    if (o.kind === "color" && typeof o.hex === "string") {
+      const hex = normalizeProfileColorHex(o.hex);
+      if (hex) return { kind: "color", hex };
+    }
+    if (typeof o.seed === "string" && o.seed.trim()) {
+      return { kind: "color", hex: profileColorFromSeed(o.seed.trim()) };
     }
     return null;
   } catch {
@@ -123,45 +110,35 @@ export function writeProfileAvatar(next: ProfileAvatar | null) {
   }
 }
 
-/** 표시용 URL(data URL 또는 DiceBear SVG) */
-export function getProfileAvatarDisplayUrl(
-  v: ProfileAvatar | null,
-  fallbackSeed = "reels-market",
-): string {
-  if (!v) return buildNotionistsAvatarUrl(fallbackSeed);
-  if (v.kind === "preset") return buildNotionistsAvatarUrl(v.seed);
-  if (v.kind === "custom") return buildNotionistsCustomAvatarUrl(v.parts);
-  return v.dataUrl;
-}
-
 function profileAvatarFromMetadata(
   meta: Record<string, unknown> | undefined,
   userId: string,
 ): ProfileAvatar | null {
   if (!meta) return null;
   const avatarKind = typeof meta.avatar_kind === "string" ? meta.avatar_kind : "";
-  const avatarCustom = typeof meta.avatar_custom === "string" ? meta.avatar_custom : "";
-  if (avatarKind === "upload" && avatarCustom.startsWith("data:image/")) {
-    return { kind: "upload", dataUrl: avatarCustom };
+  const avatarSeed = typeof meta.avatar_seed === "string" ? meta.avatar_seed : "";
+  const avatarCustom =
+    typeof meta.avatar_custom === "string" ? meta.avatar_custom : "";
+  if (avatarKind === "color") {
+    const hex = normalizeProfileColorHex(avatarSeed);
+    if (hex) return { kind: "color", hex };
   }
-  const customRaw = meta.avatar_custom;
-  if (typeof customRaw === "string" && customRaw.trim()) {
-    try {
-      const parsed = JSON.parse(customRaw) as unknown;
-      const p = normalizeCharacterParts(parsed, userId);
-      if (p) return { kind: "custom", parts: p };
-    } catch {
-      /* ignore */
+  if (avatarKind === "upload" && avatarCustom.startsWith("data:image/")) {
+    if (!isOversizedAuthAvatarCustom(avatarCustom)) {
+      return { kind: "upload", dataUrl: avatarCustom };
     }
   }
-  const seed = meta.avatar_seed;
-  if (typeof seed === "string" && seed.trim().length > 0) {
-    return { kind: "preset", seed: seed.trim() };
+  if (avatarKind === "preset" && avatarSeed.trim()) {
+    return { kind: "color", hex: profileColorFromSeed(avatarSeed.trim()) };
   }
   return null;
 }
 
-/** DB `profiles` 행 우선, 없으면 auth 메타데이터. 로그인 사용자는 로컬 스토리지를 쓰지 않습니다. */
+function defaultColorAvatar(seed: string): ProfileAvatar {
+  return { kind: "color", hex: profileColorFromSeed(seed) };
+}
+
+/** DB `profiles` 행 우선. 로그인 사용자는 항상 색상 아바타를 반환합니다. */
 export function resolveProfileAvatar(
   user: User | null,
   dbProfile?: AppProfile | null,
@@ -172,30 +149,41 @@ export function resolveProfileAvatar(
       : typeof dbProfile?.user_id === "string"
         ? dbProfile.user_id
         : "reels-market";
-  if (dbProfile?.avatar_kind === "upload" && dbProfile.avatar_custom?.startsWith("data:image/")) {
-    return { kind: "upload", dataUrl: dbProfile.avatar_custom };
-  }
-  if (dbProfile?.avatar_kind === "preset" && dbProfile.avatar_seed?.trim()) {
-    return { kind: "preset", seed: dbProfile.avatar_seed.trim() };
-  }
-  if (dbProfile?.avatar_kind === "custom" && dbProfile.avatar_custom?.trim()) {
-    try {
-      const parsed = JSON.parse(dbProfile.avatar_custom) as unknown;
-      const p = normalizeCharacterParts(parsed, uid);
-      if (p) return { kind: "custom", parts: p };
-    } catch {
-      /* ignore */
+
+  if (dbProfile?.avatar_kind === "upload" && dbProfile.avatar_custom?.trim()) {
+    const src = dbProfile.avatar_custom.trim();
+    if (
+      src.startsWith("data:image/") ||
+      src.startsWith("https://") ||
+      src.startsWith("http://")
+    ) {
+      return { kind: "upload", dataUrl: src };
     }
   }
+
+  if (dbProfile?.avatar_kind === "color" && dbProfile.avatar_seed?.trim()) {
+    const hex = normalizeProfileColorHex(dbProfile.avatar_seed);
+    if (hex) return { kind: "color", hex };
+  }
+
+  if (dbProfile?.avatar_kind === "preset" && dbProfile.avatar_seed?.trim()) {
+    return defaultColorAvatar(dbProfile.avatar_seed.trim());
+  }
+
+  if (dbProfile?.avatar_kind === "custom") {
+    return defaultColorAvatar(uid);
+  }
+
   if (user) {
     const fromMeta = profileAvatarFromMetadata(
       user.user_metadata as Record<string, unknown> | undefined,
       uid,
     );
     if (fromMeta) return fromMeta;
-    return null;
+    return defaultColorAvatar(uid);
   }
-  return readProfileAvatar();
+
+  return readProfileAvatar() ?? defaultColorAvatar(uid);
 }
 
 export function profileAvatarFromDbOnly(record: AppProfile | null): ProfileAvatar | null {
@@ -203,4 +191,21 @@ export function profileAvatarFromDbOnly(record: AppProfile | null): ProfileAvata
   return resolveProfileAvatar({ id: record.user_id } as User, record);
 }
 
-export { createDefaultCharacterParts, type CharacterPartsV1 };
+export function profileColorHexFromDb(
+  record: Pick<AppProfile, "avatar_kind" | "avatar_seed" | "user_id"> | null,
+  fallbackSeed: string,
+): string {
+  return resolveStoredProfileColor(
+    record?.avatar_kind,
+    record?.avatar_seed,
+    fallbackSeed || record?.user_id || "reels-market",
+  );
+}
+
+export function needsProfileColorMigration(
+  record: Pick<AppProfile, "avatar_kind"> | null | undefined,
+): boolean {
+  const kind = record?.avatar_kind;
+  if (kind === "color" || kind === "upload") return false;
+  return true;
+}

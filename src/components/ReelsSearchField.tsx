@@ -31,17 +31,18 @@ const pinkSearchSubmitIconClass = "reels-search-submit-icon shrink-0 text-white"
 
 /** 풀시청 검색창 펼침 — 느리고 부드러운 감속 */
 const exploreWatchExpandTransition =
-  "transition-[max-width,background-color,border-color,box-shadow,padding,border-radius,backdrop-filter] duration-[680ms] ease-[cubic-bezier(0.16,1,0.22,1)] motion-reduce:transition-none";
+  "transition-[width,max-width,background-color,border-color,box-shadow,padding,border-radius,backdrop-filter] duration-[680ms] ease-[cubic-bezier(0.16,1,0.22,1)] motion-reduce:transition-none";
 
 /**
- * 플로팅 검색 호버·포커스 시 트랙 max-width — 우측 고정·왼쪽으로 펼침( ml-auto ). ×4/3.
+ * 플로팅 검색 호버·포커스 — 우측(핑크 버튼) 고정, `w`가 왼쪽으로 살짝만 늘어남.
+ * 접힘 w-11(2.75rem) → 펼침 약 11~12rem.
  */
 const exploreWatchExpandedWidthClasses =
-  "hover:max-w-[min(48rem,calc((100vw-var(--reels-rail-w,0px)-7rem)*2.37))] sm:hover:max-w-[min(56rem,calc((100vw-var(--reels-rail-w,0px)-7.5rem)*2.37))] md:hover:max-w-[min(67rem,calc((100vw-var(--reels-rail-w,0px)-8rem)*2.37))] lg:hover:max-w-[min(96rem,calc((100vw-var(--reels-rail-w,0px)-8.5rem)*2.37))] xl:hover:max-w-[min(128rem,calc((100vw-var(--reels-rail-w,0px)-9rem)*2.37))] 2xl:hover:max-w-[min(149rem,calc((100vw-var(--reels-rail-w,0px)-9.5rem)*2.37))] focus-within:max-w-[min(48rem,calc((100vw-var(--reels-rail-w,0px)-7rem)*2.37))] sm:focus-within:max-w-[min(56rem,calc((100vw-var(--reels-rail-w,0px)-7.5rem)*2.37))] md:focus-within:max-w-[min(67rem,calc((100vw-var(--reels-rail-w,0px)-8rem)*2.37))] lg:focus-within:max-w-[min(96rem,calc((100vw-var(--reels-rail-w,0px)-8.5rem)*2.37))] xl:focus-within:max-w-[min(128rem,calc((100vw-var(--reels-rail-w,0px)-9rem)*2.37))] 2xl:focus-within:max-w-[min(149rem,calc((100vw-var(--reels-rail-w,0px)-9.5rem)*2.37))]";
+  "hover:w-[min(11rem,calc(100vw-var(--reels-rail-w,0px)-12rem))] sm:hover:w-[min(12rem,calc(100vw-var(--reels-rail-w,0px)-12.5rem))] focus-within:w-[min(11rem,calc(100vw-var(--reels-rail-w,0px)-12rem))] sm:focus-within:w-[min(12rem,calc(100vw-var(--reels-rail-w,0px)-12.5rem))]";
 
-/** 헤더 인라인 변형(레거시) — 동일 1.5배 스케일 */
+/** 헤더 인라인 — 플로팅보다 한 단계 짧게 */
 const exploreWatchExpandedWidthClassesInline =
-  "hover:max-w-[min(22.5rem,calc((100vw-var(--reels-rail-w,0px)-11rem)*1.5))] sm:hover:max-w-[min(27rem,calc((100vw-var(--reels-rail-w,0px)-11.5rem)*1.5))] md:hover:max-w-[min(33rem,calc((100vw-var(--reels-rail-w,0px)-12rem)*1.5))] lg:hover:max-w-[min(42rem,calc((100vw-var(--reels-rail-w,0px)-12.5rem)*1.5))] xl:hover:max-w-[min(51rem,calc((100vw-var(--reels-rail-w,0px)-13rem)*1.5))] 2xl:hover:max-w-[min(57rem,calc((100vw-var(--reels-rail-w,0px)-13.5rem)*1.5))] focus-within:max-w-[min(22.5rem,calc((100vw-var(--reels-rail-w,0px)-11rem)*1.5))] sm:focus-within:max-w-[min(27rem,calc((100vw-var(--reels-rail-w,0px)-11.5rem)*1.5))] md:focus-within:max-w-[min(33rem,calc((100vw-var(--reels-rail-w,0px)-12rem)*1.5))] lg:focus-within:max-w-[min(42rem,calc((100vw-var(--reels-rail-w,0px)-12.5rem)*1.5))] xl:focus-within:max-w-[min(51rem,calc((100vw-var(--reels-rail-w,0px)-13rem)*1.5))] 2xl:focus-within:max-w-[min(57rem,calc((100vw-var(--reels-rail-w,0px)-13.5rem)*1.5))]";
+  "hover:w-[min(10rem,calc(100vw-var(--reels-rail-w,0px)-13rem))] sm:hover:w-[min(11rem,calc(100vw-var(--reels-rail-w,0px)-13.5rem))] focus-within:w-[min(10rem,calc(100vw-var(--reels-rail-w,0px)-13rem))] sm:focus-within:w-[min(11rem,calc(100vw-var(--reels-rail-w,0px)-13.5rem))]";
 
 export function ReelsSearchField({
   compact,
@@ -159,7 +160,7 @@ export function ReelsSearchField({
     return (
       <form
         ref={expandTrayFormRef}
-        className={`group relative ml-auto flex h-11 max-w-11 shrink-0 flex-row items-center justify-end self-center overflow-visible rounded-none border border-transparent bg-transparent py-0 shadow-none backdrop-blur-0 ${expandedWidthClasses} hover:overflow-hidden hover:rounded-full hover:border-white/28 hover:bg-zinc-900 hover:pr-1 focus-within:overflow-hidden focus-within:rounded-full focus-within:border-white/28 focus-within:bg-zinc-900 focus-within:pr-1 motion-reduce:overflow-hidden motion-reduce:rounded-full motion-reduce:border-white/25 motion-reduce:bg-zinc-900 motion-reduce:pr-1 ${exploreWatchExpandTransition} [html[data-theme='dark']_&]:hover:border-white/30 [html[data-theme='dark']_&]:hover:bg-zinc-800 [html[data-theme='dark']_&]:focus-within:border-white/30 [html[data-theme='dark']_&]:focus-within:bg-zinc-800 [html[data-theme='light']_&]:hover:border-2 [html[data-theme='light']_&]:hover:border-black [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus-within:border-2 [html[data-theme='light']_&]:focus-within:border-black [html[data-theme='light']_&]:focus-within:bg-white`}
+        className={`group relative ml-auto flex h-11 w-11 shrink-0 flex-row items-center justify-end self-center overflow-visible rounded-full border border-transparent bg-transparent py-0 pl-1 shadow-none backdrop-blur-0 ${expandedWidthClasses} hover:overflow-hidden hover:border-white/28 hover:bg-zinc-900 hover:pr-1 focus-within:overflow-hidden focus-within:border-white/28 focus-within:bg-zinc-900 focus-within:pr-1 motion-reduce:overflow-hidden motion-reduce:border-white/25 motion-reduce:bg-zinc-900 motion-reduce:pr-1 ${exploreWatchExpandTransition} [html[data-theme='dark']_&]:hover:border-white/30 [html[data-theme='dark']_&]:hover:bg-zinc-800 [html[data-theme='dark']_&]:focus-within:border-white/30 [html[data-theme='dark']_&]:focus-within:bg-zinc-800 [html[data-theme='light']_&]:border-2 [html[data-theme='light']_&]:border-black [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-black [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:focus-within:border-black [html[data-theme='light']_&]:focus-within:bg-white`}
         onPointerEnter={
           onExpandTrayOpenChange ? () => syncExpandTrayOpen(true) : undefined
         }

@@ -2,14 +2,19 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { flushSync } from "react-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaceProfileUploadSection } from "@/components/FaceProfileUploadSection";
 import { LocalePreferenceSelect } from "@/components/LocalePreferenceSelect";
 import { MyPageProfileEditForm } from "@/components/MyPageProfileEditForm";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import type { ProfileAvatar } from "@/lib/profileAvatarStorage";
-import { resolveProfileAvatar } from "@/lib/profileAvatarStorage";
+import {
+  needsProfileColorMigration,
+  profileAvatarToAuthMetaPatch,
+  profileAvatarToDbPatch,
+  resolveProfileAvatar,
+} from "@/lib/profileAvatarStorage";
+import { profileColorFromSeed } from "@/lib/profileColorSpectrum";
 import {
   loadProfileMergedWithBackfill,
   mergeProfileRowWithAuthUser,
@@ -17,9 +22,20 @@ import {
   type AppProfile,
 } from "@/lib/supabaseProfiles";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { updateAuthUserSafe } from "@/lib/supabaseAuthSerialize";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DocumentTitleI18n } from "@/components/DocumentTitleI18n";
 import { SettingsThemeSection } from "@/components/SettingsThemeSection";
+import {
+  ACCOUNT_PAGE_ASIDE_CLASS,
+  ACCOUNT_PAGE_CONTAINER_CLASS,
+  ACCOUNT_PAGE_LAYOUT_CLASS,
+  ACCOUNT_PAGE_HEADER_CLASS,
+  ACCOUNT_PAGE_MAIN_CLASS,
+  ACCOUNT_PAGE_MENU_LABEL_CLASS,
+  ACCOUNT_PAGE_SECTION_CLASS,
+  ACCOUNT_PAGE_TITLE_CLASS,
+} from "@/lib/accountSidebarLayout";
 import {
   sidebarNavLinkActiveClass,
   sidebarNavLinkInactiveClass,
@@ -71,21 +87,6 @@ function normalizeSettingsTab(input: string | null): SettingsTab {
   return "basic";
 }
 
-function appProfileAvatarPatch(
-  next: ProfileAvatar | null,
-): Pick<AppProfile, "avatar_kind" | "avatar_seed" | "avatar_custom"> {
-  return {
-    avatar_kind: next?.kind ?? null,
-    avatar_seed: next?.kind === "preset" ? next.seed : null,
-    avatar_custom:
-      next?.kind === "custom"
-        ? JSON.stringify(next.parts)
-        : next?.kind === "upload"
-          ? next.dataUrl
-          : null,
-  };
-}
-
 export function AccountSettingsDashboard() {
   const router = useRouter();
   const params = useSearchParams();
@@ -115,83 +116,117 @@ export function AccountSettingsDashboard() {
   );
 
   const persistProfileAvatar = useCallback(
-    async (next: ProfileAvatar | null): Promise<boolean> => {
+    async (next: ProfileAvatar | null): Promise<{
+      ok: boolean;
+      error?: string;
+    }> => {
       const supabase = getSupabaseBrowserClient();
-      if (!supabase || !user) return false;
+      if (!supabase || !user) return { ok: false, error: "no_client" };
+
       try {
-        const { error: authErr } = await supabase.auth.updateUser({
-          data: {
-            avatar_kind: next?.kind ?? null,
-            avatar_seed: next?.kind === "preset" ? next.seed : null,
-            avatar_custom:
-              next?.kind === "custom"
-                ? JSON.stringify(next.parts)
-                : next?.kind === "upload"
-                  ? next.dataUrl
-                  : null,
-          },
+        if (next?.kind === "upload") {
+          let res: Response;
+          try {
+            res = await fetch("/api/profile/avatar", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ dataUrl: next.dataUrl }),
+            });
+          } catch {
+            return { ok: false, error: "network" };
+          }
+          const payload = (await res.json().catch(() => null)) as {
+            ok?: boolean;
+            error?: string;
+            url?: string;
+          } | null;
+          if (!res.ok || !payload?.ok || !payload.url) {
+            return {
+              ok: false,
+              error: payload?.error ?? "upload_failed",
+            };
+          }
+          const saved: ProfileAvatar = { kind: "upload", dataUrl: payload.url };
+          const merged = await loadProfileMergedWithBackfill(supabase, user);
+          if (merged) {
+            setProfileRecord(
+              mergeProfileRowWithAuthUser(
+                { ...merged, ...profileAvatarToDbPatch(saved) },
+                user,
+              ),
+            );
+          }
+          return { ok: true };
+        }
+
+        const dbPatch = profileAvatarToDbPatch(next);
+        const authMetaPatch = profileAvatarToAuthMetaPatch(next);
+        const upserted = await upsertUserProfile(supabase, user.id, dbPatch);
+        if (!upserted) return { ok: false, error: "profile_save_failed" };
+
+        const { user: authUser, error: authErr } = await updateAuthUserSafe(supabase, {
+          data: authMetaPatch,
         });
-        if (authErr) return false;
+        if (authErr) return { ok: false, error: "auth_meta_failed" };
 
-        const rowPatch = {
-          avatar_kind: next?.kind ?? null,
-          avatar_seed: next?.kind === "preset" ? next.seed : null,
-          avatar_custom:
-            next?.kind === "custom"
-              ? JSON.stringify(next.parts)
-              : next?.kind === "upload"
-                ? next.dataUrl
-                : null,
-        };
-        const upserted = await upsertUserProfile(supabase, user.id, rowPatch);
-        const { data: authData } = await supabase.auth.getUser();
-        const authUser = authData?.user ?? user;
-
-        if (!upserted) return false;
-        setProfileRecord(mergeProfileRowWithAuthUser(upserted, authUser));
-        return true;
+        const mergedAuthUser = authUser ?? user;
+        setProfileRecord(mergeProfileRowWithAuthUser(upserted, mergedAuthUser));
+        return { ok: true };
       } catch {
-        return false;
+        return { ok: false, error: "unknown" };
       }
     },
     [user],
   );
 
-  const onProfileAvatarPick = useCallback(
-    async (next: ProfileAvatar | null) => {
+  const patchProfileRecordAvatar = useCallback(
+    (next: ProfileAvatar | null) => {
       if (!user) return;
-
-      flushSync(() => {
-        setProfileRecord((prev) => {
-          const empty: AppProfile = {
-            user_id: user.id,
-            email: null,
-            nickname: null,
-            first_name: null,
-            last_name: null,
-            phone: null,
-            phone_country_code: null,
-            country: null,
-            timezone: null,
-            avatar_kind: null,
-            avatar_seed: null,
-            avatar_custom: null,
-          };
-          const base = prev ?? empty;
-          return mergeProfileRowWithAuthUser({ ...base, ...appProfileAvatarPatch(next) }, user);
-        });
+      setProfileRecord((prev) => {
+        const empty: AppProfile = {
+          user_id: user.id,
+          email: null,
+          nickname: null,
+          first_name: null,
+          last_name: null,
+          phone: null,
+          phone_country_code: null,
+          country: null,
+          timezone: null,
+          avatar_kind: null,
+          avatar_seed: null,
+          avatar_custom: null,
+        };
+        const base = prev ?? empty;
+        return mergeProfileRowWithAuthUser({ ...base, ...profileAvatarToDbPatch(next) }, user);
       });
+    },
+    [user],
+  );
+
+  const onProfileAvatarPick = useCallback(
+    async (next: ProfileAvatar) => {
+      if (!user) return;
+      patchProfileRecordAvatar(next);
 
       const supabase = getSupabaseBrowserClient();
       if (!supabase) return;
 
-      const ok = await persistProfileAvatar(next);
-      if (!ok) {
+      const result = await persistProfileAvatar(next);
+      if (!result.ok) {
+        if (next.kind === "upload") {
+          if (result.error === "bucket_missing") {
+            window.alert(t("avatar.alertStorageNotReady"));
+          } else {
+            window.alert(t("avatar.alertSaveFail"));
+          }
+        }
         const merged = await loadProfileMergedWithBackfill(supabase, user);
         if (merged) setProfileRecord(merged);
       }
     },
-    [user, persistProfileAvatar],
+    [user, patchProfileRecordAvatar, persistProfileAvatar, t],
   );
 
   useEffect(() => {
@@ -204,9 +239,32 @@ export function AccountSettingsDashboard() {
     let cancelled = false;
 
     const loadAndSync = async () => {
-      const merged = await loadProfileMergedWithBackfill(supabase, user);
-      if (cancelled) return;
-      setProfileRecord(merged);
+      try {
+        let merged = await loadProfileMergedWithBackfill(supabase, user);
+        if (cancelled) return;
+
+        if (merged && needsProfileColorMigration(merged)) {
+          const colorAvatar = {
+            kind: "color" as const,
+            hex: profileColorFromSeed(user.id),
+          };
+          const dbPatch = profileAvatarToDbPatch(colorAvatar);
+          const authMetaPatch = profileAvatarToAuthMetaPatch(colorAvatar);
+          const { error: migrateErr } = await updateAuthUserSafe(supabase, {
+            data: authMetaPatch,
+          });
+          if (!migrateErr) {
+            const upserted = await upsertUserProfile(supabase, user.id, dbPatch);
+            merged = upserted ?? { ...merged, ...dbPatch };
+          }
+        }
+
+        if (!cancelled) setProfileRecord(merged);
+      } catch {
+        if (!cancelled) {
+          setProfileRecord(mergeProfileRowWithAuthUser(null, user));
+        }
+      }
     };
 
     void loadAndSync();
@@ -218,9 +276,9 @@ export function AccountSettingsDashboard() {
 
   if (redirectingFromPurchasesTab) {
     return (
-      <main className="min-h-[60vh] bg-zinc-950 text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
+      <main className={ACCOUNT_PAGE_MAIN_CLASS}>
         <DocumentTitleI18n titleKey="meta.settings" />
-        <div className="mx-auto max-w-[1500px] px-4 py-20 text-center sm:px-6">
+        <div className={`${ACCOUNT_PAGE_CONTAINER_CLASS} py-20 text-center`}>
           <p className="text-[16px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
             {t("common.loading")}
           </p>
@@ -230,18 +288,18 @@ export function AccountSettingsDashboard() {
   }
 
   return (
-    <main className="min-h-[60vh] bg-zinc-950 text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
+    <main className={ACCOUNT_PAGE_MAIN_CLASS}>
       <DocumentTitleI18n titleKey="meta.settings" />
-      <div className="mx-auto max-w-[1500px] px-4 py-10 sm:px-6 sm:py-12 lg:px-10">
-        <header className="border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-100">
-          <h1 className="text-[1.625rem] font-semibold tracking-tight text-zinc-50 sm:text-[1.875rem] [html[data-theme='light']_&]:text-zinc-900">
+      <div className={ACCOUNT_PAGE_CONTAINER_CLASS}>
+        <div className={ACCOUNT_PAGE_LAYOUT_CLASS}>
+        <header className={ACCOUNT_PAGE_HEADER_CLASS}>
+          <h1 className={ACCOUNT_PAGE_TITLE_CLASS}>
             {t("settings.title")}
           </h1>
         </header>
 
-        <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,13.5rem)_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[15rem_minmax(0,1fr)]">
-          <aside className="lg:sticky lg:top-24 lg:self-start">
-            <p className="mb-3 text-[13px] font-medium uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
+          <aside className={ACCOUNT_PAGE_ASIDE_CLASS}>
+            <p className={ACCOUNT_PAGE_MENU_LABEL_CLASS}>
               {t("settings.menu")}
             </p>
             <nav aria-label={t("settings.menu")} className="flex flex-col gap-0.5">
@@ -260,7 +318,7 @@ export function AccountSettingsDashboard() {
             </nav>
           </aside>
 
-          <section className="min-w-0">
+          <section className={ACCOUNT_PAGE_SECTION_CLASS}>
           {authLoading && !user ? (
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-12 text-center [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/50">
               <p className="text-[16px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">

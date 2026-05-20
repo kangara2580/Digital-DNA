@@ -3,6 +3,14 @@ import { NextResponse, type NextRequest } from "next/server";
 import { attachLocalePreferenceCookie } from "@/lib/localeCookieMiddleware";
 import { getSiteMetadataBase } from "@/lib/siteMetadataBase";
 import { getSupabaseAuthCookieOptions } from "@/lib/supabaseCookieOptions";
+import {
+  applySupabaseAuthCookies,
+  clearAllSupabaseAuthCookies,
+  getSupabaseProjectRef,
+  SUPABASE_AUTH_COOKIE_WARN_BYTES,
+  totalSupabaseAuthCookieBytes,
+} from "@/lib/supabaseAuthCookies";
+import { isTransientSupabaseFetchError } from "@/lib/supabaseNetworkError";
 
 function canonicalHostFromEnv(): string | null {
   try {
@@ -66,6 +74,47 @@ export async function middleware(request: NextRequest) {
     return withLocale(request, NextResponse.redirect(fixed));
   }
 
+  if (pathname === "/clear-auth-cookies.html") {
+    return NextResponse.next({ request });
+  }
+
+  const supabaseUrlEarly = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const supabaseKeyEarly = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+  if (supabaseUrlEarly && supabaseKeyEarly) {
+    const projectRefEarly = getSupabaseProjectRef(supabaseUrlEarly);
+    const authCookieBytes = totalSupabaseAuthCookieBytes(
+      request.cookies.getAll(),
+      projectRefEarly,
+    );
+    if (
+      authCookieBytes >= SUPABASE_AUTH_COOKIE_WARN_BYTES &&
+      pathname !== "/auth/clear-session" &&
+      pathname !== "/auth/callback" &&
+      pathname !== "/clear-auth-cookies.html"
+    ) {
+      const clearUrl = request.nextUrl.clone();
+      clearUrl.pathname = "/clear-auth-cookies.html";
+      clearUrl.search = "";
+      clearUrl.searchParams.set(
+        "next",
+        pathname + request.nextUrl.search,
+      );
+      return withLocale(request, NextResponse.redirect(clearUrl));
+    }
+  }
+
+  if (pathname === "/auth/clear-session") {
+    const response = NextResponse.next({ request });
+    if (supabaseUrlEarly) {
+      clearAllSupabaseAuthCookies(
+        request,
+        response,
+        getSupabaseProjectRef(supabaseUrlEarly),
+      );
+    }
+    return withLocale(request, response);
+  }
+
   const canonicalHost = canonicalHostFromEnv();
   const requestHost = request.nextUrl.host;
   /**
@@ -119,6 +168,7 @@ export async function middleware(request: NextRequest) {
    */
   let supabaseResponse = NextResponse.next({ request });
   const cookieBase = getSupabaseAuthCookieOptions();
+  const projectRef = getSupabaseProjectRef(url);
 
   const supabase = createServerClient(url, key, {
     cookieOptions: cookieBase,
@@ -129,23 +179,23 @@ export async function middleware(request: NextRequest) {
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
         supabaseResponse = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options),
+        applySupabaseAuthCookies(
+          request,
+          supabaseResponse,
+          cookiesToSet,
+          projectRef,
         );
       },
     },
   });
 
   try {
-    let {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      user = session?.user ?? null;
+    let user = null as Awaited<ReturnType<typeof supabase.auth.getUser>>["data"]["user"];
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (!userError) {
+      user = userData.user;
+    } else if (!isTransientSupabaseFetchError(userError)) {
+      throw userError;
     }
 
     if (!user) {

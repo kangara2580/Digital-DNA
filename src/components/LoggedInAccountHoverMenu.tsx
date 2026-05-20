@@ -26,7 +26,7 @@ const menuItemLink =
 const menuItemLogout =
   "flex w-full items-center gap-3.5 whitespace-nowrap px-5 py-3.5 text-left text-[15px] font-semibold leading-snug text-zinc-100 transition-colors hover:bg-white/[0.08] disabled:opacity-50 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
 
-const menuIconClass = "h-[18px] w-[18px] shrink-0 opacity-70";
+const menuIconClass = "h-[21px] w-[21px] shrink-0 opacity-70";
 type InnerProps = Props & {
   /** `/mypage?tab=` 값 — Next 15에서 `useSearchParams`는 Suspense 경계 안에서만 씀 */
   mypageQueryTab: string;

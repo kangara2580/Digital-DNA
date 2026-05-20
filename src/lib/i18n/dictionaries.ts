@@ -808,6 +808,14 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
       "이미지 용량이 커서 저장할 수 없어요. 더 작은 사진을 선택해 주세요.",
     "avatar.alertLoadFail":
       "이미지를 불러오지 못했어요. 다른 파일을 시도해 주세요.",
+    "avatar.alertSaveFail":
+      "프로필 이미지를 서버에 저장하지 못했어요. 잠시 후 다시 시도해 주세요.",
+    "avatar.alertStorageNotReady":
+      "프로필 사진 저장 공간(avatars)이 아직 준비되지 않았어요. Supabase에서 avatars 버킷을 만든 뒤 storage_profile_avatars.sql 을 실행해 주세요.",
+    "avatar.confirmReplaceImageMessage":
+      "기본 색상으로 바꾸면 지금 올린 프로필 이미지가 사라집니다. 색상으로 바꿀까요?",
+    "avatar.confirmReplaceNo": "아니요",
+    "avatar.confirmReplaceYes": "예",
     "avatar.title": "프로필 이미지",
     "avatar.upload": "이미지 올리기",
     "avatar.customize": "캐릭터 꾸미기",
@@ -1998,6 +2006,13 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
       "Produces more natural, accurate results.",
     "faceProfile.aiBadge": "AI",
     "avatar.alertTooLarge": "Image is too large to save. Pick a smaller photo.",
+    "avatar.alertSaveFail": "Couldn't save your profile image. Please try again.",
+    "avatar.confirmReplaceImageMessage":
+      "Switching to a profile color will remove your uploaded photo. Continue?",
+    "avatar.confirmReplaceNo": "No",
+    "avatar.confirmReplaceYes": "Yes",
+    "avatar.alertStorageNotReady":
+      "Profile photo storage (avatars bucket) isn't set up yet. Create the bucket in Supabase and run storage_profile_avatars.sql.",
     "avatar.alertLoadFail": "Couldn’t load the image. Try another file.",
     "avatar.title": "Profile image",
     "avatar.upload": "Upload photo",

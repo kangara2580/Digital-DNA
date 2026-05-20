@@ -1,6 +1,10 @@
 import type { FeedVideo } from "@/data/videos";
 import { getSellerNickname, normalizeSellerHandle } from "@/data/videoCatalog";
-import { buildNotionistsAvatarUrl } from "@/data/reelsAvatarPresets";
+import type { AppProfile } from "@/lib/supabaseProfiles";
+import {
+  profileColorFromSeed,
+  resolveStoredProfileColor,
+} from "@/lib/profileColorSpectrum";
 
 type SellerSource = Pick<FeedVideo, "creator" | "listing">;
 
@@ -19,7 +23,18 @@ export function sellerDisplayNameFromVideo(video: SellerSource): string {
   return getSellerNickname(video.creator);
 }
 
-/** 판매자 피드·카드용 프로필 이미지 URL (업로드 전 Notionists 시드) */
-export function sellerAvatarUrlFromVideo(video: SellerSource): string {
-  return buildNotionistsAvatarUrl(sellerDisplayNameFromVideo(video));
+/** 판매자 피드·카드용 프로필 색상(hex) */
+export function sellerProfileColorFromVideo(video: SellerSource): string {
+  return profileColorFromSeed(sellerHandleFromVideo(video));
+}
+
+export function sellerProfileColorFromRecord(
+  record: Pick<AppProfile, "avatar_kind" | "avatar_seed" | "user_id"> | null,
+  fallbackSeed: string,
+): string {
+  return resolveStoredProfileColor(
+    record?.avatar_kind,
+    record?.avatar_seed,
+    fallbackSeed || record?.user_id || "reels-market",
+  );
 }

@@ -1,10 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
+import { ProfileColorAvatarFromSeed } from "@/components/ProfileColorAvatar";
 import {
   getSellerNickname,
   normalizeSellerHandle,
 } from "@/data/videoCatalog";
-import { buildNotionistsAvatarUrl } from "@/data/reelsAvatarPresets";
 
 type Props = {
   creator: string;
@@ -32,15 +31,10 @@ export function SellerIdentityLink({
         compact ? "gap-2 px-2.5 py-1.5" : "gap-3 px-3 py-2.5"
       } ${className}`}
     >
-      <Image
-        src={buildNotionistsAvatarUrl(nickname)}
-        width={compact ? 28 : 40}
-        height={compact ? 28 : 40}
-        alt=""
-        unoptimized
-        className={`shrink-0 rounded-full object-cover ${
-          compact ? "h-7 w-7" : "h-10 w-10"
-        }`}
+      <ProfileColorAvatarFromSeed
+        seed={handle}
+        initial={nickname.slice(0, 1).toUpperCase()}
+        sizeClass={compact ? "h-7 w-7" : "h-10 w-10"}
       />
       <span className="min-w-0">
         <span

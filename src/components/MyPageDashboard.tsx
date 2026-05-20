@@ -14,6 +14,16 @@ import { MyPageLikedVideosSection } from "@/components/MyPageLikedVideosSection"
 import { DocumentTitleI18n } from "@/components/DocumentTitleI18n";
 import { MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 import {
+  ACCOUNT_PAGE_ASIDE_CLASS,
+  ACCOUNT_PAGE_CONTAINER_CLASS,
+  ACCOUNT_PAGE_LAYOUT_CLASS,
+  ACCOUNT_PAGE_HEADER_CLASS,
+  ACCOUNT_PAGE_MAIN_CLASS,
+  ACCOUNT_PAGE_MENU_LABEL_CLASS,
+  ACCOUNT_PAGE_SECTION_CLASS,
+  ACCOUNT_PAGE_TITLE_CLASS,
+} from "@/lib/accountSidebarLayout";
+import {
   sidebarNavLinkActiveClass,
   sidebarNavLinkInactiveClass,
 } from "@/lib/brandPinkTokens";
@@ -79,18 +89,18 @@ export function MyPageDashboard() {
   const { loading: authLoading, user } = useAuthSession();
 
   return (
-    <main className="min-h-[60vh] bg-zinc-950 text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
+    <main className={ACCOUNT_PAGE_MAIN_CLASS}>
       <DocumentTitleI18n titleKey="meta.mypage" />
-      <div className="mx-auto max-w-[1500px] px-4 py-10 sm:px-6 sm:py-12 lg:px-10">
-        <header className="border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-100">
-          <h1 className="text-[1.625rem] font-semibold tracking-tight text-zinc-50 sm:text-[1.875rem] [html[data-theme='light']_&]:text-zinc-900">
+      <div className={ACCOUNT_PAGE_CONTAINER_CLASS}>
+        <div className={ACCOUNT_PAGE_LAYOUT_CLASS}>
+        <header className={ACCOUNT_PAGE_HEADER_CLASS}>
+          <h1 className={ACCOUNT_PAGE_TITLE_CLASS}>
             {t("mypage.title")}
           </h1>
         </header>
 
-        <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,13.5rem)_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[15rem_minmax(0,1fr)]">
-          <aside className="lg:sticky lg:top-24 lg:self-start">
-            <p className="mb-3 text-[13px] font-medium uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-400">
+          <aside className={ACCOUNT_PAGE_ASIDE_CLASS}>
+            <p className={ACCOUNT_PAGE_MENU_LABEL_CLASS}>
               {t("mypage.menuLabel")}
             </p>
             <nav aria-label={t("mypage.navAria")} className="flex flex-col gap-0.5">
@@ -110,7 +120,7 @@ export function MyPageDashboard() {
             </nav>
           </aside>
 
-          <section className="min-w-0">
+          <section className={ACCOUNT_PAGE_SECTION_CLASS}>
             {authLoading && !user ? (
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-12 text-center [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/50">
                 <p className="text-[16px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">

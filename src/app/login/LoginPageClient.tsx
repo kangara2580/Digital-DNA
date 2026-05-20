@@ -34,7 +34,12 @@ export function LoginPageClient() {
   const notice = "";
 
   useEffect(() => {
-    if (searchParams.get("error") !== "oauth") {
+    const errCode = searchParams.get("error") ?? "";
+    const isOauthErr =
+      errCode === "oauth" ||
+      errCode === "oauth_callback_failed" ||
+      errCode === "oauth_start_failed";
+    if (!isOauthErr) {
       setError("");
       return;
     }

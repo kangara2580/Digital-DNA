@@ -55,7 +55,9 @@ export function DevAuthSessionReset() {
     }
 
     const shouldSkip = () =>
-      cancelled || consumeOAuthReturnCookie() || isOAuthFlowPending();
+      cancelled ||
+      consumeOAuthReturnCookie() ||
+      isOAuthFlowPending(20 * 60 * 1000);
 
     const runSignOut = () => {
       if (cancelled || inFlightRef.current) return;
@@ -82,24 +84,20 @@ export function DevAuthSessionReset() {
       })();
     };
 
-    /** 동기 구간에서 쿠키가 안 보이는 경우 대비 — 한 틱·한 프레임 뒤 재확인 */
+    /** OAuth 직후 `dev_oauth_return`·세션 쿠키 반영까지 여러 번 재확인 */
     const schedule = () => {
-      if (shouldSkip()) {
-        markDevStartSignedOutApplied();
-        return;
-      }
-      requestAnimationFrame(() => {
-        if (shouldSkip()) {
-          markDevStartSignedOutApplied();
-          return;
-        }
+      const delays = [0, 50, 200, 600, 1500];
+      delays.forEach((ms, index) => {
         window.setTimeout(() => {
+          if (cancelled) return;
           if (shouldSkip()) {
             markDevStartSignedOutApplied();
             return;
           }
-          runSignOut();
-        }, 0);
+          if (index === delays.length - 1) {
+            runSignOut();
+          }
+        }, ms);
       });
     };
 

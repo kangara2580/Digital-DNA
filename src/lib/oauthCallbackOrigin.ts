@@ -29,6 +29,13 @@ function devForcedAuthOrigin(): string | null {
 }
 
 export function resolveOAuthCallbackOriginFromRequest(requestOrigin: string): string {
+  if (process.env.NODE_ENV === "development") {
+    /**
+     * PKCE verifier 쿠키는 `/api/auth/google/start` 를 연 **그 호스트**에만 붙습니다.
+     * `NEXTAUTH_URL` 이 `localhost` 인데 브라우저가 `127.0.0.1` 이면 교환 실패 → 로그인으로 돌아감.
+     */
+    return requestOrigin;
+  }
   return devForcedAuthOrigin() ?? requestOrigin;
 }
 

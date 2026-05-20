@@ -3,6 +3,8 @@
 import { TrendingUp, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { ProfileColorAvatar } from "@/components/ProfileColorAvatar";
+import { profileColorFromSeed } from "@/lib/profileColorSpectrum";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getExploreFormatters } from "@/lib/exploreLocaleFormat";
 import { revenueAmountClass } from "@/lib/revenueDisplayTokens";
@@ -16,7 +18,7 @@ type LeaderboardItem = {
   title: string;
   sellerId: string;
   nickname: string;
-  avatarUrl: string | null;
+  avatarColor: string;
   totalSales: number;
   totalRevenue: number;
 };
@@ -49,52 +51,33 @@ const rankChipClass = (rank: number) =>
     : "bg-white/[0.1] text-zinc-100 [html[data-theme='light']_&]:bg-zinc-200 [html[data-theme='light']_&]:text-zinc-900";
 
 function Avatar({ item, profileAlt }: { item: LeaderboardItem; profileAlt: string }) {
-  const [imgFailed, setImgFailed] = useState(false);
   const handle = stripLeaderboardSellerLabel(item.nickname);
   const letter = (handle.slice(0, 1) || "?").toUpperCase();
+  const hex = item.avatarColor || profileColorFromSeed(item.sellerId);
 
-  useEffect(() => {
-    setImgFailed(false);
-  }, [item.avatarUrl]);
-  if (item.avatarUrl && !imgFailed) {
-    return (
-      <img
-        src={item.avatarUrl}
-        alt={profileAlt}
-        onError={() => setImgFailed(true)}
-        className="h-12 w-12 shrink-0 rounded-2xl object-cover ring-2 ring-white/15 [html[data-theme='light']_&]:ring-zinc-200"
-      />
-    );
-  }
   return (
-    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-[17px] font-bold text-zinc-100 ring-2 ring-white/10 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:ring-zinc-200">
-      {letter}
-    </div>
+    <ProfileColorAvatar
+      hex={hex}
+      initial={letter}
+      label={profileAlt}
+      sizeClass="h-12 w-12"
+      className="rounded-2xl ring-2 ring-white/15 [html[data-theme='light']_&]:ring-zinc-200"
+    />
   );
 }
 
 function ListAvatar({ item }: { item: LeaderboardItem }) {
-  const [imgFailed, setImgFailed] = useState(false);
   const handle = stripLeaderboardSellerLabel(item.nickname);
   const letter = (handle.slice(0, 1) || "?").toUpperCase();
+  const hex = item.avatarColor || profileColorFromSeed(item.sellerId);
 
-  useEffect(() => {
-    setImgFailed(false);
-  }, [item.avatarUrl]);
-  if (item.avatarUrl && !imgFailed) {
-    return (
-      <img
-        src={item.avatarUrl}
-        alt=""
-        onError={() => setImgFailed(true)}
-        className="h-10 w-10 shrink-0 rounded-xl object-cover ring-1 ring-white/15 [html[data-theme='light']_&]:ring-zinc-200"
-      />
-    );
-  }
   return (
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[15px] font-bold text-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-700">
-      {letter}
-    </div>
+    <ProfileColorAvatar
+      hex={hex}
+      initial={letter}
+      sizeClass="h-10 w-10"
+      className="rounded-xl ring-1 ring-white/15 [html[data-theme='light']_&]:ring-zinc-200"
+    />
   );
 }
 
@@ -163,7 +146,7 @@ export function LeaderboardClient() {
       title: t("leaderboard.placeholderTitle"),
       sellerId: `empty-${rank}`,
       nickname: t("leaderboard.placeholderNickname"),
-      avatarUrl: null,
+      avatarColor: profileColorFromSeed(`empty-${rank}`),
       totalSales: 0,
       totalRevenue: 0,
     });

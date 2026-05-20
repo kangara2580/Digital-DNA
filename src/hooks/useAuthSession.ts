@@ -9,6 +9,7 @@ import {
 } from "@/lib/authSimulate";
 import { clearOAuthFlowPending, isOAuthFlowPending } from "@/lib/authOAuthPending";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { getAuthSessionSafe } from "@/lib/supabaseAuthSerialize";
 
 export type AuthSessionState = {
   user: User | null;
@@ -114,12 +115,12 @@ export function useAuthSession(): AuthSessionState {
 
     const init = async () => {
       try {
-        let s = (await supabase.auth.getSession()).data.session;
+        let s = (await getAuthSessionSafe(supabase)).session;
         if (!s && isOAuthFlowPending()) {
           for (let i = 0; i < 15 && !s; i++) {
             await new Promise((r) => setTimeout(r, 180));
             if (cancelled) return;
-            s = (await supabase.auth.getSession()).data.session;
+            s = (await getAuthSessionSafe(supabase)).session;
           }
         }
         if (cancelled) return;

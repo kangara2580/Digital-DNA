@@ -1,4 +1,3 @@
-import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SellerFeedBioEditor } from "@/components/SellerFeedBioEditor";
@@ -14,7 +13,8 @@ import {
   getVideosBySellerHandle,
   normalizeSellerHandle,
 } from "@/data/videoCatalog";
-import { buildNotionistsAvatarUrl } from "@/data/reelsAvatarPresets";
+import { ProfileColorAvatar } from "@/components/ProfileColorAvatar";
+import { sellerProfileColorFromRecord } from "@/lib/sellerProfile";
 import { ensureProfileSellerBioColumn } from "@/lib/ensureProfileSellerBioColumn";
 import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
 import { prisma } from "@/lib/prisma";
@@ -73,22 +73,37 @@ export default async function SellerPage({
 
   let profileNickname: string | null = null;
   let profileBio: string | null = null;
+  let profileAvatarKind: string | null = null;
+  let profileAvatarSeed: string | null = null;
+  let profileAvatarCustom: string | null = null;
   try {
     await ensureProfileSellerBioColumn();
     const admin = getSupabaseServiceRoleClient();
     if (admin) {
       const { data } = await admin
         .from(supabaseTables.profiles)
-        .select("nickname,seller_bio")
+        .select("nickname,seller_bio,avatar_kind,avatar_seed,avatar_custom")
         .eq("user_id", sellerKey)
         .maybeSingle();
-      const row = (data ?? null) as { nickname?: string | null; seller_bio?: string | null } | null;
+      const row = (data ?? null) as {
+        nickname?: string | null;
+        seller_bio?: string | null;
+        avatar_kind?: string | null;
+        avatar_seed?: string | null;
+        avatar_custom?: string | null;
+      } | null;
       profileNickname = row?.nickname?.trim() || null;
       profileBio = row?.seller_bio?.trim() || null;
+      profileAvatarKind = row?.avatar_kind?.trim() || null;
+      profileAvatarSeed = row?.avatar_seed?.trim() || null;
+      profileAvatarCustom = row?.avatar_custom?.trim() || null;
     }
   } catch {
     profileNickname = null;
     profileBio = null;
+    profileAvatarKind = null;
+    profileAvatarSeed = null;
+    profileAvatarCustom = null;
   }
 
   let videos: FeedVideo[] = [];
@@ -118,6 +133,16 @@ export default async function SellerPage({
   }
 
   const nickname = profileNickname || (videos[0] ? getSellerNickname(videos[0].creator) : sellerKey.slice(0, 8));
+  const profileColor = sellerProfileColorFromRecord(
+    {
+      user_id: sellerKey,
+      avatar_kind: profileAvatarKind,
+      avatar_seed: profileAvatarSeed,
+    },
+    sellerKey,
+  );
+  const profileUploadUrl =
+    profileAvatarKind === "upload" && profileAvatarCustom ? profileAvatarCustom : null;
 
   return (
     <div className="min-h-screen bg-transparent text-white [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
@@ -135,14 +160,22 @@ export default async function SellerPage({
                   className="absolute inset-0 hidden rounded-full bg-[color:var(--reels-point)]/15 blur-lg [html[data-theme='light']_&]:block"
                   aria-hidden
                 />
-                <Image
-                  src={buildNotionistsAvatarUrl(nickname)}
-                  width={72}
-                  height={72}
-                  alt=""
-                  unoptimized
-                  className="relative h-[4.25rem] w-[4.25rem] rounded-full object-cover ring-2 ring-white/20 ring-offset-2 ring-offset-[var(--background)] sm:h-[4.75rem] sm:w-[4.75rem] [html[data-theme='light']_&]:ring-zinc-200/80 [html[data-theme='light']_&]:ring-offset-white"
-                />
+                {profileUploadUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={profileUploadUrl}
+                    alt=""
+                    className="relative h-[4.25rem] w-[4.25rem] rounded-full object-cover ring-2 ring-white/20 ring-offset-2 ring-offset-[var(--background)] sm:h-[4.75rem] sm:w-[4.75rem] [html[data-theme='light']_&]:ring-zinc-200/80 [html[data-theme='light']_&]:ring-offset-white"
+                  />
+                ) : (
+                  <ProfileColorAvatar
+                    hex={profileColor}
+                    initial={nickname.slice(0, 1).toUpperCase()}
+                    sizeClass="relative h-[4.25rem] w-[4.25rem] sm:h-[4.75rem] sm:w-[4.75rem]"
+                    className="ring-2 ring-white/20 ring-offset-2 ring-offset-[var(--background)] [html[data-theme='light']_&]:ring-zinc-200/80 [html[data-theme='light']_&]:ring-offset-white"
+                    label={`${nickname} 프로필`}
+                  />
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <h1 className="truncate text-2xl font-extrabold tracking-tight sm:text-[1.85rem] sm:leading-tight">

@@ -1,4 +1,6 @@
 import type { SupabaseClient, User } from "@supabase/supabase-js";
+import { isOversizedAuthAvatarCustom } from "@/lib/profileAvatarStorage";
+import { getAuthUserSafe } from "@/lib/supabaseAuthSerialize";
 import { getProfilesTableName } from "@/lib/supabaseTableNames";
 
 export type AppProfile = {
@@ -21,6 +23,16 @@ export type AppProfile = {
 
 type ProfilePatch = Partial<AppProfile>;
 
+const PROFILE_SELECT_CORE =
+  "user_id,email,nickname,first_name,last_name,phone,phone_country_code,country,timezone,avatar_kind,avatar_seed,avatar_custom";
+
+const PROFILE_SELECT_FULL = `${PROFILE_SELECT_CORE},face_profile_json`;
+
+function isMissingOptionalColumnError(message: string): boolean {
+  const m = message.toLowerCase();
+  return m.includes("face_profile_json") || m.includes("does not exist") || m.includes("column");
+}
+
 function toNullableString(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
@@ -42,7 +54,11 @@ export function buildProfilePatchFromUser(user: User): ProfilePatch {
     timezone: toNullableString(meta.timezone),
     avatar_kind: toNullableString(meta.avatar_kind),
     avatar_seed: toNullableString(meta.avatar_seed),
-    avatar_custom: toNullableString(meta.avatar_custom),
+    avatar_custom: (() => {
+      const v = toNullableString(meta.avatar_custom);
+      if (v && isOversizedAuthAvatarCustom(v)) return null;
+      return v;
+    })(),
   };
 }
 
@@ -144,7 +160,13 @@ export function mergeProfileRowWithAuthUser(
     timezone: coalesceField(base.timezone, meta, "timezone"),
     avatar_kind: coalesceField(base.avatar_kind, meta, "avatar_kind"),
     avatar_seed: coalesceField(base.avatar_seed, meta, "avatar_seed"),
-    avatar_custom: coalesceField(base.avatar_custom, meta, "avatar_custom"),
+    avatar_custom: (() => {
+      const fromDb = toNullableString(base.avatar_custom);
+      if (fromDb) return fromDb;
+      const fromMeta = toNullableString(meta.avatar_custom);
+      if (fromMeta && isOversizedAuthAvatarCustom(fromMeta)) return null;
+      return fromMeta;
+    })(),
   };
 }
 
@@ -248,9 +270,8 @@ export async function loadProfileMergedWithBackfill(
   supabase: SupabaseClient,
   user: User,
 ): Promise<AppProfile | null> {
-  // 세션에 담긴 user 객체보다 Auth 서버의 최신 `raw_user_meta_data`가 필요합니다.
-  const { data: authData } = await supabase.auth.getUser();
-  const authUser = authData?.user ?? user;
+  // 세션 user + Auth 서버 메타 병합(동시 getUser 락 충돌 방지).
+  const authUser = await getAuthUserSafe(supabase, user);
 
   const row = await fetchUserProfile(supabase, authUser.id);
   const merged = mergeProfileRowWithAuthUser(row, authUser);
@@ -280,13 +301,19 @@ export async function fetchUserProfile(
   userId: string,
 ): Promise<AppProfile | null> {
   try {
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from(getProfilesTableName())
-      .select(
-        "user_id,email,nickname,first_name,last_name,phone,phone_country_code,country,timezone,avatar_kind,avatar_seed,avatar_custom,face_profile_json",
-      )
+      .select(PROFILE_SELECT_FULL)
       .eq("user_id", userId)
       .maybeSingle();
+
+    if (error && isMissingOptionalColumnError(error.message)) {
+      ({ data, error } = await supabase
+        .from(getProfilesTableName())
+        .select(PROFILE_SELECT_CORE)
+        .eq("user_id", userId)
+        .maybeSingle());
+    }
 
     if (error || !data) return null;
     return data as AppProfile;
@@ -307,17 +334,31 @@ export async function upsertUserProfile(
       ...patch,
     };
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from(getProfilesTableName())
       .upsert(payload, { onConflict: "user_id" })
-      .select(
-        "user_id,email,nickname,first_name,last_name,phone,phone_country_code,country,timezone,avatar_kind,avatar_seed,avatar_custom,face_profile_json",
-      )
+      .select(PROFILE_SELECT_FULL)
       .single();
 
-    if (error) return null;
+    if (error && isMissingOptionalColumnError(error.message)) {
+      ({ data, error } = await supabase
+        .from(getProfilesTableName())
+        .upsert(payload, { onConflict: "user_id" })
+        .select(PROFILE_SELECT_CORE)
+        .single());
+    }
+
+    if (error) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("[upsertUserProfile]", error.message, error.code);
+      }
+      return null;
+    }
     return data as AppProfile;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("[upsertUserProfile] exception", err);
+    }
     return null;
   }
 }

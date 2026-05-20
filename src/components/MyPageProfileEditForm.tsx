@@ -3,7 +3,7 @@
 import type { User } from "@supabase/supabase-js";
 import { useCallback, useEffect, useState } from "react";
 import { SocialLinkFields } from "@/components/SocialLinkFields";
-import { ProfileAvatarPicker } from "@/components/ProfileAvatarPicker";
+import { ProfileColorPicker } from "@/components/ProfileColorPicker";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import {
   fetchUserDataBlob,
@@ -14,6 +14,7 @@ import {
   parseSellerSocialBlob,
 } from "@/lib/sellerSocialLinks";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { updateAuthUserSafe } from "@/lib/supabaseAuthSerialize";
 import {
   fetchUserProfile,
   mergeProfileRowWithAuthUser,
@@ -79,7 +80,7 @@ export function MyPageProfileEditForm({
   profileForForm: AppProfile | null;
   onSaved: (p: AppProfile) => void;
   profileAvatar: ProfileAvatar | null;
-  onProfileAvatarChange: (next: ProfileAvatar | null) => void;
+  onProfileAvatarChange: (next: ProfileAvatar) => void;
 }) {
   const { t } = useTranslation();
   const { user, supabaseConfigured } = useAuthSession();
@@ -166,7 +167,7 @@ export function MyPageProfileEditForm({
         nickname: nextNick,
         ...preserved,
       };
-      const { error: authErr } = await supabase.auth.updateUser({
+      const { user: freshUser, error: authErr } = await updateAuthUserSafe(supabase, {
         data: { nickname: patch.nickname },
       });
       if (authErr) {
@@ -182,14 +183,9 @@ export function MyPageProfileEditForm({
         setNicknameMessage(null);
         return;
       }
-      const { data: authFresh, error: refreshErr } = await supabase.auth.getUser();
-      const freshUser = authFresh.user;
-      if (refreshErr || !freshUser) {
-        setNicknameMessage(t("profileForm.saveStateUnknown"));
-        return;
-      }
+      const authUser = freshUser ?? user;
       const row = await fetchUserProfile(supabase, user.id);
-      onSaved(mergeProfileRowWithAuthUser(row, freshUser));
+      onSaved(mergeProfileRowWithAuthUser(row, authUser));
       setNicknameMessage(null);
     } finally {
       setNicknameBusy(false);
@@ -246,23 +242,20 @@ export function MyPageProfileEditForm({
   return (
     <div className="space-y-5">
       <section className={cardShell} aria-label={t("profileForm.loginAccount")}>
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
-          <div className="w-full max-w-[24rem] shrink-0">
-            <ProfileAvatarPicker
-              density="compact"
-              value={profileAvatar}
-              onChange={onProfileAvatarChange}
-            />
-          </div>
-          <div className="min-w-0 flex-1 lg:-ml-16">
-            <div className="flex items-center gap-2">
-              <p className="text-[14px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                {providerLabel}
-              </p>
-              <p className="text-[19px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                {displayName}
-              </p>
-            </div>
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:gap-8">
+          <ProfileColorPicker
+            className="min-w-0 flex-1"
+            density="compact"
+            value={profileAvatar}
+            onChange={onProfileAvatarChange}
+          />
+          <div className="shrink-0 lg:ml-auto lg:min-w-[11rem] lg:pt-1 lg:text-right">
+            <p className="text-[14px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+              {providerLabel}
+            </p>
+            <p className="mt-1 text-[19px] font-semibold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+              {displayName}
+            </p>
             {user.email ? (
               <p className="mt-1 truncate text-[15px] text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
                 {user.email}

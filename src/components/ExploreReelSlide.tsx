@@ -755,7 +755,7 @@ export function ExploreReelSlide({
           부모(탐색 스크롤 루트)가 이미 레일 폭만큼 inset 되었으므로 여기서는 100vw에서 레일을 또 빼지 않음.
         */}
         <div className="flex w-full max-w-[min(56rem,100%)] flex-row items-center justify-center gap-1 md:gap-1.5 lg:gap-2">
-          <div className="relative w-[min(100%,min(420px,calc(100%-15rem)))] shrink-0">
+          <div className="relative w-[min(100%,min(var(--explore-reel-video-max-w,26.25rem),calc(100%-15rem)))] shrink-0">
             <div
               className="relative aspect-[9/16] w-full max-h-[min(78dvh,calc(100dvh-var(--header-height)-7rem))] overflow-hidden rounded-2xl border border-white/12 bg-black shadow-[0_24px_80px_-30px_rgba(0,0,0,0.85)] md:max-h-[min(92dvh,calc(100dvh-var(--header-height)-2rem))] [html[data-theme='light']_&]:border-zinc-200"
             >

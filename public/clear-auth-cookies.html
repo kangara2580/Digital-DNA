@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>로그인 쿠키 초기화</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 28rem;
+        margin: 3rem auto;
+        padding: 0 1rem;
+        line-height: 1.5;
+        color: #18181b;
+      }
+      p {
+        margin: 0.75rem 0;
+      }
+      a {
+        color: #e11d74;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>로그인 쿠키 초기화</h1>
+    <p id="status">Supabase 로그인 쿠키를 삭제하는 중…</p>
+    <p><a id="login" href="/login">로그인으로 이동</a></p>
+    <script>
+      (function () {
+        var cleared = 0;
+        var names = document.cookie.split(";").map(function (c) {
+          return c.split("=")[0].trim();
+        });
+        names.forEach(function (name) {
+          if (!name || name.indexOf("sb-") !== 0) return;
+          document.cookie =
+            name + "=; path=/; max-age=0; SameSite=Lax";
+          document.cookie =
+            name + "=; path=/; max-age=0; SameSite=Lax; secure";
+          cleared++;
+        });
+        var status = document.getElementById("status");
+        status.textContent =
+          cleared > 0
+            ? "쿠키 " + cleared + "개를 삭제했습니다. 잠시 후 로그인 페이지로 이동합니다."
+            : "삭제할 Supabase 쿠키가 없습니다. 로그인 페이지로 이동합니다.";
+        var params = new URLSearchParams(location.search);
+        var next = params.get("next") || "/login";
+        var login = document.getElementById("login");
+        login.href = next.indexOf("/") === 0 ? next : "/login";
+        setTimeout(function () {
+          location.replace(login.href);
+        }, 1200);
+      })();
+    </script>
+  </body>
+</html>

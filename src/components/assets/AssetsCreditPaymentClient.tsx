@@ -36,12 +36,12 @@ export function AssetsCreditPaymentClient() {
           className="scroll-mt-28 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-transparent p-6 sm:p-8 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:from-zinc-50 [html[data-theme='light']_&]:to-white"
         >
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-4">
+            <div className="flex items-center gap-4">
               <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[color:var(--reels-point)]/35 bg-[color:var(--reels-point)]/10 text-[color:var(--reels-point)] [html[data-theme='light']_&]:bg-[color:var(--reels-point)]/12">
                 <PaymentDiamondIcon className="h-7 w-7" />
               </span>
-              <div>
-                <p className="text-3xl font-semibold tracking-tight text-zinc-50 sm:text-4xl [html[data-theme='light']_&]:text-zinc-900">
+              <div className="pt-0.5">
+                <p className="text-3xl font-semibold leading-none tracking-tight text-zinc-50 sm:text-4xl [html[data-theme='light']_&]:text-zinc-900">
                   {formatCredits(wallet?.balance ?? 0, locale as SiteLocale)}{" "}
                   <span className="text-lg font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-500">
                     {t("assets.hero.gemsUnit")}

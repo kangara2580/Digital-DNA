@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { buildNotionistsAvatarUrl } from "@/data/reelsAvatarPresets";
+import { ProfileColorAvatarFromSeed } from "@/components/ProfileColorAvatar";
 import { BEST_PURCHASE_REVIEWS } from "@/data/marketing";
 import { LOCAL_TRENDING_FEED_VIDEOS } from "@/data/videos";
 import { homeSectionHeadingH2ClassName } from "@/lib/homeSectionHeadingTypography";
@@ -188,15 +188,11 @@ export function BestPurchaseReviewsSection() {
                       {quote}
                     </p>
                     <div className="mt-2.5 flex items-center gap-2">
-                      <div className="relative h-8 w-8 overflow-hidden rounded-full">
-                        <Image
-                          src={buildNotionistsAvatarUrl(card.author)}
-                          fill
-                          alt=""
-                          unoptimized
-                          className="object-cover"
-                        />
-                      </div>
+                      <ProfileColorAvatarFromSeed
+                        seed={card.author}
+                        initial={card.author.slice(0, 1).toUpperCase()}
+                        sizeClass="h-8 w-8"
+                      />
                       <p className="min-w-0 truncate text-[12px] font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
                         {card.author}
                       </p>

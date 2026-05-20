@@ -38,6 +38,8 @@
   --header-height: 220px;
   /** md+ 틱톡형 좌측 레일 — 본문·헤더 패딩과 동기화 */
   --reels-rail-w: 0px;
+  /** 탐색 watch 세로 영상 최대 너비(9:16 비율은 ExploreReelSlide에서 유지) */
+  --explore-reel-video-max-w: 26.25rem;
   /** ARA 라이트 서피스 / 시안 포인트 (홈 영감 섹션 등) */
   --primary-color: #ff2d8d;
   --bg-color: #ffffff;
@@ -246,6 +248,13 @@
   :root {
     /** 좌측 레일 — 루트 rem + vw (대형 화면에서 한 단계 더 넓게) */
     --reels-rail-w: clamp(4.25rem, 3.25rem + 0.88vw, 6.875rem);
+  }
+}
+
+/** 넓은 데스크톱(예: 1800×1169) — 탐색 영상만 키움, 9:16 비율 동일 */
+@media (min-width: 1600px) and (min-height: 1050px) {
+  :root {
+    --explore-reel-video-max-w: 34rem;
   }
 }
 
