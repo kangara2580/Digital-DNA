@@ -29,10 +29,10 @@ export async function GET(request: NextRequest) {
     mode,
     hasPexels:
       Boolean(process.env.PEXELS_API_KEY?.trim()) ||
-      Boolean(process.env.NEXT_PUBLIC_PEXELS_API_KEY?.trim()),
+      Boolean(process.env.PEXELS_API_KEY?.trim()),
     hasPixabay:
       Boolean(process.env.PIXABAY_API_KEY?.trim()) ||
-      Boolean(process.env.NEXT_PUBLIC_PIXABAY_API_KEY?.trim()),
+      Boolean(process.env.PIXABAY_API_KEY?.trim()),
   });
   if (!keyword) {
     return NextResponse.json({ error: "theme_or_q_required" }, { status: 400 });

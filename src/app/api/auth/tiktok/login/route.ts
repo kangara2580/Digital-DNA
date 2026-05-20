@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createOAuthState, setOAuthStateCookie } from "@/lib/tiktokSession";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -11,26 +12,34 @@ function resolveRedirectUri(req: NextRequest): string {
 }
 
 export async function GET(req: NextRequest) {
-  const clientKey = process.env.TIKTOK_CLIENT_KEY?.trim();
-  if (!clientKey) {
-    return NextResponse.json({ error: "missing_tiktok_client_key" }, { status: 500 });
+  const rl = checkRateLimit(req, { windowMs: 60_000, maxRequests: 10, prefix: "tiktok-login" });
+  if (!rl.ok) return rl.response;
+
+  try {
+    const clientKey = process.env.TIKTOK_CLIENT_KEY?.trim();
+    if (!clientKey) {
+      return NextResponse.json({ error: "missing_tiktok_client_key" }, { status: 500 });
+    }
+
+    const redirectUri = resolveRedirectUri(req);
+    const state = createOAuthState();
+    const scope = process.env.TIKTOK_OAUTH_SCOPE?.trim() || "user.info.basic,video.list";
+    const disableAutoAuth =
+      process.env.TIKTOK_DISABLE_AUTO_AUTH?.trim() === "0" ? "0" : "1";
+
+    const authUrl = new URL("https://www.tiktok.com/v2/auth/authorize/");
+    authUrl.searchParams.set("client_key", clientKey);
+    authUrl.searchParams.set("response_type", "code");
+    authUrl.searchParams.set("scope", scope);
+    authUrl.searchParams.set("redirect_uri", redirectUri);
+    authUrl.searchParams.set("state", state);
+    authUrl.searchParams.set("disable_auto_auth", disableAutoAuth);
+
+    const res = NextResponse.redirect(authUrl);
+    setOAuthStateCookie(res, state);
+    return res;
+  } catch (err) {
+    console.error("[tiktok/login]", err);
+    return NextResponse.json({ error: "internal_server_error" }, { status: 500 });
   }
-
-  const redirectUri = resolveRedirectUri(req);
-  const state = createOAuthState();
-  const scope = process.env.TIKTOK_OAUTH_SCOPE?.trim() || "user.info.basic,video.list";
-  const disableAutoAuth =
-    process.env.TIKTOK_DISABLE_AUTO_AUTH?.trim() === "0" ? "0" : "1";
-
-  const authUrl = new URL("https://www.tiktok.com/v2/auth/authorize/");
-  authUrl.searchParams.set("client_key", clientKey);
-  authUrl.searchParams.set("response_type", "code");
-  authUrl.searchParams.set("scope", scope);
-  authUrl.searchParams.set("redirect_uri", redirectUri);
-  authUrl.searchParams.set("state", state);
-  authUrl.searchParams.set("disable_auto_auth", disableAutoAuth);
-
-  const res = NextResponse.redirect(authUrl);
-  setOAuthStateCookie(res, state);
-  return res;
 }

@@ -5,9 +5,14 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
-  const to = req.nextUrl.searchParams.get("next") || "/";
-  const url = new URL(to, req.nextUrl.origin);
-  const res = NextResponse.redirect(url);
-  clearTikTokSessionCookie(res);
-  return res;
+  try {
+    const to = req.nextUrl.searchParams.get("next") || "/";
+    const url = new URL(to, req.nextUrl.origin);
+    const res = NextResponse.redirect(url);
+    clearTikTokSessionCookie(res);
+    return res;
+  } catch (err) {
+    console.error("[tiktok/logout]", err);
+    return NextResponse.json({ error: "internal_server_error" }, { status: 500 });
+  }
 }
