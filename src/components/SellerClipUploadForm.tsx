@@ -11,6 +11,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
+import { localizeApiError } from "@/lib/i18n/localizeApiError";
+import type { SiteLocale } from "@/lib/sitePreferences";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import {
   coerceSellCategoryForUserForm,
@@ -67,7 +69,7 @@ function clampThumbSec(t: number, durationSec: number | null): number {
 
 export function SellerClipUploadForm() {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const posterImageInputRef = useRef<HTMLInputElement>(null);
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
@@ -434,7 +436,10 @@ export function SellerClipUploadForm() {
       if (!res.ok || !data.ok) {
         setMessage({
           ok: false,
-          text: data.error ?? t("sellForm.errUploadFail"),
+          text: localizeApiError(
+            locale as SiteLocale,
+            data.error ?? data.message ?? t("sellForm.errUploadFail"),
+          ),
         });
         return;
       }
@@ -463,6 +468,17 @@ export function SellerClipUploadForm() {
       const sellerFeedHref = sellerIdForRedirect
         ? `/seller/${encodeURIComponent(sellerIdForRedirect)}`
         : "/mypage?tab=listings";
+
+      try {
+        for (const key of Object.keys(window.sessionStorage)) {
+          if (key.startsWith("reels:category:feed:")) {
+            window.sessionStorage.removeItem(key);
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+      window.dispatchEvent(new Event("reels-market-feed-updated"));
 
       queueMicrotask(() => {
         router.replace(sellerFeedHref);

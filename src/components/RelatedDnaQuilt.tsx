@@ -4,7 +4,10 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { FeedVideo } from "@/data/videos";
 import { getRelatedByVibe } from "@/data/videoCatalog";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
+import { formatPriceWon } from "@/lib/exploreLocaleFormat";
+import type { SiteLocale } from "@/lib/sitePreferences";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 type Props = {
@@ -14,6 +17,7 @@ type Props = {
 
 /** 같은 Vibe를 공유하는 조각을 퀼트처럼 엮어 표시 */
 export function RelatedDnaQuilt({ video, className }: Props) {
+  const { locale } = useTranslation();
   const related = getRelatedByVibe(video.id, 28);
   const displayTitle = useVideoDisplayTitle();
   const [visibleCount, setVisibleCount] = useState(6);
@@ -52,7 +56,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
             </p>
             {hero.priceWon != null ? (
               <p className="mt-0.5 text-[10px] font-bold tabular-nums text-white">
-                {hero.priceWon.toLocaleString("ko-KR")}원
+                {formatPriceWon(locale as SiteLocale, hero.priceWon)}
               </p>
             ) : null}
           </div>
@@ -78,7 +82,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
                 </p>
                 {v.priceWon != null ? (
                   <p className="text-[9px] font-bold tabular-nums text-white/95">
-                    {v.priceWon.toLocaleString("ko-KR")}원
+                    {formatPriceWon(locale as SiteLocale, v.priceWon)}
                   </p>
                 ) : null}
               </div>
@@ -107,7 +111,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
                 <p className="line-clamp-2 text-[9px] font-medium text-zinc-200">{displayTitle(v)}</p>
                 {v.priceWon != null ? (
                   <p className="text-[9px] font-bold tabular-nums text-reels-cyan">
-                    {v.priceWon.toLocaleString("ko-KR")}원
+                    {formatPriceWon(locale as SiteLocale, v.priceWon)}
                   </p>
                 ) : null}
               </div>

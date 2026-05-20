@@ -3,6 +3,9 @@ import { CheckCircle2, CreditCard, Sparkles, WalletCards } from "lucide-react";
 import { TossCheckoutButton } from "@/components/payments/TossCheckoutButton";
 import { getUserCreditSummary } from "@/lib/credits";
 import { getCurrentUser } from "@/lib/serverSession";
+import { formatPriceWon } from "@/lib/exploreLocaleFormat";
+import { translate } from "@/lib/i18n/dictionaries";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
 import { getTossEnvStatus, tossCreditPacks } from "@/lib/tossConfig";
 
 export const dynamic = "force-dynamic";
@@ -11,11 +14,8 @@ function formatCredits(value: number): string {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
-function formatWon(value: number): string {
-  return `${new Intl.NumberFormat("ko-KR").format(value)}원`;
-}
-
 export default async function CreditsPage() {
+  const locale = await getSiteLocale();
   const user = await getCurrentUser();
   const summary = user ? await getUserCreditSummary(user.id) : null;
   const envStatus = getTossEnvStatus();
@@ -34,16 +34,14 @@ export default async function CreditsPage() {
                 Credits
               </p>
               <h1 className="mt-3 max-w-3xl text-4xl font-black tracking-tight sm:text-6xl">
-                AI 편집과 릴스 제작을 위한 크레딧 충전
+                {translate(locale, "credits.page.lead")}
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-300">
-                결제는 토스페이먼츠 결제창에서 처리되고, 승인 성공 시 Supabase에
-                결제 기록과 크레딧 원장이 자동으로 쌓입니다.
+                {translate(locale, "credits.page.desc")}
               </p>
               {!tossReady ? (
                 <p className="mt-4 rounded-md border border-amber-300/30 bg-amber-400/10 px-4 py-3 text-sm font-bold text-amber-200">
-                  토스페이먼츠 키가 아직 설정되지 않았습니다. Vercel에
-                  NEXT_PUBLIC_TOSS_CLIENT_KEY와 TOSS_SECRET_KEY를 넣으면 결제가 활성화됩니다.
+                  {translate(locale, "credits.page.tossMissing")}
                 </p>
               ) : null}
             </div>
@@ -53,7 +51,9 @@ export default async function CreditsPage() {
                   <WalletCards size={22} />
                 </span>
                 <div>
-                  <p className="text-sm font-bold text-zinc-400">현재 보유 크레딧</p>
+                  <p className="text-sm font-bold text-zinc-400">
+                    {translate(locale, "credits.page.balance")}
+                  </p>
                   <p className="text-3xl font-black">
                     {formatCredits(summary?.balance ?? 0)}
                   </p>
@@ -63,12 +63,14 @@ export default async function CreditsPage() {
                 {user ? (
                   <>
                     <p className="font-bold text-white">{user.email ?? user.id}</p>
-                    <p className="mt-1">로그인된 계정으로 결제와 크레딧이 적립됩니다.</p>
+                    <p className="mt-1">{translate(locale, "credits.page.loggedInNote")}</p>
                   </>
                 ) : (
                   <>
-                    <p className="font-bold text-white">로그인이 필요합니다</p>
-                    <p className="mt-1">결제 전 Google 로그인 후 다시 시도해 주세요.</p>
+                    <p className="font-bold text-white">
+                      {translate(locale, "credits.page.loginRequired")}
+                    </p>
+                    <p className="mt-1">{translate(locale, "credits.page.loginHint")}</p>
                   </>
                 )}
               </div>
@@ -97,30 +99,32 @@ export default async function CreditsPage() {
                 </div>
                 {isRecommended ? (
                   <span className="rounded-full bg-[#ff2f93] px-2 py-1 text-xs font-black">
-                    추천
+                    {translate(locale, "credits.pack.recommended")}
                   </span>
                 ) : null}
               </div>
               <p className="mt-6 text-3xl font-black">{formatCredits(pack.credits)}</p>
               <p className="mt-1 text-sm font-bold text-zinc-400">ARA credits</p>
-              <p className="mt-5 text-2xl font-black">{formatWon(pack.priceKrw)}</p>
+              <p className="mt-5 text-2xl font-black">
+                {formatPriceWon(locale, pack.priceKrw)}
+              </p>
               <div className="mt-5 space-y-2 text-sm text-zinc-300">
                 <p className="flex items-center gap-2">
                   <CheckCircle2 size={16} className="text-[#ff7abf]" />
-                  토스 카드/간편결제 지원
+                  {translate(locale, "credits.pack.tossSupport")}
                 </p>
                 <p className="flex items-center gap-2">
                   <Sparkles size={16} className="text-[#ff7abf]" />
-                  Kling/Gemini/Nano Banana 사용량 기록 가능
+                  {translate(locale, "credits.pack.usageLog")}
                 </p>
                 <p className="flex items-center gap-2">
                   <CreditCard size={16} className="text-[#ff7abf]" />
-                  결제 승인 시 자동 적립
+                  {translate(locale, "credits.pack.autoCredit")}
                 </p>
               </div>
               <div className="mt-6">
                 <TossCheckoutButton productType="credits" productKey={pack.key}>
-                  토스페이먼츠로 결제하기
+                  {translate(locale, "credits.pack.checkoutCta")}
                 </TossCheckoutButton>
               </div>
             </article>

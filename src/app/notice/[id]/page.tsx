@@ -5,6 +5,8 @@ import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { translate } from "@/lib/i18n/dictionaries";
 import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
 import { getSiteLocale } from "@/lib/i18n/serverLocale";
+import { getNoticeById as getCatalogNotice } from "@/data/notices";
+import { localizeNotice } from "@/lib/i18n/localizeNotice";
 import { getNoticeById } from "@/lib/noticesRepo";
 
 type Props = { params: Promise<{ id: string }> };
@@ -47,11 +49,24 @@ export default async function NoticeDetailPage({ params }: Props) {
   const notice = await getNoticeById(safeId);
   if (!notice) notFound();
 
-  const paragraphs = notice.body.split(/\n\n+/).filter(Boolean);
+  const loc = await getSiteLocale();
+  const catalog = getCatalogNotice(safeId);
+  const { title: localizedTitle, body: localizedBody } = localizeNotice(
+    {
+      id: notice.id,
+      title: notice.title,
+      date: notice.createdAt.slice(0, 10),
+      body: notice.body,
+      titleEn: catalog?.titleEn,
+      bodyEn: catalog?.bodyEn,
+    },
+    loc,
+  );
+  const paragraphs = localizedBody.split(/\n\n+/).filter(Boolean);
 
   return (
     <FooterLegalPageShell
-      title="공지사항"
+      title={translate(loc, "notice.pageTitle")}
       withCard={false}
       mainMaxClass="max-w-3xl"
       showTitle={false}
@@ -60,7 +75,7 @@ export default async function NoticeDetailPage({ params }: Props) {
       homeLinkTopClass="mt-20 sm:mt-24"
     >
       <NoticeDetailClient
-        title={notice.title}
+        title={localizedTitle}
         createdAt={notice.createdAt}
         bodyParagraphs={paragraphs}
         imageUrls={notice.imageUrls}

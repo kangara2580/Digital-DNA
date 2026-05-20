@@ -208,7 +208,7 @@ export default function CartPage() {
           }
         | null;
       if (!res.ok || !body?.ok) {
-        setCheckoutError("결제 전 가격 검증에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+        setCheckoutError(t("cart.checkout.priceVerifyFail"));
         return;
       }
       if (!body.canCheckout) {
@@ -219,10 +219,13 @@ export default function CartPage() {
               ? `${first.actualPriceWon.toLocaleString(numLocale)}${t("cart.currencySuffix")}`
               : t("cart.priceInquire");
           setCheckoutError(
-            `가격이 변경된 항목이 있어요. 다시 확인해 주세요. (기존 ${first.expectedPriceWon.toLocaleString(numLocale)}${t("cart.currencySuffix")} → 현재 ${actual})`,
+            t("cart.checkout.priceChanged", {
+              expected: `${first.expectedPriceWon.toLocaleString(numLocale)}${t("cart.currencySuffix")}`,
+              actual,
+            }),
           );
         } else {
-          setCheckoutError("가격이 변경된 항목이 있어 결제를 진행할 수 없어요.");
+          setCheckoutError(t("cart.checkout.priceChangedBlock"));
         }
         return;
       }
@@ -265,11 +268,9 @@ export default function CartPage() {
         failUrl: payload.failUrl,
       });
       return;
-      setCheckoutError(
-        "가격 검증 완료. 결제 백엔드 연동 시 이 지점에서 결제 생성 API를 호출하면 됩니다.",
-      );
+      setCheckoutError(t("cart.checkout.verifyOk"));
     } catch {
-      setCheckoutError("네트워크 오류로 결제 전 검증에 실패했습니다.");
+      setCheckoutError(t("cart.checkout.networkFail"));
     } finally {
       setCheckoutBusy(false);
     }

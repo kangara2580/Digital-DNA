@@ -17,7 +17,10 @@ import {
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
+import { useOptionalSitePreferences } from "@/context/SitePreferencesContext";
+import { translate } from "@/lib/i18n/dictionaries";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import type { SiteLocale } from "@/lib/sitePreferences";
 import { captureActionError, logActionEvent } from "@/lib/observability";
 import {
   fetchUserCartVideos,
@@ -88,6 +91,8 @@ function videosToBuilderItems(videos: FeedVideo[]): BuilderTimelineItem[] {
 }
 
 export function DopamineBasketProvider({ children }: { children: React.ReactNode }) {
+  const prefs = useOptionalSitePreferences();
+  const locale = (prefs?.locale ?? "ko") as SiteLocale;
   const {
     user,
     session,
@@ -134,7 +139,7 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
         return;
       }
       if (!isGuest && !cartSyncReady) {
-        window.alert("장바구니를 불러오는 중입니다. 잠시 후 다시 눌러 주세요.");
+        window.alert(translate(locale, "cart.alert.loading"));
         return;
       }
       const vid = canonicalFavoriteVideoId(video.id);

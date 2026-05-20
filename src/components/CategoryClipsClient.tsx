@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation";
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { VideoCard } from "@/components/VideoCard";
 import { useTranslation } from "@/hooks/useTranslation";
-import { getMetricsForVideoDetail } from "@/data/trendingStats";
+import { getGridCardMetrics } from "@/data/trendingStats";
 import {
   MALL_CATEGORY_TOOLBAR_FILTER_ID,
 } from "@/data/mallCategoryNav";
@@ -61,6 +61,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   const label = t(`nav.cat.${slug}`);
   const staticBase = useMemo(() => getVideosForCategory(slug), [slug]);
   const [fetchedVideos, setFetchedVideos] = useState<FeedVideo[] | null>(null);
+  const [feedReloadTick, setFeedReloadTick] = useState(0);
   useEffect(() => {
     setFetchedVideos(null);
     const cacheKey = `reels:category:feed:${slug}`;
@@ -107,7 +108,24 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
       alive = false;
       ctrl.abort();
     };
-  }, [slug]);
+  }, [slug, feedReloadTick]);
+
+  useEffect(() => {
+    const onFeedUpdated = () => {
+      try {
+        for (const key of Object.keys(window.sessionStorage)) {
+          if (key.startsWith("reels:category:feed:")) {
+            window.sessionStorage.removeItem(key);
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+      setFeedReloadTick((n) => n + 1);
+    };
+    window.addEventListener("reels-market-feed-updated", onFeedUpdated);
+    return () => window.removeEventListener("reels-market-feed-updated", onFeedUpdated);
+  }, []);
 
   const base = useMemo(
     () => fetchedVideos ?? staticBase,
@@ -241,7 +259,8 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
             footerExtension={
               <TrendingVideoStatsFooter
                 hideMetricLabels
-                metrics={getMetricsForVideoDetail(video.id)}
+                fullNumberDisplay
+                metrics={getGridCardMetrics(video)}
               />
             }
           />

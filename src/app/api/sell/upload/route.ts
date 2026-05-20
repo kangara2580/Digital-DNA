@@ -9,6 +9,11 @@ import { getNeutralPosterBuffer, NEUTRAL_POSTER_DATA_URL } from "@/lib/neutralPo
 import { ensureVideoCategoryColumn } from "@/lib/ensureVideoCategoryColumn";
 import { isSellVideoCategory } from "@/lib/sellVideoCategory";
 import { normalizeSellHashtags } from "@/lib/sellHashtags";
+import {
+  sellUploadModerationFields,
+  sellUploadSuccessMessage,
+} from "@/lib/sellUploadModeration";
+import { videoRowToFeedVideo } from "@/lib/flashSaleVideos";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -357,6 +362,7 @@ export async function POST(request: Request) {
 
   const creator = displayNameFromUser(user);
   await ensureVideoCategoryColumn();
+  const moderation = sellUploadModerationFields();
 
   let created;
   try {
@@ -376,8 +382,10 @@ export async function POST(request: Request) {
         hashtags: hashtagsNormalized,
         isAiGenerated: isAi,
         category: categoryRaw,
-        status: "pending",
-        moderationReason: "New seller upload awaiting admin review.",
+        status: moderation.status,
+        moderationReason: moderation.moderationReason,
+        approvedAt: moderation.approvedAt,
+        approvedBy: moderation.approvedBy,
       },
     });
   } catch (e) {
@@ -398,8 +406,10 @@ export async function POST(request: Request) {
         description: description || null,
         hashtags: hashtagsNormalized,
         isAiGenerated: isAi,
-        status: "pending",
-        moderationReason: "New seller upload awaiting admin review.",
+        status: moderation.status,
+        moderationReason: moderation.moderationReason,
+        approvedAt: moderation.approvedAt,
+        approvedBy: moderation.approvedBy,
       },
     });
     const dbUrl = process.env.DATABASE_URL?.trim() ?? "";
@@ -421,7 +431,7 @@ export async function POST(request: Request) {
   return NextResponse.json({
     ok: true,
     videoId: created.id,
-    message:
-      "등록이 접수되었습니다. Admin 검수 후 마켓에 노출됩니다.",
+    message: sellUploadSuccessMessage(),
+    video: videoRowToFeedVideo(created),
   });
 }

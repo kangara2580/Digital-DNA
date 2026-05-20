@@ -1,4 +1,5 @@
 import type { SiteLocale } from "@/lib/sitePreferences";
+import { EXTRA_MESSAGES } from "@/lib/i18n/extraMessages";
 
 /** 플랫 키 — 누락 시 한국어 폴백 */
 export type MessageKey = string;
@@ -2408,6 +2409,9 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "assets.payout.errAccountRequired": "Register your payout account above before submitting a request.",
   },
 };
+
+Object.assign(DICTIONARY.ko, EXTRA_MESSAGES.ko);
+Object.assign(DICTIONARY.en, EXTRA_MESSAGES.en);
 
 export function translate(
   locale: SiteLocale,

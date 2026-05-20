@@ -1,10 +1,12 @@
 export type NoticeItem = {
   id: string;
   title: string;
+  titleEn?: string;
   /** YYYY-MM-DD */
   date: string;
   pinned?: boolean;
   body: string;
+  bodyEn?: string;
 };
 
 /**
@@ -14,6 +16,7 @@ export const NOTICES: NoticeItem[] = [
   {
     id: "welcome-2026",
     title: "Digital DNA · ARA 오픈 안내",
+    titleEn: "Digital DNA · ARA is now open",
     date: "2026-04-01",
     pinned: true,
     body:
@@ -22,24 +25,40 @@ export const NOTICES: NoticeItem[] = [
       "트렌드에 맞춰 큐레이션된 동영상을 탐색하고, 라이선스 범위 안에서 자유롭게 창작에 활용해 보세요.\n\n" +
       "앞으로도 서비스 안내와 정책 변경은 공지사항을 통해 안내드리겠습니다.\n\n" +
       "감사합니다.",
+    bodyEn:
+      "Hello,\n\n" +
+      "Short-form source marketplace Digital DNA is officially open.\n" +
+      "Browse curated clips and use them within your license for your own creations.\n\n" +
+      "We’ll share service updates and policy changes here.\n\n" +
+      "Thank you.",
   },
   {
     id: "policy-license-update",
     title: "라이선스 규정 페이지 개편 안내",
+    titleEn: "License policy page updated",
     date: "2026-04-10",
     body:
       "라이선스 규정 페이지가 개편되어 Free to Create(권장)·Rules for Respect(금지) 안내를 보기 쉽게 정리했습니다.\n\n" +
       "자세한 내용은 상단 메뉴의 라이선스 규정 페이지에서 확인해 주세요.",
+    bodyEn:
+      "We reorganized the license page so “Free to Create” (recommended) and “Rules for Respect” (restrictions) are easier to read.\n\n" +
+      "See the License page in the top menu for details.",
   },
   {
     id: "maintenance-sample",
     title: "[안내] 정기 점검 일정 (예시)",
+    titleEn: "[Notice] Scheduled maintenance (sample)",
     date: "2026-04-14",
     body:
       "더 안정적인 서비스 제공을 위해 아래 시간대에 정기 점검이 진행될 수 있습니다.\n\n" +
       "· 일시: 추후 공지 시 확정\n" +
       "· 영향: 점검 시간 중 일시적으로 접속이 지연되거나 일부 기능이 제한될 수 있습니다.\n\n" +
       "실제 점검 일정이 잡히면 본 공지를 수정하거나 별도 공지로 안내드리겠습니다.",
+    bodyEn:
+      "We may run scheduled maintenance during the window below for stability.\n\n" +
+      "· When: To be announced\n" +
+      "· Impact: Access may be slower or some features limited during maintenance.\n\n" +
+      "We’ll update this notice or post a new one when the schedule is confirmed.",
   },
 ];
 

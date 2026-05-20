@@ -1,3 +1,5 @@
+import type { FeedVideo } from "@/data/videos";
+
 /** 인기순위 카드 하단 데모 지표 (실서비스는 API로 교체) */
 export type TrendingRankMetrics = {
   /** 누적 수익(원) */
@@ -92,4 +94,19 @@ export function getMetricsForVideoDetail(videoId: string): TrendingRankMetrics {
   }
   const rankIndex = Math.abs(x) % 10;
   return deriveMetricsFromRank(videoId, rankIndex);
+}
+
+/** 쇼핑몰·카테고리 그리드 카드 — DB listing 실적 또는 데모 시드 */
+export function getGridCardMetrics(video: FeedVideo): TrendingRankMetrics {
+  if (video.listing) {
+    const views = Math.max(0, video.listing.views ?? 0);
+    const sales = Math.max(0, video.listing.salesCount ?? 0);
+    return {
+      cumulativeRevenueWon: (video.priceWon ?? 0) * sales,
+      totalViews: views,
+      totalLikes: Math.max(0, Math.floor(views * 0.028)),
+      growthPercent: 0,
+    };
+  }
+  return getMetricsForVideoDetail(video.id);
 }

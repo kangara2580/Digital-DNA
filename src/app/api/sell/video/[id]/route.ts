@@ -8,6 +8,10 @@ import { prisma } from "@/lib/prisma";
 import { isSellVideoCategory } from "@/lib/sellVideoCategory";
 import { SELL_CUSTOM_POSTER_MAX_BYTES } from "@/lib/sellCustomPosterMaxBytes";
 import { normalizeSellHashtags } from "@/lib/sellHashtags";
+import {
+  sellEditSuccessMessage,
+  sellUploadModerationFields,
+} from "@/lib/sellUploadModeration";
 
 export const runtime = "nodejs";
 
@@ -323,6 +327,8 @@ export async function PATCH(
     }
   }
 
+  const moderation = sellUploadModerationFields();
+
   try {
     let updated;
     try {
@@ -334,10 +340,10 @@ export async function PATCH(
           hashtags: hashtagsNormalized,
           category,
           price: priceWon,
-          status: "pending",
-          moderationReason: "Seller edited content; admin review required.",
-          approvedAt: null,
-          approvedBy: null,
+          status: moderation.status,
+          moderationReason: moderation.moderationReason,
+          approvedAt: moderation.approvedAt,
+          approvedBy: moderation.approvedBy,
           ...(posterUrl ? { poster: posterUrl } : {}),
         },
       });
@@ -351,10 +357,10 @@ export async function PATCH(
           description: description || null,
           hashtags: hashtagsNormalized,
           price: priceWon,
-          status: "pending",
-          moderationReason: "Seller edited content; admin review required.",
-          approvedAt: null,
-          approvedBy: null,
+          status: moderation.status,
+          moderationReason: moderation.moderationReason,
+          approvedAt: moderation.approvedAt,
+          approvedBy: moderation.approvedBy,
           ...(posterUrl ? { poster: posterUrl } : {}),
         },
       });

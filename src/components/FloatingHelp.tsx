@@ -3,6 +3,7 @@
 import { ChevronUp } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const SCROLL_TOP_THRESHOLD = 80;
 
@@ -39,6 +40,7 @@ function getViewportScrollTop(): number {
 }
 
 export function FloatingHelp() {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const pathnameRef = useRef(pathname);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -162,7 +164,9 @@ export function FloatingHelp() {
           }
         }}
         onClick={scrollToTop}
-        aria-label={pathname === "/" ? "인기순위 섹션으로 이동" : "맨 위로 가기"}
+        aria-label={
+          pathname === "/" ? t("floating.scrollToTrending") : t("floating.scrollToTop")
+        }
         className={`flex h-11 w-11 items-center justify-center rounded-full ${scrollTopShell} scale-95 opacity-0 transition-[opacity,transform,box-shadow,background-color,border-color] duration-[400ms] ease-in-out hover:border-white/55 hover:bg-white/8 hover:shadow-[0_12px_36px_-14px_rgba(255,255,255,0.45)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 [html[data-theme='light']_&]:hover:border-black [html[data-theme='light']_&]:hover:bg-white [html[data-theme='light']_&]:hover:shadow-[0_12px_36px_-14px_rgba(0,0,0,0.14)] [html[data-theme='light']_&]:focus-visible:outline-zinc-900/75 motion-reduce:transition-none ${
           showScrollTop
             ? "pointer-events-auto scale-100 opacity-100"

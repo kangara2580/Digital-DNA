@@ -8,7 +8,10 @@ import { CartIcon } from "@/components/CartIcon";
 import { useDopamineBasketOptional } from "@/context/DopamineBasketContext";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
+import { formatPriceWon } from "@/lib/exploreLocaleFormat";
+import type { SiteLocale } from "@/lib/sitePreferences";
 import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
 import {
   reelActionBtn,
@@ -24,15 +27,10 @@ import { useVideoLike } from "@/hooks/useVideoLike";
 import { useVideoWishlistAction } from "@/hooks/useVideoWishlistAction";
 import { useVideoCartAction } from "@/hooks/useVideoCartAction";
 
-function formatPrice(v: FeedVideo): string {
-  if (v.priceWon != null) {
-    return `${v.priceWon.toLocaleString("ko-KR")}원`;
-  }
-  return "—";
-}
-
 /** 「영감이 필요한 순간」 그리드 셀 — VideoCard와 동일하게 호버 시 장바구니·좋아요·찜 노출 */
 export function InspirationVideoCell({ video }: { video: FeedVideo }) {
+  const { t, locale } = useTranslation();
+  const priceLabel = formatPriceWon(locale as SiteLocale, video.priceWon) ?? "—";
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const displayTitle = useVideoDisplayTitle();
@@ -60,7 +58,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
     requireAuth,
     onError: () => {
       if (typeof window !== "undefined") {
-        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
+        window.alert(t("explore.likeFailed"));
       }
     },
   });
@@ -215,7 +213,7 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
           {displayTitle(video)}
         </p>
         <p className="text-[13px] font-bold text-[var(--primary-color)]">
-          {formatPrice(video)}
+          {priceLabel}
         </p>
       </div>
     </div>

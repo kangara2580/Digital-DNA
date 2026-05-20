@@ -1,6 +1,8 @@
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 import { AboutPageBody } from "@/components/AboutPageBody";
 import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
+import { translate } from "@/lib/i18n/dictionaries";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
 
 export async function generateMetadata() {
   return buildPageMetadata({
@@ -9,10 +11,11 @@ export async function generateMetadata() {
   });
 }
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const locale = await getSiteLocale();
   return (
     <FooterLegalPageShell
-      title="소개"
+      title={translate(locale, "meta.about")}
       withCard={false}
       mainMaxClass="max-w-6xl"
       contentTopClass="-mt-10 sm:-mt-14"

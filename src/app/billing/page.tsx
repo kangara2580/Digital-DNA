@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 import { getUserCreditSummary } from "@/lib/credits";
+import { translate } from "@/lib/i18n/dictionaries";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
 import { getCurrentUser } from "@/lib/serverSession";
+import type { SiteLocale } from "@/lib/sitePreferences";
 
 export const dynamic = "force-dynamic";
 
@@ -8,9 +11,9 @@ function formatCredits(value: number): string {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
-function formatDate(value: Date | null): string {
+function formatDate(value: Date | null, locale: SiteLocale): string {
   if (!value) return "-";
-  return new Intl.DateTimeFormat("ko-KR", {
+  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "ko-KR", {
     timeZone: "Asia/Seoul",
     dateStyle: "short",
     timeStyle: "short",
@@ -21,6 +24,7 @@ export default async function BillingPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
+  const locale = await getSiteLocale();
   const summary = await getUserCreditSummary(user.id);
 
   return (
@@ -29,9 +33,11 @@ export default async function BillingPage() {
         <p className="text-xs font-black uppercase tracking-[0.3em] text-[#ff7abf]">
           Billing
         </p>
-        <h1 className="mt-3 text-4xl font-black">결제와 크레딧 내역</h1>
+        <h1 className="mt-3 text-4xl font-black">{translate(locale, "billing.title")}</h1>
         <div className="mt-6 rounded-lg border border-white/10 bg-white/[0.05] p-5">
-          <p className="text-sm font-bold text-zinc-400">현재 크레딧</p>
+          <p className="text-sm font-bold text-zinc-400">
+            {translate(locale, "billing.creditsLabel")}
+          </p>
           <p className="mt-2 text-4xl font-black">{formatCredits(summary.balance)}</p>
         </div>
 
@@ -39,24 +45,26 @@ export default async function BillingPage() {
           <table className="min-w-full text-left text-sm">
             <thead className="border-b border-white/10 text-zinc-400">
               <tr>
-                <th className="px-4 py-3">날짜</th>
-                <th className="px-4 py-3">상품</th>
-                <th className="px-4 py-3">상태</th>
-                <th className="px-4 py-3">금액</th>
-                <th className="px-4 py-3">크레딧</th>
+                <th className="px-4 py-3">{translate(locale, "billing.col.date")}</th>
+                <th className="px-4 py-3">{translate(locale, "billing.col.product")}</th>
+                <th className="px-4 py-3">{translate(locale, "billing.col.status")}</th>
+                <th className="px-4 py-3">{translate(locale, "billing.col.amount")}</th>
+                <th className="px-4 py-3">{translate(locale, "billing.col.credits")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
               {summary.payments.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-10 text-center text-zinc-400">
-                    결제 내역이 없습니다.
+                    {translate(locale, "billing.empty")}
                   </td>
                 </tr>
               ) : (
                 summary.payments.map((payment) => (
                   <tr key={payment.id}>
-                    <td className="px-4 py-3">{formatDate(payment.paidAt ?? payment.createdAt)}</td>
+                    <td className="px-4 py-3">
+                      {formatDate(payment.paidAt ?? payment.createdAt, locale)}
+                    </td>
                     <td className="px-4 py-3 font-bold">{payment.productKey}</td>
                     <td className="px-4 py-3">{payment.status}</td>
                     <td className="px-4 py-3">

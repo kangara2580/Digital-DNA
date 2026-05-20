@@ -23,7 +23,10 @@ import {
 import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
 import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
 import { captureActionError, logActionEvent } from "@/lib/observability";
+import { useOptionalSitePreferences } from "@/context/SitePreferencesContext";
+import { translate } from "@/lib/i18n/dictionaries";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import type { SiteLocale } from "@/lib/sitePreferences";
 import { waitForSupabaseAccessToken } from "@/lib/waitSupabaseSessionReady";
 
 /** 토글 직후 짧게 토큰이 비는 레이스로 낙관적 찜만 롤백되는 현상 줄이기 */
@@ -157,6 +160,8 @@ export function useWishlistOptional() {
 }
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
+  const prefs = useOptionalSitePreferences();
+  const locale = (prefs?.locale ?? "ko") as SiteLocale;
   const {
     user,
     loading: authLoading,
@@ -320,14 +325,14 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       }
       if (!wishlistSyncReady) {
         if (typeof window !== "undefined") {
-          window.alert("찜 목록을 불러오는 중입니다. 잠시 후 다시 눌러 주세요.");
+          window.alert(translate(locale, "wishlist.alert.loading"));
         }
         return;
       }
       const supabase = getSupabaseBrowserClient();
       if (!supabase) {
         if (typeof window !== "undefined") {
-          window.alert("로그인 후 이용 가능합니다.");
+          window.alert(translate(locale, "wishlist.alert.loginRequired"));
         }
         return;
       }
@@ -359,7 +364,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
                 );
               }
               if (typeof window !== "undefined") {
-                window.alert("세션을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.");
+                window.alert(translate(locale, "wishlist.alert.sessionLoading"));
               }
               return;
             }
@@ -405,7 +410,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             bumpPersistingWishlist();
             setEntries((p) => p.filter((e) => canonicalFavoriteVideoId(e.id) !== vid));
             if (typeof window !== "undefined") {
-              window.alert("세션을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.");
+              window.alert(translate(locale, "wishlist.alert.sessionLoading"));
             }
             return;
           }

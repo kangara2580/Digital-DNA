@@ -5,6 +5,8 @@ export type ExploreFormatters = {
   formatCompactCount: (n: number) => string;
   formatViewCountRail: (n: number) => string;
   formatLikeApprox: (n: number) => string;
+  /** 만/억/k 축약 없이 전체 숫자 */
+  formatFullCount: (n: number) => string;
   numberLocale: string;
 };
 
@@ -61,11 +63,25 @@ export function getExploreFormatters(locale: SiteLocale): ExploreFormatters {
     return v.toLocaleString("ko-KR");
   }
 
+  function formatFullCount(n: number): string {
+    const v = Math.max(0, Math.floor(n));
+    return v.toLocaleString(numberLocale);
+  }
+
   return {
     formatCompactWon,
     formatCompactCount,
     formatViewCountRail,
     formatLikeApprox,
+    formatFullCount,
     numberLocale,
   };
+}
+
+/** Full price label for cards (no 만/k compact). */
+export function formatPriceWon(locale: SiteLocale, n: number | null | undefined): string | null {
+  if (n == null || !Number.isFinite(n)) return null;
+  const v = Math.max(0, Math.floor(n));
+  if (locale === "en") return `₩${v.toLocaleString("en-US")}`;
+  return `${v.toLocaleString("ko-KR")}원`;
 }

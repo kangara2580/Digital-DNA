@@ -24,6 +24,8 @@ type Props = {
   dense?: boolean;
   /** 상세·구매 등 — 수익만 만/억 축약 없이 전체 숫자(천 단위 구분) */
   revenueFullWon?: boolean;
+  /** 쇼핑몰·카테고리 그리드 — 수익·조회·좋아요 모두 전체 숫자(만/k 없음) */
+  fullNumberDisplay?: boolean;
 };
 
 const rowCls = "flex items-center gap-8 py-1.5";
@@ -45,15 +47,25 @@ export function TrendingVideoStatsFooter({
   hideMetricLabels = false,
   dense = false,
   revenueFullWon = false,
+  fullNumberDisplay = false,
 }: Props) {
   const { t, locale } = useTranslation();
   const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
+  const useFullNumbers = fullNumberDisplay || revenueFullWon;
   const revenueDisplay = useMemo(() => {
     const v = Math.max(0, Math.floor(metrics.cumulativeRevenueWon));
-    if (!revenueFullWon) return fmt.formatCompactWon(metrics.cumulativeRevenueWon);
+    if (!useFullNumbers) return fmt.formatCompactWon(metrics.cumulativeRevenueWon);
     if (locale === "en") return `₩${v.toLocaleString("en-US")}`;
-    return v.toLocaleString("ko-KR");
-  }, [revenueFullWon, metrics.cumulativeRevenueWon, fmt, locale]);
+    return `${v.toLocaleString("ko-KR")}원`;
+  }, [useFullNumbers, metrics.cumulativeRevenueWon, fmt, locale]);
+  const viewsDisplay = useMemo(() => {
+    if (!useFullNumbers) return fmt.formatViewCountRail(metrics.totalViews);
+    return fmt.formatFullCount(metrics.totalViews);
+  }, [useFullNumbers, metrics.totalViews, fmt]);
+  const likesDisplay = useMemo(() => {
+    if (!useFullNumbers) return fmt.formatLikeApprox(metrics.totalLikes);
+    return fmt.formatFullCount(metrics.totalLikes);
+  }, [useFullNumbers, metrics.totalLikes, fmt]);
   const isUp = metrics.growthPercent >= 0;
   const metricRowCls =
     dense && hideMetricLabels
@@ -132,7 +144,7 @@ export function TrendingVideoStatsFooter({
             {labelViews}
           </div>
           <div className={`${neutralMetricValueCls} min-w-0 ${valueDdExtras}`}>
-            {fmt.formatViewCountRail(metrics.totalViews)}
+            {viewsDisplay}
           </div>
         </li>
         <li key="likes" className={metricRowCls}>
@@ -141,7 +153,7 @@ export function TrendingVideoStatsFooter({
             {labelLikes}
           </div>
           <div className={`${neutralMetricValueCls} min-w-0 ${valueDdExtras}`}>
-            {fmt.formatLikeApprox(metrics.totalLikes)}
+            {likesDisplay}
           </div>
         </li>
         {typeof salesCount === "number" ? (

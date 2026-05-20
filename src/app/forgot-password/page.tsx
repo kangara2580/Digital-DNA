@@ -6,11 +6,16 @@ import {
   araAuthFlowWordmarkClassName,
   araWordmarkFontStyle,
 } from "@/lib/araBrandTypography";
+import { useTranslation } from "@/hooks/useTranslation";
+import { localizeApiError } from "@/lib/i18n/localizeApiError";
+import type { SiteLocale } from "@/lib/sitePreferences";
 
 const INPUT =
   "w-full rounded-xl border border-white/20 bg-black/30 px-3.5 py-3 text-sm text-zinc-100 outline-none backdrop-blur-sm transition placeholder:text-zinc-500 focus:border-[#FF2D8D]/60 focus:ring-2 focus:ring-[#FF2D8D]/26";
 
 export default function ForgotPasswordPage() {
+  const { t, locale } = useTranslation();
+  const loc = locale as SiteLocale;
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [countryCode, setCountryCode] = useState("+82");
@@ -27,9 +32,8 @@ export default function ForgotPasswordPage() {
     setError("");
     setPhoneVerified(false);
     setSmsProof("");
-    const p = phone.trim();
-    if (!p) {
-      setError("휴대폰 번호를 먼저 입력해 주세요.");
+    if (!phone.trim()) {
+      setError(t("findId.errPhoneFirst"));
       return;
     }
     setSendingSms(true);
@@ -40,16 +44,15 @@ export default function ForgotPasswordPage() {
         body: JSON.stringify({
           context: "forgot-password",
           countryCode,
-          phone: p,
+          phone: phone.trim(),
         }),
       });
       const data = (await res.json()) as { ok?: boolean; message?: string };
       if (!res.ok || !data.ok) {
-        setError(data.message || "인증번호 발송에 실패했습니다.");
-        return;
+        setError(localizeApiError(loc, data.message));
       }
     } catch {
-      setError("인증번호 발송 중 오류가 발생했습니다.");
+      setError(t("findId.errSmsSendGeneric"));
     } finally {
       setSendingSms(false);
     }
@@ -57,10 +60,8 @@ export default function ForgotPasswordPage() {
 
   const verifySmsCode = async () => {
     setError("");
-    const p = phone.trim();
-    const code = smsCode.trim();
-    if (!p || !code) {
-      setError("휴대폰 번호와 인증번호를 입력해 주세요.");
+    if (!phone.trim() || !smsCode.trim()) {
+      setError(t("findId.errPhoneAndCode"));
       return;
     }
     setVerifyingSms(true);
@@ -71,8 +72,8 @@ export default function ForgotPasswordPage() {
         body: JSON.stringify({
           context: "forgot-password",
           countryCode,
-          phone: p,
-          code,
+          phone: phone.trim(),
+          code: smsCode.trim(),
         }),
       });
       const data = (await res.json()) as {
@@ -81,7 +82,7 @@ export default function ForgotPasswordPage() {
         proof?: string;
       };
       if (!res.ok || !data.ok || !data.proof) {
-        setError(data.message || "인증번호 확인에 실패했습니다.");
+        setError(localizeApiError(loc, data.message));
         setPhoneVerified(false);
         setSmsProof("");
         return;
@@ -89,7 +90,7 @@ export default function ForgotPasswordPage() {
       setPhoneVerified(true);
       setSmsProof(data.proof);
     } catch {
-      setError("인증번호 확인 중 오류가 발생했습니다.");
+      setError(t("findId.errVerifyGeneric"));
     } finally {
       setVerifyingSms(false);
     }
@@ -98,13 +99,12 @@ export default function ForgotPasswordPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const trimmed = email.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setError("올바른 이메일 형식을 입력해 주세요.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError(t("forgot.errEmailFormat"));
       return;
     }
     if (!phoneVerified || !smsProof) {
-      setError("휴대폰 인증을 먼저 완료해 주세요.");
+      setError(t("forgot.errPhoneVerifyFirst"));
       return;
     }
     setBusy(true);
@@ -113,7 +113,7 @@ export default function ForgotPasswordPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: trimmed,
+          email: email.trim(),
           countryCode,
           phone: phone.trim(),
           smsProof,
@@ -121,12 +121,12 @@ export default function ForgotPasswordPage() {
       });
       const data = (await res.json()) as { ok?: boolean; message?: string };
       if (!res.ok || !data.ok) {
-        setError(data.message || "메일 발송에 실패했습니다.");
+        setError(localizeApiError(loc, data.message) || t("forgot.errMailFail"));
         return;
       }
       setDone(true);
     } catch {
-      setError("요청 처리 중 오류가 발생했습니다.");
+      setError(t("forgot.errRequestGeneric"));
     } finally {
       setBusy(false);
     }
@@ -139,10 +139,8 @@ export default function ForgotPasswordPage() {
         <p className={araAuthFlowWordmarkClassName} style={araWordmarkFontStyle}>
           ARA
         </p>
-        <h1 className="mt-3 text-2xl font-black tracking-tight text-white">비밀번호 찾기</h1>
-        <p className="mt-2 text-sm text-zinc-400">
-          가입 시 사용한 이메일로 재설정 링크를 보냅니다. 받은 편지함과 스팸함을 확인해 주세요.
-        </p>
+        <h1 className="mt-3 text-2xl font-black tracking-tight text-white">{t("forgot.title")}</h1>
+        <p className="mt-2 text-sm text-zinc-400">{t("forgot.lead")}</p>
 
         {error ? (
           <p className="mt-5 rounded-xl border border-reels-crimson/45 bg-reels-crimson/12 px-3 py-2 text-[13px] font-semibold text-[#F9ECF3]">
@@ -152,12 +150,14 @@ export default function ForgotPasswordPage() {
 
         {done ? (
           <p className="mt-6 rounded-xl border border-emerald-500/45 bg-emerald-500/10 px-3 py-3 text-[13px] font-semibold text-emerald-200">
-            입력하신 주소로 메일을 보냈습니다. 링크를 눌러 새 비밀번호를 설정한 뒤 로그인해 주세요.
+            {t("forgot.done")}
           </p>
         ) : (
           <form className="mt-6 space-y-4" onSubmit={onSubmit}>
             <div>
-              <label className="mb-1.5 block text-[12px] font-bold text-zinc-300">이메일</label>
+              <label className="mb-1.5 block text-[12px] font-bold text-zinc-300">
+                {t("forgot.email")}
+              </label>
               <input
                 className={INPUT}
                 type="email"
@@ -169,7 +169,9 @@ export default function ForgotPasswordPage() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-[12px] font-bold text-zinc-300">휴대폰 번호 인증</label>
+              <label className="mb-1.5 block text-[12px] font-bold text-zinc-300">
+                {t("forgot.phoneVerify")}
+              </label>
               <div className="flex gap-2">
                 <select
                   className={`${INPUT} max-w-[110px]`}
@@ -203,7 +205,7 @@ export default function ForgotPasswordPage() {
                   disabled={sendingSms}
                   className="shrink-0 rounded-xl border border-reels-crimson/42 bg-reels-crimson/12 px-3 py-2 text-[12px] font-bold text-[#F6D5E8] transition hover:bg-reels-crimson/22 disabled:opacity-50"
                 >
-                  {sendingSms ? "발송 중…" : "코드 발송"}
+                  {sendingSms ? t("findId.sendingSms") : t("forgot.sendCode")}
                 </button>
               </div>
               <div className="mt-2 flex gap-2">
@@ -211,7 +213,7 @@ export default function ForgotPasswordPage() {
                   className={INPUT}
                   type="text"
                   inputMode="numeric"
-                  placeholder="인증번호 입력"
+                  placeholder={t("forgot.codePh")}
                   value={smsCode}
                   onChange={(e) => setSmsCode(e.target.value)}
                 />
@@ -221,7 +223,11 @@ export default function ForgotPasswordPage() {
                   disabled={verifyingSms}
                   className="shrink-0 rounded-xl border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-[12px] font-bold text-emerald-300 transition hover:bg-emerald-500/20 disabled:opacity-50"
                 >
-                  {verifyingSms ? "확인 중…" : phoneVerified ? "인증 완료" : "인증 확인"}
+                  {verifyingSms
+                    ? t("findId.verifyingSms")
+                    : phoneVerified
+                      ? t("password.verified")
+                      : t("findId.verifySms")}
                 </button>
               </div>
             </div>
@@ -230,14 +236,14 @@ export default function ForgotPasswordPage() {
               disabled={busy}
               className="w-full rounded-full bg-gradient-to-r from-[#FF2D8D] to-indigo-500 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_30px_rgba(255,45,141,0.42)] transition hover:brightness-110 disabled:opacity-60"
             >
-              {busy ? "발송 중…" : "재설정 링크 보내기"}
+              {busy ? t("forgot.submitBusy") : t("forgot.submit")}
             </button>
           </form>
         )}
 
         <p className="mt-6 text-center text-sm text-zinc-500">
           <Link href="/login" className="font-semibold text-[#F07AB0] hover:underline">
-            로그인으로 돌아가기
+            {t("forgot.backLogin")}
           </Link>
         </p>
       </div>

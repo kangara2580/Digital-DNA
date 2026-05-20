@@ -19,7 +19,9 @@ import { useVideoCartAction } from "@/hooks/useVideoCartAction";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
 import { useVideoLike } from "@/hooks/useVideoLike";
 import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
+import { formatPriceWon } from "@/lib/exploreLocaleFormat";
 import { useVideoWishlistAction } from "@/hooks/useVideoWishlistAction";
 import {
   clonesRemaining,
@@ -155,6 +157,7 @@ function AuthRequiredModal({
   onClose: () => void;
   onGoogleStart: () => void;
 }) {
+  const { t } = useTranslation();
   if (!open) return null;
 
   return createPortal(
@@ -162,7 +165,7 @@ function AuthRequiredModal({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="로그인 또는 회원가입"
+        aria-label={t("auth.dialogAria")}
         className={`relative w-full rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
@@ -177,7 +180,7 @@ function AuthRequiredModal({
             onClose();
           }}
           className={authModalDismissButtonCls}
-          aria-label="닫기"
+          aria-label={t("a11y.close")}
         >
           ×
         </button>
@@ -190,7 +193,7 @@ function AuthRequiredModal({
         <p
           className={`relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100 ${authModalBrandHeadlineClassName}`}
         >
-          로그인/회원가입
+          {t("auth.loginSignupTitle")}
         </p>
         <AuthModalGoogleStartButton onClick={onGoogleStart} />
       </div>
@@ -229,6 +232,7 @@ export function VideoCard({
   mypageListCard = false,
   reelHoverRailLead,
 }: Props) {
+  const { t, locale } = useTranslation();
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const reduceMotion = useReducedMotion() ?? false;
@@ -319,7 +323,7 @@ export function VideoCard({
     requireAuth,
     onError: () => {
       if (typeof window !== "undefined") {
-        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
+        window.alert(t("explore.likeFailed"));
       }
     },
   });
@@ -427,10 +431,7 @@ export function VideoCard({
         ? "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md transition-[border-color,background-color] duration-200 ease-out hover:border-white/16 hover:bg-white/[0.07] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-zinc-50"
         : "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-white/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-zinc-300";
 
-  const priceLabel =
-    video.priceWon != null
-      ? `${video.priceWon.toLocaleString("ko-KR")}원`
-      : null;
+  const priceLabel = formatPriceWon(locale, video.priceWon);
   const socialLinksToShow = sellerSocialLinks;
   const sellerHref = useMemo(() => sellerProfileHrefFromVideo(video), [video]);
   const sellerName = useMemo(() => sellerDisplayNameFromVideo(video), [video]);
@@ -587,7 +588,7 @@ export function VideoCard({
             type="button"
             onClick={onPick}
             className="absolute inset-0 z-[3] cursor-pointer border-0 bg-transparent p-0"
-            aria-label={`${displayTitle(video)} — 세로 릴로 보기`}
+            aria-label={t("video.card.reelViewAria", { title: displayTitle(video) })}
           />
         ) : (
           <Link
@@ -595,8 +596,8 @@ export function VideoCard({
             className="absolute inset-0 z-[3]"
             aria-label={
               detailHref?.endsWith("/customize")
-                ? `${displayTitle(video)} 맞춤 리스킨 스튜디오`
-                : `${displayTitle(video)} 상세 페이지`
+                ? t("video.card.customizeAria", { title: displayTitle(video) })
+                : t("video.card.detailAria", { title: displayTitle(video) })
             }
           />
         )}

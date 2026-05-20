@@ -6,30 +6,20 @@ import {
   araAuthFlowWordmarkClassName,
   araWordmarkFontStyle,
 } from "@/lib/araBrandTypography";
+import { useTranslation } from "@/hooks/useTranslation";
+import { localizeApiError } from "@/lib/i18n/localizeApiError";
+import type { SiteLocale } from "@/lib/sitePreferences";
 
 const INPUT =
   "w-full rounded-xl border border-white/20 bg-black/30 px-3.5 py-3 text-sm text-zinc-100 outline-none backdrop-blur-sm transition placeholder:text-zinc-500 focus:border-[#FF2D8D]/60 focus:ring-2 focus:ring-[#FF2D8D]/26";
 
 type ApiOk =
-  | {
-      ok: true;
-      found: true;
-      maskedEmail: string;
-      hint?: string;
-    }
-  | {
-      ok: true;
-      found: false;
-      ambiguous?: boolean;
-      message?: string;
-    }
-  | {
-      ok: false;
-      error?: string;
-      message?: string;
-    };
+  | { ok: true; found: true; maskedEmail: string; hint?: string }
+  | { ok: true; found: false; ambiguous?: boolean; message?: string }
+  | { ok: false; error?: string; message?: string };
 
 export default function FindIdPage() {
+  const { t, locale } = useTranslation();
   const [nickname, setNickname] = useState("");
   const [phone, setPhone] = useState("");
   const [countryCode, setCountryCode] = useState("+82");
@@ -41,14 +31,14 @@ export default function FindIdPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<ApiOk | null>(null);
+  const loc = locale as SiteLocale;
 
   const sendSmsCode = async () => {
     setError("");
     setPhoneVerified(false);
     setSmsProof("");
-    const p = phone.trim();
-    if (!p) {
-      setError("휴대폰 번호를 먼저 입력해 주세요.");
+    if (!phone.trim()) {
+      setError(t("findId.errPhoneFirst"));
       return;
     }
     setSendingSms(true);
@@ -56,14 +46,14 @@ export default function FindIdPage() {
       const res = await fetch("/api/auth/sms/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ context: "find-email", countryCode, phone: p }),
+        body: JSON.stringify({ context: "find-email", countryCode, phone: phone.trim() }),
       });
       const data = (await res.json()) as { ok?: boolean; message?: string };
       if (!res.ok || !data.ok) {
-        setError(data.message || "인증번호 발송에 실패했습니다.");
+        setError(localizeApiError(loc, data.message));
       }
     } catch {
-      setError("인증번호 발송 중 오류가 발생했습니다.");
+      setError(t("findId.errSmsSendGeneric"));
     } finally {
       setSendingSms(false);
     }
@@ -71,10 +61,8 @@ export default function FindIdPage() {
 
   const verifySmsCode = async () => {
     setError("");
-    const p = phone.trim();
-    const code = smsCode.trim();
-    if (!p || !code) {
-      setError("휴대폰 번호와 인증번호를 입력해 주세요.");
+    if (!phone.trim() || !smsCode.trim()) {
+      setError(t("findId.errPhoneAndCode"));
       return;
     }
     setVerifyingSms(true);
@@ -85,8 +73,8 @@ export default function FindIdPage() {
         body: JSON.stringify({
           context: "find-email",
           countryCode,
-          phone: p,
-          code,
+          phone: phone.trim(),
+          code: smsCode.trim(),
         }),
       });
       const data = (await res.json()) as {
@@ -95,7 +83,7 @@ export default function FindIdPage() {
         proof?: string;
       };
       if (!res.ok || !data.ok || !data.proof) {
-        setError(data.message || "인증번호 확인에 실패했습니다.");
+        setError(localizeApiError(loc, data.message));
         setPhoneVerified(false);
         setSmsProof("");
         return;
@@ -103,7 +91,7 @@ export default function FindIdPage() {
       setPhoneVerified(true);
       setSmsProof(data.proof);
     } catch {
-      setError("인증번호 확인 중 오류가 발생했습니다.");
+      setError(t("findId.errVerifyGeneric"));
     } finally {
       setVerifyingSms(false);
     }
@@ -116,15 +104,15 @@ export default function FindIdPage() {
     const n = nickname.trim();
     const p = phone.trim();
     if (!n && !p) {
-      setError("닉네임 또는 휴대폰 번호 중 하나 이상 입력해 주세요.");
+      setError(t("findId.errNicknameOrPhone"));
       return;
     }
     if (!p) {
-      setError("보안을 위해 휴대폰 번호 입력이 필요합니다.");
+      setError(t("findId.errPhoneRequired"));
       return;
     }
     if (!phoneVerified || !smsProof) {
-      setError("보안을 위해 휴대폰 SMS 인증을 먼저 완료해 주세요.");
+      setError(t("findId.errSmsFirst"));
       return;
     }
     setBusy(true);
@@ -141,12 +129,12 @@ export default function FindIdPage() {
       });
       const data = (await res.json()) as ApiOk & { message?: string };
       if (!res.ok) {
-        setError(data.message || "요청을 처리하지 못했습니다.");
+        setError(localizeApiError(loc, data.message));
         return;
       }
       setResult(data);
     } catch {
-      setError("네트워크 오류가 발생했습니다.");
+      setError(t("findId.errNetwork"));
     } finally {
       setBusy(false);
     }
@@ -159,12 +147,10 @@ export default function FindIdPage() {
         <p className={araAuthFlowWordmarkClassName} style={araWordmarkFontStyle}>
           ARA
         </p>
-        <h1 className="mt-3 text-2xl font-black tracking-tight text-white">아이디(이메일) 찾기</h1>
-        <p className="mt-2 text-sm text-zinc-400">
-          로그인 아이디는 <strong className="text-zinc-300">이메일 주소</strong>입니다. 가입 시 등록한{" "}
-          <strong className="text-zinc-300">닉네임</strong> 또는{" "}
-          <strong className="text-zinc-300">휴대폰 번호</strong>로 조회하면 일부만 표시됩니다.
-        </p>
+        <h1 className="mt-3 text-2xl font-black tracking-tight text-white">
+          {t("findId.titleFull")}
+        </h1>
+        <p className="mt-2 text-sm text-zinc-400">{t("findId.leadDetail")}</p>
 
         {error ? (
           <p className="mt-5 rounded-xl border border-reels-crimson/45 bg-reels-crimson/12 px-3 py-2 text-[13px] font-semibold text-[#F9ECF3]">
@@ -174,18 +160,22 @@ export default function FindIdPage() {
 
         <form className="mt-6 space-y-4" onSubmit={onSubmit}>
           <div>
-            <label className="mb-1.5 block text-[12px] font-bold text-zinc-300">닉네임 (선택)</label>
+            <label className="mb-1.5 block text-[12px] font-bold text-zinc-300">
+              {t("findId.nicknameOptional")}
+            </label>
             <input
               className={INPUT}
               type="text"
               autoComplete="nickname"
-              placeholder="가입 시 닉네임"
+              placeholder={t("findId.nicknamePh")}
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-[12px] font-bold text-zinc-300">휴대폰 번호 (필수, SMS 인증)</label>
+            <label className="mb-1.5 block text-[12px] font-bold text-zinc-300">
+              {t("findId.phoneRequired")}
+            </label>
             <div className="flex gap-2">
               <select
                 className={`${INPUT} max-w-[110px]`}
@@ -219,7 +209,7 @@ export default function FindIdPage() {
                 disabled={sendingSms}
                 className="shrink-0 rounded-xl border border-reels-crimson/42 bg-reels-crimson/12 px-3 py-2 text-[12px] font-bold text-[#F6D5E8] transition hover:bg-reels-crimson/22 disabled:opacity-50"
               >
-                {sendingSms ? "발송 중…" : "코드 발송"}
+                {sendingSms ? t("findId.sendingSms") : t("findId.sendCode")}
               </button>
             </div>
             <div className="mt-2 flex gap-2">
@@ -227,7 +217,7 @@ export default function FindIdPage() {
                 className={INPUT}
                 type="text"
                 inputMode="numeric"
-                placeholder="인증번호 입력"
+                placeholder={t("findId.codePh")}
                 value={smsCode}
                 onChange={(e) => setSmsCode(e.target.value)}
               />
@@ -237,7 +227,11 @@ export default function FindIdPage() {
                 disabled={verifyingSms}
                 className="shrink-0 rounded-xl border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-[12px] font-bold text-emerald-300 transition hover:bg-emerald-500/20 disabled:opacity-50"
               >
-                {verifyingSms ? "확인 중…" : phoneVerified ? "인증 완료" : "인증 확인"}
+                {verifyingSms
+                  ? t("findId.verifyingSms")
+                  : phoneVerified
+                    ? t("password.verified")
+                    : t("findId.verifySms")}
               </button>
             </div>
           </div>
@@ -246,32 +240,33 @@ export default function FindIdPage() {
             disabled={busy}
             className="w-full rounded-full bg-gradient-to-r from-[#FF2D8D] to-indigo-500 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_30px_rgba(255,45,141,0.42)] transition hover:brightness-110 disabled:opacity-60"
           >
-            {busy ? "조회 중…" : "이메일 힌트 받기"}
+            {busy ? t("findId.submitBusy") : t("findId.submitHint")}
           </button>
         </form>
 
         {result && result.ok && "found" in result && result.found ? (
           <div className="mt-6 rounded-xl border border-emerald-500/45 bg-emerald-500/10 px-3 py-3 text-[13px] text-emerald-100">
-            <p className="font-bold">조회 결과</p>
+            <p className="font-bold">{t("findId.resultTitle")}</p>
             <p className="mt-2 font-mono text-[15px] text-white">{result.maskedEmail}</p>
-            {result.hint ? <p className="mt-2 text-[12px] text-emerald-200/90">{result.hint}</p> : null}
+            {result.hint ? (
+              <p className="mt-2 text-[12px] text-emerald-200/90">{result.hint}</p>
+            ) : null}
           </div>
         ) : null}
 
         {result && result.ok && "found" in result && !result.found ? (
           <p className="mt-6 rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-3 text-[13px] text-amber-100">
-            {result.message ||
-              "일치하는 정보가 없습니다."}
+            {localizeApiError(loc, result.message) || t("findId.notFound")}
           </p>
         ) : null}
 
         <p className="mt-6 text-center text-sm text-zinc-500">
           <Link href="/login" className="font-semibold text-[#F07AB0] hover:underline">
-            로그인으로 돌아가기
+            {t("findId.backLogin")}
           </Link>
           {" · "}
           <Link href="/forgot-password" className="font-semibold text-[#F07AB0] hover:underline">
-            비밀번호 찾기
+            {t("auth.link.forgotPassword")}
           </Link>
         </p>
       </div>

@@ -26,7 +26,10 @@ import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
 import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
 import { useVideoCartAction } from "@/hooks/useVideoCartAction";
 import { useVideoLike } from "@/hooks/useVideoLike";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
+import { formatPriceWon } from "@/lib/exploreLocaleFormat";
+import type { SiteLocale } from "@/lib/sitePreferences";
 import { useVideoWishlistAction } from "@/hooks/useVideoWishlistAction";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import {
@@ -136,6 +139,7 @@ function MarqueeCardPreview({ video }: { video: FeedVideo }) {
 }
 
 export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
+  const { t, locale } = useTranslation();
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const displayTitle = useVideoDisplayTitle();
@@ -147,10 +151,7 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
   const authPromptScrollYRef = useRef(0);
 
   const thumbnailSrc = sanitizePosterSrc(video.poster);
-  const priceLabel =
-    video.priceWon != null
-      ? `${video.priceWon.toLocaleString("ko-KR")}원`
-      : null;
+  const priceLabel = formatPriceWon(locale as SiteLocale, video.priceWon);
 
   const requireAuth = useCallback(() => {
     if (authLoading) return false;
@@ -173,7 +174,7 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
     requireAuth,
     onError: () => {
       if (typeof window !== "undefined") {
-        window.alert("좋아요 처리 중 문제가 발생했어요. 다시 시도해 주세요.");
+        window.alert(t("explore.likeFailed"));
       }
     },
   });

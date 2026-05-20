@@ -32,7 +32,7 @@ export function SitePreferencesMenu({
   const localeGroup = (
     <div
       role="group"
-      aria-label="언어 선택"
+      aria-label={t("settings.language.selectAria")}
       className="flex items-center rounded-full border border-white/10 bg-black/20 p-0.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/80"
     >
       <button
@@ -44,7 +44,7 @@ export function SitePreferencesMenu({
             : "text-zinc-500 hover:text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900"
         }`}
         aria-pressed={locale === "ko"}
-        title="한국어"
+        title={t("locale.option.ko")}
       >
         ko
       </button>
@@ -57,7 +57,7 @@ export function SitePreferencesMenu({
             : "text-zinc-500 hover:text-zinc-300 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:text-zinc-900"
         }`}
         aria-pressed={locale === "en"}
-        title="English"
+        title={t("locale.option.en")}
       >
         en
       </button>
@@ -65,15 +65,19 @@ export function SitePreferencesMenu({
   );
 
   const themeBtn = (
-    <div role="group" aria-label="화면 테마" className="flex items-center">
+    <div role="group" aria-label={t("settings.theme.groupAria")} className="flex items-center">
       <button
         type="button"
         onClick={toggleTheme}
         className={navActionClass}
         aria-label={
-          themeMode === "dark" ? "화이트 테마로 전환" : "다크 테마로 전환"
+          themeMode === "dark"
+            ? t("settings.theme.switchToLight")
+            : t("settings.theme.switchToDark")
         }
-        title={themeMode === "dark" ? "화이트 버전" : "다크 버전"}
+        title={
+          themeMode === "dark" ? t("settings.theme.light") : t("settings.theme.dark")
+        }
       >
         {themeMode === "dark" ? (
           <Sun className="h-[19px] w-[19px]" strokeWidth={iconStroke} />

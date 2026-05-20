@@ -16,7 +16,7 @@ import { ExploreReelSlide } from "@/components/ExploreReelSlide";
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { VideoCard } from "@/components/VideoCard";
 import { buildWishlistVideoLookup } from "@/data/videoCatalog";
-import { getMetricsForVideoDetail } from "@/data/trendingStats";
+import { getGridCardMetrics } from "@/data/trendingStats";
 import type { FeedVideo } from "@/data/videos";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -102,7 +102,8 @@ function ExploreBrowseGrid({
               footerExtension={
                 <TrendingVideoStatsFooter
                   hideMetricLabels
-                  metrics={getMetricsForVideoDetail(video.id)}
+                  fullNumberDisplay={browseCardTarget === "purchase"}
+                  metrics={getGridCardMetrics(video)}
                 />
               }
             />

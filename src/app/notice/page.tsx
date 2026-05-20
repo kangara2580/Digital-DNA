@@ -2,6 +2,8 @@ import { NoticeComposer } from "@/components/NoticeComposer";
 import { NoticeListClient } from "@/components/NoticeListClient";
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
+import { translate } from "@/lib/i18n/dictionaries";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
 import { listNotices } from "@/lib/noticesRepo";
 
 export async function generateMetadata() {
@@ -14,11 +16,12 @@ export async function generateMetadata() {
 export const dynamic = "force-dynamic";
 
 export default async function NoticePage() {
+  const locale = await getSiteLocale();
   const rows = await listNotices();
 
   return (
     <FooterLegalPageShell
-      title="공지사항"
+      title={translate(locale, "notice.pageTitle")}
       withCard={false}
       mainMaxClass="max-w-4xl"
       showTitle={false}

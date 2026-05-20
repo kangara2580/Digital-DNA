@@ -7,11 +7,13 @@ import {
   araAuthFlowWordmarkClassName,
   araWordmarkFontStyle,
 } from "@/lib/araBrandTypography";
+import { useTranslation } from "@/hooks/useTranslation";
+import { localizeApiError } from "@/lib/i18n/localizeApiError";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import type { SiteLocale } from "@/lib/sitePreferences";
 
 const INPUT =
   "w-full rounded-xl border border-white/20 bg-black/30 px-3.5 py-3 text-sm text-zinc-100 outline-none backdrop-blur-sm transition placeholder:text-zinc-500 focus:border-[#FF2D8D]/60 focus:ring-2 focus:ring-[#FF2D8D]/26";
-const SAME_PASSWORD_MESSAGE = "기존 비밀번호와 동일해요. 새로운 비밀번호로 변경해 주세요.";
 const RECOVERY_COOKIE = "rm_recovery_in_progress";
 
 function setRecoveryCookie() {
@@ -38,6 +40,8 @@ function isSamePasswordError(message: string): boolean {
 }
 
 export default function ResetPasswordPage() {
+  const { t, locale } = useTranslation();
+  const loc = locale as SiteLocale;
   const [initializing, setInitializing] = useState(true);
   const [ready, setReady] = useState(false);
   const [password, setPassword] = useState("");
@@ -65,7 +69,7 @@ export default function ResetPasswordPage() {
         const urlError =
           searchParams.get("error_description") || searchParams.get("error") || "";
         if (urlError) {
-          linkError = "유효한 재설정 링크가 아니거나 만료되었습니다. 비밀번호 찾기를 다시 시도해 주세요.";
+          linkError = t("reset.errInvalidLink");
         }
 
         const code = searchParams.get("code");
@@ -82,7 +86,7 @@ export default function ResetPasswordPage() {
         if (code) {
           const { error: exchangeErr } = await supabase.auth.exchangeCodeForSession(code);
           if (exchangeErr) {
-            linkError = exchangeErr.message || "재설정 링크 확인에 실패했습니다. 다시 시도해 주세요.";
+            linkError = localizeApiError(loc, exchangeErr.message) || t("reset.errLinkCheck");
           }
         } else if (tokenHash && otpType) {
           const { error: verifyErr } = await supabase.auth.verifyOtp({
@@ -90,7 +94,7 @@ export default function ResetPasswordPage() {
             type: otpType as EmailOtpType,
           });
           if (verifyErr) {
-            linkError = verifyErr.message || "재설정 링크 확인에 실패했습니다. 다시 시도해 주세요.";
+            linkError = localizeApiError(loc, verifyErr.message) || t("reset.errLinkCheck");
           }
         } else if (hashAccessToken && hashRefreshToken) {
           const { error: setSessionErr } = await supabase.auth.setSession({
@@ -98,7 +102,8 @@ export default function ResetPasswordPage() {
             refresh_token: hashRefreshToken,
           });
           if (setSessionErr) {
-            linkError = setSessionErr.message || "재설정 링크 확인에 실패했습니다. 다시 시도해 주세요.";
+            linkError =
+              localizeApiError(loc, setSessionErr.message) || t("reset.errLinkCheck");
           }
         }
 
@@ -118,13 +123,12 @@ export default function ResetPasswordPage() {
             clearRecoveryCookie();
           }
           if (hasSession && (code || tokenHash || hashAccessToken)) {
-            // URL에서 일회성 인증 파라미터를 제거해 재사용/노출을 줄입니다.
             window.history.replaceState({}, "", "/reset-password");
           }
         }
       } catch {
         if (!cancelled) {
-          setError("링크 확인 중 오류가 발생했습니다. 비밀번호 찾기를 다시 시도해 주세요.");
+          setError(t("reset.errLinkBoot"));
         }
       } finally {
         if (!cancelled) setInitializing(false);
@@ -155,22 +159,22 @@ export default function ResetPasswordPage() {
       cancelled = true;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [loc, t]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (password.length < 8) {
-      setError("비밀번호는 8자 이상이어야 합니다.");
+      setError(t("reset.errTooShort"));
       return;
     }
     if (password !== confirm) {
-      setError("비밀번호와 확인이 일치하지 않습니다.");
+      setError(t("reset.errMismatchConfirm"));
       return;
     }
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
-      setError("Supabase 환경변수가 없습니다.");
+      setError(t("login.supabaseMissing"));
       return;
     }
     setBusy(true);
@@ -183,7 +187,7 @@ export default function ResetPasswordPage() {
           password,
         });
         if (!sameCheckErr) {
-          setError(SAME_PASSWORD_MESSAGE);
+          setError(t("reset.samePassword"));
           return;
         }
       }
@@ -191,10 +195,10 @@ export default function ResetPasswordPage() {
       const { error: upErr } = await supabase.auth.updateUser({ password });
       if (upErr) {
         if (isSamePasswordError(upErr.message || "")) {
-          setError(SAME_PASSWORD_MESSAGE);
+          setError(t("reset.samePassword"));
           return;
         }
-        setError(upErr.message || "비밀번호를 저장하지 못했습니다.");
+        setError(localizeApiError(loc, upErr.message) || t("reset.errSaveFail"));
         return;
       }
       clearRecoveryCookie();
@@ -202,7 +206,7 @@ export default function ResetPasswordPage() {
       setDone(true);
       setReady(false);
     } catch {
-      setError("처리 중 오류가 발생했습니다.");
+      setError(t("password.processError"));
     } finally {
       setBusy(false);
     }
@@ -215,22 +219,20 @@ export default function ResetPasswordPage() {
         <p className={araAuthFlowWordmarkClassName} style={araWordmarkFontStyle}>
           ARA
         </p>
-        <h1 className="mt-3 text-2xl font-black tracking-tight text-white">새 비밀번호 설정</h1>
-        <p className="mt-2 text-sm text-zinc-400">
-          이메일로 받은 링크를 연 뒤, 아래에 새 비밀번호를 입력해 주세요.
-        </p>
+        <h1 className="mt-3 text-2xl font-black tracking-tight text-white">{t("reset.title")}</h1>
+        <p className="mt-2 text-sm text-zinc-400">{t("reset.lead")}</p>
 
         {initializing && !done ? (
-          <p className="mt-6 text-[13px] text-zinc-400">재설정 링크를 확인하고 있습니다…</p>
+          <p className="mt-6 text-[13px] text-zinc-400">{t("reset.checkingLink")}</p>
         ) : null}
 
         {!initializing && !ready && !done ? (
           <p className="mt-6 text-[13px] text-zinc-500">
-            유효한 재설정 링크가 아니거나 만료되었을 수 있습니다.{" "}
+            {t("reset.invalidLink")}{" "}
             <Link href="/forgot-password" className="font-semibold text-[#F07AB0] hover:underline">
-              비밀번호 찾기
+              {t("reset.invalidLinkCta")}
             </Link>
-            를 다시 시도해 주세요.
+            {t("reset.invalidLinkSuffix")}
           </p>
         ) : null}
 
@@ -242,14 +244,16 @@ export default function ResetPasswordPage() {
 
         {done ? (
           <p className="mt-6 rounded-xl border border-emerald-500/45 bg-emerald-500/10 px-3 py-3 text-[13px] font-semibold text-emerald-200">
-            비밀번호가 변경되었습니다. 새 비밀번호로 로그인해 주세요.
+            {t("reset.success")}
           </p>
         ) : null}
 
         {!initializing && ready && !done ? (
           <form className="mt-6 space-y-4" onSubmit={onSubmit}>
             <div>
-              <label className="mb-1.5 block text-[12px] font-bold text-zinc-300">새 비밀번호</label>
+              <label className="mb-1.5 block text-[12px] font-bold text-zinc-300">
+                {t("reset.newPassword")}
+              </label>
               <input
                 className={INPUT}
                 type="password"
@@ -261,7 +265,9 @@ export default function ResetPasswordPage() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-[12px] font-bold text-zinc-300">새 비밀번호 확인</label>
+              <label className="mb-1.5 block text-[12px] font-bold text-zinc-300">
+                {t("reset.confirmPassword")}
+              </label>
               <input
                 className={INPUT}
                 type="password"
@@ -277,14 +283,14 @@ export default function ResetPasswordPage() {
               disabled={busy}
               className="w-full rounded-full bg-gradient-to-r from-[#FF2D8D] to-indigo-500 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_30px_rgba(255,45,141,0.42)] transition hover:brightness-110 disabled:opacity-60"
             >
-              {busy ? "저장 중…" : "비밀번호 저장"}
+              {busy ? t("reset.saveBusy") : t("reset.submit")}
             </button>
           </form>
         ) : null}
 
         <p className="mt-6 text-center text-sm text-zinc-500">
           <Link href="/login" className="font-semibold text-[#F07AB0] hover:underline">
-            로그인으로 이동
+            {t("reset.goLogin")}
           </Link>
         </p>
       </div>

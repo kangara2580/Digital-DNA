@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useStudioHistory } from "@/context/StudioHistoryContext";
+import { useTranslation } from "@/hooks/useTranslation";
+import { localizeApiError } from "@/lib/i18n/localizeApiError";
+import type { SiteLocale } from "@/lib/sitePreferences";
 
 type JobPayload = {
   id: string;
@@ -15,27 +18,31 @@ type JobPayload = {
   normalizedBackgroundPrompt?: string;
 };
 
-function statusLabel(status: string): string {
-  switch (status) {
-    case "queued":
-      return "대기 중";
-    case "running":
-      return "생성 중";
-    case "succeeded":
-      return "완료";
-    case "failed":
-      return "실패";
-    default:
-      return status;
-  }
-}
-
 export function GenerationResultView({ jobId }: { jobId: string }) {
+  const { t, locale } = useTranslation();
   const { append: appendStudioHistory } = useStudioHistory();
   const [job, setJob] = useState<JobPayload | null>(null);
   const [phase, setPhase] = useState<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const studioHistoryAppendedRef = useRef<string | null>(null);
+
+  const statusLabel = useCallback(
+    (status: string): string => {
+      switch (status) {
+        case "queued":
+          return t("generation.status.queued");
+        case "running":
+          return t("generation.status.running");
+        case "succeeded":
+          return t("generation.status.succeeded");
+        case "failed":
+          return t("generation.status.failed");
+        default:
+          return status;
+      }
+    },
+    [t],
+  );
 
   const fetchJob = useCallback(async () => {
     const res = await fetch(
@@ -44,15 +51,13 @@ export function GenerationResultView({ jobId }: { jobId: string }) {
     const data = (await res.json()) as { job?: JobPayload; error?: string };
     if (!res.ok) {
       if (data.error === "job_not_found") {
-        throw new Error(
-          "작업을 찾을 수 없어요. 서버가 재시작됐거나 링크가 잘못됐을 수 있어요.",
-        );
+        throw new Error(t("generation.err.jobNotFound"));
       }
-      throw new Error("작업 정보를 불러오지 못했습니다.");
+      throw new Error(t("generation.err.loadFail"));
     }
-    if (!data.job) throw new Error("응답이 올바르지 않습니다.");
+    if (!data.job) throw new Error(t("generation.err.badResponse"));
     return data.job;
-  }, [jobId]);
+  }, [jobId, t]);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,13 +70,17 @@ export function GenerationResultView({ jobId }: { jobId: string }) {
       } catch (e) {
         if (cancelled) return;
         setPhase("error");
-        setErrorMessage(e instanceof Error ? e.message : "오류가 발생했습니다.");
+        setErrorMessage(
+          e instanceof Error
+            ? localizeApiError(locale as SiteLocale, e.message)
+            : t("generation.err.generic"),
+        );
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [fetchJob]);
+  }, [fetchJob, locale, t]);
 
   useEffect(() => {
     if (!job || job.status !== "succeeded" || !job.outputVideoUrl) return;
@@ -111,17 +120,17 @@ export function GenerationResultView({ jobId }: { jobId: string }) {
     <div className="mx-auto max-w-[900px]">
       <header className="mb-8 text-center sm:mb-10">
         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-reels-cyan/90">
-          AI 생성
+          {t("generation.badge")}
         </p>
         <h1 className="mt-2 text-[22px] font-extrabold tracking-tight text-zinc-100 sm:text-[26px] [html[data-theme='light']_&]:text-zinc-900">
-          생성 결과
+          {t("generation.title")}
         </h1>
       </header>
 
       {phase === "loading" ? (
         <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-black/30 py-20 text-zinc-400">
           <Loader2 className="h-8 w-8 animate-spin text-reels-cyan/80" aria-hidden />
-          <p className="text-[13px]">불러오는 중…</p>
+          <p className="text-[13px]">{t("generation.loading")}</p>
         </div>
       ) : null}
 
@@ -142,8 +151,7 @@ export function GenerationResultView({ jobId }: { jobId: string }) {
                 {statusLabel(job.status)} — {pct}%
               </p>
               <p className="mt-2 text-[12px] text-zinc-500">
-                완료되면 아래에 자동으로 표시됩니다. 이 탭을 닫아도 서버 작업은
-                계속됩니다.
+                {t("generation.progressHint")}
               </p>
               <div className="mx-auto mt-4 h-2 max-w-md overflow-hidden rounded-full bg-white/10">
                 <div
@@ -156,7 +164,8 @@ export function GenerationResultView({ jobId }: { jobId: string }) {
 
           {job.status === "failed" ? (
             <p className="rounded-2xl border border-reels-crimson/35 bg-reels-crimson/10 px-5 py-6 text-center text-[14px] text-zinc-200">
-              {job.error?.trim() || "생성에 실패했습니다."}
+              {localizeApiError(locale as SiteLocale, job.error) ||
+                t("generation.err.failed")}
             </p>
           ) : null}
 
@@ -174,7 +183,7 @@ export function GenerationResultView({ jobId }: { jobId: string }) {
               </div>
               {job.normalizedBackgroundPrompt ? (
                 <p className="border-t border-white/10 px-4 py-3 text-[12px] text-zinc-500">
-                  배경 프롬프트:{" "}
+                  {t("generation.bgPromptLabel")}{" "}
                   <span className="text-zinc-400">{job.normalizedBackgroundPrompt}</span>
                 </p>
               ) : null}
@@ -183,7 +192,7 @@ export function GenerationResultView({ jobId }: { jobId: string }) {
 
           {job.status === "succeeded" && !job.outputVideoUrl ? (
             <p className="text-center text-[13px] text-zinc-500">
-              완료되었지만 결과 URL이 없습니다. 임시 저장에서 다시 확인해 주세요.
+              {t("generation.err.noOutputUrl")}
             </p>
           ) : null}
 
@@ -192,19 +201,19 @@ export function GenerationResultView({ jobId }: { jobId: string }) {
               href={`/video/${job.videoId}/customize`}
               className="inline-flex rounded-full border border-white/15 bg-white/[0.06] px-5 py-2.5 text-[13px] font-bold text-zinc-200 transition hover:border-reels-cyan/35 hover:text-white"
             >
-              맞춤 리스킨으로 돌아가기
+              {t("generation.cta.customize")}
             </Link>
             <Link
               href="/mypage?tab=drafts"
               className="inline-flex rounded-full border border-reels-cyan/35 bg-reels-cyan/12 px-5 py-2.5 text-[13px] font-bold text-reels-cyan hover:bg-reels-cyan/20"
             >
-              마이페이지 · 임시 저장
+              {t("generation.cta.drafts")}
             </Link>
             <Link
               href="/explore"
               className="inline-flex rounded-full px-4 py-2.5 text-[13px] font-semibold text-zinc-500 hover:text-zinc-300"
             >
-              탐색 탭
+              {t("generation.cta.explore")}
             </Link>
           </div>
         </div>

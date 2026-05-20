@@ -537,8 +537,27 @@ function ReelDesktopRail({
 function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
   const { t, locale } = useTranslation();
   const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
-  const metrics = useMemo(() => getMetricsForVideoDetail(video.id), [video.id]);
-  const commerce = useMemo(() => getCommerceMeta(video.id), [video.id]);
+  const metrics = useMemo(() => {
+    if (video.listing) {
+      const views = video.listing.views;
+      const sales = video.listing.salesCount;
+      const p = video.priceWon ?? 0;
+      return {
+        cumulativeRevenueWon: p * sales,
+        totalViews: Math.max(0, views),
+        totalLikes: Math.max(0, Math.floor(views * 0.028)),
+        growthPercent: 0,
+      };
+    }
+    return getMetricsForVideoDetail(video.id);
+  }, [video]);
+  const commerce = useMemo(
+    () =>
+      video.listing
+        ? { salesCount: video.listing.salesCount, edition: "open" as const }
+        : getCommerceMeta(video.id),
+    [video],
+  );
   const revenueUp = metrics.growthPercent >= 0;
 
   return (

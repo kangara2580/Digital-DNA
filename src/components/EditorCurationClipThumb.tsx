@@ -4,7 +4,10 @@ import { useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import type { FeedVideo } from "@/data/videos";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
+import { formatPriceWon } from "@/lib/exploreLocaleFormat";
+import type { SiteLocale } from "@/lib/sitePreferences";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 type Props = {
@@ -14,6 +17,7 @@ type Props = {
 };
 
 export function EditorCurationClipThumb({ video, className }: Props) {
+  const { locale } = useTranslation();
   const reduceMotion = useReducedMotion() ?? false;
   const displayTitle = useVideoDisplayTitle();
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(
@@ -59,7 +63,7 @@ export function EditorCurationClipThumb({ video, className }: Props) {
       </p>
       {video.priceWon != null ? (
         <p className="mt-0.5 text-left text-[11px] font-semibold tabular-nums text-reels-cyan sm:text-[12px]">
-          {video.priceWon.toLocaleString("ko-KR")}원
+          {formatPriceWon(locale as SiteLocale, video.priceWon)}
         </p>
       ) : null}
     </Link>

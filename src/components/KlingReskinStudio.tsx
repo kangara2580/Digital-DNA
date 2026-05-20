@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ReskinGenerationQueueModal } from "@/components/ReskinGenerationQueueModal";
 import { DEMO_FACE_PROFILES } from "@/data/demoFaceProfiles";
 import type { FeedVideo } from "@/data/videos";
+import { useTranslation } from "@/hooks/useTranslation";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 type Props = {
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export function KlingReskinStudio({ video, creationFlow = false }: Props) {
+  const { t } = useTranslation();
   const [profileId, setProfileId] = useState<string | null>(DEMO_FACE_PROFILES[0]?.id ?? null);
   const [faceName, setFaceName] = useState<string | null>(null);
   const [prompt, setPrompt] = useState("");
@@ -56,12 +58,10 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
             id="kling-reskin-heading"
             className="mt-1 text-xl font-extrabold tracking-tight text-zinc-100 sm:text-2xl"
           >
-            AI 리스킨 스튜디오
+            {t("kling.studio.title")}
           </h2>
           <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-zinc-500">
-            {creationFlow
-              ? "구매 후 이어지는 창작 단계입니다. 프로필과 배경을 지정한 뒤 생성을 눌러 주세요."
-              : "모션 가이드를 유지한 채 얼굴·배경만 교체합니다. 서비스 연동 시 이 화면에서 바로 결과를 받게 됩니다."}
+            {creationFlow ? t("kling.studio.leadPurchase") : t("kling.studio.leadDemo")}
           </p>
         </div>
       </div>
@@ -69,7 +69,7 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
       <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
         <div className="min-w-0">
           <p className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-            원본 모션 가이드
+            {t("kling.studio.motionGuide")}
           </p>
           <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black/40">
             <div
@@ -90,7 +90,7 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
                   <div className="reels-scan-line" />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="rounded-full border border-reels-cyan/40 bg-black/60 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-reels-cyan">
-                      처리 중…
+                      {t("kling.studio.processing")}
                     </span>
                   </div>
                 </div>
@@ -101,21 +101,15 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
 
         <div className="flex min-w-0 flex-col gap-4">
           <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-            소스 & 프롬프트
+            {t("kling.studio.sourcePrompt")}
           </p>
 
           {creationFlow ? (
             <div className="reels-glass-card rounded-xl p-4">
               <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                ① 설정 — AI 프로필 설정
+                {t("kling.studio.step1Profile")}
               </p>
-              <p className="mt-1 text-[12px] text-zinc-400">
-                창작에 쓸 얼굴입니다.{" "}
-                <a href="/settings?tab=profile" className="text-reels-cyan/90 underline-offset-2 hover:underline">
-                  설정 › AI 프로필 설정
-                </a>
-                에서 등록하는 이미지와 동일한 데모 세트입니다.
-              </p>
+              <p className="mt-1 text-[12px] text-zinc-400">{t("kling.studio.step1Lead")}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {DEMO_FACE_PROFILES.map((p) => {
                   const on = profileId === p.id;
@@ -148,7 +142,7 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
 
           <div className="reels-glass-card rounded-xl p-4">
             <label className="block text-[12px] font-semibold text-zinc-300">
-              {creationFlow ? "② 다른 얼굴 이미지 (선택)" : "레퍼런스 얼굴 이미지"}
+              {creationFlow ? t("kling.studio.step2AltFace") : t("kling.studio.refFace")}
             </label>
             <input
               ref={fileRef}
@@ -170,14 +164,14 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
               htmlFor="reskin-bg-prompt"
               className="block text-[12px] font-semibold text-zinc-300"
             >
-              {creationFlow ? "③ 배경 프롬프트" : "배경 프롬프트"}
+              {t("kling.studio.bgPrompt")}
             </label>
             <textarea
               id="reskin-bg-prompt"
               rows={3}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder='예: 눈 내리는 파리 에펠탑 앞, 시네마틱 · 네온이 비치는 비 오는 도쿄 골목'
+              placeholder={t("kling.studio.bgPromptPh")}
               className="mt-2 w-full resize-none rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-[13px] text-zinc-100 placeholder:text-zinc-600 focus:border-reels-cyan/50 focus:outline-none focus:ring-1 focus:ring-reels-cyan/40"
             />
           </div>
@@ -188,7 +182,7 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
         <div className="min-w-0 flex-1 sm:max-w-md">
           <div className="flex items-center justify-between gap-2">
             <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-              모션 강도
+              {t("kling.studio.motionStrength")}
             </span>
             <span className="font-mono text-sm font-bold tabular-nums text-reels-cyan">
               {strength}%
@@ -236,7 +230,7 @@ export function KlingReskinStudio({ video, creationFlow = false }: Props) {
           <div className="relative mt-2 flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-reels-crimson/25 via-reels-void to-reels-cyan/20">
             <div className="absolute inset-0 reels-data-stream opacity-60" />
             <span className="relative z-10 rounded border border-reels-cyan/30 bg-black/55 px-3 py-2 text-center text-[11px] font-bold text-zinc-300">
-              API 연결 시 결과가 표시됩니다
+              {t("kling.studio.apiPlaceholder")}
             </span>
           </div>
         </div>

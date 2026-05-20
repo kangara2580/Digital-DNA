@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { localizeApiError } from "@/lib/i18n/localizeApiError";
 import { parseSafePaymentNextParam, videoIdFromPurchaseCompletePath } from "@/lib/safePaymentNextPath";
+import type { SiteLocale } from "@/lib/sitePreferences";
 
 type ConfirmState =
   | { status: "confirming" }
@@ -18,9 +21,10 @@ export function TossConfirmClient({
   paymentKey: string | null;
   orderId: string | null;
   amount: string | null;
-  /** `/payments/toss/success?next=...` — 검증 후 우선 사용 */
   nextRedirect?: string | null;
 }) {
+  const { t, locale } = useTranslation();
+  const loc = locale as SiteLocale;
   const [state, setState] = useState<ConfirmState>({ status: "confirming" });
 
   const payload = useMemo(() => {
@@ -30,7 +34,7 @@ export function TossConfirmClient({
 
   useEffect(() => {
     if (!payload || !Number.isFinite(payload.amount)) {
-      setState({ status: "failed", message: "결제 승인 정보가 올바르지 않습니다." });
+      setState({ status: "failed", message: t("toss.confirm.invalidPayload") });
       return;
     }
 
@@ -52,7 +56,9 @@ export function TossConfirmClient({
 
         if (cancelled) return;
         if (!response.ok || !data?.ok) {
-          throw new Error(data?.message ?? data?.error ?? "결제 승인에 실패했습니다.");
+          throw new Error(
+            localizeApiError(loc, data?.message ?? data?.error) || t("toss.confirm.fail"),
+          );
         }
 
         setState({
@@ -64,7 +70,10 @@ export function TossConfirmClient({
         if (cancelled) return;
         setState({
           status: "failed",
-          message: error instanceof Error ? error.message : "결제 승인에 실패했습니다.",
+          message:
+            error instanceof Error
+              ? localizeApiError(loc, error.message)
+              : t("toss.confirm.fail"),
         });
       }
     }
@@ -73,16 +82,14 @@ export function TossConfirmClient({
     return () => {
       cancelled = true;
     };
-  }, [payload]);
+  }, [payload, loc, t]);
 
   if (state.status === "confirming") {
     return (
       <section className="w-full max-w-md rounded-lg border border-white/10 bg-white/[0.05] p-8 text-center">
         <p className="text-sm font-bold text-[#ff7abf]">Toss Payments</p>
-        <h1 className="mt-3 text-3xl font-black">결제 승인 중입니다</h1>
-        <p className="mt-3 text-sm text-zinc-400">
-          결제 정보를 서버에서 한 번 더 검증하고 있습니다.
-        </p>
+        <h1 className="mt-3 text-3xl font-black">{t("toss.confirming.title")}</h1>
+        <p className="mt-3 text-sm text-zinc-400">{t("toss.confirming.lead")}</p>
       </section>
     );
   }
@@ -90,14 +97,14 @@ export function TossConfirmClient({
   if (state.status === "failed") {
     return (
       <section className="w-full max-w-md rounded-lg border border-rose-400/30 bg-rose-400/10 p-8 text-center">
-        <p className="text-sm font-bold text-rose-200">결제 승인 실패</p>
-        <h1 className="mt-3 text-3xl font-black">처리가 완료되지 않았습니다</h1>
+        <p className="text-sm font-bold text-rose-200">{t("toss.failed.label")}</p>
+        <h1 className="mt-3 text-3xl font-black">{t("toss.failed.title")}</h1>
         <p className="mt-3 text-sm leading-6 text-rose-100">{state.message}</p>
         <Link
           href="/assets"
           className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-black text-slate-950"
         >
-          다시 시도하기
+          {t("toss.retry")}
         </Link>
       </section>
     );
@@ -116,20 +123,18 @@ export function TossConfirmClient({
 
   return (
     <section className="w-full max-w-md rounded-lg border border-white/10 bg-white/[0.05] p-8 text-center">
-      <p className="text-sm font-bold text-[#ff7abf]">결제 완료</p>
-      <h1 className="mt-3 text-3xl font-black">정상적으로 처리됐습니다</h1>
-      <p className="mt-3 text-sm leading-6 text-zinc-300">
-        구매 권한, 크레딧, 판매자 수익, 관리자 장부가 자동으로 반영됐습니다.
-      </p>
+      <p className="text-sm font-bold text-[#ff7abf]">{t("toss.done.label")}</p>
+      <h1 className="mt-3 text-3xl font-black">{t("toss.done.title")}</h1>
+      <p className="mt-3 text-sm leading-6 text-zinc-300">{t("toss.done.lead")}</p>
       <div className="mt-6 grid gap-3">
         <Link
           href={href}
           className="rounded-full bg-[#ff2f93] px-5 py-3 text-sm font-black text-white"
         >
-          확인하러 가기
+          {t("toss.done.cta")}
         </Link>
         <Link href="/assets" className="text-sm font-bold text-zinc-400 hover:text-white">
-          내 자산에서 결제·크레딧 보기
+          {t("toss.done.assets")}
         </Link>
       </div>
     </section>

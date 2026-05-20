@@ -1,3 +1,6 @@
+import { getSellVideoCategoryLabelLocalized } from "@/lib/i18n/localizeSellCategory";
+import type { SiteLocale } from "@/lib/sitePreferences";
+
 export const SELL_VIDEO_CATEGORY_OPTIONS = [
   { value: "best", label: "베스트" },
   { value: "recommend", label: "추천" },
@@ -50,11 +53,9 @@ export function coerceSellCategoryForUserForm(
   return "daily";
 }
 
-const SELL_VIDEO_CATEGORY_LABEL_MAP = new Map<string, string>(
-  SELL_VIDEO_CATEGORY_OPTIONS.map((item) => [item.value, item.label]),
-);
-
-export function getSellVideoCategoryLabel(value: string | undefined): string {
-  if (!value) return "카테고리 미지정";
-  return SELL_VIDEO_CATEGORY_LABEL_MAP.get(value) ?? "카테고리 미지정";
+export function getSellVideoCategoryLabel(
+  value: string | undefined,
+  locale: SiteLocale = "ko",
+): string {
+  return getSellVideoCategoryLabelLocalized(locale, value);
 }

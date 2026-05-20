@@ -1,6 +1,8 @@
 import { FooterLegalPageShell } from "@/components/FooterLegalPageShell";
 import { SupportCenterPageClient } from "@/components/SupportCenterPageClient";
 import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
+import { translate } from "@/lib/i18n/dictionaries";
+import { getSiteLocale } from "@/lib/i18n/serverLocale";
 
 export async function generateMetadata() {
   return buildPageMetadata({
@@ -9,10 +11,11 @@ export async function generateMetadata() {
   });
 }
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const locale = await getSiteLocale();
   return (
     <FooterLegalPageShell
-      title="고객센터"
+      title={translate(locale, "meta.contact")}
       withCard={false}
       mainMaxClass="max-w-3xl"
       showBreadcrumb={false}

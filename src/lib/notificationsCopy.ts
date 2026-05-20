@@ -1,20 +1,25 @@
 import type { Video } from "@prisma/client";
+import { translate } from "@/lib/i18n/dictionaries";
+import { formatPriceWon } from "@/lib/exploreLocaleFormat";
+import type { SiteLocale } from "@/lib/sitePreferences";
 
 const TYPE_PRICE_SUGGEST = "PRICE_SUGGEST";
 
-export function priceSuggestionTitle(): string {
-  return "데이터 기반 가격 인하 제안";
+export function priceSuggestionTitle(locale: SiteLocale = "ko"): string {
+  return translate(locale, "notifications.priceSuggestTitle");
 }
 
 export function buildPriceSuggestionBody(
   video: Pick<Video, "title" | "price">,
   suggestedPrice: number,
+  locale: SiteLocale = "ko",
 ): string {
-  const vibe =
-    "오랫동안 선택받지 못한 이 동영상에 새로운 생명(DNA)을 불어넣어 주세요! ";
-  const data =
-    `이 영상과 비슷한 분위기의 동영상들이 최근 ${suggestedPrice.toLocaleString("ko-KR")}원대에 활발히 거래되고 있어요. `;
-  const ask = `${video.price.toLocaleString("ko-KR")}원 → ${suggestedPrice.toLocaleString("ko-KR")}원으로 낮춰보시겠어요?`;
+  const vibe = translate(locale, "notifications.priceSuggestVibe");
+  const suggestedLabel = formatPriceWon(locale, suggestedPrice) ?? String(suggestedPrice);
+  const data = translate(locale, "notifications.priceTrend", { price: suggestedLabel });
+  const from = formatPriceWon(locale, video.price) ?? String(video.price);
+  const to = formatPriceWon(locale, suggestedPrice) ?? String(suggestedPrice);
+  const ask = translate(locale, "notifications.priceAsk", { from, to });
   return vibe + data + ask;
 }
 

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { localizeApiError } from "@/lib/i18n/localizeApiError";
 import { postLoginRedirectPath } from "@/lib/postLoginRedirect";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
@@ -13,6 +15,7 @@ export function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const redirect = params.get("redirect") ?? "/";
+  const { t, locale } = useTranslation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,7 +27,7 @@ export function LoginForm() {
     setError("");
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
-      setError("Supabase 환경변수가 없어 로그인할 수 없습니다.");
+      setError(t("login.supabaseMissing"));
       return;
     }
     setBusy(true);
@@ -34,7 +37,7 @@ export function LoginForm() {
         password,
       });
       if (signErr) {
-        setError(signErr.message || "로그인에 실패했습니다.");
+        setError(localizeApiError(locale, signErr.message) || t("login.failed"));
         return;
       }
       const path =
@@ -43,7 +46,7 @@ export function LoginForm() {
           : null;
       router.replace(postLoginRedirectPath(path));
     } catch {
-      setError("로그인 중 오류가 발생했습니다.");
+      setError(t("login.errorGeneric"));
     } finally {
       setBusy(false);
     }
@@ -53,10 +56,10 @@ export function LoginForm() {
     <main className="mx-auto min-h-[70vh] max-w-md px-4 py-12 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-16">
       <div className="reels-glass-card rounded-2xl p-6 sm:p-8">
         <h1 className="text-2xl font-extrabold tracking-tight [html[data-theme='light']_&]:text-zinc-900">
-          로그인
+          {t("login.title")}
         </h1>
         <p className="mt-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          동영상 판매 등록 등 회원 전용 기능에 사용됩니다.
+          {t("login.lead")}
         </p>
 
         {error ? (
@@ -71,7 +74,7 @@ export function LoginForm() {
         <form className="mt-6 space-y-4" onSubmit={onSubmit}>
           <div>
             <label className="mb-1.5 block text-[12px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-              이메일
+              {t("login.email")}
             </label>
             <input
               className={INPUT}
@@ -84,7 +87,7 @@ export function LoginForm() {
           </div>
           <div>
             <label className="mb-1.5 block text-[12px] font-bold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-              비밀번호
+              {t("login.password")}
             </label>
             <input
               className={INPUT}
@@ -100,17 +103,17 @@ export function LoginForm() {
             disabled={busy}
             className="w-full rounded-full bg-reels-crimson py-3 text-[15px] font-extrabold text-white shadow-reels-crimson transition hover:brightness-110 disabled:opacity-60"
           >
-            {busy ? "처리 중…" : "로그인"}
+            {busy ? t("login.submitBusy") : t("login.submit")}
           </button>
         </form>
 
         <p className="mt-6 text-center text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          아직 계정이 없나요?{" "}
+          {t("login.noAccount")}{" "}
           <Link
             href={`/signup?redirect=${encodeURIComponent(redirect)}`}
             className="font-bold text-reels-cyan hover:underline"
           >
-            회원가입
+            {t("login.signupLink")}
           </Link>
         </p>
         <p className="mt-4 text-center">
@@ -118,7 +121,7 @@ export function LoginForm() {
             href="/sell"
             className="text-[12px] font-semibold text-zinc-500 hover:text-zinc-300 [html[data-theme='light']_&]:text-zinc-600"
           >
-            ← 판매 등록으로 돌아가기
+            {t("login.backToSell")}
           </Link>
         </p>
       </div>

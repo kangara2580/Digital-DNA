@@ -1,6 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { formatPriceWon } from "@/lib/exploreLocaleFormat";
+import { localizeApiError } from "@/lib/i18n/localizeApiError";
+import type { SiteLocale } from "@/lib/sitePreferences";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
 export type PriceSuggestionPayload = {
@@ -28,6 +32,8 @@ export function PriceSuggestionModal({
   onClose,
   onAccepted,
 }: Props) {
+  const { t, locale } = useTranslation();
+  const loc = locale as SiteLocale;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,19 +58,25 @@ export function PriceSuggestionModal({
       });
       if (!res.ok) {
         const j = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(j.error ?? "요청에 실패했어요.");
+        throw new Error(localizeApiError(loc, j.error) || t("priceSuggest.errRequest"));
       }
       onAccepted();
       onClose();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "오류가 났어요.");
+      setError(
+        e instanceof Error
+          ? localizeApiError(loc, e.message)
+          : t("priceSuggest.errGeneric"),
+      );
     } finally {
       setLoading(false);
     }
-  }, [item, onAccepted, onClose, sellerId]);
+  }, [item, loc, onAccepted, onClose, sellerId, t]);
 
   if (!open || !item) return null;
   const posterSrc = sanitizePosterSrc(item.poster);
+  const oldLabel = formatPriceWon(loc, item.oldPrice);
+  const newLabel = formatPriceWon(loc, item.newPrice);
 
   return (
     <div
@@ -76,13 +88,13 @@ export function PriceSuggestionModal({
       <button
         type="button"
         className="absolute inset-0 bg-slate-900/25 backdrop-blur-[2px]"
-        aria-label="닫기"
+        aria-label={t("priceSuggest.closeAria")}
         onClick={onClose}
       />
       <div className="relative z-[1] flex max-h-[min(92dvh,calc(100dvh-1.5rem))] w-full max-w-md min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200/95 bg-white shadow-[0_24px_64px_-20px_rgba(15,23,42,0.35)]">
         <div className="shrink-0 border-b border-slate-100 px-5 pb-3 pt-5">
           <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">
-            Digital DNA · 판매자
+            {t("priceSuggest.brand")}
           </p>
           <h2
             id="price-suggest-title"
@@ -103,11 +115,9 @@ export function PriceSuggestionModal({
           ) : null}
           <p className="break-words text-[14px] leading-relaxed text-slate-800">{item.body}</p>
           <div className="flex flex-wrap items-baseline gap-2 rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-2.5">
-            <span className="text-[13px] text-slate-500 line-through tabular-nums">
-              {item.oldPrice.toLocaleString("ko-KR")}원
-            </span>
+            <span className="text-[13px] text-slate-500 line-through tabular-nums">{oldLabel}</span>
             <span className="text-[15px] font-bold tabular-nums text-slate-900">
-              → {item.newPrice.toLocaleString("ko-KR")}원 제안
+              → {newLabel} {t("priceSuggest.proposal")}
             </span>
           </div>
           {error ? (
@@ -123,7 +133,7 @@ export function PriceSuggestionModal({
             onClick={onClose}
             disabled={loading}
           >
-            나중에
+            {t("priceSuggest.later")}
           </button>
           <button
             type="button"
@@ -131,7 +141,7 @@ export function PriceSuggestionModal({
             onClick={() => void accept()}
             disabled={loading}
           >
-            {loading ? "반영 중…" : "수락하고 끌올하기"}
+            {loading ? t("priceSuggest.accepting") : t("priceSuggest.accept")}
           </button>
         </div>
       </div>

@@ -48,6 +48,8 @@ import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter"
 import { SellerIdentityLink } from "@/components/SellerIdentityLink";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import { useTranslation } from "@/hooks/useTranslation";
+import { translate } from "@/lib/i18n/dictionaries";
+import type { SiteLocale } from "@/lib/sitePreferences";
 
 const FONT_PRETENDARD = "var(--font-pretendard)";
 const FONT_MONTSERRAT = "var(--font-montserrat), Arial, sans-serif";
@@ -254,14 +256,14 @@ function looksLikeVideoUrl(url: string): boolean {
  * Replicate/HTTP 등에서 온 기술 메시지를 사용자용 한국어로만 바꿉니다.
  * (상태 코드, 도메인, 영문 JSON 노출 방지)
  */
-function userFacingAiErrorMessage(raw: string): string {
+function userFacingAiErrorMessage(raw: string, locale: SiteLocale): string {
   const lower = raw.toLowerCase();
   if (
     raw.includes("402") ||
     lower.includes("insufficient credit") ||
     lower.includes("payment required")
   ) {
-    return "이용 가능한 크레딧이 부족합니다. 충전 후 다시 시도해 주세요.";
+    return translate(locale, "studio.err.credits");
   }
   if (
     raw.includes("429") ||
@@ -270,14 +272,14 @@ function userFacingAiErrorMessage(raw: string): string {
     lower.includes("rate limit") ||
     lower.includes("replicate_rate_limited")
   ) {
-    return "현재 생성 요청이 많습니다. 잠시 후 다시 시도해 주세요.";
+    return translate(locale, "studio.err.rateLimit");
   }
   if (
     lower.includes("replicate_token_missing") ||
     lower.includes(".env.local") ||
     lower.includes("replicate api 토큰")
   ) {
-    return "AI 기능을 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.";
+    return translate(locale, "studio.err.aiUnavailable");
   }
   if (
     lower.includes("api.replicate.com") ||
@@ -285,10 +287,11 @@ function userFacingAiErrorMessage(raw: string): string {
     /status["']?\s*:\s*\d{3}/.test(raw) ||
     raw.length > 200
   ) {
-    return "처리 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+    return translate(locale, "studio.err.generic");
   }
   const trimmed = raw.trim();
   if (
+    locale === "ko" &&
     /[\uac00-\ud7a3]/.test(trimmed) &&
     trimmed.length <= 140 &&
     !trimmed.includes("http") &&
@@ -296,11 +299,14 @@ function userFacingAiErrorMessage(raw: string): string {
   ) {
     return trimmed;
   }
-  return "처리 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+  if (locale === "en" && trimmed.length <= 140 && !trimmed.includes("http")) {
+    return trimmed;
+  }
+  return translate(locale, "studio.err.generic");
 }
 
 /** 서버 생성 작업 상태 — API 값은 숨기고 한국어 안내만 노출 */
-function reelsJobPresentation(status: string): {
+function reelsJobPresentation(status: string, locale: SiteLocale): {
   title: string;
   line: string;
   showMeter: boolean;
@@ -308,32 +314,32 @@ function reelsJobPresentation(status: string): {
   switch (status) {
     case "queued":
       return {
-        title: "순서를 기다리는 중이에요",
-        line: "곧 서버에서 AI 합성이 시작됩니다. (보통 수십 초 안에 진행돼요)",
+        title: translate(locale, "studio.job.queued.title"),
+        line: translate(locale, "studio.job.queued.line"),
         showMeter: true,
       };
     case "running":
       return {
-        title: "서버에서 열심히 제작 중이에요",
-        line: "완료까지 약 20~60초 정도 걸릴 수 있어요. 창을 닫아도 작업은 계속됩니다.",
+        title: translate(locale, "studio.job.running.title"),
+        line: translate(locale, "studio.job.running.line"),
         showMeter: true,
       };
     case "succeeded":
       return {
-        title: "생성이 완료되었어요",
-        line: "아래에서 결과를 확인하거나, 마이페이지에서도 다시 열어볼 수 있어요.",
+        title: translate(locale, "studio.job.succeeded.title"),
+        line: translate(locale, "studio.job.succeeded.line"),
         showMeter: false,
       };
     case "failed":
       return {
-        title: "생성에 문제가 생겼어요",
-        line: "잠시 후 다시 시도하거나, 임시 저장 내용을 확인해 주세요.",
+        title: translate(locale, "studio.job.failed.title"),
+        line: translate(locale, "studio.job.failed.line"),
         showMeter: false,
       };
     default:
       return {
-        title: "처리 중이에요",
-        line: "잠시만 기다려 주세요.",
+        title: translate(locale, "studio.job.default.title"),
+        line: translate(locale, "studio.job.default.line"),
         showMeter: true,
       };
   }
@@ -348,14 +354,17 @@ type RemoteJobBanner = {
 };
 
 function ServerGenerationStatusCard({ job }: { job: RemoteJobBanner }) {
-  const pres = reelsJobPresentation(job.status);
+  const { t, locale } = useTranslation();
+  const pres = reelsJobPresentation(job.status, locale as SiteLocale);
   const busy = job.status === "queued" || job.status === "running";
   const pct = Math.max(0, Math.min(100, Number(job.progress) || 0));
   const barPct = job.status === "queued" && pct < 4 ? 12 : Math.max(6, pct);
 
   return (
     <div className="mt-4 rounded-xl border border-reels-cyan/20 bg-gradient-to-br from-black/45 to-black/20 px-4 py-4 text-[13px] text-zinc-300">
-      <p className="text-[11px] font-bold uppercase tracking-wide text-reels-cyan/90">AI 생성</p>
+      <p className="text-[11px] font-bold uppercase tracking-wide text-reels-cyan/90">
+        {t("generation.badge")}
+      </p>
       <p className="mt-2 text-[15px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
         {pres.title}
       </p>
@@ -379,28 +388,28 @@ function ServerGenerationStatusCard({ job }: { job: RemoteJobBanner }) {
       {busy ? (
         <div className="mt-4 rounded-lg border border-white/10 bg-black/35 px-3 py-3 text-[12px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:border-zinc-200/80 [html[data-theme='light']_&]:bg-zinc-50/80 [html[data-theme='light']_&]:text-zinc-600">
           <p>
-            생성이 시작되었어요.{" "}
+            {t("generation.jobBanner.started")}{" "}
             <strong className="text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
-              이 페이지를 나가도 서버 작업은 중단되지 않아요.
+              {t("generation.jobBanner.leavePage")}
             </strong>{" "}
-            완료된 영상은{" "}
+            {t("generation.jobBanner.draftsLead")}{" "}
             <Link
               href="/mypage?tab=drafts"
               className="font-semibold text-reels-cyan underline-offset-2 hover:underline"
             >
-              마이페이지 → 임시 저장
-            </Link>
-            에서 이어서 확인할 수 있어요.
+              {t("generation.jobBanner.draftsLink")}
+            </Link>{" "}
+            {t("generation.jobBanner.draftsSuffix")}
           </p>
           <p className="mt-2">
-            기다리는 동안{" "}
+            {t("generation.jobBanner.waitLead")}{" "}
             <Link
               href="/explore"
               className="font-semibold text-reels-cyan underline-offset-2 hover:underline"
             >
-              탐색 탭
-            </Link>
-            동영상을 구경해 보세요.
+              {t("generation.jobBanner.exploreLink")}
+            </Link>{" "}
+            {t("generation.jobBanner.exploreSuffix")}
           </p>
         </div>
       ) : null}
@@ -411,7 +420,7 @@ function ServerGenerationStatusCard({ job }: { job: RemoteJobBanner }) {
             href={`/generation/result/${encodeURIComponent(job.jobId)}`}
             className="inline-flex rounded-full border border-reels-cyan/40 bg-reels-cyan/15 px-4 py-2 text-[12px] font-bold text-reels-cyan hover:bg-reels-cyan/25"
           >
-            결과 보기
+            {t("generation.jobBanner.viewResult")}
           </Link>
         </div>
       ) : null}
@@ -1237,7 +1246,7 @@ export function PurchaseCustomizeStudio({
       setPreviewTransitionLoading(false);
       const raw =
         e instanceof Error ? e.message : "AI 합성에 실패했습니다.";
-      setFacePreviewError(userFacingAiErrorMessage(raw));
+      setFacePreviewError(userFacingAiErrorMessage(raw, locale as SiteLocale));
     } finally {
       setFacePreviewApplying(false);
     }
@@ -1298,7 +1307,10 @@ export function PurchaseCustomizeStudio({
           setBackgroundPreviewError(
             data.backgroundWarning
               ? "현재 생성 요청이 많아 배경 이미지를 만들지 못했습니다. 잠시 후 다시 시도해 주세요."
-              : userFacingAiErrorMessage(data.message ?? "배경 이미지를 생성하지 못했습니다."),
+              : userFacingAiErrorMessage(
+                  data.message ?? translate(locale as SiteLocale, "studio.bgGenerateFail"),
+                  locale as SiteLocale,
+                ),
           );
           setPreviewTransitionLoading(false);
           return;
@@ -1379,7 +1391,7 @@ export function PurchaseCustomizeStudio({
       setPreviewTransitionLoading(false);
       const raw =
         e instanceof Error ? e.message : "배경 미리보기에 실패했습니다.";
-      setBackgroundPreviewError(userFacingAiErrorMessage(raw));
+      setBackgroundPreviewError(userFacingAiErrorMessage(raw, locale as SiteLocale));
     } finally {
       setBackgroundPreviewApplying(false);
     }
@@ -1518,24 +1530,23 @@ export function PurchaseCustomizeStudio({
 
   if (!draft || draftHydrating) {
     return (
-      <p className="py-16 text-center text-[14px] text-zinc-500">불러오는 중…</p>
+      <p className="py-16 text-center text-[14px] text-zinc-500">{t("studio.loading")}</p>
     );
   }
 
   const purchaseGatePanel = !owned ? (
     <div className="mx-auto mb-6 max-w-lg rounded-2xl border border-white/10 bg-black/30 px-6 py-10 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
       <p className="text-[15px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
-        모션 권한 구매 후 커스텀 편집을 이용할 수 있어요.
+        {t("studio.purchaseGateTitle")}
       </p>
       <p className="mt-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        아래 「영상만 구매」로 결제하거나, 상세 페이지에서 구매한 뒤 얼굴·배경 편집과 임시 저장을
-        사용할 수 있습니다.
+        {t("studio.purchaseGateLead")}
       </p>
       <Link
         href={`/video/${encodeURIComponent(video.id)}`}
         className="mt-6 inline-flex rounded-full border border-reels-cyan/40 bg-reels-cyan/10 px-6 py-3 text-[14px] font-extrabold text-reels-cyan hover:bg-reels-cyan/18"
       >
-        동영상 상세로 돌아가기
+        {t("studio.backToDetail")}
       </Link>
     </div>
   ) : null;
@@ -1547,7 +1558,7 @@ export function PurchaseCustomizeStudio({
           <h1 className="min-w-0 max-w-full">
             <div
               role="group"
-              aria-label="창작 스튜디오 모드"
+              aria-label={t("studio.modeAria")}
               className="inline-flex w-max max-w-full min-w-0 items-stretch overflow-hidden rounded-full border-2 border-white/[0.26] bg-zinc-950/35 p-0 [html[data-theme='light']_&]:border-zinc-400/45 [html[data-theme='light']_&]:bg-white/70"
             >
               <button
@@ -1561,8 +1572,8 @@ export function PurchaseCustomizeStudio({
                 aria-pressed={useAdvancedStep}
                 aria-label={
                   useAdvancedStep
-                    ? "편집 화면 맨 위로 이동"
-                    : "커스텀 편집 단계로 돌아가기"
+                    ? t("studio.scrollTopAria")
+                    : t("studio.backToEditAria")
                 }
                 className={`${
                   useAdvancedStep ? HERO_STUDIO_CAPSULE_BTN_SELECTED : HERO_STUDIO_CAPSULE_BTN_IDLE
@@ -1578,12 +1589,12 @@ export function PurchaseCustomizeStudio({
                 type="button"
                 onClick={() => setUseAdvancedStep(false)}
                 aria-pressed={!useAdvancedStep}
-                aria-label="영상만 구매 모드로 전환"
+                aria-label={t("studio.videoOnlyAria")}
                 className={`${
                   !useAdvancedStep ? HERO_STUDIO_CAPSULE_BTN_SELECTED : HERO_STUDIO_CAPSULE_BTN_IDLE
                 } rounded-none`}
               >
-                <span className="whitespace-nowrap text-center">영상만 구매</span>
+                <span className="whitespace-nowrap text-center">{t("studio.videoOnly")}</span>
               </button>
             </div>
           </h1>
@@ -1593,14 +1604,14 @@ export function PurchaseCustomizeStudio({
       {!heroTitle ? (
         <div className="flex flex-col gap-4 border-b border-white/10 pb-8 md:flex-row md:items-center md:justify-between md:gap-6 [html[data-theme='light']_&]:border-zinc-100">
           <p className="min-w-0 max-w-xl flex-1 text-[15px] leading-relaxed text-white/55 [html[data-theme='light']_&]:text-zinc-600">
-            먼저 커스텀 편집으로 얼굴·배경을 만져 보세요. 편집 없이 바로 진행하려면 오른쪽 「영상만 구매」를 누르세요.
+            {t("studio.leadNoHero")}
           </p>
           <button
             type="button"
             onClick={() => setUseAdvancedStep(false)}
             className={`${MYPAGE_OUTLINE_BTN_MD} w-full max-w-xs shrink-0 md:w-auto`}
           >
-            영상만 구매
+            {t("studio.videoOnly")}
           </button>
         </div>
       ) : null}
@@ -1612,10 +1623,8 @@ export function PurchaseCustomizeStudio({
           role="status"
           className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-[13px] leading-relaxed text-amber-100 [html[data-theme='light']_&]:border-amber-400/40 [html[data-theme='light']_&]:bg-amber-50 [html[data-theme='light']_&]:text-amber-950"
         >
-          <p className="font-semibold">참조 영상(MP4) 준비 중</p>
-          <p className="mt-1 opacity-90">
-            유튜브·틱톡·인스타 링크는 서버에서 MP4로 변환해 저장한 뒤 Kling·미리보기에 씁니다. 로그인한 상태에서만 자동 변환이 진행됩니다.
-          </p>
+          <p className="font-semibold">{t("studio.mp4PreparingTitle")}</p>
+          <p className="mt-1 opacity-90">{t("studio.mp4PreparingLead")}</p>
         </div>
       ) : null}
 
@@ -2992,7 +3001,7 @@ export function PurchaseCustomizeStudio({
                 className="rounded-lg bg-[#2e3138] disabled:opacity-50 px-6 py-2.5 text-[14px] font-semibold text-zinc-100 hover:bg-[#3f434c] transition-colors"
                 disabled={customUploadAngles.length === 0 || isGeneratingAngles}
               >
-                확정
+                {t("studio.confirm")}
               </button>
             </div>
           </div>

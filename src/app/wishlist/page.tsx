@@ -10,19 +10,13 @@ import { resolveManualTikTokVideoForStudio } from "@/data/tiktokData";
 import { buildWishlistVideoLookup } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   feedOverlayCheckboxInputClass,
   feedOverlayCheckboxLabelClass,
 } from "@/lib/brandPinkTokens";
 
-const SORT_OPTIONS = [
-  { value: "recent", label: "최근 찜한 순" },
-  { value: "oldest", label: "오래된 순" },
-  { value: "price-asc", label: "가격 낮은 순" },
-  { value: "price-desc", label: "가격 높은 순" },
-] as const;
-
-type SortValue = (typeof SORT_OPTIONS)[number]["value"];
+type SortValue = "recent" | "oldest" | "price-asc" | "price-desc";
 
 type Row = { entryId: string; video: FeedVideo; savedAt: number };
 
@@ -50,6 +44,17 @@ function sortRows(rows: Row[], sort: SortValue): Row[] {
 }
 
 export default function WishlistPage() {
+  const { t } = useTranslation();
+  const sortOptions = useMemo(
+    () =>
+      [
+        { value: "recent" as const, label: t("mypage.sort.recentSaved") },
+        { value: "oldest" as const, label: t("mypage.sort.oldestSaved") },
+        { value: "price-asc" as const, label: t("mypage.sort.priceAsc") },
+        { value: "price-desc" as const, label: t("mypage.sort.priceDesc") },
+      ],
+    [t],
+  );
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const { entries, hydrated, removeMany } = useWishlist();
   const [sort, setSort] = useState<SortValue>("recent");
@@ -90,14 +95,13 @@ export default function WishlistPage() {
     if (selected.size === 0) return;
     if (
       typeof window !== "undefined" &&
-      !window.confirm(`선택한 ${selected.size}개를 찜 목록에서 뺄까요?`)
+      !window.confirm(t("mypage.wishlist.confirmRemoveSelected", { n: selected.size }))
     ) {
       return;
     }
     void removeMany([...selected]).then(() => setSelected(new Set()));
-  }, [selected, removeMany]);
+  }, [selected, removeMany, t]);
 
-  /** 로그인 없이도 localStorage 찜이 있으면 목록 표시 */
   const showLoginGate =
     supabaseConfigured &&
     !authLoading &&
@@ -121,22 +125,22 @@ export default function WishlistPage() {
       <header className="flex flex-col gap-4 border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-[1.625rem] font-semibold tracking-tight text-zinc-50 sm:text-[1.875rem] [html[data-theme='light']_&]:text-zinc-900">
-            찜한 목록
+            {t("mypage.section.wishlist.title")}
           </h1>
         </div>
 
         {!showLoginGate ? (
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
             <label className="flex items-center gap-2 text-[15px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-              <span className="sr-only">정렬 기준</span>
+              <span className="sr-only">{t("mypage.sort.label")}</span>
               <span className="hidden font-medium text-zinc-400 sm:inline [html[data-theme='light']_&]:text-zinc-700">
-                정렬
+                {t("mypage.sort.label")}
               </span>
               <MyPageSortSelect
-                options={SORT_OPTIONS}
+                options={sortOptions}
                 value={sort}
                 onChange={(v) => setSort(v as SortValue)}
-                ariaLabel="찜한 동영상 정렬"
+                ariaLabel={t("mypage.wishlist.sortAria")}
               />
             </label>
             {hydrated && entries.length > 0 ? (
@@ -146,7 +150,7 @@ export default function WishlistPage() {
                   onClick={selectAllWishlist}
                   className="rounded-lg border border-white/15 px-3 py-2 text-[15px] font-medium text-zinc-400 transition-[border-color,background-color] hover:border-white/40 hover:bg-white/[0.06] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:border-zinc-400"
                 >
-                  전체 선택
+                  {t("mypage.wishlist.selectAll")}
                 </button>
                 <button
                   type="button"
@@ -154,14 +158,14 @@ export default function WishlistPage() {
                   disabled={selected.size === 0}
                   className="rounded-lg border border-white/15 px-3 py-2 text-[15px] font-medium text-zinc-400 transition-colors hover:border-white/25 disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700"
                 >
-                  선택 해제
+                  {t("mypage.wishlist.deselect")}
                 </button>
                 <button
                   type="button"
                   onClick={deleteSelectedWishlist}
                   disabled={selected.size === 0}
-                  aria-label="선택 삭제"
-                  title="선택 삭제"
+                  aria-label={t("mypage.wishlist.deleteSelected")}
+                  title={t("mypage.wishlist.deleteSelected")}
                   className="relative z-10 inline-flex items-center justify-center rounded-lg border border-[color:var(--reels-point)] bg-transparent p-2 text-white shadow-none outline-none transition-[background-color] hover:bg-[color:var(--reels-point)]/14 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-40 [html[data-theme='light']_&]:border-[color:var(--reels-point)] [html[data-theme='light']_&]:hover:bg-[color:var(--reels-point)]/10"
                 >
                   <Trash2 className="h-[1.125rem] w-[1.125rem] shrink-0" strokeWidth={2} aria-hidden />
@@ -175,7 +179,7 @@ export default function WishlistPage() {
       {showLoginGate ? (
         <div className="mx-auto mt-16 max-w-md text-center">
           <p className="text-[17px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            로그인하면 찜한 동영상을 볼 수 있어요!
+            {t("mypage.wishlist.pageLoginHint")}
           </p>
           <div
             className={`mt-6 transition-[opacity,transform] duration-300 ease-out ${
@@ -188,24 +192,24 @@ export default function WishlistPage() {
               href={`/login?redirect=${encodeURIComponent("/wishlist")}`}
               className="inline-flex items-center justify-center rounded-full border border-white/20 bg-[linear-gradient(135deg,#0b1327_0%,#122247_50%,#1e3a8a_100%)] px-7 py-2.5 text-[16px] font-bold text-white ring-1 ring-white/10 shadow-[0_12px_28px_-14px_rgba(30,58,138,0.82)] transition-all duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:brightness-110 hover:shadow-[0_18px_38px_-16px_rgba(37,99,235,0.8)]"
             >
-              로그인
+              {t("settings.loginCta")}
             </Link>
           </div>
         </div>
       ) : !hydrated ? (
         <p className="mt-10 text-[16px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600" aria-live="polite">
-          불러오는 중…
+          {t("common.loading")}
         </p>
       ) : rows.length === 0 ? (
         <div className="mx-auto mt-16 max-w-md text-center">
           <p className="text-[17px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            아직 찜한 동영상이 없어요.
+            {t("mypage.wishlist.empty")}
           </p>
           <Link
             href="/"
             className="mt-6 inline-flex rounded-full bg-reels-crimson px-5 py-2.5 text-[16px] font-extrabold text-white shadow-reels-crimson hover:brightness-110"
           >
-            동영상 둘러보기
+            {t("mypage.wishlist.browse")}
           </Link>
         </div>
       ) : (
@@ -219,7 +223,7 @@ export default function WishlistPage() {
                   onChange={() => toggleSelect(entryId)}
                   className={feedOverlayCheckboxInputClass}
                 />
-                <span className="sr-only">선택</span>
+                <span className="sr-only">{t("mypage.selectItemAria")}</span>
               </label>
               <VideoCard
                 video={video}

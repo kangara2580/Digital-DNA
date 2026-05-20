@@ -8,22 +8,20 @@ import { useRecentClips } from "@/context/RecentClipsContext";
 import { useSitePreferences } from "@/context/SitePreferencesContext";
 import { ALL_MARKET_VIDEOS } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import { videoDisplayTitle } from "@/lib/videoDisplayTitle";
 import type { SiteLocale } from "@/lib/sitePreferences";
 
-const SORT_OPTIONS = [
-  { value: "recent", label: "최근 본 순" },
-  { value: "oldest", label: "오래된 순" },
-  { value: "price-asc", label: "가격 낮은 순" },
-  { value: "price-desc", label: "가격 높은 순" },
-  { value: "title-asc", label: "제목 가나다 순" },
-  { value: "title-desc", label: "제목 역순" },
-  { value: "duration-asc", label: "짧은 영상 먼저" },
-  { value: "duration-desc", label: "긴 영상 먼저" },
-] as const;
-
-type SortValue = (typeof SORT_OPTIONS)[number]["value"];
+type SortValue =
+  | "recent"
+  | "oldest"
+  | "price-asc"
+  | "price-desc"
+  | "title-asc"
+  | "title-desc"
+  | "duration-asc"
+  | "duration-desc";
 
 type Row = { video: FeedVideo; viewedAt: number };
 
@@ -108,8 +106,34 @@ function sortRows(rows: Row[], sort: SortValue, locale: SiteLocale): Row[] {
 }
 
 export default function RecentPage() {
+  const { t } = useTranslation();
   const { entries, hydrated, clear, remove } = useRecentClips();
   const { locale } = useSitePreferences();
+  const sortOptions = useMemo(
+    () => [
+      { value: "recent" as const, label: t("mypage.sort.recentViewed") },
+      { value: "oldest" as const, label: t("mypage.sort.oldestSaved") },
+      { value: "price-asc" as const, label: t("mypage.sort.priceAsc") },
+      { value: "price-desc" as const, label: t("mypage.sort.priceDesc") },
+      {
+        value: "title-asc" as const,
+        label:
+          locale === "en"
+            ? t("mypage.sort.titleAscEn")
+            : t("mypage.sort.titleAsc"),
+      },
+      {
+        value: "title-desc" as const,
+        label:
+          locale === "en"
+            ? t("mypage.sort.titleDescEn")
+            : t("mypage.sort.titleDesc"),
+      },
+      { value: "duration-asc" as const, label: t("mypage.sort.durationAsc") },
+      { value: "duration-desc" as const, label: t("mypage.sort.durationDesc") },
+    ],
+    [t, locale],
+  );
   const displayTitle = useVideoDisplayTitle();
   const [sort, setSort] = useState<SortValue>("recent");
   const [browseCtaVisible, setBrowseCtaVisible] = useState(false);
@@ -146,23 +170,23 @@ export default function RecentPage() {
       <header className="flex flex-col gap-4 border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-            최근 본 동영상
+            {t("mypage.section.recent.title")}
           </h1>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           <label className="flex items-center gap-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            <span className="sr-only">정렬 순서</span>
+            <span className="sr-only">{t("mypage.recent.sortSr")}</span>
             <span className="hidden font-medium text-zinc-400 sm:inline [html[data-theme='light']_&]:text-zinc-700">
-              정렬
+              {t("mypage.sort.label")}
             </span>
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortValue)}
               className="min-w-[11.5rem] cursor-pointer rounded-lg border border-white/15 bg-reels-void/80 px-3 py-2 text-[13px] font-medium text-zinc-100 outline-none transition-colors hover:border-reels-cyan/35 focus:border-reels-cyan/50 focus:ring-2 focus:ring-reels-cyan/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900"
-              aria-label="최근 본 동영상 정렬"
+              aria-label={t("mypage.recent.sortAria")}
             >
-              {SORT_OPTIONS.map((o) => (
+              {sortOptions.map((o) => (
                 <option key={o.value} value={o.value}>
                   {o.label}
                 </option>
@@ -175,14 +199,14 @@ export default function RecentPage() {
               onClick={() => {
                 if (
                   typeof window !== "undefined" &&
-                  window.confirm("이 기기에서 최근 본 기록을 모두 지울까요?")
+                  window.confirm(t("mypage.recent.clearConfirm"))
                 ) {
                   clear();
                 }
               }}
               className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-reels-crimson/35 hover:bg-white/[0.06] hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
             >
-              모두 지우기
+              {t("mypage.recent.clearAll")}
             </button>
           ) : null}
         </div>
@@ -190,12 +214,12 @@ export default function RecentPage() {
 
       {!hydrated ? (
         <p className="mt-10 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600" aria-live="polite">
-          불러오는 중…
+          {t("common.loading")}
         </p>
       ) : rows.length === 0 ? (
         <div className="mx-auto mt-16 max-w-md text-center">
           <p className="mt-2 text-[14px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            로그인 후 최근 본 동영상을 찾아볼 수 있어요.
+            {t("mypage.recent.emptyHint")}
           </p>
           <div
             className={`mt-6 transition-[opacity,transform] duration-300 ease-out ${
@@ -208,7 +232,7 @@ export default function RecentPage() {
               href="/"
               className="inline-flex items-center justify-center rounded-full border border-white/20 bg-[linear-gradient(135deg,#0b1327_0%,#122247_50%,#1e3a8a_100%)] px-7 py-2.5 text-[14px] font-bold text-white ring-1 ring-white/10 shadow-[0_12px_28px_-14px_rgba(30,58,138,0.82)] transition-all duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:brightness-110 hover:shadow-[0_18px_38px_-16px_rgba(37,99,235,0.8)]"
             >
-              동영상 둘러보기
+              {t("mypage.wishlist.browse")}
             </Link>
           </div>
         </div>
@@ -220,7 +244,9 @@ export default function RecentPage() {
                 type="button"
                 onClick={() => remove(video.id)}
                 className="absolute right-2 top-2 z-[25] flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-reels-void/90 text-zinc-300 shadow-md backdrop-blur-md transition-colors hover:border-reels-crimson/40 hover:bg-white/10 hover:text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:bg-zinc-100"
-                aria-label={`${displayTitle(video)} — 최근 본 목록에서 제거`}
+                aria-label={t("mypage.recent.removeAria", {
+                  title: displayTitle(video),
+                })}
               >
                 <X className="h-4 w-4" strokeWidth={2.2} aria-hidden />
               </button>

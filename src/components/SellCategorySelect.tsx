@@ -2,10 +2,13 @@
 
 import { Check, ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { getSellVideoCategoryLabelLocalized } from "@/lib/i18n/localizeSellCategory";
 import {
   SELL_VIDEO_CATEGORY_USER_OPTIONS,
   type SellVideoUserSelectableCategory,
 } from "@/lib/sellVideoCategory";
+import type { SiteLocale } from "@/lib/sitePreferences";
 
 type Props = {
   id: string;
@@ -25,15 +28,16 @@ export function SellCategorySelect({
   listboxId,
   value,
   onChange,
-  ariaLabel = "카테고리 선택",
+  ariaLabel,
   triggerClassName,
 }: Props) {
+  const { t, locale } = useTranslation();
+  const resolvedAria = ariaLabel ?? t("sellForm.categoryAria");
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
-  const currentLabel =
-    SELL_VIDEO_CATEGORY_USER_OPTIONS.find((o) => o.value === value)?.label ?? value;
+  const currentLabel = getSellVideoCategoryLabelLocalized(locale as SiteLocale, value);
 
   useEffect(() => {
     if (!open) return;
@@ -91,7 +95,7 @@ export function SellCategorySelect({
             role="listbox"
             tabIndex={-1}
             className="max-h-[min(18rem,50vh)] overflow-y-auto overflow-x-hidden overscroll-contain rounded-b-xl py-1"
-            aria-label={ariaLabel}
+            aria-label={resolvedAria}
             onWheel={(e) => e.stopPropagation()}
           >
             {SELL_VIDEO_CATEGORY_USER_OPTIONS.map((item) => {
@@ -118,7 +122,9 @@ export function SellCategorySelect({
                     ) : (
                       <span className="inline-block h-4 w-4 shrink-0" aria-hidden />
                     )}
-                    <span className="min-w-0 flex-1">{item.label}</span>
+                    <span className="min-w-0 flex-1">
+                      {getSellVideoCategoryLabelLocalized(locale as SiteLocale, item.value)}
+                    </span>
                   </button>
                 </li>
               );
