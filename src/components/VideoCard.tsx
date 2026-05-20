@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { AtSign, Bookmark, Camera, Heart, Link as LinkIcon, Music2, Play } from "lucide-react";
+import { Bookmark, Heart } from "lucide-react";
 import Link from "next/link";
 import {
   useCallback,
@@ -33,7 +33,8 @@ import {
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { CartIcon } from "@/components/CartIcon";
 import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
-import type { SellerSocialLink } from "@/lib/sellerSocialLinks";
+import { SellerSocialLinkIcons } from "@/components/SellerSocialLinkIcons";
+import { useSellerSocialLinks } from "@/hooks/useSellerSocialLinks";
 import { SellerProfileAvatarLink } from "@/components/SellerProfileAvatarLink";
 import {
   sellerDisplayNameFromVideo,
@@ -143,55 +144,6 @@ function formatDuration(seconds: number): string {
   const m = Math.floor(s / 60);
   const r = s % 60;
   return `${m}:${r.toString().padStart(2, "0")}`;
-}
-
-const sellerSocialLinksCache = new Map<string, SellerSocialLink[]>();
-const sellerSocialLinksInFlight = new Map<string, Promise<SellerSocialLink[]>>();
-
-async function loadSellerSocialLinks(sellerId: string): Promise<SellerSocialLink[]> {
-  const cached = sellerSocialLinksCache.get(sellerId);
-  if (cached) return cached;
-  const inflight = sellerSocialLinksInFlight.get(sellerId);
-  if (inflight) return inflight;
-
-  const req = fetch(
-    `/api/sellers/social-links?sellerIds=${encodeURIComponent(sellerId)}`,
-    { cache: "no-store" },
-  )
-    .then(async (res) => {
-      const body = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        linksBySellerId?: Record<string, SellerSocialLink[]>;
-      };
-      if (!res.ok || !body.ok) return [];
-      const links = Array.isArray(body.linksBySellerId?.[sellerId])
-        ? body.linksBySellerId?.[sellerId] ?? []
-        : [];
-      sellerSocialLinksCache.set(sellerId, links);
-      return links;
-    })
-    .catch(() => [])
-    .finally(() => {
-      sellerSocialLinksInFlight.delete(sellerId);
-    });
-
-  sellerSocialLinksInFlight.set(sellerId, req);
-  return req;
-}
-
-function iconForSocialPlatform(platform: SellerSocialLink["platform"]) {
-  switch (platform) {
-    case "instagram":
-      return Camera;
-    case "youtube":
-      return Play;
-    case "twitter":
-      return AtSign;
-    case "tiktok":
-      return Music2;
-    default:
-      return LinkIcon;
-  }
 }
 
 function AuthRequiredModal({
@@ -342,8 +294,9 @@ export function VideoCard({
   }, [normalizedPoster, previewSrc, fallbackPoster, externalIframe?.kind]);
   const [thumbnailSrc, setThumbnailSrc] = useState(defaultThumbnail);
   const [isPreviewing, setIsPreviewing] = useState(false);
-  const [sellerSocialLinks, setSellerSocialLinks] = useState<SellerSocialLink[]>(
-    video.sellerSocialLinks ?? [],
+  const sellerSocialLinks = useSellerSocialLinks(
+    video.listing?.sellerId,
+    video.sellerSocialLinks,
   );
 
   const requireAuth = useCallback(() => {
@@ -419,38 +372,6 @@ export function VideoCard({
     setIsPreviewing(false);
   }, [defaultThumbnail]);
 
-  useEffect(() => {
-    setSellerSocialLinks(video.sellerSocialLinks ?? []);
-  }, [video.sellerSocialLinks]);
-
-  useEffect(() => {
-    const sellerId = video.listing?.sellerId;
-    if (!sellerId || (video.sellerSocialLinks?.length ?? 0) > 0) return;
-    let cancelled = false;
-    void loadSellerSocialLinks(sellerId).then((links) => {
-      if (cancelled) return;
-      setSellerSocialLinks(links);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [video.listing?.sellerId, video.sellerSocialLinks]);
-
-  useEffect(() => {
-    const sellerId = video.listing?.sellerId;
-    if (!sellerId) return;
-    const handler = (evt: Event) => {
-      const detail = (evt as CustomEvent<{ sellerId?: string; links?: SellerSocialLink[] }>).detail;
-      if (!detail || detail.sellerId !== sellerId || !Array.isArray(detail.links)) return;
-      sellerSocialLinksCache.set(sellerId, detail.links);
-      setSellerSocialLinks(detail.links);
-    };
-    window.addEventListener("seller-social-links-updated", handler as EventListener);
-    return () => {
-      window.removeEventListener("seller-social-links-updated", handler as EventListener);
-    };
-  }, [video.listing?.sellerId]);
-
   const toggleInternalLike = useCallback(async () => {
     const nextLiked = !likedByMe;
     setLikePulse(true);
@@ -510,8 +431,7 @@ export function VideoCard({
     video.priceWon != null
       ? `${video.priceWon.toLocaleString("ko-KR")}원`
       : null;
-  const socialLinksToShow =
-    (video.sellerSocialLinks?.length ?? 0) > 0 ? video.sellerSocialLinks! : sellerSocialLinks;
+  const socialLinksToShow = sellerSocialLinks;
   const sellerHref = useMemo(() => sellerProfileHrefFromVideo(video), [video]);
   const sellerName = useMemo(() => sellerDisplayNameFromVideo(video), [video]);
   const videoContentSource = useMemo(() => getVideoContentSource(video), [video]);
@@ -926,27 +846,11 @@ export function VideoCard({
               </span>
             ) : null}
           </div>
-          {socialLinksToShow.length > 0 ? (
-            <div className="flex items-center gap-1.5">
-              {socialLinksToShow.slice(0, 4).map((link) => {
-                const Icon = iconForSocialPlatform(link.platform);
-                return (
-                  <a
-                    key={`${link.platform}-${link.url}`}
-                    href={link.url}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    onClick={(e) => e.stopPropagation()}
-                    className="relative z-[9] inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/20 bg-white/[0.06] text-zinc-300 transition hover:border-reels-cyan/45 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
-                    aria-label={`${link.platform} 링크 열기`}
-                    title={link.url}
-                  >
-                    <Icon className="h-3 w-3" aria-hidden />
-                  </a>
-                );
-              })}
-            </div>
-          ) : null}
+          <SellerSocialLinkIcons
+            links={socialLinksToShow}
+            size="xs"
+            stopPropagation
+          />
         </div>
       </div>
       )}

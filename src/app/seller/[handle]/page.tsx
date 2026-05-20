@@ -22,8 +22,11 @@ import { getSupabaseServiceRoleClient } from "@/lib/supabaseServiceRole";
 import { supabaseTables } from "@/lib/supabaseTableNames";
 import type { TrendingRankMetrics } from "@/data/trendingStats";
 import { listingMetricsPayloadForFeeds } from "@/lib/sellerListingCardMetrics";
-import { translate } from "@/lib/i18n/dictionaries";
+import { SellerFeedSocialLinks } from "@/components/SellerFeedSocialLinks";
+import { parseSellerSocialBlob } from "@/lib/sellerSocialLinks";
+import type { SellerSocialLink } from "@/lib/sellerSocialLinks";
 import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
+import { translate } from "@/lib/i18n/dictionaries";
 import { getSiteLocale } from "@/lib/i18n/serverLocale";
 import { resolveSellerDisplayNameForSeo } from "@/lib/seo/sellerSeo";
 
@@ -76,6 +79,7 @@ export default async function SellerPage({
   let profileAvatarKind: string | null = null;
   let profileAvatarSeed: string | null = null;
   let profileAvatarCustom: string | null = null;
+  let sellerSocialLinks: SellerSocialLink[] = [];
   try {
     await ensureProfileSellerBioColumn();
     const admin = getSupabaseServiceRoleClient();
@@ -97,6 +101,18 @@ export default async function SellerPage({
       profileAvatarKind = row?.avatar_kind?.trim() || null;
       profileAvatarSeed = row?.avatar_seed?.trim() || null;
       profileAvatarCustom = row?.avatar_custom?.trim() || null;
+
+      if (isProbablySellerUserId(sellerKey)) {
+        const { data: socialRow } = await admin
+          .from(supabaseTables.dataBlobs)
+          .select("data")
+          .eq("user_id", sellerKey)
+          .eq("blob_key", "social_links")
+          .maybeSingle();
+        sellerSocialLinks = parseSellerSocialBlob(
+          (socialRow as { data?: unknown } | null)?.data,
+        );
+      }
     }
   } catch {
     profileNickname = null;
@@ -113,7 +129,10 @@ export default async function SellerPage({
       orderBy: { createdAt: "desc" },
       take: 100,
     });
-    videos = rows.map(videoRowToFeedVideo);
+    videos = rows.map((row) => ({
+      ...videoRowToFeedVideo(row),
+      sellerSocialLinks,
+    }));
   } catch {
     videos = [];
   }
@@ -182,6 +201,12 @@ export default async function SellerPage({
                   {nickname}
                 </h1>
                 <SellerFeedListingCount videoCount={videos.length} isDbSeller={isDbSeller} />
+                {isProbablySellerUserId(sellerKey) ? (
+                  <SellerFeedSocialLinks
+                    sellerId={sellerKey}
+                    initialLinks={sellerSocialLinks}
+                  />
+                ) : null}
               </div>
             </div>
             <div className="min-w-0 border-t border-white/[0.1] pt-6 lg:border-t-0 lg:border-l lg:border-white/[0.1] lg:pl-8 lg:pt-0 [html[data-theme='light']_&]:border-zinc-200/75">

@@ -1133,7 +1133,7 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "assets.section.payment.tossOk": "Toss 결제가 설정되어 있어요. 아래 패키지에서 충전을 진행할 수 있습니다.",
     "assets.section.payment.tossMissing":
       "Toss 키가 아직 설정되지 않았어요. 관리자에게 `NEXT_PUBLIC_TOSS_CLIENT_KEY`·`TOSS_SECRET_KEY` 설정을 요청하거나 `.env.local`을 확인해 주세요.",
-    "assets.section.payment.billingLink": "상세 결제·영수증 테이블 (레거시)",
+    "assets.section.payment.billingLink": "결제 등록 하기",
     "assets.section.credits.title": "크레딧 충전",
     "assets.section.credits.lead": "AI 스튜디오·맞춤 작업에 쓰이는 보석을 충전해요.",
     "assets.pack.buy": "이 패키지로 충전",
@@ -2326,7 +2326,7 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "assets.section.payment.tossOk": "Toss is configured. Pick a pack below to continue.",
     "assets.section.payment.tossMissing":
       "Toss keys are missing. Ask your admin to set NEXT_PUBLIC_TOSS_CLIENT_KEY and TOSS_SECRET_KEY, or check .env.local.",
-    "assets.section.payment.billingLink": "Legacy billing table",
+    "assets.section.payment.billingLink": "Register payment",
     "assets.section.credits.title": "Credit packs",
     "assets.section.credits.lead": "Gems power AI studio and customization.",
     "assets.pack.buy": "Checkout this pack",

@@ -50,22 +50,12 @@ export function AssetsCreditPaymentClient() {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <a href="#credit-topup" className={MYPAGE_OUTLINE_BTN_SM}>
-                {t("assets.hero.ctaCharge")}
-              </a>
-            </div>
-          </div>
-          {walletLoading ? <p className="mt-6 text-[15px] text-zinc-500">{t("common.loading")}</p> : null}
-        </div>
-
-        <div id="credit-payment-register" className="scroll-mt-28 space-y-8">
-          <MyPageSectionShell title={t("assets.section.payment.title")}>
-            <div className="mt-6">
-              <Link href="/billing" className={`${MYPAGE_OUTLINE_BTN_SM} text-[15px]`}>
+              <Link href="/billing" className={MYPAGE_OUTLINE_BTN_SM}>
                 {t("assets.section.payment.billingLink")}
               </Link>
             </div>
-          </MyPageSectionShell>
+          </div>
+          {walletLoading ? <p className="mt-6 text-[15px] text-zinc-500">{t("common.loading")}</p> : null}
         </div>
 
         <div id="credit-topup" className="scroll-mt-28 space-y-8">

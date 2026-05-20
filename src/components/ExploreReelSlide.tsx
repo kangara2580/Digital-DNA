@@ -49,7 +49,8 @@ import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
 import { getVideoContentSource } from "@/lib/videoSourcePlatform";
 import { getExploreFormatters } from "@/lib/exploreLocaleFormat";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
+import { SellerSocialLinkIcons } from "@/components/SellerSocialLinkIcons";
+import { useSellerSocialLinks } from "@/hooks/useSellerSocialLinks";
 
 type ReelSlideProps = {
   video: FeedVideo;
@@ -278,6 +279,10 @@ function ReelDesktopRail({
     },
   });
   const displayedLikeTotal = Math.max(0, externalLikeCount + internalLikeCount);
+  const sellerSocialLinks = useSellerSocialLinks(
+    video.listing?.sellerId,
+    video.sellerSocialLinks,
+  );
 
   const onBuyClick = useCallback(() => {
     if (soldOut || authLoading) return;
@@ -409,6 +414,12 @@ function ReelDesktopRail({
           aria-label={t("explore.rail.purchasesAria", { n: salesStr })}
         />
       </div>
+
+      <SellerSocialLinkIcons
+        links={sellerSocialLinks}
+        size="sm"
+        className="justify-center px-2"
+      />
 
       {video.priceWon != null ? (
         soldOut ? (
@@ -584,6 +595,10 @@ export function ExploreReelSlide({
     posterSrc ?? (video.poster?.trim() || undefined);
   const sellerHref = useMemo(() => sellerProfileHrefFromVideo(video), [video]);
   const videoContentSource = useMemo(() => getVideoContentSource(video), [video]);
+  const sellerSocialLinks = useSellerSocialLinks(
+    video.listing?.sellerId,
+    video.sellerSocialLinks,
+  );
 
   const sidebarMetrics = useExploreReelSidebarMetrics(video);
 
@@ -814,16 +829,19 @@ export function ExploreReelSlide({
             ) : null}
 
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] space-y-2 p-4 pb-5">
-              <Link
-                href={sellerHref}
-                className="pointer-events-auto inline-flex items-center gap-1.5 text-[13px] font-semibold text-white/90 underline-offset-2 hover:text-reels-cyan hover:underline"
-              >
-                <VideoSourcePlatformIcon
-                  source={videoContentSource}
-                  className="h-3.5 w-3.5 shrink-0 text-white/85"
-                />
-                {video.creator}
-              </Link>
+              <div className="pointer-events-auto flex flex-wrap items-center gap-2">
+                <Link
+                  href={sellerHref}
+                  className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-white/90 underline-offset-2 hover:text-reels-cyan hover:underline"
+                >
+                  <VideoSourcePlatformIcon
+                    source={videoContentSource}
+                    className="h-3.5 w-3.5 shrink-0 text-white/85"
+                  />
+                  {video.creator}
+                </Link>
+                <SellerSocialLinkIcons links={sellerSocialLinks} size="sm" stopPropagation />
+              </div>
               <p className="line-clamp-3 text-left text-[15px] font-bold leading-snug text-white sm:text-[16px]">
                 {displayTitle(video)}
               </p>

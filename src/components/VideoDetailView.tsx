@@ -7,7 +7,8 @@ import { Bookmark, ChevronLeft, ChevronRight, Heart, ShoppingCart } from "lucide
 import { useAuthPromptModal } from "@/components/AuthPromptModalProvider";
 import { TossCheckoutButton } from "@/components/payments/TossCheckoutButton";
 import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
-import { SellerSocialPlatformIcon } from "@/components/SellerSocialPlatformIcon";
+import { SellerSocialLinkIcons } from "@/components/SellerSocialLinkIcons";
+import { useSellerSocialLinks } from "@/hooks/useSellerSocialLinks";
 import { SellerIdentityLink } from "@/components/SellerIdentityLink";
 import { VideoDetailRecommendations } from "@/components/VideoDetailRecommendations";
 import { VideoDetailReviewsSection } from "@/components/VideoDetailReviewsSection";
@@ -45,42 +46,7 @@ import {
   EXPLORE_RAIL_ACTION_ICON,
   EXPLORE_RAIL_ACTION_ICON_FILLED,
 } from "@/lib/exploreRailActionTokens";
-import type { SellerSocialLink } from "@/lib/sellerSocialLinks";
 import { getVideoContentSource } from "@/lib/videoSourcePlatform";
-
-const sellerSocialLinksCache = new Map<string, SellerSocialLink[]>();
-const sellerSocialLinksInFlight = new Map<string, Promise<SellerSocialLink[]>>();
-
-async function loadSellerSocialLinks(sellerId: string): Promise<SellerSocialLink[]> {
-  const cached = sellerSocialLinksCache.get(sellerId);
-  if (cached) return cached;
-  const inflight = sellerSocialLinksInFlight.get(sellerId);
-  if (inflight) return inflight;
-
-  const req = fetch(
-    `/api/sellers/social-links?sellerIds=${encodeURIComponent(sellerId)}`,
-    { cache: "no-store" },
-  )
-    .then(async (res) => {
-      const body = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        linksBySellerId?: Record<string, SellerSocialLink[]>;
-      };
-      if (!res.ok || !body.ok) return [];
-      const links = Array.isArray(body.linksBySellerId?.[sellerId])
-        ? body.linksBySellerId?.[sellerId] ?? []
-        : [];
-      sellerSocialLinksCache.set(sellerId, links);
-      return links;
-    })
-    .catch(() => [])
-    .finally(() => {
-      sellerSocialLinksInFlight.delete(sellerId);
-    });
-
-  sellerSocialLinksInFlight.set(sellerId, req);
-  return req;
-}
 
 export function VideoDetailView({
   video,
@@ -354,8 +320,9 @@ export function VideoDetailView({
     playCount: number;
     diggCount: number;
   } | null>(null);
-  const [sellerSocialLinks, setSellerSocialLinks] = useState<SellerSocialLink[]>(
-    video.sellerSocialLinks ?? [],
+  const sellerSocialLinks = useSellerSocialLinks(
+    video.listing?.sellerId,
+    video.sellerSocialLinks,
   );
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(video.src);
   const canLoadDirectVideo =
@@ -446,45 +413,6 @@ export function VideoDetailView({
       window.clearInterval(t);
     };
   }, [statsPageUrl]);
-
-  useEffect(() => {
-    setSellerSocialLinks(video.sellerSocialLinks ?? []);
-  }, [video.sellerSocialLinks]);
-
-  useEffect(() => {
-    const sellerId = video.listing?.sellerId;
-    if (!sellerId || (video.sellerSocialLinks?.length ?? 0) > 0) return;
-    let cancelled = false;
-    void loadSellerSocialLinks(sellerId).then((links) => {
-      if (cancelled) return;
-      setSellerSocialLinks(links);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [video.listing?.sellerId, video.sellerSocialLinks]);
-
-  useEffect(() => {
-    const sellerId = video.listing?.sellerId;
-    if (!sellerId) return;
-    const handler = (
-      evt: Event,
-    ) => {
-      const detail = (
-        evt as CustomEvent<{
-          sellerId?: string;
-          links?: SellerSocialLink[];
-        }>
-      ).detail;
-      if (!detail || detail.sellerId !== sellerId || !Array.isArray(detail.links)) return;
-      sellerSocialLinksCache.set(sellerId, detail.links);
-      setSellerSocialLinks(detail.links);
-    };
-    window.addEventListener("seller-social-links-updated", handler as EventListener);
-    return () => {
-      window.removeEventListener("seller-social-links-updated", handler as EventListener);
-    };
-  }, [video.listing?.sellerId]);
 
   const toggleInternalLike = useCallback(async () => {
     const nextLiked = !likedByMe;
@@ -641,28 +569,7 @@ export function VideoDetailView({
                         className="min-w-0 flex-1"
                       />
                     </div>
-                    {sellerSocialLinks.length > 0 ? (
-                      <div className="flex items-center gap-1.5">
-                        {sellerSocialLinks.slice(0, 4).map((link) => (
-                          <a
-                            key={`${link.platform}-${link.url}`}
-                            href={link.url}
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/[0.04] text-zinc-300 transition hover:border-reels-cyan/45 hover:text-reels-cyan [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700"
-                            aria-label={t("video.detail.openPlatformLink", {
-                              platform: link.platform,
-                            })}
-                            title={link.url}
-                          >
-                            <SellerSocialPlatformIcon
-                              platform={link.platform}
-                              className="h-4 w-4"
-                            />
-                          </a>
-                        ))}
-                      </div>
-                    ) : null}
+                    <SellerSocialLinkIcons links={sellerSocialLinks} size="md" />
                   </div>
                   <h1 className="min-w-0 text-center text-2xl font-extrabold tracking-tight text-zinc-100 sm:text-3xl [html[data-theme='light']_&]:text-zinc-900">
                     {displayTitle(video)}

@@ -32,6 +32,7 @@ const SNS_URL_PRESETS = [
   { prefix: "https://www.tiktok.com/", label: "TikTok" },
   { prefix: "https://www.instagram.com/", label: "Instagram" },
   { prefix: "https://www.youtube.com/", label: "YouTube" },
+  { prefix: "https://x.com/", label: "X" },
 ] as const;
 
 function nz(s: string): string | null {
@@ -87,12 +88,12 @@ export function MyPageProfileEditForm({
   const [nickname, setNickname] = useState("");
   const [socialLinks, setSocialLinks] = useState<string[]>([""]);
   const [socialLinksReady, setSocialLinksReady] = useState(false);
-  const [, setSocialBusy] = useState(false);
   const [nicknameBusy, setNicknameBusy] = useState(false);
   /** 닉네임 저장 실패 등 — 닉네임 필드 전용 */
   const [nicknameMessage, setNicknameMessage] = useState<string | null>(null);
-  /** SNS blob 저장 실패(화면 미표시, 로그성 상태) */
-  const [, setSocialMessage] = useState<string | null>(null);
+  /** SNS blob 저장 실패 등 */
+  const [socialMessage, setSocialMessage] = useState<string | null>(null);
+  const [socialBusy, setSocialBusy] = useState(false);
 
   useEffect(() => {
     if (!profileForForm) {
@@ -326,27 +327,19 @@ export function MyPageProfileEditForm({
           </div>
         ) : null}
 
-        <div className="mt-6 rounded-xl border border-dashed border-white/15 bg-black/15 px-4 py-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50/80">
-          <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-            {t("profileForm.snsConnectComing")}
+        {socialBusy ? (
+          <p className="mt-4 text-[13px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+            {t("profileForm.snsSaving")}
           </p>
-          <p className="mt-1 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            {t("profileForm.snsConnectSoon")}
+        ) : null}
+        {socialMessage ? (
+          <p
+            className="mt-3 text-[15px] font-medium text-red-400 [html[data-theme='light']_&]:text-red-600"
+            role="status"
+          >
+            {socialMessage}
           </p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {SNS_URL_PRESETS.map(({ label }) => (
-              <button
-                key={`oauth-${label}`}
-                type="button"
-                disabled
-                className="inline-flex cursor-not-allowed items-center rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[14px] font-semibold text-zinc-500 opacity-60 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-500"
-                aria-label={`${label} — ${t("profileForm.snsConnectSoon")}`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
+        ) : null}
       </section>
     </div>
   );

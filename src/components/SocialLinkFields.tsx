@@ -117,6 +117,13 @@ export function SocialLinkFields({
           </div>
         );
       })}
+      <button
+        type="button"
+        onClick={() => onChange([...links, ""])}
+        className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-[13px] font-semibold text-zinc-200 transition hover:border-white/28 hover:bg-white/[0.1] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-800"
+      >
+        {t("socialLinks.add")}
+      </button>
     </div>
   );
 }
