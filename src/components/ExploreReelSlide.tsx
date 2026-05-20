@@ -49,6 +49,7 @@ import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
 import { getVideoContentSource } from "@/lib/videoSourcePlatform";
 import { getExploreFormatters } from "@/lib/exploreLocaleFormat";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import { SellerSocialLinkIcons } from "@/components/SellerSocialLinkIcons";
 import { useSellerSocialLinks } from "@/hooks/useSellerSocialLinks";
 

@@ -59,6 +59,7 @@ export async function runReelsGenerationPipeline(
       const g = await pollGeminiJob(gemini.externalId);
       geminiPolls += 1;
       if (g.done) {
+        if (g.error) throw new Error(g.error);
         if (g.outputUrl) intermediateVideo = g.outputUrl;
         break;
       }
@@ -88,6 +89,7 @@ export async function runReelsGenerationPipeline(
       const m = await pollKlingMotionJob(motion.externalId);
       motionPolls += 1;
       if (m.done) {
+        if (m.error) throw new Error(m.error);
         if (m.outputUrl) motionVideo = m.outputUrl;
         break;
       }
@@ -117,6 +119,7 @@ export async function runReelsGenerationPipeline(
       const u = await pollUpscaleJob(upscale.externalId);
       upPolls += 1;
       if (u.done) {
+        if (u.error) throw new Error(u.error);
         if (u.outputUrl) finalVideo = u.outputUrl;
         break;
       }

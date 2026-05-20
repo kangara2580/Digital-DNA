@@ -8,8 +8,17 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 import type { FeedVideo } from "@/data/videos";
 import { LOCAL_FACE_SWAP_VIDEO_IDS } from "@/constants/videos";
 import { buildFacePickerOptions, type FacePickerOption } from "@/lib/facePickerOptions";
+import { useAuthPromptModal } from "@/components/AuthPromptModalProvider";
 import { markCustomizeDraftSaved } from "@/lib/customizeDraftIndex";
-import { getCustomizeDraftStorageKey } from "@/lib/customizeDraftStorage";
+import {
+  fetchRemoteCustomizeDraft,
+  persistCustomizeDraft,
+  pickNewerCustomizeDraft,
+  readLocalCustomizeDraft,
+  writeLocalCustomizeDraft,
+  type CustomizeDraftBlob,
+} from "@/lib/customizeDraftSync";
+import { useStoredFaceProfile } from "@/hooks/useStoredFaceProfile";
 import { buildPurchaseCompleteNextPath } from "@/lib/safePaymentNextPath";
 import {
   consumeLocalFacePreviewSuccess,
@@ -153,14 +162,11 @@ function clampOverlayPosition(v: number, min = 5, max = 95): number {
   return Math.min(max, Math.max(min, v));
 }
 
-function loadDraft(
-  videoId: string,
+function parseCustomizeDraftBlob(
+  j: Record<string, unknown> | null,
   options: FacePickerOption[],
 ): { draft: CustomizeDraft; persistedPreview: PersistedPreviewV1 | null } {
   try {
-    const raw = localStorage.getItem(getCustomizeDraftStorageKey(videoId));
-    if (!raw) throw new Error("empty");
-    const j = JSON.parse(raw) as Record<string, unknown>;
     if (!j || typeof j !== "object") throw new Error("bad");
     const persistedPreview = parsePersistedPreview(j.persistedPreview);
     const faceOk =
@@ -232,13 +238,11 @@ function loadDraft(
   }
 }
 
-function saveDraft(videoId: string, d: CustomizeDraft, persistedPreview: PersistedPreviewV1) {
-  try {
-    const blob = { ...d, persistedPreview };
-    localStorage.setItem(getCustomizeDraftStorageKey(videoId), JSON.stringify(blob));
-  } catch {
-    /* quota */
-  }
+function buildDraftBlob(
+  d: CustomizeDraft,
+  persistedPreview: PersistedPreviewV1,
+): CustomizeDraftBlob {
+  return { ...d, persistedPreview };
 }
 
 function looksLikeVideoUrl(url: string): boolean {
@@ -473,7 +477,10 @@ export function PurchaseCustomizeStudio({
     setVideo(initialVideo);
   }, [initialVideo]);
   const { hasPurchased } = usePurchasedVideos();
-  const { user } = useAuthSession();
+  const { user, supabaseConfigured } = useAuthSession();
+  const { openAuthModal } = useAuthPromptModal();
+  const { profile: storedFaceProfile, setProfile: setStoredFaceProfile } =
+    useStoredFaceProfile();
   const aiPreviewQuotaActive = false; // 구독 게이트 비활성화 시 항상 false
   const isLocalFaceSwapDemo = LOCAL_FACE_SWAP_VIDEO_IDS.includes(video.id);
   const owned = hasPurchased(video.id) || isLocalFaceSwapDemo;
@@ -510,8 +517,13 @@ export function PurchaseCustomizeStudio({
   const [draft, setDraft] = useState<CustomizeDraft | null>(null);
   const [duration, setDuration] = useState(0);
   /** idle: 아직 저장 안 함 · saving: 저장 중 · saved: 완료(문구 유지, 재저장 시 다시 saving → saved) */
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">(
+    "idle",
+  );
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [draftHydrating, setDraftHydrating] = useState(true);
   const saveInFlightRef = useRef(false);
+  const autoSaveTimerRef = useRef<number | null>(null);
   const [useAdvancedStep, setUseAdvancedStep] = useState(true);
   const [submitRemote, setSubmitRemote] = useState(false);
   const [remoteErr, setRemoteErr] = useState<string | null>(null);
@@ -568,7 +580,11 @@ export function PurchaseCustomizeStudio({
                 ? (data as { items: unknown[] }).items
                 : [];
             const finishedVideos = list.filter(
-              (t: any) => t?.status === "succeed" && t?.videoUrl,
+              (t: { status?: string; videoUrl?: string; outputUrl?: string }) =>
+                (t?.status === "succeed" ||
+                  t?.status === "succeeded" ||
+                  t?.status === "done") &&
+                (t?.videoUrl || t?.outputUrl),
             );
             setKlingHistory(finishedVideos);
         })
@@ -598,64 +614,115 @@ export function PurchaseCustomizeStudio({
   const lastAutoAppliedKeywordRef = useRef<string>("");
   const prevBackgroundModeRef = useRef<"video" | "image" | null>(null);
 
+  const applyLoadedDraft = useCallback(
+    (loaded: {
+      draft: CustomizeDraft;
+      persistedPreview: PersistedPreviewV1 | null;
+    }) => {
+      setDraft(loaded.draft);
+      const p = loaded.persistedPreview;
+      const mode = loaded.draft.backgroundMode ?? "video";
+      prevBackgroundModeRef.current = mode;
+      lastAutoAppliedKeywordRef.current = loaded.draft.backgroundPrompt.trim();
+
+      if (p) {
+        if (owned) setUseAdvancedStep(p.useAdvancedStep);
+        else setUseAdvancedStep(false);
+        setPreviewBgPrompt(p.previewBgPrompt);
+        setPreviewBgVideoUrl(p.previewBgVideoUrl);
+        setPreviewBgImageUrl(p.previewBgImageUrl);
+        setPreviewCompositeFgUrl(p.previewCompositeFgUrl);
+        setPreviewCompositeBgUrl(p.previewCompositeBgUrl);
+        setPreviewCandidates(p.previewCandidates);
+        setPreviewCandidateIndex(
+          p.previewCandidates.length > 0
+            ? Math.min(p.previewCandidateIndex, p.previewCandidates.length - 1)
+            : 0,
+        );
+      } else {
+        setUseAdvancedStep(owned);
+        setPreviewBgPrompt(null);
+        setPreviewBgVideoUrl(null);
+        setPreviewBgImageUrl(null);
+        setPreviewCompositeFgUrl(null);
+        setPreviewCompositeBgUrl(null);
+        setPreviewCandidates([]);
+        setPreviewCandidateIndex(0);
+      }
+      setIncomingPreviewUrl(null);
+      setIncomingVisible(false);
+      setPreviewTransitionLoading(false);
+      setPreviewBgVersion((v) => v + 1);
+      setFacePreviewError(null);
+      setFacePreviewApplying(false);
+      setBackgroundPreviewError(null);
+      setBackgroundPreviewInfo(null);
+      setBackgroundPreviewApplying(false);
+      setCustomUploadModalVisible(false);
+    },
+    [owned],
+  );
+
+  useEffect(() => {
+    if (!owned) setUseAdvancedStep(false);
+  }, [owned, video.id]);
+
   useEffect(() => {
     const onFocus = () => {
       setFaceOptions((prev) => {
-        const base = buildFacePickerOptions();
+        const base = buildFacePickerOptions(storedFaceProfile);
         const customs = prev.filter((o) => o.id.startsWith("custom-"));
         return [...base, ...customs];
       });
     };
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
-  }, []);
+  }, [storedFaceProfile]);
 
   useEffect(() => {
-    const opts = buildFacePickerOptions();
-    setFaceOptions(opts);
-    const loaded = loadDraft(video.id, opts);
-    setDraft(loaded.draft);
-    const p = loaded.persistedPreview;
-    const mode = loaded.draft.backgroundMode ?? "video";
-    prevBackgroundModeRef.current = mode;
-    lastAutoAppliedKeywordRef.current = loaded.draft.backgroundPrompt.trim();
-
-    if (p) {
-      setUseAdvancedStep(p.useAdvancedStep);
-      setPreviewBgPrompt(p.previewBgPrompt);
-      setPreviewBgVideoUrl(p.previewBgVideoUrl);
-      setPreviewBgImageUrl(p.previewBgImageUrl);
-      setPreviewCompositeFgUrl(p.previewCompositeFgUrl);
-      setPreviewCompositeBgUrl(p.previewCompositeBgUrl);
-      setPreviewCandidates(p.previewCandidates);
-      setPreviewCandidateIndex(
-        p.previewCandidates.length > 0
-          ? Math.min(p.previewCandidateIndex, p.previewCandidates.length - 1)
-          : 0,
-      );
-    } else {
-      setUseAdvancedStep(true);
-      setPreviewBgPrompt(null);
-      setPreviewBgVideoUrl(null);
-      setPreviewBgImageUrl(null);
-      setPreviewCompositeFgUrl(null);
-      setPreviewCompositeBgUrl(null);
-      setPreviewCandidates([]);
-      setPreviewCandidateIndex(0);
-    }
-    setIncomingPreviewUrl(null);
-    setIncomingVisible(false);
-    setPreviewTransitionLoading(false);
-    setPreviewBgVersion((v) => v + 1);
-    setFacePreviewError(null);
-    setFacePreviewApplying(false);
-    setBackgroundPreviewError(null);
-    setBackgroundPreviewInfo(null);
-    setBackgroundPreviewApplying(false);
+    let cancelled = false;
+    setDraftHydrating(true);
     setSaveStatus("idle");
-    setCustomUploadModalVisible(false);
+    setSaveError(null);
     saveInFlightRef.current = false;
-  }, [video.id]);
+
+    const opts = buildFacePickerOptions(storedFaceProfile);
+    setFaceOptions(opts);
+
+    const localBlob = readLocalCustomizeDraft(video.id);
+
+    void (async () => {
+      let merged = localBlob;
+      if (user && supabaseConfigured) {
+        const supabase = getSupabaseBrowserClient();
+        if (supabase) {
+          const remoteBlob = await fetchRemoteCustomizeDraft(
+            supabase,
+            user.id,
+            video.id,
+          );
+          merged = pickNewerCustomizeDraft(localBlob, remoteBlob);
+          if (remoteBlob && merged === remoteBlob && merged) {
+            writeLocalCustomizeDraft(video.id, merged);
+          }
+        }
+      }
+      if (cancelled) return;
+      const parsed = parseCustomizeDraftBlob(merged, opts);
+      applyLoadedDraft(parsed);
+      setDraftHydrating(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    applyLoadedDraft,
+    storedFaceProfile,
+    supabaseConfigured,
+    user,
+    video.id,
+  ]);
 
   useEffect(() => {
     if (useAdvancedStep) return;
@@ -944,10 +1011,70 @@ export function PurchaseCustomizeStudio({
 
   const persist = useCallback(() => {
     if (!draft || saveInFlightRef.current) return;
+    if (!user) {
+      openAuthModal();
+      return;
+    }
     saveInFlightRef.current = true;
     setSaveStatus("saving");
-    const minSpinnerMs = 320;
-    window.setTimeout(() => {
+    setSaveError(null);
+    const persistedPreview: PersistedPreviewV1 = {
+      v: 1,
+      useAdvancedStep,
+      previewBgPrompt,
+      previewBgVideoUrl,
+      previewBgImageUrl,
+      previewCompositeFgUrl,
+      previewCompositeBgUrl,
+      previewCandidates,
+      previewCandidateIndex,
+      textPreviewEnabled: false,
+    };
+    const blob = buildDraftBlob(draft, persistedPreview);
+    const supabase =
+      supabaseConfigured ? getSupabaseBrowserClient() : null;
+    void persistCustomizeDraft(supabase, user.id, video.id, blob).then(
+      ({ remoteOk }) => {
+        markCustomizeDraftSaved(video.id);
+        trackBehavior({
+          type: "draft_saved",
+          keyword: draft.backgroundPrompt,
+          mode: draft.backgroundMode ?? "video",
+        });
+        if (!remoteOk && supabaseConfigured) {
+          setSaveStatus("error");
+          setSaveError(
+            "이 기기에는 저장됐지만 계정 동기화에 실패했어요. 네트워크 확인 후 다시 저장해 주세요.",
+          );
+        } else {
+          setSaveStatus("saved");
+          setSaveError(null);
+        }
+        saveInFlightRef.current = false;
+      },
+    );
+  }, [
+    draft,
+    openAuthModal,
+    previewBgImageUrl,
+    previewBgPrompt,
+    previewBgVideoUrl,
+    previewCandidateIndex,
+    previewCandidates,
+    previewCompositeBgUrl,
+    previewCompositeFgUrl,
+    supabaseConfigured,
+    trackBehavior,
+    useAdvancedStep,
+    user,
+    video.id,
+  ]);
+
+  useEffect(() => {
+    if (!draft || !user || draftHydrating) return;
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = window.setTimeout(() => {
+      if (saveInFlightRef.current) return;
       const persistedPreview: PersistedPreviewV1 = {
         v: 1,
         useAdvancedStep,
@@ -960,28 +1087,28 @@ export function PurchaseCustomizeStudio({
         previewCandidateIndex,
         textPreviewEnabled: false,
       };
-      saveDraft(video.id, draft, persistedPreview);
-      markCustomizeDraftSaved(video.id);
-      trackBehavior({
-        type: "draft_saved",
-        keyword: draft.backgroundPrompt,
-        mode: draft.backgroundMode ?? "video",
-      });
-      setSaveStatus("saved");
-      saveInFlightRef.current = false;
-    }, minSpinnerMs);
+      const blob = buildDraftBlob(draft, persistedPreview);
+      const supabase =
+        supabaseConfigured ? getSupabaseBrowserClient() : null;
+      void persistCustomizeDraft(supabase, user.id, video.id, blob);
+    }, 2000);
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    };
   }, [
     draft,
-    trackBehavior,
-    video.id,
-    useAdvancedStep,
+    draftHydrating,
+    previewBgImageUrl,
     previewBgPrompt,
     previewBgVideoUrl,
-    previewBgImageUrl,
-    previewCompositeFgUrl,
-    previewCompositeBgUrl,
-    previewCandidates,
     previewCandidateIndex,
+    previewCandidates,
+    previewCompositeBgUrl,
+    previewCompositeFgUrl,
+    supabaseConfigured,
+    useAdvancedStep,
+    user,
+    video.id,
   ]);
 
   const submitServerGeneration = useCallback(async () => {
@@ -1389,27 +1516,29 @@ export function PurchaseCustomizeStudio({
     };
   }, [pollJobId]);
 
-  // 테스트를 위해 임시로 권한 체크를 해제합니다.
-  // if (!owned) {
-  //   return (
-  //     <div className="mx-auto max-w-lg rounded-2xl border border-white/10 bg-black/30 px-6 py-14 text-center">
-  //       <p className="text-[15px] font-semibold text-zinc-200">모션 권한 구매 후 이용할 수 있어요.</p>
-  //       <p className="mt-2 text-[13px] text-zinc-500">동영상 구매 후 얼굴·배경·편집 설정을 저장할 수 있습니다.</p>
-  //       <Link
-  //         href={`/video/${video.id}`}
-  //         className="mt-6 inline-flex rounded-full border border-reels-cyan/40 bg-reels-cyan/10 px-6 py-3 text-[14px] font-extrabold text-reels-cyan hover:bg-reels-cyan/18"
-  //       >
-  //         동영상 상세로 돌아가기
-  //       </Link>
-  //     </div>
-  //   );
-  // }
-
-  if (!draft) {
+  if (!draft || draftHydrating) {
     return (
       <p className="py-16 text-center text-[14px] text-zinc-500">불러오는 중…</p>
     );
   }
+
+  const purchaseGatePanel = !owned ? (
+    <div className="mx-auto mb-6 max-w-lg rounded-2xl border border-white/10 bg-black/30 px-6 py-10 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+      <p className="text-[15px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
+        모션 권한 구매 후 커스텀 편집을 이용할 수 있어요.
+      </p>
+      <p className="mt-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        아래 「영상만 구매」로 결제하거나, 상세 페이지에서 구매한 뒤 얼굴·배경 편집과 임시 저장을
+        사용할 수 있습니다.
+      </p>
+      <Link
+        href={`/video/${encodeURIComponent(video.id)}`}
+        className="mt-6 inline-flex rounded-full border border-reels-cyan/40 bg-reels-cyan/10 px-6 py-3 text-[14px] font-extrabold text-reels-cyan hover:bg-reels-cyan/18"
+      >
+        동영상 상세로 돌아가기
+      </Link>
+    </div>
+  ) : null;
 
   return (
     <div className="space-y-8">
@@ -1749,7 +1878,8 @@ export function PurchaseCustomizeStudio({
               </div>
             </section>
           ) : null}
-          {useAdvancedStep ? (
+          {useAdvancedStep && !owned ? purchaseGatePanel : null}
+          {useAdvancedStep && owned ? (
             <>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:items-stretch md:gap-3 lg:gap-4">
                 <section
@@ -2571,10 +2701,17 @@ export function PurchaseCustomizeStudio({
                     </h2>
                     
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 relative z-10">
-                        {klingHistory.map((hist, idx) => (
-                            <div key={idx} className="relative group rounded-xl overflow-hidden border border-white/10 bg-black aspect-[9/16] shadow-lg">
+                        {klingHistory.map((hist, idx) => {
+                          const histUrl =
+                            (typeof hist.videoUrl === "string" && hist.videoUrl) ||
+                            (typeof hist.outputUrl === "string" && hist.outputUrl) ||
+                            "";
+                          const histTime =
+                            hist.createdAt ?? hist.updatedAt ?? hist.time;
+                          return (
+                            <div key={hist.id ?? idx} className="relative group rounded-xl overflow-hidden border border-white/10 bg-black aspect-[9/16] shadow-lg">
                                 <video
-                                  src={hist.videoUrl}
+                                  src={histUrl}
                                   className="studio-preview-native-video h-full w-full object-contain"
                                   controls
                                   controlsList="nodownload noplaybackrate noremoteplayback"
@@ -2584,10 +2721,14 @@ export function PurchaseCustomizeStudio({
                                 />
                                 <div className="absolute top-0 left-0 w-full p-2 bg-gradient-to-b from-black/80 to-transparent flex justify-between items-start pointer-events-none transition-opacity opacity-0 group-hover:opacity-100">
                                     <div className="max-w-[70%]">
-                                        <p className="text-[9px] font-semibold text-white/50">{new Date(hist.time).toLocaleString()}</p>
+                                        <p className="text-[9px] font-semibold text-white/50">
+                                          {histTime
+                                            ? new Date(histTime).toLocaleString()
+                                            : "—"}
+                                        </p>
                                     </div>
                                     <a 
-                                      href={hist.videoUrl} 
+                                      href={histUrl} 
                                       target="_blank" 
                                       rel="noreferrer"
                                       className="bg-reels-cyan/90 backdrop-blur text-black px-2 py-1 rounded text-[10px] font-bold z-10 pointer-events-auto hover:bg-white transition-colors shadow-lg"
@@ -2596,7 +2737,8 @@ export function PurchaseCustomizeStudio({
                                     </a>
                                 </div>
                             </div>
-                        ))}
+                          );
+                        })}
                     </div>
                   </section>
               )}
@@ -2604,7 +2746,7 @@ export function PurchaseCustomizeStudio({
             </>
           ) : null}
 
-          {useAdvancedStep ? (
+          {useAdvancedStep && owned ? (
             <div className="flex w-full flex-col items-end gap-3">
               <div className="flex flex-wrap items-center justify-end gap-3">
                 <button
@@ -2623,6 +2765,10 @@ export function PurchaseCustomizeStudio({
                 ) : saveStatus === "saved" ? (
                   <span className="text-[12px] font-semibold text-[color:var(--reels-point)]">
                     마이페이지에 임시 저장됨
+                  </span>
+                ) : saveStatus === "error" && saveError ? (
+                  <span className="max-w-xs text-[12px] font-medium text-amber-200 [html[data-theme='light']_&]:text-amber-800">
+                    {saveError}
                   </span>
                 ) : null}
                 <button
@@ -2835,13 +2981,12 @@ export function PurchaseCustomizeStudio({
                   updateDraft({ faceOptionId: newId });
                   setCustomUploadModalVisible(false);
                   
-                  // 마이페이지에 영구 저장되도록 localStorage에 기록
                   if (customUploadSourceUrl) {
-                     localStorage.setItem("reels-mypage-face-profile-v2", JSON.stringify({
-                        kind: "ai",
-                        source: customUploadSourceUrl,
-                        generatedAt: Date.now()
-                     }));
+                    void setStoredFaceProfile({
+                      kind: "ai",
+                      source: customUploadSourceUrl,
+                      generatedAt: Date.now(),
+                    });
                   }
                 }}
                 className="rounded-lg bg-[#2e3138] disabled:opacity-50 px-6 py-2.5 text-[14px] font-semibold text-zinc-100 hover:bg-[#3f434c] transition-colors"

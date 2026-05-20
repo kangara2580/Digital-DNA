@@ -113,32 +113,59 @@ export async function GET(request: Request) {
         LIMIT 10
       `);
     } else {
-      const videos = await prisma.video.findMany({
+      const purchases = await prisma.purchase.findMany({
         where: {
-          salesCount: { gt: 0 },
+          status: "paid",
           createdAt: { gte: since },
         },
         select: {
-          id: true,
-          title: true,
+          videoId: true,
           sellerId: true,
-          salesCount: true,
           price: true,
-          createdAt: true,
         },
-        orderBy: { createdAt: "desc" },
-        take: 500,
       });
-      rows = videos.map((video) => ({
-        videoId: video.id,
-        title: video.title,
-        sellerId: video.sellerId,
-        nickname: null,
-        avatarKind: null,
-        avatarSeed: null,
-        salesCount: video.salesCount,
-        totalRevenue: video.salesCount * video.price,
-      }));
+
+      const agg = new Map<
+        string,
+        { salesCount: number; totalRevenue: number; sellerId: string }
+      >();
+      for (const pu of purchases) {
+        const prev = agg.get(pu.videoId);
+        if (!prev) {
+          agg.set(pu.videoId, {
+            salesCount: 1,
+            totalRevenue: pu.price,
+            sellerId: pu.sellerId,
+          });
+        } else {
+          prev.salesCount += 1;
+          prev.totalRevenue += pu.price;
+        }
+      }
+
+      const videoIds = [...agg.keys()];
+      const videos =
+        videoIds.length > 0
+          ? await prisma.video.findMany({
+              where: { id: { in: videoIds } },
+              select: { id: true, title: true, sellerId: true },
+            })
+          : [];
+      const videoById = new Map(videos.map((v) => [v.id, v]));
+
+      rows = [...agg.entries()].map(([videoId, stats]) => {
+        const v = videoById.get(videoId);
+        return {
+          videoId,
+          title: v?.title ?? null,
+          sellerId: v?.sellerId ?? stats.sellerId,
+          nickname: null,
+          avatarKind: null,
+          avatarSeed: null,
+          salesCount: stats.salesCount,
+          totalRevenue: stats.totalRevenue,
+        };
+      });
       rows.sort((a, b) => {
         if (metric === "revenue") {
           const revenueDiff = bigintToNumber(b.totalRevenue) - bigintToNumber(a.totalRevenue);

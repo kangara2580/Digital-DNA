@@ -67,7 +67,12 @@ export default async function PurchaseCompletePage({
         <p className="mt-4 line-clamp-3 text-[15px] font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
           {title}
         </p>
-        <PurchaseCompleteClient title={title} downloadUrl={downloadUrl} sharePageUrl={sharePageUrl} />
+        <PurchaseCompleteClient
+          videoId={videoId}
+          title={title}
+          downloadUrl={downloadUrl}
+          sharePageUrl={sharePageUrl}
+        />
         <div className="mt-10 flex flex-wrap justify-center gap-4 border-t border-white/10 pt-8 text-[13px] [html[data-theme='light']_&]:border-zinc-200">
           <Link href="/mypage?tab=purchases" className="font-semibold text-[color:var(--reels-point)] hover:underline">
             구매 내역 보기

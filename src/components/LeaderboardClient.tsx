@@ -139,36 +139,14 @@ export function LeaderboardClient() {
   }, [metric, period]);
 
   const hasData = items.length > 0;
-  const rankedItems: LeaderboardItem[] = useMemo(() => {
-    const makePlaceholder = (rank: number): LeaderboardItem => ({
-      rank,
-      videoId: `empty-${rank}`,
-      title: t("leaderboard.placeholderTitle"),
-      sellerId: `empty-${rank}`,
-      nickname: t("leaderboard.placeholderNickname"),
-      avatarColor: profileColorFromSeed(`empty-${rank}`),
-      totalSales: 0,
-      totalRevenue: 0,
-    });
-
-    if (!hasData) {
-      return Array.from({ length: 10 }, (_, idx) => makePlaceholder(idx + 1));
-    }
-
-    const fromApi = items.slice(0, 10).map((row, idx) => ({
-      ...row,
-      rank: idx + 1,
-    }));
-
-    if (fromApi.length >= 10) return fromApi;
-
-    return [
-      ...fromApi,
-      ...Array.from({ length: 10 - fromApi.length }, (_, i) =>
-        makePlaceholder(fromApi.length + i + 1),
-      ),
-    ];
-  }, [hasData, items, t]);
+  const rankedItems: LeaderboardItem[] = useMemo(
+    () =>
+      items.slice(0, 10).map((row, idx) => ({
+        ...row,
+        rank: idx + 1,
+      })),
+    [items],
+  );
 
   const topThree = rankedItems.slice(0, 3);
   const others = rankedItems.slice(3);
@@ -254,6 +232,15 @@ export function LeaderboardClient() {
         ) : error ? (
           <div className="rounded-3xl border border-red-500/25 bg-red-950/25 px-5 py-6 text-center text-[15px] font-medium text-red-100 [html[data-theme='light']_&]:border-red-200 [html[data-theme='light']_&]:bg-red-50 [html[data-theme='light']_&]:text-red-800">
             {t("leaderboard.error")}
+          </div>
+        ) : !hasData ? (
+          <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] px-6 py-14 text-center [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">
+            <p className="text-[17px] font-semibold text-zinc-200 [html[data-theme='light']_&]:text-zinc-900">
+              {t("leaderboard.placeholderTitle")}
+            </p>
+            <p className="mt-2 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+              {t("leaderboard.emptyHint")}
+            </p>
           </div>
         ) : (
           <div className="space-y-6">

@@ -442,7 +442,7 @@ export function ExploreReelsFeed({
     const target = watchPool[normalized];
 
     if (browseCardTarget === "purchase") {
-      router.push(`/video/${encodeURIComponent(target.id)}`);
+      router.push(`/create?videoId=${encodeURIComponent(target.id)}`);
       return;
     }
 

@@ -14,6 +14,7 @@ import {
   isOwnAiServerEnabled,
 } from "@/lib/reelsGenerate/endpoints";
 import type { ReelsCustomizeDraft } from "@/lib/reelsGenerate/types";
+import { getKlingBearerToken } from "@/lib/klingApi";
 import { getReplicateApiToken } from "@/lib/replicateToken";
 
 export type StartResult = { externalId: string };
@@ -38,6 +39,13 @@ type OwnPollResponse = {
 function hasEnv(name: string): boolean {
   return Boolean(process.env[name]?.trim());
 }
+
+function isKlingConfigured(): boolean {
+  return getKlingBearerToken().ok;
+}
+
+const AI_NOT_CONFIGURED =
+  "AI 생성 서비스가 아직 설정되지 않았습니다. 잠시 후 다시 시도해 주세요.";
 
 const PROMPT_SUFFIX =
   "high quality, cinematic lighting, matching original character style";
@@ -64,10 +72,8 @@ export async function startGeminiCompositeJob(params: {
     return { externalId: res.jobId ?? res.externalId ?? `own-gemini-${Date.now()}` };
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    await sleep(400);
-    return { externalId: `gemini-mock-${Date.now()}` };
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error(AI_NOT_CONFIGURED);
   }
 
   // TODO: direct Gemini API 연동 (필요 시)
@@ -87,10 +93,8 @@ export async function startKlingMotionControlJob(params: {
     return { externalId: res.jobId ?? res.externalId ?? `own-kling-${Date.now()}` };
   }
 
-  const apiKey = process.env.KLING_API_KEY;
-  if (!apiKey) {
-    await sleep(400);
-    return { externalId: `kling-motion-mock-${Date.now()}` };
+  if (!isKlingConfigured()) {
+    throw new Error(AI_NOT_CONFIGURED);
   }
 
   // TODO: direct Kling API 연동 (필요 시)
@@ -110,10 +114,8 @@ export async function runFfmpegEncodeJob(params: {
     if (res.outputUrl) return { outputUrl: res.outputUrl };
   }
 
-  // TODO: ffmpeg worker/container 실연동
   void params;
-  await sleep(500);
-  return { outputUrl: "https://example.invalid/ffmpeg-output-placeholder.mp4" };
+  throw new Error(AI_NOT_CONFIGURED);
 }
 
 /** 5단계: 업스케일링 */
@@ -149,11 +151,7 @@ export async function pollGeminiJob(externalId: string): Promise<PollResult> {
   }
 
   if (!process.env.GEMINI_API_KEY) {
-    await sleep(600);
-    return {
-      done: true,
-      outputUrl: "https://example.invalid/gemini-composite-placeholder.mp4",
-    };
+    return { done: true, error: AI_NOT_CONFIGURED };
   }
 
   // TODO: direct Gemini status polling
@@ -172,12 +170,8 @@ export async function pollKlingMotionJob(externalId: string): Promise<PollResult
     return pollFromOwnResponse(res);
   }
 
-  if (!process.env.KLING_API_KEY) {
-    await sleep(500);
-    return {
-      done: true,
-      outputUrl: "https://example.invalid/kling-motion-placeholder.mp4",
-    };
+  if (!isKlingConfigured()) {
+    return { done: true, error: AI_NOT_CONFIGURED };
   }
 
   // TODO: direct Kling status polling
@@ -197,11 +191,7 @@ export async function pollUpscaleJob(externalId: string): Promise<PollResult> {
   }
 
   if (!getReplicateApiToken()) {
-    await sleep(500);
-    return {
-      done: true,
-      outputUrl: "https://example.invalid/upscale-placeholder.mp4",
-    };
+    return { done: true, error: AI_NOT_CONFIGURED };
   }
 
   // TODO: direct upscale status polling

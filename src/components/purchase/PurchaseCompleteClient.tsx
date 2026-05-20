@@ -3,12 +3,19 @@
 import { useCallback, useState } from "react";
 
 type Props = {
+  videoId: string;
   title: string;
   downloadUrl: string;
   sharePageUrl: string;
 };
 
-export function PurchaseCompleteClient({ title, downloadUrl, sharePageUrl }: Props) {
+export function PurchaseCompleteClient({
+  videoId,
+  title,
+  downloadUrl,
+  sharePageUrl,
+}: Props) {
+  const proxyDownloadHref = `/api/purchases/download?videoId=${encodeURIComponent(videoId)}`;
   const [copied, setCopied] = useState(false);
   const [shareErr, setShareErr] = useState<string | null>(null);
 
@@ -44,10 +51,8 @@ export function PurchaseCompleteClient({ title, downloadUrl, sharePageUrl }: Pro
   return (
     <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
       <a
-        href={downloadUrl}
-        download
-        target="_blank"
-        rel="noreferrer"
+        href={proxyDownloadHref}
+        download={title ? `${title}.mp4` : "video.mp4"}
         className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-white/20 bg-white px-6 py-3 text-center text-[15px] font-bold text-zinc-950 transition hover:bg-zinc-100 sm:min-w-[200px] [html[data-theme='light']_&]:border-zinc-300"
       >
         원본 영상 다운로드

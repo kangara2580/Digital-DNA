@@ -14,6 +14,7 @@ import { getMarketVideoById } from "@/data/videoCommerce";
 import type { FeedVideo } from "@/data/videos";
 import {
   dispatchCustomizeDraftsUpdated,
+  getCustomizeDraftStorageKey,
   summarizeCustomizePayload,
   type CustomizeDraftSummary,
 } from "@/lib/customizeDraftStorage";
@@ -118,6 +119,11 @@ export function MyPageSavedDraftsSection() {
                 if (supabase && user) {
                   void deleteCustomizeDraftRemote(supabase, user.id, videoId).then(
                     () => {
+                      try {
+                        localStorage.removeItem(getCustomizeDraftStorageKey(videoId));
+                      } catch {
+                        /* ignore */
+                      }
                       dispatchCustomizeDraftsUpdated();
                       reload();
                     },

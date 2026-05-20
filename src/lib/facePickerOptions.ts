@@ -16,8 +16,29 @@ export type FacePickerOption = {
 export function buildFacePickerOptions(
   storedProfile?: StoredFaceProfile | null,
 ): FacePickerOption[] {
-  void storedProfile;
-  const first = DEMO_FACE_PROFILES[0];
-  if (!first) return [];
-  return [{ id: first.id, label: first.label, src: first.src }];
+  const options: FacePickerOption[] = [];
+
+  if (storedProfile?.kind === "ai" && storedProfile.source.trim()) {
+    options.push({
+      id: "profile-saved-ai",
+      label: "내 프로필",
+      src: storedProfile.source.trim(),
+    });
+  } else if (storedProfile?.kind === "triple") {
+    const front = storedProfile.front.trim();
+    if (front) {
+      options.push({
+        id: "profile-saved-triple",
+        label: "내 프로필 (3면)",
+        src: front,
+        aiAngles: [storedProfile.left, front, storedProfile.right].filter(Boolean),
+      });
+    }
+  }
+
+  for (const demo of DEMO_FACE_PROFILES) {
+    options.push({ id: demo.id, label: demo.label, src: demo.src });
+  }
+
+  return options;
 }

@@ -405,6 +405,7 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "leaderboard.loading": "잠깐만요… 불러오는 중",
     "leaderboard.error": "랭킹을 못 불러왔어요. 조금 뒤에 다시 눌러 주세요.",
     "leaderboard.placeholderTitle": "아직 데이터가 없어요",
+    "leaderboard.emptyHint": "선택한 기간에 집계된 판매가 없습니다. 결제가 완료되면 순위가 표시됩니다.",
     "leaderboard.placeholderNickname": "대기중",
     "leaderboard.rankShort": "{n}위",
     "leaderboard.sellerFeedAria": "{name} 판매자 피드",
@@ -1615,6 +1616,8 @@ export const DICTIONARY: Record<SiteLocale, Record<string, string>> = {
     "leaderboard.loading": "Loading…",
     "leaderboard.error": "Couldn’t load rankings. Please try again shortly.",
     "leaderboard.placeholderTitle": "No data yet",
+    "leaderboard.emptyHint":
+      "No paid sales in this period yet. Rankings appear after checkout completes.",
     "leaderboard.placeholderNickname": "Pending",
     "leaderboard.rankShort": "#{n}",
     "leaderboard.sellerFeedAria": "{name}’s seller feed",

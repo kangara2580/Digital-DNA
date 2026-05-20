@@ -1,7 +1,7 @@
 "use client";
 
 import type { User } from "@supabase/supabase-js";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SocialLinkFields } from "@/components/SocialLinkFields";
 import { ProfileColorPicker } from "@/components/ProfileColorPicker";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -94,6 +94,7 @@ export function MyPageProfileEditForm({
   /** SNS blob 저장 실패 등 */
   const [socialMessage, setSocialMessage] = useState<string | null>(null);
   const [socialBusy, setSocialBusy] = useState(false);
+  const socialSnapshotRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!profileForForm) {
@@ -121,21 +122,31 @@ export function MyPageProfileEditForm({
       const blob = await fetchUserDataBlob(supabase, user.id, SOCIAL_LINKS_BLOB_KEY);
       if (cancelled) return;
       const parsedFromBlob = parseSellerSocialBlob(blob);
+      let linkUrls: string[];
       if (parsedFromBlob.length > 0) {
-        setSocialLinks(parsedFromBlob.map((x) => x.url));
+        linkUrls = parsedFromBlob.map((x) => x.url);
       } else {
-        const metaLinks = Array.isArray((user.user_metadata as { social_links?: unknown })?.social_links)
-          ? (user.user_metadata as { social_links: unknown[] }).social_links
-              .filter((x): x is string => typeof x === "string")
+        const metaLinks = Array.isArray(
+          (user.user_metadata as { social_links?: unknown })?.social_links,
+        )
+          ? (user.user_metadata as { social_links: unknown[] }).social_links.filter(
+              (x): x is string => typeof x === "string",
+            )
           : [];
         const parsedFromMeta = normalizeSellerSocialLinksInput(metaLinks);
-        setSocialLinks(parsedFromMeta.length > 0 ? parsedFromMeta.map((x) => x.url) : [""]);
+        linkUrls =
+          parsedFromMeta.length > 0 ? parsedFromMeta.map((x) => x.url) : [""];
       }
+      setSocialLinks(linkUrls);
+      socialSnapshotRef.current = JSON.stringify(
+        normalizeSellerSocialLinksInput(linkUrls),
+      );
       setSocialLinksReady(true);
     };
     void loadSocialLinks();
     return () => {
       cancelled = true;
+      socialSnapshotRef.current = null;
     };
   }, [user, supabaseConfigured]);
 
@@ -186,8 +197,12 @@ export function MyPageProfileEditForm({
       }
       const authUser = freshUser ?? user;
       const row = await fetchUserProfile(supabase, user.id);
-      onSaved(mergeProfileRowWithAuthUser(row, authUser));
-      setNicknameMessage(null);
+      if (row) {
+        onSaved(mergeProfileRowWithAuthUser(row, authUser));
+        setNicknameMessage(null);
+        return;
+      }
+      setNicknameMessage(t("profileForm.saveStateUnknown"));
     } finally {
       setNicknameBusy(false);
     }
@@ -203,8 +218,10 @@ export function MyPageProfileEditForm({
     if (!supabase) return;
 
     const timer = window.setTimeout(async () => {
-      setSocialBusy(true);
       const normalized = normalizeSellerSocialLinksInput(socialLinks);
+      const snap = JSON.stringify(normalized);
+      if (socialSnapshotRef.current === snap) return;
+      setSocialBusy(true);
       const ok = await upsertUserDataBlob(
         supabase,
         user.id,
@@ -217,6 +234,7 @@ export function MyPageProfileEditForm({
         return;
       }
       setSocialMessage(null);
+      socialSnapshotRef.current = snap;
       window.dispatchEvent(
         new CustomEvent("seller-social-links-updated", {
           detail: { sellerId: user.id, links: normalized },
