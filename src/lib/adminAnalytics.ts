@@ -200,11 +200,11 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsData> {
     prisma.$queryRaw<{ count: number }[]>`SELECT count(*)::int AS count FROM public.profiles`,
     prisma.$queryRaw<{ count: number }[]>`
       SELECT count(*)::int AS count FROM public.profiles
-      WHERE created_at >= ${thisMonthStart}
+      WHERE updated_at >= ${thisMonthStart}
     `,
     prisma.$queryRaw<{ count: number }[]>`
       SELECT count(*)::int AS count FROM public.profiles
-      WHERE created_at >= ${lastMonthStart} AND created_at < ${thisMonthStart}
+      WHERE updated_at >= ${lastMonthStart} AND updated_at < ${thisMonthStart}
     `,
     // Refund request stats
     prisma.refundRequest.groupBy({
@@ -243,7 +243,7 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsData> {
     }),
     prisma.$queryRaw<{ count: number }[]>`
       SELECT count(*)::int AS count FROM public.profiles
-      WHERE created_at >= ${today}
+      WHERE updated_at >= ${today}
     `,
     prisma.generationJob.count({
       where: { status: { in: ["queued", "processing"] } },

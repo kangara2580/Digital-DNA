@@ -24,8 +24,12 @@ export async function GET() {
     return NextResponse.json(data);
   } catch (err) {
     console.error("[admin-analytics] Query error:", err);
+    const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { error: "analytics_query_failed" },
+      {
+        error: "analytics_query_failed",
+        ...(process.env.NODE_ENV !== "production" ? { detail: message } : {}),
+      },
       { status: 500 },
     );
   }
