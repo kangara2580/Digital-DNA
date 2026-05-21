@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import {
   Activity,
   BadgeCheck,
+  BarChart3,
   Bot,
   Database,
   FileText,
@@ -132,6 +133,13 @@ export default async function AdminPage() {
           </p>
         </div>
         <nav className="space-y-1 p-3">
+          <Link
+            href="/admin/analytics"
+            className="flex h-10 items-center gap-2 rounded-md px-3 text-sm font-bold text-[#FF2D8D] hover:bg-[#FF2D8D]/5"
+          >
+            <BarChart3 size={16} />
+            분석 대시보드
+          </Link>
           <Link
             href="/admin/members"
             className="flex h-10 items-center rounded-md px-3 text-sm font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-950"
