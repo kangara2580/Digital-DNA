@@ -1,6 +1,7 @@
 "use client";
 
-import { TossCheckoutButton } from "@/components/payments/TossCheckoutButton";
+import { PolarCheckoutButton } from "@/components/payments/PolarCheckoutButton";
+import type { CreditPackKey } from "@/lib/polarConfig";
 
 export function CreditCheckoutButton({
   productKey,
@@ -10,12 +11,11 @@ export function CreditCheckoutButton({
   disabled?: boolean;
 }) {
   return (
-    <TossCheckoutButton
-      productType="credits"
-      productKey={productKey}
+    <PolarCheckoutButton
+      packKey={productKey as CreditPackKey}
       disabled={disabled}
     >
-      토스페이먼츠로 결제하기
-    </TossCheckoutButton>
+      이 패키지로 충전
+    </PolarCheckoutButton>
   );
 }

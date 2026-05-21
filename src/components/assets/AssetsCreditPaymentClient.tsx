@@ -4,18 +4,19 @@ import Link from "next/link";
 import { DocumentTitleI18n } from "@/components/DocumentTitleI18n";
 import { PaymentDiamondIcon } from "@/components/PaymentDiamondIcon";
 import { MyPageSectionShell } from "@/components/MyPageSectionShell";
-import { TossCheckoutButton } from "@/components/payments/TossCheckoutButton";
+import { PolarCheckoutButton } from "@/components/payments/PolarCheckoutButton";
 import { formatCredits } from "@/components/assets/assetsFormat";
 import { useMeWallet } from "@/hooks/useMeWallet";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 import type { SiteLocale } from "@/lib/sitePreferences";
-import { tossCreditPacks } from "@/lib/tossConfig";
+import { creditPacks } from "@/lib/polarConfig";
 
 export function AssetsCreditPaymentClient() {
   const { t, locale } = useTranslation();
   const { wallet, walletError, walletLoading, loadWallet } = useMeWallet();
-  const tossReady = Boolean(wallet?.toss.hasClientKey && wallet?.toss.hasSecretKey);
+  // Polar checkout is always enabled client-side; the server validates the token
+  const polarReady = true;
 
   return (
     <>
@@ -64,7 +65,7 @@ export function AssetsCreditPaymentClient() {
             description={t("assets.section.credits.lead")}
           >
             <div className="grid gap-4 md:grid-cols-3">
-              {tossCreditPacks.map((pack) => {
+              {creditPacks.map((pack) => {
                 const recommended = pack.key === "creator";
                 return (
                   <article
@@ -94,19 +95,16 @@ export function AssetsCreditPaymentClient() {
                       {t("assets.pack.creditsLine", { credits: formatCredits(pack.credits, locale as SiteLocale) })}
                     </p>
                     <p className="mt-1 text-[15px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                      {t("assets.pack.priceLine", {
-                        price: new Intl.NumberFormat(locale === "ko" ? "ko-KR" : "en-US").format(pack.priceKrw),
-                      })}
+                      ${pack.priceUsd.toFixed(2)}
                     </p>
                     <div className="mt-5">
-                      <TossCheckoutButton
-                        productType="credits"
-                        productKey={pack.key}
-                        disabled={!tossReady}
+                      <PolarCheckoutButton
+                        packKey={pack.key}
+                        disabled={!polarReady}
                         className={`${MYPAGE_OUTLINE_BTN_SM} w-full border-[color:var(--reels-point)] text-[15px] disabled:cursor-not-allowed disabled:opacity-50`}
                       >
                         {t("assets.pack.buy")}
-                      </TossCheckoutButton>
+                      </PolarCheckoutButton>
                     </div>
                   </article>
                 );
