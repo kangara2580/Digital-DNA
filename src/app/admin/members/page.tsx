@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { AdminSubmitButton, FormPendingOverlay } from "@/components/AdminSubmitButton";
 import {
   ArrowLeft,
   BadgeDollarSign,
@@ -304,7 +305,8 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
                   </div>
                 </div>
 
-                <form action={updateMemberAdminState} className="mt-5 grid gap-3">
+                <form action={updateMemberAdminState} className="relative mt-5 grid gap-3">
+                  <FormPendingOverlay />
                   <input type="hidden" name="userId" value={selected.userId} />
                   <label className="grid gap-1 text-sm font-bold text-slate-600">
                     상태
@@ -340,9 +342,9 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
                       placeholder="정지 사유, CS 메모, 특이사항"
                     />
                   </label>
-                  <button className="h-10 rounded-md bg-slate-950 px-4 text-sm font-black text-white">
+                  <AdminSubmitButton className="h-10 rounded-md bg-slate-950 px-4 text-sm font-black text-white">
                     회원 상태 저장
-                  </button>
+                  </AdminSubmitButton>
                 </form>
 
                 <form action={createAdminNote} className="mt-4 grid gap-2 rounded-md border border-slate-200 bg-slate-50 p-3">
@@ -353,9 +355,9 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
                     className="min-h-20 rounded-md border border-slate-200 px-3 py-2 text-sm"
                     placeholder="이 회원에 대한 운영 메모 추가"
                   />
-                  <button className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm font-bold">
+                  <AdminSubmitButton className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm font-bold">
                     메모 추가
-                  </button>
+                  </AdminSubmitButton>
                 </form>
               </section>
 

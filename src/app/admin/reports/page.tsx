@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, FileText, Search } from "lucide-react";
+import { AdminSubmitButton, FormPendingOverlay } from "@/components/AdminSubmitButton";
 import { updateReportStatus } from "@/app/admin/actions";
 import { getAdminAccess } from "@/lib/adminAuth";
 import { getAdminReportsData } from "@/lib/adminReportsData";
@@ -189,7 +190,8 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                 ) : null}
               </div>
 
-              <form action={updateReportStatus} className="mt-4 grid gap-2">
+              <form action={updateReportStatus} className="relative mt-4 grid gap-2">
+                <FormPendingOverlay />
                 <input type="hidden" name="reportId" value={item.id} />
                 <textarea
                   name="adminNote"
@@ -199,14 +201,14 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                 />
                 <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
                   {["open", "reviewing", "resolved", "dismissed"].map((status) => (
-                    <button
+                    <AdminSubmitButton
                       key={status}
                       name="status"
                       value={status}
                       className="h-9 rounded-md bg-slate-950 px-2 text-xs font-bold text-white"
                     >
                       {status}
-                    </button>
+                    </AdminSubmitButton>
                   ))}
                 </div>
               </form>

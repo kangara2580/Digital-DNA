@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   UserRound,
 } from "lucide-react";
+import { AdminSubmitButton, FormPendingOverlay } from "@/components/AdminSubmitButton";
 import {
   createAdminNote,
   syncCatalogVideosToDb,
@@ -207,9 +208,9 @@ export default async function AdminPage() {
                   아래 버튼으로 현재 코드 카탈로그를 DB에 동기화할 수 있습니다.
                 </p>
                 <form action={syncCatalogVideosToDb}>
-                  <button className="h-9 rounded-md bg-cyan-700 px-4 text-sm font-black text-white">
+                  <AdminSubmitButton className="h-9 rounded-md bg-cyan-700 px-4 text-sm font-black text-white">
                     카탈로그 DB 동기화
-                  </button>
+                  </AdminSubmitButton>
                 </form>
               </div>
             </div>
@@ -303,7 +304,8 @@ export default async function AdminPage() {
                       <span className="rounded-md bg-slate-100 px-2 py-1 font-bold">{formatWon(item.price)}</span>
                     </div>
                     {item.reason ? <p className="text-xs text-rose-600">사유: {item.reason}</p> : null}
-                    <form action={updateAdminVideoDetails} className="grid gap-2 rounded-md border border-slate-200 bg-slate-50 p-3">
+                    <form action={updateAdminVideoDetails} className="relative grid gap-2 rounded-md border border-slate-200 bg-slate-50 p-3">
+                      <FormPendingOverlay />
                       <input type="hidden" name="videoId" value={item.id} />
                       <div className="grid gap-2 md:grid-cols-2">
                         <input name="title" defaultValue={item.title} placeholder="제목" className="h-9 rounded-md border border-slate-200 px-3 text-sm" />
@@ -313,26 +315,27 @@ export default async function AdminPage() {
                       <input name="poster" defaultValue={item.poster} placeholder="썸네일 URL" className="h-9 rounded-md border border-slate-200 px-3 text-sm" />
                       <input name="src" defaultValue={item.src} placeholder="영상 URL" className="h-9 rounded-md border border-slate-200 px-3 text-sm" />
                       <textarea name="description" defaultValue={item.description ?? ""} placeholder="설명" className="min-h-20 rounded-md border border-slate-200 px-3 py-2 text-sm" />
-                      <button className="h-9 rounded-md bg-cyan-700 px-3 text-xs font-black text-white">
+                      <AdminSubmitButton className="h-9 rounded-md bg-cyan-700 px-3 text-xs font-black text-white">
                         정보 수정
-                      </button>
+                      </AdminSubmitButton>
                     </form>
                     <form action={createAdminNote} className="grid gap-2 rounded-md border border-slate-200 bg-white p-3">
                       <input type="hidden" name="targetType" value="video" />
                       <input type="hidden" name="targetId" value={item.id} />
                       <textarea name="body" placeholder="이 영상에 대한 운영 메모" className="min-h-16 rounded-md border border-slate-200 px-3 py-2 text-sm" />
-                      <button className="h-8 rounded-md border border-slate-200 px-3 text-xs font-bold text-slate-700">
+                      <AdminSubmitButton className="h-8 rounded-md border border-slate-200 px-3 text-xs font-bold text-slate-700">
                         메모 남기기
-                      </button>
+                      </AdminSubmitButton>
                     </form>
-                    <form action={updateVideoModeration} className="grid gap-2">
+                    <form action={updateVideoModeration} className="relative grid gap-2">
+                      <FormPendingOverlay />
                       <input type="hidden" name="videoId" value={item.id} />
                       <input name="reason" placeholder="반려/숨김 사유" className="h-9 rounded-md border border-slate-200 px-3 text-sm" />
                       <div className="grid grid-cols-4 gap-2">
                         {["approved", "pending", "rejected", "hidden"].map((status) => (
-                          <button key={status} name="status" value={status} className="h-9 rounded-md bg-slate-950 px-2 text-xs font-bold text-white">
+                          <AdminSubmitButton key={status} name="status" value={status} className="h-9 rounded-md bg-slate-950 px-2 text-xs font-bold text-white">
                             {status}
-                          </button>
+                          </AdminSubmitButton>
                         ))}
                       </div>
                     </form>
@@ -362,12 +365,13 @@ export default async function AdminPage() {
                       </div>
                       <StatusBadge status={purchase.status} />
                     </div>
-                    <form action={updatePurchaseStatus} className="mt-3 flex flex-wrap gap-2">
+                    <form action={updatePurchaseStatus} className="relative mt-3 flex flex-wrap gap-2">
+                      <FormPendingOverlay />
                       <input type="hidden" name="purchaseId" value={purchase.id} />
                       {["paid", "refunded", "canceled"].map((status) => (
-                        <button key={status} name="status" value={status} className="h-8 rounded-md border border-slate-200 px-3 text-xs font-bold text-slate-700">
+                        <AdminSubmitButton key={status} name="status" value={status} className="h-8 rounded-md border border-slate-200 px-3 text-xs font-bold text-slate-700">
                           {status}
-                        </button>
+                        </AdminSubmitButton>
                       ))}
                     </form>
                   </div>
@@ -423,14 +427,15 @@ export default async function AdminPage() {
                       <StatusBadge status={report.status} />
                     </div>
                     {report.adminNote ? <p className="mt-2 text-xs text-slate-500">메모: {report.adminNote}</p> : null}
-                    <form action={updateReportStatus} className="mt-3 grid gap-2">
+                    <form action={updateReportStatus} className="relative mt-3 grid gap-2">
+                      <FormPendingOverlay />
                       <input type="hidden" name="reportId" value={report.id} />
                       <input name="adminNote" placeholder="관리자 메모" className="h-9 rounded-md border border-slate-200 px-3 text-sm" />
                       <div className="flex flex-wrap gap-2">
                         {["open", "reviewing", "resolved", "dismissed"].map((status) => (
-                          <button key={status} name="status" value={status} className="h-8 rounded-md border border-slate-200 px-3 text-xs font-bold text-slate-700">
+                          <AdminSubmitButton key={status} name="status" value={status} className="h-8 rounded-md border border-slate-200 px-3 text-xs font-bold text-slate-700">
                             {status}
-                          </button>
+                          </AdminSubmitButton>
                         ))}
                       </div>
                     </form>

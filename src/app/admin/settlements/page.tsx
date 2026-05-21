@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, Landmark } from "lucide-react";
+import { AdminSubmitButton } from "@/components/AdminSubmitButton";
 import { approveSettlementRequest, markSettlementPaid } from "@/app/admin/commerce-actions";
 import { getAdminAccess } from "@/lib/adminAuth";
 import { prisma } from "@/lib/prisma";
@@ -146,9 +147,9 @@ export default async function AdminSettlementsPage() {
                               placeholder="관리자 메모"
                               className="h-9 rounded-md border border-slate-200 px-3 text-xs"
                             />
-                            <button className="h-9 rounded-md bg-slate-950 px-3 text-xs font-black text-white">
+                            <AdminSubmitButton className="h-9 rounded-md bg-slate-950 px-3 text-xs font-black text-white">
                               승인
-                            </button>
+                            </AdminSubmitButton>
                           </form>
                         ) : (
                           <p className="text-xs text-slate-400">처리됨</p>
@@ -199,9 +200,9 @@ export default async function AdminSettlementsPage() {
                         {settlement.status !== "paid" ? (
                           <form action={markSettlementPaid}>
                             <input type="hidden" name="settlementId" value={settlement.id} />
-                            <button className="h-9 rounded-md bg-emerald-600 px-3 text-xs font-black text-white">
+                            <AdminSubmitButton className="h-9 rounded-md bg-emerald-600 px-3 text-xs font-black text-white">
                               수동 송금 완료
-                            </button>
+                            </AdminSubmitButton>
                           </form>
                         ) : (
                           <p className="text-xs text-slate-400">

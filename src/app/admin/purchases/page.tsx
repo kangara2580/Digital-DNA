@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, ReceiptText, Search } from "lucide-react";
+import { AdminSubmitButton } from "@/components/AdminSubmitButton";
 import { updatePurchaseStatus } from "@/app/admin/actions";
 import { getAdminAccess } from "@/lib/adminAuth";
 import { getAdminPurchasesData } from "@/lib/adminPurchasesData";
@@ -194,14 +195,14 @@ export default async function AdminPurchasesPage({ searchParams }: PageProps) {
                       <form action={updatePurchaseStatus} className="flex flex-wrap gap-2">
                         <input type="hidden" name="purchaseId" value={item.id} />
                         {["paid", "refunded", "canceled"].map((status) => (
-                          <button
+                          <AdminSubmitButton
                             key={status}
                             name="status"
                             value={status}
                             className="h-8 rounded-md border border-slate-200 px-3 text-xs font-bold text-slate-700 hover:bg-slate-100"
                           >
                             {status}
-                          </button>
+                          </AdminSubmitButton>
                         ))}
                       </form>
                     </td>
