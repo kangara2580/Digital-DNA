@@ -33,7 +33,7 @@ export async function GET() {
           accountHolder: true,
           createdAt: true,
         },
-      }),
+      }).catch(() => []),
       prisma.sellerPayoutAccount.findUnique({
         where: { sellerId: user.id },
         select: {
@@ -42,7 +42,7 @@ export async function GET() {
           accountHolder: true,
           updatedAt: true,
         },
-      }),
+      }).catch(() => null),
     ]);
 
     const toss = getTossEnvStatus();

@@ -4,9 +4,77 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import { createPolarClient, getCreditPack, getCreditPackProductId, getSiteUrl, type CreditPackKey } from "@/lib/polarConfig";
+import { getCreditPack, getCreditPackProductId, getSiteUrl, type CreditPackKey } from "@/lib/polarConfig";
 import { grantCreditsForPayment } from "@/lib/credits";
 import { sendPurchaseReceipt } from "@/lib/email/send";
+
+/**
+ * Polar API base URL per server mode.
+ */
+function polarApiBase(): string {
+  const server = process.env.POLAR_SERVER === "production" ? "production" : "sandbox";
+  return server === "production"
+    ? "https://api.polar.sh"
+    : "https://sandbox-api.polar.sh";
+}
+
+/**
+ * Create a Polar checkout session via direct REST call.
+ * We avoid the SDK's built-in fetch because Next.js patches global fetch
+ * which can cause "expected non-null body source" errors with the SDK.
+ */
+async function createPolarCheckoutSession(params: {
+  productId: string;
+  successUrl: string;
+  customerEmail?: string;
+  metadata?: Record<string, string | number | boolean>;
+}): Promise<{ id: string; url: string }> {
+  const accessToken = process.env.POLAR_ACCESS_TOKEN?.trim();
+  if (!accessToken) throw new Error("POLAR_ACCESS_TOKEN is required.");
+
+  const apiBase = polarApiBase();
+  const body: Record<string, unknown> = {
+    products: [params.productId],
+    success_url: params.successUrl,
+  };
+  if (params.customerEmail) body.customer_email = params.customerEmail;
+  if (params.metadata) body.metadata = params.metadata;
+
+  const res = await fetch(`${apiBase}/v1/checkouts/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
+
+  const text = await res.text();
+  let data: Record<string, unknown>;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(`Polar API returned non-JSON (${res.status}): ${text.substring(0, 200)}`);
+  }
+
+  if (!res.ok) {
+    const errorDesc =
+      (data as any).error_description ??
+      (data as any).detail ??
+      (data as any).error ??
+      text.substring(0, 200);
+    throw new Error(`Polar API ${res.status}: ${errorDesc}`);
+  }
+
+  const id = data.id as string;
+  const url = data.url as string;
+  if (!id || !url) {
+    throw new Error(`Polar checkout response missing id or url: ${JSON.stringify(data).substring(0, 300)}`);
+  }
+
+  return { id, url };
+}
 
 /**
  * Create a Polar checkout session and a pending Payment row.
@@ -29,11 +97,10 @@ export async function createPolarCheckout(params: {
     );
   }
 
-  const polar = createPolarClient();
   const siteUrl = getSiteUrl();
 
-  const checkout = await polar.checkouts.create({
-    products: [productId],
+  const checkout = await createPolarCheckoutSession({
+    productId,
     successUrl: `${siteUrl}/payments/polar/success?checkout_id={CHECKOUT_ID}`,
     customerEmail: params.userEmail ?? undefined,
     metadata: {
