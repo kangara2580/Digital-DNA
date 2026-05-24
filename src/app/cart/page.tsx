@@ -151,10 +151,10 @@ export default function CartPage() {
     [hasPurchased, selectedItems],
   );
 
-  const selectedTotal = useMemo(
+  const selectedTotalGems = useMemo(
     () =>
       selectedPayableItems.reduce(
-        (sum, { video }) => sum + (video.priceWon ?? 0),
+        (sum, { video }) => sum + Math.round((video.priceWon ?? 0) / 6),
         0,
       ),
     [selectedPayableItems],
@@ -371,8 +371,8 @@ export default function CartPage() {
               const videoContentSource = getVideoContentSource(video);
               const metrics = getMetricsForVideoDetail(video.id);
               const priceLabel =
-                video.priceWon != null
-                  ? `${video.priceWon.toLocaleString(numLocale)}${t("cart.currencySuffix")}`
+                video.priceWon != null && video.priceWon > 0
+                  ? `${Math.round(video.priceWon / 6).toLocaleString()}💎`
                   : null;
               return (
                 <li
@@ -475,12 +475,12 @@ export default function CartPage() {
                 className="text-4xl font-extrabold tabular-nums tracking-tight text-zinc-100 sm:text-5xl [html[data-theme='light']_&]:text-zinc-900"
                 aria-live="polite"
                 aria-label={t("cart.totalAria", {
-                  amount: selectedTotal.toLocaleString(numLocale),
+                  amount: selectedTotalGems.toLocaleString(),
                   n: selected.size,
                 })}
               >
-                {selectedTotal.toLocaleString(numLocale)}
-                {t("cart.currencySuffix")}
+                {selectedTotalGems.toLocaleString()}
+                💎
               </p>
             </div>
             <div className="mt-6 flex justify-end">

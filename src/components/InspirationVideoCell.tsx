@@ -25,8 +25,8 @@ import { useVideoWishlistAction } from "@/hooks/useVideoWishlistAction";
 import { useVideoCartAction } from "@/hooks/useVideoCartAction";
 
 function formatPrice(v: FeedVideo): string {
-  if (v.priceWon != null) {
-    return `${v.priceWon.toLocaleString("ko-KR")}원`;
+  if (v.priceWon != null && v.priceWon > 0) {
+    return `${Math.round(v.priceWon / 6).toLocaleString()}💎`;
   }
   return "—";
 }

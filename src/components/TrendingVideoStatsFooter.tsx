@@ -49,11 +49,9 @@ export function TrendingVideoStatsFooter({
   const { t, locale } = useTranslation();
   const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
   const revenueDisplay = useMemo(() => {
-    const v = Math.max(0, Math.floor(metrics.cumulativeRevenueWon));
-    if (!revenueFullWon) return fmt.formatCompactWon(metrics.cumulativeRevenueWon);
-    if (locale === "en") return `₩${v.toLocaleString("en-US")}`;
-    return v.toLocaleString("ko-KR");
-  }, [revenueFullWon, metrics.cumulativeRevenueWon, fmt, locale]);
+    const gems = Math.max(0, Math.round(metrics.cumulativeRevenueWon / 6));
+    return `${gems.toLocaleString()}💎`;
+  }, [metrics.cumulativeRevenueWon]);
   const isUp = metrics.growthPercent >= 0;
   const metricRowCls =
     dense && hideMetricLabels

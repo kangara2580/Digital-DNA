@@ -30,7 +30,7 @@ import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { useVideoStartPoster } from "@/hooks/useVideoStartPoster";
 import { InputSection } from "@/components/InputSection";
-import { TossCheckoutButton } from "@/components/payments/TossCheckoutButton";
+import { CreditPurchaseButton } from "@/components/payments/CreditPurchaseButton";
 import { VideoBackgroundComposite } from "@/components/VideoBackgroundComposite";
 import { MYPAGE_OUTLINE_BTN_MD, MYPAGE_OUTLINE_BTN_MD_TRANSPARENT } from "@/lib/mypageOutlineCta";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
@@ -1852,29 +1852,22 @@ export function PurchaseCustomizeStudio({
               {purchasePriceWon > 0 ? (
                 <div className="text-center">
                   <span className="font-black tabular-nums tracking-tight text-[length:calc(36px_+_5pt)] text-white [html[data-theme='light']_&]:text-zinc-900">
-                    {locale === "en" ? (
-                      <>₩{purchasePriceWon.toLocaleString("en-US")}</>
-                    ) : (
-                      <>
-                        {purchasePriceWon.toLocaleString("ko-KR")}
-                        <span className="ml-1.5 font-extrabold text-[length:calc(22px_+_5pt)]">
-                          {t("video.detail.currencySuffix")}
-                        </span>
-                      </>
-                    )}
+                    {Math.round(purchasePriceWon / 6).toLocaleString()}
+                    <span className="ml-1.5 font-extrabold text-[length:calc(22px_+_5pt)]">
+                      💎
+                    </span>
                   </span>
                 </div>
               ) : null}
               <div className="flex w-full justify-center pt-1">
-                <TossCheckoutButton
-                  productType="video"
+                <CreditPurchaseButton
                   videoId={video.id}
-                  next={buildPurchaseCompleteNextPath(video.id)}
+                  priceWon={purchasePriceWon}
                   disabled={!user || owned || !purchasePriceWon || purchaseSoldOut}
                   className={`${MYPAGE_OUTLINE_BTN_MD} w-full max-w-sm shrink-0 disabled:pointer-events-none disabled:opacity-45`}
                 >
-                  바로 구매
-                </TossCheckoutButton>
+                  {`${Math.round(purchasePriceWon / 6).toLocaleString()}💎 구매`}
+                </CreditPurchaseButton>
               </div>
             </section>
           ) : null}

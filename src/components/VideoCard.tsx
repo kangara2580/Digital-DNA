@@ -428,8 +428,8 @@ export function VideoCard({
         : "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-white/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-zinc-300";
 
   const priceLabel =
-    video.priceWon != null
-      ? `${video.priceWon.toLocaleString("ko-KR")}원`
+    video.priceWon != null && video.priceWon > 0
+      ? `${Math.round(video.priceWon / 6).toLocaleString()}💎`
       : null;
   const socialLinksToShow = sellerSocialLinks;
   const sellerHref = useMemo(() => sellerProfileHrefFromVideo(video), [video]);

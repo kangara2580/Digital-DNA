@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bookmark, ChevronLeft, ChevronRight, Heart, ShoppingCart } from "lucide-react";
 import { useAuthPromptModal } from "@/components/AuthPromptModalProvider";
-import { TossCheckoutButton } from "@/components/payments/TossCheckoutButton";
+import { CreditPurchaseButton } from "@/components/payments/CreditPurchaseButton";
+import { InsufficientCreditsModal } from "@/components/InsufficientCreditsModal";
 import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
 import { SellerSocialLinkIcons } from "@/components/SellerSocialLinkIcons";
 import { useSellerSocialLinks } from "@/hooks/useSellerSocialLinks";
@@ -47,6 +48,7 @@ import {
   EXPLORE_RAIL_ACTION_ICON_FILLED,
 } from "@/lib/exploreRailActionTokens";
 import { getVideoContentSource } from "@/lib/videoSourcePlatform";
+import { toGemPrice, formatGems } from "@/lib/gemPrice";
 
 export function VideoDetailView({
   video,
@@ -292,6 +294,10 @@ export function VideoDetailView({
   const [wishlistPulse, setWishlistPulse] = useState(false);
   const [likePulse, setLikePulse] = useState(false);
   const [likeBurst, setLikeBurst] = useState(false);
+  const [insufficientModal, setInsufficientModal] = useState<{
+    required: number;
+    balance: number;
+  } | null>(null);
   const { internalLikeCount, likedByMe, likeBusy, toggleLike } = useVideoLike({
     videoId: video.id,
     requireAuth,
@@ -614,25 +620,17 @@ export function VideoDetailView({
               />
             </section>
 
-            {/* 가격 표시 */}
+            {/* 가격 표시 (보석) */}
             {price > 0 && (
               <div className="text-center">
                 <span className="font-black tabular-nums tracking-tight text-[length:calc(36px_+_5pt)] text-white [html[data-theme='light']_&]:text-zinc-900">
-                  {locale === "en" ? (
-                    <>₩{price.toLocaleString("en-US")}</>
-                  ) : (
-                    <>
-                      {price.toLocaleString("ko-KR")}
-                      <span className="ml-1.5 font-extrabold text-[length:calc(22px_+_5pt)]">
-                        {t("video.detail.currencySuffix")}
-                      </span>
-                    </>
-                  )}
+                  {toGemPrice(price).toLocaleString()}
+                  <span className="ml-1.5 text-[length:calc(22px_+_5pt)]">💎</span>
                 </span>
               </div>
             )}
 
-            {/* 구매 버튼 — 운영: 미보유 시 Toss. 개발: NEXT_PUBLIC_DEV_BYPASS_CHECKOUT_TO_STUDIO=1 이면 토스 없이 스튜디오로 */}
+            {/* 구매 버튼 — 보석 결제 */}
             <div className="px-8">
               {owned || isOwner ? (
                 <button
@@ -645,31 +643,31 @@ export function VideoDetailView({
                 >
                   {t("video.detail.buyNow")}
                 </button>
-              ) : devBypassCheckoutToStudio ? (
-                <button
-                  type="button"
-                  disabled={soldOut}
-                  onClick={() => {
-                    if (soldOut) return;
-                    if (!requireAuth()) return;
-                    router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
-                  }}
-                  className={`${buyStudioCtaClassName} disabled:cursor-not-allowed disabled:opacity-40`}
-                >
-                  {soldOut ? t("video.detail.soldOut") : t("video.detail.buyNow")}
-                </button>
               ) : (
-                <TossCheckoutButton
-                  productType="video"
+                <CreditPurchaseButton
                   videoId={video.id}
+                  priceWon={price}
                   onUnauthorized={openAuthModal}
+                  onInsufficientCredits={(required, balance) =>
+                    setInsufficientModal({ required, balance })
+                  }
                   className={`${buyStudioCtaClassName} disabled:cursor-wait disabled:opacity-40`}
                   disabled={soldOut}
                 >
-                  {soldOut ? t("video.detail.soldOut") : t("video.detail.buyNow")}
-                </TossCheckoutButton>
+                  {soldOut
+                    ? t("video.detail.soldOut")
+                    : `${toGemPrice(price).toLocaleString()}💎 구매`}
+                </CreditPurchaseButton>
               )}
             </div>
+
+            {insufficientModal && (
+              <InsufficientCreditsModal
+                required={insufficientModal.required}
+                balance={insufficientModal.balance}
+                onClose={() => setInsufficientModal(null)}
+              />
+            )}
 
             {/* 액션 아이콘 — 탐색 레일과 동일 실루엣 */}
             <div className="flex items-center justify-center gap-3">

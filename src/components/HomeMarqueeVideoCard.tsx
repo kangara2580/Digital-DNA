@@ -148,8 +148,8 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
 
   const thumbnailSrc = sanitizePosterSrc(video.poster);
   const priceLabel =
-    video.priceWon != null
-      ? `${video.priceWon.toLocaleString("ko-KR")}원`
+    video.priceWon != null && video.priceWon > 0
+      ? `${Math.round(video.priceWon / 6).toLocaleString()}💎`
       : null;
 
   const requireAuth = useCallback(() => {

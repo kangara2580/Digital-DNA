@@ -52,7 +52,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
             </p>
             {hero.priceWon != null ? (
               <p className="mt-0.5 text-[10px] font-bold tabular-nums text-white">
-                {hero.priceWon.toLocaleString("ko-KR")}원
+                {Math.round(hero.priceWon / 6).toLocaleString()}💎
               </p>
             ) : null}
           </div>
@@ -78,7 +78,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
                 </p>
                 {v.priceWon != null ? (
                   <p className="text-[9px] font-bold tabular-nums text-white/95">
-                    {v.priceWon.toLocaleString("ko-KR")}원
+                    {Math.round(v.priceWon / 6).toLocaleString()}💎
                   </p>
                 ) : null}
               </div>
@@ -107,7 +107,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
                 <p className="line-clamp-2 text-[9px] font-medium text-zinc-200">{displayTitle(v)}</p>
                 {v.priceWon != null ? (
                   <p className="text-[9px] font-bold tabular-nums text-reels-cyan">
-                    {v.priceWon.toLocaleString("ko-KR")}원
+                    {Math.round(v.priceWon / 6).toLocaleString()}💎
                   </p>
                 ) : null}
               </div>

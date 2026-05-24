@@ -57,9 +57,9 @@ export function EditorCurationClipThumb({ video, className }: Props) {
       <p className="mt-2 line-clamp-2 text-left text-[12px] font-bold leading-snug text-zinc-200 sm:text-[13px]">
         {displayTitle(video)}
       </p>
-      {video.priceWon != null ? (
+      {video.priceWon != null && video.priceWon > 0 ? (
         <p className="mt-0.5 text-left text-[11px] font-semibold tabular-nums text-reels-cyan sm:text-[12px]">
-          {video.priceWon.toLocaleString("ko-KR")}원
+          {Math.round(video.priceWon / 6).toLocaleString()}💎
         </p>
       ) : null}
     </Link>

@@ -7,8 +7,8 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-function formatWon(value: number): string {
-  return `${new Intl.NumberFormat("ko-KR").format(value)}원`;
+function formatGem(value: number): string {
+  return `${new Intl.NumberFormat("ko-KR").format(value)}💎`;
 }
 
 function formatDate(value: Date): string {
@@ -85,7 +85,7 @@ export default async function AdminSettlementsPage() {
           <article className="rounded-lg border border-slate-200 bg-white p-4">
             <p className="text-sm font-bold text-slate-500">요청 금액</p>
             <p className="mt-2 text-2xl font-black">
-              {formatWon(requests.reduce((sum, row) => sum + row.amount, 0))}
+              {formatGem(requests.reduce((sum, row) => sum + row.amount, 0))}
             </p>
           </article>
           <article className="rounded-lg border border-slate-200 bg-white p-4">
@@ -128,7 +128,7 @@ export default async function AdminSettlementsPage() {
                     <tr key={request.id} className="align-top hover:bg-slate-50">
                       <td className="px-4 py-3">{formatDate(request.createdAt)}</td>
                       <td className="px-4 py-3 font-mono text-xs">{request.sellerId}</td>
-                      <td className="px-4 py-3 font-black">{formatWon(request.amount)}</td>
+                      <td className="px-4 py-3 font-black">{formatGem(request.amount)}</td>
                       <td className="px-4 py-3">
                         <p>{request.bankName ?? "-"}</p>
                         <p className="text-xs text-slate-500">{request.accountHolder ?? "-"} / {request.accountNo ?? "-"}</p>
@@ -190,7 +190,7 @@ export default async function AdminSettlementsPage() {
                     <tr key={settlement.id} className="hover:bg-slate-50">
                       <td className="px-4 py-3">{formatDate(settlement.createdAt)}</td>
                       <td className="px-4 py-3 font-mono text-xs">{settlement.sellerId}</td>
-                      <td className="px-4 py-3 font-black">{formatWon(settlement.amount)}</td>
+                      <td className="px-4 py-3 font-black">{formatGem(settlement.amount)}</td>
                       <td className="px-4 py-3">
                         <span className={`rounded-full border px-2 py-1 text-xs font-black ${badgeClass(settlement.status)}`}>
                           {settlement.status}

@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       data: {
         sellerId: user.id,
         amount: requestedAmount,
-        currency: "KRW",
+        currency: "GEM",
         bankName: body?.bankName?.trim() || null,
         accountNo: body?.accountNo?.trim() || null,
         accountHolder: body?.accountHolder?.trim() || null,

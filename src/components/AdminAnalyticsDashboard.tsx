@@ -3,14 +3,54 @@
 import { useCallback, useEffect, useState } from "react";
 import type { AdminAnalyticsData } from "@/lib/adminAnalytics";
 
+// ─── Types for gem transaction data ──────────────────────
+
+type GemLedgerEntry = {
+  id: string;
+  userId: string;
+  userLabel: string;
+  type: string;
+  amount: number;
+  balanceAfter: number;
+  reason: string;
+  metadataJson: Record<string, unknown> | null;
+  createdAt: string;
+};
+
+type GemPurchaseEntry = {
+  id: string;
+  buyerId: string;
+  buyerLabel: string;
+  sellerId: string;
+  sellerLabel: string;
+  videoId: string;
+  videoTitle: string;
+  price: number;
+  status: string;
+  createdAt: string;
+};
+
+type GemTransactionData = {
+  ledger: GemLedgerEntry[];
+  purchases: GemPurchaseEntry[];
+  earningsSummary: { status: string; count: number; netAmount: number; grossAmount: number; platformFee: number }[];
+};
+
 // ─── Formatters ──────────────────────────────────────────
 
 function formatCurrency(amount: number, currency = "USD"): string {
   if (currency === "KRW" || currency === "krw") {
-    return `${amount.toLocaleString("ko-KR")}원`;
+    return `${amount.toLocaleString("ko-KR")}💎`;
+  }
+  if (currency === "GEM" || currency === "gem") {
+    return `${amount.toLocaleString("ko-KR")}💎`;
   }
   // USD: amount is in cents
   return `$${(amount / 100).toFixed(2)}`;
+}
+
+function formatGem(amount: number): string {
+  return `${amount.toLocaleString("ko-KR")}💎`;
 }
 
 function formatNumber(n: number): string {
@@ -127,6 +167,8 @@ export function AdminAnalyticsDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [chartMode, setChartMode] = useState<"revenue" | "purchases" | "newUsers">("revenue");
+  const [gemData, setGemData] = useState<GemTransactionData | null>(null);
+  const [gemTab, setGemTab] = useState<"ledger" | "purchases">("purchases");
 
   const fetchData = useCallback(async () => {
     try {
@@ -144,9 +186,22 @@ export function AdminAnalyticsDashboard() {
     }
   }, []);
 
+  const fetchGemData = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/gem-transactions");
+      if (res.ok) {
+        const json = await res.json();
+        setGemData(json);
+      }
+    } catch {
+      /* ignore — gem data is supplemental */
+    }
+  }, []);
+
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    fetchGemData();
+  }, [fetchData, fetchGemData]);
 
   if (loading) {
     return (
@@ -435,19 +490,19 @@ export function AdminAnalyticsDashboard() {
 
       {/* ─── Credit Stats + Refund Stats + Provider Stats ─── */}
       <div className="grid gap-6 md:grid-cols-3">
-        <Section title="크레딧 현황">
+        <Section title="보석 현황">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm text-slate-600">총 발급</span>
-              <span className="font-bold text-slate-950">{formatNumber(creditStats.totalIssued)}C</span>
+              <span className="font-bold text-slate-950">{formatNumber(creditStats.totalIssued)}💎</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-slate-600">환불 차감</span>
-              <span className="font-bold text-rose-500">-{formatNumber(creditStats.totalRefunded)}C</span>
+              <span className="font-bold text-rose-500">-{formatNumber(creditStats.totalRefunded)}💎</span>
             </div>
             <div className="flex items-center justify-between border-t border-slate-100 pt-3">
               <span className="text-sm font-bold text-slate-700">현재 유통량</span>
-              <span className="text-lg font-black text-[#FF2D8D]">{formatNumber(creditStats.currentCirculation)}C</span>
+              <span className="text-lg font-black text-[#FF2D8D]">{formatNumber(creditStats.currentCirculation)}💎</span>
             </div>
           </div>
         </Section>
@@ -518,6 +573,180 @@ export function AdminAnalyticsDashboard() {
           )}
         </Section>
       </div>
+
+      {/* ─── Gem Transaction Log ─── */}
+      <Section title="보석 거래 내역" className="!p-0">
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 pt-5">
+          <h3 className="text-sm font-black uppercase tracking-wide text-slate-500">보석 거래 내역</h3>
+          <div className="flex gap-1 rounded-lg border border-slate-200 p-0.5">
+            {(
+              [
+                ["purchases", "영상 구매"],
+                ["ledger", "전체 원장"],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setGemTab(key)}
+                className={`rounded-md px-3 py-1.5 text-xs font-bold transition ${
+                  gemTab === key
+                    ? "bg-slate-950 text-white"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="px-5 pb-5 pt-4">
+          {gemTab === "purchases" ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-left text-sm">
+                <thead className="border-b border-slate-200 bg-slate-50 text-xs text-slate-500">
+                  <tr>
+                    <th className="px-3 py-2">시간</th>
+                    <th className="px-3 py-2">구매자</th>
+                    <th className="px-3 py-2">판매자</th>
+                    <th className="px-3 py-2">영상</th>
+                    <th className="px-3 py-2">보석</th>
+                    <th className="px-3 py-2">상태</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {(!gemData || gemData.purchases.length === 0) ? (
+                    <tr>
+                      <td colSpan={6} className="px-3 py-8 text-center text-slate-400">
+                        구매 내역이 없습니다
+                      </td>
+                    </tr>
+                  ) : (
+                    gemData.purchases.map((p) => (
+                      <tr key={p.id} className="hover:bg-slate-50">
+                        <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-500">
+                          {new Date(p.createdAt).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
+                        </td>
+                        <td className="px-3 py-2 text-xs font-medium">{p.buyerLabel}</td>
+                        <td className="px-3 py-2 text-xs font-medium">{p.sellerLabel}</td>
+                        <td className="max-w-[200px] truncate px-3 py-2 text-xs">{p.videoTitle}</td>
+                        <td className="px-3 py-2 text-xs font-black">{formatGem(p.price)}</td>
+                        <td className="px-3 py-2">
+                          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${
+                            p.status === "paid"
+                              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                              : "border-slate-200 bg-slate-50 text-slate-600"
+                          }`}>
+                            {p.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-left text-sm">
+                <thead className="border-b border-slate-200 bg-slate-50 text-xs text-slate-500">
+                  <tr>
+                    <th className="px-3 py-2">시간</th>
+                    <th className="px-3 py-2">유저</th>
+                    <th className="px-3 py-2">유형</th>
+                    <th className="px-3 py-2">사유</th>
+                    <th className="px-3 py-2">변동</th>
+                    <th className="px-3 py-2">잔액</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {(!gemData || gemData.ledger.length === 0) ? (
+                    <tr>
+                      <td colSpan={6} className="px-3 py-8 text-center text-slate-400">
+                        원장 데이터가 없습니다
+                      </td>
+                    </tr>
+                  ) : (
+                    gemData.ledger.map((l) => {
+                      const typeLabel =
+                        l.type === "purchase" ? "충전"
+                        : l.type === "spend" ? "구매"
+                        : l.type === "seller_earning" ? "판매수익"
+                        : l.type === "refund" ? "환불"
+                        : l.type;
+                      const isPositive = l.amount >= 0;
+                      return (
+                        <tr key={l.id} className="hover:bg-slate-50">
+                          <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-500">
+                            {new Date(l.createdAt).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
+                          </td>
+                          <td className="px-3 py-2 text-xs font-medium">{l.userLabel}</td>
+                          <td className="px-3 py-2">
+                            <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${
+                              l.type === "purchase" ? "border-blue-200 bg-blue-50 text-blue-700"
+                              : l.type === "spend" ? "border-rose-200 bg-rose-50 text-rose-700"
+                              : l.type === "seller_earning" ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                              : "border-slate-200 bg-slate-50 text-slate-600"
+                            }`}>
+                              {typeLabel}
+                            </span>
+                          </td>
+                          <td className="max-w-[250px] truncate px-3 py-2 text-xs text-slate-600">{l.reason}</td>
+                          <td className="px-3 py-2 text-xs font-black">
+                            <span className={isPositive ? "text-emerald-600" : "text-rose-500"}>
+                              {isPositive ? "+" : ""}{formatGem(l.amount)}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 text-xs font-medium text-slate-600">
+                            {formatGem(l.balanceAfter)}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </Section>
+
+      {/* ─── Gem Earnings Summary ─── */}
+      {gemData && gemData.earningsSummary.length > 0 ? (
+        <Section title="보석 수익 요약">
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left text-sm">
+              <thead className="border-b border-slate-200 bg-slate-50 text-xs text-slate-500">
+                <tr>
+                  <th className="px-4 py-2">상태</th>
+                  <th className="px-4 py-2">건수</th>
+                  <th className="px-4 py-2">총액</th>
+                  <th className="px-4 py-2">수수료</th>
+                  <th className="px-4 py-2">순수익</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {gemData.earningsSummary.map((e) => (
+                  <tr key={e.status} className="hover:bg-slate-50">
+                    <td className="px-4 py-2">
+                      <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${
+                        e.status === "paid" ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                        : e.status === "pending" ? "border-amber-200 bg-amber-50 text-amber-700"
+                        : "border-slate-200 bg-slate-50 text-slate-600"
+                      }`}>
+                        {e.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 font-bold">{formatNumber(e.count)}건</td>
+                    <td className="px-4 py-2 font-bold">{formatGem(e.grossAmount)}</td>
+                    <td className="px-4 py-2 text-emerald-600 font-bold">{formatGem(e.platformFee)}</td>
+                    <td className="px-4 py-2 font-bold">{formatGem(e.netAmount)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+      ) : null}
 
       {/* ─── Footer info ─── */}
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center text-xs text-slate-400">

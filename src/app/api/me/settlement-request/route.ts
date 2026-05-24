@@ -26,7 +26,8 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as Body | null;
   const amount = body ? parseAmount(body.amount) : null;
 
-  if (amount == null || amount < 1000) {
+  // Minimum settlement: 500 gems
+  if (amount == null || amount < 500) {
     return NextResponse.json({ ok: false, error: "invalid_amount" }, { status: 400 });
   }
 
