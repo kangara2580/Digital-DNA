@@ -5,10 +5,11 @@ import type { AdminAnalyticsData } from "@/lib/adminAnalytics";
 
 // ─── Formatters ──────────────────────────────────────────
 
-function formatCurrency(amount: number, currency = "KRW"): string {
+function formatCurrency(amount: number, currency = "USD"): string {
   if (currency === "KRW" || currency === "krw") {
     return `${amount.toLocaleString("ko-KR")}원`;
   }
+  // USD: amount is in cents
   return `$${(amount / 100).toFixed(2)}`;
 }
 
@@ -183,7 +184,7 @@ export function AdminAnalyticsDashboard() {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="오늘 매출"
-          value={formatCurrency(todaySummary.revenue)}
+          value={formatCurrency(todaySummary.revenue, revenue.currency)}
           sub="실시간 결제 기준"
           accent
         />
@@ -261,28 +262,36 @@ export function AdminAnalyticsDashboard() {
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <span className="text-sm text-slate-600">총 매출</span>
-              <span className="text-lg font-black text-slate-950">{formatCurrency(revenue.totalRevenue)}</span>
+              <span className="text-lg font-black text-slate-950">{formatCurrency(revenue.totalRevenue, revenue.currency)}</span>
             </div>
+            {/* Show per-currency breakdown if mixed */}
+            {revenue.totalRevenueUsd > 0 && revenue.totalRevenueKrw > 0 ? (
+              <div className="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700">
+                <span>USD: {formatCurrency(revenue.totalRevenueUsd, "USD")}</span>
+                <span>|</span>
+                <span>KRW: {formatCurrency(revenue.totalRevenueKrw, "KRW")}</span>
+              </div>
+            ) : null}
             <div className="flex items-center justify-between">
               <span className="text-sm text-slate-600">플랫폼 수수료</span>
-              <span className="font-bold text-emerald-600">{formatCurrency(revenue.platformFees)}</span>
+              <span className="font-bold text-emerald-600">{formatCurrency(revenue.platformFees, "KRW")}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-slate-600">판매자 수익</span>
-              <span className="font-bold text-slate-700">{formatCurrency(revenue.sellerEarnings)}</span>
+              <span className="font-bold text-slate-700">{formatCurrency(revenue.sellerEarnings, "KRW")}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-slate-600">환불 금액</span>
-              <span className="font-bold text-rose-500">{formatCurrency(revenue.refundedAmount)}</span>
+              <span className="font-bold text-rose-500">{formatCurrency(revenue.refundedAmount, revenue.currency)}</span>
             </div>
             <div className="border-t border-slate-100 pt-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-slate-600">정산 대기</span>
-                <span className="font-bold text-amber-600">{formatCurrency(revenue.pendingSettlement)}</span>
+                <span className="font-bold text-amber-600">{formatCurrency(revenue.pendingSettlement, "KRW")}</span>
               </div>
               <div className="mt-2 flex items-center justify-between">
                 <span className="text-sm text-slate-600">정산 완료</span>
-                <span className="font-bold text-emerald-600">{formatCurrency(revenue.paidSettlement)}</span>
+                <span className="font-bold text-emerald-600">{formatCurrency(revenue.paidSettlement, "KRW")}</span>
               </div>
             </div>
           </div>
@@ -476,10 +485,14 @@ export function AdminAnalyticsDashboard() {
               {providerStats.map((p) => {
                 const totalCount = providerStats.reduce((a, b) => a + b.count, 0);
                 const pct = totalCount > 0 ? Math.round((p.count / totalCount) * 100) : 0;
+                const cur = p.currency ?? (p.provider === "polar" ? "USD" : "KRW");
                 return (
                   <div key={p.provider}>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="font-bold capitalize text-slate-700">{p.provider}</span>
+                      <span className="font-bold capitalize text-slate-700">
+                        {p.provider === "polar" ? "Polar" : p.provider === "toss" ? "Toss" : p.provider}
+                        <span className="ml-1 text-xs font-normal text-slate-400">({cur})</span>
+                      </span>
                       <span className="text-slate-500">
                         {formatNumber(p.count)}건 ({pct}%)
                       </span>
@@ -490,9 +503,14 @@ export function AdminAnalyticsDashboard() {
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <p className="mt-1 text-right text-xs text-slate-400">
-                      {formatCurrency(p.totalAmount)}
-                    </p>
+                    <div className="mt-1 flex items-center justify-between text-xs text-slate-400">
+                      <span>
+                        {p.totalAmount === 0 ? (
+                          <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">테스트</span>
+                        ) : null}
+                      </span>
+                      <span>{formatCurrency(p.totalAmount, cur)}</span>
+                    </div>
                   </div>
                 );
               })}

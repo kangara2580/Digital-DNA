@@ -29,6 +29,9 @@ export type TopSeller = {
 
 export type RevenueBreakdown = {
   totalRevenue: number;
+  totalRevenueUsd: number; // USD cents
+  totalRevenueKrw: number; // KRW
+  currency: string; // dominant currency for display
   platformFees: number;
   sellerEarnings: number;
   refundedAmount: number;
@@ -47,6 +50,8 @@ export type PaymentProviderStats = {
   provider: string;
   count: number;
   totalAmount: number;
+  currency: string;
+  testCount: number; // discount/free test payments (amountCents === 0)
 };
 
 export type RefundStats = {
@@ -136,6 +141,9 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsData> {
     creditCirculation,
     // Provider breakdown
     providerBreakdown,
+    testPaymentCount,
+    usdRevenue,
+    krwRevenue,
     // Today stats
     todayPayments,
     todayPurchases,
@@ -225,11 +233,24 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsData> {
     prisma.userCreditBalance.aggregate({
       _sum: { balance: true },
     }),
-    // Provider breakdown
+    // Provider breakdown (with currency)
     prisma.payment.groupBy({
-      by: ["provider"],
+      by: ["provider", "currency"],
       where: { status: "paid" },
       _count: { _all: true },
+      _sum: { amountCents: true },
+    }),
+    // Test/coupon payments (amount = 0)
+    prisma.payment.count({
+      where: { status: "paid", amountCents: 0 },
+    }),
+    // Revenue by currency
+    prisma.payment.aggregate({
+      where: { status: "paid", currency: "USD" },
+      _sum: { amountCents: true },
+    }),
+    prisma.payment.aggregate({
+      where: { status: "paid", currency: { not: "USD" } },
       _sum: { amountCents: true },
     }),
     // Today stats
@@ -343,11 +364,30 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsData> {
 
   // ─── Provider stats ───
 
-  const providerStats: PaymentProviderStats[] = providerBreakdown.map((p) => ({
-    provider: p.provider,
-    count: p._count._all,
-    totalAmount: p._sum.amountCents ?? 0,
-  }));
+  // Group by provider (merge currency variants)
+  const providerMap = new Map<string, PaymentProviderStats>();
+  for (const p of providerBreakdown) {
+    const key = p.provider;
+    const existing = providerMap.get(key);
+    if (existing) {
+      existing.count += p._count._all;
+      existing.totalAmount += p._sum.amountCents ?? 0;
+    } else {
+      providerMap.set(key, {
+        provider: p.provider,
+        count: p._count._all,
+        totalAmount: p._sum.amountCents ?? 0,
+        currency: p.currency ?? "KRW",
+        testCount: 0,
+      });
+    }
+  }
+  const providerStats = Array.from(providerMap.values());
+
+  // Determine dominant currency
+  const totalUsd = usdRevenue._sum.amountCents ?? 0;
+  const totalKrw = krwRevenue._sum.amountCents ?? 0;
+  const dominantCurrency = totalUsd > 0 ? "USD" : "KRW";
 
   return {
     dailyStats,
@@ -355,6 +395,9 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsData> {
     topSellers,
     revenue: {
       totalRevenue,
+      totalRevenueUsd: totalUsd,
+      totalRevenueKrw: totalKrw,
+      currency: dominantCurrency,
       platformFees,
       sellerEarnings: pendingSettlement + paidSettlement,
       refundedAmount,
