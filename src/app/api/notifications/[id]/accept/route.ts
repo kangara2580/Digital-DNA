@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/serverSession";
+import { validateCsrf } from "@/lib/csrf";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
-
-type Body = { sellerId?: string };
 
 async function loadPrismaRuntime(): Promise<{ prisma: any } | null> {
   try {
@@ -17,20 +17,20 @@ async function loadPrismaRuntime(): Promise<{ prisma: any } | null> {
 }
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   ctx: { params: Promise<{ id: string }> },
 ) {
+  const csrf = validateCsrf(req);
+  if (!csrf.ok) return csrf.response;
+
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "login_required" }, { status: 401 });
+  }
+
   const { id } = await ctx.params;
-  let body: Body = {};
-  try {
-    body = (await req.json()) as Body;
-  } catch {
-    body = {};
-  }
-  const sellerId = body.sellerId?.trim();
-  if (!sellerId) {
-    return NextResponse.json({ error: "sellerId required" }, { status: 400 });
-  }
+  // Use the authenticated user's ID as sellerId instead of trusting the body
+  const sellerId = user.id;
 
   try {
     const runtime = await loadPrismaRuntime();

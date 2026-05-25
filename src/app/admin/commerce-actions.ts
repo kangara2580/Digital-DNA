@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdminAccess } from "@/lib/adminAuth";
 import { prisma } from "@/lib/prisma";
 import { cancelTossPayment, toJsonValue } from "@/lib/tossPayments";
+import { sendRefundApproved } from "@/lib/email/send";
 
 export async function rejectRefundRequest(formData: FormData) {
   const admin = await requireAdminAccess();
@@ -172,6 +173,15 @@ export async function approveRefundRequest(formData: FormData) {
       },
     });
   });
+
+  // Send refund approved email (fire-and-forget)
+  if (payment.userEmail) {
+    sendRefundApproved({
+      to: payment.userEmail,
+      amount: payment.amountCents,
+      currency: payment.currency,
+    }).catch(() => {});
+  }
 
   revalidatePath("/admin/refunds");
   revalidatePath("/admin/payments");

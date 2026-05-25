@@ -1,10 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
+import { validateCsrf } from "@/lib/csrf";
+import { sendRefundRequestConfirm } from "@/lib/email/send";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const csrf = validateCsrf(request);
+  if (!csrf.ok) return csrf.response;
+
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ ok: false, error: "login_required" }, { status: 401 });
@@ -46,6 +51,15 @@ export async function POST(request: Request) {
       status: "requested",
     },
   });
+
+  // Send confirmation email (fire-and-forget)
+  if (user.email) {
+    sendRefundRequestConfirm({
+      to: user.email,
+      refundRequestId: requestRow.id,
+      reason,
+    }).catch(() => {});
+  }
 
   return NextResponse.json({ ok: true, refundRequestId: requestRow.id });
 }

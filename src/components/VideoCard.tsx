@@ -21,7 +21,9 @@ import { useVideoLike } from "@/hooks/useVideoLike";
 import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
-import { formatPriceWon } from "@/lib/exploreLocaleFormat";
+import { formatGem } from "@/components/assets/assetsFormat";
+import { toGemPrice } from "@/lib/gemPrice";
+import type { SiteLocale } from "@/lib/sitePreferences";
 import { useVideoWishlistAction } from "@/hooks/useVideoWishlistAction";
 import {
   clonesRemaining,
@@ -431,7 +433,10 @@ export function VideoCard({
         ? "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md transition-[border-color,background-color] duration-200 ease-out hover:border-white/16 hover:bg-white/[0.07] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-zinc-300 [html[data-theme='light']_&]:hover:bg-zinc-50"
         : "rounded-xl border border-white/10 bg-white/[0.055] shadow-none backdrop-blur-md hover:border-white/20 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:hover:border-zinc-300";
 
-  const priceLabel = formatPriceWon(locale, video.priceWon);
+  const priceLabel =
+    video.priceWon != null && video.priceWon > 0
+      ? formatGem(toGemPrice(video.priceWon), locale as SiteLocale)
+      : null;
   const socialLinksToShow = sellerSocialLinks;
   const sellerHref = useMemo(() => sellerProfileHrefFromVideo(video), [video]);
   const sellerName = useMemo(() => sellerDisplayNameFromVideo(video), [video]);

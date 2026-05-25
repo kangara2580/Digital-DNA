@@ -18,64 +18,11 @@ import { explorePurchaseButtonClass } from "@/lib/explorePurchaseButtonClass";
 import type { SiteLocale } from "@/lib/sitePreferences";
 import { getVideoContentSource } from "@/lib/videoSourcePlatform";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
+import { InsufficientCreditsModal } from "@/components/InsufficientCreditsModal";
 
 const cartOutlineBtn =
   "inline-flex shrink-0 items-center justify-center rounded-xl border border-white/30 bg-transparent px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/35 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
 
-type TossCheckoutPayload = {
-  ok?: boolean;
-  clientKey?: string;
-  orderId?: string;
-  orderName?: string;
-  amount?: number;
-  customerEmail?: string | null;
-  customerName?: string | null;
-  successUrl?: string;
-  failUrl?: string;
-  loginUrl?: string;
-  error?: string;
-};
-
-declare global {
-  interface Window {
-    TossPayments?: (clientKey: string) => {
-      requestPayment: (
-        method: string,
-        params: {
-          amount: number;
-          orderId: string;
-          orderName: string;
-          customerName?: string;
-          customerEmail?: string;
-          successUrl: string;
-          failUrl: string;
-        },
-      ) => Promise<void>;
-    };
-  }
-}
-
-function loadTossSdk(): Promise<void> {
-  if (window.TossPayments) return Promise.resolve();
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(
-      'script[src="https://js.tosspayments.com/v1/payment"]',
-    );
-    if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("Toss SDK load failed")), {
-        once: true,
-      });
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = "https://js.tosspayments.com/v1/payment";
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Toss SDK load failed"));
-    document.head.appendChild(script);
-  });
-}
 function localCartPosterFallback(videoId: string): string {
   const hash = Array.from(videoId).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
   const idx = (Math.abs(hash) % 10) + 1;
@@ -118,6 +65,10 @@ export default function CartPage() {
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [checkoutBusy, setCheckoutBusy] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [insufficientModal, setInsufficientModal] = useState<{
+    required: number;
+    balance: number;
+  } | null>(null);
 
   useEffect(() => {
     const valid = new Set(builderItems.map((b) => b.key));
@@ -151,10 +102,10 @@ export default function CartPage() {
     [hasPurchased, selectedItems],
   );
 
-  const selectedTotal = useMemo(
+  const selectedTotalGems = useMemo(
     () =>
       selectedPayableItems.reduce(
-        (sum, { video }) => sum + (video.priceWon ?? 0),
+        (sum, { video }) => sum + Math.round((video.priceWon ?? 0) / 6),
         0,
       ),
     [selectedPayableItems],
@@ -186,95 +137,68 @@ export default function CartPage() {
     setCheckoutError(null);
     setCheckoutBusy(true);
     try {
-      const res = await fetch("/api/cart/validate-pricing", {
+      const res = await fetch("/api/videos/purchase-batch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: selectedPayableItems.map(({ video }) => ({
-            videoId: video.id,
-            expectedPriceWon: video.priceWon ?? 0,
-          })),
+          videoIds: selectedPayableItems.map(({ video }) => video.id),
         }),
       });
-      const body = (await res.json().catch(() => null)) as
-        | {
-            ok?: boolean;
-            canCheckout?: boolean;
-            mismatches?: Array<{
-              videoId: string;
-              expectedPriceWon: number;
-              actualPriceWon: number | null;
-            }>;
-          }
-        | null;
-      if (!res.ok || !body?.ok) {
-        setCheckoutError(t("cart.checkout.priceVerifyFail"));
-        return;
-      }
-      if (!body.canCheckout) {
-        const first = body.mismatches?.[0];
-        if (first) {
-          const actual =
-            typeof first.actualPriceWon === "number"
-              ? `${first.actualPriceWon.toLocaleString(numLocale)}${t("cart.currencySuffix")}`
-              : t("cart.priceInquire");
-          setCheckoutError(
-            t("cart.checkout.priceChanged", {
-              expected: `${first.expectedPriceWon.toLocaleString(numLocale)}${t("cart.currencySuffix")}`,
-              actual,
-            }),
-          );
-        } else {
-          setCheckoutError(t("cart.checkout.priceChangedBlock"));
-        }
-        return;
-      }
-      const checkout = await fetch("/api/payments/toss/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productType: "cart",
-          items: selectedPayableItems.map(({ video }) => ({
-            videoId: video.id,
-            expectedPriceWon: video.priceWon ?? 0,
-          })),
-        }),
-      });
-      const payload = (await checkout.json().catch(() => null)) as TossCheckoutPayload | null;
-      if (checkout.status === 401) {
+
+      const payload = (await res.json().catch(() => null)) as {
+        ok?: boolean;
+        error?: string;
+        required?: number;
+        balance?: number;
+        purchased?: Array<{ videoId: string }>;
+        skipped?: Array<{ videoId: string; reason: string }>;
+        totalGems?: number;
+        itemCount?: number;
+      } | null;
+
+      if (res.status === 401) {
         openAuthModal();
         return;
       }
-      if (
-        !checkout.ok ||
-        !payload?.clientKey ||
-        !payload.orderId ||
-        !payload.orderName ||
-        !payload.amount ||
-        !payload.successUrl ||
-        !payload.failUrl
-      ) {
-        throw new Error(payload?.error ?? "checkout_failed");
+
+      if (res.status === 402) {
+        setInsufficientModal({
+          required: payload?.required ?? 0,
+          balance: payload?.balance ?? 0,
+        });
+        return;
       }
-      await loadTossSdk();
-      if (!window.TossPayments) throw new Error("Toss SDK is unavailable.");
-      await window.TossPayments(payload.clientKey).requestPayment("카드", {
-        amount: payload.amount,
-        orderId: payload.orderId,
-        orderName: payload.orderName,
-        customerName: payload.customerName ?? undefined,
-        customerEmail: payload.customerEmail ?? undefined,
-        successUrl: payload.successUrl,
-        failUrl: payload.failUrl,
-      });
-      return;
-      setCheckoutError(t("cart.checkout.verifyOk"));
+
+      if (!res.ok || !payload?.ok) {
+        setCheckoutError(
+          payload?.error === "validation_failed"
+            ? t("cart.checkout.validationFail")
+            : t("cart.checkout.purchaseFail"),
+        );
+        return;
+      }
+
+      const purchasedIds = new Set(
+        payload.purchased?.map((p) => p.videoId) ?? [],
+      );
+      const keysToRemove = selectedPayableItems
+        .filter(({ video }) => purchasedIds.has(video.id))
+        .map(({ key }) => key);
+      if (keysToRemove.length > 0) {
+        removeBuilderItemsByKeys(keysToRemove);
+      }
+      setSelected(new Set());
+
+      const firstPurchased = payload.purchased?.[0];
+      if (firstPurchased) {
+        window.location.href = `/create?videoId=${encodeURIComponent(firstPurchased.videoId)}`;
+      }
     } catch {
-      setCheckoutError(t("cart.checkout.networkFail"));
+      setCheckoutError(t("cart.checkout.networkPurchaseFail"));
     } finally {
       setCheckoutBusy(false);
     }
-  }, [checkoutBusy, numLocale, openAuthModal, selectedPayableItems, t]);
+  }, [checkoutBusy, openAuthModal, selectedPayableItems, removeBuilderItemsByKeys, t]);
 
   const confirmClearCart = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -372,8 +296,8 @@ export default function CartPage() {
               const videoContentSource = getVideoContentSource(video);
               const metrics = getMetricsForVideoDetail(video.id);
               const priceLabel =
-                video.priceWon != null
-                  ? `${video.priceWon.toLocaleString(numLocale)}${t("cart.currencySuffix")}`
+                video.priceWon != null && video.priceWon > 0
+                  ? `${Math.round(video.priceWon / 6).toLocaleString(numLocale)}💎`
                   : null;
               return (
                 <li
@@ -476,12 +400,12 @@ export default function CartPage() {
                 className="text-4xl font-extrabold tabular-nums tracking-tight text-zinc-100 sm:text-5xl [html[data-theme='light']_&]:text-zinc-900"
                 aria-live="polite"
                 aria-label={t("cart.totalAria", {
-                  amount: selectedTotal.toLocaleString(numLocale),
+                  amount: selectedTotalGems.toLocaleString(numLocale),
                   n: selected.size,
                 })}
               >
-                {selectedTotal.toLocaleString(numLocale)}
-                {t("cart.currencySuffix")}
+                {selectedTotalGems.toLocaleString(numLocale)}
+                💎
               </p>
             </div>
             <div className="mt-6 flex justify-end">
@@ -503,6 +427,13 @@ export default function CartPage() {
             </div>
           </footer>
         </>
+      )}
+      {insufficientModal && (
+        <InsufficientCreditsModal
+          required={insufficientModal.required}
+          balance={insufficientModal.balance}
+          onClose={() => setInsufficientModal(null)}
+        />
       )}
     </main>
   );

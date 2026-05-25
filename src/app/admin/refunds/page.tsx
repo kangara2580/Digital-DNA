@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, RotateCcw } from "lucide-react";
+import { AdminSubmitButton } from "@/components/AdminSubmitButton";
 import { approveRefundRequest, rejectRefundRequest } from "@/app/admin/commerce-actions";
 import { getAdminAccess } from "@/lib/adminAuth";
 import { prisma } from "@/lib/prisma";
@@ -141,9 +142,9 @@ export default async function AdminRefundsPage() {
                                   placeholder="관리자 메모"
                                   className="h-9 rounded-md border border-slate-200 px-3 text-xs"
                                 />
-                                <button className="h-9 rounded-md bg-emerald-600 px-3 text-xs font-black text-white">
+                                <AdminSubmitButton className="h-9 rounded-md bg-emerald-600 px-3 text-xs font-black text-white">
                                   환불 승인
-                                </button>
+                                </AdminSubmitButton>
                               </form>
                               <form action={rejectRefundRequest} className="grid gap-2">
                                 <input type="hidden" name="id" value={request.id} />
@@ -152,9 +153,9 @@ export default async function AdminRefundsPage() {
                                   placeholder="거절 사유"
                                   className="h-9 rounded-md border border-slate-200 px-3 text-xs"
                                 />
-                                <button className="h-9 rounded-md bg-slate-900 px-3 text-xs font-black text-white">
+                                <AdminSubmitButton className="h-9 rounded-md bg-slate-900 px-3 text-xs font-black text-white">
                                   거절
-                                </button>
+                                </AdminSubmitButton>
                               </form>
                             </div>
                           ) : (

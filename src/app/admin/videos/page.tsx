@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, ImageIcon, Search, ShieldCheck } from "lucide-react";
+import { AdminSubmitButton, FormPendingOverlay } from "@/components/AdminSubmitButton";
 import {
   createAdminNote,
   syncCatalogVideosToDb,
@@ -131,9 +132,9 @@ export default async function AdminVideosPage({ searchParams }: PageProps) {
               </p>
             </div>
             <form action={syncCatalogVideosToDb}>
-              <button className="h-10 rounded-md bg-cyan-700 px-4 text-sm font-black text-white">
+              <AdminSubmitButton className="h-10 rounded-md bg-cyan-700 px-4 text-sm font-black text-white">
                 기존 영상 전체 동기화
-              </button>
+              </AdminSubmitButton>
             </form>
           </div>
         </header>
@@ -229,7 +230,8 @@ export default async function AdminVideosPage({ searchParams }: PageProps) {
                     <summary className="cursor-pointer px-3 py-2 text-sm font-black text-slate-700">
                       수정 열기
                     </summary>
-                    <form action={updateAdminVideoDetails} className="grid gap-2 border-t border-slate-200 p-3">
+                    <form action={updateAdminVideoDetails} className="relative grid gap-2 border-t border-slate-200 p-3">
+                      <FormPendingOverlay />
                       <input type="hidden" name="videoId" value={item.id} />
                       <div className="grid gap-2 md:grid-cols-2">
                         <input name="title" defaultValue={item.title} className="h-9 rounded-md border border-slate-200 px-3 text-sm" />
@@ -238,18 +240,19 @@ export default async function AdminVideosPage({ searchParams }: PageProps) {
                       <input name="category" defaultValue={item.category ?? ""} placeholder="카테고리" className="h-9 rounded-md border border-slate-200 px-3 text-sm" />
                       <input name="poster" defaultValue={item.poster} placeholder="썸네일 URL" className="h-9 rounded-md border border-slate-200 px-3 text-sm" />
                       <input name="src" defaultValue={item.src} placeholder="영상 URL" className="h-9 rounded-md border border-slate-200 px-3 text-sm" />
-                      <button className="h-9 rounded-md bg-cyan-700 px-3 text-xs font-black text-white">정보 수정</button>
+                      <AdminSubmitButton className="h-9 rounded-md bg-cyan-700 px-3 text-xs font-black text-white">정보 수정</AdminSubmitButton>
                     </form>
                   </details>
 
-                  <form action={updateVideoModeration} className="grid gap-2">
+                  <form action={updateVideoModeration} className="relative grid gap-2">
+                    <FormPendingOverlay />
                     <input type="hidden" name="videoId" value={item.id} />
                     <input name="reason" placeholder="반려/숨김 사유" className="h-9 rounded-md border border-slate-200 px-3 text-sm" />
                     <div className="grid grid-cols-4 gap-2">
                       {["approved", "pending", "rejected", "hidden"].map((status) => (
-                        <button key={status} name="status" value={status} className="h-9 rounded-md bg-slate-950 px-2 text-xs font-bold text-white">
+                        <AdminSubmitButton key={status} name="status" value={status} className="h-9 rounded-md bg-slate-950 px-2 text-xs font-bold text-white">
                           {status}
-                        </button>
+                        </AdminSubmitButton>
                       ))}
                     </div>
                   </form>
@@ -262,7 +265,7 @@ export default async function AdminVideosPage({ searchParams }: PageProps) {
                       <input type="hidden" name="targetType" value="video" />
                       <input type="hidden" name="targetId" value={item.id} />
                       <textarea name="body" placeholder="운영 메모" className="min-h-16 rounded-md border border-slate-200 px-3 py-2 text-sm" />
-                      <button className="h-8 rounded-md border border-slate-200 px-3 text-xs font-bold text-slate-700">메모 남기기</button>
+                      <AdminSubmitButton className="h-8 rounded-md border border-slate-200 px-3 text-xs font-bold text-slate-700">메모 남기기</AdminSubmitButton>
                     </form>
                   </details>
                 </div>

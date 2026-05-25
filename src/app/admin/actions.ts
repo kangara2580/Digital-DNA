@@ -276,6 +276,21 @@ export async function updateMemberAdminState(formData: FormData): Promise<void> 
   `;
   const after = afterRows[0];
 
+  const wasSuspended = before.account_status === "suspended";
+  const isSuspended = status === "suspended";
+
+  if (isSuspended && !wasSuspended) {
+    await prisma.video.updateMany({
+      where: { sellerId: userId, status: "approved" },
+      data: { status: "hidden", moderationReason: "계정 정지로 인한 자동 비공개" },
+    });
+  } else if (!isSuspended && wasSuspended) {
+    await prisma.video.updateMany({
+      where: { sellerId: userId, status: "hidden", moderationReason: "계정 정지로 인한 자동 비공개" },
+      data: { status: "approved", moderationReason: null },
+    });
+  }
+
   await writeAdminAuditLog({
     actor,
     action: `member.${status}`,
@@ -296,6 +311,7 @@ export async function updateMemberAdminState(formData: FormData): Promise<void> 
 
   revalidatePath("/admin");
   revalidatePath("/admin/members");
+  revalidatePath("/admin/videos");
 }
 
 export async function updatePurchaseStatus(formData: FormData): Promise<void> {

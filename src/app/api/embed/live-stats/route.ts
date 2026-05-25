@@ -8,41 +8,46 @@ import type { ExternalProvider } from "@/lib/externalEmbed/types";
  * TikTok 레거시: `videoId` 숫자만 넘기면 TikTok으로 처리합니다.
  */
 export async function GET(request: NextRequest) {
-  const rawUrl = request.nextUrl.searchParams.get("url")?.trim();
-  const rawVideoId = request.nextUrl.searchParams.get("videoId")?.trim();
+  try {
+    const rawUrl = request.nextUrl.searchParams.get("url")?.trim();
+    const rawVideoId = request.nextUrl.searchParams.get("videoId")?.trim();
 
-  let provider: ExternalProvider;
-  let canonicalKey: string;
+    let provider: ExternalProvider;
+    let canonicalKey: string;
 
-  const parsed = rawUrl ? parseExternalMediaUrl(rawUrl) : null;
-  if (parsed) {
-    provider = parsed.provider;
-    canonicalKey = parsed.canonicalKey;
-  } else if (rawVideoId && /^\d{10,20}$/.test(rawVideoId)) {
-    provider = "tiktok";
-    canonicalKey = rawVideoId;
-  } else {
+    const parsed = rawUrl ? parseExternalMediaUrl(rawUrl) : null;
+    if (parsed) {
+      provider = parsed.provider;
+      canonicalKey = parsed.canonicalKey;
+    } else if (rawVideoId && /^\d{10,20}$/.test(rawVideoId)) {
+      provider = "tiktok";
+      canonicalKey = rawVideoId;
+    } else {
+      return NextResponse.json(
+        { error: "missing or invalid url (or legacy videoId)" },
+        { status: 400 },
+      );
+    }
+
+    const stats = await fetchExternalLiveStats(provider, canonicalKey);
+    if (!stats) {
+      return NextResponse.json({ error: "stats unavailable" }, { status: 502 });
+    }
+
     return NextResponse.json(
-      { error: "missing or invalid url (or legacy videoId)" },
-      { status: 400 },
-    );
-  }
-
-  const stats = await fetchExternalLiveStats(provider, canonicalKey);
-  if (!stats) {
-    return NextResponse.json({ error: "stats unavailable" }, { status: 502 });
-  }
-
-  return NextResponse.json(
-    {
-      ...stats,
-      /** @deprecated 하위 호환 — TikTok embed id 등 */
-      videoId: stats.canonicalKey,
-    },
-    {
-      headers: {
-        "cache-control": "no-store, max-age=0",
+      {
+        ...stats,
+        /** @deprecated 하위 호환 — TikTok embed id 등 */
+        videoId: stats.canonicalKey,
       },
-    },
-  );
+      {
+        headers: {
+          "cache-control": "no-store, max-age=0",
+        },
+      },
+    );
+  } catch (err) {
+    console.error("[embed/live-stats]", err);
+    return NextResponse.json({ error: "internal_server_error" }, { status: 500 });
+  }
 }

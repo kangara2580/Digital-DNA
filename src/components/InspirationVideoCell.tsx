@@ -10,7 +10,8 @@ import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
-import { formatPriceWon } from "@/lib/exploreLocaleFormat";
+import { formatGem } from "@/components/assets/assetsFormat";
+import { toGemPrice } from "@/lib/gemPrice";
 import type { SiteLocale } from "@/lib/sitePreferences";
 import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
 import {
@@ -30,7 +31,10 @@ import { useVideoCartAction } from "@/hooks/useVideoCartAction";
 /** 「영감이 필요한 순간」 그리드 셀 — VideoCard와 동일하게 호버 시 장바구니·좋아요·찜 노출 */
 export function InspirationVideoCell({ video }: { video: FeedVideo }) {
   const { t, locale } = useTranslation();
-  const priceLabel = formatPriceWon(locale as SiteLocale, video.priceWon) ?? "—";
+  const priceLabel =
+    video.priceWon != null && video.priceWon > 0
+      ? formatGem(toGemPrice(video.priceWon), locale as SiteLocale)
+      : "—";
   const dopamine = useDopamineBasketOptional();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const displayTitle = useVideoDisplayTitle();

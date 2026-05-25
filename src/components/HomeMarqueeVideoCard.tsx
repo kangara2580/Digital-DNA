@@ -28,7 +28,8 @@ import { useVideoCartAction } from "@/hooks/useVideoCartAction";
 import { useVideoLike } from "@/hooks/useVideoLike";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
-import { formatPriceWon } from "@/lib/exploreLocaleFormat";
+import { formatGem } from "@/components/assets/assetsFormat";
+import { toGemPrice } from "@/lib/gemPrice";
 import type { SiteLocale } from "@/lib/sitePreferences";
 import { useVideoWishlistAction } from "@/hooks/useVideoWishlistAction";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
@@ -151,7 +152,10 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
   const authPromptScrollYRef = useRef(0);
 
   const thumbnailSrc = sanitizePosterSrc(video.poster);
-  const priceLabel = formatPriceWon(locale as SiteLocale, video.priceWon);
+  const priceLabel =
+    video.priceWon != null && video.priceWon > 0
+      ? formatGem(toGemPrice(video.priceWon), locale as SiteLocale)
+      : null;
 
   const requireAuth = useCallback(() => {
     if (authLoading) return false;

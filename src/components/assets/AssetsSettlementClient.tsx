@@ -342,7 +342,7 @@ export function AssetsSettlementClient() {
                 !wallet ||
                 !hasPayoutAccount ||
                 available <= 0 ||
-                available < 1000 ||
+                available < 500 ||
                 payoutBusy ||
                 walletLoading
               }

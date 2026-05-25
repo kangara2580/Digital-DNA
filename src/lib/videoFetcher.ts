@@ -478,7 +478,7 @@ export async function searchPexelsVideos(
 ): Promise<VideoSearchItem[]> {
   const apiKey =
     process.env.PEXELS_API_KEY?.trim() ||
-    process.env.NEXT_PUBLIC_PEXELS_API_KEY?.trim();
+    process.env.PEXELS_API_KEY?.trim();
   console.log(
     "[videoFetcher][pexels] key status:",
     apiKey ? `loaded(len=${apiKey.length})` : "missing",
@@ -538,7 +538,7 @@ export async function searchPixabayVideos(
 ): Promise<VideoSearchItem[]> {
   const apiKey =
     process.env.PIXABAY_API_KEY?.trim() ||
-    process.env.NEXT_PUBLIC_PIXABAY_API_KEY?.trim();
+    process.env.PIXABAY_API_KEY?.trim();
   console.log(
     "[videoFetcher][pixabay] key status:",
     apiKey ? `loaded(len=${apiKey.length})` : "missing",
@@ -642,7 +642,7 @@ export async function searchPexelsImages(
 ): Promise<ImageSearchItem[]> {
   const apiKey =
     process.env.PEXELS_API_KEY?.trim() ||
-    process.env.NEXT_PUBLIC_PEXELS_API_KEY?.trim();
+    process.env.PEXELS_API_KEY?.trim();
   if (!apiKey) {
     throw new Error("PEXELS_API_KEY is missing");
   }
@@ -692,7 +692,7 @@ export async function searchPixabayImages(
 ): Promise<ImageSearchItem[]> {
   const apiKey =
     process.env.PIXABAY_API_KEY?.trim() ||
-    process.env.NEXT_PUBLIC_PIXABAY_API_KEY?.trim();
+    process.env.PIXABAY_API_KEY?.trim();
   if (!apiKey) {
     throw new Error("PIXABAY_API_KEY is missing");
   }

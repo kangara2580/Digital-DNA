@@ -22,15 +22,16 @@ function placeholderFeed(videoId: string, title: string): FeedVideo {
 }
 
 export async function GET() {
-  const user = await getCurrentUser();
-  if (!user) {
-    return NextResponse.json(
-      { ok: false, error: "login_required", videoIds: [] },
-      { status: 401 },
-    );
-  }
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { ok: false, error: "login_required", videoIds: [] },
+        { status: 401 },
+      );
+    }
 
-  const [entitlements, purchases] = await Promise.all([
+    const [entitlements, purchases] = await Promise.all([
     prisma.userEntitlement.findMany({
       where: {
         userId: user.id,
@@ -106,5 +107,9 @@ export async function GET() {
     };
   });
 
-  return NextResponse.json({ ok: true, videoIds, items });
+    return NextResponse.json({ ok: true, videoIds, items });
+  } catch (err) {
+    console.error("[purchases/owned]", err);
+    return NextResponse.json({ ok: false, error: "internal_server_error" }, { status: 500 });
+  }
 }

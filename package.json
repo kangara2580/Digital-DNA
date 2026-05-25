@@ -22,6 +22,9 @@
     "start": "next start",
     "preview": "next build && next start",
     "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "git:push": "git push origin main"
   },
   "dependencies": {
@@ -40,6 +43,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "replicate": "^1.4.0",
+    "resend": "^6.12.3",
     "twilio": "^6.0.0"
   },
   "devDependencies": {
@@ -48,6 +52,7 @@
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^6.0.2",
     "autoprefixer": "^10.4.27",
     "eslint": "^9.16.0",
     "eslint-config-next": "^15.1.0",
@@ -55,6 +60,7 @@
     "prisma": "^6.19.0",
     "tailwindcss": "^3.4.16",
     "tsx": "^4.19.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.7"
   }
 }

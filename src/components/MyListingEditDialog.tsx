@@ -536,7 +536,12 @@ export function MyListingEditDialog({ video, open, onClose, onSaved }: Props) {
                 </div>
                 <div>
                   <label className={LABEL} htmlFor={`${hid}-price`}>
-                    금액
+                    금액 (원)
+                    {price && Number(price) > 0 ? (
+                      <span className="ml-2 text-xs font-normal text-zinc-400">
+                        = {Math.round(Number(price) / 6).toLocaleString()}💎
+                      </span>
+                    ) : null}
                   </label>
                   <input
                     id={`${hid}-price`}

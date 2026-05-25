@@ -223,6 +223,11 @@ export const EXTRA_MESSAGES = {
       "결제는 토스페이먼츠 결제창에서 처리되고, 승인 성공 시 Supabase에 결제 기록과 크레딧 원장이 자동으로 쌓입니다.",
     "credits.page.tossMissing":
       "토스페이먼츠 키가 아직 설정되지 않았습니다. Vercel에 NEXT_PUBLIC_TOSS_CLIENT_KEY와 TOSS_SECRET_KEY를 넣으면 결제가 활성화됩니다.",
+    "credits.page.polarMissing": "결제 시스템이 아직 설정되지 않았습니다. 관리자에게 문의해 주세요.",
+    "credits.pack.globalPay": "글로벌 카드/PayPal 결제",
+    "cart.checkout.validationFail": "일부 영상을 구매할 수 없습니다. 장바구니를 확인해 주세요.",
+    "cart.checkout.purchaseFail": "구매에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+    "cart.checkout.networkPurchaseFail": "네트워크 오류로 구매에 실패했습니다.",
     "credits.page.balance": "현재 보유 크레딧",
     "credits.page.loggedInNote": "로그인된 계정으로 결제와 크레딧이 적립됩니다.",
     "credits.page.loginRequired": "로그인이 필요합니다",
@@ -666,6 +671,11 @@ export const EXTRA_MESSAGES = {
       "Checkout runs in Toss Payments; successful approval records payments and credits in Supabase.",
     "credits.page.tossMissing":
       "Toss Payments isn’t configured. Add NEXT_PUBLIC_TOSS_CLIENT_KEY and TOSS_SECRET_KEY on Vercel to enable checkout.",
+    "credits.page.polarMissing": "Checkout is not configured yet. Please contact support.",
+    "credits.pack.globalPay": "Global card / PayPal",
+    "cart.checkout.validationFail": "Some videos can’t be purchased. Check your cart.",
+    "cart.checkout.purchaseFail": "Purchase failed. Please try again shortly.",
+    "cart.checkout.networkPurchaseFail": "A network error blocked the purchase.",
     "credits.page.balance": "Current balance",
     "credits.page.loggedInNote": "Payments and credits apply to your signed-in account.",
     "credits.page.loginRequired": "Sign-in required",

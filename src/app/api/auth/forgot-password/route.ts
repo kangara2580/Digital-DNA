@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { toE164 } from "@/lib/phoneE164";
+import { checkRateLimit } from "@/lib/rateLimit";
 import { verifySmsProofToken } from "@/lib/smsProof";
 
 export const runtime = "nodejs";
@@ -37,7 +38,10 @@ function buildCandidates(request: Request): string[] {
   return out;
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const rl = checkRateLimit(request, { windowMs: 60_000, maxRequests: 5, prefix: "forgot-pw" });
+  if (!rl.ok) return rl.response;
+
   let body: Body;
   try {
     body = (await request.json()) as Body;

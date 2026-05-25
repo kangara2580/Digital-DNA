@@ -54,6 +54,7 @@ model Video {
   @@index([flashSaleUntil])
   @@index([status, createdAt])
   @@index([externalProvider, externalKey])
+  @@index([category])
   @@map("videos")
 }
 
@@ -207,7 +208,7 @@ model RefundRequest {
 /// Actual refund/cancel result from provider.
 model Refund {
   id                 String   @id @default(cuid())
-  paymentId          String   @map("payment_id")
+  paymentId          String?  @map("payment_id")
   refundRequestId    String?  @map("refund_request_id")
   provider           String   @default("toss")
   providerRefundKey  String?  @map("provider_refund_key")
@@ -218,7 +219,7 @@ model Refund {
   providerRawJson    Json?    @map("provider_raw_json")
   createdAt          DateTime @default(now()) @map("created_at")
 
-  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  payment Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
 
   @@index([paymentId, createdAt])
   @@index([refundRequestId])

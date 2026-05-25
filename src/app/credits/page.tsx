@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { CheckCircle2, CreditCard, Sparkles, WalletCards } from "lucide-react";
-import { TossCheckoutButton } from "@/components/payments/TossCheckoutButton";
+import { PolarCheckoutButton } from "@/components/payments/PolarCheckoutButton";
 import { getUserCreditSummary } from "@/lib/credits";
-import { getCurrentUser } from "@/lib/serverSession";
-import { formatPriceWon } from "@/lib/exploreLocaleFormat";
 import { translate } from "@/lib/i18n/dictionaries";
 import { getSiteLocale } from "@/lib/i18n/serverLocale";
-import { getTossEnvStatus, tossCreditPacks } from "@/lib/tossConfig";
+import { creditPacks, getPolarEnvStatus } from "@/lib/polarConfig";
+import { getCurrentUser } from "@/lib/serverSession";
 
 export const dynamic = "force-dynamic";
 
@@ -14,12 +13,16 @@ function formatCredits(value: number): string {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
+function formatUsd(value: number): string {
+  return `$${value.toFixed(2)}`;
+}
+
 export default async function CreditsPage() {
   const locale = await getSiteLocale();
   const user = await getCurrentUser();
   const summary = user ? await getUserCreditSummary(user.id) : null;
-  const envStatus = getTossEnvStatus();
-  const tossReady = envStatus.hasClientKey && envStatus.hasSecretKey;
+  const envStatus = getPolarEnvStatus();
+  const polarReady = envStatus.hasAccessToken;
 
   return (
     <main className="min-h-screen bg-[#05050a] text-white">
@@ -34,14 +37,14 @@ export default async function CreditsPage() {
                 Credits
               </p>
               <h1 className="mt-3 max-w-3xl text-4xl font-black tracking-tight sm:text-6xl">
-                {translate(locale, "credits.page.lead")}
+                {translate(locale, "assets.section.credits.title")}
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-300">
-                {translate(locale, "credits.page.desc")}
+                {translate(locale, "assets.section.credits.lead")}
               </p>
-              {!tossReady ? (
+              {!polarReady ? (
                 <p className="mt-4 rounded-md border border-amber-300/30 bg-amber-400/10 px-4 py-3 text-sm font-bold text-amber-200">
-                  {translate(locale, "credits.page.tossMissing")}
+                  {translate(locale, "credits.page.polarMissing")}
                 </p>
               ) : null}
             </div>
@@ -80,8 +83,8 @@ export default async function CreditsPage() {
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 sm:px-8 lg:grid-cols-3">
-        {tossCreditPacks.map((pack) => {
-          const isRecommended = pack.key === "starter";
+        {creditPacks.map((pack) => {
+          const isRecommended = pack.key === "creator";
 
           return (
             <article
@@ -103,19 +106,20 @@ export default async function CreditsPage() {
                   </span>
                 ) : null}
               </div>
-              <p className="mt-6 text-3xl font-black">{formatCredits(pack.credits)}</p>
-              <p className="mt-1 text-sm font-bold text-zinc-400">ARA credits</p>
-              <p className="mt-5 text-2xl font-black">
-                {formatPriceWon(locale, pack.priceKrw)}
+              <p className="mt-6 text-3xl font-black">
+                {translate(locale, "assets.pack.creditsLine", {
+                  credits: formatCredits(pack.credits),
+                })}
               </p>
+              <p className="mt-2 text-2xl font-black">{formatUsd(pack.priceUsd)}</p>
               <div className="mt-5 space-y-2 text-sm text-zinc-300">
                 <p className="flex items-center gap-2">
                   <CheckCircle2 size={16} className="text-[#ff7abf]" />
-                  {translate(locale, "credits.pack.tossSupport")}
+                  {translate(locale, "credits.pack.globalPay")}
                 </p>
                 <p className="flex items-center gap-2">
                   <Sparkles size={16} className="text-[#ff7abf]" />
-                  {translate(locale, "credits.pack.usageLog")}
+                  {pack.estimatedUses}
                 </p>
                 <p className="flex items-center gap-2">
                   <CreditCard size={16} className="text-[#ff7abf]" />
@@ -123,9 +127,9 @@ export default async function CreditsPage() {
                 </p>
               </div>
               <div className="mt-6">
-                <TossCheckoutButton productType="credits" productKey={pack.key}>
-                  {translate(locale, "credits.pack.checkoutCta")}
-                </TossCheckoutButton>
+                <PolarCheckoutButton packKey={pack.key} disabled={!polarReady}>
+                  {translate(locale, "assets.pack.buy")}
+                </PolarCheckoutButton>
               </div>
             </article>
           );

@@ -56,6 +56,106 @@ export async function getUserCreditSummary(userId: string) {
   };
 }
 
+/**
+ * Spend credits for a video purchase.
+ * Deducts from buyer, records ledger entry.
+ * Returns the new balance and ledger entry.
+ */
+export async function spendCreditsForPurchase(params: {
+  userId: string;
+  amount: number;
+  purchaseId: string;
+  videoId: string;
+  videoTitle: string;
+  sellerId: string;
+  metadata?: Prisma.InputJsonValue;
+}) {
+  if (params.amount <= 0) {
+    throw new Error("Spend amount must be positive.");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    // Check current balance
+    const balanceRow = await tx.userCreditBalance.findUnique({
+      where: { userId: params.userId },
+      select: { balance: true },
+    });
+
+    const currentBalance = balanceRow?.balance ?? 0;
+    if (currentBalance < params.amount) {
+      throw new Error(
+        `Insufficient credits: has ${currentBalance}, needs ${params.amount}`,
+      );
+    }
+
+    // Deduct balance
+    const updated = await tx.userCreditBalance.update({
+      where: { userId: params.userId },
+      data: { balance: { decrement: params.amount } },
+      select: { balance: true },
+    });
+
+    // Record ledger
+    const ledger = await tx.creditLedger.create({
+      data: {
+        userId: params.userId,
+        type: "spend",
+        amount: -params.amount,
+        balanceAfter: updated.balance,
+        reason: `영상 구매: ${params.videoTitle}`,
+        metadataJson: params.metadata ?? {
+          purchaseId: params.purchaseId,
+          videoId: params.videoId,
+          sellerId: params.sellerId,
+        },
+      },
+      select: { id: true, balanceAfter: true },
+    });
+
+    return { balance: updated.balance, ledgerId: ledger.id };
+  });
+}
+
+/**
+ * Add credits to a seller's balance (earned from a sale).
+ */
+export async function addSellerCredits(params: {
+  sellerId: string;
+  amount: number;
+  purchaseId: string;
+  videoId: string;
+  videoTitle: string;
+  buyerId: string;
+}) {
+  if (params.amount <= 0) return;
+
+  return prisma.$transaction(async (tx) => {
+    const balance = await tx.userCreditBalance.upsert({
+      where: { userId: params.sellerId },
+      create: { userId: params.sellerId, balance: params.amount },
+      update: { balance: { increment: params.amount } },
+      select: { balance: true },
+    });
+
+    await tx.creditLedger.create({
+      data: {
+        userId: params.sellerId,
+        type: "seller_earning",
+        amount: params.amount,
+        balanceAfter: balance.balance,
+        reason: `판매 수익: ${params.videoTitle}`,
+        metadataJson: {
+          purchaseId: params.purchaseId,
+          videoId: params.videoId,
+          buyerId: params.buyerId,
+        },
+      },
+    });
+
+    return { balance: balance.balance };
+  });
+}
+
 export async function grantCreditsForPayment(params: {
   paymentId: string;
   userId: string;

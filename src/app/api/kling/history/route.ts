@@ -21,39 +21,44 @@ function readOutputUrl(providerJson: unknown): string | null {
 }
 
 export async function GET() {
-  const jobs = await prisma.generationJob.findMany({
-    where: {
-      stage: { in: ["motion-kling", "done"] },
-    },
-    orderBy: { updatedAt: "desc" },
-    take: 20,
-    select: {
-      id: true,
-      status: true,
-      progress: true,
-      outputUrl: true,
-      errorMessage: true,
-      inputJson: true,
-      providerJson: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
+  try {
+    const jobs = await prisma.generationJob.findMany({
+      where: {
+        stage: { in: ["motion-kling", "done"] },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        status: true,
+        progress: true,
+        outputUrl: true,
+        errorMessage: true,
+        inputJson: true,
+        providerJson: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
 
-  return NextResponse.json(
-    jobs.map((job) => ({
-      id: job.id,
-      taskId: job.id,
-      externalId: job.id,
-      status: job.status,
-      progress: job.progress,
-      videoUrl: job.outputUrl ?? readOutputUrl(job.providerJson),
-      outputUrl: job.outputUrl ?? readOutputUrl(job.providerJson),
-      error: job.errorMessage,
-      input: job.inputJson,
-      provider: job.providerJson,
-      createdAt: job.createdAt,
-      updatedAt: job.updatedAt,
-    })),
-  );
+    return NextResponse.json(
+      jobs.map((job) => ({
+        id: job.id,
+        taskId: job.id,
+        externalId: job.id,
+        status: job.status,
+        progress: job.progress,
+        videoUrl: job.outputUrl ?? readOutputUrl(job.providerJson),
+        outputUrl: job.outputUrl ?? readOutputUrl(job.providerJson),
+        error: job.errorMessage,
+        input: job.inputJson,
+        provider: job.providerJson,
+        createdAt: job.createdAt,
+        updatedAt: job.updatedAt,
+      })),
+    );
+  } catch (err) {
+    console.error("[kling/history]", err);
+    return NextResponse.json({ error: "internal_server_error" }, { status: 500 });
+  }
 }

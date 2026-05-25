@@ -53,11 +53,9 @@ export function TrendingVideoStatsFooter({
   const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
   const useFullNumbers = fullNumberDisplay || revenueFullWon;
   const revenueDisplay = useMemo(() => {
-    const v = Math.max(0, Math.floor(metrics.cumulativeRevenueWon));
-    if (!useFullNumbers) return fmt.formatCompactWon(metrics.cumulativeRevenueWon);
-    if (locale === "en") return `₩${v.toLocaleString("en-US")}`;
-    return `${v.toLocaleString("ko-KR")}원`;
-  }, [useFullNumbers, metrics.cumulativeRevenueWon, fmt, locale]);
+    const gems = Math.max(0, Math.round(metrics.cumulativeRevenueWon / 6));
+    return `${gems.toLocaleString(fmt.numberLocale)}💎`;
+  }, [metrics.cumulativeRevenueWon, fmt.numberLocale]);
   const viewsDisplay = useMemo(() => {
     if (!useFullNumbers) return fmt.formatViewCountRail(metrics.totalViews);
     return fmt.formatFullCount(metrics.totalViews);

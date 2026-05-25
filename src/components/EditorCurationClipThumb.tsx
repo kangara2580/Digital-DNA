@@ -6,7 +6,8 @@ import type { FeedVideo } from "@/data/videos";
 import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
-import { formatPriceWon } from "@/lib/exploreLocaleFormat";
+import { formatGem } from "@/components/assets/assetsFormat";
+import { toGemPrice } from "@/lib/gemPrice";
 import type { SiteLocale } from "@/lib/sitePreferences";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
@@ -63,7 +64,7 @@ export function EditorCurationClipThumb({ video, className }: Props) {
       </p>
       {video.priceWon != null ? (
         <p className="mt-0.5 text-left text-[11px] font-semibold tabular-nums text-reels-cyan sm:text-[12px]">
-          {formatPriceWon(locale as SiteLocale, video.priceWon)}
+          {formatGem(toGemPrice(video.priceWon), locale as SiteLocale)}
         </p>
       ) : null}
     </Link>

@@ -19,11 +19,12 @@ function parseSellerIds(value: string | null): string[] {
 }
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const sellerIds = parseSellerIds(searchParams.get("sellerIds"));
-  if (sellerIds.length === 0) {
-    return NextResponse.json({ ok: true, linksBySellerId: {} });
-  }
+  try {
+    const { searchParams } = new URL(request.url);
+    const sellerIds = parseSellerIds(searchParams.get("sellerIds"));
+    if (sellerIds.length === 0) {
+      return NextResponse.json({ ok: true, linksBySellerId: {} });
+    }
 
   const linksBySellerId: Record<string, ReturnType<typeof parseSellerSocialBlob>> = {};
   for (const id of sellerIds) {
@@ -68,5 +69,9 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.json({ ok: true, linksBySellerId });
+    return NextResponse.json({ ok: true, linksBySellerId });
+  } catch (err) {
+    console.error("[sellers/social-links]", err);
+    return NextResponse.json({ ok: false, error: "internal_server_error" }, { status: 500 });
+  }
 }

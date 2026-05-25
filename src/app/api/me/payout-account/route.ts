@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/serverSession";
+import { validateCsrf } from "@/lib/csrf";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,10 @@ function str(raw: unknown, max: number): string | null {
   return s.slice(0, max);
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const csrf = validateCsrf(request);
+  if (!csrf.ok) return csrf.response;
+
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ ok: false, error: "login_required" }, { status: 401 });

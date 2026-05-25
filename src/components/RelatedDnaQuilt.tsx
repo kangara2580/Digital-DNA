@@ -6,7 +6,8 @@ import type { FeedVideo } from "@/data/videos";
 import { getRelatedByVibe } from "@/data/videoCatalog";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
-import { formatPriceWon } from "@/lib/exploreLocaleFormat";
+import { formatGem } from "@/components/assets/assetsFormat";
+import { toGemPrice } from "@/lib/gemPrice";
 import type { SiteLocale } from "@/lib/sitePreferences";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 
@@ -56,7 +57,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
             </p>
             {hero.priceWon != null ? (
               <p className="mt-0.5 text-[10px] font-bold tabular-nums text-white">
-                {formatPriceWon(locale as SiteLocale, hero.priceWon)}
+                {formatGem(toGemPrice(hero.priceWon), locale as SiteLocale)}
               </p>
             ) : null}
           </div>
@@ -82,7 +83,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
                 </p>
                 {v.priceWon != null ? (
                   <p className="text-[9px] font-bold tabular-nums text-white/95">
-                    {formatPriceWon(locale as SiteLocale, v.priceWon)}
+                    {formatGem(toGemPrice(v.priceWon), locale as SiteLocale)}
                   </p>
                 ) : null}
               </div>
@@ -111,7 +112,7 @@ export function RelatedDnaQuilt({ video, className }: Props) {
                 <p className="line-clamp-2 text-[9px] font-medium text-zinc-200">{displayTitle(v)}</p>
                 {v.priceWon != null ? (
                   <p className="text-[9px] font-bold tabular-nums text-reels-cyan">
-                    {formatPriceWon(locale as SiteLocale, v.priceWon)}
+                    {formatGem(toGemPrice(v.priceWon), locale as SiteLocale)}
                   </p>
                 ) : null}
               </div>
