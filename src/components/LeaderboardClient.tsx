@@ -7,6 +7,7 @@ import { ProfileColorAvatar } from "@/components/ProfileColorAvatar";
 import { profileColorFromSeed } from "@/lib/profileColorSpectrum";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getExploreFormatters } from "@/lib/exploreLocaleFormat";
+import { formatGemsCompact } from "@/lib/gemDisplay";
 import { revenueAmountClass } from "@/lib/revenueDisplayTokens";
 
 type Metric = "sales" | "revenue";
@@ -91,9 +92,7 @@ export function LeaderboardClient() {
   const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
 
   const formatRevenueValue = (value: number) =>
-    locale === "en"
-      ? `₩${Math.max(0, value).toLocaleString("en-US")}`
-      : `${Math.max(0, value).toLocaleString("ko-KR")}원`;
+    formatGemsCompact(locale, value);
 
   const formatSalesValue = (value: number) =>
     t("leaderboard.salesCount", {

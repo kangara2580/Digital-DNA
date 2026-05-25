@@ -1,4 +1,5 @@
 import type { Video } from "@prisma/client";
+import { toGemPrice } from "@/lib/gemPrice";
 import type {
   FunnelStage,
   RetentionStep,
@@ -61,7 +62,7 @@ function lifetimeDaysInclusive(video: Video, today: Date): number {
 }
 
 function videoLifetimeRevenue(video: Video): number {
-  return video.price * video.salesCount;
+  return toGemPrice(video.price) * Math.max(0, video.salesCount);
 }
 
 /** 누적 매출·판매를 업로드 이후 일수로 균등 분배해 기간 내 추정치 계산 (이벤트 로그 없을 때) */

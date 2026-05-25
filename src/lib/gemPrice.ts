@@ -23,6 +23,27 @@ export function formatGemsPlain(gems: number): string {
   return gems.toLocaleString();
 }
 
+/**
+ * DB `purchases.price` — gem-era values vs legacy listing KRW stored as price.
+ * Compare with listing `video.price` (KRW) when available.
+ */
+export function normalizeStoredPurchaseGems(
+  purchasePrice: number,
+  listingPriceWon = 0,
+): number {
+  const p = Math.max(0, Math.floor(purchasePrice));
+  if (p <= 0) return 0;
+  const listing = Math.max(0, Math.floor(listingPriceWon));
+  if (listing <= 0) {
+    return p >= 500 ? toGemPrice(p) : p;
+  }
+  const expectedGems = toGemPrice(listing);
+  if (p === expectedGems) return p;
+  if (p === listing) return expectedGems;
+  if (p > expectedGems * 2) return toGemPrice(p);
+  return p;
+}
+
 /** Minimum settlement amount in gems. */
 export const MIN_SETTLEMENT_GEMS = 500;
 

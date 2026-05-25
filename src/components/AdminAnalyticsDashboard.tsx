@@ -324,7 +324,7 @@ export function AdminAnalyticsDashboard() {
               <div className="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700">
                 <span>USD: {formatCurrency(revenue.totalRevenueUsd, "USD")}</span>
                 <span>|</span>
-                <span>KRW: {formatCurrency(revenue.totalRevenueKrw, "KRW")}</span>
+                <span>보석: {formatCurrency(revenue.totalRevenueKrw, "KRW")}</span>
               </div>
             ) : null}
             <div className="flex items-center justify-between">

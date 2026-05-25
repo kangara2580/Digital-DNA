@@ -48,6 +48,8 @@ import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
 import { getVideoContentSource } from "@/lib/videoSourcePlatform";
 import { getExploreFormatters } from "@/lib/exploreLocaleFormat";
+import { formatGemsLocale } from "@/lib/gemDisplay";
+import { toGemPrice } from "@/lib/gemPrice";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import { SellerSocialLinkIcons } from "@/components/SellerSocialLinkIcons";
@@ -154,7 +156,7 @@ function useExploreReelSidebarMetrics(video: FeedVideo): ExploreReelSidebarMetri
       const sales = video.listing.salesCount;
       const p = video.priceWon ?? 0;
       return {
-        cumulativeRevenueWon: p * sales,
+        cumulativeRevenueWon: toGemPrice(p) * sales,
         totalViews: Math.max(0, views),
         totalLikes: Math.max(0, Math.floor(views * 0.028)),
         growthPercent: 0,
@@ -362,8 +364,9 @@ function ReelDesktopRail({
   const revenueUp = rankMetrics.growthPercent >= 0;
 
   const revRounded = Math.round(Math.max(0, rankMetrics.cumulativeRevenueWon));
+  const revDisplay = formatGemsLocale(locale, revRounded);
   const revNums = revRounded.toLocaleString(fmt.numberLocale);
-  const revAriaVal = locale === "en" ? `₩${revNums}` : `${revNums}원`;
+  const revAriaVal = revDisplay;
   const viewsStr = fmt.formatViewCountRail(displayedViews);
   const likesStr = fmt.formatLikeApprox(displayedLikeTotal);
   const salesStr = meta.salesCount.toLocaleString(fmt.numberLocale);
@@ -386,7 +389,7 @@ function ReelDesktopRail({
               {revenueUp ? "▲" : "▼"}
             </span>
           }
-          value={revNums}
+          value={`${revNums} 💎`}
           valueClassName={railStatValueWhite}
           aria-label={t("explore.rail.revenueAria", { v: revAriaVal })}
         />
@@ -537,7 +540,7 @@ function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
       const sales = video.listing.salesCount;
       const p = video.priceWon ?? 0;
       return {
-        cumulativeRevenueWon: p * sales,
+        cumulativeRevenueWon: toGemPrice(p) * sales,
         totalViews: Math.max(0, views),
         totalLikes: Math.max(0, Math.floor(views * 0.028)),
         growthPercent: 0,

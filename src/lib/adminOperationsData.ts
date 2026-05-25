@@ -133,8 +133,8 @@ function numberText(value: number): string {
   return new Intl.NumberFormat("ko-KR").format(value);
 }
 
-function wonText(value: number): string {
-  return `${numberText(value)}원`;
+function gemsText(value: number): string {
+  return `${numberText(value)}💎`;
 }
 
 function toIso(value: Date | string | null | undefined): string | null {
@@ -285,7 +285,7 @@ export async function getAdminOperationsData(): Promise<AdminOperationsData> {
     metrics: [
       { label: "회원", value: numberText(memberCount), helper: "profiles 기준" },
       { label: "이미지/영상", value: numberText(videos.length), helper: "최근 12개 표시" },
-      { label: "구매", value: numberText(purchaseAggregate._count._all), helper: wonText(purchaseTotal) },
+      { label: "구매", value: numberText(purchaseAggregate._count._all), helper: gemsText(purchaseTotal) },
       { label: "AI 작업", value: numberText(jobs.length), helper: "최근 작업 기준" },
       { label: "신고", value: numberText(reports.length), helper: "최근 신고 기준" },
       { label: "저장 데이터", value: numberText(blobCount), helper: "user_data_blobs 기준" },

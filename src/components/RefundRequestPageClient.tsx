@@ -73,7 +73,9 @@ function statusBadge(status: string) {
 }
 
 function formatAmount(amount: number, currency: string) {
-  if (currency === "KRW") return `${amount.toLocaleString("ko-KR")}원`;
+  if (currency === "KRW") {
+    return `${Math.max(0, Math.floor(amount)).toLocaleString("ko-KR")}💎`;
+  }
   return `$${(amount / 100).toFixed(2)}`;
 }
 

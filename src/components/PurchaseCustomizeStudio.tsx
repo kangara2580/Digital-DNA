@@ -30,6 +30,7 @@ import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { useVideoStartPoster } from "@/hooks/useVideoStartPoster";
 import { InputSection } from "@/components/InputSection";
+import { InsufficientCreditsModal } from "@/components/InsufficientCreditsModal";
 import { CreditPurchaseButton } from "@/components/payments/CreditPurchaseButton";
 import { VideoBackgroundComposite } from "@/components/VideoBackgroundComposite";
 import { MYPAGE_OUTLINE_BTN_MD, MYPAGE_OUTLINE_BTN_MD_TRANSPARENT } from "@/lib/mypageOutlineCta";
@@ -50,6 +51,7 @@ import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import { useTranslation } from "@/hooks/useTranslation";
 import { translate } from "@/lib/i18n/dictionaries";
 import type { SiteLocale } from "@/lib/sitePreferences";
+import { toGemPrice } from "@/lib/gemPrice";
 
 const FONT_PRETENDARD = "var(--font-pretendard)";
 const FONT_MONTSERRAT = "var(--font-montserrat), Arial, sans-serif";
@@ -509,7 +511,7 @@ export function PurchaseCustomizeStudio({
       const sales = video.listing.salesCount;
       const p = video.priceWon ?? 0;
       return {
-        cumulativeRevenueWon: p * sales,
+        cumulativeRevenueWon: toGemPrice(p) * sales,
         totalViews: Math.max(0, views),
         totalLikes: Math.max(0, Math.floor(views * 0.028)),
         growthPercent: 0,
@@ -521,6 +523,10 @@ export function PurchaseCustomizeStudio({
   const purchaseRemaining = clonesRemaining(purchaseCommerceMeta);
   const purchaseSoldOut =
     purchaseRemaining === 0 && isLimitedFamily(purchaseCommerceMeta.edition);
+  const [insufficientModal, setInsufficientModal] = useState<{
+    required: number;
+    balance: number;
+  } | null>(null);
 
   const [faceOptions, setFaceOptions] = useState<FacePickerOption[]>([]);
   const [draft, setDraft] = useState<CustomizeDraft | null>(null);
@@ -1861,7 +1867,7 @@ export function PurchaseCustomizeStudio({
               {purchasePriceWon > 0 ? (
                 <div className="text-center">
                   <span className="font-black tabular-nums tracking-tight text-[length:calc(36px_+_5pt)] text-white [html[data-theme='light']_&]:text-zinc-900">
-                    {Math.round(purchasePriceWon / 6).toLocaleString()}
+                    {toGemPrice(purchasePriceWon).toLocaleString()}
                     <span className="ml-1.5 font-extrabold text-[length:calc(22px_+_5pt)]">
                       💎
                     </span>
@@ -1873,9 +1879,12 @@ export function PurchaseCustomizeStudio({
                   videoId={video.id}
                   priceWon={purchasePriceWon}
                   disabled={!user || owned || !purchasePriceWon || purchaseSoldOut}
+                  onInsufficientCredits={(required, balance) =>
+                    setInsufficientModal({ required, balance })
+                  }
                   className={`${MYPAGE_OUTLINE_BTN_MD} w-full max-w-sm shrink-0 disabled:pointer-events-none disabled:opacity-45`}
                 >
-                  {`${Math.round(purchasePriceWon / 6).toLocaleString()}💎 구매`}
+                  {`${toGemPrice(purchasePriceWon).toLocaleString()}💎 구매`}
                 </CreditPurchaseButton>
               </div>
             </section>
@@ -3061,6 +3070,13 @@ export function PurchaseCustomizeStudio({
           )}
         </div>
       )}
+      {insufficientModal ? (
+        <InsufficientCreditsModal
+          required={insufficientModal.required}
+          balance={insufficientModal.balance}
+          onClose={() => setInsufficientModal(null)}
+        />
+      ) : null}
     </div>
   );
 }

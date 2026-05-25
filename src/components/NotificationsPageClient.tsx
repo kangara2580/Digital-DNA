@@ -1,6 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { formatListingPriceWon } from "@/lib/gemDisplay";
+import type { SiteLocale } from "@/lib/sitePreferences";
 
 type NotificationItem = {
   id: string;
@@ -21,6 +24,8 @@ type NotificationItem = {
 };
 
 export function NotificationsPageClient({ userId }: { userId: string }) {
+  const { locale } = useTranslation();
+  const loc = locale as SiteLocale;
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -160,10 +165,10 @@ export function NotificationsPageClient({ userId }: { userId: string }) {
               {notif.type === "PRICE_SUGGEST" && (
                 <div className="mt-2 flex items-center gap-2 text-sm">
                   <span className="text-zinc-500 line-through">
-                    {notif.oldPrice.toLocaleString()}원
+                    {formatListingPriceWon(loc, notif.oldPrice) ?? "—"}
                   </span>
                   <span className="text-[#FF2D8D] font-semibold">
-                    → {notif.newPrice.toLocaleString()}원
+                    → {formatListingPriceWon(loc, notif.newPrice) ?? "—"}
                   </span>
                 </div>
               )}

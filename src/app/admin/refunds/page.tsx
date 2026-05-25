@@ -4,12 +4,9 @@ import { AdminSubmitButton } from "@/components/AdminSubmitButton";
 import { approveRefundRequest, rejectRefundRequest } from "@/app/admin/commerce-actions";
 import { getAdminAccess } from "@/lib/adminAuth";
 import { prisma } from "@/lib/prisma";
+import { formatAdminGems } from "@/lib/gemDisplay";
 
 export const dynamic = "force-dynamic";
-
-function formatWon(value: number): string {
-  return `${new Intl.NumberFormat("ko-KR").format(value)}원`;
-}
 
 function formatDate(value: Date): string {
   return new Intl.DateTimeFormat("ko-KR", {
@@ -121,7 +118,7 @@ export default async function AdminRefundsPage() {
                           </p>
                         </td>
                         <td className="px-4 py-3 font-bold">
-                          {payment ? formatWon(payment.amountCents) : "-"}
+                          {payment ? formatAdminGems(payment.amountCents) : "-"}
                         </td>
                         <td className="px-4 py-3">
                           <span className={`rounded-full border px-2 py-1 text-xs font-black ${badgeClass(request.status)}`}>

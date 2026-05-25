@@ -41,7 +41,7 @@ export function purchaseReceiptHtml(params: {
 }): string {
   const amountStr =
     params.currency === "KRW"
-      ? `${params.amount.toLocaleString("ko-KR")}원`
+      ? `${params.amount.toLocaleString("ko-KR")}💎`
       : `$${(params.amount / 100).toFixed(2)}`;
 
   return layout(
@@ -102,7 +102,7 @@ export function refundApprovedHtml(params: {
 }): string {
   const amountStr =
     params.currency === "KRW"
-      ? `${params.amount.toLocaleString("ko-KR")}원`
+      ? `${params.amount.toLocaleString("ko-KR")}💎`
       : `$${(params.amount / 100).toFixed(2)}`;
 
   return layout(
@@ -124,7 +124,7 @@ export function saleNotificationHtml(params: {
 }): string {
   const fmt = (v: number) =>
     params.currency === "KRW"
-      ? `${v.toLocaleString("ko-KR")}원`
+      ? `${v.toLocaleString("ko-KR")}💎`
       : `$${(v / 100).toFixed(2)}`;
 
   return layout(
@@ -158,7 +158,7 @@ export function settlementNoticeHtml(params: {
 }): string {
   const amountStr =
     params.currency === "KRW"
-      ? `${params.amount.toLocaleString("ko-KR")}원`
+      ? `${params.amount.toLocaleString("ko-KR")}💎`
       : `$${(params.amount / 100).toFixed(2)}`;
 
   return layout(

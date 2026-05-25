@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, CreditCard } from "lucide-react";
 import { getAdminAccess } from "@/lib/adminAuth";
 import { prisma } from "@/lib/prisma";
+import { formatAdminGems } from "@/lib/gemDisplay";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ function formatDate(value: Date | null): string {
 
 function formatMoney(amount: number, currency: string): string {
   if (currency.toUpperCase() === "KRW") {
-    return `${new Intl.NumberFormat("ko-KR").format(amount)}원`;
+    return formatAdminGems(amount);
   }
   return `${(amount / 100).toFixed(2)} ${currency.toUpperCase()}`;
 }

@@ -17,6 +17,7 @@ import {
 } from "@/app/admin/actions";
 import { getAdminAccess } from "@/lib/adminAuth";
 import { getAdminMembersData } from "@/lib/adminMembersData";
+import { formatAdminGems } from "@/lib/gemDisplay";
 
 export const dynamic = "force-dynamic";
 
@@ -41,10 +42,6 @@ function formatDate(value: string | null): string {
 
 function formatNumber(value: number): string {
   return new Intl.NumberFormat("ko-KR").format(value);
-}
-
-function formatWon(value: number): string {
-  return `${formatNumber(value)}원`;
 }
 
 function shortId(value: string): string {
@@ -245,7 +242,7 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
                         </td>
                         <td className="px-4 py-3">
                           <p className="font-bold">{formatNumber(member.purchasesCount)}건</p>
-                          <p className="text-xs text-slate-500">{formatWon(member.purchasesTotal)}</p>
+                          <p className="text-xs text-slate-500">{formatAdminGems(member.purchasesTotal)}</p>
                         </td>
                         <td className="px-4 py-3">{formatNumber(member.jobsCount)}</td>
                         <td className="px-4 py-3">{formatNumber(member.reportsCount)}</td>
@@ -404,7 +401,7 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
                   empty="구매 기록이 없습니다."
                   rows={selected.recentPurchases.map((item) => ({
                     key: item.id,
-                    title: `${formatWon(item.price)} / ${item.status}`,
+                    title: `${formatAdminGems(item.price)} / ${item.status}`,
                     meta: `${shortId(item.videoId)} / ${formatDate(item.createdAt)}`,
                   }))}
                 />
@@ -435,7 +432,7 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
                   rows={selected.recentVideos.map((item) => ({
                     key: item.id,
                     title: `${item.title} / ${item.status}`,
-                    meta: `${formatWon(item.price)} / ${formatDate(item.createdAt)}`,
+                    meta: `${formatAdminGems(item.price)} / ${formatDate(item.createdAt)}`,
                   }))}
                 />
                 <DetailBlock

@@ -314,7 +314,7 @@ export function VideoDetailView({
       const sales = video.listing.salesCount;
       const p = video.priceWon ?? 0;
       return {
-        cumulativeRevenueWon: p * sales,
+        cumulativeRevenueWon: toGemPrice(p) * sales,
         totalViews: Math.max(0, views),
         totalLikes: Math.max(0, Math.floor(views * 0.028)),
         growthPercent: 0,

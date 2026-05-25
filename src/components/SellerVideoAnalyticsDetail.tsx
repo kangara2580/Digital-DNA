@@ -23,15 +23,13 @@ import {
 } from "@/lib/revenueDisplayTokens";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import type { SiteLocale } from "@/lib/sitePreferences";
-import { translate } from "@/lib/i18n/dictionaries";
+import { formatGemsLocale } from "@/lib/gemDisplay";
 import { localizeSellerVideoDetailSnapshot } from "@/lib/i18n/localizeSellerAnalytics";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DocumentTitleI18n } from "@/components/DocumentTitleI18n";
 
-function formatWon(n: number, locale: SiteLocale): string {
-  const locTag = locale === "en" ? "en-US" : "ko-KR";
-  const suffix = translate(locale, "analytics.suffixWon");
-  return `${Math.round(n).toLocaleString(locTag)}${suffix}`;
+function formatRevenueGems(n: number, locale: SiteLocale): string {
+  return formatGemsLocale(locale, Math.round(n));
 }
 
 function formatCompact(n: number, locale: SiteLocale): string {
@@ -207,7 +205,7 @@ export function SellerVideoAnalyticsDetail({ videoId, days, from, to }: Props) {
               {t("analytics.videoInsight.periodRevenue")}
             </p>
             <p className={`mt-1 text-[22px] font-extrabold tabular-nums ${revenueAmountClass}`}>
-              {formatWon(d.periodRevenueWon, locale)}
+              {formatRevenueGems(d.periodRevenueWon, locale)}
             </p>
             <p className="mt-1 text-[11px] text-zinc-500">
               {t("analytics.videoInsight.momRevenueCaption")}{" "}
@@ -286,7 +284,7 @@ export function SellerVideoAnalyticsDetail({ videoId, days, from, to }: Props) {
                       <div
                         className="w-full rounded-t-md bg-gradient-to-t from-reels-cyan/30 to-reels-cyan/75"
                         style={{ height: `${Math.max(10, h)}%` }}
-                        title={formatWon(pt.revenueWon, locale)}
+                        title={formatRevenueGems(pt.revenueWon, locale)}
                       />
                     </div>
                     <span className="text-[9px] font-semibold text-zinc-500">{pt.label}</span>

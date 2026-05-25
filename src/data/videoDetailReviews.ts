@@ -167,9 +167,9 @@ export const VIDEO_DETAIL_REVIEWS: Record<string, VideoDetailReview[]> = {
       id: "vr-mm-1",
       author: "@sora_kr",
       rating: R(5),
-      body: "300원대인데 야시장 무드가 생각보다 고퀄이에요. 쇼츠에 여러 번 재사용 중이에요.",
+      body: "보석 가격대가 낮은데 야시장 무드가 생각보다 고퀄이에요. 쇼츠에 여러 번 재사용 중이에요.",
       bodyEn:
-        "It’s in the ~₩300 range, but the night-market mood is higher quality than I expected. Reusing it a lot in Shorts.",
+        "It’s in the low gem-tier, but the night-market mood is higher quality than I expected. Reusing it a lot in Shorts.",
       dateLabel: "어제",
       dateLabelEn: "Yesterday",
       verifiedPurchase: true,

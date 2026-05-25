@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { normalizeStoredPurchaseGems } from "@/lib/gemPrice";
 import { resolveStoredProfileColor } from "@/lib/profileColorSpectrum";
 
 export const runtime = "nodejs";
@@ -102,13 +103,18 @@ export async function GET(request: Request) {
           p.avatar_kind AS "avatarKind",
           p.avatar_seed AS "avatarSeed",
           COUNT(pu.id)::bigint AS "salesCount",
-          COALESCE(SUM(pu.price), 0)::bigint AS "totalRevenue"
+          COALESCE(SUM(
+            CASE
+              WHEN v.price > 0 AND pu.price >= v.price THEN (pu.price + 3) / 6
+              ELSE pu.price
+            END
+          ), 0)::bigint AS "totalRevenue"
         FROM videos v
         INNER JOIN purchases pu ON pu.video_id = v.id AND pu.status = 'paid'
         LEFT JOIN profiles p ON p.user_id::text = v.seller_id
         WHERE 1 = 1
         ${purchaseTimeFilter}
-        GROUP BY v.id, v.title, v.seller_id, p.nickname, p.avatar_kind, p.avatar_seed, v.created_at
+        GROUP BY v.id, v.title, v.seller_id, p.nickname, p.avatar_kind, p.avatar_seed, v.created_at, v.price
         ${orderSql}
         LIMIT 10
       `);
@@ -125,33 +131,35 @@ export async function GET(request: Request) {
         },
       });
 
+      const videoIds = [...new Set(purchases.map((pu) => pu.videoId))];
+      const videos =
+        videoIds.length > 0
+          ? await prisma.video.findMany({
+              where: { id: { in: videoIds } },
+              select: { id: true, title: true, sellerId: true, price: true },
+            })
+          : [];
+      const videoById = new Map(videos.map((v) => [v.id, v]));
+
       const agg = new Map<
         string,
         { salesCount: number; totalRevenue: number; sellerId: string }
       >();
       for (const pu of purchases) {
+        const listingWon = videoById.get(pu.videoId)?.price ?? 0;
+        const gems = normalizeStoredPurchaseGems(pu.price, listingWon);
         const prev = agg.get(pu.videoId);
         if (!prev) {
           agg.set(pu.videoId, {
             salesCount: 1,
-            totalRevenue: pu.price,
+            totalRevenue: gems,
             sellerId: pu.sellerId,
           });
         } else {
           prev.salesCount += 1;
-          prev.totalRevenue += pu.price;
+          prev.totalRevenue += gems;
         }
       }
-
-      const videoIds = [...agg.keys()];
-      const videos =
-        videoIds.length > 0
-          ? await prisma.video.findMany({
-              where: { id: { in: videoIds } },
-              select: { id: true, title: true, sellerId: true },
-            })
-          : [];
-      const videoById = new Map(videos.map((v) => [v.id, v]));
 
       rows = [...agg.entries()].map(([videoId, stats]) => {
         const v = videoById.get(videoId);

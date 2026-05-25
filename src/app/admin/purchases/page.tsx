@@ -4,6 +4,7 @@ import { AdminSubmitButton } from "@/components/AdminSubmitButton";
 import { updatePurchaseStatus } from "@/app/admin/actions";
 import { getAdminAccess } from "@/lib/adminAuth";
 import { getAdminPurchasesData } from "@/lib/adminPurchasesData";
+import { formatAdminGems } from "@/lib/gemDisplay";
 
 export const dynamic = "force-dynamic";
 
@@ -26,10 +27,6 @@ function formatDate(value: string): string {
 
 function formatNumber(value: number): string {
   return new Intl.NumberFormat("ko-KR").format(value);
-}
-
-function formatWon(value: number): string {
-  return `${formatNumber(value)}원`;
 }
 
 function shortId(value: string): string {
@@ -118,7 +115,7 @@ export default async function AdminPurchasesPage({ searchParams }: PageProps) {
           </article>
           <article className="rounded-lg border border-slate-200 bg-white p-4">
             <p className="text-sm font-bold text-slate-500">누적 정상 결제액</p>
-            <p className="mt-2 text-2xl font-black">{formatWon(data.totalPaidAmount)}</p>
+            <p className="mt-2 text-2xl font-black">{formatAdminGems(data.totalPaidAmount)}</p>
           </article>
         </section>
 
@@ -185,7 +182,7 @@ export default async function AdminPurchasesPage({ searchParams }: PageProps) {
                       <p className="font-bold">{item.videoTitle || "제목 없음"}</p>
                       <p className="font-mono text-xs text-slate-400">{shortId(item.videoId)}</p>
                     </td>
-                    <td className="px-4 py-3 font-black">{formatWon(item.price)}</td>
+                    <td className="px-4 py-3 font-black">{formatAdminGems(item.price)}</td>
                     <td className="px-4 py-3">
                       <span className={`rounded-full border px-2 py-1 text-xs font-black ${badgeClass(item.status)}`}>
                         {item.status}

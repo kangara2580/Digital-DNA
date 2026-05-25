@@ -1,8 +1,9 @@
 import type { FeedVideo } from "@/data/videos";
+import { toGemPrice } from "@/lib/gemPrice";
 
 /** 인기순위 카드 하단 데모 지표 (실서비스는 API로 교체) */
 export type TrendingRankMetrics = {
-  /** 누적 수익(원) */
+  /** 누적 수익(보석) — 필드명 legacy, 값은 💎 단위 */
   cumulativeRevenueWon: number;
   /** 총 조회수 */
   totalViews: number;
@@ -12,7 +13,7 @@ export type TrendingRankMetrics = {
   growthPercent: number;
 };
 
-export const TRENDING_RANK_METRICS: Record<string, TrendingRankMetrics> = {
+const TRENDING_RANK_METRICS_WON: Record<string, TrendingRankMetrics> = {
   "1": {
     cumulativeRevenueWon: 12_480_000,
     totalViews: 2_842_000,
@@ -45,6 +46,14 @@ export const TRENDING_RANK_METRICS: Record<string, TrendingRankMetrics> = {
   },
 };
 
+/** 데모 고정 지표 — KRW 누적값을 보석으로 환산해 노출 */
+export const TRENDING_RANK_METRICS: Record<string, TrendingRankMetrics> = Object.fromEntries(
+  Object.entries(TRENDING_RANK_METRICS_WON).map(([id, m]) => [
+    id,
+    { ...m, cumulativeRevenueWon: toGemPrice(m.cumulativeRevenueWon) },
+  ]),
+);
+
 function hashToUnit(h: number, max: number): number {
   return h % max;
 }
@@ -62,7 +71,7 @@ function deriveMetricsFromRank(videoId: string, rankIndex: number): TrendingRank
   const likes = 2_000 + hashToUnit(seed >>> 16, 380_000);
   const growthRaw = hashToUnit(seed >>> 24, 121) - 35;
   return {
-    cumulativeRevenueWon: revenue,
+    cumulativeRevenueWon: toGemPrice(revenue),
     totalViews: views,
     totalLikes: likes,
     growthPercent: growthRaw,
@@ -102,7 +111,7 @@ export function getGridCardMetrics(video: FeedVideo): TrendingRankMetrics {
     const views = Math.max(0, video.listing.views ?? 0);
     const sales = Math.max(0, video.listing.salesCount ?? 0);
     return {
-      cumulativeRevenueWon: (video.priceWon ?? 0) * sales,
+      cumulativeRevenueWon: toGemPrice(video.priceWon ?? 0) * sales,
       totalViews: views,
       totalLikes: Math.max(0, Math.floor(views * 0.028)),
       growthPercent: 0,

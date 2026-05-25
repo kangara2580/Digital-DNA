@@ -3,7 +3,7 @@ import { SectionMoreLink } from "@/components/SectionMoreLink";
 import { ALL_MARKET_VIDEOS } from "@/data/videoCatalog";
 import { isMicroDna } from "@/data/videoCommerce";
 
-/** 300원 이하 Micro DNA — 세포처럼 촘촘한 그리드 */
+/** Micro DNA — 짧은 클립 촘촘 그리드 */
 export function MicroDnaExploreSection() {
   const micro = [...ALL_MARKET_VIDEOS]
     .filter(isMicroDna)
@@ -27,15 +27,15 @@ export function MicroDnaExploreSection() {
         >
           영감이 필요한 순간을{" "}
           <span className="text-reels-cyan [text-shadow:0_0_10px_rgba(0,242,234,0.28),0_0_4px_rgba(0,242,234,0.12)]">
-            100원
-          </span>
-          만 준비하세요~
+            가볍게
+          </span>{" "}
+          채워 보세요
         </h2>
 
         <div className="mt-4 flex flex-col gap-3 sm:mt-5 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
           <div className="min-w-0 text-left">
             <p className="max-w-2xl text-[15px] leading-relaxed text-zinc-500 sm:text-[16px]">
-              300원 이하 동영상만 모았어요.
+              짧고 임팩트 있는 클립만 촘촘히 모았어요.
             </p>
           </div>
           <SectionMoreLink

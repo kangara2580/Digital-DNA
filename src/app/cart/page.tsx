@@ -19,6 +19,7 @@ import type { SiteLocale } from "@/lib/sitePreferences";
 import { getVideoContentSource } from "@/lib/videoSourcePlatform";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { InsufficientCreditsModal } from "@/components/InsufficientCreditsModal";
+import { toGemPrice } from "@/lib/gemPrice";
 
 const cartOutlineBtn =
   "inline-flex shrink-0 items-center justify-center rounded-xl border border-white/30 bg-transparent px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/35 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
@@ -105,7 +106,7 @@ export default function CartPage() {
   const selectedTotalGems = useMemo(
     () =>
       selectedPayableItems.reduce(
-        (sum, { video }) => sum + Math.round((video.priceWon ?? 0) / 6),
+        (sum, { video }) => sum + toGemPrice(video.priceWon ?? 0),
         0,
       ),
     [selectedPayableItems],
@@ -297,7 +298,7 @@ export default function CartPage() {
               const metrics = getMetricsForVideoDetail(video.id);
               const priceLabel =
                 video.priceWon != null && video.priceWon > 0
-                  ? `${Math.round(video.priceWon / 6).toLocaleString(numLocale)}💎`
+                  ? `${toGemPrice(video.priceWon).toLocaleString(numLocale)}💎`
                   : null;
               return (
                 <li

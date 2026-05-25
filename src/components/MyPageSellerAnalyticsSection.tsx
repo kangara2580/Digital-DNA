@@ -27,6 +27,8 @@ import type { SiteLocale } from "@/lib/sitePreferences";
 import { translate } from "@/lib/i18n/dictionaries";
 import { localizeSellerAnalyticsSnapshot } from "@/lib/i18n/localizeSellerAnalytics";
 import { useTranslation } from "@/hooks/useTranslation";
+import { formatGemsLocale } from "@/lib/gemDisplay";
+import { toGemPrice } from "@/lib/gemPrice";
 
 type PeriodState =
   | { kind: "preset"; days: 7 | 28 | 90 }
@@ -57,10 +59,8 @@ function videoInsightHref(videoId: string, period: PeriodState): string {
   return `/mypage/analytics/video/${encodeURIComponent(videoId)}?days=${period.days}`;
 }
 
-function formatWon(n: number, locale: SiteLocale): string {
-  const locTag = locale === "en" ? "en-US" : "ko-KR";
-  const suffix = translate(locale, "analytics.suffixWon");
-  return `${Math.round(n).toLocaleString(locTag)}${suffix}`;
+function formatRevenueGems(n: number, locale: SiteLocale): string {
+  return formatGemsLocale(locale, Math.round(n));
 }
 
 function formatCompact(n: number, locale: SiteLocale): string {
@@ -148,7 +148,7 @@ function RevenueBars({
               <div
                 className="w-full rounded-t-md bg-gradient-to-t from-reels-crimson/35 to-[color:var(--reels-point)] [html[data-theme='light']_&]:from-[#FCEEF6] [html[data-theme='light']_&]:to-reels-crimson"
                 style={{ height: `${Math.max(8, h)}%` }}
-                title={formatWon(d.revenueWon, locale)}
+                title={formatRevenueGems(d.revenueWon, locale)}
               />
             </div>
             <span className="text-[12px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[13px]">
@@ -359,7 +359,7 @@ export function MyPageSellerAnalyticsSection() {
           label={t("analytics.kpiRevenue", { period: displaySnapshot.periodLabel })}
           value={
             <span className={revenueAmountClass}>
-              {formatWon(snapTotals.cumulativeRevenueWon, locale)}
+              {formatRevenueGems(snapTotals.cumulativeRevenueWon, locale)}
             </span>
           }
           sub={
@@ -389,7 +389,7 @@ export function MyPageSellerAnalyticsSection() {
           label={t("analytics.kpiAvgPrice")}
           value={
             snapTotals.avgSellingPrice > 0
-              ? formatWon(snapTotals.avgSellingPrice, locale)
+              ? formatGemsLocale(locale, toGemPrice(snapTotals.avgSellingPrice))
               : "—"
           }
           sub={t("analytics.kpiAvgPriceSub")}
@@ -639,7 +639,7 @@ export function MyPageSellerAnalyticsSection() {
                     {row.salesCount.toLocaleString(numLocale)}
                   </td>
                   <td className={`px-2 py-2.5 tabular-nums font-semibold ${revenueAmountClass}`}>
-                    {formatWon(row.cumulativeRevenueWon, locale)}
+                    {formatRevenueGems(row.cumulativeRevenueWon, locale)}
                   </td>
                   <td className="px-2 py-2.5 tabular-nums text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
                     {formatCompact(row.totalViews, locale)}

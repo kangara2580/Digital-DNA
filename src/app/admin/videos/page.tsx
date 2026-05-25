@@ -9,6 +9,7 @@ import {
 } from "@/app/admin/actions";
 import { getAdminAccess } from "@/lib/adminAuth";
 import { getAdminVideosData } from "@/lib/adminVideosData";
+import { formatAdminListingPriceWon } from "@/lib/gemDisplay";
 
 export const dynamic = "force-dynamic";
 
@@ -30,10 +31,6 @@ const navItems = [
   ["신고", "/admin/reports"],
   ["기록", "/admin#audit"],
 ];
-
-function formatWon(value: number): string {
-  return `${new Intl.NumberFormat("ko-KR").format(value)}원`;
-}
 
 function formatDate(value: string): string {
   const date = new Date(value);
@@ -206,7 +203,7 @@ export default async function AdminVideosPage({ searchParams }: PageProps) {
                     <StatusBadge status={item.status} />
                   </div>
                   <div className="flex flex-wrap gap-2 text-xs">
-                    <span className="rounded-md bg-slate-100 px-2 py-1 font-bold">{formatWon(item.price)}</span>
+                    <span className="rounded-md bg-slate-100 px-2 py-1 font-bold">{formatAdminListingPriceWon(item.price)}</span>
                     <span className="rounded-md bg-slate-100 px-2 py-1 font-bold">{item.category ?? "no category"}</span>
                     <span className="rounded-md bg-slate-100 px-2 py-1 font-bold">{formatDate(item.createdAt)}</span>
                   </div>

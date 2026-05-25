@@ -63,42 +63,53 @@ export function CreditPurchaseButton({
       }
 
       if (res.status === 402 || data?.error === "insufficient_credits") {
+        const required = data?.required ?? gemPrice;
+        const balance = data?.balance ?? 0;
         if (onInsufficientCredits) {
-          onInsufficientCredits(
-            data?.required ?? gemPrice,
-            data?.balance ?? 0,
-          );
+          onInsufficientCredits(required, balance);
         } else {
-          setError(`보석이 부족합니다. 필요: ${formatGems(data?.required ?? gemPrice)}`);
+          setError(
+            t("gems.insufficient.inline", {
+              required: formatGems(required),
+            }),
+          );
         }
         return;
       }
 
       if (res.status === 409) {
-        // Already purchased — redirect to studio
         router.push(`/create?videoId=${encodeURIComponent(videoId)}`);
         return;
       }
 
       if (!res.ok || !data?.ok) {
-        const msg = data?.error === "cannot_buy_own_video"
-          ? "자신의 영상은 구매할 수 없습니다."
-          : data?.error === "video_not_found"
-            ? "영상을 찾을 수 없습니다."
-            : "구매 처리 중 오류가 발생했습니다.";
+        const msg =
+          data?.error === "cannot_buy_own_video"
+            ? t("gems.purchase.errOwnVideo")
+            : data?.error === "video_not_found"
+              ? t("gems.purchase.errNotFound")
+              : t("gems.purchase.errGeneric");
         setError(msg);
         return;
       }
 
-      // Purchase successful — redirect to studio
       router.push(`/create?videoId=${encodeURIComponent(videoId)}`);
       router.refresh();
     } catch {
-      setError("네트워크 오류가 발생했습니다.");
+      setError(t("gems.purchase.errNetwork"));
     } finally {
       setLoading(false);
     }
-  }, [videoId, gemPrice, disabled, loading, onUnauthorized, onInsufficientCredits, router]);
+  }, [
+    videoId,
+    gemPrice,
+    disabled,
+    loading,
+    onUnauthorized,
+    onInsufficientCredits,
+    router,
+    t,
+  ]);
 
   return (
     <div className="space-y-2">
@@ -108,12 +119,16 @@ export function CreditPurchaseButton({
         onClick={handlePurchase}
         className={
           className ??
-          "h-11 w-full rounded-full bg-[#ff2f93] px-5 text-sm font-black text-white shadow-[0_12px_30px_rgba(255,47,147,0.28)] transition hover:bg-[#ff4ba3] disabled:cursor-wait disabled:bg-zinc-700"
+          "h-11 w-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-sm font-black text-white"
         }
       >
-        {loading ? "처리 중..." : children}
+        {loading ? `${t("gems.purchase.busy")}...` : children}
       </button>
-      {error ? <p className="text-center text-xs font-bold text-rose-300">{error}</p> : null}
+      {error ? (
+        <p className="text-center text-xs font-medium text-rose-400 [html[data-theme='light']_&]:text-rose-600">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

@@ -24,6 +24,7 @@ import {
 } from "@/app/admin/actions";
 import { getAdminAccess } from "@/lib/adminAuth";
 import { getAdminOperationsData } from "@/lib/adminOperationsData";
+import { formatAdminGems, formatAdminListingPriceWon } from "@/lib/gemDisplay";
 
 export const dynamic = "force-dynamic";
 
@@ -47,10 +48,6 @@ function formatDate(value: string | null): string {
     hour: "2-digit",
     minute: "2-digit",
   }).format(date);
-}
-
-function formatWon(value: number): string {
-  return `${new Intl.NumberFormat("ko-KR").format(value)}원`;
 }
 
 function shortId(value: string): string {
@@ -301,7 +298,7 @@ export default async function AdminPage() {
                     </div>
                     <div className="flex flex-wrap gap-2 text-xs">
                       <a href={item.src} target="_blank" rel="noreferrer" className="rounded-md border border-slate-200 px-2 py-1 font-bold text-slate-600">원본 열기</a>
-                      <span className="rounded-md bg-slate-100 px-2 py-1 font-bold">{formatWon(item.price)}</span>
+                      <span className="rounded-md bg-slate-100 px-2 py-1 font-bold">{formatAdminListingPriceWon(item.price)}</span>
                     </div>
                     {item.reason ? <p className="text-xs text-rose-600">사유: {item.reason}</p> : null}
                     <form action={updateAdminVideoDetails} className="relative grid gap-2 rounded-md border border-slate-200 bg-slate-50 p-3">
@@ -360,7 +357,7 @@ export default async function AdminPage() {
                   <div key={purchase.id} className="rounded-md border border-slate-200 p-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-bold">{formatWon(purchase.price)} / 영상 {purchase.videoId}</p>
+                        <p className="font-bold">{formatAdminGems(purchase.price)} / 영상 {purchase.videoId}</p>
                         <p className="mt-1 text-xs text-slate-500">구매자 {shortId(purchase.buyerId)} · 판매자 {shortId(purchase.sellerId)}</p>
                       </div>
                       <StatusBadge status={purchase.status} />

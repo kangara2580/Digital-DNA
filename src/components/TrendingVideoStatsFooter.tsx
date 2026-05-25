@@ -53,7 +53,7 @@ export function TrendingVideoStatsFooter({
   const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
   const useFullNumbers = fullNumberDisplay || revenueFullWon;
   const revenueDisplay = useMemo(() => {
-    const gems = Math.max(0, Math.round(metrics.cumulativeRevenueWon / 6));
+    const gems = Math.max(0, Math.floor(metrics.cumulativeRevenueWon));
     return `${gems.toLocaleString(fmt.numberLocale)}💎`;
   }, [metrics.cumulativeRevenueWon, fmt.numberLocale]);
   const viewsDisplay = useMemo(() => {
