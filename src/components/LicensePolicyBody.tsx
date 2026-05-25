@@ -3,8 +3,8 @@
 import { useSitePreferences } from "@/context/SitePreferencesContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { SiteLocale } from "@/lib/sitePreferences";
-import { LICENSE_ARTICLES_EN } from "@/lib/i18n/licensePolicyEn";
-import { LICENSE_ARTICLES_KO } from "@/lib/i18n/licensePolicyKo";
+import { LICENSE_ARTICLES_EN, LICENSE_EFFECTIVE_DATE_EN } from "@/lib/i18n/licensePolicyEn";
+import { LICENSE_ARTICLES_KO, LICENSE_EFFECTIVE_DATE_KO } from "@/lib/i18n/licensePolicyKo";
 import type { PrivacyBlock } from "@/lib/i18n/privacyPolicyKo";
 
 const artCls =
@@ -36,15 +36,24 @@ export function LicensePolicyBody() {
   const loc = locale as SiteLocale;
   const articles = loc === "en" ? LICENSE_ARTICLES_EN : LICENSE_ARTICLES_KO;
 
+  const effective =
+    loc === "en" ? LICENSE_EFFECTIVE_DATE_EN : LICENSE_EFFECTIVE_DATE_KO;
+
   return (
     <section className="space-y-8 px-2 pb-10 sm:px-0">
       <header className="px-1 py-2">
         <h1 className="text-[clamp(1.52rem,3.6vw,2.2rem)] font-extrabold tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
           {t("license.page.title")}
         </h1>
+        <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+          {t("license.page.updated", { date: effective })}
+        </p>
+        <p className="mt-3 text-[13px] leading-relaxed text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+          {t("license.page.disclaimer")}
+        </p>
       </header>
       {articles.map((article, idx) => (
-        <article key={idx} className={artCls}>
+        <article key={article.id ?? idx} id={article.id} className={`scroll-mt-24 ${artCls}`}>
           <h2 className={h2Cls}>{article.title}</h2>
           <div className="mt-0 space-y-0 [&>*:first-child]:mt-3">
             {article.blocks.map((b, i) => (

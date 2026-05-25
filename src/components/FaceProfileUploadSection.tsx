@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
@@ -308,6 +309,16 @@ export function FaceProfileUploadSection() {
       >
         {t("faceProfile.heading")}
       </h2>
+      <p className="mt-2 text-[13px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+        {t("faceProfile.legalNoticePrefix")}
+        <Link
+          href="/license#ai-face"
+          className="font-semibold text-reels-cyan underline underline-offset-2 hover:text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-[color:var(--reels-point)]"
+        >
+          {t("faceProfile.legalNoticeLink")}
+        </Link>
+        {t("faceProfile.legalNoticeSuffix")}
+      </p>
 
       {/* ① 빠른 등록 (AI) — 먼저 노출 */}
       <div className="mt-8 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-100">

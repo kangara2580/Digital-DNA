@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { GlobalLoading } from "@/components/GlobalLoading";
 import type { AdminAnalyticsData } from "@/lib/adminAnalytics";
 
 // ─── Types for gem transaction data ──────────────────────
@@ -205,9 +206,8 @@ export function AdminAnalyticsDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#FF2D8D] border-t-transparent" />
-        <span className="ml-3 text-sm text-slate-500">분석 데이터 로딩 중...</span>
+      <div className="flex justify-center py-20">
+        <GlobalLoading size="lg" label="분석 데이터 로딩 중…" />
       </div>
     );
   }

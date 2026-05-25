@@ -29,6 +29,7 @@ import { useVideoLike } from "@/hooks/useVideoLike";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import { formatGem } from "@/components/assets/assetsFormat";
+import { GemAmount } from "@/components/PaymentDiamondIcon";
 import { toGemPrice } from "@/lib/gemPrice";
 import type { SiteLocale } from "@/lib/sitePreferences";
 import { useVideoWishlistAction } from "@/hooks/useVideoWishlistAction";
@@ -117,20 +118,45 @@ function MarqueeCardPreview({ video }: { video: FeedVideo }) {
     reduceMotion,
   });
   const posterSrc = sanitizePosterSrc(video.poster);
+  const primeLocalPoster = useCallback(
+    (el: HTMLVideoElement) => {
+      if (!isLocal || reduceMotion) return;
+      const seek = () => {
+        if (!Number.isFinite(el.duration) || el.duration <= 0) return;
+        const t = Math.min(0.12, el.duration * 0.02);
+        if (el.currentTime < t - 0.001) el.currentTime = t;
+      };
+      if (el.readyState >= 1) seek();
+      else el.addEventListener("loadeddata", seek, { once: true });
+    },
+    [isLocal, reduceMotion],
+  );
   return (
     <div
-      className="absolute inset-0"
+      className="absolute inset-0 bg-zinc-900/80"
       onMouseEnter={isLocal ? localPb.onEnter : hover.onEnter}
       onMouseLeave={isLocal ? localPb.onLeave : hover.onLeave}
     >
+      {posterSrc ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={posterSrc}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
+        />
+      ) : null}
       <video
         ref={isLocal ? localPb.ref : hover.ref}
         className="absolute inset-0 h-full w-full object-cover"
-        poster={isLocal ? undefined : posterSrc}
+        poster={posterSrc}
         playsInline
         muted
-        preload="auto"
+        preload={isLocal ? "metadata" : "auto"}
         loop={false}
+        onLoadedData={(e) => primeLocalPoster(e.currentTarget)}
         onTimeUpdate={isLocal ? localPb.onTimeUpdate : hover.onTimeUpdate}
       >
         <source src={previewSrc} type="video/mp4" />
@@ -260,11 +286,11 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
           />
           {priceLabel ? (
             <div className="pointer-events-none absolute inset-x-0 top-0 z-[4] flex justify-center px-2 pb-8 pt-2.5 sm:px-3 sm:pb-10 sm:pt-3">
-              <span
-                className={`${videoCardPriceOnMediaClass} inline-block max-w-[min(100%,calc(100%-3.5rem))] truncate px-1 text-center text-[13px] font-bold tabular-nums text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.92),0_0_10px_rgba(0,0,0,0.5)] sm:max-w-[min(100%,calc(100%-4rem))] sm:text-sm ${hoverRevealPrice}`}
-              >
-                {priceLabel}
-              </span>
+              <GemAmount
+                value={priceLabel}
+                className={`${videoCardPriceOnMediaClass} inline-flex max-w-[min(100%,calc(100%-3.5rem))] justify-center px-1 text-center text-[13px] font-bold tabular-nums text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.92),0_0_10px_rgba(0,0,0,0.5)] sm:max-w-[min(100%,calc(100%-4rem))] sm:text-sm ${hoverRevealPrice}`}
+                iconClassName="h-3.5 w-3.5 shrink-0 text-white [filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.92))]"
+              />
             </div>
           ) : null}
           <div className={reelActionRailOuter}>

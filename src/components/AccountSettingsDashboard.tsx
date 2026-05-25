@@ -23,6 +23,7 @@ import {
 } from "@/lib/supabaseProfiles";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { updateAuthUserSafe } from "@/lib/supabaseAuthSerialize";
+import { GlobalLoading } from "@/components/GlobalLoading";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DocumentTitleI18n } from "@/components/DocumentTitleI18n";
 import { SettingsThemeSection } from "@/components/SettingsThemeSection";
@@ -33,6 +34,7 @@ import {
   ACCOUNT_PAGE_HEADER_CLASS,
   ACCOUNT_PAGE_MAIN_CLASS,
   ACCOUNT_PAGE_MENU_LABEL_CLASS,
+  ACCOUNT_PAGE_NAV_CLASS,
   ACCOUNT_PAGE_SECTION_CLASS,
   ACCOUNT_PAGE_TITLE_CLASS,
 } from "@/lib/accountSidebarLayout";
@@ -302,7 +304,7 @@ export function AccountSettingsDashboard() {
             <p className={ACCOUNT_PAGE_MENU_LABEL_CLASS}>
               {t("settings.menu")}
             </p>
-            <nav aria-label={t("settings.menu")} className="flex flex-col gap-0.5">
+            <nav aria-label={t("settings.menu")} className={ACCOUNT_PAGE_NAV_CLASS}>
               {SETTINGS_TAB_DEFS.map((item) => {
                 const active = item.id === currentTab;
                 return (
@@ -320,10 +322,8 @@ export function AccountSettingsDashboard() {
 
           <section className={ACCOUNT_PAGE_SECTION_CLASS}>
           {authLoading && !user ? (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-12 text-center [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/50">
-              <p className="text-[16px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-                {t("settings.loading")}
-              </p>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-12 [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/50">
+              <GlobalLoading size="lg" label={t("settings.loading")} />
             </div>
           ) : null}
           {!authLoading && !user && currentTab !== "theme" ? (

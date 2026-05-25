@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { GlobalLoading } from "@/components/GlobalLoading";
 import { PurchaseCustomizeStudio } from "@/components/PurchaseCustomizeStudio";
 import { MYPAGE_OUTLINE_BTN_MD } from "@/lib/mypageOutlineCta";
 import { resolveManualTikTokVideoForStudio } from "@/data/tiktokData";
@@ -115,11 +115,12 @@ export function CreateStudioPage() {
 
   if (!staticVideo && dbState === "loading") {
     return (
-      <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 rounded-2xl border border-white/10 bg-zinc-900/40 px-6 py-14 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm">
-        <Loader2 className="h-10 w-10 animate-spin text-reels-crimson" aria-hidden />
-        <p className="text-[14px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-          동영상 정보를 불러오는 중이에요…
-        </p>
+      <div className="min-h-[320px] rounded-2xl border border-white/10 bg-zinc-900/40 px-6 py-14 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm">
+        <GlobalLoading
+          size="xl"
+          label="동영상 정보를 불러오는 중이에요…"
+          className="text-zinc-400 [html[data-theme='light']_&]:text-zinc-600"
+        />
       </div>
     );
   }

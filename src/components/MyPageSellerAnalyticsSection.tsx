@@ -27,6 +27,7 @@ import type { SiteLocale } from "@/lib/sitePreferences";
 import { translate } from "@/lib/i18n/dictionaries";
 import { localizeSellerAnalyticsSnapshot } from "@/lib/i18n/localizeSellerAnalytics";
 import { useTranslation } from "@/hooks/useTranslation";
+import { GemAmount } from "@/components/PaymentDiamondIcon";
 import { formatGemsLocale } from "@/lib/gemDisplay";
 import { toGemPrice } from "@/lib/gemPrice";
 
@@ -358,9 +359,11 @@ export function MyPageSellerAnalyticsSection() {
           icon={TrendingUp}
           label={t("analytics.kpiRevenue", { period: displaySnapshot.periodLabel })}
           value={
-            <span className={revenueAmountClass}>
-              {formatRevenueGems(snapTotals.cumulativeRevenueWon, locale)}
-            </span>
+            <GemAmount
+              value={formatRevenueGems(snapTotals.cumulativeRevenueWon, locale)}
+              amountClassName={revenueAmountClass}
+              iconClassName="h-4 w-4 shrink-0 text-[color:var(--reels-point)]"
+            />
           }
           sub={
             <>
@@ -388,9 +391,14 @@ export function MyPageSellerAnalyticsSection() {
           icon={Gauge}
           label={t("analytics.kpiAvgPrice")}
           value={
-            snapTotals.avgSellingPrice > 0
-              ? formatGemsLocale(locale, toGemPrice(snapTotals.avgSellingPrice))
-              : "—"
+            snapTotals.avgSellingPrice > 0 ? (
+              <GemAmount
+                value={formatGemsLocale(locale, toGemPrice(snapTotals.avgSellingPrice))}
+                iconClassName="h-4 w-4 shrink-0 text-[color:var(--reels-point)]"
+              />
+            ) : (
+              "—"
+            )
           }
           sub={t("analytics.kpiAvgPriceSub")}
           accent="violet"
@@ -639,7 +647,11 @@ export function MyPageSellerAnalyticsSection() {
                     {row.salesCount.toLocaleString(numLocale)}
                   </td>
                   <td className={`px-2 py-2.5 tabular-nums font-semibold ${revenueAmountClass}`}>
-                    {formatRevenueGems(row.cumulativeRevenueWon, locale)}
+                    <GemAmount
+                      value={formatRevenueGems(row.cumulativeRevenueWon, locale)}
+                      amountClassName={revenueAmountClass}
+                      iconClassName="h-3.5 w-3.5 shrink-0 text-[color:var(--reels-point)]"
+                    />
                   </td>
                   <td className="px-2 py-2.5 tabular-nums text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
                     {formatCompact(row.totalViews, locale)}

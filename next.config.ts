@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
+  /** 상위 폴더 lockfile 때문에 workspace root가 어긋나는 경우 방지 */
+  outputFileTracingRoot: projectRoot,
   /**
    * dev 서버(.next)와 production build 산출물(.next-build)을 분리해
    * 동시/교차 실행 시 chunk·manifest 충돌(ENOENT, MODULE_NOT_FOUND)을 방지합니다.
@@ -32,18 +38,20 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "picsum.photos", pathname: "/**" },
     ],
   },
-  /** 브라우저 기본 요청 `/favicon.ico` → public에 ico 없을 때 404 방지 */
-  async redirects() {
+  async headers() {
     return [
       {
         source: "/favicon.ico",
-        destination: "/favicon.svg",
-        permanent: false,
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        ],
       },
-    ];
-  },
-  async headers() {
-    return [
+      {
+        source: "/favicon.svg",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        ],
+      },
       {
         source: "/(.*)",
         headers: [

@@ -12,6 +12,8 @@
     "dev:safari": "node scripts/dev-open-safari.mjs",
     "dna": "npm run dev",
     "dev:3001": "next dev -p 3001 -H 127.0.0.1",
+    "dev:lan": "node scripts/dev-lan.mjs",
+    "dev:mobile": "node scripts/dev-lan.mjs",
     "dev:turbo": "next dev --turbopack",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
@@ -47,6 +49,8 @@
     "twilio": "^6.0.0"
   },
   "devDependencies": {
+    "@fontsource/fredoka": "^5.2.10",
+    "@resvg/resvg-js": "^2.6.2",
     "@types/busboy": "^1.5.4",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.10.0",

@@ -13,9 +13,9 @@ export function toGemPrice(priceWon: number): number {
   return Math.round(priceWon / GEM_KRW_RATE);
 }
 
-/** Format gem amount with 💎 suffix for display. */
+/** Format gem amount (no emoji — pair with PaymentDiamondIcon). */
 export function formatGems(gems: number): string {
-  return `${gems.toLocaleString()}💎`;
+  return gems.toLocaleString();
 }
 
 /** Format gem amount with commas only (no emoji). */

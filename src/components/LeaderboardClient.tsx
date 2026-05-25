@@ -7,6 +7,7 @@ import { ProfileColorAvatar } from "@/components/ProfileColorAvatar";
 import { profileColorFromSeed } from "@/lib/profileColorSpectrum";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getExploreFormatters } from "@/lib/exploreLocaleFormat";
+import { GemAmount } from "@/components/PaymentDiamondIcon";
 import { formatGemsCompact } from "@/lib/gemDisplay";
 import { revenueAmountClass } from "@/lib/revenueDisplayTokens";
 
@@ -99,8 +100,18 @@ export function LeaderboardClient() {
       n: Math.max(0, value).toLocaleString(fmt.numberLocale),
     });
 
-  const metricValue = (item: LeaderboardItem, m: Metric): string =>
-    m === "revenue" ? formatRevenueValue(item.totalRevenue) : formatSalesValue(item.totalSales);
+  const renderMetricValue = (item: LeaderboardItem, m: Metric, rowFilled: boolean) => {
+    if (!rowFilled) return "—";
+    if (m === "revenue") {
+      return (
+        <GemAmount
+          value={formatRevenueValue(item.totalRevenue)}
+          iconClassName="h-4 w-4 shrink-0 text-[color:var(--reels-point)]"
+        />
+      );
+    }
+    return formatSalesValue(item.totalSales);
+  };
 
   const [metric, setMetric] = useState<Metric>("revenue");
   const [period, setPeriod] = useState<Period>("today");
@@ -151,7 +162,7 @@ export function LeaderboardClient() {
   const others = rankedItems.slice(3);
 
   return (
-    <div className="mx-auto w-full max-w-lg px-4 pb-24 pt-8 sm:max-w-xl sm:px-5 md:max-w-2xl md:pt-10">
+    <div className="mx-auto w-full max-w-lg px-4 pb-24 pt-[var(--mobile-top-float-pad)] sm:max-w-xl sm:px-5 md:max-w-2xl md:pt-10">
       <div
         className="pointer-events-none fixed inset-x-0 top-[var(--header-height,4.5rem)] z-0 h-44 max-h-[38vh] bg-[radial-gradient(ellipse_90%_85%_at_50%_-5%,rgba(255,255,255,0.06),transparent_62%)] [html[data-theme='light']_&]:bg-[radial-gradient(ellipse_90%_85%_at_50%_-5%,rgba(24,24,27,0.08),transparent_62%)]"
         aria-hidden
@@ -304,7 +315,7 @@ export function LeaderboardClient() {
                             : "text-zinc-50 [html[data-theme='light']_&]:text-zinc-900"
                         }`}
                       >
-                        {rowFilled ? metricValue(item, metric) : "—"}
+                        {renderMetricValue(item, metric, rowFilled)}
                       </p>
                     </div>
                   </article>
@@ -363,7 +374,7 @@ export function LeaderboardClient() {
                                 : "text-zinc-50 [html[data-theme='light']_&]:text-zinc-950"
                             }`}
                           >
-                            {rowFilled ? metricValue(item, metric) : "—"}
+                            {renderMetricValue(item, metric, rowFilled)}
                           </span>
                         </div>
                       </li>

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
+import { AraDualSpinLogo } from "@/components/AraDualSpinLogo";
+import { GlobalLoading } from "@/components/GlobalLoading";
 import { MyListingEditDialog } from "@/components/MyListingEditDialog";
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { VideoCard } from "@/components/VideoCard";
@@ -275,10 +277,12 @@ export function MyPageMyListingsSection() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center gap-2 text-[16px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-        <span>{t("listings.checkingAccount")}</span>
-      </div>
+      <GlobalLoading
+        size="sm"
+        inline
+        label={t("listings.checkingAccount")}
+        className="justify-start text-[16px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600"
+      />
     );
   }
 
@@ -300,10 +304,11 @@ export function MyPageMyListingsSection() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-16 text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        <Loader2 className="h-8 w-8 animate-spin text-[color:var(--reels-point)]" aria-hidden />
-        <p className="text-[16px]">{t("listings.loading")}</p>
-      </div>
+      <GlobalLoading
+        size="lg"
+        label={t("listings.loading")}
+        className="py-16 text-zinc-500 [html[data-theme='light']_&]:text-zinc-600"
+      />
     );
   }
 
@@ -422,7 +427,7 @@ export function MyPageMyListingsSection() {
           aria-label={t("listings.delete")}
         >
           {deleteBusy ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+            <AraDualSpinLogo size={14} className="shrink-0" />
           ) : (
             <Trash2 className="h-3.5 w-3.5" aria-hidden />
           )}

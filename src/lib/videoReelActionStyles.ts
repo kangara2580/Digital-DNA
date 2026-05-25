@@ -16,6 +16,10 @@ export const videoShortFormAspectClassName = "aspect-[9/16] w-full";
 /** 영상 위 텍스트·아이콘 (라이트에서 body `.text-white` 보정 예외) */
 export const videoCardPriceOnMediaClass = "video-card-price-on-media";
 export const videoCardDurationBadgeClass = "video-card-duration-badge";
+
+/** 몰·랭킹 카드 하단 크레딧 가격 — 호버 시 브랜드 핑크, 회색 pill 배경 없음 */
+export const videoCardMallPriceClass =
+  "video-card-mall-price shrink-0 text-right font-extrabold tabular-nums transition-colors duration-200 motion-reduce:transition-none text-zinc-50 [html[data-theme='light']_&]:text-zinc-950 group-hover:text-[color:var(--reels-point)]";
 export const reelsActionIconOnMediaClass = "reels-action-icon-on-media";
 
 /** 비활성 액션 아이콘 색 — 활성 시 브랜드 핑크 */

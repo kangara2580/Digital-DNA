@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#FFFFFF"/>
+  <g transform="translate(600 315)">
+    <g transform="translate(-206 -54)">
+      <image xlink:href="../brand/ara-brand-mark.png" x="0" y="0" width="104" height="104" preserveAspectRatio="xMidYMid meet"/>
+      <text x="116" y="52" fill="#18181B" font-family="Fredoka, ui-rounded, system-ui, sans-serif" font-size="104" font-weight="600" letter-spacing="2.08" dominant-baseline="central">ARA</text>
+    </g>
+  </g>
+</svg>

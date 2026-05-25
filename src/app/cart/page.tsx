@@ -19,6 +19,7 @@ import type { SiteLocale } from "@/lib/sitePreferences";
 import { getVideoContentSource } from "@/lib/videoSourcePlatform";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { InsufficientCreditsModal } from "@/components/InsufficientCreditsModal";
+import { GemAmount } from "@/components/PaymentDiamondIcon";
 import { toGemPrice } from "@/lib/gemPrice";
 
 const cartOutlineBtn =
@@ -70,6 +71,13 @@ export default function CartPage() {
     required: number;
     balance: number;
   } | null>(null);
+  const [gemBalance, setGemBalance] = useState<number | null>(null);
+  const [checkoutSuccess, setCheckoutSuccess] = useState<{
+    count: number;
+    totalGems: number;
+    firstVideoId: string;
+    skippedCount: number;
+  } | null>(null);
 
   useEffect(() => {
     const valid = new Set(builderItems.map((b) => b.key));
@@ -83,6 +91,31 @@ export default function CartPage() {
       return changed ? next : prev;
     });
   }, [builderItems]);
+
+  useEffect(() => {
+    if (!user) {
+      setGemBalance(null);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch("/api/me/wallet");
+        const data = (await res.json().catch(() => null)) as {
+          ok?: boolean;
+          balance?: number;
+        } | null;
+        if (!cancelled && res.ok && data?.ok && typeof data.balance === "number") {
+          setGemBalance(data.balance);
+        }
+      } catch {
+        if (!cancelled) setGemBalance(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const toggleKey = useCallback((key: string) => {
     setSelected((s) => {
@@ -101,15 +134,6 @@ export default function CartPage() {
   const selectedPayableItems = useMemo(
     () => selectedItems.filter(({ video }) => !hasPurchased(video.id)),
     [hasPurchased, selectedItems],
-  );
-
-  const selectedTotalGems = useMemo(
-    () =>
-      selectedPayableItems.reduce(
-        (sum, { video }) => sum + toGemPrice(video.priceWon ?? 0),
-        0,
-      ),
-    [selectedPayableItems],
   );
 
   const allKeys = useMemo(() => builderItems.map((b) => b.key), [builderItems]);
@@ -133,9 +157,19 @@ export default function CartPage() {
     setSelected(new Set());
   }, [selected, removeBuilderItemsByKeys]);
 
+  const payableGemsTotal = useMemo(
+    () =>
+      selectedPayableItems.reduce(
+        (sum, { video }) => sum + toGemPrice(video.priceWon ?? 0),
+        0,
+      ),
+    [selectedPayableItems],
+  );
+
   const onCheckoutPreflight = useCallback(async () => {
     if (selectedPayableItems.length === 0 || checkoutBusy) return;
     setCheckoutError(null);
+    setCheckoutSuccess(null);
     setCheckoutBusy(true);
     try {
       const res = await fetch("/api/videos/purchase-batch", {
@@ -182,6 +216,8 @@ export default function CartPage() {
       const purchasedIds = new Set(
         payload.purchased?.map((p) => p.videoId) ?? [],
       );
+      const purchasedList = payload.purchased ?? [];
+      const skippedCount = payload.skipped?.length ?? 0;
       const keysToRemove = selectedPayableItems
         .filter(({ video }) => purchasedIds.has(video.id))
         .map(({ key }) => key);
@@ -190,16 +226,32 @@ export default function CartPage() {
       }
       setSelected(new Set());
 
-      const firstPurchased = payload.purchased?.[0];
+      if (typeof payload.balance === "number") {
+        setGemBalance(payload.balance);
+      }
+
+      const firstPurchased = purchasedList[0];
       if (firstPurchased) {
-        window.location.href = `/create?videoId=${encodeURIComponent(firstPurchased.videoId)}`;
+        setCheckoutSuccess({
+          count: purchasedList.length,
+          totalGems: payload.totalGems ?? payableGemsTotal,
+          firstVideoId: firstPurchased.videoId,
+          skippedCount,
+        });
       }
     } catch {
       setCheckoutError(t("cart.checkout.networkPurchaseFail"));
     } finally {
       setCheckoutBusy(false);
     }
-  }, [checkoutBusy, openAuthModal, selectedPayableItems, removeBuilderItemsByKeys, t]);
+  }, [
+    checkoutBusy,
+    openAuthModal,
+    payableGemsTotal,
+    selectedPayableItems,
+    removeBuilderItemsByKeys,
+    t,
+  ]);
 
   const confirmClearCart = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -296,9 +348,9 @@ export default function CartPage() {
               const checked = selected.has(key);
               const videoContentSource = getVideoContentSource(video);
               const metrics = getMetricsForVideoDetail(video.id);
-              const priceLabel =
+              const priceGems =
                 video.priceWon != null && video.priceWon > 0
-                  ? `${toGemPrice(video.priceWon).toLocaleString(numLocale)}💎`
+                  ? toGemPrice(video.priceWon).toLocaleString(numLocale)
                   : null;
               return (
                 <li
@@ -355,10 +407,12 @@ export default function CartPage() {
                         >
                           {displayTitle(video)}
                         </Link>
-                        {priceLabel ? (
-                          <span className="shrink-0 rounded-md px-2 py-0.5 text-right text-[12px] font-extrabold tabular-nums text-zinc-50 transition-colors duration-200 sm:text-[13px] [html[data-theme='light']_&]:text-zinc-950">
-                            {priceLabel}
-                          </span>
+                        {priceGems ? (
+                          <GemAmount
+                            value={priceGems}
+                            className="shrink-0 text-[12px] font-extrabold tabular-nums text-zinc-50 sm:text-[13px] [html[data-theme='light']_&]:text-zinc-950"
+                            iconClassName="h-3.5 w-3.5 shrink-0 text-[color:var(--reels-point)]"
+                          />
                         ) : (
                           <span className="shrink-0 text-[11px] font-semibold text-zinc-500 sm:text-[12px]">
                             {t("cart.priceInquire")}
@@ -388,44 +442,125 @@ export default function CartPage() {
           </ul>
 
           <footer className="mt-8 border-t border-white/10 pt-6 [html[data-theme='light']_&]:border-zinc-200">
-            <div className="flex flex-wrap items-end justify-end gap-x-5 gap-y-2 sm:gap-x-6">
-              <div className="space-y-0.5 text-right">
-                <p className="text-[15px] font-semibold leading-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                  {t("cart.subtotalLabel")}
-                </p>
-                <p className="text-[14px] font-medium leading-tight text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                  {t("cart.selectedCount", { n: selected.size })}
-                </p>
-              </div>
-              <p
-                className="text-4xl font-extrabold tabular-nums tracking-tight text-zinc-100 sm:text-5xl [html[data-theme='light']_&]:text-zinc-900"
+            {checkoutSuccess ? (
+              <div
+                className="mx-auto max-w-lg rounded-2xl border border-emerald-400/35 bg-emerald-500/10 px-5 py-5 text-center [html[data-theme='light']_&]:border-emerald-300 [html[data-theme='light']_&]:bg-emerald-50"
+                role="status"
                 aria-live="polite"
-                aria-label={t("cart.totalAria", {
-                  amount: selectedTotalGems.toLocaleString(numLocale),
-                  n: selected.size,
-                })}
               >
-                {selectedTotalGems.toLocaleString(numLocale)}
-                💎
-              </p>
-            </div>
-            <div className="mt-6 flex justify-end">
-              <div className="flex max-w-[min(100%,32rem)] flex-col items-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => void onCheckoutPreflight()}
-                  disabled={selected.size === 0 || checkoutBusy}
-                  className="inline-flex shrink-0 rounded-full border border-white/15 bg-white/[0.06] px-10 py-3 text-[17px] font-bold text-zinc-200 transition hover:bg-white/[0.1] disabled:cursor-not-allowed disabled:text-zinc-500 disabled:opacity-90 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100 [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:bg-zinc-200 [html[data-theme='light']_&]:disabled:text-zinc-600"
-                >
-                  {checkoutBusy ? `${t("cart.checkout")}...` : t("cart.checkout")}
-                </button>
-                {checkoutError ? (
-                  <p className="text-right text-[12px] font-medium leading-relaxed text-[color:var(--reels-point)]">
-                    {checkoutError}
+                <p className="text-lg font-black text-emerald-200 [html[data-theme='light']_&]:text-emerald-800">
+                  {t("cart.checkout.successTitle")}
+                </p>
+                <p className="mt-2 text-[14px] leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
+                  {t("cart.checkout.successLead", {
+                    n: checkoutSuccess.count,
+                    gems: checkoutSuccess.totalGems.toLocaleString(numLocale),
+                  })}
+                </p>
+                {checkoutSuccess.skippedCount > 0 ? (
+                  <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
+                    {t("cart.checkout.partialSkip")}
                   </p>
                 ) : null}
+                <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center">
+                  <Link
+                    href={`/create?videoId=${encodeURIComponent(checkoutSuccess.firstVideoId)}`}
+                    className="inline-flex h-11 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-6 text-sm font-black text-white shadow-lg"
+                  >
+                    {t("cart.checkout.successStudio")}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setCheckoutSuccess(null)}
+                    className="inline-flex h-11 items-center justify-center rounded-full border border-white/20 px-6 text-sm font-bold text-zinc-300 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:text-zinc-700"
+                  >
+                    {t("cart.checkout.successStay")}
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
+                  <p className="text-[13px] font-medium text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                    {t("cart.balanceLabel")}
+                  </p>
+                  <p className="text-lg font-black tabular-nums text-amber-300 [html[data-theme='light']_&]:text-amber-700">
+                    {gemBalance != null ? (
+                      <GemAmount
+                        value={gemBalance.toLocaleString(numLocale)}
+                        iconClassName="h-4 w-4 shrink-0 text-[color:var(--reels-point)]"
+                      />
+                    ) : (
+                      "—"
+                    )}
+                  </p>
+                </div>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="space-y-0.5 sm:text-left">
+                    <p className="text-[15px] font-semibold leading-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+                      {t("cart.subtotalLabel")}
+                    </p>
+                    <p className="text-[14px] font-medium leading-tight text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
+                      {t("cart.selectedCount", { n: selected.size })}
+                      {selectedPayableItems.length !== selected.size
+                        ? ` · ${t("cart.payableCount", { n: selectedPayableItems.length })}`
+                        : ""}
+                    </p>
+                  </div>
+                  <p
+                    className="text-3xl font-extrabold tabular-nums tracking-tight text-zinc-100 sm:text-4xl md:text-5xl [html[data-theme='light']_&]:text-zinc-900"
+                    aria-live="polite"
+                    aria-label={t("cart.totalAria", {
+                      amount: payableGemsTotal.toLocaleString(numLocale),
+                      n: selectedPayableItems.length,
+                    })}
+                  >
+                    <GemAmount
+                      value={payableGemsTotal.toLocaleString(numLocale)}
+                      className="text-3xl font-extrabold sm:text-4xl md:text-5xl"
+                      iconClassName="h-[0.85em] w-[0.85em] shrink-0 text-[color:var(--reels-point)]"
+                    />
+                  </p>
+                </div>
+                <div className="mt-6 flex flex-col items-stretch gap-2 sm:items-end">
+                  <button
+                    type="button"
+                    onClick={() => void onCheckoutPreflight()}
+                    disabled={
+                      selected.size === 0 ||
+                      selectedPayableItems.length === 0 ||
+                      checkoutBusy
+                    }
+                    className="inline-flex h-12 w-full max-w-full shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[color:var(--reels-point)] to-[#ff7abf] px-6 text-[16px] font-black text-white shadow-[0_8px_28px_-10px_rgba(255,45,141,0.55)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-45 sm:px-10 sm:text-[17px] md:w-auto md:min-w-[14rem]"
+                  >
+                    {checkoutBusy
+                      ? t("cart.checkout.busy")
+                      : t("cart.checkout.gemsCta")}
+                  </button>
+                  {selected.size > 0 && selectedPayableItems.length === 0 ? (
+                    <p className="text-center text-[12px] font-medium text-zinc-500 sm:text-right [html[data-theme='light']_&]:text-zinc-600">
+                      {t("cart.checkout.allOwned")}
+                    </p>
+                  ) : selectedPayableItems.length === 0 ? (
+                    <p className="text-center text-[12px] font-medium text-zinc-500 sm:text-right [html[data-theme='light']_&]:text-zinc-600">
+                      {t("cart.checkout.noPayable")}
+                    </p>
+                  ) : gemBalance != null && gemBalance < payableGemsTotal ? (
+                    <p className="text-center text-[12px] font-medium text-amber-400 sm:text-right [html[data-theme='light']_&]:text-amber-700">
+                      {t("gems.insufficient.lead")}
+                    </p>
+                  ) : null}
+                  {checkoutError ? (
+                    <p
+                      className="text-center text-[12px] font-medium leading-relaxed text-[color:var(--reels-point)] sm:text-right"
+                      role="alert"
+                    >
+                      {checkoutError}
+                    </p>
+                  ) : null}
+                </div>
+              </>
+            )}
           </footer>
         </>
       )}

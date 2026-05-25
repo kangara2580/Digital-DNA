@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, CreditCard, Loader2, Lock, Shield } from "lucide-react";
+import { CheckCircle2, CreditCard, Lock, Shield } from "lucide-react";
+import { GlobalLoading } from "@/components/GlobalLoading";
 import {
   SUBSCRIPTION_CHECKOUT_PLANS,
   parsePlanKey,
@@ -169,14 +170,12 @@ export function SubscribeCheckoutFlow() {
     return (
       <>
         {checkoutHeader}
-        <div className="mx-auto flex max-w-md flex-col items-center px-4 py-20 text-center">
-        <Loader2
-          className="h-10 w-10 animate-spin text-reels-cyan"
-          aria-hidden
+        <div className="mx-auto max-w-md px-4 py-20 text-center">
+        <GlobalLoading
+          size="xl"
+          label="결제를 안전하게 처리 중입니다…"
+          className="[html[data-theme='light']_&]:text-zinc-900"
         />
-        <p className="mt-6 text-lg font-bold [html[data-theme='light']_&]:text-zinc-900">
-          결제를 안전하게 처리 중입니다…
-        </p>
         <p className="mt-2 text-[13px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
           창을 닫거나 새로고침하지 마세요.
         </p>

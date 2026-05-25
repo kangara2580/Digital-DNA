@@ -1,6 +1,7 @@
 "use client";
 
-import { Loader2, MoreVertical } from "lucide-react";
+import { MoreVertical } from "lucide-react";
+import { AraDualSpinLogo } from "@/components/AraDualSpinLogo";
 import { useRouter } from "next/navigation";
 import {
   useCallback,
@@ -27,6 +28,8 @@ type Props = {
   isDbSeller: boolean;
   initialVideos: FeedVideo[];
   initialMetricsByVideoId: Record<string, TrendingRankMetrics>;
+  /** 상세·탐색과 동일한 `?fromSeller=` 등 (기본: 판매자 피드 쿼리) */
+  detailHrefSuffix?: string;
 };
 
 export function SellerFeedListingsGrid({
@@ -34,6 +37,7 @@ export function SellerFeedListingsGrid({
   isDbSeller,
   initialVideos,
   initialMetricsByVideoId,
+  detailHrefSuffix,
 }: Props) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -55,6 +59,13 @@ export function SellerFeedListingsGrid({
   const isOwner = Boolean(
     !authLoading && user?.id && user.id === sellerId && isDbSeller,
   );
+
+  const videoDetailHref = (id: string) => {
+    const suffix =
+      detailHrefSuffix ??
+      `?fromSeller=${encodeURIComponent(sellerId)}`;
+    return `/video/${encodeURIComponent(id)}${suffix}`;
+  };
 
   useEffect(() => {
     setVideos(initialVideos);
@@ -192,7 +203,7 @@ export function SellerFeedListingsGrid({
                 preloadMode="metadata"
                 trendingRankCardPrice
                 className="h-full min-w-0"
-                detailHref={`/video/${encodeURIComponent(video.id)}?fromSeller=${encodeURIComponent(sellerId)}`}
+                detailHref={videoDetailHref(video.id)}
                 reelHoverRailLead={
                   isOwner ? (
                     <button
@@ -210,7 +221,7 @@ export function SellerFeedListingsGrid({
                       }}
                     >
                       {busy ? (
-                        <Loader2 className={`${reelActionIcon} animate-spin`} aria-hidden />
+                        <AraDualSpinLogo size={22} className={reelActionIcon} />
                       ) : (
                         <MoreVertical
                           className={reelActionIcon}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BRAND_PRIMARY_BUTTON_CLASS } from "@/lib/brandPrimaryButton";
 
 type PolarCheckoutResponse = {
   ok?: boolean;
@@ -71,7 +72,7 @@ export function PolarCheckoutButton({
         onClick={startCheckout}
         className={
           className ??
-          "h-11 w-full rounded-full bg-[#ff2f93] px-5 text-sm font-black text-white shadow-[0_12px_30px_rgba(255,47,147,0.28)] transition hover:bg-[#ff4ba3] disabled:cursor-wait disabled:bg-zinc-700"
+          `${BRAND_PRIMARY_BUTTON_CLASS} h-11 w-full px-5 text-[15px] disabled:cursor-wait`
         }
       >
         {loading ? "결제 준비 중..." : children}

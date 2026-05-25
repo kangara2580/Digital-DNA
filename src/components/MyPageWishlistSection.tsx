@@ -10,6 +10,7 @@ import { buildWishlistVideoLookup } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { GlobalLoading } from "@/components/GlobalLoading";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   feedOverlayCheckboxInputClass,
@@ -117,12 +118,11 @@ export function MyPageWishlistSection() {
             </Link>
           </div>
         ) : !hydrated ? (
-          <p
-            className="text-[16px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600"
-            aria-live="polite"
-          >
-            {t("common.loading")}
-          </p>
+          <GlobalLoading
+            size="md"
+            label={t("common.loading")}
+            className="py-8 text-zinc-500 [html[data-theme='light']_&]:text-zinc-600"
+          />
         ) : (
           <>
             <div className="mb-6 flex flex-wrap items-center gap-2">

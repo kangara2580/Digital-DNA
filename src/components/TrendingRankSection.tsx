@@ -11,28 +11,19 @@ import { type FeedVideo } from "@/data/videos";
 import { liveStatsKeyFromFeedVideo } from "@/lib/externalEmbed/parseUrl";
 import { TrendingVideoStatsFooter } from "./TrendingVideoStatsFooter";
 import { homeSectionHeadingH2ClassName } from "@/lib/homeSectionHeadingTypography";
+import { GlobalLoading } from "@/components/GlobalLoading";
 import { VideoCard } from "./VideoCard";
 import { useTranslation } from "@/hooks/useTranslation";
 
 function SkeletonGrid({ ariaLabel }: { ariaLabel: string }) {
   return (
     <div
-      className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
+      className="flex min-h-[14rem] w-full items-center justify-center py-10"
       role="status"
       aria-live="polite"
       aria-label={ariaLabel}
     >
-      {Array.from({ length: 10 }).map((_, i) => (
-        <div key={`skeleton-${i}`} className="relative">
-          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100/70">
-            <div className="aspect-[9/16] animate-pulse bg-zinc-800/70 [html[data-theme='light']_&]:bg-zinc-200" />
-            <div className="space-y-2 px-3 py-3">
-              <div className="h-3 w-3/4 animate-pulse rounded bg-zinc-700/80 [html[data-theme='light']_&]:bg-zinc-300" />
-              <div className="h-3 w-1/2 animate-pulse rounded bg-zinc-700/80 [html[data-theme='light']_&]:bg-zinc-300" />
-            </div>
-          </div>
-        </div>
-      ))}
+      <GlobalLoading size="lg" label={ariaLabel} />
     </div>
   );
 }
@@ -281,7 +272,7 @@ export function TrendingRankSection() {
 
           {!loading && visibleRowsData.length > 0 ? (
             <div
-              className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5"
+              className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-5"
               role="list"
               aria-label={t("home.trending.listAria")}
             >
@@ -330,7 +321,7 @@ export function TrendingRankSection() {
               type="button"
               onClick={showCollapse ? onCollapseToFirstRow : onExpandAllRows}
               disabled={showCollapse ? !canCollapse : !canExpand}
-              className="group inline-flex h-12 min-w-[280px] items-center justify-center bg-transparent px-0 text-white transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:text-zinc-800 sm:h-14 sm:min-w-[360px]"
+              className="group inline-flex h-12 w-full max-w-[220px] items-center justify-center bg-transparent px-0 text-white transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:text-zinc-800 sm:h-14 sm:max-w-[280px]"
               aria-label={showCollapse ? t("home.trending.collapseAria") : t("home.trending.expandAria")}
               title={showCollapse ? t("home.trending.collapseTitle") : t("home.trending.expandTitle")}
             >

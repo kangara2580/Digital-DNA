@@ -1,6 +1,7 @@
 "use client";
 
 import { PolarCheckoutButton } from "@/components/payments/PolarCheckoutButton";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { CreditPackKey } from "@/lib/polarConfig";
 
 export function CreditCheckoutButton({
@@ -10,12 +11,13 @@ export function CreditCheckoutButton({
   productKey: string;
   disabled?: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <PolarCheckoutButton
       packKey={productKey as CreditPackKey}
       disabled={disabled}
     >
-      이 패키지로 충전
+      {t("assets.pack.buy")}
     </PolarCheckoutButton>
   );
 }

@@ -5,6 +5,7 @@ import { DocumentTitleI18n } from "@/components/DocumentTitleI18n";
 import { MyPageSectionShell } from "@/components/MyPageSectionShell";
 import { formatCredits, formatWhen, formatWon, ledgerTypeLabel } from "@/components/assets/assetsFormat";
 import { useMeWallet } from "@/hooks/useMeWallet";
+import { GlobalLoading } from "@/components/GlobalLoading";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 import type { SiteLocale } from "@/lib/sitePreferences";
@@ -167,14 +168,14 @@ export function AssetsSettlementClient() {
                 </div>
               ))}
             </dl>
-          ) : (
-            <p className="mt-6 text-[15px] text-zinc-500">{walletLoading ? t("common.loading") : ""}</p>
-          )}
+          ) : walletLoading ? (
+            <GlobalLoading size="sm" label={t("common.loading")} className="mt-6 justify-start" />
+          ) : null}
         </div>
 
         <MyPageSectionShell title={t("assets.section.ledger.title")} description={t("assets.section.ledger.lead")}>
-          <div className="overflow-hidden rounded-xl border border-white/10 [html[data-theme='light']_&]:border-zinc-200">
-            <table className="min-w-full text-left text-[14px]">
+          <div className="overflow-x-auto rounded-xl border border-white/10 [html[data-theme='light']_&]:border-zinc-200">
+            <table className="min-w-[36rem] w-full text-left text-[14px]">
               <thead className="border-b border-white/10 bg-white/[0.03] text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-500">
                 <tr>
                   <th className="px-4 py-3 font-medium">{t("assets.col.date")}</th>
@@ -357,8 +358,8 @@ export function AssetsSettlementClient() {
             <h3 className="text-lg font-semibold text-zinc-50 [html[data-theme='light']_&]:text-zinc-900">
               {t("assets.payout.requestsTitle")}
             </h3>
-            <div className="mt-4 overflow-hidden rounded-xl border border-white/10 [html[data-theme='light']_&]:border-zinc-200">
-              <table className="min-w-full text-left text-[14px]">
+            <div className="mt-4 overflow-x-auto rounded-xl border border-white/10 [html[data-theme='light']_&]:border-zinc-200">
+              <table className="min-w-[28rem] w-full text-left text-[14px]">
                 <thead className="border-b border-white/10 bg-white/[0.03] text-zinc-400 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-500">
                   <tr>
                     <th className="px-4 py-3 font-medium">{t("assets.col.date")}</th>

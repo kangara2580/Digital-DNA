@@ -55,7 +55,14 @@ const filterGroupLabel =
 /** MainTopUserMenu 게스트 캡슐과 동일 셀 스타일 + 필터용 패딩 */
 const mallFilterCapsuleButtonClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} max-w-full min-w-0 gap-1.5 rounded-full px-2 text-[12px] font-bold leading-none sm:gap-2 sm:px-3 sm:text-[13px]`;
 
-export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
+export function CategoryClipsClient({
+  slug,
+  cardTarget = "detail",
+}: {
+  slug: CategorySlug;
+  /** `purchase` — 쇼핑몰: 카드 탭 시 구매(커스터마이즈) 플로우 */
+  cardTarget?: "detail" | "purchase";
+}) {
   const router = useRouter();
   const { t } = useTranslation();
   const label = t(`nav.cat.${slug}`);
@@ -195,9 +202,13 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
 
   const openExploreWatch = useCallback(
     (video: FeedVideo) => {
+      if (cardTarget === "purchase") {
+        router.push(`/create?videoId=${encodeURIComponent(video.id)}`);
+        return;
+      }
       router.push(`/video/${encodeURIComponent(video.id)}?from=${encodeURIComponent(slug)}`);
     },
-    [router, slug],
+    [cardTarget, router, slug],
   );
 
   /* ── 무한 스크롤 ── */
@@ -239,7 +250,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
 
   const renderMosaicGrid = (items: Array<{ video: FeedVideo; key: string }>) => (
     <div
-      className="grid grid-cols-2 gap-3 border border-white/10 p-3 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
+      className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 xl:grid-cols-5"
       role="list"
       aria-label={t("category.listAria", { cat: label })}
     >
@@ -464,7 +475,7 @@ export function CategoryClipsClient({ slug }: { slug: CategorySlug }) {
   return (
     <div className="min-h-screen bg-transparent text-zinc-100 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900">
       <div className="mx-auto max-w-[1800px]">
-        <main className="min-w-0 pt-3 sm:pt-4 [html[data-theme='light']_&]:bg-white">
+        <main className="min-w-0 pt-2 max-md:pt-1 sm:pt-4 [html[data-theme='light']_&]:bg-white">
           <h1 className="sr-only">{label}</h1>
           {toolbarEndHost ? createPortal(categoryFilterToolbar, toolbarEndHost) : null}
 

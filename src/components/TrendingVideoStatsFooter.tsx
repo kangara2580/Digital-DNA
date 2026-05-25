@@ -54,7 +54,7 @@ export function TrendingVideoStatsFooter({
   const useFullNumbers = fullNumberDisplay || revenueFullWon;
   const revenueDisplay = useMemo(() => {
     const gems = Math.max(0, Math.floor(metrics.cumulativeRevenueWon));
-    return `${gems.toLocaleString(fmt.numberLocale)}💎`;
+    return gems.toLocaleString(fmt.numberLocale);
   }, [metrics.cumulativeRevenueWon, fmt.numberLocale]);
   const viewsDisplay = useMemo(() => {
     if (!useFullNumbers) return fmt.formatViewCountRail(metrics.totalViews);

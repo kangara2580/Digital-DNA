@@ -11,6 +11,7 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import { formatGem } from "@/components/assets/assetsFormat";
+import { GemAmount } from "@/components/PaymentDiamondIcon";
 import { toGemPrice } from "@/lib/gemPrice";
 import type { SiteLocale } from "@/lib/sitePreferences";
 import { redirectToLoginStart } from "@/lib/authRequiredRedirect";
@@ -216,9 +217,11 @@ export function InspirationVideoCell({ video }: { video: FeedVideo }) {
         <p className="truncate text-[13px] font-medium leading-snug text-[var(--text-main)]">
           {displayTitle(video)}
         </p>
-        <p className="text-[13px] font-bold text-[var(--primary-color)]">
-          {priceLabel}
-        </p>
+        <GemAmount
+          value={priceLabel}
+          className="text-[13px] font-bold text-[var(--primary-color)]"
+          iconClassName="h-3.5 w-3.5 shrink-0 text-[color:var(--reels-point)]"
+        />
       </div>
     </div>
   );

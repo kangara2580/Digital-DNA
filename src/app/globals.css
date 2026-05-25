@@ -36,6 +36,8 @@
   --font-pretendard: "Pretendard", ui-sans-serif, system-ui, sans-serif;
   --reels-transition-page: 0.4s ease-in-out;
   --header-height: 220px;
+  /** 모바일 상단 플로팅(홈·검색·계정) — 본문·탐색 피드가 아이콘과 겹치지 않도록 */
+  --mobile-top-float-pad: max(3.75rem, calc(env(safe-area-inset-top, 0px) + 3.25rem));
   /** md+ 틱톡형 좌측 레일 — 본문·헤더 패딩과 동기화 */
   --reels-rail-w: 0px;
   /** 탐색 watch 세로 영상 최대 너비(9:16 비율은 ExploreReelSlide에서 유지) */
@@ -105,6 +107,12 @@
   color: #ffffff !important;
 }
 
+/* 브랜드 핑크 그라데이션 CTA — 라이트 body .text-white 보정 무시 */
+:root[data-theme="light"] body .brand-primary-cta,
+:root[data-theme="light"] body .brand-primary-cta.text-white {
+  color: #ffffff !important;
+}
+
 /* 핑크 검색 제출 버튼 — 돋보기 아이콘 라이트에서 흰색 유지 */
 :root[data-theme="light"] body button.reels-search-submit-tile {
   color: #ffffff !important;
@@ -144,16 +152,36 @@
   stroke: #ffffff !important;
 }
 
+/* 탐색·상세 영상 재생 오버레이 — 라이트 body .text-white 보정 무시, 흰 재생 아이콘 */
+:root[data-theme="light"] button.reel-video-play-overlay,
+:root[data-theme="light"] button.reel-video-play-overlay span,
+:root[data-theme="light"] button.reel-video-play-overlay svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* 탐색 릴 — 영상 위 제목·크리에이터 (라이트 body .text-white → 검정 보정 무시) */
+:root[data-theme="light"] .explore-reel-on-video-text,
+:root[data-theme="light"] .explore-reel-on-video-text.text-white,
+:root[data-theme="light"] .explore-reel-on-video-text.text-white\/90,
+:root[data-theme="light"] .explore-reel-on-video-text.text-white\/95 {
+  color: #ffffff !important;
+}
+
 /* 영상 카드 — 재생시간·호버 액션(라이트에서 body .text-white 보정 무시) */
 :root[data-theme="light"] .video-reel-media-root .video-card-duration-badge,
 :root[data-theme="light"] .video-reel-media-root .video-card-price-on-media {
   color: #ffffff !important;
 }
 
-/* 몰·그리드 카드 하단 가격 — 호버 시 영상 위와 동일하게 흰색 */
+/* 몰·그리드 카드 하단 가격 — 호버 시 브랜드 핑크, 회색 pill 배경 없음 */
 :root[data-theme="light"] .group:hover .video-card-mall-price,
-:root[data-theme="light"] .group:focus-within .video-card-mall-price {
-  color: #ffffff !important;
+:root[data-theme="light"] .group:focus-within .video-card-mall-price,
+:root[data-theme="dark"] .group:hover .video-card-mall-price,
+:root[data-theme="dark"] .group:focus-within .video-card-mall-price {
+  color: var(--reels-point) !important;
+  background-color: transparent !important;
 }
 
 :root[data-theme="light"] .video-reel-media-root button.reels-action-glass-btn {
@@ -328,14 +356,24 @@ html[data-theme="light"]::-webkit-scrollbar-thumb {
   }
 }
 
+/* 텍스트 드래그 선택 — 브랜드 핑크 배경 · 흰 글자 (다크·라이트 공통) */
 *::selection {
-  background-color: rgba(255, 45, 141, 0.42);
+  background-color: var(--reels-point);
   color: #ffffff;
 }
 
 *::-moz-selection {
-  background-color: rgba(255, 45, 141, 0.42);
+  background-color: var(--reels-point);
   color: #ffffff;
+}
+
+/* 라이트: body .text-white → 검정 보정보다 선택 하이라이트 우선 */
+:root[data-theme="light"] *::selection,
+:root[data-theme="light"] *::-moz-selection,
+:root[data-theme="light"] .highlight24-lock-white *::selection,
+:root[data-theme="light"] .highlight24-lock-white *::-moz-selection {
+  background-color: var(--reels-point) !important;
+  color: #ffffff !important;
 }
 
 /**
@@ -920,4 +958,41 @@ html[data-theme="light"] .trending-rank-ocean-bg {
 
 .studio-preview-native-video:fullscreen::backdrop {
   background: #000;
+}
+
+/* ARA 글로벌 로딩 — 이중 회전 (검은 삼각형 CW · 핑크 재생 CCW) */
+@keyframes ara-logo-spin-cw {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ara-logo-spin-ccw {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.ara-dual-spin-stage {
+  contain: layout style;
+  background: transparent;
+}
+
+.ara-dual-spin-logo {
+  transform-origin: 50% 50%;
+  backface-visibility: hidden;
+  will-change: transform;
+  animation: ara-logo-spin-cw 2.2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ara-dual-spin-logo {
+    animation: none;
+  }
 }

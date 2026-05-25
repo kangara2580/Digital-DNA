@@ -4,7 +4,7 @@ export type PrivacyBlock =
   | { type: "ul"; items: string[] }
   | { type: "sub"; text: string };
 
-export type PrivacyArticle = { title: string; blocks: PrivacyBlock[] };
+export type PrivacyArticle = { title: string; blocks: PrivacyBlock[]; id?: string };
 
 export const PRIVACY_ARTICLES_KO: PrivacyArticle[] = [
   {
@@ -67,7 +67,13 @@ export const PRIVACY_ARTICLES_KO: PrivacyArticle[] = [
         ],
       },
       { type: "p", text: "※ 카드 정보 등 민감 결제 정보는 회사가 직접 저장하지 않습니다." },
-      { type: "sub", text: "5. 외부 콘텐츠(URL) 정보" },
+      { type: "sub", text: "5. AI 얼굴 프로필·레퍼런스 이미지" },
+      {
+        type: "p",
+        text:
+          "AI 맞춤 편집·프로필 설정 시 이용자가 업로드한 얼굴 사진(정면·측면 등) 및 이를 처리한 파생 데이터가 수집·저장될 수 있습니다. 이는 서비스 제공·품질·안전 검수 목적이며, 약관 제17·18조의 업로드 제한(본인 또는 동의받은 얼굴만)을 준수해야 합니다.",
+      },
+      { type: "sub", text: "6. 외부 콘텐츠(URL) 정보" },
       { type: "p", text: "이용자가 외부 플랫폼 링크를 등록할 경우 다음 정보가 수집될 수 있습니다:" },
       {
         type: "ul",
@@ -160,15 +166,15 @@ export const PRIVACY_ARTICLES_KO: PrivacyArticle[] = [
     ],
   },
   {
-    title: "제 9 조 (크레딧 시스템 관련 정보)",
+    title: "제 9 조 (보석·크레딧 시스템 관련 정보)",
     blocks: [
       {
         type: "ul",
         items: [
-          "크레딧은 선불 충전 방식으로 제공됩니다.",
-          "구매한 크레딧은 계정에 유지되며 사용 시 차감됩니다.",
-          "크레딧 사용 내역은 서비스 내에서 관리됩니다.",
-          "크레딧은 환불 정책에 따라 제한될 수 있습니다.",
+          "보석(💎, 약관상 크레딧과 동일 개념)은 선불 충전 방식으로 제공됩니다.",
+          "구매·지급된 보석은 계정에 유지되며 사용 시 차감됩니다.",
+          "보석 사용·영상 구매 내역은 서비스 내에서 관리됩니다.",
+          "환불·청약철회는 약관 및 정책(/license)에 따릅니다.",
         ],
       },
     ],
@@ -199,7 +205,7 @@ export const PRIVACY_ARTICLES_KO: PrivacyArticle[] = [
       { type: "p", text: "회사는 개인정보 보호 관련 문의를 처리하기 위해 책임자를 지정합니다." },
       {
         type: "ul",
-        items: ["개인정보 보호 책임자: ARA 운영팀", "문의 이메일: support@ara.com (예시)"],
+        items: ["개인정보 보호 책임자: ARA 운영팀", "문의 이메일: support@ara.pink"],
       },
     ],
   },

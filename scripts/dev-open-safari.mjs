@@ -64,11 +64,20 @@ if (Number.isFinite(envPort) && envPort > 0) {
   nextArgs.push("-p", String(envPort));
 }
 
+const polyfillSelf = path.join(root, "scripts", "polyfill-self.cjs");
+const nodeOptions = [
+  process.env.NODE_OPTIONS?.trim(),
+  `--require=${polyfillSelf}`,
+]
+  .filter(Boolean)
+  .join(" ");
+
 const child = spawn(process.execPath, [nextCli, ...nextArgs], {
   stdio: ["inherit", "pipe", "pipe"],
   cwd: root,
   env: {
     ...process.env,
+    NODE_OPTIONS: nodeOptions,
     FORCE_COLOR: process.env.FORCE_COLOR ?? "1",
     // macOS + 대규모 워크스페이스에서 EMFILE(watch) 방지용 기본값.
     WATCHPACK_POLLING: process.env.WATCHPACK_POLLING ?? "true",

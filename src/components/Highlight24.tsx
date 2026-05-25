@@ -10,6 +10,7 @@ import { useAuthPromptModal } from "@/components/AuthPromptModalProvider";
 import { HomeMarqueeVideoCard } from "@/components/HomeMarqueeVideoCard";
 import { HomeStartCtaButton } from "@/components/HomeStartCtaButton";
 import { MainTopUserMenu } from "@/components/MainTopUserMenu";
+import { MobileTopFloatChrome } from "@/components/MobileTopFloatChrome";
 import { ReelsSearchField } from "@/components/ReelsSearchField";
 import {
   araHeroWordmarkClassName,
@@ -30,7 +31,7 @@ function HomeBestMarquee({ videos }: { videos: FeedVideo[] }) {
       aria-label={t("home.hero.marqueeAria")}
     >
       <div className="pr-6 pl-2 sm:pr-10 sm:pl-3 md:pr-16 md:pl-[max(0px,env(safe-area-inset-left))] lg:pr-[4.5rem] xl:pr-24">
-        <div className="home-best-marquee-track flex gap-1.5 sm:gap-2 md:gap-2.5">
+        <div className="home-best-marquee-track flex gap-0 sm:gap-2 md:gap-2.5">
           {loop.map((v, i) => (
             <HomeMarqueeVideoCard key={`${v.id}-${i}`} video={v} />
           ))}
@@ -98,16 +99,28 @@ export function Highlight24() {
         className="highlight24-hero-glow pointer-events-none absolute inset-0 hidden [html[data-theme='dark']_&]:block bg-[radial-gradient(ellipse_90%_60%_at_50%_-10%,rgba(255,45,141,0.09),transparent_55%)]"
         aria-hidden
       />
-      <div
-        className={`${MAIN_TOP_USER_FLOAT_BOX_CLASS} flex flex-row items-center gap-2 sm:gap-2 ${
-          authLoading ? "pointer-events-none opacity-50" : ""
-        }`}
-      >
-        <ReelsSearchField compact exploreWatchExpand q={searchQ} setQ={setSearchQ} />
-        <MainTopUserMenu />
+      <MobileTopFloatChrome>
+        <div
+          className={`flex shrink-0 flex-nowrap items-center justify-end gap-1.5 ${
+            authLoading ? "pointer-events-none opacity-50" : ""
+          }`}
+        >
+          <ReelsSearchField compact exploreWatchExpand q={searchQ} setQ={setSearchQ} />
+          <MainTopUserMenu />
+        </div>
+      </MobileTopFloatChrome>
+      <div className={`pointer-events-none ${MAIN_TOP_USER_FLOAT_BOX_CLASS}`}>
+        <div
+          className={`pointer-events-auto flex flex-row items-center gap-2 sm:gap-2 ${
+            authLoading ? "opacity-50" : ""
+          }`}
+        >
+          <ReelsSearchField compact exploreWatchExpand q={searchQ} setQ={setSearchQ} />
+          <MainTopUserMenu />
+        </div>
       </div>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-3xl -translate-y-2 flex-col items-center px-4 pb-4 pt-[max(0.25rem,calc(env(safe-area-inset-top)+3rem))] text-center motion-reduce:translate-y-0 sm:-translate-y-3 sm:px-6 sm:pb-5 sm:pt-[max(0.5rem,calc(env(safe-area-inset-top)+3.25rem))] motion-reduce:sm:translate-y-0">
+      <div className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-4 pb-4 pt-[var(--mobile-top-float-pad)] text-center sm:px-6 sm:pb-5 md:pt-[max(0.5rem,calc(env(safe-area-inset-top)+3.25rem))]">
         <h1 className={araHeroWordmarkClassName} style={araWordmarkFontStyle}>
           ARA
         </h1>

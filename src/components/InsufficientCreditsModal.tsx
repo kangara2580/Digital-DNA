@@ -2,6 +2,7 @@
 
 import { useEffect, useId } from "react";
 import { useRouter } from "next/navigation";
+import { GemAmount } from "@/components/PaymentDiamondIcon";
 import { formatGems } from "@/lib/gemPrice";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -59,19 +60,19 @@ export function InsufficientCreditsModal({
           <div className="flex items-center justify-between gap-3">
             <dt>{t("gems.insufficient.required")}</dt>
             <dd className="font-black tabular-nums text-white [html[data-theme='light']_&]:text-zinc-900">
-              {formatGems(required)}
+              <GemAmount value={formatGems(required)} iconClassName="h-4 w-4 shrink-0 text-[color:var(--reels-point)]" />
             </dd>
           </div>
           <div className="flex items-center justify-between gap-3">
             <dt>{t("gems.insufficient.balance")}</dt>
             <dd className="font-black tabular-nums text-amber-400 [html[data-theme='light']_&]:text-amber-600">
-              {formatGems(balance)}
+              <GemAmount value={formatGems(balance)} iconClassName="h-4 w-4 shrink-0 text-[color:var(--reels-point)]" />
             </dd>
           </div>
           <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-2.5 [html[data-theme='light']_&]:border-zinc-200">
             <dt>{t("gems.insufficient.shortage")}</dt>
             <dd className="font-black tabular-nums text-rose-400 [html[data-theme='light']_&]:text-rose-600">
-              {formatGems(shortage)}
+              <GemAmount value={formatGems(shortage)} iconClassName="h-4 w-4 shrink-0 text-[color:var(--reels-point)]" />
             </dd>
           </div>
         </dl>
@@ -83,7 +84,7 @@ export function InsufficientCreditsModal({
               onClose();
               router.push("/credits");
             }}
-            className="h-11 w-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-sm font-black text-white shadow-lg transition hover:shadow-amber-500/30 active:scale-[0.98] motion-reduce:active:scale-100"
+            className="h-11 w-full rounded-full bg-gradient-to-r from-[color:var(--reels-point)] to-[#ff7abf] text-sm font-black text-white shadow-[0_8px_28px_-10px_rgba(255,45,141,0.55)] transition hover:brightness-110 active:scale-[0.98] motion-reduce:active:scale-100"
           >
             {t("gems.insufficient.chargeCta")}
           </button>

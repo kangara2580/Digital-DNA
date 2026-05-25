@@ -61,8 +61,12 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: desc,
     icons: {
-      icon: "/favicon.svg",
-      shortcut: "/favicon.svg",
+      icon: [
+        { url: "/favicon.ico", sizes: "48x48" },
+        { url: "/favicon.svg?v=ara-brand-4", type: "image/svg+xml" },
+      ],
+      shortcut: "/favicon.ico",
+      apple: [{ url: "/apple-touch-icon.png?v=ara-brand-4", sizes: "180x180", type: "image/png" }],
     },
     ...socialMetadataFields(locale, titleDefault, desc),
   };

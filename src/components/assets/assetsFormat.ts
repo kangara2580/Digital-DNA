@@ -15,11 +15,11 @@ export function formatCredits(n: number, locale: SiteLocale): string {
 }
 
 export function formatWon(n: number, locale: SiteLocale): string {
-  return `${new Intl.NumberFormat(locale === "ko" ? "ko-KR" : "en-US").format(n)}💎`;
+  return new Intl.NumberFormat(locale === "ko" ? "ko-KR" : "en-US").format(n);
 }
 
 export function formatGem(n: number, locale: SiteLocale): string {
-  return `${new Intl.NumberFormat(locale === "ko" ? "ko-KR" : "en-US").format(n)}💎`;
+  return new Intl.NumberFormat(locale === "ko" ? "ko-KR" : "en-US").format(n);
 }
 
 export function ledgerTypeLabel(type: string, t: (k: string) => string): string {

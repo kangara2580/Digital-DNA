@@ -22,15 +22,17 @@ function availableAt(): Date {
  * Cart batch purchase — atomically purchase multiple videos with gems.
  */
 export async function POST(request: Request) {
-  try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json(
-        { ok: false, error: "login_required", loginUrl: "/login" },
-        { status: 401 },
-      );
-    }
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json(
+      { ok: false, error: "login_required", loginUrl: "/login" },
+      { status: 401 },
+    );
+  }
 
+  let totalGems = 0;
+
+  try {
     const body = (await request.json().catch(() => null)) as Body | null;
     const videoIds = body?.videoIds;
 
@@ -128,7 +130,7 @@ export async function POST(request: Request) {
       return { video, gemPrice, platformFee, sellerNet };
     });
 
-    const totalGems = purchaseItems.reduce((sum, item) => sum + item.gemPrice, 0);
+    totalGems = purchaseItems.reduce((sum, item) => sum + item.gemPrice, 0);
 
     // Check buyer balance
     const balance = await getUserCreditBalance(user.id);
@@ -320,8 +322,14 @@ export async function POST(request: Request) {
     const message = err instanceof Error ? err.message : "unknown_error";
 
     if (message === "insufficient_credits") {
+      const balance = await getUserCreditBalance(user.id);
       return NextResponse.json(
-        { ok: false, error: "insufficient_credits" },
+        {
+          ok: false,
+          error: "insufficient_credits",
+          required: totalGems,
+          balance,
+        },
         { status: 402 },
       );
     }

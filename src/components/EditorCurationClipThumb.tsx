@@ -7,6 +7,7 @@ import { useHoverInstantPreview } from "@/hooks/useHoverInstantPreview";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import { formatGem } from "@/components/assets/assetsFormat";
+import { GemAmount } from "@/components/PaymentDiamondIcon";
 import { toGemPrice } from "@/lib/gemPrice";
 import type { SiteLocale } from "@/lib/sitePreferences";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
@@ -63,9 +64,11 @@ export function EditorCurationClipThumb({ video, className }: Props) {
         {displayTitle(video)}
       </p>
       {video.priceWon != null ? (
-        <p className="mt-0.5 text-left text-[11px] font-semibold tabular-nums text-reels-cyan sm:text-[12px]">
-          {formatGem(toGemPrice(video.priceWon), locale as SiteLocale)}
-        </p>
+        <GemAmount
+          value={formatGem(toGemPrice(video.priceWon), locale as SiteLocale)}
+          className="mt-0.5 text-left text-[11px] font-semibold tabular-nums text-reels-cyan sm:text-[12px]"
+          iconClassName="h-3 w-3 shrink-0 text-[color:var(--reels-point)]"
+        />
       ) : null}
     </Link>
   );

@@ -33,12 +33,15 @@ const railIconActive =
 const railItemLabelBase =
   "max-w-[3.75rem] cursor-pointer text-center text-[0.625rem] font-medium leading-[1.2] tracking-tight transition-colors duration-200 group-hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:group-hover:text-zinc-950";
 
-/** 홈 마크 — 윤곽 필터가 img 박스 밖으로 펼쳐지므로 여백·약간 작은 렌더로 상하 클립 방지 */
+/** 홈 마크 — 레일 폭 안 최대(가로 여백 0.5rem). 필터 없음 → 잘림 없음. */
 const railHomeLogoLink =
-  "mx-auto inline-flex shrink-0 items-center justify-center overflow-visible rounded-xl bg-transparent p-1.5 transition-[opacity,transform,background-color] duration-200 hover:opacity-90 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:mx-0 [html[data-theme='light']_&]:w-full [html[data-theme='light']_&]:justify-center [html[data-theme='light']_&]:rounded-xl [html[data-theme='light']_&]:py-2 [html[data-theme='light']_&]:hover:bg-zinc-900/[0.04]";
+  "mx-auto inline-flex w-full max-w-full shrink-0 items-center justify-center overflow-visible rounded-xl bg-transparent p-0.5 transition-[opacity,transform,background-color] duration-200 hover:opacity-90 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:mx-0 [html[data-theme='light']_&]:justify-center [html[data-theme='light']_&]:rounded-xl [html[data-theme='light']_&]:py-1.5 [html[data-theme='light']_&]:hover:bg-zinc-900/[0.04]";
 
 const railHomeLogoImg =
-  "block h-8 w-8 max-w-full object-contain object-center select-none [filter:url(#reelsRailLogoOutlineDark)] [html[data-theme='light']_&]:[filter:url(#reelsRailLogoOutlineLight)] motion-reduce:filter-none";
+  "block size-[calc(var(--reels-rail-w)-0.5rem)] max-w-full shrink-0 object-contain object-center select-none";
+
+const railHomeLogoWrap =
+  "pointer-events-auto relative flex w-full shrink-0 flex-col items-center overflow-visible px-0.5 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1";
 
 type RailItem = {
   href: string;
@@ -145,10 +148,10 @@ export function ReelsLeftRail() {
           className="pointer-events-none fixed inset-y-0 left-0 z-[52] hidden w-[var(--reels-rail-w)] flex-col bg-transparent md:flex"
           aria-label={t("rail.aria.main")}
         >
-          <div className="pointer-events-auto relative flex w-full shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
+          <div className={railHomeLogoWrap}>
             <Link href="/" className={railHomeLogoLink} aria-label={t("rail.aria.home")}>
               <img
-                src="/brand/rail-home-logo.png"
+                src="/brand/ara-brand-mark.png"
                 alt=""
                 className={railHomeLogoImg}
                 draggable={false}
@@ -210,10 +213,10 @@ export function ReelsLeftRail() {
         className="fixed inset-y-0 left-0 z-[52] hidden w-[var(--reels-rail-w)] flex-col border-r border-white/[0.08] bg-reels-abyss/80 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[1px_0_0_rgba(0,0,0,0.04)] md:flex"
         aria-label={t("rail.aria.main")}
       >
-        <div className="relative flex w-full shrink-0 flex-col items-center px-1 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1">
+        <div className={railHomeLogoWrap}>
           <Link href="/" className={railHomeLogoLink} aria-label={t("rail.aria.home")}>
             <img
-              src="/brand/rail-home-logo.png"
+              src="/brand/ara-brand-mark.png"
               alt=""
               className={railHomeLogoImg}
               draggable={false}

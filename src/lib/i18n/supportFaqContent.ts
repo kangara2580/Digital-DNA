@@ -151,6 +151,21 @@ export const SUPPORT_FAQ_ITEMS: SupportFaqItem[] = [
     },
   },
   {
+    id: "face-deepfake",
+    popular: true,
+    category: "copyright",
+    question: {
+      ko: "다른 사람 얼굴을 AI 프로필·영상에 써도 되나요?",
+      en: "Can I use someone else's face in AI profile or videos?",
+    },
+    answer: {
+      ko:
+        "아니요. 본인 얼굴 또는 사전 동의·법적 허용이 있는 경우에만 업로드·AI 처리할 수 있습니다. 연예인·지인·미성년자 등 제3자 얼굴을 무단으로 쓰는 행위, 딥페이크·허위 합성 영상 제작·유포는 약관 제17·18조에서 금지하며 형사·민사 책임이 따를 수 있습니다. 자세한 내용은 /license 페이지를 확인해 주세요.",
+      en:
+        "No. Upload and process only your own face or faces you are legally authorized to use. Unauthorized use of celebrities, acquaintances, minors, or deepfakes is prohibited (Terms Arts. 17–18) and may lead to civil or criminal liability. See /license.",
+    },
+  },
+  {
     id: "delete-account",
     category: "account",
     question: { ko: "계정 삭제", en: "Account deletion" },

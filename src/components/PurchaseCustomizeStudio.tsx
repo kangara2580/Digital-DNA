@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { AraDualSpinLogo } from "@/components/AraDualSpinLogo";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import type { FeedVideo } from "@/data/videos";
@@ -51,6 +52,7 @@ import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import { useTranslation } from "@/hooks/useTranslation";
 import { translate } from "@/lib/i18n/dictionaries";
 import type { SiteLocale } from "@/lib/sitePreferences";
+import { GemAmount } from "@/components/PaymentDiamondIcon";
 import { toGemPrice } from "@/lib/gemPrice";
 
 const FONT_PRETENDARD = "var(--font-pretendard)";
@@ -1866,12 +1868,11 @@ export function PurchaseCustomizeStudio({
               </div>
               {purchasePriceWon > 0 ? (
                 <div className="text-center">
-                  <span className="font-black tabular-nums tracking-tight text-[length:calc(36px_+_5pt)] text-white [html[data-theme='light']_&]:text-zinc-900">
-                    {toGemPrice(purchasePriceWon).toLocaleString()}
-                    <span className="ml-1.5 font-extrabold text-[length:calc(22px_+_5pt)]">
-                      💎
-                    </span>
-                  </span>
+                  <GemAmount
+                    value={toGemPrice(purchasePriceWon).toLocaleString()}
+                    className="font-black tabular-nums tracking-tight text-[length:calc(36px_+_5pt)] text-white [html[data-theme='light']_&]:text-zinc-900"
+                    iconClassName="h-[0.6em] w-[0.6em] shrink-0 text-[color:var(--reels-point)]"
+                  />
                 </div>
               ) : null}
               <div className="flex w-full justify-center pt-1">
@@ -1884,7 +1885,7 @@ export function PurchaseCustomizeStudio({
                   }
                   className={`${MYPAGE_OUTLINE_BTN_MD} w-full max-w-sm shrink-0 disabled:pointer-events-none disabled:opacity-45`}
                 >
-                  {`${toGemPrice(purchasePriceWon).toLocaleString()}💎 구매`}
+                  {t("explore.rail.buy")}
                 </CreditPurchaseButton>
               </div>
             </section>
@@ -2392,7 +2393,7 @@ export function PurchaseCustomizeStudio({
                          >
                             {isFusionApplying ? (
                                <>
-                                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" fill="none" viewBox="0 0 24 24" aria-hidden><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                 <AraDualSpinLogo size={16} className="-ml-1 mr-2 shrink-0" />
                                  의상 적용 및 DNA 융합 중...
                                </>
                             ) : (
@@ -2593,7 +2594,7 @@ export function PurchaseCustomizeStudio({
                    >
                       {isKlingGenerating ? (
                           <>
-                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" fill="none" viewBox="0 0 24 24" aria-hidden><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            <AraDualSpinLogo size={16} className="-ml-1 mr-2 shrink-0" />
                             Task 전송 중...
                           </>
                       ) : (
@@ -2617,10 +2618,11 @@ export function PurchaseCustomizeStudio({
                     {klingJob && klingJob.status !== "succeeded" && klingJob.status !== "failed" && (
                          <div className="mt-2 rounded-xl border border-reels-cyan/30 bg-reels-cyan/5 p-5 sm:p-6 shadow-inner">
                            <div className="flex flex-col items-center justify-center gap-3 mb-6">
-                              <div className="relative w-16 h-16">
-                                <div className="absolute inset-0 border-4 border-white/10 rounded-full"></div>
-                                <div className="absolute inset-0 border-4 border-reels-cyan rounded-full border-t-transparent animate-spin"></div>
-                                <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-reels-cyan">{klingJob.progress}%</div>
+                              <div className="relative flex h-16 w-16 items-center justify-center">
+                                <AraDualSpinLogo size={64} />
+                                <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-reels-cyan">
+                                  {klingJob.progress}%
+                                </span>
                               </div>
                               <h3 className="text-[14px] font-bold text-zinc-100 flex items-center gap-2">
                                  AI 슈퍼컴퓨터가 프레임을 합성 중입니다...
@@ -2770,7 +2772,7 @@ export function PurchaseCustomizeStudio({
                 </button>
                 {saveStatus === "saving" ? (
                   <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-                    <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
+                    <AraDualSpinLogo size={14} className="shrink-0" />
                     저장 중…
                   </span>
                 ) : saveStatus === "saved" ? (
@@ -2942,7 +2944,7 @@ export function PurchaseCustomizeStudio({
                            <div className="flex-1 grid grid-cols-3 gap-3 w-full">
                               {[1, 2, 3].map(col => (
                                 <div key={col} className="aspect-[9/16] rounded-xl bg-[#1c1d21] flex items-center justify-center">
-                                   <div className="w-5 h-5 border-2 border-white/10 border-t-white/40 rounded-full animate-spin"></div>
+                                   <AraDualSpinLogo size={20} />
                                 </div>
                               ))}
                            </div>

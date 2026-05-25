@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { GlobalLoading } from "@/components/GlobalLoading";
 import { useStudioHistory } from "@/context/StudioHistoryContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { localizeApiError } from "@/lib/i18n/localizeApiError";
@@ -128,9 +128,8 @@ export function GenerationResultView({ jobId }: { jobId: string }) {
       </header>
 
       {phase === "loading" ? (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-black/30 py-20 text-zinc-400">
-          <Loader2 className="h-8 w-8 animate-spin text-reels-cyan/80" aria-hidden />
-          <p className="text-[13px]">{t("generation.loading")}</p>
+        <div className="rounded-2xl border border-white/10 bg-black/30 py-20 text-zinc-400">
+          <GlobalLoading size="lg" label={t("generation.loading")} />
         </div>
       ) : null}
 

@@ -79,9 +79,7 @@ function ExploreBrowseGrid({
     <div className="mx-auto max-w-[1800px] px-4 pb-20 pt-[max(3.75rem,1rem)] sm:px-6 md:pl-[calc(var(--reels-rail-w,0px)+1rem)] lg:px-8">
       <div
         className={
-          browseCardTarget === "purchase"
-            ? "grid grid-cols-2 gap-3 p-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
-            : "grid grid-cols-2 gap-3 border border-white/10 p-3 [html[data-theme='light']_&]:border-zinc-200 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
+          "grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-3 md:gap-4 lg:grid-cols-4 xl:grid-cols-5"
         }
         role="list"
         aria-label={t("explore.gridAria")}
@@ -293,7 +291,7 @@ function ExploreWatchReels({
      * 슬라이드(ExploreReelSlide)와 동일한 가로 기준: md 레일 inset + max-w 56rem + px-2/md:px-4.
      * 뷰포트 우측 고정(pr vw 계산) 대신 콘텐츠 열 안에서 정렬해 해상도가 커져도 가격 레일과 겹치지 않음.
      */
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[101] box-border flex justify-center md:pl-[var(--reels-rail-w)]">
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 top-[var(--mobile-top-float-pad)] z-[101] box-border hidden justify-center md:flex md:top-[var(--header-height,4.5rem)] md:pl-[var(--reels-rail-w)]">
       <div className="pointer-events-none flex h-full w-full max-w-[min(56rem,100%)] items-center justify-end px-2 sm:px-4 md:px-4">
         <div
           className={
@@ -335,11 +333,11 @@ function ExploreWatchReels({
 
   return (
     <>
-      {chevronRail}
+      <div className="hidden md:contents">{chevronRail}</div>
 
       <div
         ref={scrollRef}
-        className="explore-reels-feed no-scrollbar fixed inset-x-0 bottom-0 top-[var(--header-height,4.5rem)] z-[30] overflow-y-auto overflow-x-hidden overscroll-y-contain snap-y snap-mandatory"
+        className="explore-reels-feed no-scrollbar fixed inset-x-0 bottom-0 top-0 z-[30] overflow-y-auto overflow-x-hidden overscroll-y-contain snap-y snap-mandatory max-md:pb-[var(--mobile-bottom-nav-h,0px)] md:top-[var(--header-height,4.5rem)] md:pb-0"
         style={{ WebkitOverflowScrolling: "touch" }}
         role="feed"
         aria-label={t("explore.feedAria")}

@@ -13,6 +13,7 @@ import {
   USER_FAVORITE_LIKE_UPDATED_EVENT,
   type UserFavoriteLikeUpdatedDetail,
 } from "@/hooks/useVideoLike";
+import { GlobalLoading } from "@/components/GlobalLoading";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   feedOverlayCheckboxInputClass,
@@ -206,9 +207,11 @@ export function MyPageLikedVideosSection() {
           </Link>
         </div>
       ) : !hydrated || loading ? (
-        <p className="text-[16px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600" aria-live="polite">
-          {t("common.loading")}
-        </p>
+        <GlobalLoading
+          size="md"
+          label={t("common.loading")}
+          className="py-8 text-zinc-500 [html[data-theme='light']_&]:text-zinc-600"
+        />
       ) : (
         <>
           <div className="mb-6 flex flex-wrap items-center gap-2">

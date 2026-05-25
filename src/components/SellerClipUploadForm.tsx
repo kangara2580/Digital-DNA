@@ -4,9 +4,11 @@ import {
   AlertCircle,
   CheckCircle2,
   Film,
-  Loader2,
   Upload,
 } from "lucide-react";
+import Link from "next/link";
+import { AraDualSpinLogo } from "@/components/AraDualSpinLogo";
+import { GemAmount } from "@/components/PaymentDiamondIcon";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -612,7 +614,12 @@ export function SellerClipUploadForm() {
                   {t("sellForm.priceLabel")}
                   {price && Number(price) > 0 ? (
                     <span className="ml-2 text-xs font-normal text-zinc-400">
-                      = {Math.round(Number(price) / 6).toLocaleString()}💎
+                      ={" "}
+                      <GemAmount
+                        value={Math.round(Number(price) / 6).toLocaleString()}
+                        className="inline-flex text-xs font-normal text-zinc-400"
+                        iconClassName="h-3 w-3 shrink-0 text-[color:var(--reels-point)]"
+                      />
                     </span>
                   ) : null}
                 </label>
@@ -793,7 +800,14 @@ export function SellerClipUploadForm() {
           </div>
         ) : (
           <p className="text-[12px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-            {t("sellForm.termsNotice")}
+            {t("sellForm.termsNoticePrefix")}
+            <Link
+              href="/license#seller"
+              className="font-semibold text-reels-cyan underline underline-offset-2 hover:text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-[color:var(--reels-point)]"
+            >
+              {t("sellForm.termsNoticeLink")}
+            </Link>
+            {t("sellForm.termsNoticeSuffix")}
           </p>
         )}
         <button
@@ -802,7 +816,7 @@ export function SellerClipUploadForm() {
           className={`inline-flex w-full cursor-pointer items-center justify-center gap-2 ${MYPAGE_OUTLINE_BTN_MD} sm:w-auto sm:min-w-[10rem] ${BTN_DISABLED_GHOST}`}
         >
           {submitting ? (
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            <AraDualSpinLogo size={16} className="shrink-0" />
           ) : (
             <Upload className="h-4 w-4" aria-hidden />
           )}

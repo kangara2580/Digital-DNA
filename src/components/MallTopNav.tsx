@@ -1,8 +1,8 @@
 "use client";
 
-import { ChevronDown, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Home, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Fragment,
   useCallback,
@@ -24,8 +24,8 @@ import {
   TOP_NAV_ACCOUNT_CART_PILL_OUTER,
   topNavHeroCapsuleGlyphIconClass,
 } from "@/lib/topNavIconRing";
-import { SitePreferencesOverflowButton } from "@/components/SitePreferencesOverflowButton";
 import { MainTopUserMenu } from "@/components/MainTopUserMenu";
+import { MobileTopFloatChrome } from "@/components/MobileTopFloatChrome";
 import { ReelsSearchField } from "@/components/ReelsSearchField";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -47,7 +47,7 @@ const mallHeaderFilterTriggerClass = `${TOP_NAV_ACCOUNT_CART_PILL_CELL} max-w-fu
  * collapsed 검색(~2.75rem) + gap + 3칸 캡슐 + 펼침(×1.5) 대비 여유.
  */
 const mallToolbarReservedForFloatChromeClass =
-  "pr-[max(16.75rem,calc(env(safe-area-inset-right)+15.5rem))] sm:pr-[max(17.25rem,calc(env(safe-area-inset-right)+16rem))] md:pr-[max(16.5rem,calc(env(safe-area-inset-right)+15.25rem))]";
+  "max-md:pr-2 md:pr-[max(16.75rem,calc(env(safe-area-inset-right)+15.5rem))] lg:pr-[max(16.5rem,calc(env(safe-area-inset-right)+15.25rem))]";
 
 /** 카테고리 스크롤 좌우 화살표 — 헤더 h-11 라인 정렬 */
 const categoryScrollChevronBtnClass =
@@ -71,6 +71,7 @@ export function MallTopNav() {
   const headerRef = useRef<HTMLElement>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { t } = useTranslation();
   const isHomePage = pathname === "/";
   const isShopPage = pathname === "/shop";
@@ -86,17 +87,35 @@ export function MallTopNav() {
     pathname === "/mypage" || pathname.startsWith("/mypage/") || pathname === "/settings" || pathname.startsWith("/settings/");
   const isCartPage = pathname === "/cart";
   const isSellPage = pathname === "/sell";
+  const isSellerFeedPath = pathname.startsWith("/seller/");
   /** 탐색/카테고리: 메인에서 스크롤 내린 것과 같은 컴팩트 헤더를 즉시 적용 */
   const compactEffective =
     pathname === "/explore" || isShopPage || isCategoryPage || isVideoDetailPage;
   /** /explore 는 페이지가 watch로 시작 — 첫 프레임 false면 스티키 헤더·검색이 한 박자 늦게 바뀌며 레이아웃이 튐 */
-  const [isExploreWatchMode, setIsExploreWatchMode] = useState(() => {
-    if (typeof window === "undefined") {
-      return isExplorePath;
-    }
-    if (!isExplorePath) return false;
-    return new URLSearchParams(window.location.search).get("view") !== "browse";
-  });
+  const exploreViewBrowse = searchParams.get("view") === "browse";
+  const shopCategorySlug = isShopPage ? searchParams.get("cat") : null;
+  const shopActiveCategorySlug = shopCategorySlug ?? "best";
+  const categoryItemHref = useCallback(
+    (href: string) => {
+      if (!isShopPage) return href;
+      const slug = href.replace(/^\/category\//, "");
+      return `/shop?cat=${encodeURIComponent(slug)}`;
+    },
+    [isShopPage],
+  );
+  const categoryItemActive = useCallback(
+    (href: string) => {
+      if (isShopPage) {
+        const slug = href.replace(/^\/category\//, "");
+        return slug === shopActiveCategorySlug;
+      }
+      return pathname === href;
+    },
+    [isShopPage, pathname, shopActiveCategorySlug],
+  );
+  const [isExploreWatchMode, setIsExploreWatchMode] = useState(
+    () => isExplorePath && !exploreViewBrowse,
+  );
   const showCategoryNav = (isShopPage || isCategoryPage) && !isExploreWatchMode;
   const showAllCategoriesInline =
     (isShopPage || isCategoryPage) && !isExploreWatchMode;
@@ -110,7 +129,8 @@ export function MallTopNav() {
     isLeaderboardPath ||
     isMypagePath ||
     isCartPage ||
-    isSellPage;
+    isSellPage ||
+    isSellerFeedPath;
   const [topNavSearchQ, setTopNavSearchQ] = useState("");
   const [mounted, setMounted] = useState(false);
   const moreWrapRef = useRef<HTMLDivElement>(null);
@@ -191,26 +211,24 @@ export function MallTopNav() {
   }, []);
 
   useLayoutEffect(() => {
-    if (typeof document === "undefined") return;
     if (!isExplorePath) {
       setIsExploreWatchMode(false);
       return;
     }
-    let mode = document.documentElement.dataset.exploreMode;
-    if (mode !== "watch" && mode !== "browse") {
-      const wantWatch =
-        new URLSearchParams(window.location.search).get("view") !== "browse";
-      mode = wantWatch ? "watch" : "browse";
-      document.documentElement.dataset.exploreMode = mode;
+    const mode = document.documentElement.dataset.exploreMode;
+    if (mode === "watch" || mode === "browse") {
+      setIsExploreWatchMode(mode === "watch");
+      return;
     }
-    setIsExploreWatchMode(mode === "watch");
-  }, [isExplorePath, pathname]);
+    setIsExploreWatchMode(!exploreViewBrowse);
+  }, [isExplorePath, exploreViewBrowse, pathname]);
 
   useEffect(() => {
     const syncExploreMode = () => {
       if (typeof document === "undefined") return;
-      const isWatch = document.documentElement.dataset.exploreMode === "watch";
-      setIsExploreWatchMode(isWatch);
+      const mode = document.documentElement.dataset.exploreMode;
+      if (mode !== "watch" && mode !== "browse") return;
+      setIsExploreWatchMode(mode === "watch");
     };
     window.addEventListener("reels:explore-mode", syncExploreMode);
     return () => {
@@ -354,6 +372,15 @@ export function MallTopNav() {
   if (showFloatingChromeOnlyNav) {
     return (
       <Fragment>
+        <MobileTopFloatChrome>
+          <ReelsSearchField
+            compact
+            exploreWatchExpand
+            q={topNavSearchQ}
+            setQ={setTopNavSearchQ}
+          />
+          <MainTopUserMenu />
+        </MobileTopFloatChrome>
         <div className={`pointer-events-none ${MAIN_TOP_USER_FLOAT_BOX_CLASS}`}>
           <div className="pointer-events-auto flex flex-row items-center gap-2 sm:gap-2">
             <ReelsSearchField
@@ -363,11 +390,6 @@ export function MallTopNav() {
               setQ={setTopNavSearchQ}
             />
             <MainTopUserMenu />
-            {compactEffective ? (
-              <div className="md:hidden">
-                <SitePreferencesOverflowButton variant="topNav" />
-              </div>
-            ) : null}
           </div>
         </div>
       </Fragment>
@@ -398,12 +420,13 @@ export function MallTopNav() {
           aria-label={t("nav.category")}
         >
           {ITEMS.map((item) => {
-            const active = pathname === item.href;
+            const active = categoryItemActive(item.href);
             return (
               <Link
                 key={item.href}
-                href={item.href}
+                href={categoryItemHref(item.href)}
                 aria-current={active ? "page" : undefined}
+                scroll={isShopPage ? false : undefined}
                 className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} shrink-0 whitespace-nowrap px-3 py-[0.5625rem] text-[0.9375rem] sm:px-3.5 sm:py-[0.5625rem] sm:text-[1rem]`}
               >
                 {t(categoryNavKey(item.href))}
@@ -424,12 +447,13 @@ export function MallTopNav() {
         {compactEffective ? (
           <>
             {COMPACT_PRIMARY.map((item) => {
-              const active = pathname === item.href;
+              const active = categoryItemActive(item.href);
               return (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  href={categoryItemHref(item.href)}
                   aria-current={active ? "page" : undefined}
+                  scroll={isShopPage ? false : undefined}
                   className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} px-2.5 py-[0.4375rem] text-[0.875rem] sm:px-3 sm:py-[0.4375rem] sm:text-[0.9375rem]`}
                 >
                   {t(categoryNavKey(item.href))}
@@ -487,12 +511,13 @@ export function MallTopNav() {
                         aria-label={t("nav.categoryMore")}
                       >
                         {COMPACT_MORE.map((item) => {
-                          const active = pathname === item.href;
+                          const active = categoryItemActive(item.href);
                           return (
                             <Link
                               key={item.href}
-                              href={item.href}
+                              href={categoryItemHref(item.href)}
                               aria-current={active ? "page" : undefined}
+                              scroll={isShopPage ? false : undefined}
                               onClick={() => {
                                 cancelHoverClose();
                                 setMoreOpen(false);
@@ -516,12 +541,13 @@ export function MallTopNav() {
           </>
         ) : (
           ITEMS.map((item) => {
-            const active = pathname === item.href;
+            const active = categoryItemActive(item.href);
             return (
               <Link
                 key={item.href}
-                href={item.href}
+                href={categoryItemHref(item.href)}
                 aria-current={active ? "page" : undefined}
+                scroll={isShopPage ? false : undefined}
                 className={`${categoryPillClass} ${active ? categoryPillActiveClass : ""} ${easeLayout} px-2.5 py-[0.4375rem] text-[0.875rem] sm:px-3 sm:py-[0.4375rem] sm:text-[0.9375rem]`}
               >
                 {t(categoryNavKey(item.href))}
@@ -547,9 +573,18 @@ export function MallTopNav() {
 
   return (
     <Fragment>
+      <MobileTopFloatChrome>
+        <ReelsSearchField
+          compact
+          exploreWatchExpand
+          q={topNavSearchQ}
+          setQ={setTopNavSearchQ}
+        />
+        <MainTopUserMenu />
+      </MobileTopFloatChrome>
     <header
       ref={headerRef}
-      className={`sticky top-0 z-40 isolate [transform:translateZ(0)] ${
+      className={`sticky top-0 z-40 isolate [transform:translateZ(0)] max-md:top-[var(--mobile-top-float-pad)] ${
         isHomePage && !compactEffective
           ? "bg-black/55 backdrop-blur-0"
           : "bg-reels-abyss/90 backdrop-blur-sm [html[data-theme='light']_&]:bg-white/95"
@@ -626,23 +661,7 @@ export function MallTopNav() {
               <div
                 className={`relative z-20 flex w-full min-w-0 flex-row items-center gap-1.5 self-center overflow-visible sm:gap-2 ${mallToolbarReservedForFloatChromeClass}`}
               >
-                {isShopPage ? (
-                  <Link
-                    href="/category/best"
-                    aria-label={t("category.filter.button")}
-                    className={`${TOP_NAV_ACCOUNT_CART_PILL_OUTER} ${TOP_NAV_ACCOUNT_CART_PILL_GRID_SINGLE} relative shrink-0 self-center`}
-                  >
-                    <span className={mallHeaderFilterTriggerClass}>
-                      <SlidersHorizontal
-                        className={`${topNavHeroCapsuleGlyphIconClass()} shrink-0`}
-                        aria-hidden
-                      />
-                      <span className="max-w-[4.5rem] truncate sm:max-w-none">
-                        {t("category.filter.button")}
-                      </span>
-                    </span>
-                  </Link>
-                ) : isCategoryPage ? (
+                {isShopPage || isCategoryPage ? (
                   <div
                     id={MALL_CATEGORY_TOOLBAR_FILTER_ID}
                     className="flex min-h-[2.75rem] min-w-[5.75rem] shrink-0 items-center justify-center self-center sm:min-w-[6.25rem]"
@@ -675,11 +694,6 @@ export function MallTopNav() {
           setQ={setTopNavSearchQ}
         />
         <MainTopUserMenu />
-        {compactEffective ? (
-          <div className="md:hidden">
-            <SitePreferencesOverflowButton variant="topNav" />
-          </div>
-        ) : null}
       </div>
     </div>
     </Fragment>

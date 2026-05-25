@@ -62,7 +62,13 @@ export const PRIVACY_ARTICLES_EN: PrivacyArticle[] = [
         type: "p",
         text: "We do not store full card numbers or other sensitive payment credentials on our servers.",
       },
-      { type: "sub", text: "5. External platform (URL) information" },
+      { type: "sub", text: "5. AI face profile & reference images" },
+      {
+        type: "p",
+        text:
+          "When you set up an AI face profile or upload reference faces for customization, we may collect and store those images and derived processing data to run the Services, improve quality, and enforce safety rules. You may only upload your own face or faces you are authorized to use (see Terms Arts. 17–18).",
+      },
+      { type: "sub", text: "6. External platform (URL) information" },
       {
         type: "p",
         text: "When you register a link to an external platform, we may collect:",
@@ -188,15 +194,15 @@ export const PRIVACY_ARTICLES_EN: PrivacyArticle[] = [
     ],
   },
   {
-    title: "Article 9 (Credits)",
+    title: "Article 9 (Gems / credits)",
     blocks: [
       {
         type: "ul",
         items: [
-          "Credits are sold on a prepaid basis.",
-          "Purchased credits remain on your account until consumed.",
-          "Usage history is available inside the product.",
-          "Refunds follow the refund rules described in this policy and in our Terms & Policies.",
+          "Gems (💎, also called credits in our Terms) are sold on a prepaid basis.",
+          "Purchased or granted gems remain on your account until consumed.",
+          "Usage and video purchase history are available inside the product.",
+          "Refunds follow Terms & Policies (/license) and the refund section of this policy.",
         ],
       },
     ],
@@ -233,7 +239,7 @@ export const PRIVACY_ARTICLES_EN: PrivacyArticle[] = [
       { type: "p", text: "Questions about privacy can be directed to our privacy contact:" },
       {
         type: "ul",
-        items: ["Privacy officer: ARA Operations", "Email: support@ara.com (example)"],
+        items: ["Privacy officer: ARA Operations", "Email: support@ara.pink"],
       },
     ],
   },

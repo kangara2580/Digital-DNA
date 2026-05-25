@@ -1,13 +1,9 @@
-import { SkeletonPageHeader, SkeletonTable, SkeletonSidebar } from "@/components/PageSkeleton";
+import { PageLoadingShell } from "@/components/GlobalLoading";
 
 export default function AdminLoading() {
   return (
-    <div className="flex min-h-screen gap-6 p-6">
-      <SkeletonSidebar />
-      <div className="flex-1">
-        <SkeletonPageHeader />
-        <SkeletonTable rows={8} />
-      </div>
+    <div className="mx-auto flex max-w-6xl gap-8 px-4 py-8">
+      <PageLoadingShell className="w-full" />
     </div>
   );
 }

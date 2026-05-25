@@ -6,6 +6,7 @@ import {
   ShoppingBag,
   ShoppingCart,
   TrendingUp,
+  Play,
   Volume2,
   VolumeX,
 } from "lucide-react";
@@ -31,7 +32,11 @@ import { safePlayVideo } from "@/lib/safeVideoPlay";
 import { sellerProfileHrefFromVideo } from "@/lib/sellerProfile";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { getExternalLiveStatsPageUrl } from "@/lib/externalEmbed/playerUrls";
-import { explorePurchaseButtonClass } from "@/lib/explorePurchaseButtonClass";
+import {
+  explorePurchaseButtonClass,
+  explorePurchaseButtonMobileClass,
+} from "@/lib/explorePurchaseButtonClass";
+import { PaymentDiamondIcon } from "@/components/PaymentDiamondIcon";
 import {
   EXPLORE_RAIL_ACTION_BTN,
   EXPLORE_RAIL_ACTION_BTN_ACTIVE_TINT,
@@ -39,7 +44,6 @@ import {
   EXPLORE_RAIL_ACTION_ICON_FILLED,
 } from "@/lib/exploreRailActionTokens";
 import {
-  revenueAmountClass,
   revenueTrendDeltaGlyphClass,
   revenueTrendDownClass,
   revenueTrendUpClass,
@@ -48,7 +52,6 @@ import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
 import { getVideoContentSource } from "@/lib/videoSourcePlatform";
 import { getExploreFormatters } from "@/lib/exploreLocaleFormat";
-import { formatGemsLocale } from "@/lib/gemDisplay";
 import { toGemPrice } from "@/lib/gemPrice";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
@@ -80,11 +83,66 @@ const railExploreBuyButtonClass = explorePurchaseButtonClass;
 const railStatValueWhite =
   "text-[14px] font-semibold tabular-nums text-white [html[data-theme='light']_&]:text-zinc-900";
 
+/** 모바일 탐색 — 아이콘 위 · Compact 숫자 아래 (#B3B3B3 톤) */
+const reelMobileStatValueClass =
+  "text-[11px] font-semibold tabular-nums text-[#B3B3B3]/90 [html[data-theme='light']_&]:text-zinc-500/85";
+
+function ReelMobileMetricStack({
+  icon,
+  value,
+  "aria-label": ariaLabel,
+}: {
+  icon: React.ReactNode;
+  value: string;
+  "aria-label"?: string;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-0.5" aria-label={ariaLabel}>
+      <span className="flex h-8 w-8 items-center justify-center text-white/85 [&_svg]:h-[20px] [&_svg]:w-[20px] [html[data-theme='light']_&]:text-zinc-600">
+        {icon}
+      </span>
+      <span className={reelMobileStatValueClass}>{value}</span>
+    </div>
+  );
+}
+
+function ReelMobileRevenueMetric({
+  value,
+  revenueUp,
+  "aria-label": ariaLabel,
+}: {
+  value: string;
+  revenueUp: boolean;
+  "aria-label"?: string;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-0.5" aria-label={ariaLabel}>
+      <span className="flex flex-col items-center justify-center text-white/85">
+        <TrendingUp strokeWidth={2.25} className="h-[18px] w-[18px] shrink-0" aria-hidden />
+        <span
+          className={`${revenueTrendDeltaGlyphClass} mt-0.5 text-[10px] font-bold leading-none ${
+            revenueUp ? revenueTrendUpClass : revenueTrendDownClass
+          }`}
+          aria-hidden
+        >
+          {revenueUp ? "▲" : "▼"}
+        </span>
+      </span>
+      <span className={reelMobileStatValueClass}>{value}</span>
+    </div>
+  );
+}
+
+/** TikTok형 — 아이콘 + 숫자(선택) */
+const reelMobileActionColClass =
+  "flex flex-col items-center gap-0.5 border-0 bg-transparent p-0 text-white/90 transition active:scale-95 [html[data-theme='light']_&]:text-zinc-800";
+
 function ReelExploreStatLine({
   icon,
   iconAdornment,
   value,
   valueClassName,
+  valueColClassName = railExploreStatValueCol,
   as = "div",
   onClick,
   "aria-label": ariaLabel,
@@ -94,6 +152,7 @@ function ReelExploreStatLine({
   iconAdornment?: React.ReactNode;
   value: string;
   valueClassName: string;
+  valueColClassName?: string;
   as?: "div" | "button";
   onClick?: () => void;
   "aria-label"?: string;
@@ -112,7 +171,7 @@ function ReelExploreStatLine({
           {iconAdornment ?? <span className="block w-3" />}
         </span>
       </span>
-      <span className={`${railExploreStatValueCol} ${valueClassName}`}>{value}</span>
+      <span className={`${valueColClassName} ${valueClassName}`}>{value}</span>
     </>
   );
   if (as === "button" && onClick) {
@@ -235,10 +294,13 @@ function ReelDesktopRail({
   video,
   sidebarMetrics,
   className,
+  mobileOverlay = false,
 }: {
   video: FeedVideo;
   sidebarMetrics: ExploreReelSidebarMetrics;
   className?: string;
+  /** 모바일: 영상 위 우측 오버레이(하단 텍스트 바 대신) */
+  mobileOverlay?: boolean;
 }) {
   const router = useRouter();
   const dopamine = useDopamineBasket();
@@ -364,9 +426,114 @@ function ReelDesktopRail({
   const revenueUp = rankMetrics.growthPercent >= 0;
 
   const revRounded = Math.round(Math.max(0, rankMetrics.cumulativeRevenueWon));
-  const revDisplay = formatGemsLocale(locale, revRounded);
+  const revAriaVal = revRounded.toLocaleString(fmt.numberLocale);
+
+  if (mobileOverlay) {
+    const revNums = fmt.formatCompactCount(revRounded);
+    const viewsStr = fmt.formatCompactCount(displayedViews);
+    const likesStr = fmt.formatCompactCount(displayedLikeTotal);
+    const salesStr = fmt.formatCompactCount(meta.salesCount);
+    return (
+      <>
+        <aside
+          className={`pointer-events-none absolute bottom-[max(2.75rem,calc(var(--mobile-bottom-nav-h,0px)+0.5rem))] right-2.5 top-14 z-30 flex w-11 flex-col items-center justify-end gap-3 md:hidden ${className ?? ""}`}
+          aria-label={t("explore.rail.metricsAside")}
+        >
+          <div
+            className="pointer-events-auto flex w-full flex-col items-center gap-3"
+            aria-label={t("explore.rail.statsGroup")}
+          >
+            <ReelMobileRevenueMetric
+              value={revNums}
+              revenueUp={revenueUp}
+              aria-label={t("explore.rail.revenueAria", { v: revAriaVal })}
+            />
+            <ReelMobileMetricStack
+              icon={<Eye strokeWidth={2.25} className="shrink-0" />}
+              value={viewsStr}
+              aria-label={t("explore.rail.viewsAria", { v: viewsStr })}
+            />
+            <ReelMobileMetricStack
+              icon={<ShoppingBag strokeWidth={2.25} className="shrink-0" />}
+              value={salesStr}
+              aria-label={t("explore.rail.purchasesAria", { n: salesStr })}
+            />
+          </div>
+
+          <div
+            role="group"
+            aria-label={t("explore.rail.actions")}
+            className="pointer-events-auto flex w-full flex-col items-center gap-3"
+          >
+            <button
+              type="button"
+              title={inCart ? t("explore.rail.cartRemove") : t("explore.rail.cartAdd")}
+              onClick={(e) => {
+                if (soldOut) return;
+                if (!requireAuth()) return;
+                toggleCartFromButton(e.currentTarget, posterSrc ?? undefined);
+              }}
+              className={`${reelMobileActionColClass} disabled:opacity-40`}
+              disabled={soldOut}
+              aria-label={inCart ? t("explore.rail.cartRemove") : t("explore.rail.cartAdd")}
+              aria-pressed={inCart}
+            >
+              <ShoppingCart
+                strokeWidth={2.25}
+                className={`h-[26px] w-[26px] ${inCart ? "stroke-[var(--reels-point)] fill-[var(--reels-point)]" : "stroke-current"}`}
+              />
+            </button>
+
+            <button
+              type="button"
+              title={likedByMe ? t("explore.rail.likeUndo") : t("explore.rail.like")}
+              onClick={(e) => {
+                e.preventDefault();
+                void toggleInternalLike();
+              }}
+              className={`${reelMobileActionColClass} relative ${likedByMe ? "text-[var(--reels-point)]" : ""}`}
+              aria-label={likedByMe ? t("explore.rail.likeUndo") : t("explore.rail.like")}
+              aria-pressed={likedByMe}
+            >
+              {likeBurst ? (
+                <span className="pointer-events-none absolute inset-0 rounded-full bg-[var(--reels-point)]/28 animate-ping" />
+              ) : null}
+              <Heart
+                strokeWidth={2.25}
+                className={`relative z-[1] h-[26px] w-[26px] transition-transform ${
+                  likedByMe
+                    ? "fill-[var(--reels-point)] stroke-[var(--reels-point)]"
+                    : "stroke-current"
+                } ${likePulse || likeBurst ? "scale-110" : "scale-100"}`}
+              />
+              <span className="text-[11px] font-semibold tabular-nums text-white/90 [html[data-theme='light']_&]:text-zinc-800">
+                {likesStr}
+              </span>
+            </button>
+
+            <BookmarkButton
+              video={video}
+              beforeToggle={requireAuth}
+              buttonClassNameBase={reelMobileActionColClass}
+              buttonClassWhenBookmarked="text-[var(--reels-point)]"
+              iconClassWhenBookmarked="h-[26px] w-[26px] stroke-[var(--reels-point)] fill-[var(--reels-point)]"
+              iconClassWhenDefault="h-[26px] w-[26px] stroke-current"
+            />
+          </div>
+        </aside>
+
+        {mounted ? (
+          <AuthPromptModal
+            open={authPromptOpen}
+            onClose={() => setAuthPromptOpen(false)}
+            onGoogleStart={startGoogleAuth}
+          />
+        ) : null}
+      </>
+    );
+  }
+
   const revNums = revRounded.toLocaleString(fmt.numberLocale);
-  const revAriaVal = revDisplay;
   const viewsStr = fmt.formatViewCountRail(displayedViews);
   const likesStr = fmt.formatLikeApprox(displayedLikeTotal);
   const salesStr = meta.salesCount.toLocaleString(fmt.numberLocale);
@@ -376,7 +543,10 @@ function ReelDesktopRail({
       className={`${railDeckClass} flex w-max max-w-[min(15rem,38vw)] shrink-0 flex-col items-center gap-5 px-2 [html[data-theme='light']_&]:text-zinc-900 ${className ?? ""}`}
       aria-label={t("explore.rail.metricsAside")}
     >
-      <div className="flex flex-col items-center pl-9 sm:pl-10" aria-label={t("explore.rail.statsGroup")}>
+      <div
+        className="flex flex-col items-center pl-9 sm:pl-10"
+        aria-label={t("explore.rail.statsGroup")}
+      >
         <ReelExploreStatLine
           icon={<TrendingUp strokeWidth={2.25} className="shrink-0" />}
           iconAdornment={
@@ -389,7 +559,7 @@ function ReelDesktopRail({
               {revenueUp ? "▲" : "▼"}
             </span>
           }
-          value={`${revNums} 💎`}
+          value={revNums}
           valueClassName={railStatValueWhite}
           aria-label={t("explore.rail.revenueAria", { v: revAriaVal })}
         />
@@ -431,7 +601,7 @@ function ReelDesktopRail({
             <div className="opacity-45">
               <span className="text-[clamp(1.5rem,3.8vw,2.35rem)] font-black tabular-nums tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
                 {Math.round(video.priceWon / 6).toLocaleString()}
-                <span className="text-[1.05em] font-bold"> 💎</span>
+                <PaymentDiamondIcon className="ml-1 inline-block h-[1.05em] w-[1.05em] align-middle text-[color:var(--reels-point)]" />
               </span>
             </div>
             <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">{t("explore.rail.soldOut")}</span>
@@ -441,10 +611,7 @@ function ReelDesktopRail({
             <div className="text-center">
               <span className="text-[clamp(1.55rem,4vw,2.85rem)] font-black tabular-nums tracking-tighter text-white [html[data-theme='light']_&]:text-zinc-900">
                 {Math.round(video.priceWon / 6).toLocaleString()}
-                <span className="text-[0.92em] font-bold tracking-normal text-white/[0.95] sm:text-[1.05em] [html[data-theme='light']_&]:text-zinc-900">
-                  {" "}
-                  💎
-                </span>
+                <PaymentDiamondIcon className="ml-1 inline-block h-[0.92em] w-[0.92em] align-middle text-[color:var(--reels-point)] sm:h-[1.05em] sm:w-[1.05em]" />
               </span>
             </div>
             <button
@@ -530,60 +697,143 @@ function ReelDesktopRail({
   );
 }
 
-/** 모바일: 하단 한 줄 요약 (쇼츠·동영상 하단 메타와 유사) */
-function ReelMobileCommerceBar({ video }: { video: FeedVideo }) {
+/** 모바일 탐색 — 제목 옆 💎 가격 + 구매 (우측 레일에서 분리) */
+function ExploreReelMobileTitlePurchaseRow({
+  video,
+  title,
+}: {
+  video: FeedVideo;
+  title: string;
+}) {
+  const router = useRouter();
+  const { hasPurchased } = usePurchasedVideos();
+  const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
+  const owned = hasPurchased(video.id);
   const { t, locale } = useTranslation();
   const fmt = useMemo(() => getExploreFormatters(locale), [locale]);
-  const metrics = useMemo(() => {
-    if (video.listing) {
-      const views = video.listing.views;
-      const sales = video.listing.salesCount;
-      const p = video.priceWon ?? 0;
-      return {
-        cumulativeRevenueWon: toGemPrice(p) * sales,
-        totalViews: Math.max(0, views),
-        totalLikes: Math.max(0, Math.floor(views * 0.028)),
-        growthPercent: 0,
-      };
-    }
-    return getMetricsForVideoDetail(video.id);
-  }, [video]);
-  const commerce = useMemo(
+  const meta = useMemo(
     () =>
       video.listing
         ? { salesCount: video.listing.salesCount, edition: "open" as const }
         : getCommerceMeta(video.id),
     [video],
   );
-  const revenueUp = metrics.growthPercent >= 0;
+  const remaining = clonesRemaining(meta);
+  const soldOut = remaining === 0 && isLimitedFamily(meta.edition);
+  const authPromptScrollYRef = useRef(0);
+  const [authPromptOpen, setAuthPromptOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  const requireAuth = useCallback(() => {
+    if (authLoading) return false;
+    if (!supabaseConfigured || !user) {
+      authPromptScrollYRef.current =
+        typeof window !== "undefined" ? window.scrollY : 0;
+      setAuthPromptOpen(true);
+      return false;
+    }
+    return true;
+  }, [authLoading, supabaseConfigured, user]);
+
+  const onBuyClick = useCallback(() => {
+    if (soldOut || authLoading) return;
+    if (!requireAuth()) return;
+    router.push(
+      owned
+        ? `/create?videoId=${encodeURIComponent(video.id)}`
+        : `/video/${encodeURIComponent(video.id)}`,
+    );
+  }, [authLoading, owned, requireAuth, router, soldOut, video.id]);
+
+  const startGoogleAuth = useCallback(async () => {
+    const next =
+      typeof window !== "undefined"
+        ? `${window.location.pathname}${window.location.search}${window.location.hash}`
+        : "/";
+    const redirectTo = buildAuthCallbackRedirectTo(next);
+    const supabase = getSupabaseBrowserClient();
+    if (supabase && redirectTo) {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          queryParams: { prompt: "select_account" },
+        },
+      });
+      if (!error && data.url) {
+        window.location.assign(data.url);
+        return;
+      }
+    }
+    window.location.assign(`/api/auth/google/start?next=${encodeURIComponent(next)}`);
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!authPromptOpen) return;
+    const scrollY = authPromptScrollYRef.current;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setAuthPromptOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      requestAnimationFrame(() => window.scrollTo(0, scrollY));
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [authPromptOpen]);
+
+  const gemCount =
+    video.priceWon != null ? Math.round(video.priceWon / 6) : null;
+  const gemLabel =
+    gemCount != null ? fmt.formatFullCount(gemCount) : null;
 
   return (
-    <div className="flex shrink-0 items-center justify-between gap-2 border-t border-white/10 bg-black/50 px-3 py-2.5 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/90">
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-[11px] font-bold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-          {t("explore.mobile.revenue")}{" "}
-          <span
-            className={`${revenueTrendDeltaGlyphClass} inline tabular-nums ${revenueUp ? revenueTrendUpClass : revenueTrendDownClass}`}
-            aria-hidden
+    <>
+      <div className="pointer-events-auto flex w-full min-w-0 flex-col gap-2 md:hidden">
+        <div className="flex min-w-0 items-center gap-2">
+          <p className="explore-reel-on-video-text min-w-0 flex-1 line-clamp-2 text-left text-[14px] font-bold leading-snug text-white">
+            {title}
+          </p>
+          {gemLabel ? (
+            <span
+              className="inline-flex shrink-0 items-center gap-0.5 tabular-nums text-[13px] font-bold text-white"
+              aria-label={t("explore.rail.buyAria")}
+            >
+              <PaymentDiamondIcon className="h-4 w-4 text-[color:var(--reels-point)]" aria-hidden />
+              {gemLabel}
+            </span>
+          ) : null}
+        </div>
+        {video.priceWon != null && !soldOut ? (
+          <button
+            type="button"
+            onClick={onBuyClick}
+            className={explorePurchaseButtonMobileClass}
+            aria-label={t("explore.rail.buyAria")}
           >
-            {revenueUp ? "▲" : "▼"}
-          </span>{" "}
-          <span className={`tabular-nums ${revenueAmountClass}`}>
-            {fmt.formatCompactWon(metrics.cumulativeRevenueWon)}
+            {t("explore.rail.buy")}
+          </button>
+        ) : null}
+        {video.priceWon != null && soldOut ? (
+          <span className="w-full text-center text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
+            {t("explore.rail.soldOut")}
           </span>
-          {" "}
-          · {t("explore.mobile.sales")}{" "}
-          {commerce.salesCount.toLocaleString(fmt.numberLocale)}
-        </p>
-        <p className="truncate font-mono text-[10px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-          {t("explore.mobile.views")} {fmt.formatCompactCount(metrics.totalViews)} · {t("explore.mobile.reactions")}{" "}
-          {fmt.formatCompactCount(metrics.totalLikes)}
-        </p>
+        ) : null}
       </div>
-      <span className="shrink-0 rounded-full border border-reels-cyan/30 bg-reels-cyan/10 px-3 py-1.5 text-[11px] font-bold text-reels-cyan">
-        {t("explore.mobile.playing")}
-      </span>
-    </div>
+      {mounted ? (
+        <AuthPromptModal
+          open={authPromptOpen}
+          onClose={() => setAuthPromptOpen(false)}
+          onGoogleStart={startGoogleAuth}
+        />
+      ) : null}
+    </>
   );
 }
 
@@ -605,6 +855,7 @@ export function ExploreReelSlide({
   }, [video.id]);
   const [volume, setVolume] = useState(0.75);
   const [volumeUiVisible, setVolumeUiVisible] = useState(false);
+  const [reelPaused, setReelPaused] = useState(true);
   const previewSrc = video.previewSrc ?? video.src;
   const isPexelsBlockedVideo = /^https?:\/\/videos\.pexels\.com\//i.test(previewSrc);
   const posterSrc = sanitizePosterSrc(video.poster);
@@ -780,20 +1031,17 @@ export function ExploreReelSlide({
   return (
     <div
       ref={blockRef}
-      className="flex h-[calc(100dvh-var(--header-height,4.5rem))] w-full shrink-0 snap-start snap-always flex-col bg-[#050508] [html[data-theme='light']_&]:bg-zinc-100"
+      className="flex h-[100dvh] w-full shrink-0 snap-start snap-always flex-col bg-black [html[data-theme='light']_&]:max-md:bg-zinc-950 md:h-[calc(100dvh-var(--header-height,4.5rem)-var(--mobile-bottom-nav-h,0px))] md:bg-[#050508] md:[--mobile-bottom-nav-h:0px] [html[data-theme='light']_&]:md:bg-zinc-100"
     >
-      <div className="flex min-h-0 w-full flex-1 items-center justify-center px-2 pt-2 md:px-4 md:pt-0">
-        {/*
-          부모(탐색 스크롤 루트)가 이미 레일 폭만큼 inset 되었으므로 여기서는 100vw에서 레일을 또 빼지 않음.
-        */}
-        <div className="flex w-full max-w-[min(56rem,100%)] flex-row items-center justify-center gap-1 md:gap-1.5 lg:gap-2">
-          <div className="relative w-[min(100%,min(var(--explore-reel-video-max-w,26.25rem),calc(100%-15rem)))] shrink-0">
+      <div className="flex min-h-0 w-full flex-1 items-center justify-center px-0 pt-0 max-md:relative max-md:items-stretch max-md:px-0 md:px-4 md:pt-0">
+        <div className="relative flex w-full max-w-none flex-row items-center justify-center gap-1 max-md:h-full max-md:min-h-0 max-md:max-w-none max-md:items-stretch md:max-w-[min(56rem,100%)] md:gap-1.5 md:items-center lg:gap-2">
+          <div className="relative w-full shrink-0 max-md:absolute max-md:inset-0 max-md:h-full max-md:w-full md:w-[min(100%,min(var(--explore-reel-video-max-w,26.25rem),calc(100%-15rem)))]">
             <div
-              className="relative aspect-[9/16] w-full max-h-[min(78dvh,calc(100dvh-var(--header-height)-7rem))] overflow-hidden rounded-2xl border border-white/12 bg-black shadow-[0_24px_80px_-30px_rgba(0,0,0,0.85)] md:max-h-[min(92dvh,calc(100dvh-var(--header-height)-2rem))] [html[data-theme='light']_&]:border-zinc-200"
+              className="relative aspect-[9/16] w-full overflow-hidden max-md:h-full max-md:max-h-none max-md:rounded-none max-md:border-0 max-md:shadow-none max-md:aspect-auto max-h-[min(78dvh,calc(100dvh-var(--header-height)-7rem))] rounded-2xl border border-white/12 bg-black shadow-[0_24px_80px_-30px_rgba(0,0,0,0.85)] md:max-h-[min(92dvh,calc(100dvh-var(--header-height)-2rem))] [html[data-theme='light']_&]:max-md:border-0 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:shadow-none"
             >
             <video
               ref={videoRef}
-              className="absolute inset-0 z-0 h-full w-full cursor-pointer object-cover"
+              className="absolute inset-0 z-0 h-full w-full cursor-pointer object-contain md:object-cover"
               poster={posterFallback || undefined}
               src={isPexelsBlockedVideo ? undefined : previewSrc}
               muted={muted}
@@ -803,17 +1051,35 @@ export function ExploreReelSlide({
               onTimeUpdate={onTimeUpdate}
               onLoadedMetadata={syncProgressFromVideo}
               onCanPlay={syncProgressFromVideo}
+              onPlay={() => setReelPaused(false)}
+              onPause={() => setReelPaused(true)}
               onClick={togglePlayPause}
             />
+            {/* 하단 캡션 가독용만 — 전체 화면 딤 제거(원본 밝기 유지) */}
             <div
-              className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/85 via-black/10 to-black/35"
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[34%] max-h-[11rem] bg-gradient-to-t from-black/42 to-transparent max-md:h-[40%] max-md:max-h-[13rem] max-md:from-black/48"
               aria-hidden
             />
+            {reelPaused ? (
+              <button
+                type="button"
+                className="reel-video-play-overlay absolute inset-0 z-[4] flex items-center justify-center"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePlayPause();
+                }}
+                aria-label={t("explore.player.play")}
+              >
+                <span className="flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-full border border-white/25 bg-black/50 text-white shadow-lg backdrop-blur-sm">
+                  <Play className="ml-1 h-9 w-9 fill-current" aria-hidden />
+                </span>
+              </button>
+            ) : null}
 
             <button
               type="button"
               onClick={toggleMute}
-              className="explore-reel-mute-btn pointer-events-auto absolute right-3 top-3 z-[3] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition hover:bg-black/60"
+              className="explore-reel-mute-btn pointer-events-auto absolute left-3 top-3 z-[3] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition hover:bg-black/60 max-md:left-3 max-md:right-auto md:right-3 md:left-auto"
               aria-label={muted ? t("explore.player.unmute") : t("explore.player.mute")}
             >
               {muted ? (
@@ -845,11 +1111,11 @@ export function ExploreReelSlide({
               </div>
             ) : null}
 
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] space-y-2 p-4 pb-5">
-              <div className="pointer-events-auto flex flex-wrap items-center gap-2">
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] space-y-2 p-4 pb-5 max-md:bottom-[max(2.5rem,calc(var(--mobile-bottom-nav-h,0px)+0.35rem))] max-md:right-14 max-md:px-3 max-md:pb-2">
+              <div className="pointer-events-auto flex flex-wrap items-center gap-2 max-md:block max-md:space-y-1.5">
                 <Link
                   href={sellerHref}
-                  className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-white/90 underline-offset-2 hover:text-reels-cyan hover:underline"
+                  className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-white/90 underline-offset-2 hover:text-reels-cyan hover:underline max-md:text-white/95"
                 >
                   <VideoSourcePlatformIcon
                     source={videoContentSource}
@@ -859,7 +1125,11 @@ export function ExploreReelSlide({
                 </Link>
                 <SellerSocialLinkIcons links={sellerSocialLinks} size="sm" stopPropagation />
               </div>
-              <p className="line-clamp-3 text-left text-[15px] font-bold leading-snug text-white sm:text-[16px]">
+              <ExploreReelMobileTitlePurchaseRow
+                video={video}
+                title={displayTitle(video)}
+              />
+              <p className="explore-reel-on-video-text hidden line-clamp-3 text-left text-[15px] font-bold leading-snug text-white sm:text-[16px] md:block">
                 {displayTitle(video)}
               </p>
             </div>
@@ -885,7 +1155,13 @@ export function ExploreReelSlide({
                 }}
               />
             </div>
-          </div>
+
+            <ReelDesktopRail
+              video={video}
+              sidebarMetrics={sidebarMetrics}
+              mobileOverlay
+            />
+            </div>
           </div>
 
           <ReelDesktopRail
@@ -894,10 +1170,6 @@ export function ExploreReelSlide({
             className="hidden shrink-0 md:flex"
           />
         </div>
-      </div>
-
-      <div className="md:hidden">
-        <ReelMobileCommerceBar video={video} />
       </div>
     </div>
   );

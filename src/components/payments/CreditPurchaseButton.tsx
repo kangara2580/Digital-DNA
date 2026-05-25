@@ -112,7 +112,7 @@ export function CreditPurchaseButton({
   ]);
 
   return (
-    <div className="space-y-2">
+    <div className={`space-y-2 ${className ? "w-full min-w-0" : ""}`}>
       <button
         type="button"
         disabled={loading || disabled}

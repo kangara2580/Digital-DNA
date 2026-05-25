@@ -108,7 +108,7 @@ export function SupportCenterPageClient() {
         <p className="mt-2 text-[14px] text-zinc-300 [html[data-theme='light']_&]:text-zinc-600">
           {t("support.emailLabel")}{" "}
           <span className="font-semibold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-            support@ara.com
+            support@ara.pink
           </span>
         </p>
         <p className="mt-1 text-[12px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">

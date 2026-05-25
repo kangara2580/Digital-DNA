@@ -6,7 +6,9 @@ import {
   captureFrameFromVideoSrc,
 } from "@/lib/captureVideoFrame";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import { Loader2, X } from "lucide-react";
+import { X } from "lucide-react";
+import { AraDualSpinLogo } from "@/components/AraDualSpinLogo";
+import { GemAmount } from "@/components/PaymentDiamondIcon";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { SellCategorySelect } from "@/components/SellCategorySelect";
@@ -539,7 +541,12 @@ export function MyListingEditDialog({ video, open, onClose, onSaved }: Props) {
                     금액 (원)
                     {price && Number(price) > 0 ? (
                       <span className="ml-2 text-xs font-normal text-zinc-400">
-                        = {Math.round(Number(price) / 6).toLocaleString()}💎
+                        ={" "}
+                        <GemAmount
+                          value={Math.round(Number(price) / 6).toLocaleString()}
+                          className="inline-flex text-xs font-normal text-zinc-400"
+                          iconClassName="h-3 w-3 shrink-0 text-[color:var(--reels-point)]"
+                        />
                       </span>
                     ) : null}
                   </label>
@@ -580,7 +587,7 @@ export function MyListingEditDialog({ video, open, onClose, onSaved }: Props) {
             className="relative z-[1] inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-5 py-2.5 text-[13px] font-extrabold leading-snug text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50 [html[data-theme='light']_&]:border-zinc-300 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-800 [html[data-theme='light']_&]:hover:bg-zinc-100"
           >
             {saving ? (
-              <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
+              <AraDualSpinLogo size={16} className="shrink-0" />
             ) : null}
             저장
           </button>

@@ -7,6 +7,7 @@ import { MyPageSectionShell } from "@/components/MyPageSectionShell";
 import { PolarCheckoutButton } from "@/components/payments/PolarCheckoutButton";
 import { formatCredits } from "@/components/assets/assetsFormat";
 import { useMeWallet } from "@/hooks/useMeWallet";
+import { GlobalLoading } from "@/components/GlobalLoading";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 import type { SiteLocale } from "@/lib/sitePreferences";
@@ -56,7 +57,9 @@ export function AssetsCreditPaymentClient() {
               </Link>
             </div>
           </div>
-          {walletLoading ? <p className="mt-6 text-[15px] text-zinc-500">{t("common.loading")}</p> : null}
+          {walletLoading ? (
+            <GlobalLoading size="sm" label={t("common.loading")} className="mt-6 justify-start" />
+          ) : null}
         </div>
 
         <div id="credit-topup" className="scroll-mt-28 space-y-8">
@@ -98,11 +101,7 @@ export function AssetsCreditPaymentClient() {
                       ${pack.priceUsd.toFixed(2)}
                     </p>
                     <div className="mt-5">
-                      <PolarCheckoutButton
-                        packKey={pack.key}
-                        disabled={!polarReady}
-                        className={`${MYPAGE_OUTLINE_BTN_SM} w-full border-[color:var(--reels-point)] text-[15px] disabled:cursor-not-allowed disabled:opacity-50`}
-                      >
+                      <PolarCheckoutButton packKey={pack.key} disabled={!polarReady}>
                         {t("assets.pack.buy")}
                       </PolarCheckoutButton>
                     </div>

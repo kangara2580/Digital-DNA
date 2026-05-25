@@ -22,6 +22,7 @@ import { useLocalSamplePlayback } from "@/hooks/useLocalSamplePlayback";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import { formatGem } from "@/components/assets/assetsFormat";
+import { GemAmount } from "@/components/PaymentDiamondIcon";
 import { toGemPrice } from "@/lib/gemPrice";
 import type { SiteLocale } from "@/lib/sitePreferences";
 import { useVideoWishlistAction } from "@/hooks/useVideoWishlistAction";
@@ -37,8 +38,6 @@ import {
 import { isLocalPublicVideo } from "@/lib/localVideoHighlight";
 import { CartIcon } from "@/components/CartIcon";
 import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
-import { SellerSocialLinkIcons } from "@/components/SellerSocialLinkIcons";
-import { useSellerSocialLinks } from "@/hooks/useSellerSocialLinks";
 import { SellerProfileAvatarLink } from "@/components/SellerProfileAvatarLink";
 import {
   sellerDisplayNameFromVideo,
@@ -73,6 +72,7 @@ import {
   reelActionRailColumn,
   reelActionRailOuter,
   videoCardDurationBadgeClass,
+  videoCardMallPriceClass,
   videoReelMediaRootClassName,
   videoShortFormAspectClassName,
 } from "@/lib/videoReelActionStyles";
@@ -300,11 +300,6 @@ export function VideoCard({
   }, [normalizedPoster, previewSrc, fallbackPoster, externalIframe?.kind]);
   const [thumbnailSrc, setThumbnailSrc] = useState(defaultThumbnail);
   const [isPreviewing, setIsPreviewing] = useState(false);
-  const sellerSocialLinks = useSellerSocialLinks(
-    video.listing?.sellerId,
-    video.sellerSocialLinks,
-  );
-
   const requireAuth = useCallback(() => {
     if (authLoading) return false;
     if (!supabaseConfigured || !user) {
@@ -437,7 +432,6 @@ export function VideoCard({
     video.priceWon != null && video.priceWon > 0
       ? formatGem(toGemPrice(video.priceWon), locale as SiteLocale)
       : null;
-  const socialLinksToShow = sellerSocialLinks;
   const sellerHref = useMemo(() => sellerProfileHrefFromVideo(video), [video]);
   const sellerName = useMemo(() => sellerDisplayNameFromVideo(video), [video]);
   const videoContentSource = useMemo(() => getVideoContentSource(video), [video]);
@@ -823,12 +817,14 @@ export function VideoCard({
               {displayTitle(video)}
             </h3>
             {priceLabel ? (
-              <span
+              <GemAmount
+                value={priceLabel}
+                iconClassName="h-3.5 w-3.5 shrink-0 text-[color:var(--reels-point)] sm:h-4 sm:w-4"
                 className={
                   trendingRankCardPrice
-                    ? "video-card-mall-price shrink-0 rounded-md px-2 py-0.5 text-right text-[13px] font-extrabold tabular-nums text-zinc-50 transition-colors duration-200 motion-reduce:transition-none [html[data-theme='light']_&]:text-zinc-950 sm:text-[15px] group-hover:bg-white/[0.08] group-hover:text-white motion-reduce:group-hover:bg-transparent"
+                    ? `${videoCardMallPriceClass} text-[13px] sm:text-[15px]`
                     : mypageListCard
-                      ? `video-card-mall-price shrink-0 rounded-md px-1.5 py-0.5 text-right font-semibold tabular-nums text-white transition-colors duration-200 ease-out motion-reduce:transition-none group-hover:bg-white/[0.06] [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:group-hover:bg-zinc-200/45 ${
+                      ? `${videoCardMallPriceClass} font-semibold text-white [html[data-theme='light']_&]:text-zinc-900 ${
                           dense
                             ? "text-[10px]"
                             : reelStrip
@@ -847,16 +843,9 @@ export function VideoCard({
                                 : "text-[11px] sm:text-[12px]"
                         }`
                 }
-              >
-                {priceLabel}
-              </span>
+              />
             ) : null}
           </div>
-          <SellerSocialLinkIcons
-            links={socialLinksToShow}
-            size="xs"
-            stopPropagation
-          />
         </div>
       </div>
       )}

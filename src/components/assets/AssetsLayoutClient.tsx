@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactNode } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { GlobalLoading } from "@/components/GlobalLoading";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 import { ASSETS_CREDIT_PAYMENT, ASSETS_SETTLEMENT } from "@/lib/assetsPaths";
@@ -14,6 +15,7 @@ import {
   ACCOUNT_PAGE_HEADER_CLASS,
   ACCOUNT_PAGE_MAIN_CLASS,
   ACCOUNT_PAGE_MENU_LABEL_CLASS,
+  ACCOUNT_PAGE_NAV_CLASS,
   ACCOUNT_PAGE_SECTION_CLASS,
   ACCOUNT_PAGE_TITLE_CLASS,
 } from "@/lib/accountSidebarLayout";
@@ -52,7 +54,7 @@ export function AssetsLayoutClient({ children }: Props) {
             <p className={ACCOUNT_PAGE_MENU_LABEL_CLASS}>
               {t("assets.menuLabel")}
             </p>
-            <nav aria-label={t("assets.navAria")} className="flex flex-col gap-1">
+            <nav aria-label={t("assets.navAria")} className={ACCOUNT_PAGE_NAV_CLASS}>
               <Link
                 href={ASSETS_CREDIT_PAYMENT}
                 className={onCredit ? sidebarNavLinkActiveClass : sidebarNavLinkInactiveClass}
@@ -72,10 +74,8 @@ export function AssetsLayoutClient({ children }: Props) {
 
           <section className={`${ACCOUNT_PAGE_SECTION_CLASS} space-y-10`}>
             {authLoading && !user ? (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-12 text-center [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/50">
-                <p className="text-[16px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-                  {t("common.loading")}
-                </p>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-12 [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/50">
+                <GlobalLoading size="lg" label={t("common.loading")} />
               </div>
             ) : null}
 

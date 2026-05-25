@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { FriendlyErrorPageContent } from "@/components/FriendlyErrorPageContent";
 import type { SiteLocale } from "@/lib/sitePreferences";
 import { translate } from "@/lib/i18n/dictionaries";
 
@@ -12,8 +13,7 @@ function localeFromDocumentCookie(): SiteLocale {
 }
 
 /**
- * Root-level error surface when the root layout fails. Keeps its own `html`/`body`
- * per Next.js rules; locale follows `reels-locale` (no React providers).
+ * Root layout 실패 시 — 기술 메시지 없이 404와 동일 톤의 연결 오류 UI.
  */
 export default function GlobalError({
   error,
@@ -25,12 +25,12 @@ export default function GlobalError({
   const locale = localeFromDocumentCookie();
 
   useEffect(() => {
-    console.error("[app/global-error]", error);
+    console.error("[app/global-error]", error.digest ?? error.message, error);
   }, [error]);
 
   useEffect(() => {
     const suffix = translate(locale, "meta.brandSuffix");
-    const heading = translate(locale, "error.globalHeading");
+    const heading = translate(locale, "meta.errorBoundary");
     document.title = `${heading}${suffix}`;
     let el = document.querySelector('meta[name="description"]');
     if (!el) {
@@ -38,28 +38,13 @@ export default function GlobalError({
       el.setAttribute("name", "description");
       document.head.appendChild(el);
     }
-    el.setAttribute("content", translate(locale, "error.globalBody"));
+    el.setAttribute("content", translate(locale, "meta.errorBoundaryDescription"));
   }, [locale]);
 
   return (
     <html lang={locale === "en" ? "en" : "ko"}>
       <body className="min-h-screen bg-[#02040a] font-sans text-zinc-100 antialiased">
-        <div className="mx-auto flex min-h-[50vh] max-w-lg flex-col gap-4 px-4 py-16 text-center">
-          <h1 className="text-xl font-extrabold">
-            {translate(locale, "error.globalHeading")}
-          </h1>
-          <p className="text-[14px] text-zinc-400">
-            {error.message?.trim() ||
-              translate(locale, "error.globalBody")}
-          </p>
-          <button
-            type="button"
-            onClick={() => reset()}
-            className="mx-auto rounded-full bg-reels-crimson px-6 py-2.5 text-[14px] font-bold text-white"
-          >
-            {translate(locale, "error.globalRetry")}
-          </button>
-        </div>
+        <FriendlyErrorPageContent locale={locale} onRetry={reset} />
       </body>
     </html>
   );

@@ -52,11 +52,6 @@ function LoggedInAccountHoverMenuInner({
   const onMypageHub = pathname.startsWith("/mypage") && mypageQueryTab === "";
   const onSettings = pathname === "/settings" || pathname.startsWith("/settings/");
   const onAssets = pathname === "/assets" || pathname.startsWith("/assets/");
-  const accountSectionActive =
-    pathname.startsWith("/mypage") ||
-    pathname.startsWith("/seller/") ||
-    onSettings ||
-    onAssets;
 
   const myFeedHref =
     user?.id != null && user.id.length > 0
@@ -85,15 +80,16 @@ function LoggedInAccountHoverMenuInner({
 
   return (
     <div className={rootAlign}>
-      <button
-        type="button"
+      <Link
+        href={myFeedHref}
         className={triggerClassName}
         aria-label={ariaLabel}
         aria-haspopup="menu"
-        aria-current={accountSectionActive ? "page" : undefined}
+        aria-current={onMyFeed ? "page" : undefined}
+        title={t("account.feed")}
       >
         {children}
-      </button>
+      </Link>
 
       <div role="menu" aria-label={t("account.menu.aria")} className={menuPositionClass}>
         <div className={menuPanelInner}>

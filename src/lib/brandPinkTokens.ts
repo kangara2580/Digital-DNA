@@ -7,10 +7,10 @@ export const BRAND_PINK_HEX = "#FF2D8D";
 
 /** 마이페이지·설정·자산 등 좌측 메뉴 — 선택 탭 왼쪽 핑크 바 */
 export const sidebarNavLinkActiveClass =
-  "rounded-lg border-l-[3px] border-l-[color:var(--reels-point)] bg-white/[0.06] py-2.5 pl-[13px] pr-3 text-[16px] font-semibold text-zinc-50 transition-colors [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900";
+  "shrink-0 whitespace-nowrap rounded-lg border-l-[3px] border-l-[color:var(--reels-point)] bg-white/[0.06] py-2 pl-3 pr-3 text-[14px] font-semibold text-zinc-50 transition-colors max-md:border-b-[3px] max-md:border-l-transparent max-md:border-b-[color:var(--reels-point)] sm:py-2.5 sm:pl-[13px] sm:text-[16px] [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900";
 
 export const sidebarNavLinkInactiveClass =
-  "rounded-lg border-l-[3px] border-l-transparent py-2.5 pl-[13px] pr-3 text-[16px] font-medium text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900";
+  "shrink-0 whitespace-nowrap rounded-lg border-l-[3px] border-l-transparent py-2 pl-3 pr-3 text-[14px] font-medium text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 max-md:border-b-[3px] max-md:border-b-transparent sm:py-2.5 sm:pl-[13px] sm:text-[16px] [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900";
 
 /** 설정·필터 등 — 선택 칩 (라이트: 흰 배경·검은 테두리·검은 글자) */
 export const segmentChipBase =

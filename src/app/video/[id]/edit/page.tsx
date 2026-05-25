@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { GlobalLoading } from "@/components/GlobalLoading";
 import { MyListingEditDialog } from "@/components/MyListingEditDialog";
 import type { FeedVideo } from "@/data/videos";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
@@ -80,7 +80,7 @@ export default function VideoListingEditPage() {
   if (!video) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center text-zinc-500">
-        <Loader2 className="h-8 w-8 animate-spin text-reels-cyan/80" aria-hidden />
+        <GlobalLoading size="lg" />
       </div>
     );
   }

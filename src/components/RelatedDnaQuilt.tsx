@@ -7,6 +7,7 @@ import { getRelatedByVibe } from "@/data/videoCatalog";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import { formatGem } from "@/components/assets/assetsFormat";
+import { GemAmount } from "@/components/PaymentDiamondIcon";
 import { toGemPrice } from "@/lib/gemPrice";
 import type { SiteLocale } from "@/lib/sitePreferences";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
@@ -56,9 +57,11 @@ export function RelatedDnaQuilt({ video, className }: Props) {
               {displayTitle(hero)}
             </p>
             {hero.priceWon != null ? (
-              <p className="mt-0.5 text-[10px] font-bold tabular-nums text-white">
-                {formatGem(toGemPrice(hero.priceWon), locale as SiteLocale)}
-              </p>
+              <GemAmount
+                value={formatGem(toGemPrice(hero.priceWon), locale as SiteLocale)}
+                className="mt-0.5 text-[10px] font-bold tabular-nums text-white"
+                iconClassName="h-2.5 w-2.5 shrink-0 text-white"
+              />
             ) : null}
           </div>
         </Link>
@@ -82,9 +85,11 @@ export function RelatedDnaQuilt({ video, className }: Props) {
                   {displayTitle(v)}
                 </p>
                 {v.priceWon != null ? (
-                  <p className="text-[9px] font-bold tabular-nums text-white/95">
-                    {formatGem(toGemPrice(v.priceWon), locale as SiteLocale)}
-                  </p>
+                  <GemAmount
+                    value={formatGem(toGemPrice(v.priceWon), locale as SiteLocale)}
+                    className="text-[9px] font-bold tabular-nums text-white/95"
+                    iconClassName="h-2 w-2 shrink-0 text-white/95"
+                  />
                 ) : null}
               </div>
             </Link>
@@ -111,9 +116,11 @@ export function RelatedDnaQuilt({ video, className }: Props) {
               <div className="px-1.5 py-1">
                 <p className="line-clamp-2 text-[9px] font-medium text-zinc-200">{displayTitle(v)}</p>
                 {v.priceWon != null ? (
-                  <p className="text-[9px] font-bold tabular-nums text-reels-cyan">
-                    {formatGem(toGemPrice(v.priceWon), locale as SiteLocale)}
-                  </p>
+                  <GemAmount
+                    value={formatGem(toGemPrice(v.priceWon), locale as SiteLocale)}
+                    className="text-[9px] font-bold tabular-nums text-reels-cyan"
+                    iconClassName="h-2 w-2 shrink-0 text-[color:var(--reels-point)]"
+                  />
                 ) : null}
               </div>
             </Link>

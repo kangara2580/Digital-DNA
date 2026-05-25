@@ -20,6 +20,7 @@ import {
   ACCOUNT_PAGE_HEADER_CLASS,
   ACCOUNT_PAGE_MAIN_CLASS,
   ACCOUNT_PAGE_MENU_LABEL_CLASS,
+  ACCOUNT_PAGE_NAV_CLASS,
   ACCOUNT_PAGE_SECTION_CLASS,
   ACCOUNT_PAGE_TITLE_CLASS,
 } from "@/lib/accountSidebarLayout";
@@ -27,6 +28,7 @@ import {
   sidebarNavLinkActiveClass,
   sidebarNavLinkInactiveClass,
 } from "@/lib/brandPinkTokens";
+import { GlobalLoading } from "@/components/GlobalLoading";
 import { useTranslation } from "@/hooks/useTranslation";
 
 type MyPageTab = "drafts" | "analytics" | "listings" | "wishlist" | "likes" | "purchases";
@@ -103,7 +105,7 @@ export function MyPageDashboard() {
             <p className={ACCOUNT_PAGE_MENU_LABEL_CLASS}>
               {t("mypage.menuLabel")}
             </p>
-            <nav aria-label={t("mypage.navAria")} className="flex flex-col gap-0.5">
+            <nav aria-label={t("mypage.navAria")} className={ACCOUNT_PAGE_NAV_CLASS}>
               {TAB_DEFS.map((item) => {
                 const active = item.id === currentTab;
                 const label = t(`mypage.tab.${item.id}`);
@@ -122,10 +124,8 @@ export function MyPageDashboard() {
 
           <section className={ACCOUNT_PAGE_SECTION_CLASS}>
             {authLoading && !user ? (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-12 text-center [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/50">
-                <p className="text-[16px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-                  {t("common.loading")}
-                </p>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-12 [html[data-theme='light']_&]:border-zinc-100 [html[data-theme='light']_&]:bg-zinc-50/50">
+                <GlobalLoading size="lg" label={t("common.loading")} />
               </div>
             ) : null}
             {!authLoading && !user ? <LoginRequiredPanel tabId={activeDef.id} /> : null}
