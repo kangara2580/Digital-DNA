@@ -4,6 +4,7 @@ import { ImagePlus, Trash2 } from "lucide-react";
 import { useCallback, useId, useMemo, useRef, useState } from "react";
 import { ProfileColorAvatar } from "@/components/ProfileColorAvatar";
 import { ProfileColorSpectrumSlider } from "@/components/ProfileColorSpectrumSlider";
+import { useReelsConfirm } from "@/components/ReelsConfirmProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { ProfileAvatar } from "@/lib/profileAvatarStorage";
 import {
@@ -93,8 +94,7 @@ export function ProfileColorPicker({
   const { t } = useTranslation();
   const inputId = useId();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [replaceImageDialogOpen, setReplaceImageDialogOpen] = useState(false);
-  const pendingColorHexRef = useRef<string | null>(null);
+  const reelsConfirm = useReelsConfirm();
 
   const selectedHex = useMemo(() => {
     if (value?.kind === "color") {
@@ -118,27 +118,20 @@ export function ProfileColorPicker({
   );
 
   const onSpectrumColorChange = useCallback(
-    (hex: string) => {
+    async (hex: string) => {
       if (value?.kind === "upload") {
-        pendingColorHexRef.current = hex;
-        setReplaceImageDialogOpen(true);
-        return;
+        const ok = await reelsConfirm({
+          message: t("avatar.confirmReplaceImageMessage"),
+          confirmLabel: t("avatar.confirmReplaceYes"),
+          cancelLabel: t("avatar.confirmReplaceNo"),
+          dialogAriaLabel: t("common.confirmDialogAria"),
+        });
+        if (!ok) return;
       }
       applyColorChange(hex);
     },
-    [applyColorChange, value?.kind],
+    [applyColorChange, reelsConfirm, t, value?.kind],
   );
-
-  const closeReplaceDialog = useCallback(() => {
-    setReplaceImageDialogOpen(false);
-    pendingColorHexRef.current = null;
-  }, []);
-
-  const confirmReplaceImageWithColor = useCallback(() => {
-    const hex = pendingColorHexRef.current ?? selectedHex;
-    closeReplaceDialog();
-    applyColorChange(hex);
-  }, [applyColorChange, closeReplaceDialog, selectedHex]);
 
   const onFile = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -228,44 +221,6 @@ export function ProfileColorPicker({
         </div>
       </div>
 
-      {replaceImageDialogOpen ? (
-        <div
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/55 p-4 backdrop-blur-[2px]"
-          role="presentation"
-          onClick={closeReplaceDialog}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="avatar-replace-color-title"
-            className="w-full max-w-sm rounded-2xl border border-white/15 bg-zinc-900 p-6 shadow-xl [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <p
-              id="avatar-replace-color-title"
-              className="text-[15px] font-semibold leading-relaxed text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
-            >
-              {t("avatar.confirmReplaceImageMessage")}
-            </p>
-            <div className="mt-6 flex gap-2.5">
-              <button
-                type="button"
-                className={`${PILL} min-h-[44px] flex-1 px-4 py-2.5 text-[15px]`}
-                onClick={closeReplaceDialog}
-              >
-                {t("avatar.confirmReplaceNo")}
-              </button>
-              <button
-                type="button"
-                className="min-h-[44px] flex-1 rounded-full bg-[color:var(--reels-point)] px-4 py-2.5 text-[15px] font-bold text-white transition hover:brightness-110"
-                onClick={confirmReplaceImageWithColor}
-              >
-                {t("avatar.confirmReplaceYes")}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

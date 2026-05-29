@@ -53,7 +53,7 @@ export function AuthPromptModal({ open, onClose, onGoogleStart }: Props) {
         role="dialog"
         aria-modal="true"
         aria-label={t("auth.dialogAria")}
-        className={`relative w-full ${authModalDialogClipNoScroll} rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
+        className={`relative mx-auto w-full max-w-[min(100%,560px)] ${authModalDialogClipNoScroll} rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >

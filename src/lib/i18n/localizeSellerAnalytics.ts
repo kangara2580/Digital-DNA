@@ -7,18 +7,24 @@ import { translate } from "@/lib/i18n/dictionaries";
 
 const FUNNEL_KO_TO_KEY: Record<string, string> = {
   노출: "analytics.demo.funnel.impression",
+  "목록·피드 클릭": "analytics.demo.funnel.feedClick",
   "피드·목록 클릭": "analytics.demo.funnel.feedClick",
+  "상세 보기": "analytics.demo.funnel.detail",
   "상세 페이지": "analytics.demo.funnel.detail",
+  "장바구니·찜": "analytics.demo.funnel.cartWish",
   "장바구니·찜(추정)": "analytics.demo.funnel.cartWish",
+  "구매 완료": "analytics.demo.funnel.purchase",
   "결제·복제 완료": "analytics.demo.funnel.purchase",
   // demo dataset (video detail page style)
   "썸네일·제목 클릭": "analytics.demo.funnel.thumbTitle",
   "상세·미리보기": "analytics.demo.funnel.detailPreview",
   "찜·카트": "analytics.demo.funnel.wishCart",
+  "찜·장바구니": "analytics.demo.funnel.wishCart",
   "결제·복제": "analytics.demo.funnel.checkout",
 };
 
 const CHANNEL_KO_TO_KEY: Record<string, string> = {
+  "전체 유입": "analytics.demo.channel.aggregate",
   "앱·마켓 통합 유입": "analytics.demo.channel.aggregate",
   "추천·피드": "analytics.demo.channel.feed",
   검색: "analytics.demo.channel.search",
@@ -28,10 +34,14 @@ const CHANNEL_KO_TO_KEY: Record<string, string> = {
 };
 
 const RETENTION_KO_TO_KEY: Record<string, string> = {
+  "처음 3초": "analytics.demo.retention.0_3",
   "0–3초 훅": "analytics.demo.retention.0_3",
+  "3~15초": "analytics.demo.retention.3_15",
   "3–15초": "analytics.demo.retention.3_15",
+  "15~30초": "analytics.demo.retention.15_30",
   "15–30초": "analytics.demo.retention.15_30",
   "30초 이상": "analytics.demo.retention.30p",
+  "끝까지 시청": "analytics.demo.retention.complete",
   "완주·루프": "analytics.demo.retention.complete",
   "0–3초": "analytics.demo.retention.0_3b",
   "3–10초": "analytics.demo.retention.3_10",
@@ -48,8 +58,10 @@ function localizePeriodLabel(raw: string, locale: SiteLocale): string {
     return n === "1" ? translate(locale, "analytics.period.last1") : translate(locale, "analytics.period.lastN", { n });
   }
   if (raw === "최근 7일") return translate(locale, "analytics.period.last7");
-  if (raw === "최근 28일") return translate(locale, "analytics.period.last28");
-  if (raw === "최근 90일") return translate(locale, "analytics.period.last90");
+  if (raw === "최근 한달" || raw === "최근 28일" || raw === "최근 30일")
+    return translate(locale, "analytics.period.lastMonth");
+  if (raw === "최근 1년" || raw === "최근 90일" || raw === "최근 365일")
+    return translate(locale, "analytics.period.lastYear");
   if (raw === "최근 1일") return translate(locale, "analytics.period.last1");
   return raw;
 }

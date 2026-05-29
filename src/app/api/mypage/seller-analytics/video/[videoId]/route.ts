@@ -8,6 +8,7 @@ import {
   buildSellerVideoDetailFromDb,
   type AnalyticsRangeInput,
 } from "@/lib/sellerAnalyticsFromDb";
+import { loadSellerVideoLikes } from "@/lib/loadSellerVideoLikes";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -79,7 +80,15 @@ export async function GET(
     if (!video) {
       return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
     }
-    const detail = buildSellerVideoDetailFromDb(video, range);
+    const [purchases, likes] = await Promise.all([
+      prisma.purchase.findMany({
+        where: { sellerId: user.id, videoId, status: "paid" },
+        select: { videoId: true, price: true, createdAt: true },
+        orderBy: { createdAt: "asc" },
+      }),
+      loadSellerVideoLikes([videoId]),
+    ]);
+    const detail = buildSellerVideoDetailFromDb(video, range, { purchases, likes });
     return NextResponse.json({ ok: true, detail });
   } catch {
     return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });

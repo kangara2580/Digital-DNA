@@ -22,9 +22,14 @@ export const segmentChipOn =
 export const segmentChipOff =
   "text-zinc-300 hover:bg-white/14 hover:text-white [html[data-theme='light']_&]:border-transparent [html[data-theme='light']_&]:text-zinc-600 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900";
 
-/** 장바구니·찜·좋아요 등 썸네일 위 선택 체크 — 겉 흰 박스 없이 체크만 */
+/** 장바구니·찜·영상관리 등 썸네일 위 선택 — 라벨은 포지션만(테두리·패딩 박스 없음) */
 export const feedOverlayCheckboxLabelClass =
-  "absolute left-2 top-2 z-[20] flex cursor-pointer items-center";
+  "absolute left-2 top-2 z-[20] flex cursor-pointer items-center lg:left-1.5 lg:top-1.5";
 
+/** 썸네일 오버레이 체크박스 본체 */
 export const feedOverlayCheckboxInputClass =
-  "h-4 w-4 shrink-0 rounded border-2 border-white/90 bg-black/35 accent-[color:var(--reels-point)] shadow-[0_1px_4px_rgba(0,0,0,0.4)] sm:h-5 sm:w-5 [html[data-theme='light']_&]:border-black [html[data-theme='light']_&]:bg-white";
+  "h-4 w-4 shrink-0 cursor-pointer rounded border border-white/85 bg-white/95 accent-[color:var(--reels-point)] shadow-[0_1px_3px_rgba(0,0,0,0.5)] sm:h-[18px] sm:w-[18px] [html[data-theme='light']_&]:border-zinc-800/90 [html[data-theme='light']_&]:bg-white";
+
+/** 툴바(전체 선택 등) — 동일 톤, 오버레이용 그림자는 생략 */
+export const feedToolbarCheckboxInputClass =
+  "h-4 w-4 shrink-0 cursor-pointer rounded border border-white/30 bg-white/95 accent-[color:var(--reels-point)] [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-white";

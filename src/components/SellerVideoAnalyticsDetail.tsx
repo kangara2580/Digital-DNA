@@ -26,7 +26,12 @@ import type { SiteLocale } from "@/lib/sitePreferences";
 import { formatGemsLocale } from "@/lib/gemDisplay";
 import { localizeSellerVideoDetailSnapshot } from "@/lib/i18n/localizeSellerAnalytics";
 import { useTranslation } from "@/hooks/useTranslation";
+import { RevenueBarChart } from "@/components/analytics/RevenueBarChart";
+import { GemAmount } from "@/components/PaymentDiamondIcon";
 import { DocumentTitleI18n } from "@/components/DocumentTitleI18n";
+
+const VIDEO_INSIGHT_GEM_ICON =
+  "h-6 w-6 shrink-0 text-[color:var(--reels-point)] sm:h-7 sm:w-7";
 
 function formatRevenueGems(n: number, locale: SiteLocale): string {
   return formatGemsLocale(locale, Math.round(n));
@@ -205,7 +210,12 @@ export function SellerVideoAnalyticsDetail({ videoId, days, from, to }: Props) {
               {t("analytics.videoInsight.periodRevenue")}
             </p>
             <p className={`mt-1 text-[22px] font-extrabold tabular-nums ${revenueAmountClass}`}>
-              {formatRevenueGems(d.periodRevenueWon, locale)}
+              <GemAmount
+                value={formatRevenueGems(d.periodRevenueWon, locale)}
+                amountClassName={revenueAmountClass}
+                iconClassName={VIDEO_INSIGHT_GEM_ICON}
+                gapClassName="gap-1"
+              />
             </p>
             <p className="mt-1 text-[11px] text-zinc-500">
               {t("analytics.videoInsight.momRevenueCaption")}{" "}
@@ -256,7 +266,9 @@ export function SellerVideoAnalyticsDetail({ videoId, days, from, to }: Props) {
             </p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">CTR</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+              {t("analytics.kpiCtr")}
+            </p>
             <p className="mt-1 text-[22px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
               {row.ctrPercent.toFixed(1)}%
             </p>
@@ -270,28 +282,14 @@ export function SellerVideoAnalyticsDetail({ videoId, days, from, to }: Props) {
               <BarChart3 className="h-4 w-4 text-reels-cyan" />
               {t("analytics.revenueTrend")}
             </h2>
-            <div
-              className="mt-4 flex h-40 items-end gap-1"
-              role="img"
-              aria-label={t("analytics.revenueBarsAria")}
-            >
-              {d.revenueByDay.map((pt) => {
-                const max = Math.max(...d.revenueByDay.map((x) => x.revenueWon), 1);
-                const h = Math.round((pt.revenueWon / max) * 100);
-                return (
-                  <div key={pt.label} className="flex min-w-0 flex-1 flex-col items-center gap-1">
-                    <div className="flex w-full flex-1 flex-col justify-end">
-                      <div
-                        className="w-full rounded-t-md bg-gradient-to-t from-reels-cyan/30 to-reels-cyan/75"
-                        style={{ height: `${Math.max(10, h)}%` }}
-                        title={formatRevenueGems(pt.revenueWon, locale)}
-                      />
-                    </div>
-                    <span className="text-[9px] font-semibold text-zinc-500">{pt.label}</span>
-                  </div>
-                );
-              })}
-            </div>
+            <RevenueBarChart
+              data={d.revenueByDay}
+              formatTooltip={(n) => formatRevenueGems(n, locale)}
+              ariaLabel={t("analytics.revenueBarsAria")}
+              emptyLabel={t("analytics.revenueChartEmpty")}
+              className="mt-0"
+              barClassName="bg-reels-crimson/65 [html[data-theme='light']_&]:bg-reels-crimson/80"
+            />
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-black/20 p-5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white">

@@ -19,6 +19,7 @@ import {
   type CustomizeDraftSummary,
 } from "@/lib/customizeDraftStorage";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
+import { useReelsConfirm } from "@/components/ReelsConfirmProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MYPAGE_OUTLINE_BTN_MD } from "@/lib/mypageOutlineCta";
 
@@ -152,6 +153,7 @@ function DraftRowView({
   onRemove: () => void;
 }) {
   const { t, locale } = useTranslation();
+  const reelsConfirm = useReelsConfirm();
   const numLocale = locale === "en" ? "en-US" : "ko-KR";
   const title = video?.title ?? t("drafts.videoFallback", { id: videoId });
   const poster = sanitizePosterSrc(video?.poster) ?? "";
@@ -204,8 +206,14 @@ function DraftRowView({
         <button
           type="button"
           onClick={() => {
-            if (typeof window !== "undefined" && !window.confirm(t("drafts.deleteConfirm"))) return;
-            onRemove();
+            void (async () => {
+              const ok = await reelsConfirm({
+                message: t("drafts.deleteConfirm"),
+                confirmLabel: t("common.delete"),
+                dialogAriaLabel: t("common.confirmDialogAria"),
+              });
+              if (ok) onRemove();
+            })();
           }}
           className={draftRowIconGhost}
           aria-label={t("drafts.deleteAria")}

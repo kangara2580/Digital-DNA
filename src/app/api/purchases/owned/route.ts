@@ -107,7 +107,10 @@ export async function GET() {
     };
   });
 
-    return NextResponse.json({ ok: true, videoIds, items });
+  items.sort((a, b) => b.acquiredAt - a.acquiredAt);
+  const orderedVideoIds = items.map((item) => item.videoId);
+
+    return NextResponse.json({ ok: true, videoIds: orderedVideoIds, items });
   } catch (err) {
     console.error("[purchases/owned]", err);
     return NextResponse.json({ ok: false, error: "internal_server_error" }, { status: 500 });

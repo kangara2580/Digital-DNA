@@ -27,6 +27,7 @@ import {
   replaceUserCart,
 } from "@/lib/supabaseUserSync";
 import { canonicalFavoriteVideoId } from "@/lib/favoriteVideoId";
+import { enrichCartFeedVideo } from "@/lib/feedVideoThumbnail";
 import { sanitizePosterSrc } from "@/lib/videoPoster";
 import { waitForSupabaseAccessToken } from "@/lib/waitSupabaseSessionReady";
 
@@ -83,7 +84,8 @@ function dedupeCartVideosByCanonicalId(videos: FeedVideo[]): FeedVideo[] {
 }
 
 function videosToBuilderItems(videos: FeedVideo[]): BuilderTimelineItem[] {
-  const uniq = dedupeCartVideosByCanonicalId(videos);
+  const enriched = videos.map(enrichCartFeedVideo);
+  const uniq = dedupeCartVideosByCanonicalId(enriched);
   return uniq.map((video, i) => ({
     key: `b-load-${video.id}-${i}`,
     video,
@@ -151,7 +153,7 @@ export function DopamineBasketProvider({ children }: { children: React.ReactNode
         }
         didAdd = true;
         const key = `b-${video.id}-${++builderSeq.current}`;
-        return [...items, { key, video }];
+        return [...items, { key, video: enrichCartFeedVideo(video) }];
       });
       logActionEvent({
         domain: "cart",

@@ -17,7 +17,7 @@ import { AuthPromptModal } from "@/components/AuthPromptModal";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
-import { getMetricsForVideoDetail } from "@/data/trendingStats";
+import { getGridCardMetrics } from "@/data/trendingStats";
 import {
   clonesRemaining,
   getCommerceMeta,
@@ -209,20 +209,7 @@ type ExploreReelSidebarMetrics = {
 };
 
 function useExploreReelSidebarMetrics(video: FeedVideo): ExploreReelSidebarMetrics {
-  const rankMetrics = useMemo(() => {
-    if (video.listing) {
-      const views = video.listing.views;
-      const sales = video.listing.salesCount;
-      const p = video.priceWon ?? 0;
-      return {
-        cumulativeRevenueWon: toGemPrice(p) * sales,
-        totalViews: Math.max(0, views),
-        totalLikes: Math.max(0, Math.floor(views * 0.028)),
-        growthPercent: 0,
-      };
-    }
-    return getMetricsForVideoDetail(video.id);
-  }, [video]);
+  const rankMetrics = useMemo(() => getGridCardMetrics(video), [video]);
 
   const meta = useMemo(
     () =>

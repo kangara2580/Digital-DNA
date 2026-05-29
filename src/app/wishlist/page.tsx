@@ -10,6 +10,7 @@ import { resolveManualTikTokVideoForStudio } from "@/data/tiktokData";
 import { buildWishlistVideoLookup } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useReelsConfirm } from "@/components/ReelsConfirmProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   feedOverlayCheckboxInputClass,
@@ -45,6 +46,7 @@ function sortRows(rows: Row[], sort: SortValue): Row[] {
 
 export default function WishlistPage() {
   const { t } = useTranslation();
+  const reelsConfirm = useReelsConfirm();
   const sortOptions = useMemo(
     () =>
       [
@@ -91,16 +93,16 @@ export default function WishlistPage() {
 
   const clearWishlistSelection = useCallback(() => setSelected(new Set()), []);
 
-  const deleteSelectedWishlist = useCallback(() => {
+  const deleteSelectedWishlist = useCallback(async () => {
     if (selected.size === 0) return;
-    if (
-      typeof window !== "undefined" &&
-      !window.confirm(t("mypage.wishlist.confirmRemoveSelected", { n: selected.size }))
-    ) {
-      return;
-    }
+    const ok = await reelsConfirm({
+      message: t("mypage.wishlist.confirmRemoveSelected", { n: selected.size }),
+      confirmLabel: t("common.confirm"),
+      dialogAriaLabel: t("common.confirmDialogAria"),
+    });
+    if (!ok) return;
     void removeMany([...selected]).then(() => setSelected(new Set()));
-  }, [selected, removeMany, t]);
+  }, [selected, removeMany, reelsConfirm, t]);
 
   const showLoginGate =
     supabaseConfigured &&

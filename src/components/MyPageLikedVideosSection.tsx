@@ -14,6 +14,7 @@ import {
   type UserFavoriteLikeUpdatedDetail,
 } from "@/hooks/useVideoLike";
 import { GlobalLoading } from "@/components/GlobalLoading";
+import { useReelsConfirm } from "@/components/ReelsConfirmProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   feedOverlayCheckboxInputClass,
@@ -65,6 +66,7 @@ const LOGIN_REDIRECT = encodeURIComponent("/mypage?tab=likes");
 export function MyPageLikedVideosSection() {
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const { t } = useTranslation();
+  const reelsConfirm = useReelsConfirm();
 
   const sortOptions = useMemo(
     () =>
@@ -172,12 +174,12 @@ export function MyPageLikedVideosSection() {
 
   const unlikeSelected = useCallback(async () => {
     if (!user || selected.size === 0) return;
-    if (
-      typeof window !== "undefined" &&
-      !window.confirm(t("mypage.likes.confirmUnlike", { n: selected.size }))
-    ) {
-      return;
-    }
+    const ok = await reelsConfirm({
+      message: t("mypage.likes.confirmUnlike", { n: selected.size }),
+      confirmLabel: t("common.confirm"),
+      dialogAriaLabel: t("common.confirmDialogAria"),
+    });
+    if (!ok) return;
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
     const ready = await waitForSupabaseAccessToken(supabase);
@@ -191,7 +193,7 @@ export function MyPageLikedVideosSection() {
     }
     await loadLikes();
     setSelected(new Set());
-  }, [selected, user, loadLikes, t]);
+  }, [selected, user, loadLikes, reelsConfirm, t]);
 
   const showLoginGate = supabaseConfigured && !authLoading && hydrated && !user;
 

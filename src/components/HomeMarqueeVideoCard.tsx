@@ -289,7 +289,7 @@ export function HomeMarqueeVideoCard({ video }: { video: FeedVideo }) {
               <GemAmount
                 value={priceLabel}
                 className={`${videoCardPriceOnMediaClass} inline-flex max-w-[min(100%,calc(100%-3.5rem))] justify-center px-1 text-center text-[13px] font-bold tabular-nums text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.92),0_0_10px_rgba(0,0,0,0.5)] sm:max-w-[min(100%,calc(100%-4rem))] sm:text-sm ${hoverRevealPrice}`}
-                iconClassName="h-3.5 w-3.5 shrink-0 text-white [filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.92))]"
+                iconClassName="h-3.5 w-3.5 shrink-0 text-[color:var(--reels-point)] [filter:drop-shadow(0_1px_4px_rgba(0,0,0,0.85))]"
               />
             </div>
           ) : null}

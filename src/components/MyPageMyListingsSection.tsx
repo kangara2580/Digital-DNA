@@ -18,12 +18,19 @@ import { MYPAGE_OUTLINE_BTN_MD, MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlin
 import type { FeedVideo } from "@/data/videos";
 import type { TrendingRankMetrics } from "@/data/trendingStats";
 import { metricsForSellerListingCard } from "@/lib/sellerListingCardMetricsPure";
+import { useReelsConfirm } from "@/components/ReelsConfirmProvider";
 import { useTranslation } from "@/hooks/useTranslation";
+import {
+  feedOverlayCheckboxInputClass,
+  feedOverlayCheckboxLabelClass,
+  feedToolbarCheckboxInputClass,
+} from "@/lib/brandPinkTokens";
 
 const PENDING_UPLOADED_VIDEO_KEY = "sell:pending-uploaded-video";
 
 export function MyPageMyListingsSection() {
   const { t } = useTranslation();
+  const reelsConfirm = useReelsConfirm();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const [videos, setVideos] = useState<FeedVideo[]>([]);
   const [listingCardMetrics, setListingCardMetrics] = useState<
@@ -262,18 +269,17 @@ export function MyPageMyListingsSection() {
     [getToken, removeFromSelection, t],
   );
 
-  const confirmDeleteSelected = useCallback(() => {
+  const confirmDeleteSelected = useCallback(async () => {
     if (deleteBusy || selectedIds.length === 0) return;
     const n = selectedIds.length;
-    if (
-      !window.confirm(
-        t("listings.deleteConfirm", { n }),
-      )
-    ) {
-      return;
-    }
+    const ok = await reelsConfirm({
+      message: t("listings.deleteConfirm", { n }),
+      confirmLabel: t("common.delete"),
+      dialogAriaLabel: t("common.confirmDialogAria"),
+    });
+    if (!ok) return;
     void deleteByIds([...selectedIds]);
-  }, [deleteBusy, selectedIds, deleteByIds, t]);
+  }, [deleteBusy, selectedIds, deleteByIds, reelsConfirm, t]);
 
   if (authLoading) {
     return (
@@ -364,12 +370,17 @@ export function MyPageMyListingsSection() {
             ) : null}
           </p>
         </div>
-        <Link href="/sell" className={`inline-flex ${MYPAGE_OUTLINE_BTN_MD}`}>
-          <span className="text-[22px] leading-none text-[color:var(--reels-point)]">+</span>
-          <span className="ml-1.5 text-white [html[data-theme='light']_&]:text-zinc-900">
-            {t("listings.newListing").replace(/\s*[→➜➡]+$/u, "")}
-          </span>
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/seller/reviews" className={`inline-flex ${MYPAGE_OUTLINE_BTN_MD}`}>
+            {t("seller.reviews.manageLink")}
+          </Link>
+          <Link href="/sell" className={`inline-flex ${MYPAGE_OUTLINE_BTN_MD}`}>
+            <span className="text-[22px] leading-none text-[color:var(--reels-point)]">+</span>
+            <span className="ml-1.5 text-white [html[data-theme='light']_&]:text-zinc-900">
+              {t("listings.newListing").replace(/\s*[→➜➡]+$/u, "")}
+            </span>
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -413,7 +424,7 @@ export function MyPageMyListingsSection() {
             checked={allSelected}
             onChange={toggleSelectAll}
             disabled={deleteBusy || videos.length === 0}
-            className="h-4 w-4 rounded border-white/30 bg-black/40 text-[color:var(--reels-point)] accent-[color:var(--reels-point)] focus:ring-[color:var(--reels-point)]/35 [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-white"
+            className={feedToolbarCheckboxInputClass}
             aria-label={t("listings.selectAllAria")}
           />
           {t("listings.selectAllAria")}
@@ -445,13 +456,13 @@ export function MyPageMyListingsSection() {
           const checked = selectedIds.includes(v.id);
           return (
             <li key={v.id} className="group relative min-w-0">
-              <label className="absolute left-1.5 top-1.5 z-[25] flex cursor-pointer items-center justify-center rounded-md border border-white/25 bg-black/70 p-1.5 shadow-md backdrop-blur-sm transition hover:bg-black/85 [html[data-theme='light']_&]:border-zinc-400 [html[data-theme='light']_&]:bg-white/95">
+              <label className={`${feedOverlayCheckboxLabelClass} z-[25]`}>
                 <input
                   type="checkbox"
                   checked={checked}
                   onChange={() => toggleSelect(v.id)}
                   disabled={deleteBusy}
-                  className="h-3.5 w-3.5 rounded border-white/35 text-[color:var(--reels-point)] accent-[color:var(--reels-point)] focus:ring-[color:var(--reels-point)]/35 [html[data-theme='light']_&]:border-zinc-400"
+                  className={feedOverlayCheckboxInputClass}
                   aria-label={t("listings.selectVideoAria", { title: v.title })}
                 />
               </label>

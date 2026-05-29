@@ -40,7 +40,7 @@ import {
   needsServerMp4Extraction,
   resolveKlingMotionVideoUrl,
 } from "@/lib/klingMotionVideoUrl";
-import { getMetricsForVideoDetail } from "@/data/trendingStats";
+import { getGridCardMetrics } from "@/data/trendingStats";
 import {
   clonesRemaining,
   getCommerceMeta,
@@ -49,6 +49,7 @@ import {
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { SellerIdentityLink } from "@/components/SellerIdentityLink";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
+import { useReelsConfirm } from "@/components/ReelsConfirmProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import { translate } from "@/lib/i18n/dictionaries";
 import type { SiteLocale } from "@/lib/sitePreferences";
@@ -498,6 +499,7 @@ export function PurchaseCustomizeStudio({
   const isLocalFaceSwapDemo = LOCAL_FACE_SWAP_VIDEO_IDS.includes(video.id);
   const owned = hasPurchased(video.id) || isLocalFaceSwapDemo;
   const { t, locale } = useTranslation();
+  const reelsConfirm = useReelsConfirm();
   const displayTitle = useVideoDisplayTitle();
 
   const purchaseCommerceMeta = useMemo(
@@ -507,20 +509,7 @@ export function PurchaseCustomizeStudio({
         : getCommerceMeta(video.id),
     [video],
   );
-  const purchaseRankMetrics = useMemo(() => {
-    if (video.listing) {
-      const views = video.listing.views;
-      const sales = video.listing.salesCount;
-      const p = video.priceWon ?? 0;
-      return {
-        cumulativeRevenueWon: toGemPrice(p) * sales,
-        totalViews: Math.max(0, views),
-        totalLikes: Math.max(0, Math.floor(views * 0.028)),
-        growthPercent: 0,
-      };
-    }
-    return getMetricsForVideoDetail(video.id);
-  }, [video]);
+  const purchaseRankMetrics = useMemo(() => getGridCardMetrics(video), [video]);
   const purchasePriceWon = video.priceWon ?? 0;
   const purchaseRemaining = clonesRemaining(purchaseCommerceMeta);
   const purchaseSoldOut =
@@ -2675,9 +2664,14 @@ export function PurchaseCustomizeStudio({
                                 </a>
                                 <button
                                     onClick={() => {
-                                        if(confirm("기존 영상을 닫고, 현재 설정으로 영상을 다시 렌더링하시겠습니까?")) {
-                                            setKlingJob(null);
-                                        }
+                                        void (async () => {
+                                          const ok = await reelsConfirm({
+                                            message: t("studio.kling.rerenderConfirm"),
+                                            confirmLabel: t("common.confirm"),
+                                            dialogAriaLabel: t("common.confirmDialogAria"),
+                                          });
+                                          if (ok) setKlingJob(null);
+                                        })();
                                     }}
                                     className="w-full py-3 bg-[#1A1A1A] border border-white/10 text-zinc-300 rounded-xl text-[12px] font-bold hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
                                 >

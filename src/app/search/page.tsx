@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { VideoCard } from "@/components/VideoCard";
-import { getMetricsForVideoDetail } from "@/data/trendingStats";
+import { resolveVideoCardMetrics } from "@/data/trendingStats";
 import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { translate } from "@/lib/i18n/dictionaries";
 import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
 import { getSiteLocale } from "@/lib/i18n/serverLocale";
+import { listingMetricsPayloadForFeeds } from "@/lib/sellerListingCardMetrics";
 import { searchMarketVideos } from "@/lib/searchMarketVideos";
 
 export async function generateMetadata({
@@ -43,6 +44,11 @@ export default async function SearchPage({
   const { q: rawQ = "" } = await searchParams;
   const query = rawQ.trim();
   const videos = query ? await searchMarketVideos(query) : [];
+  const dbListingVideos = videos.filter((v) => v.listing?.sellerId);
+  const metricsByVideoId =
+    dbListingVideos.length > 0
+      ? await listingMetricsPayloadForFeeds(dbListingVideos)
+      : {};
 
   return (
     <div className="mx-auto max-w-[1800px] pb-16 pt-4">
@@ -92,7 +98,7 @@ export default async function SearchPage({
                 footerExtension={
                   <TrendingVideoStatsFooter
                     hideMetricLabels
-                    metrics={getMetricsForVideoDetail(v.id)}
+                    metrics={resolveVideoCardMetrics(v, metricsByVideoId)}
                   />
                 }
               />

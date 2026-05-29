@@ -1,5 +1,5 @@
 import type { Video } from "@prisma/client";
-import { toGemPrice } from "@/lib/gemPrice";
+import { normalizeStoredPurchaseGems, toGemPrice } from "@/lib/gemPrice";
 import type {
   FunnelStage,
   RetentionStep,
@@ -16,6 +16,168 @@ import {
 
 /** 노출은 DB에 없어 조회수 대비 계수로만 추정 */
 const IMPRESSION_FACTOR = 1.15;
+
+export type SellerAnalyticsPurchase = {
+  videoId: string;
+  price: number;
+  createdAt: Date;
+};
+
+export type SellerAnalyticsLike = {
+  videoId: string;
+  createdAt: Date;
+};
+
+export type BuildSellerAnalyticsOptions = {
+  now?: Date;
+  purchases?: SellerAnalyticsPurchase[];
+  likes?: SellerAnalyticsLike[];
+};
+
+function purchaseOnUtcDay(p: SellerAnalyticsPurchase): number {
+  return utcDayStart(p.createdAt).getTime();
+}
+
+function purchaseInRange(
+  p: SellerAnalyticsPurchase,
+  rangeStart: Date,
+  rangeEnd: Date,
+): boolean {
+  const t = purchaseOnUtcDay(p);
+  return (
+    t >= utcDayStart(rangeStart).getTime() && t <= utcDayStart(rangeEnd).getTime()
+  );
+}
+
+function likeOnUtcDay(like: SellerAnalyticsLike): number {
+  return utcDayStart(like.createdAt).getTime();
+}
+
+function likeInRange(
+  like: SellerAnalyticsLike,
+  rangeStart: Date,
+  rangeEnd: Date,
+): boolean {
+  const t = likeOnUtcDay(like);
+  return (
+    t >= utcDayStart(rangeStart).getTime() && t <= utcDayStart(rangeEnd).getTime()
+  );
+}
+
+function countLikesInRange(
+  likes: SellerAnalyticsLike[],
+  videoId: string,
+  rangeStart: Date,
+  rangeEnd: Date,
+): number {
+  return likes.filter(
+    (l) => l.videoId === videoId && likeInRange(l, rangeStart, rangeEnd),
+  ).length;
+}
+
+function listingPriceByVideoId(videos: Video[]): Map<string, number> {
+  return new Map(videos.map((v) => [v.id, v.price]));
+}
+
+function purchaseRevenueGems(
+  p: SellerAnalyticsPurchase,
+  listingPrices: Map<string, number>,
+): number {
+  return normalizeStoredPurchaseGems(p.price, listingPrices.get(p.videoId) ?? 0);
+}
+
+function sumPurchaseRevenue(
+  purchases: SellerAnalyticsPurchase[],
+  listingPrices: Map<string, number>,
+  rangeStart: Date,
+  rangeEnd: Date,
+): number {
+  return purchases
+    .filter((p) => purchaseInRange(p, rangeStart, rangeEnd))
+    .reduce((sum, p) => sum + purchaseRevenueGems(p, listingPrices), 0);
+}
+
+function countPurchasesInRange(
+  purchases: SellerAnalyticsPurchase[],
+  rangeStart: Date,
+  rangeEnd: Date,
+): number {
+  return purchases.filter((p) => purchaseInRange(p, rangeStart, rangeEnd)).length;
+}
+
+const WEEKDAY_KO = ["일", "월", "화", "수", "목", "금", "토"] as const;
+
+function chartShortDate(ymd: string): string {
+  return ymd.slice(5).replace("-", "/");
+}
+
+function chartDayLabel(ymd: string): string {
+  const dt = parseYmdToUtcNoon(ymd);
+  if (!dt) return chartShortDate(ymd);
+  return `${WEEKDAY_KO[dt.getUTCDay()]} ${chartShortDate(ymd)}`;
+}
+
+function chartBucketLabel(fromYmd: string, toYmd: string): string {
+  const from = chartShortDate(fromYmd);
+  const to = chartShortDate(toYmd);
+  return from === to ? from : `${from}~${to}`;
+}
+
+/** 14일 이하: 일별, 한달: 7구간, 분기: 10, 1년: 12구간 */
+function resolveRevenueBucketCount(periodDays: number): number {
+  if (periodDays <= 14) return periodDays;
+  if (periodDays <= 31) return 7;
+  if (periodDays <= 90) return 10;
+  return 12;
+}
+
+function dailyRevenueFromPurchases(
+  purchases: SellerAnalyticsPurchase[],
+  listingPrices: Map<string, number>,
+  dayYmd: string,
+): number {
+  const day = parseYmdToUtcNoon(dayYmd);
+  if (!day) return 0;
+  return purchases
+    .filter((p) => purchaseInRange(p, day, day))
+    .reduce((sum, p) => sum + purchaseRevenueGems(p, listingPrices), 0);
+}
+
+function buildRevenueSeriesFromPurchases(
+  purchases: SellerAnalyticsPurchase[],
+  listingPrices: Map<string, number>,
+  periodStart: Date,
+  periodEnd: Date,
+  periodDays: number,
+): RevenueDayPoint[] {
+  const days = enumerateDays(periodStart, periodEnd);
+  if (days.length === 0) return [];
+
+  if (periodDays <= 14) {
+    return days.map((d) => ({
+      label: chartDayLabel(d),
+      revenueWon: Math.round(dailyRevenueFromPurchases(purchases, listingPrices, d)),
+    }));
+  }
+
+  const bucketCount = Math.min(resolveRevenueBucketCount(periodDays), days.length);
+  const out: RevenueDayPoint[] = [];
+  const chunk = Math.ceil(days.length / bucketCount);
+  for (let b = 0; b < bucketCount; b++) {
+    const slice = days.slice(b * chunk, (b + 1) * chunk);
+    let sub = 0;
+    for (const d of slice) {
+      sub += dailyRevenueFromPurchases(purchases, listingPrices, d);
+    }
+    const fromYmd = slice[0] ?? "";
+    const toYmd = slice[slice.length - 1] ?? "";
+    out.push({
+      label: chartBucketLabel(fromYmd, toYmd),
+      revenueWon: Math.round(sub),
+    });
+  }
+  return out;
+}
 
 function ymd(d: Date): string {
   const y = d.getUTCFullYear();
@@ -142,15 +304,13 @@ function buildRevenueSeries(
   if (days.length === 0) return [];
 
   if (periodDays <= 14) {
-    const wk = ["일", "월", "화", "수", "목", "금", "토"];
-    return days.map((d) => {
-      const dt = parseYmdToUtcNoon(d)!;
-      const label = `${wk[dt.getUTCDay()]} ${d.slice(5).replace("-", "/")}`;
-      return { label, revenueWon: Math.round(dailyRevenueForDay(videos, d, today)) };
-    });
+    return days.map((d) => ({
+      label: chartDayLabel(d),
+      revenueWon: Math.round(dailyRevenueForDay(videos, d, today)),
+    }));
   }
 
-  const bucketCount = Math.min(7, Math.max(1, days.length));
+  const bucketCount = Math.min(resolveRevenueBucketCount(periodDays), days.length);
   const out: RevenueDayPoint[] = [];
   const chunk = Math.ceil(days.length / bucketCount);
   for (let b = 0; b < bucketCount; b++) {
@@ -159,10 +319,10 @@ function buildRevenueSeries(
     for (const d of slice) {
       sub += dailyRevenueForDay(videos, d, today);
     }
-    const from = slice[0]?.replace(/-/g, ". ") ?? "";
-    const to = slice[slice.length - 1]?.replace(/-/g, ". ") ?? "";
+    const fromYmd = slice[0] ?? "";
+    const toYmd = slice[slice.length - 1] ?? "";
     out.push({
-      label: slice.length <= 1 ? from : `${from}~${to}`,
+      label: chartBucketLabel(fromYmd, toYmd),
       revenueWon: Math.round(sub),
     });
   }
@@ -203,22 +363,22 @@ function buildFunnel(
   return [
     { label: "노출", stepRatePercent: 100, funnelPercent: 100 },
     {
-      label: "피드·목록 클릭",
+      label: "목록·피드 클릭",
       stepRatePercent: Math.round(ctr * 0.96),
       funnelPercent: Math.round(ctr * 0.96),
     },
     {
-      label: "상세 페이지",
+      label: "상세 보기",
       stepRatePercent: Math.round(ctr * 0.88),
       funnelPercent: Math.round(ctr * 0.9),
     },
     {
-      label: "장바구니·찜(추정)",
+      label: "장바구니·찜",
       stepRatePercent: Math.round(mid),
       funnelPercent: Math.round(ctr * 0.42),
     },
     {
-      label: "결제·복제 완료",
+      label: "구매 완료",
       stepRatePercent: Math.round(pSale),
       funnelPercent: Math.round((ctr * pSale) / 100),
     },
@@ -239,11 +399,11 @@ function buildRetention(totalViews: number, totalSales: number): RetentionStep[]
         )
       : 40;
   return [
-    { label: "0–3초 훅", audiencePercent: Math.min(100, Math.round(engagement + 6)) },
-    { label: "3–15초", audiencePercent: Math.round(engagement) },
-    { label: "15–30초", audiencePercent: Math.round(engagement * 0.82) },
+    { label: "처음 3초", audiencePercent: Math.min(100, Math.round(engagement + 6)) },
+    { label: "3~15초", audiencePercent: Math.round(engagement) },
+    { label: "15~30초", audiencePercent: Math.round(engagement * 0.82) },
     { label: "30초 이상", audiencePercent: Math.round(engagement * 0.64) },
-    { label: "완주·루프", audiencePercent: Math.round(engagement * 0.45) },
+    { label: "끝까지 시청", audiencePercent: Math.round(engagement * 0.45) },
   ];
 }
 
@@ -251,7 +411,7 @@ function buildChannels(): TrafficChannel[] {
   return [
     {
       id: "app",
-      label: "앱·마켓 통합 유입",
+      label: "전체 유입",
       percent: 100,
       deltaPercentPoints: 0,
     },
@@ -307,7 +467,13 @@ export function resolveAnalyticsRange(
   periodStart.setUTCDate(periodStart.getUTCDate() - (days - 1));
 
   const periodLabel =
-    days === 7 ? "최근 7일" : days === 28 ? "최근 28일" : days === 90 ? "최근 90일" : `최근 ${days}일`;
+    days === 7
+      ? "최근 7일"
+      : days === 30
+        ? "최근 한달"
+        : days === 365
+          ? "최근 1년"
+          : `최근 ${days}일`;
 
   return { periodStart, periodEnd, periodDays: days, periodLabel };
 }
@@ -315,8 +481,14 @@ export function resolveAnalyticsRange(
 export function buildSellerAnalyticsFromVideos(
   videos: Video[],
   input: AnalyticsRangeInput,
-  now = new Date(),
+  options: BuildSellerAnalyticsOptions = {},
 ): SellerAnalyticsSnapshot {
+  const now = options.now ?? new Date();
+  const purchases = options.purchases ?? [];
+  const likes = options.likes ?? [];
+  const usePurchases = purchases.length > 0;
+  const listingPrices = listingPriceByVideoId(videos);
+
   const { periodStart, periodEnd, periodDays, dateRange, periodLabel } =
     resolveAnalyticsRange(input, now);
   const { prevStart, prevEnd } = previousPeriod(periodStart, periodEnd);
@@ -329,20 +501,42 @@ export function buildSellerAnalyticsFromVideos(
   let totalLifetimeSales = 0;
   let totalLifetimeViews = 0;
   let totalPriceWeight = 0;
+  let avgSellingPrice = 0;
 
-  for (const v of videos) {
-    periodRevenue += estimatedRevenueInPeriod(v, periodStart, periodEnd, now);
-    prevRevenue += estimatedRevenueInPeriod(v, prevStart, prevEnd, now);
-    periodSales += estimatedSalesInPeriod(v, periodStart, periodEnd, now);
-    prevSales += estimatedSalesInPeriod(v, prevStart, prevEnd, now);
-    periodViews += estimatedViewsInPeriod(v, periodStart, periodEnd, now);
-    totalLifetimeSales += v.salesCount;
-    totalLifetimeViews += v.views;
-    totalPriceWeight += v.price * v.salesCount;
+  if (usePurchases) {
+    periodRevenue = sumPurchaseRevenue(purchases, listingPrices, periodStart, periodEnd);
+    prevRevenue = sumPurchaseRevenue(purchases, listingPrices, prevStart, prevEnd);
+    periodSales = countPurchasesInRange(purchases, periodStart, periodEnd);
+    prevSales = countPurchasesInRange(purchases, prevStart, prevEnd);
+    const periodPurchaseRows = purchases.filter((p) =>
+      purchaseInRange(p, periodStart, periodEnd),
+    );
+    for (const v of videos) {
+      totalLifetimeSales += v.salesCount;
+      totalLifetimeViews += v.views;
+    }
+    if (periodPurchaseRows.length > 0) {
+      const priceSum = periodPurchaseRows.reduce(
+        (sum, p) => sum + (listingPrices.get(p.videoId) ?? 0),
+        0,
+      );
+      avgSellingPrice = Math.round(priceSum / periodPurchaseRows.length);
+    }
+    periodViews = Math.round(periodSales * 95);
+  } else {
+    for (const v of videos) {
+      periodRevenue += estimatedRevenueInPeriod(v, periodStart, periodEnd, now);
+      prevRevenue += estimatedRevenueInPeriod(v, prevStart, prevEnd, now);
+      periodSales += estimatedSalesInPeriod(v, periodStart, periodEnd, now);
+      prevSales += estimatedSalesInPeriod(v, prevStart, prevEnd, now);
+      periodViews += estimatedViewsInPeriod(v, periodStart, periodEnd, now);
+      totalLifetimeSales += v.salesCount;
+      totalLifetimeViews += v.views;
+      totalPriceWeight += v.price * v.salesCount;
+    }
+    avgSellingPrice =
+      totalLifetimeSales > 0 ? Math.round(totalPriceWeight / totalLifetimeSales) : 0;
   }
-
-  const avgSellingPrice =
-    totalLifetimeSales > 0 ? Math.round(totalPriceWeight / totalLifetimeSales) : 0;
 
   const totalDetailViews = periodViews;
   const totalImpressions = Math.round(totalDetailViews * IMPRESSION_FACTOR);
@@ -355,16 +549,39 @@ export function buildSellerAnalyticsFromVideos(
       ? Math.min(100, (periodSales / totalDetailViews) * 100)
       : 0;
 
-  const revenueByDay = buildRevenueSeries(
-    videos,
-    periodStart,
-    periodEnd,
-    periodDays,
-    now,
-  );
+  const revenueByDay = usePurchases
+    ? buildRevenueSeriesFromPurchases(
+        purchases,
+        listingPrices,
+        periodStart,
+        periodEnd,
+        periodDays,
+      )
+    : buildRevenueSeries(videos, periodStart, periodEnd, periodDays, now);
 
   const rows: SellerVideoAnalyticsRow[] = videos
-    .map((v) => buildSellerVideoRowFromDb(v, periodStart, periodEnd, prevStart, prevEnd, now))
+    .map((v) =>
+      usePurchases
+        ? buildSellerVideoRowFromPurchases(
+            v,
+            purchases,
+            likes,
+            listingPrices,
+            periodStart,
+            periodEnd,
+            prevStart,
+            prevEnd,
+          )
+        : buildSellerVideoRowFromDb(
+            v,
+            likes,
+            periodStart,
+            periodEnd,
+            prevStart,
+            prevEnd,
+            now,
+          ),
+    )
     .sort((a, b) => b.cumulativeRevenueWon - a.cumulativeRevenueWon);
 
   return {
@@ -390,29 +607,33 @@ export function buildSellerAnalyticsFromVideos(
   };
 }
 
-function buildSellerVideoRowFromDb(
+function buildSellerVideoRowFromPurchases(
   v: Video,
+  purchases: SellerAnalyticsPurchase[],
+  likes: SellerAnalyticsLike[],
+  listingPrices: Map<string, number>,
   periodStart: Date,
   periodEnd: Date,
   prevStart: Date,
   prevEnd: Date,
-  now: Date,
 ): SellerVideoAnalyticsRow {
-  const cumulativeRevenueWon = videoLifetimeRevenue(v);
-  const impressions = Math.round(v.views * IMPRESSION_FACTOR);
-  const ctrPercent =
-    impressions > 0 ? Math.min(99.9, (v.views / impressions) * 100) : 0;
-
-  const pRev = estimatedRevenueInPeriod(v, periodStart, periodEnd, now);
-  const prevRev = estimatedRevenueInPeriod(v, prevStart, prevEnd, now);
+  const forVideo = purchases.filter((p) => p.videoId === v.id);
+  const pRev = sumPurchaseRevenue(forVideo, listingPrices, periodStart, periodEnd);
+  const prevRev = sumPurchaseRevenue(forVideo, listingPrices, prevStart, prevEnd);
   const rowGrowth = computeGrowthPercent(pRev, prevRev);
+  const periodSales = countPurchasesInRange(forVideo, periodStart, periodEnd);
+  const periodViews = Math.round(periodSales * 95);
+
+  const impressions = Math.round(periodViews * IMPRESSION_FACTOR);
+  const ctrPercent =
+    impressions > 0 ? Math.min(99.9, (periodViews / impressions) * 100) : 0;
 
   const avgWatchSec =
-    v.durationSec != null && v.views > 0
+    v.durationSec != null && periodViews > 0
       ? Math.min(v.durationSec, Math.round(v.durationSec * 0.52))
       : v.durationSec ?? 0;
   const completionRate =
-    v.views > 0
+    periodViews > 0
       ? Math.min(
           99,
           Math.round(
@@ -420,7 +641,7 @@ function buildSellerVideoRowFromDb(
               82 *
                 (1 -
                   Math.exp(
-                    -v.salesCount / Math.max(30, v.views / 80),
+                    -periodSales / Math.max(30, periodViews / 80),
                   )),
           ),
         )
@@ -431,10 +652,68 @@ function buildSellerVideoRowFromDb(
     title: v.title,
     poster: v.poster,
     priceWon: v.price,
-    salesCount: v.salesCount,
-    cumulativeRevenueWon,
-    totalViews: v.views,
-    totalLikes: 0,
+    salesCount: periodSales,
+    cumulativeRevenueWon: Math.round(pRev),
+    totalViews: periodViews,
+    totalLikes: countLikesInRange(likes, v.id, periodStart, periodEnd),
+    growthPercent: rowGrowth,
+    ctrPercent,
+    impressions,
+    avgWatchSec,
+    completionRate,
+  };
+}
+
+function buildSellerVideoRowFromDb(
+  v: Video,
+  likes: SellerAnalyticsLike[],
+  periodStart: Date,
+  periodEnd: Date,
+  prevStart: Date,
+  prevEnd: Date,
+  now: Date,
+): SellerVideoAnalyticsRow {
+  const pRev = estimatedRevenueInPeriod(v, periodStart, periodEnd, now);
+  const prevRev = estimatedRevenueInPeriod(v, prevStart, prevEnd, now);
+  const rowGrowth = computeGrowthPercent(pRev, prevRev);
+  const periodSales = Math.round(
+    estimatedSalesInPeriod(v, periodStart, periodEnd, now),
+  );
+  const periodViews = Math.round(
+    estimatedViewsInPeriod(v, periodStart, periodEnd, now),
+  );
+  const impressions = Math.round(periodViews * IMPRESSION_FACTOR);
+  const ctrPercent =
+    impressions > 0 ? Math.min(99.9, (periodViews / impressions) * 100) : 0;
+
+  const avgWatchSec =
+    v.durationSec != null && periodViews > 0
+      ? Math.min(v.durationSec, Math.round(v.durationSec * 0.52))
+      : v.durationSec ?? 0;
+  const completionRate =
+    periodViews > 0
+      ? Math.min(
+          99,
+          Math.round(
+            18 +
+              82 *
+                (1 -
+                  Math.exp(
+                    -periodSales / Math.max(30, periodViews / 80),
+                  )),
+          ),
+        )
+      : 0;
+
+  return {
+    videoId: v.id,
+    title: v.title,
+    poster: v.poster,
+    priceWon: v.price,
+    salesCount: periodSales,
+    cumulativeRevenueWon: Math.round(pRev),
+    totalViews: periodViews,
+    totalLikes: countLikesInRange(likes, v.id, periodStart, periodEnd),
     growthPercent: rowGrowth,
     ctrPercent,
     impressions,
@@ -446,35 +725,62 @@ function buildSellerVideoRowFromDb(
 export function buildSellerVideoDetailFromDb(
   video: Video,
   input: AnalyticsRangeInput,
-  now = new Date(),
+  options: BuildSellerAnalyticsOptions = {},
 ): SellerVideoDetailSnapshot {
+  const now = options.now ?? new Date();
+  const purchases = options.purchases ?? [];
+  const likes = options.likes ?? [];
+  const usePurchases = purchases.length > 0;
+  const listingPrices = listingPriceByVideoId([video]);
+  const forVideo = purchases.filter((p) => p.videoId === video.id);
+
   const { periodStart, periodEnd, periodDays, dateRange, periodLabel } =
     resolveAnalyticsRange(input, now);
   const { prevStart, prevEnd } = previousPeriod(periodStart, periodEnd);
 
-  const row = buildSellerVideoRowFromDb(
-    video,
-    periodStart,
-    periodEnd,
-    prevStart,
-    prevEnd,
-    now,
-  );
-  const periodRevenueWon = Math.round(
-    estimatedRevenueInPeriod(video, periodStart, periodEnd, now),
-  );
+  const row = usePurchases
+    ? buildSellerVideoRowFromPurchases(
+        video,
+        forVideo,
+        likes,
+        listingPrices,
+        periodStart,
+        periodEnd,
+        prevStart,
+        prevEnd,
+      )
+    : buildSellerVideoRowFromDb(
+        video,
+        likes,
+        periodStart,
+        periodEnd,
+        prevStart,
+        prevEnd,
+        now,
+      );
+  const periodRevenueWon = usePurchases
+    ? Math.round(
+        sumPurchaseRevenue(forVideo, listingPrices, periodStart, periodEnd),
+      )
+    : Math.round(estimatedRevenueInPeriod(video, periodStart, periodEnd, now));
 
-  const revenueByDay = buildRevenueSeries(
-    [video],
-    periodStart,
-    periodEnd,
-    periodDays,
-    now,
-  );
+  const revenueByDay = usePurchases
+    ? buildRevenueSeriesFromPurchases(
+        forVideo,
+        listingPrices,
+        periodStart,
+        periodEnd,
+        periodDays,
+      )
+    : buildRevenueSeries([video], periodStart, periodEnd, periodDays, now);
 
-  const snap = buildSellerAnalyticsFromVideos([video], input, now);
-  const pRev = estimatedRevenueInPeriod(video, periodStart, periodEnd, now);
-  const prevRev = estimatedRevenueInPeriod(video, prevStart, prevEnd, now);
+  const snap = buildSellerAnalyticsFromVideos([video], input, { now, purchases, likes });
+  const pRev = usePurchases
+    ? sumPurchaseRevenue(forVideo, listingPrices, periodStart, periodEnd)
+    : estimatedRevenueInPeriod(video, periodStart, periodEnd, now);
+  const prevRev = usePurchases
+    ? sumPurchaseRevenue(forVideo, listingPrices, prevStart, prevEnd)
+    : estimatedRevenueInPeriod(video, prevStart, prevEnd, now);
 
   const h = video.id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
 

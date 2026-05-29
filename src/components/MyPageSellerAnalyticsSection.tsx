@@ -5,13 +5,10 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   BarChart3,
-  Eye,
   Gauge,
   MousePointerClick,
-  Radio,
   ShoppingBag,
   TrendingUp,
-  Users,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
@@ -27,12 +24,17 @@ import type { SiteLocale } from "@/lib/sitePreferences";
 import { translate } from "@/lib/i18n/dictionaries";
 import { localizeSellerAnalyticsSnapshot } from "@/lib/i18n/localizeSellerAnalytics";
 import { useTranslation } from "@/hooks/useTranslation";
+import { RevenueBarChart } from "@/components/analytics/RevenueBarChart";
 import { GemAmount } from "@/components/PaymentDiamondIcon";
 import { formatGemsLocale } from "@/lib/gemDisplay";
 import { toGemPrice } from "@/lib/gemPrice";
 
+/** 프리셋: 7일 · 한달(30일) · 1년(365일) */
+export const ANALYTICS_PRESET_DAYS = [7, 30, 365] as const;
+export type AnalyticsPresetDays = (typeof ANALYTICS_PRESET_DAYS)[number];
+
 type PeriodState =
-  | { kind: "preset"; days: 7 | 28 | 90 }
+  | { kind: "preset"; days: AnalyticsPresetDays }
   | { kind: "custom"; start: string; end: string };
 
 function localYMD(d: Date): string {
@@ -45,7 +47,7 @@ function localYMD(d: Date): string {
 function defaultRangeDraft(): { start: string; end: string } {
   const end = new Date();
   const start = new Date();
-  start.setDate(end.getDate() - 29);
+  start.setDate(end.getDate() - 29); // 약 30일(한달) 기본 범위
   return { start: localYMD(start), end: localYMD(end) };
 }
 
@@ -63,6 +65,12 @@ function videoInsightHref(videoId: string, period: PeriodState): string {
 function formatRevenueGems(n: number, locale: SiteLocale): string {
   return formatGemsLocale(locale, Math.round(n));
 }
+
+/** KPI·표 수익 옆 보석 아이콘 */
+const ANALYTICS_GEM_ICON_KPI =
+  "h-6 w-6 shrink-0 text-[color:var(--reels-point)] sm:h-7 sm:w-7";
+const ANALYTICS_GEM_ICON_TABLE =
+  "h-5 w-5 shrink-0 text-[color:var(--reels-point)] sm:h-5 sm:w-5";
 
 function formatCompact(n: number, locale: SiteLocale): string {
   const locTag = locale === "en" ? "en-US" : "ko-KR";
@@ -93,23 +101,15 @@ function KpiCard({
   label,
   value,
   sub,
-  accent,
 }: {
   icon: LucideIcon;
   label: string;
   value: React.ReactNode;
   sub?: React.ReactNode;
-  accent?: "crimson" | "violet";
 }) {
-  const ring =
-    accent === "crimson"
-      ? "border-[color:var(--reels-point)]/30 shadow-[0_0_32px_-12px_rgba(255,45,141,0.38)]"
-      : accent === "violet"
-        ? "border-[color:var(--reels-point)]/18 shadow-[0_0_28px_-14px_rgba(255,45,141,0.22)]"
-        : "border-[color:var(--reels-point)]/22 shadow-[0_0_28px_-14px_rgba(255,45,141,0.26)]";
   return (
     <div
-      className={`rounded-2xl border bg-black/30 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white ${ring}`}
+      className="rounded-2xl border border-white/10 bg-black/30 p-4 shadow-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm"
     >
       <div className="flex items-start justify-between gap-2">
         <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[14px]">
@@ -125,39 +125,6 @@ function KpiCard({
           {sub}
         </p>
       ) : null}
-    </div>
-  );
-}
-
-function RevenueBars({
-  data,
-  locale,
-  ariaLabel,
-}: {
-  data: SellerAnalyticsSnapshot["revenueByDay"];
-  locale: SiteLocale;
-  ariaLabel: string;
-}) {
-  const max = Math.max(...data.map((d) => d.revenueWon), 1);
-  return (
-    <div className="flex h-36 items-end gap-1.5 sm:gap-2" role="img" aria-label={ariaLabel}>
-      {data.map((d) => {
-        const h = Math.round((d.revenueWon / max) * 100);
-        return (
-          <div key={d.label} className="flex min-w-0 flex-1 flex-col items-center gap-1">
-            <div className="flex w-full flex-1 flex-col justify-end">
-              <div
-                className="w-full rounded-t-md bg-gradient-to-t from-reels-crimson/35 to-[color:var(--reels-point)] [html[data-theme='light']_&]:from-[#FCEEF6] [html[data-theme='light']_&]:to-reels-crimson"
-                style={{ height: `${Math.max(8, h)}%` }}
-                title={formatRevenueGems(d.revenueWon, locale)}
-              />
-            </div>
-            <span className="text-[12px] font-semibold text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[13px]">
-              {d.label}
-            </span>
-          </div>
-        );
-      })}
     </div>
   );
 }
@@ -229,13 +196,6 @@ export function MyPageSellerAnalyticsSection() {
     void fetchSnapshot();
   }, [fetchSnapshot]);
 
-  useEffect(() => {
-    const id = window.setInterval(() => {
-      if (document.visibilityState === "visible") void fetchSnapshot();
-    }, 60_000);
-    return () => window.clearInterval(id);
-  }, [fetchSnapshot]);
-
   const applyCustomRange = () => {
     if (rangeDraft.start > rangeDraft.end) {
       window.alert(t("analytics.dateOrderError"));
@@ -249,6 +209,8 @@ export function MyPageSellerAnalyticsSection() {
       setRangeDraft({ start: period.start, end: period.end });
     }
   }, [period]);
+
+  const refreshing = loading && Boolean(snapshot);
 
   if (loading && !snapshot) {
     return (
@@ -274,19 +236,16 @@ export function MyPageSellerAnalyticsSection() {
   const numLocale = locale === "en" ? "en-US" : "ko-KR";
 
   return (
-    <section aria-labelledby="seller-analytics-heading">
+    <section
+      aria-labelledby="seller-analytics-heading"
+      aria-busy={refreshing}
+      className={refreshing ? "opacity-90 transition-opacity" : undefined}
+    >
       <h2 id="seller-analytics-heading" className="sr-only">
         {t("analytics.title")}
       </h2>
       <div className="space-y-2 border-b border-white/10 pb-5 [html[data-theme='light']_&]:border-zinc-200">
-        <div className="flex flex-col gap-3 min-[520px]:flex-row min-[520px]:items-center min-[520px]:justify-between min-[520px]:gap-3 lg:gap-4">
-          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 sm:gap-x-3">
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-reels-crimson/40 bg-reels-crimson/12 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-[#FAD4E8] [html[data-theme='light']_&]:text-reels-crimson sm:px-2 sm:text-[12px]">
-              <Radio className="h-2.5 w-2.5 animate-pulse sm:h-3 sm:w-3" aria-hidden />
-              {loading ? t("analytics.syncing") : t("analytics.refresh60s")}
-            </span>
-          </div>
-
+        <div className="flex flex-col gap-3 min-[520px]:flex-row min-[520px]:items-center min-[520px]:justify-end min-[520px]:gap-3 lg:gap-4">
           <div className="flex min-w-0 w-full flex-wrap items-center justify-start gap-1.5 min-[520px]:w-auto min-[520px]:justify-end min-[520px]:flex-nowrap sm:gap-2">
             <div
               className="flex shrink-0 flex-nowrap items-center gap-1 sm:gap-1.5"
@@ -294,7 +253,7 @@ export function MyPageSellerAnalyticsSection() {
               aria-label={t("analytics.presetAria")}
             >
               <BarChart3 className="h-4 w-4 shrink-0 text-reels-crimson sm:h-[18px] sm:w-[18px]" aria-hidden />
-              {([7, 28, 90] as const).map((d) => (
+              {ANALYTICS_PRESET_DAYS.map((d) => (
                 <button
                   key={d}
                   type="button"
@@ -305,7 +264,11 @@ export function MyPageSellerAnalyticsSection() {
                       : "border-white/10 bg-black/20 text-zinc-400 hover:border-[color:var(--reels-point)]/25 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-600"
                   }`}
                 >
-                  {d === 7 ? t("analytics.day7") : d === 28 ? t("analytics.day28") : t("analytics.day90")}
+                  {d === 7
+                    ? t("analytics.day7")
+                    : d === 30
+                      ? t("analytics.dayMonth")
+                      : t("analytics.dayYear")}
                 </button>
               ))}
             </div>
@@ -362,7 +325,8 @@ export function MyPageSellerAnalyticsSection() {
             <GemAmount
               value={formatRevenueGems(snapTotals.cumulativeRevenueWon, locale)}
               amountClassName={revenueAmountClass}
-              iconClassName="h-4 w-4 shrink-0 text-[color:var(--reels-point)]"
+              iconClassName={ANALYTICS_GEM_ICON_KPI}
+              gapClassName="gap-1"
             />
           }
           sub={
@@ -385,7 +349,6 @@ export function MyPageSellerAnalyticsSection() {
               </span>
             </>
           }
-          accent="crimson"
         />
         <KpiCard
           icon={Gauge}
@@ -394,14 +357,14 @@ export function MyPageSellerAnalyticsSection() {
             snapTotals.avgSellingPrice > 0 ? (
               <GemAmount
                 value={formatGemsLocale(locale, toGemPrice(snapTotals.avgSellingPrice))}
-                iconClassName="h-4 w-4 shrink-0 text-[color:var(--reels-point)]"
+                iconClassName={ANALYTICS_GEM_ICON_KPI}
+                gapClassName="gap-1"
               />
             ) : (
               "—"
             )
           }
           sub={t("analytics.kpiAvgPriceSub")}
-          accent="violet"
         />
         <KpiCard
           icon={MousePointerClick}
@@ -418,162 +381,53 @@ export function MyPageSellerAnalyticsSection() {
         />
       </div>
 
-      <div className="mt-6 grid gap-5 lg:grid-cols-2">
-        {/* 수익 추이 */}
-        <div className="rounded-2xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:p-5">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="text-[16px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[17px]">
-              {t("analytics.revenueTrend")}
-            </h3>
-            <span className="text-[13px] font-medium text-zinc-500">
-              {t("analytics.revenueTrendMeta", {
-                bars: displaySnapshot.revenueByDay.length,
-                days: displaySnapshot.periodDays,
-              })}
-            </span>
-          </div>
-          <RevenueBars
-            data={displaySnapshot.revenueByDay}
-            locale={locale}
-            ariaLabel={t("analytics.revenueBarsAria")}
-          />
-        </div>
-
-        {/* 퍼널 */}
-        <div className="rounded-2xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:p-5">
+      <div className="mt-6 rounded-2xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:p-5">
+        <div className="flex items-center justify-between gap-2">
           <h3 className="text-[16px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[17px]">
-            {t("analytics.funnel")}
+            {t("analytics.revenueTrend")}
           </h3>
-          <p className="mt-1 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            {t("analytics.funnelHint")}
-          </p>
-          <ul className="mt-4 space-y-3">
-            {displaySnapshot.funnel.map((stage, i) => (
-              <li key={stage.label}>
-                <div className="flex items-center justify-between gap-2 text-[14px] sm:text-[15px]">
-                  <span className="font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">
-                    {i + 1}. {stage.label}
-                  </span>
-                  <span className="tabular-nums text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-                    {t("analytics.funnelStep", {
-                      step: stage.stepRatePercent,
-                      cum: stage.funnelPercent,
-                    })}
-                  </span>
-                </div>
-                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/5 [html[data-theme='light']_&]:bg-zinc-200">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-reels-crimson/55 to-[color:var(--reels-point)]"
-                    style={{ width: `${Math.min(100, stage.funnelPercent)}%` }}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
+          <span className="text-[13px] font-medium text-zinc-500">
+            {displaySnapshot.periodDays === 365
+              ? t("analytics.revenueTrendMetaYear")
+              : displaySnapshot.periodDays === 30
+                ? t("analytics.revenueTrendMetaMonth")
+                : t("analytics.revenueTrendMeta", {
+                    days: displaySnapshot.periodDays,
+                  })}
+          </span>
         </div>
+        <RevenueBarChart
+          data={displaySnapshot.revenueByDay}
+          formatTooltip={(n) => formatRevenueGems(n, locale)}
+          ariaLabel={t("analytics.revenueBarsAria")}
+          emptyLabel={t("analytics.revenueChartEmpty")}
+          barClassName="bg-reels-crimson/65 [html[data-theme='light']_&]:bg-reels-crimson/80"
+        />
       </div>
 
-      <div className="mt-6 grid gap-5 lg:grid-cols-2">
-        {/* 유입 채널 */}
-        <div className="rounded-2xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:p-5">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-reels-crimson" aria-hidden />
-            <h3 className="text-[16px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[17px]">
-              {t("analytics.channels")}
-            </h3>
-          </div>
-          <p className="mt-1 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            {t("analytics.channelsHint")}
-          </p>
-          <ul className="mt-4 space-y-3">
-            {displaySnapshot.channels.map((ch) => (
-              <li key={ch.id}>
-                <div className="flex items-center justify-between gap-2 text-[14px] sm:text-[15px]">
-                  <span className="font-medium text-zinc-200 [html[data-theme='light']_&]:text-zinc-800">
-                    {ch.label}
-                  </span>
-                  <span className="tabular-nums text-zinc-400">
-                    {ch.percent}% ·{" "}
-                    <span
-                      className={
-                        ch.deltaPercentPoints >= 0
-                          ? "text-[color:var(--reels-point)]"
-                          : "text-reels-crimson/90"
-                      }
-                    >
-                      {ch.deltaPercentPoints >= 0 ? "+" : ""}
-                      {ch.deltaPercentPoints}pp
-                    </span>
-                  </span>
-                </div>
-                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/5 [html[data-theme='light']_&]:bg-zinc-200">
-                  <div
-                    className="h-full rounded-full bg-reels-crimson/75"
-                    style={{ width: `${ch.percent}%` }}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* 시청 유지 */}
-        <div className="rounded-2xl border border-white/10 bg-black/25 p-4 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 sm:p-5">
-          <div className="flex items-center gap-2">
-            <Eye className="h-4 w-4 text-reels-crimson" aria-hidden />
-            <h3 className="text-[16px] font-extrabold text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[17px]">
-              {t("analytics.retention")}
-            </h3>
-          </div>
-          <p className="mt-1 text-[14px] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            {t("analytics.retentionHint")}
-          </p>
-          <ul className="mt-4 space-y-2.5">
-            {displaySnapshot.retention.map((r) => (
-              <li key={r.label}>
-                <div className="flex items-center justify-between text-[14px] sm:text-[15px]">
-                  <span className="text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
-                    {r.label}
-                  </span>
-                  <span className="font-bold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
-                    {r.audiencePercent}%
-                  </span>
-                </div>
-                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/5 [html[data-theme='light']_&]:bg-zinc-200">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-reels-crimson/50 to-[color:var(--reels-point)]/90"
-                    style={{ width: `${r.audiencePercent}%` }}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      {/* 집계 요약 바 */}
-      <div className="mt-6 grid gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white sm:grid-cols-3 sm:px-5 sm:py-4">
-        <div>
-          <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+      {/* 집계 요약 — 카드별 분리 */}
+      <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+        <div className="rounded-2xl border border-white/10 bg-black/30 p-4 shadow-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm sm:p-5">
+          <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[14px]">
             {t("analytics.totals.impressions")}
           </p>
-          <p className="mt-1 text-[20px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+          <p className="mt-2 text-[22px] font-extrabold tabular-nums leading-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]">
             {formatCompact(snapTotals.totalImpressions, locale)}
           </p>
         </div>
-        <div>
-          <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+        <div className="rounded-2xl border border-white/10 bg-black/30 p-4 shadow-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm sm:p-5">
+          <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[14px]">
             {t("analytics.totals.detailViews")}
           </p>
-          <p className="mt-1 text-[20px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+          <p className="mt-2 text-[22px] font-extrabold tabular-nums leading-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]">
             {formatCompact(snapTotals.totalDetailViews, locale)}
           </p>
         </div>
-        <div>
-          <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+        <div className="rounded-2xl border border-white/10 bg-black/30 p-4 shadow-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-sm sm:p-5">
+          <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-500 [html[data-theme='light']_&]:text-zinc-600 sm:text-[14px]">
             {t("analytics.totals.videos")}
           </p>
-          <p className="mt-1 text-[20px] font-extrabold tabular-nums text-zinc-100 [html[data-theme='light']_&]:text-zinc-900">
+          <p className="mt-2 text-[22px] font-extrabold tabular-nums leading-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:text-[24px]">
             {t("analytics.totals.videoCount", { n: displaySnapshot.videos.length })}
           </p>
         </div>
@@ -611,7 +465,7 @@ export function MyPageSellerAnalyticsSection() {
                   {t("analytics.col.growth")}
                 </th>
                 <th className="px-2 py-3 font-bold text-zinc-400 tabular-nums [html[data-theme='light']_&]:text-zinc-600">
-                  CTR
+                  {t("analytics.col.ctr")}
                 </th>
                 <th className="px-2 py-3 font-bold text-zinc-400 tabular-nums [html[data-theme='light']_&]:text-zinc-600">
                   {t("analytics.col.avgWatch")}
@@ -650,7 +504,8 @@ export function MyPageSellerAnalyticsSection() {
                     <GemAmount
                       value={formatRevenueGems(row.cumulativeRevenueWon, locale)}
                       amountClassName={revenueAmountClass}
-                      iconClassName="h-3.5 w-3.5 shrink-0 text-[color:var(--reels-point)]"
+                      iconClassName={ANALYTICS_GEM_ICON_TABLE}
+                      gapClassName="gap-1"
                     />
                   </td>
                   <td className="px-2 py-2.5 tabular-nums text-zinc-300 [html[data-theme='light']_&]:text-zinc-800">

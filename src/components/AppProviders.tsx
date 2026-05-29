@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { DevAuthSessionReset } from "@/components/DevAuthSessionReset";
+import { ReelsConfirmProvider } from "@/components/ReelsConfirmProvider";
 import { SitePreferencesProvider } from "@/context/SitePreferencesContext";
 import { DopamineBasketProvider } from "@/context/DopamineBasketContext";
 import { PurchasedVideosProvider } from "@/context/PurchasedVideosContext";
@@ -14,15 +15,17 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <>
       <DevAuthSessionReset />
       <SitePreferencesProvider>
-        <WishlistProvider>
-          <RecentClipsProvider>
-            <DopamineBasketProvider>
-              <PurchasedVideosProvider>
-                <StudioHistoryProvider>{children}</StudioHistoryProvider>
-              </PurchasedVideosProvider>
-            </DopamineBasketProvider>
-          </RecentClipsProvider>
-        </WishlistProvider>
+        <ReelsConfirmProvider>
+          <WishlistProvider>
+            <RecentClipsProvider>
+              <DopamineBasketProvider>
+                <PurchasedVideosProvider>
+                  <StudioHistoryProvider>{children}</StudioHistoryProvider>
+                </PurchasedVideosProvider>
+              </DopamineBasketProvider>
+            </RecentClipsProvider>
+          </WishlistProvider>
+        </ReelsConfirmProvider>
       </SitePreferencesProvider>
     </>
   );

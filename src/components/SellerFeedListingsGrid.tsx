@@ -18,6 +18,7 @@ import type { FeedVideo } from "@/data/videos";
 import type { TrendingRankMetrics } from "@/data/trendingStats";
 import { getMetricsForVideoDetail } from "@/data/trendingStats";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useReelsConfirm } from "@/components/ReelsConfirmProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { metricsForSellerListingCard } from "@/lib/sellerListingCardMetricsPure";
@@ -40,6 +41,7 @@ export function SellerFeedListingsGrid({
   detailHrefSuffix,
 }: Props) {
   const { t } = useTranslation();
+  const reelsConfirm = useReelsConfirm();
   const router = useRouter();
   const { user, loading: authLoading } = useAuthSession();
   const [videos, setVideos] = useState<FeedVideo[]>(initialVideos);
@@ -164,14 +166,17 @@ export function SellerFeedListingsGrid({
   );
 
   const onConfirmDelete = useCallback(
-    (video: FeedVideo) => {
+    async (video: FeedVideo) => {
       if (deletingId) return;
-      if (!window.confirm(t("seller.feed.deleteVideoConfirm"))) {
-        return;
-      }
+      const ok = await reelsConfirm({
+        message: t("seller.feed.deleteVideoConfirm"),
+        confirmLabel: t("common.delete"),
+        dialogAriaLabel: t("common.confirmDialogAria"),
+      });
+      if (!ok) return;
       void deleteVideo(video.id);
     },
-    [deleteVideo, deletingId, t],
+    [deleteVideo, deletingId, reelsConfirm, t],
   );
 
   const openVideo =

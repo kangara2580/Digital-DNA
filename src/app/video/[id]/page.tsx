@@ -5,6 +5,7 @@ import { getMarketVideoById } from "@/data/videoCommerce";
 import {
   getExternalRankDemoPriceWonByCanonical,
   getManualTikTokPriceWonByVideoId,
+  resolveManualTikTokVideoForStudio,
 } from "@/data/tiktokData";
 import { buildPageMetadata } from "@/lib/i18n/buildPageMetadata";
 import { translate } from "@/lib/i18n/dictionaries";
@@ -67,6 +68,46 @@ export default async function VideoDetailPage({
   const resolvedSearch = await searchParams;
   const fromCategory = resolvedSearch.from;
   const fromSeller = resolvedSearch.fromSeller;
+
+  try {
+    const row = await withTimeout(
+      prisma.video.findUnique({ where: { id } }),
+      DB_TIMEOUT_MS,
+    );
+    if (row) {
+      return (
+        <VideoDetailView
+          video={videoRowToFeedVideo(row)}
+          fromCategory={fromCategory}
+          fromSeller={fromSeller}
+        />
+      );
+    }
+  } catch {
+    /* DB 미연결 등 */
+  }
+
+  const catalogVideo = getMarketVideoById(id);
+  if (catalogVideo) {
+    return (
+      <VideoDetailView
+        video={catalogVideo}
+        fromCategory={fromCategory}
+        fromSeller={fromSeller}
+      />
+    );
+  }
+
+  const rankCatalogVideo = resolveManualTikTokVideoForStudio(id);
+  if (rankCatalogVideo) {
+    return (
+      <VideoDetailView
+        video={rankCatalogVideo}
+        fromCategory={fromCategory}
+        fromSeller={fromSeller}
+      />
+    );
+  }
 
   if (id.startsWith("tiktok-")) {
     const embedId = id.slice("tiktok-".length).trim();
@@ -182,23 +223,6 @@ export default async function VideoDetailPage({
         fromSeller={fromSeller}
       />
     );
-  }
-
-  const catalogVideo = getMarketVideoById(id);
-  if (catalogVideo) {
-    return <VideoDetailView video={catalogVideo} fromCategory={fromCategory} fromSeller={fromSeller} />;
-  }
-
-  try {
-    const row = await withTimeout(
-      prisma.video.findUnique({ where: { id } }),
-      DB_TIMEOUT_MS,
-    );
-    if (row) {
-      return <VideoDetailView video={videoRowToFeedVideo(row)} fromCategory={fromCategory} fromSeller={fromSeller} />;
-    }
-  } catch {
-    /* DB 미연결 등 */
   }
 
   notFound();

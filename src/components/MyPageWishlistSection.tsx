@@ -11,6 +11,7 @@ import type { FeedVideo } from "@/data/videos";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { GlobalLoading } from "@/components/GlobalLoading";
+import { useReelsConfirm } from "@/components/ReelsConfirmProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   feedOverlayCheckboxInputClass,
@@ -47,6 +48,7 @@ const LOGIN_REDIRECT = encodeURIComponent("/mypage?tab=wishlist");
 export function MyPageWishlistSection() {
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const { t } = useTranslation();
+  const reelsConfirm = useReelsConfirm();
 
   const sortOptions = useMemo(
     () =>
@@ -85,16 +87,16 @@ export function MyPageWishlistSection() {
     });
   }, []);
 
-  const deleteSelectedWishlist = useCallback(() => {
+  const deleteSelectedWishlist = useCallback(async () => {
     if (selected.size === 0) return;
-    if (
-      typeof window !== "undefined" &&
-      !window.confirm(t("mypage.wishlist.confirmRemoveSelected", { n: selected.size }))
-    ) {
-      return;
-    }
+    const ok = await reelsConfirm({
+      message: t("mypage.wishlist.confirmRemoveSelected", { n: selected.size }),
+      confirmLabel: t("common.confirm"),
+      dialogAriaLabel: t("common.confirmDialogAria"),
+    });
+    if (!ok) return;
     void removeMany([...selected]).then(() => setSelected(new Set()));
-  }, [selected, removeMany, t]);
+  }, [selected, removeMany, reelsConfirm, t]);
 
   const showLoginGateWishlistOnly =
     supabaseConfigured &&

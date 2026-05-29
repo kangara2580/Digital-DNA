@@ -32,7 +32,7 @@ type FeedProfilePayload = {
   sellerSocialLinks: SellerSocialLink[];
 };
 
-/** 상세 하단: `/seller` 와 동일한 프로필 카드 + 판매 목록 그리드 */
+/** 상세 하단: 판매자 피드 프로필 + 판매자의 다른 영상 그리드 */
 export function VideoDetailRecommendations({
   video,
   detailHrefSuffix = "",
@@ -76,7 +76,7 @@ export function VideoDetailRecommendations({
     return () => {
       alive = false;
     };
-  }, [sellerId]);
+  }, [sellerId, video.id]);
 
   useEffect(() => {
     setFeedProfile(null);
@@ -123,10 +123,15 @@ export function VideoDetailRecommendations({
     };
   }, [sellerKey, video]);
 
-  const feedVideos = useMemo(() => {
+  const allSellerVideos = useMemo(() => {
     if (dbVideos.length > 0) return dbVideos;
     return catalogPool;
   }, [dbVideos, catalogPool]);
+
+  const listingVideos = useMemo(() => {
+    const others = allSellerVideos.filter((v) => v.id !== video.id);
+    return others.length > 0 ? others : allSellerVideos;
+  }, [allSellerVideos, video.id]);
 
   const isDbSeller = dbVideos.length > 0;
   const feedHrefSuffix =
@@ -154,10 +159,15 @@ export function VideoDetailRecommendations({
     feedProfile?.sellerSocialLinks ?? video.sellerSocialLinks ?? [];
 
   const loading = (!dbLoaded && Boolean(sellerId)) || !profileLoaded;
+  const hasSellerFeed = Boolean(sellerId) || catalogPool.length > 0;
+
+  if (!hasSellerFeed) {
+    return null;
+  }
 
   if (loading) {
     return (
-      <section className="mt-10 sm:mt-12" aria-labelledby="video-reco-heading">
+      <section className="mt-10 w-full sm:mt-12" aria-labelledby="video-reco-heading">
         <h2
           id="video-reco-heading"
           className="text-center text-xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
@@ -169,12 +179,12 @@ export function VideoDetailRecommendations({
     );
   }
 
-  if (feedVideos.length === 0) {
+  if (allSellerVideos.length === 0 && listingVideos.length === 0) {
     return null;
   }
 
   return (
-    <section className="mt-10 sm:mt-12" aria-labelledby="video-reco-heading">
+    <section className="mt-10 w-full sm:mt-12" aria-labelledby="video-reco-heading">
       <h2
         id="video-reco-heading"
         className="text-center text-xl font-extrabold tracking-tight text-zinc-100 [html[data-theme='light']_&]:text-zinc-900"
@@ -186,7 +196,7 @@ export function VideoDetailRecommendations({
         <SellerFeedProfileCard
           sellerId={sellerKey}
           nickname={nickname}
-          videoCount={feedVideos.length}
+          videoCount={allSellerVideos.length}
           isDbSeller={isDbSeller}
           profileBio={profileBio}
           profileColor={profileColor}
@@ -195,15 +205,23 @@ export function VideoDetailRecommendations({
         />
       </div>
 
-      <section className="mt-8 sm:mt-10">
-        <SellerFeedListingsGrid
-          sellerId={sellerKey}
-          isDbSeller={isDbSeller}
-          initialVideos={feedVideos}
-          initialMetricsByVideoId={{}}
-          detailHrefSuffix={feedHrefSuffix}
-        />
-      </section>
+      {listingVideos.length > 0 ? (
+        <section className="mt-8 sm:mt-10" aria-labelledby="video-reco-listings-heading">
+          <h3
+            id="video-reco-listings-heading"
+            className="mb-4 text-center text-base font-extrabold tracking-tight text-zinc-200 [html[data-theme='light']_&]:text-zinc-800"
+          >
+            {t("video.reco.listingsHeading")}
+          </h3>
+          <SellerFeedListingsGrid
+            sellerId={sellerKey}
+            isDbSeller={isDbSeller}
+            initialVideos={listingVideos}
+            initialMetricsByVideoId={{}}
+            detailHrefSuffix={feedHrefSuffix}
+          />
+        </section>
+      ) : null}
     </section>
   );
 }

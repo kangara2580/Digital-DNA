@@ -23,8 +23,8 @@ export function AuthModalPortal({ onDismiss, children }: Props) {
         onClick={onDismiss}
         aria-hidden
       />
-      <div className="pointer-events-none fixed inset-0 z-[500] flex items-center justify-center px-4">
-        <div className="pointer-events-auto w-full max-w-[560px]">{children}</div>
+      <div className="pointer-events-none fixed inset-0 z-[500] flex items-center justify-center p-4">
+        <div className="pointer-events-auto flex w-full justify-center">{children}</div>
       </div>
     </>
   );

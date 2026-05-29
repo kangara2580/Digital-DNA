@@ -8,16 +8,21 @@ import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useSitePreferences } from "@/context/SitePreferencesContext";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useReelsConfirm } from "@/components/ReelsConfirmProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import type { FeedVideo } from "@/data/videos";
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
 import { VideoSourcePlatformIcon } from "@/components/VideoSourcePlatformIcon";
-import { getMetricsForVideoDetail } from "@/data/trendingStats";
+import { getGridCardMetrics } from "@/data/trendingStats";
 import { explorePurchaseButtonClass } from "@/lib/explorePurchaseButtonClass";
 import type { SiteLocale } from "@/lib/sitePreferences";
 import { getVideoContentSource } from "@/lib/videoSourcePlatform";
-import { sanitizePosterSrc } from "@/lib/videoPoster";
+import { CartVideoThumbnail } from "@/components/cart/CartVideoThumbnail";
+import {
+  feedOverlayCheckboxInputClass,
+  feedOverlayCheckboxLabelClass,
+} from "@/lib/brandPinkTokens";
 import { InsufficientCreditsModal } from "@/components/InsufficientCreditsModal";
 import { GemAmount } from "@/components/PaymentDiamondIcon";
 import { toGemPrice } from "@/lib/gemPrice";
@@ -25,30 +30,11 @@ import { toGemPrice } from "@/lib/gemPrice";
 const cartOutlineBtn =
   "inline-flex shrink-0 items-center justify-center rounded-xl border border-white/30 bg-transparent px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40 [html[data-theme='light']_&]:border-zinc-900/35 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-100";
 
-function localCartPosterFallback(videoId: string): string {
-  const hash = Array.from(videoId).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  const idx = (Math.abs(hash) % 10) + 1;
-  return `/videos/sample${idx}.jpg`;
-}
-
-/** 저장 JSON에 poster가 비거나 sanitize로 빠져도 카드처럼 썸네일이 나오도록 */
-function cartThumbnailSrc(video: FeedVideo): string {
-  let u = sanitizePosterSrc(video.poster);
-  if (u) return u;
-  u = sanitizePosterSrc(video.previewSrc);
-  if (u) return u;
-  const s = typeof video.src === "string" ? video.src.trim() : "";
-  if (s && /\.(webp|jpg|jpeg|png|gif|avif)(\?|$)/i.test(s)) {
-    const t = sanitizePosterSrc(s);
-    return t ?? s;
-  }
-  return localCartPosterFallback(video.id);
-}
-
 export default function CartPage() {
   const { openAuthModal } = useAuthPromptModal();
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const { t } = useTranslation();
+  const reelsConfirm = useReelsConfirm();
   const { locale } = useSitePreferences();
   const loc = locale as SiteLocale;
   const numLocale = loc === "en" ? "en-US" : "ko-KR";
@@ -253,12 +239,16 @@ export default function CartPage() {
     t,
   ]);
 
-  const confirmClearCart = useCallback(() => {
-    if (typeof window === "undefined") return;
-    if (!window.confirm(t("cart.confirmClear"))) return;
+  const confirmClearCart = useCallback(async () => {
+    const ok = await reelsConfirm({
+      message: t("cart.confirmClear"),
+      confirmLabel: t("common.confirm"),
+      dialogAriaLabel: t("common.confirmDialogAria"),
+    });
+    if (!ok) return;
     clearBuilder();
     setSelected(new Set());
-  }, [clearBuilder, t]);
+  }, [clearBuilder, reelsConfirm, t]);
 
   return (
     <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 pb-10 pt-[max(5rem,calc(env(safe-area-inset-top,0px)+4.25rem))] text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:pb-12 sm:pt-[5.75rem] lg:px-8">
@@ -347,7 +337,7 @@ export default function CartPage() {
               const owned = hasPurchased(video.id);
               const checked = selected.has(key);
               const videoContentSource = getVideoContentSource(video);
-              const metrics = getMetricsForVideoDetail(video.id);
+              const metrics = getGridCardMetrics(video);
               const priceGems =
                 video.priceWon != null && video.priceWon > 0
                   ? toGemPrice(video.priceWon).toLocaleString(numLocale)
@@ -358,12 +348,12 @@ export default function CartPage() {
                   className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] p-3 sm:p-3.5 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white/80"
                 >
                   <div className="relative w-full min-w-0 shrink-0">
-                    <label className="absolute left-2 top-2 z-[2] flex cursor-pointer items-center lg:left-1.5 lg:top-1.5">
+                    <label className={`${feedOverlayCheckboxLabelClass} z-[2]`}>
                       <input
                         type="checkbox"
                         checked={checked}
                         onChange={() => toggleKey(key)}
-                        className="h-4 w-4 shrink-0 rounded border-2 border-white/90 bg-black/35 accent-[color:var(--reels-point)] shadow-[0_1px_4px_rgba(0,0,0,0.4)] sm:h-5 sm:w-5 [html[data-theme='light']_&]:border-black [html[data-theme='light']_&]:bg-white"
+                        className={feedOverlayCheckboxInputClass}
                       />
                       <span className="sr-only">{t("cart.selectAria")}</span>
                     </label>
@@ -386,10 +376,8 @@ export default function CartPage() {
                       href={`/video/${video.id}`}
                       className="relative block aspect-[9/16] w-full min-w-0 overflow-hidden rounded-lg border border-white/12 bg-black/40 ring-1 ring-white/10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100"
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={cartThumbnailSrc(video)}
-                        alt=""
+                      <CartVideoThumbnail
+                        video={video}
                         className="h-full w-full object-cover"
                       />
                     </Link>

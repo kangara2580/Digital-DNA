@@ -33,12 +33,21 @@ const railIconActive =
 const railItemLabelBase =
   "max-w-[3.75rem] cursor-pointer text-center text-[0.625rem] font-medium leading-[1.2] tracking-tight transition-colors duration-200 group-hover:text-zinc-100 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:group-hover:text-zinc-950";
 
-/** 홈 마크 — 레일 폭 안 최대(가로 여백 0.5rem). 필터 없음 → 잘림 없음. */
+/** 홈 마크 — 라이트 PNG / 다크 PNG(흰 윤곽 baked-in, 미리보기와 동일·필터 잘림 없음) */
 const railHomeLogoLink =
   "mx-auto inline-flex w-full max-w-full shrink-0 items-center justify-center overflow-visible rounded-xl bg-transparent p-0.5 transition-[opacity,transform,background-color] duration-200 hover:opacity-90 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 [html[data-theme='light']_&]:mx-0 [html[data-theme='light']_&]:justify-center [html[data-theme='light']_&]:rounded-xl [html[data-theme='light']_&]:py-1.5 [html[data-theme='light']_&]:hover:bg-zinc-900/[0.04]";
 
-const railHomeLogoImg =
-  "block size-[calc(var(--reels-rail-w)-0.5rem)] max-w-full shrink-0 object-contain object-center select-none";
+const railHomeLogoMark =
+  "relative inline-flex shrink-0 items-center justify-center overflow-visible";
+
+const railHomeLogoImgBase =
+  "block size-[calc(var(--reels-rail-w)-2rem)] max-w-full shrink-0 object-contain object-center select-none";
+
+const railHomeLogoImgLight =
+  `${railHomeLogoImgBase} [html[data-theme='dark']_&]:hidden`;
+
+const railHomeLogoImgDark =
+  `${railHomeLogoImgBase} hidden [html[data-theme='dark']_&]:block`;
 
 const railHomeLogoWrap =
   "pointer-events-auto relative flex w-full shrink-0 flex-col items-center overflow-visible px-0.5 pt-[max(0.85rem,env(safe-area-inset-top))] pb-1";
@@ -145,17 +154,25 @@ export function ReelsLeftRail() {
     return (
       <>
         <aside
-          className="pointer-events-none fixed inset-y-0 left-0 z-[52] hidden w-[var(--reels-rail-w)] flex-col bg-transparent md:flex"
+          className="pointer-events-none fixed inset-y-0 left-0 z-[52] hidden w-[var(--reels-rail-w)] flex-col overflow-visible bg-transparent md:flex"
           aria-label={t("rail.aria.main")}
         >
           <div className={railHomeLogoWrap}>
             <Link href="/" className={railHomeLogoLink} aria-label={t("rail.aria.home")}>
-              <img
-                src="/brand/ara-brand-mark.png"
-                alt=""
-                className={railHomeLogoImg}
-                draggable={false}
-              />
+              <span className={railHomeLogoMark}>
+                <img
+                  src="/brand/ara-brand-mark.png"
+                  alt=""
+                  className={railHomeLogoImgLight}
+                  draggable={false}
+                />
+                <img
+                  src="/brand/ara-brand-mark-dark-rail.png?v=2"
+                  alt=""
+                  className={railHomeLogoImgDark}
+                  draggable={false}
+                />
+              </span>
             </Link>
           </div>
           <div className="pointer-events-none flex min-h-0 flex-1 flex-col items-stretch pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
@@ -210,17 +227,25 @@ export function ReelsLeftRail() {
   return (
     <>
       <aside
-        className="fixed inset-y-0 left-0 z-[52] hidden w-[var(--reels-rail-w)] flex-col border-r border-white/[0.08] bg-reels-abyss/80 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[1px_0_0_rgba(0,0,0,0.04)] md:flex"
+        className="fixed inset-y-0 left-0 z-[52] hidden w-[var(--reels-rail-w)] flex-col overflow-visible border-r border-white/[0.08] bg-reels-abyss/80 backdrop-blur-md [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:shadow-[1px_0_0_rgba(0,0,0,0.04)] md:flex"
         aria-label={t("rail.aria.main")}
       >
         <div className={railHomeLogoWrap}>
           <Link href="/" className={railHomeLogoLink} aria-label={t("rail.aria.home")}>
-            <img
-              src="/brand/ara-brand-mark.png"
-              alt=""
-              className={railHomeLogoImg}
-              draggable={false}
-            />
+            <span className={railHomeLogoMark}>
+              <img
+                src="/brand/ara-brand-mark.png"
+                alt=""
+                className={railHomeLogoImgLight}
+                draggable={false}
+              />
+              <img
+                src="/brand/ara-brand-mark-dark-rail.png?v=2"
+                alt=""
+                className={railHomeLogoImgDark}
+                draggable={false}
+              />
+            </span>
           </Link>
         </div>
         <div className="flex min-h-0 flex-1 flex-col items-stretch pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom))]">

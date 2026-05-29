@@ -239,15 +239,15 @@ export function buildSellerVideoDetailSnapshot(
     ? `${dateRange.start.replace(/-/g, ". ")} – ${dateRange.end.replace(/-/g, ". ")}`
     : periodDays === 7
       ? "최근 7일"
-      : periodDays === 28
-        ? "최근 28일"
-        : periodDays === 90
-          ? "최근 90일"
+      : periodDays === 30
+        ? "최근 한달"
+        : periodDays === 365
+          ? "최근 1년"
           : `최근 ${periodDays}일`;
 
   const h = hashId(`${videoId}-detail-${periodDays}`);
   const sliceFactor =
-    periodDays <= 7 ? 1 : periodDays <= 28 ? 0.92 : periodDays <= 90 ? 0.85 : 0.78;
+    periodDays <= 7 ? 1 : periodDays <= 30 ? 0.92 : periodDays <= 365 ? 0.85 : 0.78;
   const periodRevenueWon = Math.max(
     1,
     Math.round(row.cumulativeRevenueWon * 0.08 * sliceFactor * (0.9 + (h % 20) / 100)),
@@ -264,7 +264,7 @@ export function buildSellerVideoDetailSnapshot(
     { label: "썸네일·제목 클릭", stepRatePercent: 22 + (h % 8), funnelPercent: 22 + (h % 8) },
     { label: "상세·미리보기", stepRatePercent: 48, funnelPercent: 11 },
     { label: "찜·카트", stepRatePercent: 35, funnelPercent: 3.8 },
-    { label: "결제·복제", stepRatePercent: 41, funnelPercent: 1.6 },
+    { label: "구매 완료", stepRatePercent: 41, funnelPercent: 1.6 },
   ];
 
   const channels: TrafficChannel[] = [
@@ -382,14 +382,14 @@ export function buildSellerAnalyticsSnapshot(
     ? `${dateRange.start.replace(/-/g, ". ")} – ${dateRange.end.replace(/-/g, ". ")}`
     : periodDays === 7
       ? "최근 7일"
-      : periodDays === 28
-        ? "최근 28일"
-        : periodDays === 90
-          ? "최근 90일"
+      : periodDays === 30
+        ? "최근 한달"
+        : periodDays === 365
+          ? "최근 1년"
           : `최근 ${periodDays}일`;
 
   const sliceFactor =
-    periodDays <= 7 ? 1 : periodDays <= 28 ? 0.92 : periodDays <= 90 ? 0.85 : 0.78;
+    periodDays <= 7 ? 1 : periodDays <= 30 ? 0.92 : periodDays <= 365 ? 0.85 : 0.78;
   const periodRevenue = Math.round(cumulativeRevenueWon * 0.08 * sliceFactor);
 
   const revenueByDay = buildRevenueSeries(
@@ -400,10 +400,10 @@ export function buildSellerAnalyticsSnapshot(
 
   const funnel: FunnelStage[] = [
     { label: "노출", stepRatePercent: 100, funnelPercent: 100 },
-    { label: "피드·목록 클릭", stepRatePercent: 24, funnelPercent: 24 },
-    { label: "상세 페이지", stepRatePercent: 52, funnelPercent: 12.5 },
+    { label: "목록·피드 클릭", stepRatePercent: 24, funnelPercent: 24 },
+    { label: "상세 보기", stepRatePercent: 52, funnelPercent: 12.5 },
     { label: "장바구니·찜", stepRatePercent: 38, funnelPercent: 4.8 },
-    { label: "결제·복제 완료", stepRatePercent: 44, funnelPercent: 2.1 },
+    { label: "구매 완료", stepRatePercent: 44, funnelPercent: 2.1 },
   ];
 
   const channels: TrafficChannel[] = [
@@ -415,11 +415,11 @@ export function buildSellerAnalyticsSnapshot(
   ];
 
   const retention: RetentionStep[] = [
-    { label: "0–3초 훅", audiencePercent: 92 },
-    { label: "3–15초", audiencePercent: 78 },
-    { label: "15–30초", audiencePercent: 61 },
+    { label: "처음 3초", audiencePercent: 92 },
+    { label: "3~15초", audiencePercent: 78 },
+    { label: "15~30초", audiencePercent: 61 },
     { label: "30초 이상", audiencePercent: 44 },
-    { label: "완주·루프", audiencePercent: 31 },
+    { label: "끝까지 시청", audiencePercent: 31 },
   ];
 
   return {

@@ -91,8 +91,8 @@ export function getTrendingMetrics(
 }
 
 /**
- * 조각 상세 등 — `videoId`마다 고정된 데모 지표(인기순위 카드와 동일 필드).
- * `TRENDING_RANK_METRICS`에 있으면 그대로, 없으면 id 기반 시드로 생성합니다.
+ * 인기순위·레거시 데모 카드 전용 — id 시드로 큰 숫자를 만듭니다.
+ * 판매자가 올린 영상(`video.listing`)에는 `getGridCardMetrics` / `listingMetricsPayloadForFeeds`를 쓰세요.
  */
 export function getMetricsForVideoDetail(videoId: string): TrendingRankMetrics {
   const explicit = TRENDING_RANK_METRICS[videoId];
@@ -105,7 +105,7 @@ export function getMetricsForVideoDetail(videoId: string): TrendingRankMetrics {
   return deriveMetricsFromRank(videoId, rankIndex);
 }
 
-/** 쇼핑몰·카테고리 그리드 카드 — DB listing 실적 또는 데모 시드 */
+/** 쇼핑몰·검색·카테고리 그리드 — DB listing 실적(없으면 0). 데모 카탈로그만 시드 폴백 */
 export function getGridCardMetrics(video: FeedVideo): TrendingRankMetrics {
   if (video.listing) {
     const views = Math.max(0, video.listing.views ?? 0);
@@ -113,9 +113,19 @@ export function getGridCardMetrics(video: FeedVideo): TrendingRankMetrics {
     return {
       cumulativeRevenueWon: toGemPrice(video.priceWon ?? 0) * sales,
       totalViews: views,
-      totalLikes: Math.max(0, Math.floor(views * 0.028)),
+      totalLikes: 0,
       growthPercent: 0,
     };
   }
   return getMetricsForVideoDetail(video.id);
+}
+
+/** 서버에서 batch 로드한 판매 지표가 있으면 우선, 없으면 그리드 규칙 */
+export function resolveVideoCardMetrics(
+  video: FeedVideo,
+  metricsByVideoId?: Record<string, TrendingRankMetrics>,
+): TrendingRankMetrics {
+  const batch = metricsByVideoId?.[video.id];
+  if (batch) return batch;
+  return getGridCardMetrics(video);
 }

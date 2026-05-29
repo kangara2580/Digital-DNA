@@ -1,50 +1,53 @@
 import { NextResponse } from "next/server";
-import { hasPaidPurchase } from "@/lib/purchases";
-import { prisma } from "@/lib/prisma";
-import { requireBearerUser } from "@/lib/serverAuth";
+import {
+  assertBuyerCanReview,
+  deleteUserReview,
+  getUserReviewForVideo,
+  listVideoReviews,
+  upsertVideoReview,
+  type ReviewSort,
+} from "@/lib/reviews";
+import { parseReviewInput, requireReviewUser } from "@/lib/reviewAuth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const DB_TIMEOUT_MS = 1200;
-
-async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) => setTimeout(() => reject(new Error("timeout")), ms)),
-  ]);
+function parseSort(value: string | null): ReviewSort {
+  return value === "rating" ? "rating" : "latest";
 }
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ videoId: string }> },
 ) {
   const { videoId } = await params;
+  const { searchParams } = new URL(req.url);
+  const sort = parseSort(searchParams.get("sort"));
 
   try {
-    const rows = await withTimeout(
-      prisma.$queryRaw<
-        {
-          id: string;
-          user_id: string;
-          nickname: string;
-          rating: number;
-          body: string;
-          created_at: Date;
-        }[]
-      >`
-        SELECT id, user_id, nickname, rating, body, created_at
-        FROM video_reviews
-        WHERE video_id = ${videoId}
-        ORDER BY created_at DESC
-        LIMIT 100
-      `,
-      DB_TIMEOUT_MS,
-    );
-
-    return NextResponse.json({ ok: true, reviews: rows });
+    const { reviews, stats } = await listVideoReviews(videoId, sort);
+    let mine = null;
+    const auth = await requireReviewUser(req);
+    if (auth.ok) {
+      mine = await getUserReviewForVideo(auth.user.id, videoId);
+      const canWrite = await assertBuyerCanReview(auth.user.id, videoId);
+      return NextResponse.json({
+        ok: true,
+        reviews,
+        stats,
+        mine,
+        canWrite,
+      });
+    }
+    return NextResponse.json({ ok: true, reviews, stats, mine: null, canWrite: false });
   } catch {
-    return NextResponse.json({ ok: false, reviews: [] });
+    return NextResponse.json({
+      ok: false,
+      reviews: [],
+      stats: { count: 0, averageRating: null },
+      mine: null,
+      canWrite: false,
+    });
   }
 }
 
@@ -53,46 +56,18 @@ export async function POST(
   { params }: { params: Promise<{ videoId: string }> },
 ) {
   const { videoId } = await params;
-  const auth = await requireBearerUser(req);
-
+  const auth = await requireReviewUser(req);
   if (!auth.ok) {
-    return NextResponse.json(
-      { ok: false, error: auth.error },
-      { status: auth.status },
-    );
+    return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
   }
 
-  const body = (await req.json().catch(() => null)) as {
-    rating?: number;
-    body?: string;
-    nickname?: string;
-  } | null;
-
-  const rating =
-    typeof body?.rating === "number"
-      ? Math.min(5, Math.max(1, Math.round(body.rating)))
-      : 0;
-  const reviewBody = typeof body?.body === "string" ? body.body.trim() : "";
-  const fallbackNickname = auth.user.email?.split("@")[0] ?? "guest";
-  const nickname =
-    typeof body?.nickname === "string"
-      ? body.nickname.trim().slice(0, 30)
-      : fallbackNickname;
-
-  if (!rating || !reviewBody || reviewBody.length < 5) {
+  const parsed = parseReviewInput(await req.json().catch(() => null));
+  if (!parsed) {
     return NextResponse.json({ ok: false, error: "invalid_input" }, { status: 400 });
   }
 
-  if (reviewBody.length > 500) {
-    return NextResponse.json({ ok: false, error: "too_long" }, { status: 400 });
-  }
-
   try {
-    const purchased = await withTimeout(
-      hasPaidPurchase({ userId: auth.user.id, videoId }),
-      DB_TIMEOUT_MS,
-    );
-
+    const purchased = await assertBuyerCanReview(auth.user.id, videoId);
     if (!purchased) {
       return NextResponse.json(
         { ok: false, error: "purchase_required" },
@@ -100,18 +75,42 @@ export async function POST(
       );
     }
 
-    await withTimeout(
-      prisma.$executeRaw`
-        INSERT INTO video_reviews (id, video_id, user_id, nickname, rating, body)
-        VALUES (gen_random_uuid()::text, ${videoId}, ${auth.user.id}, ${nickname}, ${rating}, ${reviewBody})
-        ON CONFLICT (video_id, user_id) DO UPDATE
-          SET rating = EXCLUDED.rating,
-              body = EXCLUDED.body,
-              nickname = EXCLUDED.nickname
-      `,
-      DB_TIMEOUT_MS,
-    );
+    const review = await upsertVideoReview({
+      videoId,
+      userId: auth.user.id,
+      nickname: parsed.nickname ?? auth.user.nickname,
+      rating: parsed.rating,
+      body: parsed.reviewBody,
+    });
 
+    return NextResponse.json({ ok: true, review });
+  } catch {
+    return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
+  }
+}
+
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ videoId: string }> },
+) {
+  return POST(req, { params });
+}
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ videoId: string }> },
+) {
+  const { videoId } = await params;
+  const auth = await requireReviewUser(req);
+  if (!auth.ok) {
+    return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
+  }
+
+  try {
+    const deleted = await deleteUserReview(auth.user.id, videoId);
+    if (!deleted) {
+      return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
+    }
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });

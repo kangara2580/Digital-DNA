@@ -11,6 +11,7 @@ import { MyPageSellerAnalyticsSection } from "@/components/MyPageSellerAnalytics
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { MyPageWishlistSection } from "@/components/MyPageWishlistSection";
 import { MyPageLikedVideosSection } from "@/components/MyPageLikedVideosSection";
+import { MyPageReviewsSection } from "@/components/MyPageReviewsSection";
 import { DocumentTitleI18n } from "@/components/DocumentTitleI18n";
 import { MYPAGE_OUTLINE_BTN_SM } from "@/lib/mypageOutlineCta";
 import {
@@ -31,12 +32,20 @@ import {
 import { GlobalLoading } from "@/components/GlobalLoading";
 import { useTranslation } from "@/hooks/useTranslation";
 
-type MyPageTab = "drafts" | "analytics" | "listings" | "wishlist" | "likes" | "purchases";
+type MyPageTab =
+  | "drafts"
+  | "analytics"
+  | "listings"
+  | "wishlist"
+  | "likes"
+  | "purchases"
+  | "reviews";
 
 const TAB_DEFS: { id: MyPageTab; href: string }[] = [
   { id: "wishlist", href: "/mypage?tab=wishlist" },
   { id: "likes", href: "/mypage?tab=likes" },
   { id: "purchases", href: "/mypage?tab=purchases" },
+  { id: "reviews", href: "/mypage?tab=reviews" },
   { id: "drafts", href: "/mypage?tab=drafts" },
   { id: "listings", href: "/mypage?tab=listings" },
   { id: "analytics", href: "/mypage?tab=analytics" },
@@ -73,7 +82,8 @@ function normalizeTab(input: string | null): MyPageTab {
     input === "listings" ||
     input === "wishlist" ||
     input === "likes" ||
-    input === "purchases"
+    input === "purchases" ||
+    input === "reviews"
   ) {
     return input;
   }
@@ -145,6 +155,12 @@ export function MyPageDashboard() {
             {currentTab === "purchases" && user ? (
               <MyPageSectionShell title={t("mypage.section.purchases.title")}>
                 <MyPageAccountOverview />
+              </MyPageSectionShell>
+            ) : null}
+
+            {currentTab === "reviews" && user ? (
+              <MyPageSectionShell title={t("mypage.section.reviews.title")}>
+                <MyPageReviewsSection />
               </MyPageSectionShell>
             ) : null}
 

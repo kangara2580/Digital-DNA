@@ -12,7 +12,6 @@ import {
 import { AppProviders } from "@/components/AppProviders";
 import { GlobalLenis } from "@/components/GlobalLenis";
 import { NavigationRecovery } from "@/components/NavigationRecovery";
-import { RailHomeLogoSvgFilters } from "@/components/RailHomeLogoSvgFilters";
 import { RouteChrome } from "@/components/RouteChrome";
 import { translate } from "@/lib/i18n/dictionaries";
 import { socialMetadataFields } from "@/lib/i18n/socialMetadata";
@@ -140,7 +139,6 @@ export default async function RootLayout({
       </head>
       <body className="min-h-screen bg-[var(--background,#02040a)] font-sans text-[var(--foreground,#fafafa)] antialiased">
         <AppProviders>
-          <RailHomeLogoSvgFilters />
           <NavigationRecovery />
           <GlobalLenis />
           <RouteChrome>{children}</RouteChrome>

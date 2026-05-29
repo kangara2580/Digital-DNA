@@ -37,14 +37,18 @@ export function HomeStartCtaButton({
       <span className="select-none text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.45)] [html[data-theme='light']_&]:text-zinc-950 [html[data-theme='light']_&]:[text-shadow:none]">
         {t("home.cta.start")}
       </span>
-      <svg
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        className="h-[2.1em] w-[2.1em] shrink-0 origin-left text-reels-crimson will-change-transform motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 motion-reduce:group-hover:scale-x-100 transition-[transform] duration-500 ease-[cubic-bezier(0.33,1.45,0.58,1)] group-hover:translate-x-2 group-hover:scale-x-[1.14] sm:group-hover:translate-x-2.5 sm:group-hover:scale-x-[1.18]"
+      <span
+        className="inline-flex h-[2.1em] w-[2.1em] shrink-0 origin-left items-center justify-center will-change-transform motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 motion-reduce:group-hover:scale-x-100 transition-[transform] duration-500 ease-[cubic-bezier(0.33,1.45,0.58,1)] group-hover:translate-x-2 group-hover:scale-x-[1.14] sm:group-hover:translate-x-2.5 sm:group-hover:scale-x-[1.18]"
         aria-hidden
       >
-        <path d="M7.25 5.75 14.75 10 7.25 14.25Z" />
-      </svg>
+        <svg
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          className="h-full w-full scale-[1.12] text-reels-crimson motion-reduce:scale-100"
+        >
+          <path d="M7.25 5.75 14.75 10 7.25 14.25Z" />
+        </svg>
+      </span>
     </button>
   );
 }

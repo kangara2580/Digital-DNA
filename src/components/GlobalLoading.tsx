@@ -5,10 +5,10 @@ import { AraDualSpinLogo } from "@/components/AraDualSpinLogo";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const SIZE_PX = {
-  sm: 24,
-  md: 40,
-  lg: 56,
-  xl: 72,
+  sm: 18,
+  md: 28,
+  lg: 36,
+  xl: 52,
 } as const;
 
 export type GlobalLoadingSize = keyof typeof SIZE_PX;
@@ -35,8 +35,8 @@ export function GlobalLoading({
 
   return (
     <div
-      className={`flex items-center justify-center ${
-        inline ? "flex-row gap-2.5" : "flex-col gap-3"
+      className={`flex items-center justify-center overflow-visible ${
+        inline ? "flex-row gap-2.5" : "flex-col gap-3 pt-6 pb-1"
       } ${className}`}
       role="status"
       aria-live="polite"

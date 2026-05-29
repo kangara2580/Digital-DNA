@@ -22,7 +22,7 @@ import { SellerIdentityLink } from "@/components/SellerIdentityLink";
 import { VideoDetailRecommendations } from "@/components/VideoDetailRecommendations";
 import { VideoDetailReviewsSection } from "@/components/VideoDetailReviewsSection";
 import { TrendingVideoStatsFooter } from "@/components/TrendingVideoStatsFooter";
-import { getMetricsForVideoDetail } from "@/data/trendingStats";
+import { getGridCardMetrics } from "@/data/trendingStats";
 import { useDopamineBasket } from "@/context/DopamineBasketContext";
 import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useRecentClips } from "@/context/RecentClipsContext";
@@ -431,20 +431,7 @@ export function VideoDetailView({
     },
   });
 
-  const rankMetrics = useMemo(() => {
-    if (video.listing) {
-      const views = video.listing.views;
-      const sales = video.listing.salesCount;
-      const p = video.priceWon ?? 0;
-      return {
-        cumulativeRevenueWon: toGemPrice(p) * sales,
-        totalViews: Math.max(0, views),
-        totalLikes: Math.max(0, Math.floor(views * 0.028)),
-        growthPercent: 0,
-      };
-    }
-    return getMetricsForVideoDetail(video.id);
-  }, [video]);
+  const rankMetrics = useMemo(() => getGridCardMetrics(video), [video]);
   const [liveStats, setLiveStats] = useState<{
     playCount: number;
     diggCount: number;
@@ -813,7 +800,8 @@ export function VideoDetailView({
                 <GemAmount
                   value={toGemPrice(price).toLocaleString()}
                   className="font-black tabular-nums tracking-tight text-[length:calc(36px_+_5pt)] text-white [html[data-theme='light']_&]:text-zinc-900"
-                  iconClassName="h-[0.6em] w-[0.6em] shrink-0 text-[color:var(--reels-point)]"
+                  gapClassName="gap-1"
+                  iconClassName="h-[1.05em] w-[1.05em] shrink-0 text-[color:var(--reels-point)]"
                 />
               </div>
             )}

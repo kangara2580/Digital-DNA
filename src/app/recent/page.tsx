@@ -2,12 +2,13 @@
 
 import { X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
 import { useRecentClips } from "@/context/RecentClipsContext";
 import { useSitePreferences } from "@/context/SitePreferencesContext";
 import { ALL_MARKET_VIDEOS } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
+import { useReelsConfirm } from "@/components/ReelsConfirmProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVideoDisplayTitle } from "@/hooks/useVideoDisplayTitle";
 import { videoDisplayTitle } from "@/lib/videoDisplayTitle";
@@ -107,6 +108,7 @@ function sortRows(rows: Row[], sort: SortValue, locale: SiteLocale): Row[] {
 
 export default function RecentPage() {
   const { t } = useTranslation();
+  const reelsConfirm = useReelsConfirm();
   const { entries, hydrated, clear, remove } = useRecentClips();
   const { locale } = useSitePreferences();
   const sortOptions = useMemo(
@@ -165,6 +167,15 @@ export default function RecentPage() {
     return () => window.cancelAnimationFrame(raf);
   }, [showEmptyGate]);
 
+  const onClearAll = useCallback(async () => {
+    const ok = await reelsConfirm({
+      message: t("mypage.recent.clearConfirm"),
+      confirmLabel: t("common.confirm"),
+      dialogAriaLabel: t("common.confirmDialogAria"),
+    });
+    if (ok) clear();
+  }, [clear, reelsConfirm, t]);
+
   return (
     <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12 lg:px-8">
       <header className="flex flex-col gap-4 border-b border-white/10 pb-8 [html[data-theme='light']_&]:border-zinc-200 sm:flex-row sm:items-end sm:justify-between">
@@ -196,14 +207,7 @@ export default function RecentPage() {
           {hydrated && entries.length > 0 ? (
             <button
               type="button"
-              onClick={() => {
-                if (
-                  typeof window !== "undefined" &&
-                  window.confirm(t("mypage.recent.clearConfirm"))
-                ) {
-                  clear();
-                }
-              }}
+              onClick={() => void onClearAll()}
               className="rounded-lg border border-white/15 px-3 py-2 text-[13px] font-medium text-zinc-400 transition-colors hover:border-reels-crimson/35 hover:bg-white/[0.06] hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-100 [html[data-theme='light']_&]:hover:text-zinc-900"
             >
               {t("mypage.recent.clearAll")}

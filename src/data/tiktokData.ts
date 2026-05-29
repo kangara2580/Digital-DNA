@@ -157,10 +157,31 @@ function clipTitleFromRankItem(item: TikTokManualRankItem): string {
   return "Clip";
 }
 
+function catalogSellerIdForRankProvider(provider: ExternalProvider): string {
+  switch (provider) {
+    case "tiktok":
+      return "catalog:TikTok";
+    case "youtube":
+      return "catalog:YouTube";
+    case "instagram":
+      return "catalog:Instagram";
+    default: {
+      const _exhaustive: never = provider;
+      return _exhaustive;
+    }
+  }
+}
+
 function feedVideoFromRankItem(item: TikTokManualRankItem): FeedVideo {
   const poster = `/api/embed/poster?url=${encodeURIComponent(item.url)}`;
   const priceWon = rankDemoPriceWon(item.id);
   const title = clipTitleFromRankItem(item);
+  const listing = {
+    sellerId: catalogSellerIdForRankProvider(item.provider),
+    views: 0,
+    salesCount: 0,
+    createdAtMs: Date.now(),
+  };
 
   switch (item.provider) {
     case "tiktok":
@@ -174,6 +195,7 @@ function feedVideoFromRankItem(item: TikTokManualRankItem): FeedVideo {
         tiktokEmbedId: item.canonicalKey,
         sourcePageUrl: item.url,
         priceWon,
+        listing,
       };
     case "youtube":
       return {
@@ -186,6 +208,7 @@ function feedVideoFromRankItem(item: TikTokManualRankItem): FeedVideo {
         youtubeVideoId: item.canonicalKey,
         sourcePageUrl: item.url,
         priceWon,
+        listing,
       };
     case "instagram":
       return {
@@ -198,6 +221,7 @@ function feedVideoFromRankItem(item: TikTokManualRankItem): FeedVideo {
         instagramShortcode: item.canonicalKey,
         sourcePageUrl: item.url,
         priceWon,
+        listing,
       };
     default: {
       const _exhaustive: never = item.provider;

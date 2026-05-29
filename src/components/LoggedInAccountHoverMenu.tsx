@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useState, type ReactNode } from "react";
 import { LayoutGrid, LogOut, Settings, UserRound } from "lucide-react";
 import { PaymentDiamondIcon } from "@/components/PaymentDiamondIcon";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { signOutAndNavigateHome } from "@/lib/authLogout";
 
 type Props = {
   triggerClassName: string;
@@ -39,7 +39,6 @@ function LoggedInAccountHoverMenuInner({
   rootClassName,
   mypageQueryTab,
 }: InnerProps) {
-  const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuthSession();
   const { t } = useTranslation();
@@ -61,16 +60,11 @@ function LoggedInAccountHoverMenuInner({
   const onLogout = useCallback(async () => {
     setBusy(true);
     try {
-      const supabase = getSupabaseBrowserClient();
-      if (supabase) {
-        await supabase.auth.signOut({ scope: "global" });
-      }
-    } finally {
+      await signOutAndNavigateHome();
+    } catch {
       setBusy(false);
     }
-    router.replace("/");
-    router.refresh();
-  }, [router]);
+  }, []);
 
   const menuPositionClass =
     "pointer-events-none invisible absolute right-0 top-full z-[240] min-w-0 w-max pt-2.5 opacity-0 transition-[opacity,visibility] duration-150 ease-out motion-reduce:transition-none group-hover/acctmenu:pointer-events-auto group-hover/acctmenu:visible group-hover/acctmenu:opacity-100 group-focus-within/acctmenu:pointer-events-auto group-focus-within/acctmenu:visible group-focus-within/acctmenu:opacity-100";
@@ -151,10 +145,31 @@ function LoggedInAccountHoverSearchParamsBinder(props: Props) {
   return <LoggedInAccountHoverMenuInner {...props} mypageQueryTab={mypageQueryTab} />;
 }
 
+/** Suspense fallback — Inner와 동일 컴포넌트를 쓰면 useSearchParams 전환 시 훅 개수 불일치 오류 */
+function LoggedInAccountHoverMenuFallback({
+  triggerClassName,
+  rootClassName,
+}: Pick<Props, "triggerClassName" | "rootClassName">) {
+  const rootAlign =
+    rootClassName ?? "group/acctmenu relative inline-flex shrink-0 flex-col items-end";
+  return (
+    <div className={rootAlign} aria-hidden>
+      <span className={`${triggerClassName} pointer-events-none opacity-60`} />
+    </div>
+  );
+}
+
 /** 로그인 전용 — 프로필 호버: 내 피드 · 마이페이지 · 설정 · 로그아웃 */
 export function LoggedInAccountHoverMenu(props: Props) {
   return (
-    <Suspense fallback={<LoggedInAccountHoverMenuInner {...props} mypageQueryTab="" />}>
+    <Suspense
+      fallback={
+        <LoggedInAccountHoverMenuFallback
+          triggerClassName={props.triggerClassName}
+          rootClassName={props.rootClassName}
+        />
+      }
+    >
       <LoggedInAccountHoverSearchParamsBinder {...props} />
     </Suspense>
   );

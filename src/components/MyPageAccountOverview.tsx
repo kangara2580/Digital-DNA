@@ -1,14 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { VideoCard } from "@/components/VideoCard";
 import { MyPageSortSelect } from "@/components/MyPageSortSelect";
-import { usePurchasedVideos, type PurchasedListItem } from "@/context/PurchasedVideosContext";
+import { usePurchasedVideos } from "@/context/PurchasedVideosContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MYPAGE_OUTLINE_BTN_MD } from "@/lib/mypageOutlineCta";
-
-type Sort = "recent" | "oldest" | "price-asc" | "price-desc";
+import {
+  isPurchaseSort,
+  purchaseAcquiredAtMs,
+  sortPurchasedItems,
+  type PurchaseSort,
+} from "@/lib/sortPurchasedItems";
 
 function formatPurchasedWhen(ms: number, locale: string): string {
   if (!Number.isFinite(ms) || ms <= 0) return "—";
@@ -18,45 +23,34 @@ function formatPurchasedWhen(ms: number, locale: string): string {
     : d.toLocaleString("ko-KR", { dateStyle: "medium", timeStyle: "short" });
 }
 
-function sortPurchasedRows(rows: PurchasedListItem[], sort: Sort, locale: "ko" | "en"): PurchasedListItem[] {
-  const copy = [...rows];
-  const noPrice = 1e12;
-  const titleCmp = (a: PurchasedListItem, b: PurchasedListItem) =>
-    a.feed.title.localeCompare(b.feed.title, locale === "ko" ? "ko" : "en");
-  switch (sort) {
-    case "recent":
-      return copy.sort((a, b) => {
-        const byT = b.acquiredAt - a.acquiredAt;
-        if (byT !== 0) return byT;
-        return titleCmp(a, b);
-      });
-    case "oldest":
-      return copy.sort((a, b) => {
-        const byT = a.acquiredAt - b.acquiredAt;
-        if (byT !== 0) return byT;
-        return titleCmp(a, b);
-      });
-    case "price-asc":
-      return copy.sort((a, b) => {
-        const byP = (a.paidPriceWon ?? noPrice) - (b.paidPriceWon ?? noPrice);
-        if (byP !== 0) return byP;
-        return titleCmp(a, b);
-      });
-    case "price-desc":
-      return copy.sort((a, b) => {
-        const byP = (b.paidPriceWon ?? -1) - (a.paidPriceWon ?? -1);
-        if (byP !== 0) return byP;
-        return titleCmp(a, b);
-      });
-    default:
-      return copy;
-  }
+function parsePurchaseSortFromUrl(raw: string | null): PurchaseSort {
+  return raw && isPurchaseSort(raw) ? raw : "recent";
 }
 
-export function MyPageAccountOverview() {
+function MyPageAccountOverviewInner() {
   const { purchasedItems } = usePurchasedVideos();
   const { t, locale } = useTranslation();
-  const [sort, setSort] = useState<Sort>("recent");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const sortFromUrl = parsePurchaseSortFromUrl(searchParams.get("purchaseSort"));
+  const [sort, setSort] = useState<PurchaseSort>(sortFromUrl);
+
+  useEffect(() => {
+    setSort(sortFromUrl);
+  }, [sortFromUrl]);
+
+  const onSortChange = useCallback(
+    (next: string) => {
+      if (!isPurchaseSort(next)) return;
+      setSort(next);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", "purchases");
+      params.set("purchaseSort", next);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
 
   const sortOptions = useMemo(
     () =>
@@ -70,7 +64,12 @@ export function MyPageAccountOverview() {
   );
 
   const rows = useMemo(
-    () => sortPurchasedRows([...purchasedItems], sort, locale === "en" ? "en" : "ko"),
+    () =>
+      sortPurchasedItems(
+        purchasedItems,
+        sort,
+        locale === "en" ? "en" : "ko",
+      ),
     [purchasedItems, sort, locale],
   );
 
@@ -95,7 +94,7 @@ export function MyPageAccountOverview() {
           <MyPageSortSelect
             options={[...sortOptions]}
             value={sort}
-            onChange={(v) => setSort(v as Sort)}
+            onChange={onSortChange}
             ariaLabel={t("mypage.purchases.sortAria")}
           />
         </label>
@@ -123,7 +122,7 @@ export function MyPageAccountOverview() {
                 footerExtension={
                   <p className="border-t border-white/10 px-2.5 py-2 text-left text-[11px] leading-snug text-white [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:text-zinc-900 sm:px-3 sm:text-[12px]">
                     {t("mypage.purchases.purchasedAt", {
-                      when: formatPurchasedWhen(row.acquiredAt, locale),
+                      when: formatPurchasedWhen(purchaseAcquiredAtMs(row), locale),
                     })}
                   </p>
                 }
@@ -133,5 +132,13 @@ export function MyPageAccountOverview() {
         })}
       </ul>
     </>
+  );
+}
+
+export function MyPageAccountOverview() {
+  return (
+    <Suspense fallback={null}>
+      <MyPageAccountOverviewInner />
+    </Suspense>
   );
 }

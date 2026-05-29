@@ -48,8 +48,13 @@ function placeholderFeed(videoId: string, title: string): FeedVideo {
 }
 
 function parseItem(row: Record<string, unknown>, videoId: string): PurchasedListItem {
-  const acquiredAt =
-    typeof row.acquiredAt === "number" && Number.isFinite(row.acquiredAt) ? row.acquiredAt : 0;
+  let acquiredAt = 0;
+  if (typeof row.acquiredAt === "number" && Number.isFinite(row.acquiredAt)) {
+    acquiredAt = row.acquiredAt;
+  } else if (typeof row.acquiredAt === "string") {
+    const parsed = Date.parse(row.acquiredAt);
+    if (Number.isFinite(parsed)) acquiredAt = parsed;
+  }
   const feed =
     row.feed && typeof row.feed === "object" && row.feed !== null && typeof (row.feed as FeedVideo).id === "string"
       ? (row.feed as FeedVideo)

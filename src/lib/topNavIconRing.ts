@@ -27,6 +27,10 @@ export const TOP_NAV_ACCOUNT_CART_DUAL_MIN_WIDTH =
 export const MOBILE_TOP_FLOAT_INSET_CSS =
   "max(3.75rem,calc(env(safe-area-inset-top,0px)+3.25rem))";
 
+/** `/seller/*` 등 상단 플로팅(검색·계정)과 본문이 겹치지 않도록 */
+export const SELLER_SUBPAGE_MAIN_CLASS =
+  "mx-auto min-h-[60vh] w-full max-w-[900px] px-4 pb-10 pt-[calc(var(--mobile-top-float-pad)+1.25rem)] text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:pt-[calc(var(--mobile-top-float-pad)+1.5rem)] md:pt-[calc(var(--mobile-top-float-pad)+1rem)] lg:px-8";
+
 /**
  * 모바일: 우측 검색·계정(홈은 하단 패널). 데스크톱(md+)에서는 자식만 노출되는 경우가 많음.
  */

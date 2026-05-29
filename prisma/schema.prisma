@@ -48,6 +48,7 @@ model Video {
 
   notifications  Notification[]
   generationJobs GenerationJob[]
+  reviews        VideoReview[]
 
   @@index([sellerId])
   @@index([createdAt])
@@ -449,16 +450,26 @@ model Notification {
 
 /// 영상 구매평 — 구매한 사용자만 작성 가능
 model VideoReview {
-  id        String   @id @default(cuid())
-  videoId   String   @map("video_id")
-  userId    String   @map("user_id")
-  nickname  String
-  rating    Int /// 1–5
-  body      String
-  createdAt DateTime @default(now()) @map("created_at")
+  id                   String    @id @default(cuid())
+  videoId              String    @map("video_id")
+  userId               String    @map("user_id")
+  nickname             String
+  rating               Int /// 1–5
+  body                 String
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+  sellerReply          String?   @map("seller_reply")
+  sellerReplyAt        DateTime? @map("seller_reply_at")
+  sellerReplyUpdatedAt DateTime? @map("seller_reply_updated_at")
+  isReported           Boolean   @default(false) @map("is_reported")
+  reportedAt           DateTime? @map("reported_at")
+  reportedBy           String?   @map("reported_by")
+
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
   @@unique([videoId, userId])
   @@index([videoId, createdAt])
+  @@index([videoId, rating])
   @@map("video_reviews")
 }
 

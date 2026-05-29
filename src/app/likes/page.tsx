@@ -9,6 +9,7 @@ import { resolveManualTikTokVideoForStudio } from "@/data/tiktokData";
 import { buildWishlistVideoLookup } from "@/data/videoCatalog";
 import type { FeedVideo } from "@/data/videos";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useReelsConfirm } from "@/components/ReelsConfirmProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   USER_FAVORITE_LIKE_UPDATED_EVENT,
@@ -60,6 +61,7 @@ function rowsToLikeEntries(rows: { video_id: string; created_at: string }[]): Li
 export default function LikesPage() {
   const { user, loading: authLoading, supabaseConfigured } = useAuthSession();
   const { t } = useTranslation();
+  const reelsConfirm = useReelsConfirm();
   const sortOptions = useMemo(
     () =>
       [
@@ -180,12 +182,12 @@ export default function LikesPage() {
 
   const unlikeSelected = useCallback(async () => {
     if (!user || selected.size === 0) return;
-    if (
-      typeof window !== "undefined" &&
-      !window.confirm(t("mypage.likes.confirmUnlike", { n: selected.size }))
-    ) {
-      return;
-    }
+    const ok = await reelsConfirm({
+      message: t("mypage.likes.confirmUnlike", { n: selected.size }),
+      confirmLabel: t("common.confirm"),
+      dialogAriaLabel: t("common.confirmDialogAria"),
+    });
+    if (!ok) return;
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
     const ready = await waitForSupabaseAccessToken(supabase);
@@ -201,7 +203,7 @@ export default function LikesPage() {
     }
     await loadLikes();
     setSelected(new Set());
-  }, [selected, user, loadLikes, t]);
+  }, [selected, user, loadLikes, reelsConfirm, t]);
 
   return (
     <main className="mx-auto min-h-[50vh] max-w-[1800px] px-4 py-10 text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 sm:px-6 sm:py-12 lg:px-8">

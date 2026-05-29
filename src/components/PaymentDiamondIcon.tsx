@@ -102,17 +102,21 @@ export function GemAmount({
   className,
   amountClassName,
   iconClassName = "h-3.5 w-3.5 shrink-0 text-[color:var(--reels-point)]",
+  gapClassName = "gap-0.5",
 }: {
   value: string | number;
   className?: string;
   amountClassName?: string;
   iconClassName?: string;
+  gapClassName?: string;
 }) {
   const amountText =
     typeof value === "number" ? value.toLocaleString() : stripGemEmoji(value);
 
   return (
-    <span className={`inline-flex items-center gap-0.5 align-middle ${className ?? ""}`}>
+    <span
+      className={`inline-flex items-center align-middle ${gapClassName} ${className ?? ""}`}
+    >
       <span className={amountClassName}>{amountText}</span>
       <PaymentDiamondIcon className={iconClassName} />
     </span>

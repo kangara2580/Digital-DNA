@@ -265,6 +265,12 @@
   color: var(--reels-point) !important;
 }
 
+/* 메인 히어로 마퀴 — 호버 가격 옆 보석만 브랜드 핑크(숫자는 흰색 유지) */
+.highlight24-lock-white .video-reel-media-root .video-card-price-on-media svg {
+  color: var(--reels-point) !important;
+  stroke: var(--reels-point) !important;
+}
+
 :root[data-theme="dark"] {
   --reels-crimson: #ff2d8d;
   --reels-cyan: #ff2d8d;
@@ -960,39 +966,132 @@ html[data-theme="light"] .trending-rank-ocean-bg {
   background: #000;
 }
 
-/* ARA 글로벌 로딩 — 이중 회전 (검은 삼각형 CW · 핑크 재생 CCW) */
-@keyframes ara-logo-spin-cw {
-  from {
-    transform: rotate(0deg);
+/* ARA 글로벌 로딩 — 쫀득 젤리 점프·보잉 (촘촘한 상승/하강 프레임) */
+@keyframes ara-logo-soft-jelly {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1, 1);
   }
-  to {
-    transform: rotate(360deg);
+
+  /* 눌림 → 납작 */
+  4% {
+    transform: translate3d(0, 2%, 0) scaleX(1.06) scaleY(0.96);
+  }
+  8% {
+    transform: translate3d(0, 1%, 0) scaleX(1.22) scaleY(0.82);
+  }
+  12% {
+    transform: translate3d(0, 0, 0) scaleX(1.48) scaleY(0.48);
+  }
+
+  /* 상승 — 프레임 촘촘히 */
+  15% {
+    transform: translate3d(0, -6%, 0) scaleX(1.32) scaleY(0.68);
+  }
+  18% {
+    transform: translate3d(0, -14%, 0) scaleX(1.14) scaleY(0.86);
+  }
+  21% {
+    transform: translate3d(0, -24%, 0) scaleX(1.02) scaleY(1.08);
+  }
+  24% {
+    transform: translate3d(0, -34%, 0) scaleX(0.94) scaleY(1.18);
+  }
+  27% {
+    transform: translate3d(0, -42%, 0) scaleX(0.9) scaleY(1.28);
+  }
+  30% {
+    transform: translate3d(0, -50%, 0) scaleX(0.88) scaleY(1.36);
+  }
+  33% {
+    transform: translate3d(0, -54%, 0) scaleX(0.9) scaleY(1.34);
+  }
+  36% {
+    transform: translate3d(0, -52%, 0) scaleX(0.92) scaleY(1.3);
+  }
+
+  /* 하강 — 프레임 촘촘히 */
+  39% {
+    transform: translate3d(0, -46%, 0) scaleX(0.94) scaleY(1.24);
+  }
+  42% {
+    transform: translate3d(0, -38%, 0) scaleX(0.98) scaleY(1.14);
+  }
+  45% {
+    transform: translate3d(0, -28%, 0) scaleX(1.02) scaleY(1.06);
+  }
+  48% {
+    transform: translate3d(0, -18%, 0) scaleX(1.06) scaleY(1);
+  }
+  51% {
+    transform: translate3d(0, -10%, 0) scaleX(1.1) scaleY(0.94);
+  }
+  54% {
+    transform: translate3d(0, -4%, 0) scaleX(1.14) scaleY(0.88);
+  }
+  57% {
+    transform: translate3d(0, 0, 0) scaleX(1.2) scaleY(0.78);
+  }
+
+  /* 착지 보잉 */
+  60% {
+    transform: translate3d(0, -16%, 0) scaleX(0.94) scaleY(1.14);
+  }
+  63% {
+    transform: translate3d(0, -6%, 0) scaleX(1.08) scaleY(0.92);
+  }
+  66% {
+    transform: translate3d(0, 0, 0) scaleX(1.04) scaleY(0.96);
+  }
+  69% {
+    transform: translate3d(0, -4%, 0) scaleX(1.01) scaleY(1.02);
+  }
+  72% {
+    transform: translate3d(0, 0, 0) scaleX(1.02) scaleY(0.98);
+  }
+
+  /* 안정 */
+  78% {
+    transform: translate3d(0, -1.5%, 0) scaleX(1.008) scaleY(0.994);
+  }
+  86% {
+    transform: translate3d(0, 0, 0) scaleX(1.004) scaleY(0.998);
+  }
+  93% {
+    transform: translate3d(0, -0.6%, 0) scale(1, 1);
   }
 }
 
-@keyframes ara-logo-spin-ccw {
-  from {
-    transform: rotate(0deg);
+@keyframes ara-logo-soft-jelly-muted {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1, 1);
   }
-  to {
-    transform: rotate(-360deg);
+  50% {
+    transform: translate3d(0, -1.5%, 0) scale(1.02, 0.98);
   }
 }
 
 .ara-dual-spin-stage {
   contain: layout style;
+  overflow: visible;
   background: transparent;
-}
-
-.ara-dual-spin-logo {
-  transform-origin: 50% 50%;
+  transform-origin: 50% 100%;
   backface-visibility: hidden;
   will-change: transform;
-  animation: ara-logo-spin-cw 2.2s linear infinite;
+  animation: ara-logo-soft-jelly 2.15s linear infinite;
+}
+
+.ara-dual-spin-inner {
+  display: inline-flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ara-dual-spin-logo {
-    animation: none;
+  .ara-dual-spin-stage {
+    animation: ara-logo-soft-jelly-muted 2.8s ease-in-out infinite;
   }
 }
