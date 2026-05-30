@@ -81,7 +81,7 @@ export function ReelsConfirmDialog({
         ) : null}
 
         <p
-          className={`relative z-[1] text-center text-[15px] font-semibold leading-relaxed text-zinc-300 [html[data-theme='light']_&]:text-zinc-700 ${
+          className={`relative z-[1] whitespace-pre-line text-center text-[15px] font-semibold leading-relaxed !text-white ${
             title ? "mt-3" : ""
           }`}
         >

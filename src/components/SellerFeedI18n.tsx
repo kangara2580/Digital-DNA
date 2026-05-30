@@ -16,7 +16,7 @@ export function SellerFeedListingCount({
   const loc = locale as SiteLocale;
 
   return (
-    <p className="mt-3 text-[13px] font-medium tabular-nums text-white/[0.58] [html[data-theme='light']_&]:text-zinc-600">
+    <p className="mt-1.5 text-[13px] font-medium tabular-nums text-white/[0.58] [html[data-theme='light']_&]:text-zinc-600">
       {loc === "ko" ? (
         <>
           판매 중{" "}

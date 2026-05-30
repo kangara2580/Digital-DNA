@@ -207,28 +207,22 @@ export function AccountSettingsDashboard() {
     [user],
   );
 
-  const onProfileAvatarPick = useCallback(
+  const onProfileAvatarApply = useCallback(
     async (next: ProfileAvatar) => {
-      if (!user) return;
+      if (!user) return { ok: false, error: "no_user" };
       patchProfileRecordAvatar(next);
 
       const supabase = getSupabaseBrowserClient();
-      if (!supabase) return;
+      if (!supabase) return { ok: false, error: "no_client" };
 
       const result = await persistProfileAvatar(next);
       if (!result.ok) {
-        if (next.kind === "upload") {
-          if (result.error === "bucket_missing") {
-            window.alert(t("avatar.alertStorageNotReady"));
-          } else {
-            window.alert(t("avatar.alertSaveFail"));
-          }
-        }
         const merged = await loadProfileMergedWithBackfill(supabase, user);
         if (merged) setProfileRecord(merged);
       }
+      return result;
     },
-    [user, patchProfileRecordAvatar, persistProfileAvatar, t],
+    [user, patchProfileRecordAvatar, persistProfileAvatar],
   );
 
   useEffect(() => {
@@ -341,7 +335,7 @@ export function AccountSettingsDashboard() {
                   profileForForm={profileForForm}
                   onSaved={setProfileRecord}
                   profileAvatar={profileAvatar}
-                  onProfileAvatarChange={onProfileAvatarPick}
+                  onProfileAvatarApply={onProfileAvatarApply}
                 />
               </div>
             </div>

@@ -612,25 +612,34 @@ export function SellerClipUploadForm() {
               <div>
                 <label className={LABEL} htmlFor={`${hid}-price`}>
                   {t("sellForm.priceLabel")}
+                </label>
+                <div className="flex h-[52px] items-center gap-2.5">
+                  <input
+                    id={`${hid}-price`}
+                    className={`${INPUT} h-full min-w-0 flex-1 py-0`}
+                    inputMode="numeric"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value.replace(/[^\d]/g, ""))}
+                    required
+                  />
                   {price && Number(price) > 0 ? (
-                    <span className="ml-2 text-xs font-normal text-zinc-400">
+                    <span className="flex shrink-0 items-center gap-0.5 whitespace-nowrap text-[16px] font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700">
                       ={" "}
                       <GemAmount
                         value={Math.round(Number(price) / 6).toLocaleString()}
-                        className="inline-flex text-xs font-normal text-zinc-400"
-                        iconClassName="h-3 w-3 shrink-0 text-[color:var(--reels-point)]"
+                        className="inline-flex text-[16px] font-semibold text-zinc-300 [html[data-theme='light']_&]:text-zinc-700"
+                        amountClassName="text-[16px] font-semibold"
+                        iconClassName="h-5 w-5 shrink-0 text-[color:var(--reels-point)]"
+                        gapClassName="gap-1"
                       />
                     </span>
                   ) : null}
-                </label>
-                <input
-                  id={`${hid}-price`}
-                  className={`${INPUT} h-[52px]`}
-                  inputMode="numeric"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value.replace(/[^\d]/g, ""))}
-                  required
-                />
+                </div>
+                {price && Number(price) > 0 ? (
+                  <p className="mt-1.5 text-[12px] font-medium leading-snug text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
+                    {t("sellForm.priceCreditHint")}
+                  </p>
+                ) : null}
               </div>
             </div>
 
@@ -761,6 +770,7 @@ export function SellerClipUploadForm() {
 
                 {(customPosterPreviewUrl || appliedThumbPreviewUrl) ? (
                   <div className="w-full max-w-[200px] overflow-hidden rounded-xl border border-white/12 bg-zinc-950/80 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={customPosterPreviewUrl ?? appliedThumbPreviewUrl ?? ""}
                       alt={t("sellForm.thumbnailPreviewAlt")}

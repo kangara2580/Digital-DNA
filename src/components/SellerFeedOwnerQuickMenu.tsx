@@ -6,6 +6,7 @@ import {
   Clapperboard,
   Heart,
   Menu,
+  PenLine,
   Save,
   ShoppingBag,
 } from "lucide-react";
@@ -13,15 +14,21 @@ import Link from "next/link";
 import { useEffect, useId, useMemo, useRef } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useTranslation } from "@/hooks/useTranslation";
+import {
+  MYPAGE_TAB_DEFS,
+  mypageTabLabelKey,
+  type MyPageTab,
+} from "@/lib/mypageTabs";
 
-const ITEM_DEFS = [
-  { href: "/mypage?tab=wishlist", tabKey: "wishlist" as const, Icon: Bookmark },
-  { href: "/mypage?tab=likes", tabKey: "likes" as const, Icon: Heart },
-  { href: "/mypage?tab=purchases", tabKey: "purchases" as const, Icon: ShoppingBag },
-  { href: "/mypage?tab=drafts", tabKey: "drafts" as const, Icon: Save },
-  { href: "/mypage?tab=listings", tabKey: "listingsShort" as const, Icon: Clapperboard },
-  { href: "/mypage?tab=analytics", tabKey: "analytics" as const, Icon: BarChart3 },
-] as const;
+const TAB_ICONS: Record<MyPageTab, typeof Bookmark> = {
+  wishlist: Bookmark,
+  likes: Heart,
+  purchases: ShoppingBag,
+  reviews: PenLine,
+  drafts: Save,
+  listings: Clapperboard,
+  analytics: BarChart3,
+};
 
 const triggerClass =
   "flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border-0 bg-transparent text-zinc-100 outline-none transition-[background-color,color] hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--reels-point)]/35 [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-200/50 [html[data-theme='light']_&]:focus-visible:ring-reels-crimson/25";
@@ -49,10 +56,14 @@ export function SellerFeedOwnerQuickMenu({ sellerId }: { sellerId: string }) {
 
   const items = useMemo(
     () =>
-      ITEM_DEFS.map((d) => ({
-        ...d,
-        label: t(`mypage.tab.${d.tabKey}`),
-      })),
+      MYPAGE_TAB_DEFS.map((tab) => {
+        const labelKey = mypageTabLabelKey(tab.id);
+        return {
+          href: tab.href,
+          label: t(`mypage.tab.${labelKey}`),
+          Icon: TAB_ICONS[tab.id],
+        };
+      }),
     [t],
   );
 

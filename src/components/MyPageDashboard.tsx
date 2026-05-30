@@ -31,25 +31,13 @@ import {
 } from "@/lib/brandPinkTokens";
 import { GlobalLoading } from "@/components/GlobalLoading";
 import { useTranslation } from "@/hooks/useTranslation";
+import {
+  MYPAGE_TAB_DEFS,
+  normalizeMyPageTab,
+  type MyPageTab,
+} from "@/lib/mypageTabs";
 
-type MyPageTab =
-  | "drafts"
-  | "analytics"
-  | "listings"
-  | "wishlist"
-  | "likes"
-  | "purchases"
-  | "reviews";
-
-const TAB_DEFS: { id: MyPageTab; href: string }[] = [
-  { id: "wishlist", href: "/mypage?tab=wishlist" },
-  { id: "likes", href: "/mypage?tab=likes" },
-  { id: "purchases", href: "/mypage?tab=purchases" },
-  { id: "reviews", href: "/mypage?tab=reviews" },
-  { id: "drafts", href: "/mypage?tab=drafts" },
-  { id: "listings", href: "/mypage?tab=listings" },
-  { id: "analytics", href: "/mypage?tab=analytics" },
-];
+const TAB_DEFS = MYPAGE_TAB_DEFS;
 
 function LoginRequiredPanel({ tabId }: { tabId: MyPageTab }) {
   const { t } = useTranslation();
@@ -74,26 +62,10 @@ function LoginRequiredPanel({ tabId }: { tabId: MyPageTab }) {
   );
 }
 
-function normalizeTab(input: string | null): MyPageTab {
-  if (input === "saved") return "wishlist";
-  if (
-    input === "drafts" ||
-    input === "analytics" ||
-    input === "listings" ||
-    input === "wishlist" ||
-    input === "likes" ||
-    input === "purchases" ||
-    input === "reviews"
-  ) {
-    return input;
-  }
-  return "wishlist";
-}
-
 export function MyPageDashboard() {
   const params = useSearchParams();
   const { t } = useTranslation();
-  const currentTab = normalizeTab(params.get("tab"));
+  const currentTab = normalizeMyPageTab(params.get("tab"));
   const activeDef = useMemo(
     () => TAB_DEFS.find((item) => item.id === currentTab) ?? TAB_DEFS[0],
     [currentTab],

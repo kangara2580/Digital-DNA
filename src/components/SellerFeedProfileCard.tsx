@@ -213,7 +213,7 @@ export function SellerFeedProfileCard({
   ]);
 
   return (
-    <section className="relative overflow-hidden rounded-[1.35rem] border border-white/[0.1] bg-[var(--background)] p-5 shadow-none sm:rounded-[1.65rem] sm:p-7 [html[data-theme='light']_&]:border-zinc-200/70 [html[data-theme='light']_&]:bg-gradient-to-br [html[data-theme='light']_&]:from-white [html[data-theme='light']_&]:via-white [html[data-theme='light']_&]:to-zinc-50/90 [html[data-theme='light']_&]:shadow-[0_20px_50px_-28px_rgba(15,23,42,0.18),0_0_0_1px_rgba(255,45,141,0.07)] [html[data-theme='light']_&]:backdrop-blur-xl">
+    <section className="relative overflow-hidden rounded-[1.35rem] border border-white/[0.1] bg-[var(--background)] p-4 shadow-none sm:rounded-[1.65rem] sm:p-5 [html[data-theme='light']_&]:border-zinc-200/70 [html[data-theme='light']_&]:bg-gradient-to-br [html[data-theme='light']_&]:from-white [html[data-theme='light']_&]:via-white [html[data-theme='light']_&]:to-zinc-50/90 [html[data-theme='light']_&]:shadow-[0_20px_50px_-28px_rgba(15,23,42,0.18),0_0_0_1px_rgba(255,45,141,0.07)] [html[data-theme='light']_&]:backdrop-blur-xl">
       <div
         className="pointer-events-none absolute -left-24 -top-24 hidden h-48 w-48 rounded-full bg-[color:var(--reels-point)]/12 blur-[80px] [html[data-theme='light']_&]:block"
         aria-hidden
@@ -254,8 +254,8 @@ export function SellerFeedProfileCard({
         </div>
       ) : null}
 
-      <div className="relative grid gap-6 lg:grid-cols-2 lg:items-start lg:gap-8">
-        <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+      <div className="relative grid gap-4 lg:grid-cols-2 lg:items-start lg:gap-6">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
           {editing && isOwner ? (
             <ProfileColorPicker
               className="min-w-0 shrink-0"
@@ -300,21 +300,25 @@ export function SellerFeedProfileCard({
                 />
               </label>
             ) : (
-              <TitleTag className="truncate text-2xl font-extrabold tracking-tight sm:text-[1.85rem] sm:leading-tight">
-                {nickname}
-              </TitleTag>
+              <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
+                <TitleTag className="min-w-0 truncate text-2xl font-extrabold tracking-tight sm:text-[1.85rem] sm:leading-tight">
+                  {nickname}
+                </TitleTag>
+                {showSocialLinks ? (
+                  <SellerFeedSocialLinks
+                    sellerId={sellerId}
+                    initialLinks={sellerSocialLinks}
+                    size="sm"
+                    className="shrink-0"
+                  />
+                ) : null}
+              </div>
             )}
             <SellerFeedListingCount videoCount={videoCount} isDbSeller={isDbSeller} />
-            {showSocialLinks && !editing ? (
-              <SellerFeedSocialLinks
-                sellerId={sellerId}
-                initialLinks={sellerSocialLinks}
-              />
-            ) : null}
           </div>
         </div>
 
-        <div className="min-w-0 border-t border-white/[0.1] pt-6 lg:border-t-0 lg:border-l lg:border-white/[0.1] lg:pl-8 lg:pt-0 [html[data-theme='light']_&]:border-zinc-200/75">
+        <div className="min-w-0 border-t border-white/[0.1] pt-4 lg:border-t-0 lg:border-l lg:border-white/[0.1] lg:pl-6 lg:pt-0 [html[data-theme='light']_&]:border-zinc-200/75">
           <div className="w-full max-w-2xl">
             {editing && isOwner ? (
               <div className="mt-0 lg:mt-8">
@@ -333,7 +337,7 @@ export function SellerFeedProfileCard({
                 </p>
               </div>
             ) : (
-              <p className="mt-2.5 min-h-[3.25rem] whitespace-pre-wrap text-[13px] leading-relaxed text-white/[0.78] [html[data-theme='light']_&]:text-zinc-700 lg:mt-0">
+              <p className="mt-1 min-h-0 whitespace-pre-wrap text-[13px] leading-relaxed text-white/[0.78] [html[data-theme='light']_&]:text-zinc-700 lg:mt-0">
                 {helpText}
               </p>
             )}

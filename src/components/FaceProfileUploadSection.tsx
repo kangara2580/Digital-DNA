@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { useStoredFaceProfile } from "@/hooks/useStoredFaceProfile";
+import type { StoredFaceProfile } from "@/hooks/useStoredFaceProfile";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MYPAGE_OUTLINE_BTN_CORE } from "@/lib/mypageOutlineCta";
 
@@ -148,6 +148,13 @@ type TripleDraft = { front: string | null; left: string | null; right: string | 
 
 const emptyTriple = (): TripleDraft => ({ front: null, left: null, right: null });
 
+function faceProfilesEqual(
+  a: StoredFaceProfile | null,
+  b: StoredFaceProfile | null,
+): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 /** 찜 빈 화면·마이페이지와 동일: 알약형 · 핑크 테두리 · 투명 배경 */
 const outlineCtaMd = `${MYPAGE_OUTLINE_BTN_CORE} px-5 py-2.5 text-[15px]`;
 /** 사진 1장 / 3장 한 번에 — 터치 영역 넓힌 동일 단계 */
@@ -157,13 +164,17 @@ const faceProfileNeutralPickBtn =
   "inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 text-zinc-100 transition hover:border-white/25 hover:bg-white/10 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-900 [html[data-theme='light']_&]:hover:bg-zinc-50";
 const outlineDisabled =
   "disabled:pointer-events-none disabled:opacity-45 disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:hover:bg-transparent";
+const applyBtnClass =
+  "w-full rounded-xl bg-[color:var(--reels-point)] px-6 py-3.5 text-[17px] font-bold text-white shadow-sm transition hover:brightness-110 disabled:pointer-events-none disabled:opacity-45";
 
 export function FaceProfileUploadSection() {
   const { t } = useTranslation();
   const { profile, setProfile, hydrated } = useStoredFaceProfile();
   const reduceMotion = useReducedMotion() ?? false;
 
+  const [pendingProfile, setPendingProfile] = useState<StoredFaceProfile | null>(null);
   const [tripleDraft, setTripleDraft] = useState<TripleDraft>(emptyTriple);
+  const [applyBusy, setApplyBusy] = useState(false);
 
   const [singlePending, setSinglePending] = useState<string | null>(null);
   const [aiRunning, setAiRunning] = useState(false);
@@ -179,21 +190,31 @@ export function FaceProfileUploadSection() {
   const aiStepLabels = useMemo(() => AI_STEP_KEYS.map((k) => t(k)), [t]);
 
   useEffect(() => {
+    setPendingProfile(profile);
     if (profile?.kind === "triple") {
       setTripleDraft({
         front: profile.front,
         left: profile.left,
         right: profile.right,
       });
-    } else if (profile?.kind === "ai") {
+    } else {
       setTripleDraft(emptyTriple());
     }
+    setSinglePending(null);
   }, [profile]);
+
+  const isDirty = useMemo(
+    () => !faceProfilesEqual(pendingProfile, profile),
+    [pendingProfile, profile],
+  );
+
+  const displayProfile = pendingProfile ?? profile;
 
   const slotSrc = useCallback(
     (key: keyof TripleDraft) =>
-      tripleDraft[key] ?? (profile?.kind === "triple" ? profile[key] : null),
-    [tripleDraft, profile],
+      tripleDraft[key] ??
+      (pendingProfile?.kind === "triple" ? pendingProfile[key] : null),
+    [tripleDraft, pendingProfile],
   );
 
   const angleLabel = useCallback(
@@ -215,7 +236,7 @@ export function FaceProfileUploadSection() {
           setTripleDraft((prev) => {
             const next = { ...prev, [key]: dataUrl };
             if (next.front && next.left && next.right) {
-              setProfile({
+              setPendingProfile({
                 kind: "triple",
                 front: next.front,
                 left: next.left,
@@ -230,7 +251,7 @@ export function FaceProfileUploadSection() {
           alert(t("faceProfile.alertProcessFail"));
         });
     },
-    [angleLabel, setProfile, t],
+    [angleLabel, t],
   );
 
   const onSingleFile = useCallback(
@@ -253,15 +274,15 @@ export function FaceProfileUploadSection() {
     [t],
   );
 
-  const clearTripleSlot = useCallback(
-    (key: keyof TripleDraft) => {
-      setTripleDraft((prev) => ({ ...prev, [key]: null }));
-      if (profile?.kind === "triple") {
-        setProfile(null);
+  const clearTripleSlot = useCallback((key: keyof TripleDraft) => {
+    setTripleDraft((prev) => {
+      const next = { ...prev, [key]: null };
+      if (!(next.front && next.left && next.right)) {
+        setPendingProfile((current) => (current?.kind === "triple" ? null : current));
       }
-    },
-    [profile, setProfile],
-  );
+      return next;
+    });
+  }, []);
 
   const runAiGeneration = useCallback(async () => {
     if (!singlePending) return;
@@ -272,26 +293,36 @@ export function FaceProfileUploadSection() {
       setAiStepIndex(i);
       if (stepMs > 0) await new Promise((r) => setTimeout(r, stepMs));
     }
-    setProfile({
+    setPendingProfile({
       kind: "ai",
       source: singlePending,
       generatedAt: Date.now(),
     });
     setAiRunning(false);
     setSinglePending(null);
-  }, [reduceMotion, setProfile, singlePending]);
+  }, [reduceMotion, singlePending]);
 
   const clearAll = useCallback(() => {
-    setProfile(null);
+    setPendingProfile(null);
     setTripleDraft(emptyTriple());
     setSinglePending(null);
     setAiRunning(false);
-  }, [setProfile]);
+  }, []);
 
-  const showAiCrop = profile?.kind === "ai";
+  const handleApply = useCallback(async () => {
+    if (!isDirty || applyBusy) return;
+    setApplyBusy(true);
+    try {
+      await setProfile(pendingProfile);
+    } finally {
+      setApplyBusy(false);
+    }
+  }, [applyBusy, isDirty, pendingProfile, setProfile]);
+
+  const showAiCrop = displayProfile?.kind === "ai";
 
   const nothingStarted =
-    !profile &&
+    !pendingProfile &&
     !tripleDraft.front &&
     !tripleDraft.left &&
     !tripleDraft.right &&
@@ -309,16 +340,6 @@ export function FaceProfileUploadSection() {
       >
         {t("faceProfile.heading")}
       </h2>
-      <p className="mt-2 text-[13px] leading-relaxed text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-        {t("faceProfile.legalNoticePrefix")}
-        <Link
-          href="/license#ai-face"
-          className="font-semibold text-reels-cyan underline underline-offset-2 hover:text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-[color:var(--reels-point)]"
-        >
-          {t("faceProfile.legalNoticeLink")}
-        </Link>
-        {t("faceProfile.legalNoticeSuffix")}
-      </p>
 
       {/* ① 빠른 등록 (AI) — 먼저 노출 */}
       <div className="mt-8 border-t border-white/10 pt-8 [html[data-theme='light']_&]:border-zinc-100">
@@ -398,7 +419,7 @@ export function FaceProfileUploadSection() {
                   <div className="relative aspect-[3/4] overflow-hidden rounded-xl border border-white/12 bg-black/35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={profile.source}
+                      src={displayProfile.source}
                       alt=""
                       className={`h-full w-full object-cover ${position}`}
                     />
@@ -413,7 +434,7 @@ export function FaceProfileUploadSection() {
               ))}
             </ul>
             <p className="mt-2 text-[12px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-500">
-              {new Date(profile.generatedAt).toLocaleString(
+              {new Date(displayProfile.generatedAt).toLocaleString(
                 undefined,
                 { dateStyle: "short", timeStyle: "short" },
               )}
@@ -485,18 +506,27 @@ export function FaceProfileUploadSection() {
         </div>
       </div>
 
-      {hydrated && !nothingStarted ? (
-        <div className="mt-8 flex justify-end gap-2 border-t border-white/10 pt-6 [html[data-theme='light']_&]:border-zinc-100">
-          <p className="mr-auto self-center text-[14px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
-            {t("faceProfile.autoSaved")}
-          </p>
+      {hydrated ? (
+        <div className="mt-8 flex flex-col gap-3 border-t border-white/10 pt-6 [html[data-theme='light']_&]:border-zinc-100">
           <button
             type="button"
-            onClick={clearAll}
-            className="rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-[15px] font-medium text-zinc-300 transition hover:border-white/25 hover:bg-white/10 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
+            onClick={() => void handleApply()}
+            disabled={!isDirty || applyBusy}
+            className={applyBtnClass}
           >
-            {t("faceProfile.clearAll")}
+            {applyBusy ? t("faceProfile.applyBusy") : t("common.apply")}
           </button>
+          {!nothingStarted ? (
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={clearAll}
+                className="rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-[15px] font-medium text-zinc-300 transition hover:border-white/25 hover:bg-white/10 hover:text-zinc-100 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white [html[data-theme='light']_&]:text-zinc-700 [html[data-theme='light']_&]:hover:bg-zinc-50 [html[data-theme='light']_&]:hover:text-zinc-900"
+              >
+                {t("faceProfile.clearAll")}
+              </button>
+            </div>
+          ) : null}
         </div>
       ) : null}
 

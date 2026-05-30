@@ -1,7 +1,7 @@
 "use client";
 
 import type { User } from "@supabase/supabase-js";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SocialLinkFields } from "@/components/SocialLinkFields";
 import { ProfileColorPicker } from "@/components/ProfileColorPicker";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -65,36 +65,54 @@ function appendLinkWithPrefix(links: string[], prefix: string): string[] {
   return [...links, prefix];
 }
 
+function profileAvatarEqual(
+  a: ProfileAvatar | null,
+  b: ProfileAvatar | null,
+): boolean {
+  if (a === b) return true;
+  if (!a || !b) return !a && !b;
+  if (a.kind !== b.kind) return false;
+  if (a.kind === "color" && b.kind === "color") return a.hex === b.hex;
+  if (a.kind === "upload" && b.kind === "upload") return a.dataUrl === b.dataUrl;
+  return false;
+}
+
 const cardShell =
   "rounded-2xl border border-white/10 bg-zinc-900/35 p-5 shadow-sm [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-white";
 
 const inputNickname =
   "mt-2 w-full rounded-xl border border-white/15 bg-black/25 px-3.5 py-2.5 text-[17px] text-zinc-100 outline-none transition focus:border-white/35 [html[data-theme='light']_&]:border-zinc-200 [html[data-theme='light']_&]:bg-zinc-50 [html[data-theme='light']_&]:text-zinc-900";
 
+const applyBtnClass =
+  "w-full rounded-xl bg-[color:var(--reels-point)] px-6 py-3.5 text-[17px] font-bold text-white shadow-sm transition hover:brightness-110 disabled:pointer-events-none disabled:opacity-45";
+
 export function MyPageProfileEditForm({
   profileForForm,
   onSaved,
   profileAvatar,
-  onProfileAvatarChange,
+  onProfileAvatarApply,
 }: {
   /** DB 행 + 로그인 메타 병합 결과 (부모에서 mergeProfileRowWithAuthUser 로 생성) */
   profileForForm: AppProfile | null;
   onSaved: (p: AppProfile) => void;
   profileAvatar: ProfileAvatar | null;
-  onProfileAvatarChange: (next: ProfileAvatar) => void;
+  onProfileAvatarApply: (next: ProfileAvatar) => Promise<{ ok: boolean; error?: string }>;
 }) {
   const { t } = useTranslation();
   const { user, supabaseConfigured } = useAuthSession();
   const [nickname, setNickname] = useState("");
+  const [draftAvatar, setDraftAvatar] = useState<ProfileAvatar | null>(profileAvatar);
   const [socialLinks, setSocialLinks] = useState<string[]>([""]);
   const [socialLinksReady, setSocialLinksReady] = useState(false);
-  const [nicknameBusy, setNicknameBusy] = useState(false);
-  /** 닉네임 저장 실패 등 — 닉네임 필드 전용 */
-  const [nicknameMessage, setNicknameMessage] = useState<string | null>(null);
-  /** SNS blob 저장 실패 등 */
-  const [socialMessage, setSocialMessage] = useState<string | null>(null);
-  const [socialBusy, setSocialBusy] = useState(false);
+  const [applyBusy, setApplyBusy] = useState(false);
+  /** 닉네임 저장 실패 등 — 적용 시 표시 */
+  const [applyMessage, setApplyMessage] = useState<string | null>(null);
+  const [applySucceeded, setApplySucceeded] = useState(false);
   const socialSnapshotRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    setDraftAvatar(profileAvatar);
+  }, [profileAvatar]);
 
   useEffect(() => {
     if (!profileForForm) {
@@ -150,16 +168,15 @@ export function MyPageProfileEditForm({
     };
   }, [user, supabaseConfigured]);
 
-  const saveNickname = useCallback(async () => {
-    setNicknameMessage(null);
+  const saveNickname = useCallback(async (): Promise<boolean> => {
     if (!user || !supabaseConfigured) {
-      setNicknameMessage(t("profileForm.saveLoginRequired"));
-      return;
+      setApplyMessage(t("profileForm.saveLoginRequired"));
+      return false;
     }
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
-      setNicknameMessage(t("profileForm.supabaseCheck"));
-      return;
+      setApplyMessage(t("profileForm.supabaseCheck"));
+      return false;
     }
     const preserved = {
       first_name: profileForForm?.first_name ?? null,
@@ -171,9 +188,8 @@ export function MyPageProfileEditForm({
     };
     const nextNick = nz(nickname);
     const prevNick = nz(profileForForm?.nickname ?? "");
-    if (nextNick === prevNick) return;
+    if (nextNick === prevNick) return true;
 
-    setNicknameBusy(true);
     try {
       const patch = {
         nickname: nextNick,
@@ -183,8 +199,8 @@ export function MyPageProfileEditForm({
         data: { nickname: patch.nickname },
       });
       if (authErr) {
-        setNicknameMessage(t("profileForm.authMetaFailed"));
-        return;
+        setApplyMessage(t("profileForm.authMetaFailed"));
+        return false;
       }
       const updated = await upsertUserProfile(supabase, user.id, {
         ...patch,
@@ -192,58 +208,122 @@ export function MyPageProfileEditForm({
       });
       if (updated) {
         onSaved(updated);
-        setNicknameMessage(null);
-        return;
+        return true;
       }
       const authUser = freshUser ?? user;
       const row = await fetchUserProfile(supabase, user.id);
       if (row) {
         onSaved(mergeProfileRowWithAuthUser(row, authUser));
-        setNicknameMessage(null);
-        return;
+        return true;
       }
-      setNicknameMessage(t("profileForm.saveStateUnknown"));
-    } finally {
-      setNicknameBusy(false);
+      setApplyMessage(t("profileForm.saveStateUnknown"));
+      return false;
+    } catch {
+      setApplyMessage(t("profileForm.saveStateUnknown"));
+      return false;
     }
   }, [user, supabaseConfigured, nickname, profileForForm, onSaved, t]);
 
-  const handleNicknameBlur = useCallback(() => {
-    void saveNickname();
-  }, [saveNickname]);
+  const saveSocialLinks = useCallback(async (): Promise<boolean> => {
+    if (!user || !supabaseConfigured || !socialLinksReady) return true;
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      setApplyMessage(t("profileForm.supabaseCheck"));
+      return false;
+    }
+
+    const normalized = normalizeSellerSocialLinksInput(socialLinks);
+    const snap = JSON.stringify(normalized);
+    if (socialSnapshotRef.current === snap) return true;
+
+    const ok = await upsertUserDataBlob(
+      supabase,
+      user.id,
+      SOCIAL_LINKS_BLOB_KEY,
+      normalized,
+    );
+    if (!ok) {
+      setApplyMessage(t("profileForm.socialSaveFailed"));
+      return false;
+    }
+    socialSnapshotRef.current = snap;
+    window.dispatchEvent(
+      new CustomEvent("seller-social-links-updated", {
+        detail: { sellerId: user.id, links: normalized },
+      }),
+    );
+    return true;
+  }, [socialLinks, socialLinksReady, supabaseConfigured, user, t]);
+
+  const isDirty = useMemo(() => {
+    const nickDirty = nz(nickname) !== nz(profileForForm?.nickname ?? "");
+    const avatarDirty = !profileAvatarEqual(draftAvatar, profileAvatar);
+    const socialDirty =
+      socialLinksReady &&
+      JSON.stringify(normalizeSellerSocialLinksInput(socialLinks)) !==
+        socialSnapshotRef.current;
+    return nickDirty || avatarDirty || socialDirty;
+  }, [
+    draftAvatar,
+    nickname,
+    profileAvatar,
+    profileForForm?.nickname,
+    socialLinks,
+    socialLinksReady,
+  ]);
 
   useEffect(() => {
-    if (!user || !supabaseConfigured || !socialLinksReady) return;
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
+    if (!isDirty) return;
+    setApplyMessage(null);
+    setApplySucceeded(false);
+  }, [draftAvatar, isDirty, nickname, socialLinks]);
 
-    const timer = window.setTimeout(async () => {
-      const normalized = normalizeSellerSocialLinksInput(socialLinks);
-      const snap = JSON.stringify(normalized);
-      if (socialSnapshotRef.current === snap) return;
-      setSocialBusy(true);
-      const ok = await upsertUserDataBlob(
-        supabase,
-        user.id,
-        SOCIAL_LINKS_BLOB_KEY,
-        normalized,
-      );
-      setSocialBusy(false);
-      if (!ok) {
-        setSocialMessage(t("profileForm.socialSaveFailed"));
-        return;
+  const handleApply = useCallback(async () => {
+    if (!isDirty || applyBusy) return;
+    setApplyMessage(null);
+    setApplySucceeded(false);
+    setApplyBusy(true);
+    try {
+      const nickOk = await saveNickname();
+      if (!nickOk) return;
+
+      const socialOk = await saveSocialLinks();
+      if (!socialOk) return;
+
+      if (!profileAvatarEqual(draftAvatar, profileAvatar)) {
+        if (!draftAvatar) {
+          setApplyMessage(t("profileForm.saveStateUnknown"));
+          return;
+        }
+        const result = await onProfileAvatarApply(draftAvatar);
+        if (!result.ok) {
+          if (draftAvatar.kind === "upload") {
+            if (result.error === "bucket_missing") {
+              window.alert(t("avatar.alertStorageNotReady"));
+            } else {
+              window.alert(t("avatar.alertSaveFail"));
+            }
+          }
+          setApplyMessage(t("profileForm.saveStateUnknown"));
+          return;
+        }
       }
-      setSocialMessage(null);
-      socialSnapshotRef.current = snap;
-      window.dispatchEvent(
-        new CustomEvent("seller-social-links-updated", {
-          detail: { sellerId: user.id, links: normalized },
-        }),
-      );
-    }, 450);
 
-    return () => window.clearTimeout(timer);
-  }, [socialLinks, socialLinksReady, supabaseConfigured, user, t]);
+      setApplySucceeded(true);
+      setApplyMessage(t("profileForm.applySuccess"));
+    } finally {
+      setApplyBusy(false);
+    }
+  }, [
+    applyBusy,
+    draftAvatar,
+    isDirty,
+    onProfileAvatarApply,
+    profileAvatar,
+    saveNickname,
+    saveSocialLinks,
+    t,
+  ]);
 
   if (!user) {
     return (
@@ -265,8 +345,8 @@ export function MyPageProfileEditForm({
           <ProfileColorPicker
             className="min-w-0 flex-1"
             density="compact"
-            value={profileAvatar}
-            onChange={onProfileAvatarChange}
+            value={draftAvatar}
+            onChange={setDraftAvatar}
           />
           <div className="shrink-0 lg:ml-auto lg:min-w-[11rem] lg:pt-1 lg:text-right">
             <p className="text-[14px] font-semibold text-zinc-400 [html[data-theme='light']_&]:text-zinc-600">
@@ -291,23 +371,9 @@ export function MyPageProfileEditForm({
             className={inputNickname}
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
-            onBlur={handleNicknameBlur}
             autoComplete="nickname"
           />
         </label>
-        {nicknameBusy ? (
-          <p className="mt-2 text-[13px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            {t("profileForm.saveBusy")}
-          </p>
-        ) : null}
-        {nicknameMessage ? (
-          <p
-            className="mt-3 text-[15px] font-medium text-red-400 [html[data-theme='light']_&]:text-red-600"
-            role="status"
-          >
-            {nicknameMessage}
-          </p>
-        ) : null}
       </section>
 
       <section className={cardShell} aria-labelledby="profile-sns-dashboard">
@@ -344,21 +410,30 @@ export function MyPageProfileEditForm({
             </div>
           </div>
         ) : null}
+      </section>
 
-        {socialBusy ? (
-          <p className="mt-4 text-[13px] font-medium text-zinc-500 [html[data-theme='light']_&]:text-zinc-600">
-            {t("profileForm.snsSaving")}
-          </p>
-        ) : null}
-        {socialMessage ? (
+      <div className="pt-1">
+        <button
+          type="button"
+          onClick={() => void handleApply()}
+          disabled={!isDirty || applyBusy}
+          className={applyBtnClass}
+        >
+          {applyBusy ? t("profileForm.applyBusy") : t("common.apply")}
+        </button>
+        {applyMessage ? (
           <p
-            className="mt-3 text-[15px] font-medium text-red-400 [html[data-theme='light']_&]:text-red-600"
+            className={`mt-3 text-[15px] font-medium ${
+              applySucceeded
+                ? "text-[color:var(--reels-point)] [html[data-theme='light']_&]:text-reels-crimson"
+                : "text-red-400 [html[data-theme='light']_&]:text-red-600"
+            }`}
             role="status"
           >
-            {socialMessage}
+            {applyMessage}
           </p>
         ) : null}
-      </section>
+      </div>
     </div>
   );
 }
