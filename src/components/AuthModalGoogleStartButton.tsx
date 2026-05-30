@@ -3,9 +3,10 @@
 import { ChevronRight } from "lucide-react";
 import {
   AUTH_MODAL_BRAND_PINK_HEX,
+  authModalGoogleButtonFixedShellClass,
   authModalGoogleButtonShadow,
-  authModalGoogleButtonText,
-  authModalGoogleChevronClass,
+  authModalGoogleButtonTextFixed,
+  authModalGoogleChevronFixedClass,
 } from "@/lib/authModalTheme";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -14,7 +15,7 @@ type Props = {
 };
 
 const googleGlyph = (
-  <svg className="h-5 w-5 shrink-0 sm:h-6 sm:w-6" viewBox="0 0 24 24" aria-hidden>
+  <svg className="h-[20px] w-[20px] shrink-0 sm:h-[24px] sm:w-[24px]" viewBox="0 0 24 24" aria-hidden>
     <path
       fill="#EA4335"
       d="M12 10.2v3.9h5.4c-.2 1.2-.9 2.3-1.9 3l3 2.3c1.7-1.6 2.7-3.9 2.7-6.7 0-.6-.1-1.2-.2-1.8H12z"
@@ -41,12 +42,12 @@ export function AuthModalGoogleStartButton({ onClick }: Props) {
     <button
       type="button"
       onClick={onClick}
-      className={`relative mx-auto mt-9 flex w-full max-w-[360px] items-center justify-center gap-2.5 rounded-full bg-white px-4 py-3 font-extrabold text-[#1a1a1a] transition hover:brightness-95 sm:gap-3 sm:px-6 sm:py-4 ${authModalGoogleButtonShadow}`}
+      className={`${authModalGoogleButtonFixedShellClass} ${authModalGoogleButtonShadow}`}
     >
       {googleGlyph}
-      <span className={`shrink-0 ${authModalGoogleButtonText}`}>{t("auth.googleCta")}</span>
+      <span className={`shrink-0 ${authModalGoogleButtonTextFixed}`}>{t("auth.googleCta")}</span>
       <ChevronRight
-        className={authModalGoogleChevronClass}
+        className={authModalGoogleChevronFixedClass}
         color={AUTH_MODAL_BRAND_PINK_HEX}
         stroke={AUTH_MODAL_BRAND_PINK_HEX}
         strokeWidth={3.85}

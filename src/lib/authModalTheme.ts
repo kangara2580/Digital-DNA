@@ -56,6 +56,34 @@ export const authModalGlowBottom =
 export const authModalGoogleButtonShadow =
   "shadow-[0_18px_38px_-20px_rgba(255,45,141,0.42),0_14px_32px_-18px_rgba(255,255,255,0.52)]";
 
+/**
+ * 로그인·회원가입 모달 — fluid `html { font-size }` 와 무관한 고정 px.
+ * 1512·1800 등 해상도·전체화면에서 카드·타이포 크기가 동일하게 유지됩니다.
+ */
+export const authModalDialogFixedWidthClass =
+  "mx-auto w-[min(calc(100%-2rem),420px)] max-w-[420px]";
+
+export const authModalDialogFixedPaddingClass =
+  "rounded-[24px] px-[20px] pb-[32px] pt-[32px] sm:rounded-[28px] sm:px-[28px] sm:pb-[40px] sm:pt-[40px]";
+
+export const authModalFixedWordmarkClass =
+  "relative text-center text-[49px] font-semibold leading-none tracking-[0.02em] text-white";
+
+export const authModalFixedSubtitleClass =
+  "relative mt-3 text-center text-[30px] font-semibold leading-tight text-zinc-100";
+
+/** Google CTA 라벨 — px 고정 (fluid rem root 무관) */
+export const authModalGoogleButtonTextFixed = "text-[19.5px]";
+
+export const authModalGoogleChevronFixedClass =
+  "h-[32px] w-[32px] shrink-0 text-[color:var(--reels-point)] sm:h-[34px] sm:w-[34px]";
+
+export const authModalGoogleButtonFixedShellClass =
+  "relative mx-auto mt-9 flex w-full max-w-[360px] items-center justify-center gap-[10px] rounded-full bg-white px-[16px] py-[12px] font-extrabold text-[#1a1a1a] transition hover:brightness-95 sm:gap-3 sm:px-[24px] sm:py-[16px]";
+
+export const authModalDismissButtonFixedCls =
+  "absolute right-[16px] top-[16px] z-[1] inline-flex h-[32px] w-[32px] items-center justify-center rounded-full border border-black/10 bg-white text-[17px] font-semibold leading-none text-black shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition hover:bg-zinc-50 hover:text-black";
+
 /** Google CTA 라벨 («Google로 바로 시작») — 아이콘·패딩에 맞춘 한 줄 크기 */
 const googleOAuthCtaLabelText =
   "text-[clamp(1.0625rem,3.05vw,1.21875rem)]";

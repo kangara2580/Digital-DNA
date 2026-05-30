@@ -6,14 +6,17 @@ import { AuthModalGoogleStartButton } from "@/components/AuthModalGoogleStartBut
 import { AuthModalPortal } from "@/components/AuthModalPortal";
 import {
   authModalDialogClipNoScroll,
+  authModalDialogFixedPaddingClass,
+  authModalDialogFixedWidthClass,
   authModalDialogSurface,
-  authModalDismissButtonCls,
+  authModalDismissButtonFixedCls,
+  authModalFixedSubtitleClass,
+  authModalFixedWordmarkClass,
   authModalGlowBottom,
   authModalGlowTop,
 } from "@/lib/authModalTheme";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
-  araAuthDialogWordmarkClassName,
   araWordmarkFontStyle,
   authModalBrandHeadlineClassName,
 } from "@/lib/araBrandTypography";
@@ -53,7 +56,7 @@ export function AuthPromptModal({ open, onClose, onGoogleStart }: Props) {
         role="dialog"
         aria-modal="true"
         aria-label={t("auth.dialogAria")}
-        className={`relative mx-auto w-full max-w-[min(100%,560px)] ${authModalDialogClipNoScroll} rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}
+        className={`relative ${authModalDialogFixedWidthClass} ${authModalDialogFixedPaddingClass} ${authModalDialogClipNoScroll} shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] ${authModalDialogSurface}`}
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >
@@ -66,19 +69,19 @@ export function AuthPromptModal({ open, onClose, onGoogleStart }: Props) {
             e.stopPropagation();
             onClose();
           }}
-          className={authModalDismissButtonCls}
+          className={authModalDismissButtonFixedCls}
           aria-label={t("a11y.close")}
         >
           ×
         </button>
         <p
-          className={`${araAuthDialogWordmarkClassName} ${authModalBrandHeadlineClassName}`}
+          className={`${authModalFixedWordmarkClass} ${authModalBrandHeadlineClassName}`}
           style={araWordmarkFontStyle}
         >
           ARA
         </p>
         <p
-          className={`relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100 ${authModalBrandHeadlineClassName}`}
+          className={`${authModalFixedSubtitleClass} ${authModalBrandHeadlineClassName}`}
         >
           {t("auth.loginSignupTitle")}
         </p>

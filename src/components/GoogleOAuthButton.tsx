@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronRight } from "lucide-react";
-import { AUTH_MODAL_BRAND_PINK_HEX, authModalGoogleChevronClass } from "@/lib/authModalTheme";
+import { AUTH_MODAL_BRAND_PINK_HEX, authModalGoogleChevronFixedClass } from "@/lib/authModalTheme";
 import { buildAuthCallbackRedirectTo } from "@/lib/authOAuthRedirect";
 import { markOAuthFlowStarted } from "@/lib/authOAuthPending";
 import { postLoginRedirectPath } from "@/lib/postLoginRedirect";
@@ -80,7 +80,7 @@ export function GoogleOAuthButton({
       <span className={googleLabelTypographyClass}>{busy ? "Google로 이동 중..." : label}</span>
       {showBrandChevron && !busy ? (
         <ChevronRight
-          className={authModalGoogleChevronClass}
+          className={authModalGoogleChevronFixedClass}
           color={AUTH_MODAL_BRAND_PINK_HEX}
           stroke={AUTH_MODAL_BRAND_PINK_HEX}
           strokeWidth={3.85}

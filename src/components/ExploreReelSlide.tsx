@@ -36,7 +36,7 @@ import {
   explorePurchaseButtonClass,
   explorePurchaseButtonMobileClass,
 } from "@/lib/explorePurchaseButtonClass";
-import { PaymentDiamondIcon } from "@/components/PaymentDiamondIcon";
+import { GemAmount } from "@/components/PaymentDiamondIcon";
 import {
   EXPLORE_RAIL_ACTION_BTN,
   EXPLORE_RAIL_ACTION_BTN_ACTIVE_TINT,
@@ -586,20 +586,24 @@ function ReelDesktopRail({
         soldOut ? (
           <div className="flex w-full flex-col items-center gap-3 px-2 text-center">
             <div className="opacity-45">
-              <span className="text-[clamp(1.5rem,3.8vw,2.35rem)] font-black tabular-nums tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900">
-                {Math.round(video.priceWon / 6).toLocaleString()}
-                <PaymentDiamondIcon className="ml-1 inline-block h-[1.05em] w-[1.05em] align-middle text-[color:var(--reels-point)]" />
-              </span>
+              <GemAmount
+                value={Math.round(video.priceWon / 6).toLocaleString()}
+                className="justify-center text-[clamp(1.5rem,3.8vw,2.35rem)] font-black tabular-nums tracking-tight text-white [html[data-theme='light']_&]:text-zinc-900"
+                iconClassName="h-[0.95em] w-[0.95em] shrink-0 text-[color:var(--reels-point)]"
+                gapClassName="gap-1"
+              />
             </div>
             <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">{t("explore.rail.soldOut")}</span>
           </div>
         ) : (
           <div className="flex w-full flex-col items-stretch gap-3 px-2">
             <div className="text-center">
-              <span className="text-[clamp(1.55rem,4vw,2.85rem)] font-black tabular-nums tracking-tighter text-white [html[data-theme='light']_&]:text-zinc-900">
-                {Math.round(video.priceWon / 6).toLocaleString()}
-                <PaymentDiamondIcon className="ml-1 inline-block h-[0.92em] w-[0.92em] align-middle text-[color:var(--reels-point)] sm:h-[1.05em] sm:w-[1.05em]" />
-              </span>
+              <GemAmount
+                value={Math.round(video.priceWon / 6).toLocaleString()}
+                className="justify-center text-[clamp(1.55rem,4vw,2.85rem)] font-black tabular-nums tracking-tighter text-white [html[data-theme='light']_&]:text-zinc-900"
+                iconClassName="h-[0.95em] w-[0.95em] shrink-0 text-[color:var(--reels-point)] sm:h-[1.05em] sm:w-[1.05em]"
+                gapClassName="gap-1"
+              />
             </div>
             <button
               type="button"
@@ -788,13 +792,12 @@ function ExploreReelMobileTitlePurchaseRow({
             {title}
           </p>
           {gemLabel ? (
-            <span
-              className="inline-flex shrink-0 items-center gap-0.5 tabular-nums text-[13px] font-bold text-white"
-              aria-label={t("explore.rail.buyAria")}
-            >
-              <PaymentDiamondIcon className="h-4 w-4 text-[color:var(--reels-point)]" aria-hidden />
-              {gemLabel}
-            </span>
+            <GemAmount
+              value={gemLabel}
+              className="inline-flex shrink-0 tabular-nums text-[13px] font-bold text-white"
+              iconClassName="h-4 w-4 shrink-0 text-[color:var(--reels-point)]"
+              gapClassName="gap-0.5"
+            />
           ) : null}
         </div>
         {video.priceWon != null && !soldOut ? (

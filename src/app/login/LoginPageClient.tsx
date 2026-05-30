@@ -6,12 +6,16 @@ import { GoogleOAuthButton } from "@/components/GoogleOAuthButton";
 import {
   authLoginPageScrim,
   authModalDialogClipNoScroll,
+  authModalDialogFixedPaddingClass,
+  authModalDialogFixedWidthClass,
   authModalDialogSurface,
-  authModalDismissButtonCls,
+  authModalDismissButtonFixedCls,
+  authModalFixedSubtitleClass,
+  authModalFixedWordmarkClass,
   authModalGlowBottom,
   authModalGlowTop,
   authModalGoogleButtonShadow,
-  loginPageGoogleButtonText,
+  authModalGoogleButtonTextFixed,
   loginPageAmbientBg,
 } from "@/lib/authModalTheme";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -19,7 +23,6 @@ import { isAuthSimulateLoginEnabled } from "@/lib/authSimulate";
 import { postLoginRedirectPath } from "@/lib/postLoginRedirect";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
-  araAuthDialogWordmarkClassName,
   araWordmarkFontStyle,
   authModalBrandHeadlineClassName,
 } from "@/lib/araBrandTypography";
@@ -83,25 +86,25 @@ export function LoginPageClient() {
       <div className={`pointer-events-none absolute inset-0 ${loginPageAmbientBg}`} />
       <div className="relative flex min-h-[calc(100vh-3rem)] items-center justify-center sm:min-h-[calc(100vh-4rem)]">
         <div className={`absolute inset-0 ${authLoginPageScrim}`} />
-        <div className={`relative w-full max-w-[560px] ${authModalDialogClipNoScroll} rounded-[24px] px-5 pb-8 pt-8 shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] sm:rounded-[28px] sm:px-7 sm:pb-10 sm:pt-10 ${authModalDialogSurface}`}>
+        <div className={`relative ${authModalDialogFixedWidthClass} ${authModalDialogFixedPaddingClass} ${authModalDialogClipNoScroll} shadow-[0_60px_130px_-40px_rgba(0,0,0,0.95)] ${authModalDialogSurface}`}>
           <div className={authModalGlowTop} aria-hidden />
           <div className={authModalGlowBottom} aria-hidden />
           <button
             type="button"
             onClick={() => router.back()}
-            className={authModalDismissButtonCls}
+            className={authModalDismissButtonFixedCls}
             aria-label={t("a11y.close")}
           >
             ×
           </button>
           <p
-            className={`${araAuthDialogWordmarkClassName} ${authModalBrandHeadlineClassName}`}
+            className={`${authModalFixedWordmarkClass} ${authModalBrandHeadlineClassName}`}
             style={araWordmarkFontStyle}
           >
             ARA
           </p>
           <p
-            className={`relative mt-3 text-center text-[clamp(1.15rem,4.6vw,1.85rem)] font-semibold leading-tight text-zinc-100 ${authModalBrandHeadlineClassName}`}
+            className={`${authModalFixedSubtitleClass} ${authModalBrandHeadlineClassName}`}
           >
             {t("auth.loginSignupTitle")}
           </p>
@@ -125,9 +128,9 @@ export function LoginPageClient() {
             <GoogleOAuthButton
               nextPath={redirectPath}
               label={t("auth.googleCta")}
-              googleLabelTypographyClass={loginPageGoogleButtonText}
+              googleLabelTypographyClass={authModalGoogleButtonTextFixed}
               showBrandChevron
-              className={`flex w-full items-center justify-center gap-2.5 rounded-full bg-white px-4 py-3 font-extrabold text-[#1a1a1a] transition hover:brightness-95 sm:gap-3 sm:px-6 sm:py-4 ${authModalGoogleButtonShadow}`}
+              className={`flex w-full items-center justify-center gap-[10px] rounded-full bg-white px-[16px] py-[12px] font-extrabold text-[#1a1a1a] transition hover:brightness-95 sm:gap-3 sm:px-[24px] sm:py-[16px] ${authModalGoogleButtonShadow}`}
             />
           </div>
         </div>

@@ -458,6 +458,11 @@ export function VideoCard({
 
   /** 쇼핑·카테고리 그리드 등 세로 타일 — 카드 전체 scale 호버는 끔(영상만 커지는 느낌 방지) */
   const mallStripTile = reelLayout && reelStrip && trendingRankCardPrice;
+
+  /** 몰·랭킹 카드 하단 가격 — 숫자↔보석 간격 유지, 오른쪽 여백 쪽으로만 아이콘 확대 */
+  const priceGemIconClass = trendingRankCardPrice
+    ? "h-4 w-4 shrink-0 origin-left translate-x-0.5 text-[color:var(--reels-point)] sm:h-[18px] sm:w-[18px] sm:translate-x-1"
+    : "h-3.5 w-3.5 shrink-0 text-[color:var(--reels-point)] sm:h-4 sm:w-4";
   const gridHoverScale =
     disableHoverScale ||
     dense ||
@@ -804,7 +809,7 @@ export function VideoCard({
               }`}
             />
             <h3
-              className={`line-clamp-2 min-w-0 flex-1 text-left font-semibold leading-snug text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 ${
+              className={`min-w-0 flex-1 truncate text-left font-semibold leading-snug text-zinc-100 [html[data-theme='light']_&]:text-zinc-900 ${
                 dense
                   ? "text-[10px] sm:text-[10px]"
                   : reelStrip
@@ -819,7 +824,7 @@ export function VideoCard({
             {priceLabel ? (
               <GemAmount
                 value={priceLabel}
-                iconClassName="h-3.5 w-3.5 shrink-0 text-[color:var(--reels-point)] sm:h-4 sm:w-4"
+                iconClassName={priceGemIconClass}
                 className={
                   trendingRankCardPrice
                     ? `${videoCardMallPriceClass} text-[13px] sm:text-[15px]`
